@@ -1,5 +1,5 @@
 export default Object.freeze({
-	signin: '/sign-in',
-	signup: '/sign-up',
+	signin: '/login',
+	signup: '/signup',
 	main: '/',
 })
