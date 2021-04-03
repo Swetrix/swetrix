@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
+import { useAlert } from 'react-alert'
 
 import Header from 'components/Header'
 import MainPage from 'pages/MainPage'
@@ -15,7 +16,8 @@ import VerifyEmail from 'pages/Auth/VerifyEmail'
 import { isAuthenticated, notAuthenticated } from './hoc/protected'
 import { getAccessToken } from 'utils/accessToken'
 import { authMe } from './api'
-import { authActions } from "actions/auth"
+import { authActions } from 'actions/auth'
+import { errorsActions } from 'actions/errors'
 
 const ProtectedSignIn = notAuthenticated(SignIn)
 const ProtectedSignUp = notAuthenticated(SignUp)
@@ -25,6 +27,7 @@ const ProtectedUserSettings = isAuthenticated(UserSettings)
 
 const App = () => {
   const dispatch = useDispatch()
+  const alert = useAlert()
 	const { loading, authenticated } = useSelector(state => state.auth)
 	const { error } = useSelector(state => state.errors)
   const accessToken = getAccessToken()
@@ -39,6 +42,16 @@ const App = () => {
 			}
 		})()
 	}, [dispatch, accessToken])
+
+  useEffect(() => {
+    if (error) {
+      alert.error(error, {
+        onClose: () => {
+          dispatch(errorsActions.clearErrors())
+        }
+      })
+    }
+  }, [error])
 
   return (
     (!accessToken || !loading) && (

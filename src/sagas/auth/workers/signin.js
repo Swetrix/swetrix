@@ -11,7 +11,7 @@ export default function* ({ payload: { credentials } }) {
 		yield put(authActions.loginSuccess(response.user))
 		yield call(setAccessToken, JSON.stringify(response.access_token))
 	} catch (error) {
-		yield put(errorsActions.loginFailed(`serverErrors.${error.message}`))
+		yield put(errorsActions.loginFailed(error.message))
 	} finally {
 		yield put(authActions.finishLoading())
 	}
