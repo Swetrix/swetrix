@@ -8,8 +8,6 @@ import { isValidEmail, isValidPassword } from 'utils/validator'
 export default ({ onSubmit }) => {
   const [form, setForm] = useState({
     email: '',
-    password: '',
-    keep_signedin: false
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -54,7 +52,7 @@ export default ({ onSubmit }) => {
 
   return (
     <div className="container">
-      <h4 className="mb-3">Sign in</h4>
+      <h4 className="mb-3">Account recovery</h4>
       <Form validated={validated} onSubmit={handleSubmit} noValidate>
         <Form.Group className="mb-3 has-validation">
           <Form.Label htmlFor="email">Email</Form.Label>
@@ -74,43 +72,13 @@ export default ({ onSubmit }) => {
             {errors.email}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label htmlFor="password">Password</Form.Label>
-          <Form.Control
-            type="password"
-            value={form.password}
-            placeholder="Password"
-            id="password"
-            className="form-control"
-            name="password"
-            onChange={handleInput}
-            required
-          />
-        </Form.Group>
       </Form>
-      <Form.Group className="custom-control custom-checkbox">
-        <Form.Control
-          type="checkbox"
-          checked={form.keep_signedin}
-          id="keep_signedin"
-          className="custom-control-input"
-          name="keep_signedin"
-          onChange={handleInput}
-        />
-        <Form.Label htmlFor="keep_signedin" className="custom-control-label">
-          Don't remember me.
-        </Form.Label>
-      </Form.Group>
       <div className="d-flex align-items-center mb-3">
-        <Link to={routes.reset_password} className="btn btn-link">
-          Forgot password?
-        </Link>
-        <span> | </span>
-        <Link to={routes.signup} className="btn btn-link">
-          Sign up instead
+        <Link to={routes.signin} className="btn btn-link">
+          Sign in
         </Link>
         <button type="submit" className="btn btn-primary ml-auto">
-          Sign in
+          Reset password
         </button>
       </div>
     </div>
