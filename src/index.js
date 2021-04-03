@@ -8,7 +8,7 @@ import AlertTemplate from 'react-alert-template-basic'
 import './index.scss'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App'
-// import reportWebVitals from './reportWebVitals'
+import reportWebVitals from './reportWebVitals'
 
 const options = {
   position: positions.BOTTOM_RIGHT,
@@ -30,4 +30,4 @@ ReactDOM.render(
   document.getElementById('root')
 )
 
-// reportWebVitals()
+reportWebVitals()

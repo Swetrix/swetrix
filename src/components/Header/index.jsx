@@ -1,6 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
+import { BoxArrowRight } from 'react-bootstrap-icons'
+
 import routes from 'routes'
 import { authActions } from 'actions/auth'
 
@@ -20,12 +22,18 @@ const Header = ({ authenticated }) => {
           <Link to="/" className="p-2 text-dark">Pricing</Link>
           <Link to="/" className="p-2 text-dark">FAQs</Link>
           <Link to="/" className="p-2 text-dark">Docs</Link>
+          { authenticated && <Link to={routes.user_settings} className="p-2 text-dark">You</Link> }
         </nav>
         { authenticated
           ? (
             <>
-              <Link to={routes.user_settings} className="p-2 text-dark">You</Link>
-              <button className="p-2 text-dark btn btn-link" onClick={() => dispatch(authActions.logout())}>Exit</button>
+              <Link to={routes.dashboard} className="btn btn-outline-primary mr-3">Dashboard</Link>
+              <BoxArrowRight
+                color="#007bff"
+                size="24"
+                role="button"
+                onClick={() => dispatch(authActions.logout())}
+                />
             </>
           )
           : <Link to={routes.signup} className="btn btn-outline-primary">Get started</Link>
