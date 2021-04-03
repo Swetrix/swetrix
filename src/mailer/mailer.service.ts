@@ -52,14 +52,14 @@ export class MailerService {
 
   async sendEmail(email: string, templateName: LetterTemplate, params: Params = null): Promise<void> {
     try {
-      const templatePath = TEMPLATES_PATH +
-        '/' + 'EN' +
-        '/' + templateName + '_en.html'
+      // const templatePath = TEMPLATES_PATH +
+      //   '/' + 'en' +
+      //   '/' + templateName + '_en.html'
 
-      const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
-      const subject = metaInfoJson[templateName]['subject']['EN']
-      const template = handlebars.compile(letter)
-      const htmlToSend = template(params)
+      // const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
+      // const subject = metaInfoJson[templateName]['subject']['EN']
+      // const template = handlebars.compile(letter)
+      // const htmlToSend = template(params)
 
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
@@ -72,13 +72,15 @@ export class MailerService {
 
       const message = {
         from: {
-          name: 'Studentenwerk Frankfurt',
+          name: 'Analytics',
           address: process.env.FROM_EMAIL
         },
         to: email,
-        subject: subject,
-        html: htmlToSend,
+        // subject,
+        // html: htmlToSend,
         attachments: [],
+
+        params, // temp var
       }
   
       if (process.env.SMTP_MOCK) {
