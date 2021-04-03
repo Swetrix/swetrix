@@ -61,7 +61,7 @@ export default ({ onSubmit }) => {
           <Form.Control
             type="email"
             value={form.email}
-            placeholder="you@email.com"
+            placeholder="you@example.com"
             id="email"
             className="form-control"
             name="email"
@@ -87,32 +87,32 @@ export default ({ onSubmit }) => {
             required
           />
         </Form.Group>
-      </Form>
-      <Form.Group className="custom-control custom-checkbox">
-        <Form.Control
-          type="checkbox"
-          checked={form.keep_signedin}
-          id="keep_signedin"
-          className="custom-control-input"
-          name="keep_signedin"
-          onChange={handleInput}
-        />
-        <Form.Label htmlFor="keep_signedin" className="custom-control-label">
-          Don't remember me.
+        <Form.Group className="custom-control custom-checkbox">
+          <Form.Control
+            type="checkbox"
+            checked={form.keep_signedin}
+            id="keep_signedin"
+            className="custom-control-input"
+            name="keep_signedin"
+            onChange={handleInput}
+          />
+          <Form.Label htmlFor="keep_signedin" className="custom-control-label">
+            Don't remember me.
         </Form.Label>
-      </Form.Group>
-      <div className="d-flex align-items-center mb-3">
-        <Link to={routes.reset_password} className="btn btn-link">
-          Forgot password?
+        </Form.Group>
+        <div className="d-flex align-items-center mb-3">
+          <Link to={routes.reset_password} className="btn btn-link">
+            Forgot password?
         </Link>
-        <span> | </span>
-        <Link to={routes.signup} className="btn btn-link">
-          Sign up instead
+          <span> | </span>
+          <Link to={routes.signup} className="btn btn-link">
+            Sign up instead
         </Link>
-        <button type="submit" className="btn btn-primary ml-auto">
-          Sign in
+          <button type="submit" className="btn btn-primary ml-auto">
+            Sign in
         </button>
-      </div>
+        </div>
+      </Form>
     </div>
   )
 }

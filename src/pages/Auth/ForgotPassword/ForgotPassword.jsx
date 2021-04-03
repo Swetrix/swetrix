@@ -59,7 +59,7 @@ export default ({ onSubmit }) => {
           <Form.Control
             type="email"
             value={form.email}
-            placeholder="you@email.com"
+            placeholder="you@example.com"
             id="email"
             className="form-control"
             name="email"
@@ -72,15 +72,15 @@ export default ({ onSubmit }) => {
             {errors.email}
           </Form.Control.Feedback>
         </Form.Group>
+        <div className="d-flex align-items-center mb-3">
+          <Link to={routes.signin} className="btn btn-link">
+            Sign in
+          </Link>
+          <button type="submit" className="btn btn-primary ml-auto">
+            Reset password
+          </button>
+        </div>
       </Form>
-      <div className="d-flex align-items-center mb-3">
-        <Link to={routes.signin} className="btn btn-link">
-          Sign in
-        </Link>
-        <button type="submit" className="btn btn-primary ml-auto">
-          Reset password
-        </button>
-      </div>
     </div>
   )
 }

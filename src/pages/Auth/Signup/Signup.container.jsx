@@ -1,11 +1,13 @@
 import Signup from './Signup'
-// import { useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import { authActions } from 'actions/auth'
 
 export default () => {
-  // const dispatch = useDispatch()
+  const dispatch = useDispatch()
 
   const onSubmit = data => {
-    console.log(data)
+    delete data.repeat
+    dispatch(authActions.signupAsync(data, () => {}))
   }
 
   return (

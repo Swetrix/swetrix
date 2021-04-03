@@ -3,5 +3,7 @@ export default Object.freeze({
 	signup: '/signup',
 	reset_password: '/recovery',
 	main: '/',
-	dashboard: '/dashboard'
+	dashboard: '/dashboard',
+	user_settings: '/settings',
+	verify: '/verify/:id',
 })
