@@ -29,8 +29,14 @@ export class User {
   @Column('varchar', { length: 200, default: '' })
   password: string
 
-  @Column({ default: true })
+  @Column({ default: false })
   isActive: boolean
+
+  @Column('int', { default: 1 })
+  emailRequests: number
+
+  // @Column('datetime', { nullable: true, default: null })
+  // consent: Date
 
   @OneToMany(() => ActionToken, actionToken => actionToken.user)
   actionTokens: ActionToken[]
