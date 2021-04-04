@@ -1,13 +1,21 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 
+import { authActions } from 'actions/auth'
+import { errorsActions } from 'actions/errors'
 import UserSettings from './UserSettings'
 
 export default () => {
   const dispatch = useDispatch()
 
   const onDelete = () => {
-    // TODO
+    dispatch(
+      authActions.deleteAccountAsync(
+        (error) => dispatch(
+          errorsActions.deleteAccountFailed(error.description)
+        )
+      )
+    )
   }
 
   const onExport = () => {

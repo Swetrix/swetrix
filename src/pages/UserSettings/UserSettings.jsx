@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import Form from 'react-bootstrap/Form'
 import { Mailbox } from 'react-bootstrap-icons'
 
+import Modal from 'components/Modal'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
 export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
@@ -16,6 +17,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     validate()
@@ -48,16 +50,8 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
       allErrors.email = 'Please provide a valid email.'
     }
 
-    if (!isValidPassword(form.password)) {
-      allErrors.password = 'The password has to consist of at least 8 characters.'
-    }
-
-    if (form.password !== form.repeat || form.repeat === '') {
+    if (form.password !== form.repeat) {
       allErrors.repeat = 'Passwords have to match.'
-    }
-
-    if (!form.tos) {
-      allErrors.tos = 'You have to accept our TOS and privacy policy in order to use our services.'
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -151,11 +145,21 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
         &nbsp;
         <button
           className="btn btn-danger"
-          onClick={onDelete}
+          onClick={() => setShowModal(true)}
         >
           Delete account
         </button>
       </div>
+
+      {showModal &&
+        <Modal
+          onCancel={() => setShowModal(false)}
+          onSubmit={() => { setShowModal(false); onDelete() }}
+          submitText="Delete my account"
+          title="Delete your account?"
+          text={<>By pressing 'Delete my account' you understand, that this action is irreversible.<br/>All your data will be deleted from our servers.</>}
+          />
+      }
     </div>
   )
 }
