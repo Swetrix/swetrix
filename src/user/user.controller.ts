@@ -5,15 +5,15 @@ import { Request } from 'express'
 import { ApiTags, ApiQuery } from '@nestjs/swagger'
 
 import { UserService } from './user.service'
-// import { UserType } from './entities/user.entity'
-// import { Roles } from '../common/decorators/roles.decorator'
+import { UserType } from './entities/user.entity'
+import { Roles } from '../common/decorators/roles.decorator'
 // import { Pagination } from '../common/pagination/pagination'
 // import { User, UserType, MAX_EMAIL_REQUESTS } from './entities/user.entity'
 // import { CustomerDto } from './dto/customer.dto'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 // import { UsersService } from '../users/users.service'
 // import { UpdateCustomerDto } from './dto/update-customer'
-// import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
+import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 // import { ActionTokenType } from '../action-tokens/action-token.entity'
@@ -75,30 +75,30 @@ export class UserController {
   //   }
   // }
 
-  // @Delete('/:id')
-  // @HttpCode(204)
-  // @Roles(UserType.ADMIN)
-  // async delete(@Param('id') id: string, @CurrentUserId() currentUserId: string):
-  // Promise<any> {
-  //   this.logger.log({id, currentUserId}, 'DELETE /customers/:id')
-  //   const userToDelete = await this.customersService.findOneWhere({id})
-  //   if(!userToDelete){
-  //     throw new BadRequestException(`User with id ${id} does not exist`)
-  //   }
-  //   await this.customersService.checkIfDeletionAllowed(currentUserId)
-  //   await this.customersService.delete(id)
-  //   return
-  // }
+  @Delete('/:id')
+  @HttpCode(204)
+  @Roles(UserType.ADMIN)
+  async delete(@Param('id') id: string, @CurrentUserId() uid: string):
+  Promise<any> {
+    this.logger.log({ id, uid }, 'DELETE /customers/:id')
+    const userToDelete = await this.userService.findOneWhere({ id })
 
-  // @Delete('/')
-  // @HttpCode(204)
-  // @Roles(UserType.FREE)
-  // async deleteSelf(@CurrentUserId() currentUserId: string): Promise<any> {
-  //   this.logger.log({currentUserId}, 'DELETE /customers')
-  //   await this.customersService.checkIfDeletionAllowed(currentUserId)
-  //   await this.customersService.delete(currentUserId)
-  //   return
-  // }
+    if (!userToDelete) {
+      throw new BadRequestException(`User with id ${id} does not exist`)
+    }
+    
+    await this.userService.delete(id)
+    return
+  }
+
+  @Delete('/')
+  @HttpCode(204)
+  @Roles(UserType.FREE)
+  async deleteSelf(@CurrentUserId() uid: string): Promise<any> {
+    this.logger.log({ uid }, 'DELETE /customers')
+    await this.userService.delete(uid)
+    return
+  }
 
   // @Put('/:id')
   // @Roles(UserType.ADMIN)
