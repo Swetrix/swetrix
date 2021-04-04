@@ -16,6 +16,7 @@ const VerifyEmail = () => {
   useEffect(() => {
     setLoading(true)
     const path = window.location.pathname.split('/')[1]
+    console.log(path)
 
     dispatch(authActions.emailVerifyAsync(
       { path, id },

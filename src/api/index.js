@@ -81,7 +81,7 @@ export const changeUserDetails = (data) =>
 
 export const forgotPassword = (email) =>
 	api
-		.post('/auth/user/reset-password', email)
+		.post('/auth/reset-password', email)
 		.then((response) => response.data)
 		.catch((error) => {
 			throw new Error(error.response.data.message)

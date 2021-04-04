@@ -6,4 +6,5 @@ export default Object.freeze({
 	dashboard: '/dashboard',
 	user_settings: '/settings',
 	verify: '/verify/:id',
+	change_email: '/change-email/:id',
 })

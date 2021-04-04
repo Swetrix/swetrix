@@ -10,7 +10,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   const { user } = useSelector(state => state.auth)
 
   const [form, setForm] = useState({
-    email: user.email,
+    email: user.email || '',
     password: '',
     repeat: '',
   })
@@ -50,6 +50,10 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
       allErrors.email = 'Please provide a valid email.'
     }
 
+    if (form.password.length > 0 && !isValidPassword(form.password)) {
+      allErrors.password = 'The entered password is incorrect.'
+    }
+
     if (form.password !== form.repeat) {
       allErrors.repeat = 'Passwords have to match.'
     }
@@ -64,7 +68,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
     <div className="container">
       <h2>Profile settings</h2>
 
-      <Form validated={validated} onSubmit={handleSubmit} noValidate>
+      <Form onSubmit={handleSubmit} noValidate>
         <Form.Group className="mb-3 has-validation">
           <Form.Label htmlFor="email">Email</Form.Label>
           <Form.Control
@@ -94,9 +98,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
               className="form-control"
               name="password"
               onChange={handleInput}
-              isValid={!errors.hasOwnProperty('password')}
               isInvalid={beenSubmitted && errors.hasOwnProperty('password')}
-              required
             />
             <Form.Control.Feedback type="invalid">
               {errors.password}
@@ -112,9 +114,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
               className="form-control"
               name="repeat"
               onChange={handleInput}
-              isValid={!errors.hasOwnProperty('repeat')}
               isInvalid={beenSubmitted && errors.hasOwnProperty('repeat')}
-              required
             />
             <Form.Control.Feedback type="invalid">
               {errors.repeat}
@@ -128,7 +128,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
 
       {user?.isActive || (
         <div className="mt-4">
-          <button className="btn btn-link" onClick={onExport}>
+          <button className="btn btn-link" onClick={onEmailConfirm}>
             <Mailbox color="#007bff" size="24" className="mr-2" />
             Didn't receive a link to confirm the email address? Request a new one!
           </button>

@@ -18,6 +18,7 @@ import { getAccessToken } from 'utils/accessToken'
 import { authMe } from './api'
 import { authActions } from 'actions/auth'
 import { errorsActions } from 'actions/errors'
+import { alertsActions } from 'actions/alerts'
 
 const ProtectedSignIn = notAuthenticated(SignIn)
 const ProtectedSignUp = notAuthenticated(SignUp)
@@ -30,6 +31,7 @@ const App = () => {
   const alert = useAlert()
 	const { loading, authenticated } = useSelector(state => state.auth)
 	const { error } = useSelector(state => state.errors)
+	const { message, type } = useSelector(state => state.alerts)
   const accessToken = getAccessToken()
 
   useEffect(() => {
@@ -53,6 +55,17 @@ const App = () => {
     }
   }, [error])
 
+  useEffect(() => {
+    if (message && type) {
+      alert.show(message, {
+        type,
+        onClose: () => {
+          dispatch(alertsActions.clearAlerts())
+        }
+      })
+    }
+  }, [message, type])
+
   return (
     (!accessToken || !loading) && (
       <>
@@ -64,7 +77,8 @@ const App = () => {
           <Route path={routes.dashboard} component={ProtectedDashboard} exact />
           <Route path={routes.user_settings} component={ProtectedUserSettings} exact />
           <Route path={routes.verify} component={VerifyEmail} exact />
-          <Route path={routes.recovery} component={ProtectedForgotPassword} exact />
+          <Route path={routes.change_email} component={VerifyEmail} exact />
+          <Route path={routes.reset_password} component={ProtectedForgotPassword} exact />
           <Redirect to={routes.main} />
         </Switch>
       </>

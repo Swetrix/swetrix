@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
 
 import { authActions } from 'actions/auth'
 import { errorsActions } from 'actions/errors'
+import { alertsActions } from 'actions/alerts'
 import UserSettings from './UserSettings'
 
 export default () => {
@@ -22,8 +23,22 @@ export default () => {
     // TODO
   }
 
-  const onSubmit = () => {
-    // TODO
+  const onSubmit = (data) => {
+    delete data.repeat
+		for (let key in data) {
+			if (data[key] === '') {
+				delete data[key]
+			}
+		}
+
+		dispatch(
+			authActions.updateUserProfileAsync(
+        data,
+				() => dispatch(
+          alertsActions.accountUpdated('Your account settings have been updated!')
+        )
+			)
+		);
   }
 
   const onEmailConfirm = () => {
