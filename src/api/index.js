@@ -95,9 +95,17 @@ export const confirmEmail = () =>
 			throw new Error(error.response.data.message)
 		})
 
+export const exportUserData = () =>
+	api
+		.get('/user/export')
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
+		})
+
 export const createNewPassword = (id, password) =>
 	api
-		.post(`/auth/password-reset/${id}`, password)
+		.post(`/auth/password-reset/${id}`, { password })
 		.then((response) => response.data)
 		.catch((error) => {
 			const errorsArray = error.response.data.message
