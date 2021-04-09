@@ -32,7 +32,6 @@ export const authActions = {
 	logout() {
 		localStorage.removeItem('access_token')
 		localStorage.removeItem('user_info')
-		document.cookie = 'email_confirm=false max-age=0 path=/'
 
 		return {
 			type: types.LOGOUT

@@ -161,7 +161,7 @@ export default ({ onSubmit }) => {
           </Link>
           <button type="submit" className="btn btn-primary ml-auto">
             Sign up
-        </button>
+          </button>
         </div>
       </Form>
     </div>

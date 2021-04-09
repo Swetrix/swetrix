@@ -9,6 +9,7 @@ import MainPage from 'pages/MainPage'
 import SignUp from 'pages/Auth/Signup'
 import SignIn from 'pages/Auth/Signin'
 import ForgotPassword from 'pages/Auth/ForgotPassword'
+import CreateNewPassword from 'pages/Auth/CreateNewPassword'
 import Dashboard from 'pages/Dashboard'
 import UserSettings from 'pages/UserSettings'
 import VerifyEmail from 'pages/Auth/VerifyEmail'
@@ -23,6 +24,7 @@ import { alertsActions } from 'actions/alerts'
 const ProtectedSignIn = notAuthenticated(SignIn)
 const ProtectedSignUp = notAuthenticated(SignUp)
 const ProtectedForgotPassword = notAuthenticated(ForgotPassword)
+const ProtectedNewPasswordForm = notAuthenticated(CreateNewPassword)
 const ProtectedDashboard = isAuthenticated(Dashboard)
 const ProtectedUserSettings = isAuthenticated(UserSettings)
 
@@ -47,7 +49,7 @@ const App = () => {
 
   useEffect(() => {
     if (error) {
-      alert.error(error, {
+      alert.error(error.toString(), {
         onClose: () => {
           dispatch(errorsActions.clearErrors())
         }
@@ -57,7 +59,7 @@ const App = () => {
 
   useEffect(() => {
     if (message && type) {
-      alert.show(message, {
+      alert.show(message.toString(), {
         type,
         onClose: () => {
           dispatch(alertsActions.clearAlerts())
@@ -79,6 +81,7 @@ const App = () => {
           <Route path={routes.verify} component={VerifyEmail} exact />
           <Route path={routes.change_email} component={VerifyEmail} exact />
           <Route path={routes.reset_password} component={ProtectedForgotPassword} exact />
+          <Route path={routes.new_password_form} component={ProtectedNewPasswordForm} exact />
           <Redirect to={routes.main} />
         </Switch>
       </>
