@@ -18,6 +18,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     validate()
@@ -128,7 +129,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
 
       {user?.isActive || (
         <div className="mt-4">
-          <button className="btn btn-link" onClick={onEmailConfirm}>
+          <button className="btn btn-link" onClick={() => onEmailConfirm(setError)}>
             <Mailbox color="#007bff" size="24" className="mr-2" />
             Didn't receive a link to confirm the email address? Request a new one!
           </button>
@@ -157,7 +158,15 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
           onSubmit={() => { setShowModal(false); onDelete() }}
           submitText="Delete my account"
           title="Delete your account?"
-          text={<>By pressing 'Delete my account' you understand, that this action is irreversible.<br/>All your data will be deleted from our servers.</>}
+          text={'By pressing \'Delete my account\' you understand, that this action is irreversible.\nAll your data will be deleted from our servers.'}
+          />
+      }
+      {error &&
+        <Modal
+          onSubmit={() => { setError('') }}
+          submitText="Got it"
+          title="Error"
+          text={error}
           />
       }
     </div>
