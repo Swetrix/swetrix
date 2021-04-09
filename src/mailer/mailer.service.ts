@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import * as nodemailer from 'nodemailer'
 import handlebars from 'handlebars'
-import { LetterTemplate } from './lettter'
+import { LetterTemplate } from './letter'
 import fs = require('fs')
 import path = require('path')
 import { AppLoggerService } from 'src/logger/logger.service'

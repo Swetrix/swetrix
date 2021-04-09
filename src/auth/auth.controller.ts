@@ -17,7 +17,7 @@ import { RequestPasswordChangeDTO } from './dto/request-pass-change.dto'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
-import { LetterTemplate } from '../mailer/lettter'
+import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 
 

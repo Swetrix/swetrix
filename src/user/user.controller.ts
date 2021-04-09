@@ -1,5 +1,5 @@
 import { 
-  Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards
+  Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags, ApiQuery } from '@nestjs/swagger'
@@ -15,7 +15,7 @@ import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { AuthService } from '../auth/auth.service'
-import { LetterTemplate } from 'src/mailer/lettter'
+import { LetterTemplate } from 'src/mailer/letter'
 import { AppLoggerService } from 'src/logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
 
@@ -34,6 +34,7 @@ export class UserController {
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
+  @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
   async get(@Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<User> | User[]> {
     this.logger.log({ take, skip }, 'GET /user')
@@ -42,6 +43,7 @@ export class UserController {
 
   @Get('/search')
   @ApiQuery({ name: 'query', required: false })
+  @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
   async searchUsers(@Query('query') query: string | undefined): Promise<User[]> {
     this.logger.log({ query }, 'GET /user/search')
@@ -49,6 +51,7 @@ export class UserController {
   }
 
   @Post('/')
+  @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
   async create(@Body() userDTO: UserProfileDTO): Promise<User> {
     this.logger.log({ userDTO }, 'POST /user')
@@ -69,6 +72,7 @@ export class UserController {
 
   @Delete('/:id')
   @HttpCode(204)
+  @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
   async delete(@Param('id') id: string, @CurrentUserId() uid: string): Promise<any> {
     this.logger.log({ id, uid }, 'DELETE /user/:id')
@@ -84,6 +88,7 @@ export class UserController {
 
   @Delete('/')
   @HttpCode(204)
+  @UseGuards(RolesGuard)
   @Roles(UserType.FREE)
   async deleteSelf(@CurrentUserId() uid: string): Promise<any> {
     this.logger.log({ uid }, 'DELETE /user')
@@ -92,6 +97,7 @@ export class UserController {
   }
 
   @Post('/confirm_email')
+  @UseGuards(RolesGuard)
   @Roles(UserType.FREE)
   async sendEmailConfirmation(@CurrentUserId() id: string, @Req() request: Request): Promise<boolean> {
     this.logger.log({ id }, 'POST /confirm_email')
@@ -109,6 +115,7 @@ export class UserController {
   }
 
   @Put('/:id')
+  @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
   async update(@Body() userDTO: UpdateUserProfileDTO, @Param('id') id: string): Promise<User> {
     this.logger.log({ userDTO, id }, 'DELETE /user/:id')
@@ -138,6 +145,7 @@ export class UserController {
   }
 
   @Put('/')
+  @UseGuards(RolesGuard)
   @Roles(UserType.FREE)
   async updateCurrentUser(@Body() userDTO: UpdateUserProfileDTO, @CurrentUserId() id: string, @Req() request: Request): Promise<User> {
     this.logger.log({ userDTO, id }, 'PUT /user')
@@ -167,5 +175,19 @@ export class UserController {
     } catch (e) {
       throw new BadRequestException(e.message)
     }
+  }
+
+  @Get('/export')
+  @UseGuards(RolesGuard)
+  @Roles(UserType.FREE)
+  async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
+    this.logger.log({ user_id }, 'GET /user/export')
+    const user = await this.userService.findOneWhere({ id: user_id })
+
+    // TODO: Add related projects and other user controlled objects into report
+    // TODO: Allow users to request exports only once per day
+    await this.mailerService.sendEmail(user.email, LetterTemplate.GDPRDataExport)
+
+    return user
   }
 }
