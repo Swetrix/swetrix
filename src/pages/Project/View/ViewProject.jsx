@@ -58,7 +58,7 @@ const ViewProject = ({ id, name }) => {
         <h2>{name}</h2>
         <Link
           to={{
-            pathname: routes.new_project,
+            pathname: routes.project_settings,
             state: { name, id },
           }}
           className="btn btn-outline-primary h-100">

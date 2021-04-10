@@ -10,6 +10,8 @@ export default (state = initialState, { type, payload }) => {
 		case types.ACCOUNT_DELETED:
 		case types.ACCOUNT_UPDATED:
 		case types.NEW_PASSWORD:
+		case types.DELETE_PROJECT_SUCCESS:
+		case types.CREATE_NEW_PROJECT_SUCCESS:
 			return { ...state, message: payload.message, type: payload.type }
 
 		case types.CLEAR_ERRORS:

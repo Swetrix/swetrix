@@ -80,7 +80,6 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
             className="form-control"
             name="email"
             onChange={handleInput}
-            isValid={!errors.hasOwnProperty('email')}
             isInvalid={beenSubmitted && errors.hasOwnProperty('email')}
             required
           />

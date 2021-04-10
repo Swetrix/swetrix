@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Form from 'react-bootstrap/Form'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import { nanoid } from 'utils/random'
 import routes from 'routes'
+import Modal from 'components/Modal'
 
-const CreateProject = ({ onSubmit, name, id }) => {
+const CreateProject = ({ onSubmit, onDelete, name, id }) => {
   const [form, setForm] = useState({
     name,
     id: id || nanoid(),
   })
+  const { pathname } = useLocation()
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
 
   useEffect(() => {
     validate()
   }, [form])
+
+  useEffect(() => {
+    console.log(showDelete)
+  }, [showDelete])
 
   const handleInput = event => {
     const t = event.target
@@ -92,26 +99,45 @@ const CreateProject = ({ onSubmit, name, id }) => {
             required
           />
         </Form.Group>
-        <div className="d-flex justify-content-right">
-          <Link
-            to={{
-              pathname: id ? routes.project.replace(':id', id) : routes.dashboard,
-              state: { id, name },
-            }}
-            className="btn btn-outline-secondary">
-            Cancel
-          </Link>
-          <button type="submit" className="btn btn-primary ml-2">
-            Save
-          </button>
+        <div className="d-flex justify-content-between">
+          <div>
+            <Link
+              to={{
+                pathname: id ? routes.project.replace(':id', id) : routes.dashboard,
+                state: { id, name },
+              }}
+              className="btn btn-outline-secondary">
+              Cancel
+            </Link>
+            <button type="submit" className="btn btn-primary ml-2">
+              Save
+            </button>
+          </div>
+          {pathname === routes.project_settings && (
+            <button type="button" onClick={() => setShowDelete(true)} className="btn btn-danger">
+              Delete project
+            </button>
+          )}
         </div>
       </Form>
+
+      {showDelete &&
+        <Modal
+          onCancel={() => setShowDelete(false)}
+          onSubmit={() => { setShowDelete(false); onDelete() }}
+          submitText="Delete project"
+          cancelText="Close"
+          title={`Delete ${form.name || 'the project'}?`}
+          text={'By pressing \'Delete project\' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers.'}
+          />
+      }
     </div>
   )
 }
 
 CreateProject.propTypes = {
   onSubmit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func,
   name: PropTypes.string,
   id: PropTypes.string,
 }
@@ -119,6 +145,7 @@ CreateProject.propTypes = {
 CreateProject.defaultProps = {
   name: '',
   id: '',
+  onDelete: () => {},
 }
 
 export default CreateProject

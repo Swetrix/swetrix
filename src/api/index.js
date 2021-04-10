@@ -3,8 +3,6 @@ import { store } from 'store'
 import { authActions } from 'actions/auth'
 import { getAccessToken, removeAccessToken } from "utils/accessToken"
 
-const NET_CONNECT_ERR = 'Internet connection error'
-
 const api = axios.create({
 	baseURL: process.env.REACT_APP_API_URL,
 })
@@ -17,15 +15,15 @@ api.interceptors.request.use(
 		}
 		return config
 	},
-	(error) => {
+	error => {
 		return Promise.reject(error)
 	}
 )
 
 api.interceptors.response.use(
-	(response) => response,
-	(error) => {
-		if (error.response.data.statusCode === 401) {
+	response => response,
+	error => {
+		if (error.response?.data.statusCode === 401) {
 			removeAccessToken()
 			store.dispatch(authActions.logout())
 		}
@@ -36,25 +34,25 @@ api.interceptors.response.use(
 export const authMe = () =>
 	api
 		.get('/auth/me')
-		.then((response) => response.data)
-		.catch((error) => {
-			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
 		})
 
 export const login = (credentials) =>
 	api
 		.post('/auth/login', credentials)
-		.then((response) => response.data)
-		.catch((error) => {
-			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
 		})
 
 export const signup = (data) =>
 	api
 		.post('/auth/register', data)
-		.then((response) => response.data)
-		.catch((error) => {
-			const errorsArray = error?.response?.data?.message || NET_CONNECT_ERR
+		.then(response => response.data)
+		.catch(error => {
+			const errorsArray = error.response.data.message
 			if (Array.isArray(errorsArray)) {
 				throw errorsArray
 			}
@@ -64,17 +62,17 @@ export const signup = (data) =>
 export const deleteUser = () =>
 	api
 		.delete('/user')
-		.then((response) => response.data)
-		.catch((error) => {
+		.then(response => response.data)
+		.catch(error => {
 			throw new Error(JSON.stringify(error.response.data))
 		})
 
 export const changeUserDetails = (data) =>
 	api
 		.put('/user', data)
-		.then((response) => response.data)
-		.catch((error) => {
-			const errorsArray = error?.response?.data?.message || NET_CONNECT_ERR
+		.then(response => response.data)
+		.catch(error => {
+			const errorsArray = error.response.data.message
 			if (Array.isArray(errorsArray)) {
 				throw errorsArray
 			}
@@ -84,9 +82,9 @@ export const changeUserDetails = (data) =>
 export const forgotPassword = (email) =>
 	api
 		.post('/auth/reset-password', email)
-		.then((response) => response.data)
-		.catch((error) => {
-			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
 		})
 
 export const confirmEmail = () =>
@@ -94,7 +92,7 @@ export const confirmEmail = () =>
 		.post('/user/confirm_email')
 		.then(response => response.data)
 		.catch(error => {
-			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
+			throw new Error(error.response.data.message)
 		})
 
 export const exportUserData = () =>
@@ -102,15 +100,15 @@ export const exportUserData = () =>
 		.get('/user/export')
 		.then(response => response.data)
 		.catch(error => {
-			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
+			throw new Error(error.response.data.message)
 		})
 
 export const createNewPassword = (id, password) =>
 	api
 		.post(`/auth/password-reset/${id}`, { password })
-		.then((response) => response.data)
-		.catch((error) => {
-			const errorsArray = error?.response?.data?.message || NET_CONNECT_ERR
+		.then(response => response.data)
+		.catch(error => {
+			const errorsArray = error.response.data.message
 			if (Array.isArray(errorsArray)) {
 				throw errorsArray
 			}
@@ -120,7 +118,39 @@ export const createNewPassword = (id, password) =>
 export const verifyEmail = ({ path, id }) =>
 	api
 		.get(`/auth/${path}/${id}`)
-		.then((response) => response.data)
-		.catch((error) => {
-			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
+		})
+
+export const getProjects = () =>
+	api
+		.get(`/project`)
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
+		})
+
+export const createProject = (data) =>
+	api
+		.post(`/project`, data)
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
+		})
+
+export const updateProject = (id, data) =>
+	api
+		.put(`/project/${id}`, data)
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
+		})
+
+export const deleteProject = (id) =>
+	api
+		.delete(`/project/${id}`)
+		.then(response => response.data)
+		.catch(error => {
+			throw new Error(error.response.data.message)
 		})

@@ -91,6 +91,7 @@ const App = () => {
           <Route path={routes.reset_password} component={ProtectedForgotPassword} exact />
           <Route path={routes.new_password_form} component={ProtectedNewPasswordForm} exact />
           <Route path={routes.new_project} component={ProtectedNewProject} exact />
+          <Route path={routes.project_settings} component={ProtectedNewProject} exact />
           <Route path={routes.project} component={ProtectedViewProject} exact />
           <Redirect to={routes.main} />
         </Switch>
