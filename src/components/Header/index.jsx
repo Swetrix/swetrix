@@ -30,6 +30,7 @@ const Header = ({ authenticated }) => {
             <>
               <Link to={routes.dashboard} className="btn btn-outline-primary mr-3">Dashboard</Link>
               <BoxArrowRight
+                className="btn-hover"
                 color="#007bff"
                 size="24"
                 role="button"

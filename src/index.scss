@@ -16,3 +16,11 @@ code {
   width: 4rem !important;
   height: 4rem !important;
 }
+
+.btn-hover {
+  transition: opacity .15s ease-in-out;
+}
+
+.btn-hover:hover {
+  opacity: 0.6;
+}
