@@ -89,16 +89,17 @@ export class UserController {
   @Delete('/')
   @HttpCode(204)
   @UseGuards(RolesGuard)
-  @Roles(UserType.FREE)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteSelf(@CurrentUserId() uid: string): Promise<any> {
     this.logger.log({ uid }, 'DELETE /user')
+    // TODO: Delete all users projects
     await this.userService.delete(uid)
     return
   }
 
   @Post('/confirm_email')
   @UseGuards(RolesGuard)
-  @Roles(UserType.FREE)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(@CurrentUserId() id: string, @Req() request: Request): Promise<boolean> {
     this.logger.log({ id }, 'POST /confirm_email')
     
@@ -146,7 +147,7 @@ export class UserController {
 
   @Put('/')
   @UseGuards(RolesGuard)
-  @Roles(UserType.FREE)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async updateCurrentUser(@Body() userDTO: UpdateUserProfileDTO, @CurrentUserId() id: string, @Req() request: Request): Promise<User> {
     this.logger.log({ userDTO, id }, 'PUT /user')
     const user = await this.userService.findOneWhere({ id })
@@ -179,7 +180,7 @@ export class UserController {
 
   @Get('/export')
   @UseGuards(RolesGuard)
-  @Roles(UserType.FREE)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /user/export')
     const user = await this.userService.findOneWhere({ id: user_id })

@@ -6,6 +6,8 @@ import { ScheduleModule } from '@nestjs/schedule'
 import { AuthModule } from './auth/auth.module'
 import { UserModule } from './user/user.module'
 import { User } from './user/entities/user.entity'
+import { Project } from './project/entity/project.entity'
+import { ProjectModule } from './project/project.module'
 import { MailerModule } from './mailer/mailer.module'
 import { ActionTokensModule } from './action-tokens/action-tokens.module'
 import { ActionToken } from './action-tokens/action-token.entity'
@@ -22,7 +24,7 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
       password: process.env.MYSQL_ROOT_PASSWORD || '123123123',
       database: process.env.MYSQL_DATABASE || 'analytics',
       synchronize: true,
-      entities: [User, ActionToken],
+      entities: [User, ActionToken, Project],
     }),
     ScheduleModule.forRoot(),
     TaskManagerModule,
@@ -30,6 +32,7 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
     UserModule,
     MailerModule,
     ActionTokensModule,
+    ProjectModule,
   ],
 })
 

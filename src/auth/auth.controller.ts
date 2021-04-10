@@ -34,7 +34,7 @@ export class AuthController {
 
   @Get('/me')
   @UseGuards(RolesGuard)
-  @Roles(UserType.FREE)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async me(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /auth/me')
     return this.userService.findOneWhere({ id: user_id })

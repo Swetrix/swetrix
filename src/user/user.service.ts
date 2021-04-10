@@ -42,6 +42,10 @@ export class UserService {
     return this.usersRepository.findOne({ where, relations })
   }
 
+  findOne(id: string): Promise<User> {
+    return this.findOneWhere({ id })
+  }
+
   findWhere(where: Record<string, unknown>): Promise<User[]> {
     return this.usersRepository.find({ where })
   }
@@ -72,10 +76,10 @@ export class UserService {
 
   search(query: string): Promise<User[]> {
     return this.usersRepository
-    .createQueryBuilder('user')
-    .select()
-    .where('email like :query', { query: `%${query}%` })
-    .limit(5)
-    .getMany()
+      .createQueryBuilder('user')
+      .select()
+      .where('email like :query', { query: `%${query}%` })
+      .limit(5)
+      .getMany()
   }
 }
