@@ -65,8 +65,16 @@ export class ProjectController {
     await this.projectService.checkIfIDUnique(projectDTO.id)
 
     try {
-      const project = await this.projectService.create(projectDTO)
-      return project
+      const project = new Project()
+      Object.assign(project, projectDTO)
+
+      const newProject = await this.projectService.create(project)
+      const user = await this.userService.findOneWithRelations(userId, ['projects'])
+      user.projects.push(project)
+
+      await this.userService.create(user)
+
+      return newProject
     } catch(e) {
       if (e.code === 'ER_DUP_ENTRY'){
         if (e.sqlMessage.includes(projectDTO.id)){
@@ -92,21 +100,10 @@ export class ProjectController {
       throw new NotFoundException()
     }
 
-    await this.projectService.allowedToManage(project.id, userId)
-    await this.projectService.checkIfIDUnique(projectDTO.id)
+    await this.projectService.allowedToManage(project, userId)
+    await this.projectService.update(id, projectDTO)
 
-    try {
-      await this.projectService.update(id, projectDTO)
-      return this.projectService.findOne(id)
-    } catch(e) {
-      if (e.code === 'ER_DUP_ENTRY'){
-        if (e.sqlMessage.includes(projectDTO.id)) {
-          throw new BadRequestException('Project with selected ID already exists')
-        }
-      }
-
-      return new BadRequestException(e)
-    }
+    return this.projectService.findOne(id)
   }
 
   @Delete('/:id')
@@ -121,7 +118,7 @@ export class ProjectController {
     if (!project) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
     }
-    await this.projectService.allowedToManage(project.id, userId)
+    await this.projectService.allowedToManage(project, userId)
 
     try {
       await this.projectService.delete(id)

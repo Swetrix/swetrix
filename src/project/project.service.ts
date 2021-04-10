@@ -36,7 +36,7 @@ export class ProjectService {
     return this.projectsRepository.count()
   }
 
-  async create(project: ProjectDTO): Promise<Project> {
+  async create(project: ProjectDTO | Project): Promise<Project> {
     return this.projectsRepository.save(project)
   }
 
@@ -49,7 +49,7 @@ export class ProjectService {
   }
 
   findOneWithRelations(id: string): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, { relations: ['user'] })
+    return this.projectsRepository.findOne(id, { relations: ['admin'] })
   }
 
   findOne(id: string): Promise<Project | null> {
@@ -64,11 +64,9 @@ export class ProjectService {
     return userId === project.admin.id
   }
 
-  async allowedToManage(projectId: string, userId: string): Promise<void> {
+  async allowedToManage(project: Project, userId: string): Promise<void> {
     const user = await this.userService.findOne(userId)
-    const project = await this.findOne(projectId)
 
-    // if (user.projects.some(({ id }) => project.id === id)) {
     if (this.ifAllowedToManage(user.id, project)) {
       return
     } else {
