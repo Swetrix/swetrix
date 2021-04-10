@@ -8,5 +8,6 @@ export default Object.freeze({
 	user_settings: '/settings',
 	verify: '/verify/:id',
 	change_email: '/change-email/:id',
+	new_project: '/projects/new',
 	project: '/projects/:id',
 })

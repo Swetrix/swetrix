@@ -23,6 +23,7 @@ const Header = ({ authenticated }) => {
           <Link to="/" className="p-2 text-dark">FAQs</Link>
           <Link to="/" className="p-2 text-dark">Docs</Link>
           { authenticated && <Link to={routes.user_settings} className="p-2 text-dark">You</Link> }
+          { !authenticated && <Link to={routes.signin} className="p-2 text-dark">Sign in</Link> }
         </nav>
         { authenticated
           ? (

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import Spinner from 'react-bootstrap/Spinner'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 
-import routes from 'routes'
 import { authActions } from 'actions/auth'
 
 const VerifyEmail = () => {
@@ -31,7 +29,7 @@ const VerifyEmail = () => {
     <div className="container d-flex justify-content-center">
       {loading
         ? (
-          <Spinner animation="border" role="status">
+          <Spinner animation="border" role="status" variant="primary" className="spinner-lg">
             <span className="sr-only">Loading...</span>
           </Spinner>
         )

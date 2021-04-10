@@ -6,7 +6,7 @@ import { Mailbox } from 'react-bootstrap-icons'
 import Modal from 'components/Modal'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
-export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
+const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   const { user } = useSelector(state => state.auth)
 
   const [form, setForm] = useState({
@@ -129,7 +129,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
 
       {user?.isActive || (
         <div className="mt-4">
-          <button className="btn btn-link" onClick={() => onEmailConfirm(setError)}>
+          <button className="btn btn-link pl-0" onClick={() => onEmailConfirm(setError)}>
             <Mailbox color="#007bff" size="24" className="mr-2" />
             Didn't receive a link to confirm the email address? Request a new one!
           </button>
@@ -139,13 +139,12 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
       <div className="mt-4">
         <button
           className="btn btn-outline-primary"
-          onClick={onExport}
+          onClick={() => onExport()}
         >
           Request data export
         </button>
-        &nbsp;
         <button
-          className="btn btn-danger"
+          className="btn btn-danger ml-3"
           onClick={() => setShowModal(true)}
         >
           Delete account
@@ -157,6 +156,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
           onCancel={() => setShowModal(false)}
           onSubmit={() => { setShowModal(false); onDelete() }}
           submitText="Delete my account"
+          cancelText="Close"
           title="Delete your account?"
           text={'By pressing \'Delete my account\' you understand, that this action is irreversible.\nAll your data will be deleted from our servers.'}
           />
@@ -164,6 +164,7 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
       {error &&
         <Modal
           onSubmit={() => { setError('') }}
+          onCancel={() => { setError('') }}
           submitText="Got it"
           title="Error"
           text={error}
@@ -172,3 +173,5 @@ export default ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
     </div>
   )
 }
+
+export default React.memo(UserSettings)

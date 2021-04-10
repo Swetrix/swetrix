@@ -13,6 +13,8 @@ import CreateNewPassword from 'pages/Auth/CreateNewPassword'
 import Dashboard from 'pages/Dashboard'
 import UserSettings from 'pages/UserSettings'
 import VerifyEmail from 'pages/Auth/VerifyEmail'
+import NewProject from 'pages/Project/Create'
+import ViewProject from 'pages/Project/View'
 
 import { isAuthenticated, notAuthenticated } from './hoc/protected'
 import { getAccessToken } from 'utils/accessToken'
@@ -27,6 +29,8 @@ const ProtectedForgotPassword = notAuthenticated(ForgotPassword)
 const ProtectedNewPasswordForm = notAuthenticated(CreateNewPassword)
 const ProtectedDashboard = isAuthenticated(Dashboard)
 const ProtectedUserSettings = isAuthenticated(UserSettings)
+const ProtectedNewProject = isAuthenticated(NewProject)
+const ProtectedViewProject = isAuthenticated(ViewProject)
 
 const App = () => {
   const dispatch = useDispatch()
@@ -82,6 +86,8 @@ const App = () => {
           <Route path={routes.change_email} component={VerifyEmail} exact />
           <Route path={routes.reset_password} component={ProtectedForgotPassword} exact />
           <Route path={routes.new_password_form} component={ProtectedNewPasswordForm} exact />
+          <Route path={routes.new_project} component={ProtectedNewProject} exact />
+          <Route path={routes.project} component={ProtectedViewProject} exact />
           <Redirect to={routes.main} />
         </Switch>
       </>

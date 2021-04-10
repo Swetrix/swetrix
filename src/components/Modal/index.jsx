@@ -6,7 +6,7 @@ const NewLineText = ({ text }) => {
   return text.split('\n').map(str => <p key={str}>{str}</p>)
 }
 
-const Modal = ({ title, text, onSubmit = () => {}, onCancel, cancelText = 'Close', submitText = 'Save changes' }) => (
+const Modal = ({ title, text, onSubmit = () => {}, onCancel, cancelText, submitText = 'Save changes' }) => (
   <BM show={true} onHide={onCancel}>
     <BM.Header closeButton>
       <BM.Title>{title}</BM.Title>
@@ -15,7 +15,7 @@ const Modal = ({ title, text, onSubmit = () => {}, onCancel, cancelText = 'Close
       <NewLineText text={text} />
     </BM.Body>
     <BM.Footer>
-      {onCancel && (
+      {onCancel && cancelText && (
         <Button variant="secondary" onClick={onCancel}>
           {cancelText}
         </Button>
