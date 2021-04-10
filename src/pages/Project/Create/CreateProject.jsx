@@ -22,10 +22,6 @@ const CreateProject = ({ onSubmit, onDelete, name, id }) => {
     validate()
   }, [form])
 
-  useEffect(() => {
-    console.log(showDelete)
-  }, [showDelete])
-
   const handleInput = event => {
     const t = event.target
     const value = t.type === 'checkbox' ? t.checked : t.value
