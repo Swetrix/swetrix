@@ -3,6 +3,8 @@ import { store } from 'store'
 import { authActions } from 'actions/auth'
 import { getAccessToken, removeAccessToken } from "utils/accessToken"
 
+const NET_CONNECT_ERR = 'Internet connection error'
+
 const api = axios.create({
 	baseURL: process.env.REACT_APP_API_URL,
 })
@@ -36,7 +38,7 @@ export const authMe = () =>
 		.get('/auth/me')
 		.then((response) => response.data)
 		.catch((error) => {
-			throw new Error(error.response.data.message)
+			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
 		})
 
 export const login = (credentials) =>
@@ -44,7 +46,7 @@ export const login = (credentials) =>
 		.post('/auth/login', credentials)
 		.then((response) => response.data)
 		.catch((error) => {
-			throw new Error(error.response.data.message)
+			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
 		})
 
 export const signup = (data) =>
@@ -52,7 +54,7 @@ export const signup = (data) =>
 		.post('/auth/register', data)
 		.then((response) => response.data)
 		.catch((error) => {
-			const errorsArray = error.response.data.message
+			const errorsArray = error?.response?.data?.message || NET_CONNECT_ERR
 			if (Array.isArray(errorsArray)) {
 				throw errorsArray
 			}
@@ -72,7 +74,7 @@ export const changeUserDetails = (data) =>
 		.put('/user', data)
 		.then((response) => response.data)
 		.catch((error) => {
-			const errorsArray = error.response.data.message
+			const errorsArray = error?.response?.data?.message || NET_CONNECT_ERR
 			if (Array.isArray(errorsArray)) {
 				throw errorsArray
 			}
@@ -84,7 +86,7 @@ export const forgotPassword = (email) =>
 		.post('/auth/reset-password', email)
 		.then((response) => response.data)
 		.catch((error) => {
-			throw new Error(error.response.data.message)
+			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
 		})
 
 export const confirmEmail = () =>
@@ -92,7 +94,7 @@ export const confirmEmail = () =>
 		.post('/user/confirm_email')
 		.then(response => response.data)
 		.catch(error => {
-			throw new Error(error.response.data.message)
+			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
 		})
 
 export const exportUserData = () =>
@@ -100,7 +102,7 @@ export const exportUserData = () =>
 		.get('/user/export')
 		.then(response => response.data)
 		.catch(error => {
-			throw new Error(error.response.data.message)
+			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
 		})
 
 export const createNewPassword = (id, password) =>
@@ -108,7 +110,7 @@ export const createNewPassword = (id, password) =>
 		.post(`/auth/password-reset/${id}`, { password })
 		.then((response) => response.data)
 		.catch((error) => {
-			const errorsArray = error.response.data.message
+			const errorsArray = error?.response?.data?.message || NET_CONNECT_ERR
 			if (Array.isArray(errorsArray)) {
 				throw errorsArray
 			}
@@ -120,5 +122,5 @@ export const verifyEmail = ({ path, id }) =>
 		.get(`/auth/${path}/${id}`)
 		.then((response) => response.data)
 		.catch((error) => {
-			throw new Error(error.response.data.message)
+			throw new Error(error?.response?.data?.message || NET_CONNECT_ERR)
 		})
