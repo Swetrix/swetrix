@@ -43,10 +43,14 @@ const App = () => {
   useEffect(() => {
 		(async () => {
 			if (accessToken) {
-				const me = await authMe()
+				try {
+          const me = await authMe()
 
-				dispatch(authActions.loginSuccess(me))
-				dispatch(authActions.finishLoading())
+          dispatch(authActions.loginSuccess(me))
+          dispatch(authActions.finishLoading())
+        } catch (e) {
+          dispatch(authActions.logout())
+        }
 			}
 		})()
 	}, [dispatch, accessToken])
