@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
+import ProjectSettings from 'pages/Project/Create'
 import routes from 'routes'
 
 const data = [
@@ -50,20 +51,28 @@ const data = [
   },
 ]
 
-const ViewProject = ({ id, name }) => {
+const ViewProject = (props) => {
+  const { id, name } = props
+  const [settings, setSettings] = useState(false)
+
+  if (settings) {
+    return (
+      <ProjectSettings
+        onCancel={() => setSettings(false)}
+        project={props}
+        />
+    )
+  }
 
   return (
     <div className="container">
       <div className="d-flex justify-content-between">
         <h2>{name}</h2>
-        <Link
-          to={{
-            pathname: routes.project_settings,
-            state: { name, id },
-          }}
+        <button
+          onClick={() => setSettings(true)}
           className="btn btn-outline-primary h-100">
           Settings
-        </Link>
+        </button>
       </div>
       <ResponsiveContainer width="100%" minHeight="300px">
         <LineChart

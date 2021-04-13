@@ -7,7 +7,7 @@ import { nanoid } from 'utils/random'
 import routes from 'routes'
 import Modal from 'components/Modal'
 
-const CreateProject = ({ onSubmit, onDelete, name, id }) => {
+const CreateProject = ({ onSubmit, onDelete, onCancel, name, id }) => {
   const [form, setForm] = useState({
     name,
     id: id || nanoid(),
@@ -97,14 +97,20 @@ const CreateProject = ({ onSubmit, onDelete, name, id }) => {
         </Form.Group>
         <div className="d-flex justify-content-between">
           <div>
-            <Link
-              to={{
-                pathname: id ? routes.project.replace(':id', id) : routes.dashboard,
-                state: { id, name },
-              }}
-              className="btn btn-outline-secondary">
-              Cancel
-            </Link>
+            {onCancel ? (
+              <button onClick={onCancel} type="button" className="btn btn-outline-secondary">
+                Cancel
+              </button>
+            ) : (
+              <Link
+                to={{
+                  pathname: id ? routes.project.replace(':id', id) : routes.dashboard,
+                  state: { id, name },
+                }}
+                className="btn btn-outline-secondary">
+                Cancel
+              </Link>
+            )}
             <button type="submit" className="btn btn-primary ml-2">
               Save
             </button>
@@ -136,12 +142,14 @@ CreateProject.propTypes = {
   onDelete: PropTypes.func,
   name: PropTypes.string,
   id: PropTypes.string,
+  onCancel: PropTypes.oneOf([PropTypes.func, null]),
 }
 
 CreateProject.defaultProps = {
   name: '',
   id: '',
   onDelete: () => {},
+  onCancel: null,
 }
 
 export default CreateProject

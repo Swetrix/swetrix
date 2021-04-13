@@ -8,15 +8,13 @@ import { alertsActions } from 'actions/alerts'
 import { errorsActions } from 'actions/errors'
 import routes from 'routes'
 
-export default () => {
-  const location = useLocation()
+export default ({ onCancel, project }) => {
+  const { pathname } = useLocation()
   const history = useHistory()
   const dispatch = useDispatch()
-  const { name, id } = location.state || {}
+  const { name, id } = project || {}
 
   const onSubmit = async (data) => {
-    const { pathname } = location
-
     try {
       if (pathname === routes.new_project) {
         await createProject(data)
@@ -54,6 +52,7 @@ export default () => {
     <CreateProject
       onSubmit={onSubmit}
       onDelete={onDelete}
+      onCancel={onCancel}
       name={name}
       id={id}
       />
