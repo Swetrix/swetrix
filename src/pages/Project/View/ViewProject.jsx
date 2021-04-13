@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 import ProjectSettings from 'pages/Project/Create'
-import routes from 'routes'
+import { Locale } from './Panels' 
 
 const data = [
   {
@@ -52,7 +51,7 @@ const data = [
 ]
 
 const ViewProject = (props) => {
-  const { id, name } = props
+  const { name } = props
   const [settings, setSettings] = useState(false)
 
   if (settings) {
@@ -65,7 +64,7 @@ const ViewProject = (props) => {
   }
 
   return (
-    <div className="container">
+    <div className="container-fluid">
       <div className="d-flex justify-content-between">
         <h2>{name}</h2>
         <button
@@ -93,6 +92,15 @@ const ViewProject = (props) => {
           <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
         </LineChart>
       </ResponsiveContainer>
+      <div className="d-flex flex-wrap">
+        <Locale />
+        <Locale />
+        <Locale />
+        <Locale />
+        <Locale />
+        <Locale />
+        <Locale />
+      </div>
     </div>
   )
 }
