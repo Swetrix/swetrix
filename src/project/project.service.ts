@@ -40,8 +40,8 @@ export class ProjectService {
     return this.projectsRepository.save(project)
   }
 
-  async update(id: string, ProjectDTO: ProjectDTO): Promise<any> {
-    return this.projectsRepository.update(id, ProjectDTO)
+  async update(id: string, projectDTO: ProjectDTO): Promise<any> {
+    return this.projectsRepository.update(id, projectDTO)
   }
 
   async delete(id: string): Promise<any> {
