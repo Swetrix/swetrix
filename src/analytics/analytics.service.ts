@@ -4,7 +4,7 @@ import { Repository } from 'typeorm'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Analytics } from './entity/analytics.entity'
-import { EventsDTO } from './dto/events.dto'
+import { PageviewsDTO } from './dto/pageviews.dto'
 import { ProjectService } from '../project/project.service'
 
 @Injectable()
@@ -35,11 +35,11 @@ export class AnalyticsService {
     return this.analyticsRepository.count()
   }
 
-  async create(project: EventsDTO | Analytics): Promise<Analytics> {
+  async create(project: PageviewsDTO | Analytics): Promise<Analytics> {
     return this.analyticsRepository.save(project)
   }
 
-  async update(id: string, eventsDTO: EventsDTO): Promise<any> {
+  async update(id: string, eventsDTO: PageviewsDTO): Promise<any> {
     return this.analyticsRepository.update(id, eventsDTO)
   }
 

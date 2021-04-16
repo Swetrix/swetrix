@@ -8,7 +8,7 @@ import { UserType } from '../user/entities/user.entity'
 import { Pagination } from '../common/pagination/pagination'
 import { Analytics } from './entity/analytics.entity'
 import { UserService } from '../user/user.service'
-import { EventsDTO } from './dto/events.dto'
+import { PageviewsDTO } from './dto/pageviews.dto'
 import { AppLoggerService } from '../logger/logger.service'
 
 @ApiTags('Analytics')
