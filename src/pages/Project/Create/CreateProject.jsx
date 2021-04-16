@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Form from 'react-bootstrap/Form'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { nanoid } from 'utils/random'
 import routes from 'routes'
 import Modal from 'components/Modal'
 
-const CreateProject = ({ onSubmit, onDelete, onCancel, name, id }) => {
+const CreateProject = ({ onSubmit, onDelete, onCancel, name, id, isSettings }) => {
   const [form, setForm] = useState({
     name,
     id: id || nanoid(),
+    origins: '', // origins string, ',' is used as a separator. converted to an array on the backend side.
   })
-  const { pathname } = useLocation()
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
@@ -84,7 +84,7 @@ const CreateProject = ({ onSubmit, onDelete, onCancel, name, id }) => {
         <Form.Group className="mb-3">
           <Form.Label htmlFor="id">Project ID</Form.Label>
           <Form.Control
-            type="id"
+            type="text"
             value={form.id}
             id="id"
             className="form-control"
@@ -95,6 +95,19 @@ const CreateProject = ({ onSubmit, onDelete, onCancel, name, id }) => {
             required
           />
         </Form.Group>
+        {isSettings && (
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="origins">Allowed origins</Form.Label>
+              <Form.Control
+                type="text"
+                value={form.origins}
+                id="origins"
+                className="form-control"
+                name="origins"
+                onChange={handleInput}
+              />
+            </Form.Group>
+          )}
         <div className="d-flex justify-content-between">
           <div>
             {onCancel ? (
@@ -115,7 +128,7 @@ const CreateProject = ({ onSubmit, onDelete, onCancel, name, id }) => {
               Save
             </button>
           </div>
-          {pathname === routes.project_settings && (
+          {isSettings && (
             <button type="button" onClick={() => setShowDelete(true)} className="btn btn-danger">
               Delete project
             </button>
@@ -131,7 +144,7 @@ const CreateProject = ({ onSubmit, onDelete, onCancel, name, id }) => {
           cancelText="Close"
           title={`Delete ${form.name || 'the project'}?`}
           text={'By pressing \'Delete project\' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers.'}
-          />
+        />
       }
     </div>
   )
@@ -143,12 +156,13 @@ CreateProject.propTypes = {
   name: PropTypes.string,
   id: PropTypes.string,
   onCancel: PropTypes.oneOf([PropTypes.func, null]),
+  isSettings: PropTypes.bool.isRequired,
 }
 
 CreateProject.defaultProps = {
   name: '',
   id: '',
-  onDelete: () => {},
+  onDelete: () => { },
   onCancel: null,
 }
 

@@ -10,6 +10,7 @@ import routes from 'routes'
 
 export default ({ onCancel, project }) => {
   const { pathname } = useLocation()
+  const isSettings = routes.project_settings === pathname
   const history = useHistory()
   const dispatch = useDispatch()
   const { name, id } = project || {}
@@ -55,6 +56,7 @@ export default ({ onCancel, project }) => {
       onCancel={onCancel}
       name={name}
       id={id}
+      isSettings
       />
   )
 }
