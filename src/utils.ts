@@ -42,3 +42,8 @@ export const getUTMSource = () => findInSearch(utmSourceRegex)
 export const getUTMMedium = () => findInSearch(utmMediumRegex)
 
 export const getUTMCampaign = () => findInSearch(utmCampaignRegex)
+
+export const getPath = (): string => {
+  // TODO: Maybe we should also include such data as location.hash or location.search
+  return location.pathname || ''
+}

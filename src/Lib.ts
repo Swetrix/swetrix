@@ -8,6 +8,7 @@ import {
   getUTMCampaign,
   getUTMMedium,
   getUTMSource,
+  getPath,
 } from './utils'
 
 /**
@@ -39,6 +40,14 @@ export interface TrackEventOptions {
   params?: Map<string>
 }
 
+export interface PageData {
+  // Current URL path
+  path: string
+
+  // Object with actions related to tracking page views which are abailable to end user
+  actions: object
+}
+
 export interface PageViewsOptions {
   
 }
@@ -52,6 +61,8 @@ const defaultOptions: LibOptions = {
 }
 
 export class Lib {
+  private pageData: PageData | null = null
+
   constructor(private projectID: string, private options?: LibOptions) {
     
   }
@@ -75,11 +86,38 @@ export class Lib {
     if (!this.canTrack()) {
       return
     }
+    if (this.pageData) {
+      return this.pageData.actions
+    }
 
+    const interval = setInterval(this.trackPathChange, 1000)
+    const path = getPath()
 
+    this.pageData = {
+      path,
+      actions: {
+        stop: () => clearInterval(interval)
+      }
+    }
+
+    this.trackPage(path)
   }
 
-  private trackPage() {
+  // Tracking path changes. If path changes -> calling this.trackPage method
+  private trackPathChange() {
+    if (!this.pageData) return
+    const newPath = getPath()
+    const { path } = this.pageData
+
+    if (path !== newPath) {
+      this.trackPage(newPath)
+    }
+  }
+
+  private trackPage(pg: string) {
+    if (!this.pageData) return
+    this.pageData.path = pg
+
     const data = {
       lc: getLocale(),
       tz: getTimezone(),
@@ -87,7 +125,10 @@ export class Lib {
       so: getUTMSource(),
       me: getUTMMedium(),
       ca: getUTMCampaign(),
+      pg,
     }
+
+    this.submitData(data)
   }
 
   private debug(message: string) {
