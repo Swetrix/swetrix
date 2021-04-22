@@ -54,12 +54,6 @@ export interface PageViewsOptions {
 
 const host = 'http://localhost:5000/log'
 
-const defaultOptions: LibOptions = {
-  debug: false,
-  disabled: false,
-  respectDNT: false,
-}
-
 export class Lib {
   private pageData: PageData | null = null
 
