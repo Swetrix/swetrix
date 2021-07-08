@@ -30,6 +30,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:css": "cross-env sass --no-source-map src:src --load-path ./node_modules --style compressed",
+    "watch:css": "cross-env npm run build-css && cross-env sass --no-source-map src:src --load-path ./node_modules --style compressed --watch",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -50,5 +52,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "sass": "^1.35.2"
   }
 }

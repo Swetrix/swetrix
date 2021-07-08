@@ -35,15 +35,15 @@ const ProtectedViewProject = isAuthenticated(ViewProject)
 const App = () => {
   const dispatch = useDispatch()
   const alert = useAlert()
-	const { loading, authenticated } = useSelector(state => state.auth)
-	const { error } = useSelector(state => state.errors)
-	const { message, type } = useSelector(state => state.alerts)
+  const { loading, authenticated } = useSelector(state => state.auth)
+  const { error } = useSelector(state => state.errors)
+  const { message, type } = useSelector(state => state.alerts)
   const accessToken = getAccessToken()
 
   useEffect(() => {
-		(async () => {
-			if (accessToken) {
-				try {
+    (async () => {
+      if (accessToken) {
+        try {
           const me = await authMe()
 
           dispatch(authActions.loginSuccess(me))
@@ -51,9 +51,9 @@ const App = () => {
         } catch (e) {
           dispatch(authActions.logout())
         }
-			}
-		})()
-	}, [dispatch, accessToken])
+      }
+    })()
+  }, [dispatch, accessToken])
 
   useEffect(() => {
     if (error) {

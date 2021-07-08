@@ -18,11 +18,11 @@ const VerifyEmail = () => {
 
     dispatch(authActions.emailVerifyAsync(
       { path, id },
-			() => setLoading(false),
-			(error) => {
-				setError(error.message)
-				setLoading(false)
-			}))
+      () => setLoading(false),
+      (error) => {
+        setError(error.message)
+        setLoading(false)
+      }))
   }, [dispatch, id])
 
   return (

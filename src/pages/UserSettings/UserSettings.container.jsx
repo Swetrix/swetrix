@@ -34,27 +34,27 @@ export default () => {
 
   const onSubmit = (data) => {
     delete data.repeat
-		for (let key in data) {
-			if (data[key] === '') {
-				delete data[key]
-			}
-		}
+    for (let key in data) {
+      if (data[key] === '') {
+        delete data[key]
+      }
+    }
 
-		dispatch(
-			authActions.updateUserProfileAsync(
+    dispatch(
+      authActions.updateUserProfileAsync(
         data,
-				() => dispatch(
+        () => dispatch(
           alertsActions.accountUpdated('Your account settings have been updated!')
         )
-			)
-		);
+      )
+    );
   }
 
   const onEmailConfirm = async (errorCallback) => {
     if (getCookie('confirmation_timeout')) {
-			dispatch(errorsActions.updateProfileFailed('An email has already been sent, check your mailbox or try again in a few minutes'))
-			return
-		}
+      dispatch(errorsActions.updateProfileFailed('An email has already been sent, check your mailbox or try again in a few minutes'))
+      return
+    }
 
     try {
       const res = await confirmEmail()

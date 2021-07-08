@@ -1,104 +1,104 @@
 import { types } from './types'
 
 export const authActions = {
-	// Synchronous
-	loginSuccess(user) {
-		return {
-			type: types.LOGIN_SUCCESSFUL,
-			payload: { user }
-		}
-	},
+  // Synchronous
+  loginSuccess(user) {
+    return {
+      type: types.LOGIN_SUCCESSFUL,
+      payload: { user }
+    }
+  },
 
-	emailVerifySuccess() {
-		return {
-			type: types.EMAIL_VERIFY_SUCCESSFUL
-		}
-	},
+  emailVerifySuccess() {
+    return {
+      type: types.EMAIL_VERIFY_SUCCESSFUL
+    }
+  },
 
-	signupSuccess(user) {
-		return {
-			type: types.SIGNUP_UP_SUCCESSFUL,
-			payload: { user }
-		}
-	},
+  signupSuccess(user) {
+    return {
+      type: types.SIGNUP_UP_SUCCESSFUL,
+      payload: { user }
+    }
+  },
 
-	updateProfileSuccess(user) {
-		return {
-			type: types.UPDATE_USER_PROFILE_SUCCESS,
-			payload: { user }
-		}
-	},
+  updateProfileSuccess(user) {
+    return {
+      type: types.UPDATE_USER_PROFILE_SUCCESS,
+      payload: { user }
+    }
+  },
 
-	logout() {
-		localStorage.removeItem('access_token')
-		localStorage.removeItem('user_info')
+  logout() {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user_info')
 
-		return {
-			type: types.LOGOUT
-		}
-	},
+    return {
+      type: types.LOGOUT
+    }
+  },
 
-	clearErrors() {
-		return {
-			type: types.CLEAR_ERRORS
-		}
-	},
+  clearErrors() {
+    return {
+      type: types.CLEAR_ERRORS
+    }
+  },
 
-	savePath(path) {
-		return {
-			type: types.SAVE_PATH,
-			payload: { path }
-		}
-	},
+  savePath(path) {
+    return {
+      type: types.SAVE_PATH,
+      payload: { path }
+    }
+  },
 
-	deleteAccountSuccess() {
-		localStorage.removeItem('access_token')
-		localStorage.removeItem('user_info')
+  deleteAccountSuccess() {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user_info')
 
-		return {
-			type: types.DELETE_ACCOUNT_SUCCESS
-		}
-	},
+    return {
+      type: types.DELETE_ACCOUNT_SUCCESS
+    }
+  },
 
-	finishLoading() {
-		return {
-			type: types.FINISH_LOADING
-		}
-	},
+  finishLoading() {
+    return {
+      type: types.FINISH_LOADING
+    }
+  },
 
-	// Asynchronous
-	loginAsync(credentials) {
-		return {
-			type: types.LOGIN_ASYNC,
-			payload: { credentials }
-		}
-	},
+  // Asynchronous
+  loginAsync(credentials) {
+    return {
+      type: types.LOGIN_ASYNC,
+      payload: { credentials }
+    }
+  },
 
-	signupAsync(data, resetRecaptcha) {
-		return {
-			type: types.SIGNUP_ASYNC,
-			payload: { data, resetRecaptcha }
-		}
-	},
+  signupAsync(data, resetRecaptcha) {
+    return {
+      type: types.SIGNUP_ASYNC,
+      payload: { data, resetRecaptcha }
+    }
+  },
 
-	emailVerifyAsync(data, successfulCallback, errorCallback) {
-		return {
-			type: types.EMAIL_VERIFY_ASYNC,
-			payload: { data, successfulCallback, errorCallback }
-		}
-	},
+  emailVerifyAsync(data, successfulCallback, errorCallback) {
+    return {
+      type: types.EMAIL_VERIFY_ASYNC,
+      payload: { data, successfulCallback, errorCallback }
+    }
+  },
 
-	updateUserProfileAsync(data, successfulCallback = () => {}) {
-		return {
-			type: types.UPDATE_USER_PROFILE_ASYNC,
-			payload: { data, successfulCallback }
-		}
-	},
+  updateUserProfileAsync(data, successfulCallback = () => {}) {
+    return {
+      type: types.UPDATE_USER_PROFILE_ASYNC,
+      payload: { data, successfulCallback }
+    }
+  },
 
-	deleteAccountAsync(errorCallback) {
-		return {
-			type: types.DELETE_ACCOUNT_ASYNC,
-			payload: { errorCallback }
-		}
-	}
+  deleteAccountAsync(errorCallback) {
+    return {
+      type: types.DELETE_ACCOUNT_ASYNC,
+      payload: { errorCallback }
+    }
+  }
 }
