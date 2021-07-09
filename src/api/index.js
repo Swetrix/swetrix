@@ -1,7 +1,11 @@
 import axios from 'axios'
 import { store } from 'store'
+import Debug from 'debug'
 import { authActions } from 'actions/auth'
-import { getAccessToken, removeAccessToken } from "utils/accessToken"
+
+import { getAccessToken, removeAccessToken } from 'utils/accessToken'
+
+const debug = Debug('analytics:api')
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -36,7 +40,8 @@ export const authMe = () =>
     .get('/auth/me')
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const login = (credentials) =>
@@ -44,7 +49,8 @@ export const login = (credentials) =>
     .post('/auth/login', credentials)
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const signup = (data) =>
@@ -84,7 +90,8 @@ export const forgotPassword = (email) =>
     .post('/auth/reset-password', email)
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const confirmEmail = () =>
@@ -92,7 +99,8 @@ export const confirmEmail = () =>
     .post('/user/confirm_email')
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const exportUserData = () =>
@@ -100,7 +108,8 @@ export const exportUserData = () =>
     .get('/user/export')
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const createNewPassword = (id, password) =>
@@ -120,7 +129,8 @@ export const verifyEmail = ({ path, id }) =>
     .get(`/auth/${path}/${id}`)
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const getProjects = () =>
@@ -128,7 +138,8 @@ export const getProjects = () =>
     .get(`/project`)
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const createProject = (data) =>
@@ -136,7 +147,8 @@ export const createProject = (data) =>
     .post(`/project`, data)
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const updateProject = (id, data) =>
@@ -144,7 +156,8 @@ export const updateProject = (id, data) =>
     .put(`/project/${id}`, data)
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })
 
 export const deleteProject = (id) =>
@@ -152,5 +165,6 @@ export const deleteProject = (id) =>
     .delete(`/project/${id}`)
     .then(response => response.data)
     .catch(error => {
-      throw new Error(error.response.data.message)
+      debug('%s', error)
+      return error.response.data
     })

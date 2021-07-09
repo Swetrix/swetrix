@@ -1,5 +1,10 @@
+import Debug from 'debug'
+import { getItem, setItem, removeItem } from './localstorage'
+
+const debug = Debug('analytics:utils:at')
+
 export const getAccessToken = () => {
-  const accessToken = localStorage.getItem('access_token')
+  const accessToken = getItem('access_token')
   let token = null
 
   if (!accessToken) {
@@ -9,16 +14,16 @@ export const getAccessToken = () => {
   try {
     token = JSON.parse(accessToken)
   } catch(e) {
-    console.error('Error while parsing access token: ' + e)
+    debug('Error while parsing access token: %s', e)
   }
 
   return token
 }
 
 export const setAccessToken = token => {
-  localStorage.setItem('access_token', token)
+  setItem('access_token', token)
 }
 
 export const removeAccessToken = () => {
-  localStorage.removeItem('access_token')
+  removeItem('access_token')
 }

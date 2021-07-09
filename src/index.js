@@ -18,6 +18,10 @@ const options = {
   transition: transitions.SCALE
 }
 
+if (process.env.NODE_ENV !== 'production') {
+  localStorage.debug = 'analytics:*'
+}
+
 ReactDOM.render(
   <React.StrictMode>
     <AlertProvider template={AlertTemplate} {...options}>
