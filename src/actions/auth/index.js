@@ -1,3 +1,4 @@
+import { removeItem } from 'utils/localstorage'
 import { types } from './types'
 
 export const authActions = {
@@ -30,8 +31,8 @@ export const authActions = {
   },
 
   logout() {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('user_info')
+    removeItem('access_token')
+    removeItem('user_info')
 
     return {
       type: types.LOGOUT
@@ -52,8 +53,8 @@ export const authActions = {
   },
 
   deleteAccountSuccess() {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('user_info')
+    removeItem('access_token')
+    removeItem('user_info')
 
     return {
       type: types.DELETE_ACCOUNT_SUCCESS

@@ -41,7 +41,7 @@ export const authMe = () =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const login = (credentials) =>
@@ -50,7 +50,7 @@ export const login = (credentials) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const signup = (data) =>
@@ -91,7 +91,7 @@ export const forgotPassword = (email) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const confirmEmail = () =>
@@ -100,7 +100,7 @@ export const confirmEmail = () =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const exportUserData = () =>
@@ -109,7 +109,7 @@ export const exportUserData = () =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const createNewPassword = (id, password) =>
@@ -130,7 +130,7 @@ export const verifyEmail = ({ path, id }) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const getProjects = () =>
@@ -139,7 +139,7 @@ export const getProjects = () =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const createProject = (data) =>
@@ -148,7 +148,7 @@ export const createProject = (data) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const updateProject = (id, data) =>
@@ -157,7 +157,7 @@ export const updateProject = (id, data) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
 
 export const deleteProject = (id) =>
@@ -166,5 +166,5 @@ export const deleteProject = (id) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      return error.response.data
+      throw error.response.data
     })
