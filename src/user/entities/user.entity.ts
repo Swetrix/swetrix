@@ -38,7 +38,7 @@ export class User {
   @Column({
     type: 'set',
     enum: UserType,
-    default: UserType.CUSTOMER
+    default: UserType.CUSTOMER,
   })
   roles: UserType[]
 

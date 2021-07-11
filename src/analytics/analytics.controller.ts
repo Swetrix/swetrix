@@ -6,7 +6,7 @@ import { AnalyticsService } from './analytics.service'
 import { ProjectService } from '../project/project.service'
 import { UserType } from '../user/entities/user.entity'
 import { Pagination } from '../common/pagination/pagination'
-import { Analytics } from './entity/analytics.entity'
+import { Analytics } from './entities/analytics.entity'
 import { UserService } from '../user/user.service'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { AppLoggerService } from '../logger/logger.service'
@@ -20,5 +20,11 @@ export class AnalyticsController {
     private readonly logger: AppLoggerService,
   ) {}
 
-  
+  @Post('/')
+  async get(@Body() logDTO: PageviewsDTO): Promise<any> {
+    this.logger.log({ logDTO }, 'POST /log')
+    this.analyticsService.validate(logDTO)
+
+    return
+  }
 }

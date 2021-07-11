@@ -34,15 +34,15 @@ export class AuthService {
   }
 
   async login(user: User, res: Response): Promise<any> {
-		const options = {
-			httpOnly: true,
+    const options = {
+      httpOnly: true,
       sameSite: false,
       hostonly: true
-		}
+    }
 
-		const token = sign({ user_id: user.id }, process.env.JWT_SECRET, {
-			expiresIn: JWT_LIFE_TIME,
-		})
+    const token = sign({ user_id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: JWT_LIFE_TIME,
+    })
 
     res.cookie('token', token, options)
     return { access_token: token, user }

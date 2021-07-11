@@ -1,9 +1,10 @@
+import * as _isEmpty from 'lodash/isEmpty'
 import { ForbiddenException, Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { Analytics } from './entity/analytics.entity'
+import { Analytics } from './entities/analytics.entity'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { ProjectService } from '../project/project.service'
 
@@ -53,5 +54,17 @@ export class AnalyticsService {
 
   findOneWhere(where: Record<string, unknown>): Promise<Analytics> {
     return this.analyticsRepository.findOne({ where })
+  }
+
+  validate(logDTO: PageviewsDTO): string | null {
+    const errors = []
+    if (_isEmpty(logDTO)) errors.push('The request cannot be empty')
+    if (_isEmpty(logDTO.pid)) errors.push('The Project ID has to be provided')
+
+    if (!_isEmpty(errors)) {
+      throw new BadRequestException(errors)
+    }
+
+    return null
   }
 }
