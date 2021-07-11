@@ -36,7 +36,7 @@ export class AnalyticsService {
     return this.analyticsRepository.count()
   }
 
-  async create(project: PageviewsDTO | Analytics): Promise<Analytics> {
+  async create(project: PageviewsDTO | Analytics): Promise<PageviewsDTO | Analytics> {
     return this.analyticsRepository.save(project)
   }
 
@@ -56,10 +56,13 @@ export class AnalyticsService {
     return this.analyticsRepository.findOne({ where })
   }
 
-  validate(logDTO: PageviewsDTO): string | null {
+  async validate(logDTO: PageviewsDTO): Promise<string | null> {
     const errors = []
     if (_isEmpty(logDTO)) errors.push('The request cannot be empty')
-    if (_isEmpty(logDTO.pid)) errors.push('The Project ID has to be provided')
+    if (_isEmpty(logDTO.pid)) errors.push('The Project ID (pid) has to be provided')
+
+    const project = await this.projectService.findOne(logDTO.pid)
+    if (_isEmpty(project)) errors.push('The provided Project ID (pid) is incorrect')
 
     if (!_isEmpty(errors)) {
       throw new BadRequestException(errors)
