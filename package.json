@@ -2,9 +2,17 @@
   "name": "analytics_script",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/analytics.cjs.js",
+  "module": "dist/analytics.es5.js",
+  "browser": "dist/analytics.umd.js",
+  "esnext": "dist/esnext/index.js",
+  "typings": "dist/esnext/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prebuild": "rimraf dist",
+    "prepublish": "npm run build",
+    "build": "rollup -c && tsc -p tsconfig.esnext.json",
+    "start": "rollup -c -w",
+    "tsc": "tsc -p tsconfig.esnext.json"
   },
   "repository": {
     "type": "git",
@@ -17,7 +25,17 @@
   },
   "homepage": "https://github.com/Blaumaus/analytics_script#readme",
   "dependencies": {
-    "@types/node": "^14.14.41",
-    "typescript": "^4.2.4"
+    "@types/node": "^14.14.41"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2",
+    "rollup": "^2.53.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "rollup-plugin-uglify": "^6.0.4",
+    "typescript": "^4.3.5"
   }
 }

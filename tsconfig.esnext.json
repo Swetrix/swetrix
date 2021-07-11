@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
     "moduleResolution": "node",
-    "target": "es5",
+    "target": "es2020",
     "module": "es2015",
-    "lib": ["es2015", "es2016", "es2017", "dom"],
+    "lib": ["dom"],
     "strict": true,
+    "sourceMap": true,
+    "declaration": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "sourceMap": true,
-    "declaration": false,
-    "outDir": "dist/lib",
+    "outDir": "dist/esnext",
     "typeRoots": ["node_modules/@types"]
   },
   "include": ["src"]
