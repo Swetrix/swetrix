@@ -33,8 +33,8 @@ export const getTimezone = () => {
   }
 }
 
-export const getRefferer = () => {
-  return document.referrer
+export const getRefferer = (): string | undefined => {
+  return document.referrer || undefined
 }
 
 export const getUTMSource = () => findInSearch(utmSourceRegex)
