@@ -1,8 +1,8 @@
 const ua = navigator.userAgent || ''
 
-const findInSearch = (exp: RegExp): string | null => {
+const findInSearch = (exp: RegExp): string | undefined => {
   const res = location.search.match(exp)
-  return res && res[2]
+  return (res && res[2]) || undefined
 }
 
 const utmSourceRegex = /[?&](ref|source|utm_source)=([^?&]+)/

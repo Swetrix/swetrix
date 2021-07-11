@@ -52,7 +52,7 @@ export interface PageViewsOptions {
   
 }
 
-const host = 'http://localhost:5000/log'
+const host = 'http://localhost:5005/log'
 
 export class Lib {
   private pageData: PageData | null = null
@@ -113,6 +113,8 @@ export class Lib {
     this.pageData.path = pg
 
     const data = {
+      pid: this.projectID,
+      ev: 'pageviews',
       lc: getLocale(),
       tz: getTimezone(),
       ref: getRefferer(),
