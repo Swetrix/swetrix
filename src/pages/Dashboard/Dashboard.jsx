@@ -51,7 +51,7 @@ const Dashboard = ({ projects }) => {
                   state: { name, id },
                 }}
                 className="text-decoration-none text-reset">
-                <div class="card-body list-group-item-action text-reset">
+                <div className="card-body list-group-item-action text-reset">
                   {name}
                 </div>
               </Link>
