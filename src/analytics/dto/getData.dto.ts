@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty } from 'class-validator'
 
 export enum TimeBucketType {
+  MINUTE = 'minute',
   HOUR = 'hour',
   DAY = 'day',
   WEEK = 'week',

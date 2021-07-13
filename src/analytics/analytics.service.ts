@@ -84,12 +84,16 @@ export class AnalyticsService {
     if (_isEmpty(data)) return Promise.resolve()
     let clone = [...data]
     const res = []
-    let groupDateIterator, iterateTo
+    let groupDateIterator
+    const iterateTo = moment.utc(to).endOf(timeBucket)
 
     switch (timeBucket) {
+      case TimeBucketType.MINUTE:
+        groupDateIterator = moment.utc(from).startOf('minute')
+        break
+
       case TimeBucketType.HOUR:
         groupDateIterator = moment.utc(from).startOf('hour')
-        iterateTo = moment.utc(to).endOf('hour')
         break
 
       case TimeBucketType.DAY:
@@ -97,7 +101,6 @@ export class AnalyticsService {
       case TimeBucketType.MONTH:
       case TimeBucketType.YEAR:
         groupDateIterator = moment.utc(from).startOf('day')
-        iterateTo = moment.utc(to).endOf('day')
         break
 
       default:
@@ -105,6 +108,10 @@ export class AnalyticsService {
     }
 
     while (groupDateIterator < iterateTo) {
+      if (groupDateIterator > moment.utc()) {
+        break
+      }
+
       const nextIteration = moment(groupDateIterator).add(1, timeBucket)
       const temp = []
       
@@ -122,7 +129,6 @@ export class AnalyticsService {
         data: temp,
         total: _size(temp),
         timeFrame: groupDateIterator.format('YYYY-MM-DD HH:mm:ss'),
-        timeBucket,
       })
       groupDateIterator = nextIteration
     }

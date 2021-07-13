@@ -27,7 +27,7 @@ export class Analytics {
   ev: string
 
   @Column('varchar', {
-    length: 6,
+    length: 64,
     nullable: true,
   })
   tz: string

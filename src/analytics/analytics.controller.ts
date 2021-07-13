@@ -58,7 +58,6 @@ export class AnalyticsController {
     // if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
     const response = await this.analyticsService.findWhere(where)
-
     const [groupFrom, groupTo] = where.created._value
     const result = await this.analyticsService.groupByTimeBucket(response, timeBucket, groupFrom, groupTo)
     return result
