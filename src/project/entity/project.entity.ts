@@ -13,6 +13,13 @@ export class Project {
   @Column('varchar', { length: 80 })
   name: string
 
+  @ApiProperty()
+  @Column('varchar', {
+    length: 500, 
+    nullable: true,
+  })
+  origins: string
+
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.projects)
   admin: User

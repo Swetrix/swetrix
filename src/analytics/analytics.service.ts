@@ -1,7 +1,11 @@
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _filter from 'lodash/filter'
 import * as _size from 'lodash/size'
-import * as moment from 'moment'
+import * as _isNull from 'lodash/isNull'
+import * as _map from 'lodash/map'
+import * as _keys from 'lodash/keys'
+import * as dayjs from 'dayjs'
+import * as utc from 'dayjs/plugin/utc'
 import { ForbiddenException, Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -11,6 +15,8 @@ import { Analytics } from './entities/analytics.entity'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { ProjectService } from '../project/project.service'
 import { TimeBucketType } from './dto/getData.dto'
+
+dayjs.extend(utc)
 
 @Injectable()
 export class AnalyticsService {
@@ -79,44 +85,77 @@ export class AnalyticsService {
     return null
   }
 
+  processData(data: object): object {
+    const res = {
+      tz: {},
+      pg: {}, 
+      lc: {},
+      ref: {},
+      sw: {},
+      so: {}, 
+      me: {},
+      ca: {}, 
+      lt: {},
+    }
+    const whitelist = _keys(res)
+  
+    for (let i = 0; i < _size(data); ++i) {
+      const tfData = data[i].data
+      for (let j = 0; j < _size(tfData); ++j) {
+        for (let z = 0; z < _size(whitelist); ++z) {
+          const currWLItem = whitelist[z]
+          const tfDataRecord = tfData[j][currWLItem]
+          if (!_isNull(tfDataRecord)) {
+            res[currWLItem][tfDataRecord] = 1 + (res[currWLItem][tfDataRecord] || 0)
+          }
+        }
+      }
+    }
+  
+    return res
+  }
+
   // TODO: Refactor; check if there's no date/time shifts
   async groupByTimeBucket(data: Analytics[], timeBucket: TimeBucketType, from: string, to: string): Promise<object | void> {
+    const a = Math.random()
+    console.time('groupByTimeBucket' + a)
+
     if (_isEmpty(data)) return Promise.resolve()
+    let groupDateIterator
     let clone = [...data]
     const res = []
-    let groupDateIterator
-    const iterateTo = moment.utc(to).endOf(timeBucket)
+
+    const now = dayjs.utc().endOf(timeBucket)
+    const djsTo = dayjs.utc(to).endOf(timeBucket)
+    const iterateTo = djsTo > now ? now : djsTo
 
     switch (timeBucket) {
       case TimeBucketType.MINUTE:
-        groupDateIterator = moment.utc(from).startOf('minute')
+        groupDateIterator = dayjs.utc(from).startOf('minute')
         break
 
       case TimeBucketType.HOUR:
-        groupDateIterator = moment.utc(from).startOf('hour')
+        groupDateIterator = dayjs.utc(from).startOf('hour')
         break
 
       case TimeBucketType.DAY:
       case TimeBucketType.WEEK:
       case TimeBucketType.MONTH:
       case TimeBucketType.YEAR:
-        groupDateIterator = moment.utc(from).startOf('day')
+        groupDateIterator = dayjs.utc(from).startOf('day')
         break
 
       default:
         return Promise.reject()
     }
 
+    // the database has to use UTC timezone for this to work normally
     while (groupDateIterator < iterateTo) {
-      if (groupDateIterator > moment.utc()) {
-        break
-      }
-
-      const nextIteration = moment(groupDateIterator).add(1, timeBucket)
+      const nextIteration = groupDateIterator.add(1, timeBucket)
       const temp = []
       
       clone = _filter(clone, el => {
-        const createdAt = moment.utc(el.created)
+        const createdAt = dayjs.utc(el.created)
         if (groupDateIterator <= createdAt && createdAt < nextIteration) {
           temp.push(el)
           return false
@@ -124,7 +163,7 @@ export class AnalyticsService {
           return true
         }
       })
-      
+
       res.push({
         data: temp,
         total: _size(temp),
@@ -133,6 +172,20 @@ export class AnalyticsService {
       groupDateIterator = nextIteration
     }
 
-    return Promise.resolve(res)
+    const b = {
+      params: this.processData(res),
+      chart: {
+        x: _map(res, el => el.timeFrame),
+        visits: _map(res, el => el.total),
+      },
+    }
+    console.timeLog('groupByTimeBucket' + a)
+    return Promise.resolve({
+      params: this.processData(res),
+      chart: {
+        x: _map(res, el => el.timeFrame),
+        visits: _map(res, el => el.total),
+      },
+    })
   }
 }

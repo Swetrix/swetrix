@@ -17,4 +17,11 @@ export class ProjectDTO {
   })
   @IsNotEmpty()
   id: string
+
+  @ApiProperty({
+    example: 'localhost:3000,example.com',
+    required: false,
+    description: 'Coma-separated allowed origins'
+  })
+  origins: string
 }
