@@ -30,3 +30,24 @@ code {
 .w31-5 {
   width: 31.5% !important;
 }
+
+.label {
+  text-overflow: clip;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+
+.hoverable {
+  transition: opacity 300ms;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}

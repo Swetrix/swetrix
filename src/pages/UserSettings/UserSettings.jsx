@@ -18,6 +18,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -138,7 +139,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
       <div className="mt-4">
         <button
           className="btn btn-outline-primary"
-          onClick={() => onExport()}
+          onClick={() => setShowExportModal(true)}
         >
           Request data export
         </button>
@@ -150,7 +151,17 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
         </button>
       </div>
 
-      {showModal &&
+      {showExportModal && (
+        <Modal
+          onCancel={() => setShowExportModal(false)}
+          onSubmit={() => { setShowExportModal(false); onExport() }}
+          submitText="Continue"
+          cancelText="Close"
+          title="Data export"
+          text={'As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store.\nThe data export will be ready within 24 hours and sent to your email account.\nNote: you can request the data export only once per two weeks.'}
+        />
+      )}
+      {showModal && (
         <Modal
           onCancel={() => setShowModal(false)}
           onSubmit={() => { setShowModal(false); onDelete() }}
@@ -158,17 +169,17 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
           cancelText="Close"
           title="Delete your account?"
           text={'By pressing \'Delete my account\' you understand, that this action is irreversible.\nAll your data will be deleted from our servers.'}
-          />
-      }
-      {error &&
+        />
+      )}
+      {error && (
         <Modal
           onSubmit={() => { setError('') }}
           onCancel={() => { setError('') }}
           submitText="Got it"
           title="Error"
           text={error}
-          />
-      }
+        />
+      )}
     </div>
   )
 }

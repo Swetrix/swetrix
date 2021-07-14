@@ -1,7 +1,8 @@
 import React, { useState, useEffect, memo } from 'react'
+import { Link } from 'react-router-dom'
 import bb, { area, zoom } from 'billboard.js'
 import * as d3 from 'd3'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { useLocation } from 'react-router-dom'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
@@ -9,11 +10,12 @@ import _reduce from 'lodash/reduce'
 import _size from 'lodash/size'
 import _isNull from 'lodash/isNull'
 import _isEmpty from 'lodash/isEmpty'
+import _replace from 'lodash/replace'
 import Spinner from 'react-bootstrap/Spinner'
 // import PropTypes from 'prop-types'
 
-import ProjectSettings from 'pages/Project/Create'
-import { Locale, Panel } from './Panels'
+import { Panel } from './Panels'
+import routes from 'routes'
 import { getProjectData } from 'api'
 
 const typeNameMapping = {
@@ -28,72 +30,34 @@ const typeNameMapping = {
   lt: 'Load time',
 }
 
-// todo: refactor
-const processData = (data) => {
-  const res = {
-    tz: {},
-    pg: {}, 
-    lc: {},
-    ref: {},
-    sw: {},
-    so: {}, 
-    me: {},
-    ca: {}, 
-    lt: {},
-  }
-  const whitelist = _keys(res)
-
-  for (let i = 0; i < _size(data); ++i) {
-    const tfData = data[i].data
-    for (let j = 0; j < _size(tfData); ++j) {
-      for (let z = 0; z < _size(whitelist); ++z) {
-        const currWLItem = whitelist[z]
-        const tfDataRecord = tfData[j][currWLItem]
-        if (!_isNull(tfDataRecord)) {
-          res[currWLItem][tfDataRecord] = 1 + (res[currWLItem][tfDataRecord] || 0)
-        }
-      }
-    }
-  }
-
-  return res
-}
-
 const ViewProject = () => {
   const location = useLocation()
   const { name, id } = location.state || {}
-  const [project, setProject] = useState({})
-  const [settings, setSettings] = useState(false)
-  const [data, setData] = useState([])
   const [panelsData, setPanelsData] = useState({})
-  const [chart, setChart] = useState([])
+  // const [bbChart, setBbChart] = useState([])
 
   useEffect(() => {
     (async function() {
       try {
-        const data = await getProjectData(id) || []
-        setData(data)
+        const data = await getProjectData(id)
 
         if (_isEmpty(data)) {
           return
         }
 
-        const processedData = processData(data)
-        console.log({
-          types: _keys(processedData),
-          data: processedData,
-        })
+        const { chart, params } = data
+
         setPanelsData({
-          types: _keys(processedData),
-          data: processedData,
+          types: _keys(params),
+          data: params,
         })
 
-        const settings = {
+        const bbSettings = {
           data: {
             x: 'x',
             json: {
-              x: _map(data, el => moment.utc(el.timeFrame).toDate()),
-              visits: _map(data, el => el.total),
+              x: _map(chart.x, el => dayjs(el).toDate()),
+              visits: chart.visits,
             },
             type: area(),
             xFormat: '%y-%m-%d %H:%M:%S',
@@ -123,9 +87,8 @@ const ViewProject = () => {
           },
           bindto: '#dataChart',
         }
-        console.log(settings.data)
-        const chart = bb.generate(settings)
-        setChart(chart)
+
+        bb.generate(bbSettings)
       } catch (e) {
         console.error(e)
       }
@@ -136,30 +99,21 @@ const ViewProject = () => {
     // TODO
   }
 
-  const getProject = () => {
-    // TODO
-  }
-
-  if (settings) {
-    return (
-      <ProjectSettings
-        onCancel={() => setSettings(false)}
-        project={{ id, name }}
-      />
-    )
-  }
-
   if (id && name) {
-  // if (Object.keys(project).length > 0) {
     return (
       <div className='container-fluid'>
         <div className='d-flex justify-content-between'>
           <h2>{name}</h2>
-          <button
-            onClick={() => setSettings(true)}
+          <Link
+            to={{
+              pathname: _replace(routes.project_settings, ':id', id),
+              state: {
+                project: { name, id },
+              },
+            }}
             className='btn btn-outline-primary h-100'>
             Settings
-          </button>
+          </Link>
         </div>
         <div className='d-flex flex-wrap'>
           <div id='dataChart' />

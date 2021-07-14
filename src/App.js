@@ -13,7 +13,7 @@ import CreateNewPassword from 'pages/Auth/CreateNewPassword'
 import Dashboard from 'pages/Dashboard'
 import UserSettings from 'pages/UserSettings'
 import VerifyEmail from 'pages/Auth/VerifyEmail'
-import NewProject from 'pages/Project/Create'
+import ProjectSettings from 'pages/Project/Settings'
 import ViewProject from 'pages/Project/View'
 
 import { isAuthenticated, notAuthenticated } from './hoc/protected'
@@ -29,7 +29,7 @@ const ProtectedForgotPassword = notAuthenticated(ForgotPassword)
 const ProtectedNewPasswordForm = notAuthenticated(CreateNewPassword)
 const ProtectedDashboard = isAuthenticated(Dashboard)
 const ProtectedUserSettings = isAuthenticated(UserSettings)
-const ProtectedNewProject = isAuthenticated(NewProject)
+const ProtectedProjectSettings = isAuthenticated(ProjectSettings)
 const ProtectedViewProject = isAuthenticated(ViewProject)
 
 const App = () => {
@@ -90,7 +90,8 @@ const App = () => {
           <Route path={routes.change_email} component={VerifyEmail} exact />
           <Route path={routes.reset_password} component={ProtectedForgotPassword} exact />
           <Route path={routes.new_password_form} component={ProtectedNewPasswordForm} exact />
-          <Route path={routes.new_project} component={ProtectedNewProject} exact />
+          <Route path={routes.new_project} component={ProtectedProjectSettings} exact />
+          <Route path={routes.project_settings} component={ProtectedProjectSettings} exact />
           <Route path={routes.project} component={ProtectedViewProject} exact />
           <Redirect to={routes.main} />
         </Switch>
