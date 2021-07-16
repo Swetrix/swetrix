@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import Form from 'react-bootstrap/Form'
 
 import routes from 'routes'
+import Input from 'ui/Input'
+import Button from 'ui/Button'
 import { isValidPassword } from 'utils/validator'
 
 export default ({ onSubmit }) => {
@@ -56,54 +57,43 @@ export default ({ onSubmit }) => {
   }
 
   return (
-    <div className="container">
-      <h4 className="mb-3">Account recovery</h4>
-      <Form validated={validated} onSubmit={handleSubmit} noValidate>
-        <Form.Group className="mb-3">
-          <Form.Label htmlFor="password">Your new password</Form.Label>
-          <Form.Control
-            type="password"
-            value={form.password}
-            placeholder="Password"
-            id="password"
-            className="form-control"
-            name="password"
-            onChange={handleInput}
-            isValid={!errors.hasOwnProperty('password')}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('password')}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.password}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label htmlFor="repeat">Repeat password</Form.Label>
-          <Form.Control
-            type="password"
-            value={form.repeat}
-            placeholder="Repeat password"
-            id="repeat"
-            className="form-control"
-            name="repeat"
-            onChange={handleInput}
-            isValid={!errors.hasOwnProperty('repeat')}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('repeat')}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.repeat}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <div className="d-flex align-items-center mb-3">
-          <Link to={routes.signin} className="btn btn-link">
+    <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+        <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+          Account recovery
+        </h2>
+        <Input
+          name='password'
+          id='password'
+          type='password'
+          label='Your new password'
+          hint='Longer than 8 chars'
+          value={form.password}
+          placeholder='Password'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.password}
+        />
+        <Input
+          name='repeat'
+          id='repeat'
+          type='password'
+          label='Repeat password'
+          value={form.password}
+          placeholder='Password'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.repeat}
+        />
+        <div className='flex justify-between mt-3'>
+          <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800'>
             Sign in instead
           </Link>
-          <button type="submit" className="btn btn-primary ml-auto">
+          <Button type='submit' primary large>
             Save new password
-          </button>
+          </Button>
         </div>
-      </Form>
+      </form>
     </div>
   )
 }

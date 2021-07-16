@@ -1,5 +1,5 @@
 import { call, put } from 'redux-saga/effects'
-import { authActions } from 'actions/auth'
+import { authActions } from 'redux/actions/auth'
 import { verifyEmail } from "api"
 
 export default function* ({ payload: { data, successfulCallback, errorCallback } }) {

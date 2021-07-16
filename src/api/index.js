@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { store } from 'store'
+import { store } from 'redux/store'
 import Debug from 'debug'
-import { authActions } from 'actions/auth'
+import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
 

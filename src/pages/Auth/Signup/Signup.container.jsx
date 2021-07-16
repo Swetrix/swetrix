@@ -1,6 +1,6 @@
 import Signup from './Signup'
 import { useDispatch } from 'react-redux'
-import { authActions } from 'actions/auth'
+import { authActions } from 'redux/actions/auth'
 
 export default () => {
   const dispatch = useDispatch()

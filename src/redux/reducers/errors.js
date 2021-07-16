@@ -1,4 +1,4 @@
-import { types } from 'actions/errors/types'
+import { types } from 'redux/actions/errors/types'
 
 const initialState = {
   error: null
@@ -6,6 +6,7 @@ const initialState = {
 
 export default (state = initialState, { type, payload }) => {
   switch (type) {
+    case types.GENERIC_ERROR:
     case types.LOGIN_FAILED:
     case types.SIGN_UP_FAILED:
     case types.UPDATE_USER_PROFILE_FAILED:

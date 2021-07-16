@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import Form from 'react-bootstrap/Form'
 
 import routes from 'routes'
+import Input from 'ui/Input'
+import Button from 'ui/Button'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
 export default ({ onSubmit }) => {
@@ -51,36 +52,31 @@ export default ({ onSubmit }) => {
   }
 
   return (
-    <div className="container">
-      <h4 className="mb-3">Account recovery</h4>
-      <Form validated={validated} onSubmit={handleSubmit} noValidate>
-        <Form.Group className="mb-3 has-validation">
-          <Form.Label htmlFor="email">Email</Form.Label>
-          <Form.Control
-            type="email"
-            value={form.email}
-            placeholder="you@example.com"
-            id="email"
-            className="form-control"
-            name="email"
-            onChange={handleInput}
-            isValid={!errors.hasOwnProperty('email')}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('email')}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.email}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <div className="d-flex align-items-center mb-3">
-          <Link to={routes.signin} className="btn btn-link">
+    <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+        <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+          Account recovery
+        </h2>
+        <Input
+          name='email'
+          id='email'
+          type='email'
+          label='Email'
+          value={form.email}
+          placeholder='you@example.com'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.email}
+        />
+        <div className='flex justify-between mt-3'>
+          <Link to={routes.signin} className='mt-1 underline text-blue-600 hover:text-indigo-800'>
             Sign in
           </Link>
-          <button type="submit" className="btn btn-primary ml-auto">
+          <Button type='submit' primary large>
             Reset password
-          </button>
+          </Button>
         </div>
-      </Form>
+      </form>
     </div>
   )
 }

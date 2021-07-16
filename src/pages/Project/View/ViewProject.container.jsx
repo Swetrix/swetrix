@@ -1,5 +1,16 @@
+import { connect } from 'react-redux'
+import { errorsActions } from 'redux/actions/errors'
 import ViewProject from './ViewProject'
 
-// TODO: Redux connect
+const mapStateToProps = (state) => ({
+  projects: state.ui.projects.projects,
+  isLoading: state.ui.projects.isLoading,
+})
 
-export default ViewProject
+const mapDispatchToProps = (dispatch) => ({
+  showError: (message) => {
+    dispatch(errorsActions.genericError(message))
+  },
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(ViewProject)

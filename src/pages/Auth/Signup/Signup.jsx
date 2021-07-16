@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import Form from 'react-bootstrap/Form'
 
 import routes from 'routes'
+import Input from 'ui/Input'
+import Checkbox from 'ui/Checkbox'
+import Button from 'ui/Button'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
 export default ({ onSubmit }) => {
@@ -67,103 +69,70 @@ export default ({ onSubmit }) => {
   }
 
   return (
-    <div className="container">
-      <h4 className="mb-3">Sign up</h4>
-      <Form validated={validated} onSubmit={handleSubmit} noValidate>
-        <Form.Group className="mb-3 has-validation">
-          <Form.Label htmlFor="email">Email</Form.Label>
-          <Form.Control
-            type="email"
-            value={form.email}
-            placeholder="you@example.com"
-            id="email"
-            className="form-control"
-            name="email"
-            onChange={handleInput}
-            isValid={!errors.hasOwnProperty('email')}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('email')}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.email}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label htmlFor="password">Password</Form.Label>
-          <Form.Control
-            type="password"
-            value={form.password}
-            placeholder="Password"
-            id="password"
-            className="form-control"
-            name="password"
-            onChange={handleInput}
-            isValid={!errors.hasOwnProperty('password')}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('password')}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.password}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label htmlFor="repeat">Repeat password</Form.Label>
-          <Form.Control
-            type="password"
-            value={form.repeat}
-            placeholder="Repeat password"
-            id="repeat"
-            className="form-control"
-            name="repeat"
-            onChange={handleInput}
-            isValid={!errors.hasOwnProperty('repeat')}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('repeat')}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.repeat}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="custom-control custom-checkbox">
-          <Form.Control
-            type="checkbox"
-            checked={form.tos}
-            id="tos"
-            className="custom-control-input"
-            name="tos"
-            onChange={handleInput}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('tos')}
-            required
-          />
-          <Form.Label htmlFor="tos" className="custom-control-label">
-            I do accept terms and conditions and the privacy policy.
-          </Form.Label>
-          <Form.Control.Feedback type="invalid">
-            {errors.tos}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="custom-control custom-checkbox">
-          <Form.Control
-            type="checkbox"
-            checked={form.keep_signedin}
-            id="keep_signedin"
-            className="custom-control-input"
-            name="keep_signedin"
-            onChange={handleInput}
-          />
-          <Form.Label htmlFor="keep_signedin" className="custom-control-label">
-            Don't remember me.
-        </Form.Label>
-        </Form.Group>
-        <div className="d-flex align-items-center mb-3">
-          <Link to={routes.signin} className="btn btn-link">
+    <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+        <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+          Sign up
+        </h2>
+        <Input
+          name='email'
+          id='email'
+          type='email'
+          label='Email'
+          value={form.email}
+          placeholder='you@example.com'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.email}
+        />
+        <Input
+          name='password'
+          id='password'
+          type='password'
+          label='Password'
+          hint='Longer than 8 chars'
+          value={form.password}
+          placeholder='Password'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.password}
+        />
+        <Input
+          name='repeat'
+          id='repeat'
+          type='password'
+          label='Repeat password'
+          value={form.repeat}
+          placeholder='Repeat password'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.repeat}
+        />
+        <Checkbox
+          checked={form.tos}
+          onChange={handleInput}
+          name='tos'
+          id='tos'
+          className='mt-4'
+          label='I do accept terms and conditions and the privacy policy.'
+        />
+        <Checkbox
+          checked={form.keep_signedin}
+          onChange={handleInput}
+          name='keep_signedin'
+          id='keep_signedin'
+          className='mt-4'
+          label={'Don\'t remember me.'}
+        />
+        <div className='pt-1 flex justify-between mt-3'>
+          <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800'>
             Sign in instead
           </Link>
-          <button type="submit" className="btn btn-primary ml-auto">
+          <Button type='submit' primary large>
             Sign up
-          </button>
+          </Button>
         </div>
-      </Form>
+      </form>
     </div>
   )
 }

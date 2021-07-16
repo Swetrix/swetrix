@@ -3,7 +3,7 @@ import Spinner from 'react-bootstrap/Spinner'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 
-import { authActions } from 'actions/auth'
+import { authActions } from 'redux/actions/auth'
 
 const VerifyEmail = () => {
   const dispatch = useDispatch()
@@ -14,7 +14,6 @@ const VerifyEmail = () => {
   useEffect(() => {
     setLoading(true)
     const path = window.location.pathname.split('/')[1]
-    console.log(path)
 
     dispatch(authActions.emailVerifyAsync(
       { path, id },

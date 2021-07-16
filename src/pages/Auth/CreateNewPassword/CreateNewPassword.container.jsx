@@ -3,8 +3,8 @@ import { useHistory, useParams } from 'react-router-dom'
 
 import CreateNewPassword from './CreateNewPassword'
 import { createNewPassword } from 'api'
-import { errorsActions } from 'actions/errors'
-import { alertsActions } from 'actions/alerts'
+import { errorsActions } from 'redux/actions/errors'
+import { alertsActions } from 'redux/actions/alerts'
 import routes from 'routes'
 
 export default () => {

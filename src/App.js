@@ -19,9 +19,9 @@ import ViewProject from 'pages/Project/View'
 import { isAuthenticated, notAuthenticated } from './hoc/protected'
 import { getAccessToken } from 'utils/accessToken'
 import { authMe } from './api'
-import { authActions } from 'actions/auth'
-import { errorsActions } from 'actions/errors'
-import { alertsActions } from 'actions/alerts'
+import { authActions } from 'redux/actions/auth'
+import { errorsActions } from 'redux/actions/errors'
+import { alertsActions } from 'redux/actions/alerts'
 
 const ProtectedSignIn = notAuthenticated(SignIn)
 const ProtectedSignUp = notAuthenticated(SignUp)

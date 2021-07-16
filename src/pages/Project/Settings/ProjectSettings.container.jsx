@@ -1,10 +1,14 @@
 import { connect } from 'react-redux'
-import { alertsActions } from 'actions/alerts'
-import { errorsActions } from 'actions/errors'
+import UIActions from 'redux/actions/ui'
+import { alertsActions } from 'redux/actions/alerts'
+import { errorsActions } from 'redux/actions/errors'
 
 import ProjectSettings from './ProjectSettings'
 
-// const mapStateToProps = (state) => ({ })
+const mapStateToProps = (state) => ({
+  projects: state.ui.projects.projects,
+  isLoading: state.ui.projects.isLoading,
+})
 
 const mapDispatchToProps = (dispatch) => ({
   updateProjectFailed: (message) => {
@@ -22,6 +26,12 @@ const mapDispatchToProps = (dispatch) => ({
   deleteProjectFailed: (message) => {
     dispatch(errorsActions.deleteProjectFailed(message))
   },
+  loadProjects: () => {
+    dispatch(UIActions.loadProjects())
+  },
+  showError: (message) => {
+    dispatch(errorsActions.genericError(message))
+  },
 })
 
-export default connect(null, mapDispatchToProps)(ProjectSettings)
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectSettings)

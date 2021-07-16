@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import Form from 'react-bootstrap/Form'
-import { Mailbox } from 'react-bootstrap-icons'
+import { MailIcon } from '@heroicons/react/outline'
 
+import Input from 'ui/Input'
+import Button from 'ui/Button'
 import Modal from 'components/Modal'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
@@ -67,97 +68,82 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   }
 
   return (
-    <div className="container">
-      <h2>Profile settings</h2>
-
-      <Form onSubmit={handleSubmit} noValidate>
-        <Form.Group className="mb-3 has-validation">
-          <Form.Label htmlFor="email">Email</Form.Label>
-          <Form.Control
-            type="email"
-            value={form.email}
-            placeholder="you@example.com"
-            id="email"
-            className="form-control"
-            name="email"
+    <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+        <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+          Profile settings
+        </h2>
+        <Input
+          name='email'
+          id='email'
+          type='email'
+          label='Email'
+          value={form.email}
+          placeholder='you@example.com'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.email}
+        />
+        <div className='grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mt-4'>
+          <Input
+            name='password'
+            id='password'
+            type='password'
+            label='Password'
+            hint='Longer than 8 chars'
+            value={form.password}
+            placeholder='Password'
+            className='sm:col-span-3'
             onChange={handleInput}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('email')}
-            required
+            error={beenSubmitted && errors.password}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.email}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Row>
-          <Form.Group className="col-md-6 mb-3">
-            <Form.Label htmlFor="password">Password</Form.Label>
-            <Form.Control
-              type="password"
-              value={form.password}
-              placeholder="Password"
-              id="password"
-              className="form-control"
-              name="password"
-              onChange={handleInput}
-              isInvalid={beenSubmitted && errors.hasOwnProperty('password')}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.password}
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Form.Group className="col-md-6 mb-3">
-            <Form.Label htmlFor="repeat">Repeat password</Form.Label>
-            <Form.Control
-              type="password"
-              value={form.repeat}
-              placeholder="Repeat password"
-              id="repeat"
-              className="form-control"
-              name="repeat"
-              onChange={handleInput}
-              isInvalid={beenSubmitted && errors.hasOwnProperty('repeat')}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.repeat}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Form.Row>
-        <button type="submit" className="btn btn-primary ml-auto">
-          Update profile
-        </button>
-      </Form>
-
-      {user?.isActive || (
-        <div className="mt-4">
-          <button className="btn btn-link pl-0" onClick={() => onEmailConfirm(setError)}>
-            <Mailbox color="#007bff" size="24" className="mr-2" />
-            Didn't receive a link to confirm the email address? Request a new one!
-          </button>
+          <Input
+            name='repeat'
+            id='repeat'
+            type='password'
+            label='Repeat password'
+            value={form.repeat}
+            placeholder='Repeat password'
+            className='sm:col-span-3'
+            onChange={handleInput}
+            error={beenSubmitted && errors.repeat}
+          />
         </div>
-      )}
-
-      <div className="mt-4">
-        <button
-          className="btn btn-outline-primary"
-          onClick={() => setShowExportModal(true)}
-        >
-          Request data export
-        </button>
-        <button
-          className="btn btn-danger ml-3"
-          onClick={() => setShowModal(true)}
-        >
-          Delete account
-        </button>
-      </div>
+        <Button className='mt-4' type='submit' primary large>
+          Update profile
+        </Button>
+        {!user?.isActive && (
+          <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
+            <MailIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
+              Didn't receive a link to confirm the email address? Request a new one!
+          </div>
+        )}
+        <div className='flex justify-between mt-4'>
+          <Button
+            onClick={() => setShowExportModal(true)}
+            regular
+            primary
+          >
+            Request data export
+          </Button>
+          <Button
+            className='ml-3'
+            onClick={() => setShowModal(true)}
+            regular
+            danger
+          >
+            Delete account
+          </Button>
+        </div>
+      </form>
 
       {showExportModal && (
         <Modal
           onCancel={() => setShowExportModal(false)}
           onSubmit={() => { setShowExportModal(false); onExport() }}
-          submitText="Continue"
-          cancelText="Close"
-          title="Data export"
+          submitText='Continue'
+          cancelText='Close'
+          title='Data export'
           text={'As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store.\nThe data export will be ready within 24 hours and sent to your email account.\nNote: you can request the data export only once per two weeks.'}
         />
       )}
@@ -165,9 +151,9 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
         <Modal
           onCancel={() => setShowModal(false)}
           onSubmit={() => { setShowModal(false); onDelete() }}
-          submitText="Delete my account"
-          cancelText="Close"
-          title="Delete your account?"
+          submitText='Delete my account'
+          cancelText='Close'
+          title='Delete your account?'
           text={'By pressing \'Delete my account\' you understand, that this action is irreversible.\nAll your data will be deleted from our servers.'}
         />
       )}
@@ -175,8 +161,8 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
         <Modal
           onSubmit={() => { setError('') }}
           onCancel={() => { setError('') }}
-          submitText="Got it"
-          title="Error"
+          submitText='Got it'
+          title='Error'
           text={error}
         />
       )}

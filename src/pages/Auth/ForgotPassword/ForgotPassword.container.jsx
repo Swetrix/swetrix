@@ -3,8 +3,8 @@ import { useHistory } from 'react-router-dom'
 
 import ForgotPassword from './ForgotPassword'
 import { forgotPassword } from 'api'
-import { errorsActions } from 'actions/errors'
-import { alertsActions } from 'actions/alerts'
+import { errorsActions } from 'redux/actions/errors'
+import { alertsActions } from 'redux/actions/alerts'
 import routes from 'routes'
 
 export default () => {

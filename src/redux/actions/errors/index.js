@@ -65,6 +65,13 @@ export const errorsActions = {
     }
   },
 
+  genericError(error) {
+    return {
+      type: types.GENERIC_ERROR,
+      payload: { error },
+    }
+  },
+
   clearErrors() {
     return {
       type: types.CLEAR_ERRORS,

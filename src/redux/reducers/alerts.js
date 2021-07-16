@@ -1,4 +1,4 @@
-import { types } from 'actions/alerts/types'
+import { types } from 'redux/actions/alerts/types'
 
 const initialState = {
   message: null,

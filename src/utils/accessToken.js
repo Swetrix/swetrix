@@ -1,29 +1,15 @@
-import Debug from 'debug'
 import { getItem, setItem, removeItem } from './localstorage'
-
-const debug = Debug('analytics:utils:at')
+import { TOKEN } from 'redux/constants'
 
 export const getAccessToken = () => {
-  const accessToken = getItem('access_token')
-  let token = null
-
-  if (!accessToken) {
-    return null
-  }
-
-  try {
-    token = JSON.parse(accessToken)
-  } catch(e) {
-    debug('Error while parsing access token: %s', e)
-  }
-
-  return token
+  const accessToken = getItem(TOKEN)
+  return accessToken
 }
 
 export const setAccessToken = token => {
-  setItem('access_token', token)
+  setItem(TOKEN, token)
 }
 
 export const removeAccessToken = () => {
-  removeItem('access_token')
+  removeItem(TOKEN)
 }

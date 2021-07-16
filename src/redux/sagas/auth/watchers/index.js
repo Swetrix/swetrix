@@ -1,10 +1,10 @@
 import { takeLatest, all, call } from 'redux-saga/effects'
-import { types } from 'actions/auth/types'
-import signIn from 'sagas/auth/workers/signin'
-import signUp from 'sagas/auth/workers/signup'
-import verifyEmail from 'sagas/auth/workers/verifyEmail'
-import updateUserProfile from 'sagas/auth/workers/updateUserProfile'
-import deleteUserAccount from "sagas/auth/workers/deleteUserAccount"
+import { types } from 'redux/actions/auth/types'
+import signIn from 'redux/sagas/auth/workers/signin'
+import signUp from 'redux/sagas/auth/workers/signup'
+import verifyEmail from 'redux/sagas/auth/workers/verifyEmail'
+import updateUserProfile from 'redux/sagas/auth/workers/updateUserProfile'
+import deleteUserAccount from 'redux/sagas/auth/workers/deleteUserAccount'
 
 function* watchLogin() {
   yield takeLatest(types.LOGIN_ASYNC, signIn)

@@ -3,13 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@craco/craco": "^6.2.0",
+    "@headlessui/react": "^1.3.0",
+    "@heroicons/react": "^1.0.2",
     "@material-ui/core": "^4.11.3",
+    "@tailwindcss/forms": "^0.3.3",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.8.3",
     "axios": "^0.21.1",
     "billboard.js": "^3.1.2",
-    "bootstrap": "^4.6.0",
+    "bootstrap": "^5.0.2",
     "bootstrap-icons": "^1.4.1",
     "classnames": "^2.3.1",
     "d3": "^7.0.0",
@@ -22,9 +26,10 @@
     "react": "^17.0.1",
     "react-alert": "^7.0.2",
     "react-alert-template-basic": "^1.0.0",
-    "react-bootstrap": "^1.5.2",
+    "react-bootstrap": "^v2.0.0-beta.2",
     "react-bootstrap-icons": "^1.4.0",
     "react-dom": "^17.0.1",
+    "react-feather": "^2.0.9",
     "react-redux": "^7.2.2",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
@@ -34,11 +39,11 @@
     "web-vitals": "^1.1.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "craco start",
+    "build": "craco build",
     "build:css": "cross-env sass --no-source-map src:src --load-path ./node_modules --style compressed",
     "watch:css": "cross-env npm run build-css && cross-env sass --no-source-map src:src --load-path ./node_modules --style compressed --watch",
-    "test": "react-scripts test",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -60,7 +65,10 @@
     ]
   },
   "devDependencies": {
+    "autoprefixer": "^9.8.6",
     "cross-env": "^7.0.3",
-    "sass": "^1.35.2"
+    "postcss": "^7.0.36",
+    "sass": "^1.35.2",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.4"
   }
 }

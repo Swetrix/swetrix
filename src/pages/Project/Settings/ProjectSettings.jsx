@@ -1,20 +1,24 @@
-import React, { useState, useEffect } from 'react'
-import { useLocation, useHistory, useParams, Link } from 'react-router-dom'
-import Form from 'react-bootstrap/Form'
+import React, { useState, useEffect, useMemo } from 'react'
+import { useLocation, useHistory, useParams } from 'react-router-dom'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
+import _find from 'lodash/find'
 import PropTypes from 'prop-types'
 
 import { createProject, updateProject, deleteProject } from 'api'
+import Input from 'ui/Input'
+import Button from 'ui/Button'
 import { nanoid } from 'utils/random'
 import routes from 'routes'
 import Modal from 'components/Modal'
 
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
+  loadProjects, isLoading, projects, showError,
 }) => {
   const { pathname } = useLocation()
   const { id } = useParams()
+  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects])
   const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
   const history = useHistory()
   const [form, setForm] = useState({
@@ -27,6 +31,17 @@ const ProjectSettings = ({
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
 
+  useEffect(() => {
+    if (!isLoading && isSettings) {
+      if (_isEmpty(project)) {
+        showError('The selected project does not exist')
+        history.push(routes.dashboard)
+      } else {
+        setForm(project)
+      }
+    }
+  }, [project, isLoading, isSettings])
+
   const onSubmit = async (data) => {
     try {
       if (isSettings) {
@@ -37,6 +52,7 @@ const ProjectSettings = ({
         newProject('The project has been created')
       }
 
+      loadProjects()
       history.push(routes.dashboard)
     } catch (e) {
       if (isSettings) {
@@ -98,73 +114,67 @@ const ProjectSettings = ({
     setValidated(valid)
   }
 
+  const onCancel = () => {
+    history.push(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
+  }
+
   return (
-    <div className='container'>
-      <h4 className='mb-3'>{isSettings ? `${form.name} settings` : 'Create a new project'}</h4>
-      <Form validated={validated} onSubmit={handleSubmit} noValidate>
-        <Form.Group className='mb-3 has-validation'>
-          <Form.Label htmlFor='name'>Project name</Form.Label>
-          <Form.Control
-            type='text'
-            value={form.name}
-            placeholder='My awesome project'
-            id='name'
-            className='form-control'
-            name='name'
-            onChange={handleInput}
-            isValid={!errors.hasOwnProperty('name')}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('name')}
-            required
-          />
-          <Form.Control.Feedback type='invalid'>
-            {errors.name}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className='mb-3'>
-          <Form.Label htmlFor='id'>Project ID</Form.Label>
-          <Form.Control
-            type='text'
-            value={form.id}
-            id='id'
-            className='form-control'
-            name='id'
-            onChange={handleInput}
-            isInvalid={beenSubmitted && errors.hasOwnProperty('id')}
-            disabled
-            required
-          />
-        </Form.Group>
+    <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+        <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+          {isSettings ? `${form.name} settings` : 'Create a new project'}
+        </h2>
+        <Input
+          name='name'
+          id='name'
+          type='text'
+          label='Project name'
+          value={form.name}
+          placeholder='My awesome project'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.name}
+        />
+        <Input
+          name='id'
+          id='id'
+          type='text'
+          label='Project ID'
+          value={form.id}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.id}
+          disabled
+        />
         {isSettings && (
-          <Form.Group className='mb-3'>
-            <Form.Label htmlFor='origins'>Allowed origins</Form.Label>
-            <Form.Control
-              type='text'
-              value={form.origins}
-              id='origins'
-              className='form-control'
-              name='origins'
-              onChange={handleInput}
-            />
-          </Form.Group>
+          <Input
+            name='origins'
+            id='origins'
+            type='text'
+            label='Allowed origins'
+            value={form.origins}
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted && errors.origins}
+          />
         )}
-        <div className='d-flex justify-content-between'>
+        <div className='flex justify-between mt-4'>
           <div>
-            <Link
-              to={isSettings ? _replace(routes.project, ':id', id) : routes.dashboard}
-              className='btn btn-outline-secondary'>
+            <Button className='mr-2' onClick={onCancel} secondary regular>
               Cancel
-            </Link>
-            <button type='submit' className='btn btn-primary ml-2'>
+            </Button>
+            <Button type='submit' primary regular>
               Save
-            </button>
+            </Button>
           </div>
           {isSettings && (
-            <button type='button' onClick={() => setShowDelete(true)} className='btn btn-danger'>
+            <Button onClick={() => setShowDelete(true)} danger large>
               Delete project
-            </button>
+            </Button>
           )}
         </div>
-      </Form>
+      </form>
+
       {showDelete &&
         <Modal
           onCancel={() => setShowDelete(false)}
@@ -185,6 +195,10 @@ ProjectSettings.propTypes = {
   newProject: PropTypes.func.isRequired,
   projectDeleted: PropTypes.func.isRequired,
   deleteProjectFailed: PropTypes.func.isRequired,
+  loadProjects: PropTypes.func.isRequired,
+  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  showError: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
 }
 
 export default ProjectSettings

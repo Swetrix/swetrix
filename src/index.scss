@@ -1,4 +1,6 @@
-// @import "bootstrap/dist/css/bootstrap.min.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
   margin: 0;
@@ -42,7 +44,6 @@ code {
   opacity: 0.8;
   cursor: not-allowed;
 }
-
 
 .hoverable {
   transition: opacity 300ms;

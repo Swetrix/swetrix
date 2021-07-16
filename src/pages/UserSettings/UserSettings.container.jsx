@@ -1,9 +1,9 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 
-import { authActions } from 'actions/auth'
-import { errorsActions } from 'actions/errors'
-import { alertsActions } from 'actions/alerts'
+import { authActions } from 'redux/actions/auth'
+import { errorsActions } from 'redux/actions/errors'
+import { alertsActions } from 'redux/actions/alerts'
 import { getCookie, setCookie } from 'utils/cookie'
 import { confirmEmail, exportUserData } from 'api'
 
