@@ -112,6 +112,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
         <Button className='mt-4' type='submit' primary large>
           Update profile
         </Button>
+        <hr className='mt-3' />
         {!user?.isActive && (
           <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
             <MailIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />

@@ -2,6 +2,7 @@ import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import Spinner from 'react-bootstrap/Spinner'
 import Alert from 'react-bootstrap/Alert'
+import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -9,9 +10,10 @@ import { EyeIcon } from '@heroicons/react/outline'
 import { ChartBarIcon } from '@heroicons/react/outline'
 import { CalendarIcon } from '@heroicons/react/outline'
 
+import { ActivePin, InactivePin } from 'ui/Pin'
 import routes from 'routes'
 
-const ProjectCart = ({ name, url }) => (
+const ProjectCart = ({ name, url, created, active }) => (
   <li>
     <Link to={url} className='block hover:bg-gray-50'>
       <div className='px-4 py-4 sm:px-6'>
@@ -19,10 +21,12 @@ const ProjectCart = ({ name, url }) => (
           <p className='text-base font-medium text-indigo-600 truncate'>
             {name}
           </p>
-          <div class="ml-2 flex-shrink-0 flex">
-            <p class="px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-              Active
-            </p>
+          <div className='ml-2 flex-shrink-0 flex'>
+            {active ? (
+              <ActivePin label='Active' />
+            ) : (
+              <InactivePin label='Disabled' />
+            )}
           </div>
         </div>
         <div className='mt-2 sm:flex sm:justify-between'>
@@ -39,7 +43,7 @@ const ProjectCart = ({ name, url }) => (
           <div className='mt-2 flex items-center text-sm text-gray-500'>
             <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
             <p>
-              Created at <time datetime='2020-01-07'>January 7, 2020</time>
+              Created at <time datetime='2020-01-07'>{dayjs(created).format('MMMM D, YYYY')}</time>
             </p>
           </div>
         </div>
@@ -90,8 +94,8 @@ const Dashboard = ({ projects, isLoading, error }) => {
           ) : (
             <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
               <ul className='divide-y divide-gray-200'>
-                {_map(projects, ({ name, id }) => (
-                  <ProjectCart key={id} name={name} url={routes.project.replace(':id', id)} />
+                {_map(projects, ({ name, id, created, active }) => (
+                  <ProjectCart key={id} name={name} created={created} active={active} url={routes.project.replace(':id', id)} />
                 ))}
               </ul>
             </div>

@@ -8,6 +8,7 @@ import PropTypes from 'prop-types'
 import { createProject, updateProject, deleteProject } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
+import Checkbox from 'ui/Checkbox'
 import { nanoid } from 'utils/random'
 import routes from 'routes'
 import Modal from 'components/Modal'
@@ -147,16 +148,27 @@ const ProjectSettings = ({
           disabled
         />
         {isSettings && (
-          <Input
-            name='origins'
-            id='origins'
-            type='text'
-            label='Allowed origins'
-            value={form.origins}
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted && errors.origins}
-          />
+          <>
+            <Input
+              name='origins'
+              id='origins'
+              type='text'
+              label='Allowed origins'
+              value={form.origins}
+              className='mt-4'
+              onChange={handleInput}
+              error={beenSubmitted && errors.origins}
+            />
+             <Checkbox
+                checked={Boolean(form.active)}
+                onChange={handleInput}
+                name='active'
+                id='active'
+                className='mt-4'
+                label='Is project enabled'
+                hint={'Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project\'s analytics in dashboard.'}
+              />
+          </>
         )}
         <div className='flex justify-between mt-4'>
           <div>

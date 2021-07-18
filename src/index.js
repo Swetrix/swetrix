@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { store } from 'redux/store'
 import { Provider } from 'react-redux'
 import { transitions, positions, Provider as AlertProvider } from 'react-alert'
-import AlertTemplate from 'react-alert-template-basic'
+import AlertTemplate from 'ui/Alert'
 import 'billboard.js/dist/billboard.min.css'
 
 import App from './App'

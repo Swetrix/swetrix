@@ -22,7 +22,7 @@ import routes from 'routes'
 import { getProjectData } from 'api'
 
 const typeNameMapping = {
-  tz: 'Timezone',
+  cc: 'Country',
   pg: 'Page',
   lc: 'Locale',
   ref: 'Referrer',

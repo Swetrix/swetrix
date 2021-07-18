@@ -15,17 +15,17 @@ export const tbPeriodPairs = [{
   access: 'free',
 }, {
   label: 'Last 3 months',
-  period: '3m',
+  period: '3M',
   tbs: ['week', 'month'],
   access: 'paid',
 }, {
   label: 'Last 12 months',
-  period: '12m',
+  period: '12M',
   tbs: ['week', 'month'],
   access: 'paid',
 }, {
   label: 'Last 24 months',
-  period: '12m',
+  period: '24M',
   tbs: ['month'],
   access: 'paid',
 }]
