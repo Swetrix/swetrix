@@ -129,7 +129,7 @@ export class Lib {
 
   private debug(message: string) {
     if (this.options?.debug) {
-      console.log('[Analytics] ', message)
+      console.log('[Analytics]', message)
     }
   }
 
@@ -145,7 +145,6 @@ export class Lib {
     }
 
     if (!this.options?.debug && isLocalhost()) {
-      this.debug('Tracking disabled: running on localhost.')
       return false
     }
 
