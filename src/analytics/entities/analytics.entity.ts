@@ -76,6 +76,14 @@ export class Analytics {
   @Column({ nullable: true })
   lt: number
 
+  // the record itself is a unique view
+  // every additional pageview request coming from the user will be set as
+  // nupw -> non-unique page views
+  @Column({
+    default: 0,
+  })
+  nupw: number
+
   @CreateDateColumn()
   created: Date;
 }

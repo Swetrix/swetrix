@@ -6,11 +6,14 @@ import * as _map from 'lodash/map'
 import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
-import { ForbiddenException, Injectable, BadRequestException } from '@nestjs/common'
+import { ForbiddenException, Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
+import {
+  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
+} from '../common/constants'
 import { Analytics } from './entities/analytics.entity'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { ProjectService } from '../project/project.service'
@@ -71,23 +74,34 @@ export class AnalyticsService {
   }
 
   async validate(logDTO: PageviewsDTO): Promise<string | null> {
-    const errors = []
-    if (_isEmpty(logDTO)) errors.push('The request cannot be empty')
-    if (_isEmpty(logDTO.pid)) errors.push('The Project ID (pid) has to be provided')
+    if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
+    const { pid } = logDTO 
 
-    const project = await this.projectService.findOne(logDTO.pid)
-    if (_isEmpty(project)) errors.push('The provided Project ID (pid) is incorrect')
+    if (_isEmpty(pid)) throw new BadRequestException('The Project ID (pid) has to be provided')
+    if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
-    if (!_isEmpty(errors)) {
-      throw new BadRequestException(errors)
+    const pidKey = getRedisProjectKey(pid)
+    let project = await redis.get(pidKey)
+    if (_isEmpty(project)) {
+      project = await this.projectService.findOne(pid)
+      if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+      await redis.set(pidKey, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
+    } else {
+      try {
+        project = JSON.parse(project)
+      } catch {
+        throw new InternalServerErrorException('Error while processing project')
+      }
     }
+
+    if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
     return null
   }
 
   processData(data: object): object {
     const res = {
-      tz: {},
+      cc: {},
       pg: {}, 
       lc: {},
       ref: {},
@@ -116,10 +130,7 @@ export class AnalyticsService {
   }
 
   // TODO: Refactor; check if there's no date/time shifts
-  async groupByTimeBucket(data: Analytics[], timeBucket: TimeBucketType, from: string, to: string): Promise<object | void> {
-    const a = Math.random()
-    console.time('groupByTimeBucket' + a)
-
+  async groupByTimeBucket(data: Object[], timeBucket: TimeBucketType, from: string, to: string): Promise<object | void> {
     if (_isEmpty(data)) return Promise.resolve()
     let groupDateIterator
     let clone = [...data]
@@ -172,14 +183,13 @@ export class AnalyticsService {
       groupDateIterator = nextIteration
     }
 
-    const b = {
-      params: this.processData(res),
-      chart: {
-        x: _map(res, el => el.timeFrame),
-        visits: _map(res, el => el.total),
-      },
-    }
-    console.timeLog('groupByTimeBucket' + a)
+    // const b = {
+    //   params: this.processData(res),
+    //   chart: {
+    //     x: _map(res, el => el.timeFrame),
+    //     visits: _map(res, el => el.total),
+    //   },
+    // }
     return Promise.resolve({
       params: this.processData(res),
       chart: {

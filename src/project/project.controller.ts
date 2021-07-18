@@ -1,6 +1,7 @@
 import { Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete, BadRequestException, 
   HttpCode, NotFoundException } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import * as _isEmpty from 'lodash/isEmpty'
 
 import { ProjectService } from './project.service'
 import { UserType } from '../user/entities/user.entity'
@@ -12,6 +13,9 @@ import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { AppLoggerService } from '../logger/logger.service'
+import {
+  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
+} from '../common/constants'
 
 @ApiTags('Project')
 @Controller('project')
@@ -26,13 +30,10 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
-  @ApiResponse({status: 200, type: [Project]})
+  @ApiResponse({ status: 200, type: [Project] })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async get(
-    @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,): Promise<Pagination<Project> | Project[]> {
+  async get(@CurrentUserId() userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[]> {
     this.logger.log({ userId, take, skip }, 'GET /project')
     // const user = await this.userService.findOne(userId)
     const where = Object()
@@ -44,15 +45,15 @@ export class ProjectController {
 
   @Get('/:id')
   @ApiResponse({ status: 200, type: Project })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getOne(@Param('id') id: string): Promise<Project> {
     this.logger.log({ id }, 'GET /project/:id')
+    if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
     const project = await this.projectService.findOne(id)
 
-    if (project) {
-      return project
-    } else {
-      throw new NotFoundException()
-    }
+    if (_isEmpty(project)) throw new NotFoundException()
+    return project
   }
 
   @Post('/')
@@ -61,6 +62,7 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
+    if (!isValidPID(projectDTO.id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
     await this.projectService.checkIfIDUnique(projectDTO.id)
 
@@ -93,17 +95,26 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<any> {
     this.logger.log({ projectDTO, userId, id }, 'PUT /project/:id')
+    if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
-    const project = await this.projectService.findOneWithRelations(id)
+    let project = await this.projectService.findOneWithRelations(id)
 
-    if (!project) {
+    if (_isEmpty(project)) {
       throw new NotFoundException()
     }
 
     await this.projectService.allowedToManage(project, userId)
     await this.projectService.update(id, projectDTO)
 
-    return this.projectService.findOne(id)
+    project = await this.projectService.findOne(id)
+
+    try {
+      await redis.set(getRedisProjectKey(id), JSON.stringify(project), 'EX', redisProjectCacheTimeout)
+    } catch {
+      await redis.del()
+    }
+
+    return project
   }
 
   @Delete('/:id')
@@ -113,9 +124,11 @@ export class ProjectController {
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(@Param('id') id: string, @CurrentUserId() userId: string): Promise<any> {
     this.logger.log({ userId, id }, 'DELETE /project/:id')
+    if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+
     const project = await this.projectService.findOneWithRelations(id)
 
-    if (!project) {
+    if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
     }
     await this.projectService.allowedToManage(project, userId)

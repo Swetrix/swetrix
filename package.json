@@ -33,9 +33,12 @@
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
+    "clickhouse": "^2.4.0",
     "cookie-parser": "^1.4.5",
     "dayjs": "^1.10.6",
+    "dotenv": "^10.0.0",
     "handlebars": "^4.7.7",
+    "ioredis": "^4.27.6",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mysql": "^2.18.1",
@@ -48,7 +51,8 @@
     "rxjs": "^6.6.6",
     "sqlstring": "^2.3.2",
     "swagger-ui-express": "^4.1.6",
-    "typeorm": "^0.2.31"
+    "typeorm": "^0.2.31",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.6",

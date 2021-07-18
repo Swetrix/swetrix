@@ -24,4 +24,10 @@ export class ProjectDTO {
     description: 'Coma-separated allowed origins'
   })
   origins: string
+
+  @ApiProperty({
+    required: false,
+    description: 'The project\'s state. If enabled - all the incoming analytics data will be saved.'
+  })
+  active: boolean
 }

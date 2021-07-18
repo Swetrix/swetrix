@@ -12,7 +12,7 @@ export class RolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private userService: UserService,
-    ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const secret = process.env.JWT_SECRET
@@ -23,7 +23,7 @@ export class RolesGuard implements CanActivate {
 
     const request: Request = context.switchToHttp().getRequest()
     let token = ''
-    if(request.cookies['token']) {
+    if (request.cookies['token']) {
       token = request.cookies['token']
     } else {
       const extract = ExtractJwt.fromAuthHeaderAsBearerToken()
@@ -32,8 +32,7 @@ export class RolesGuard implements CanActivate {
 
     try {
       const decoded: any = verify(token, secret)
-
-      if(decoded){
+      if (decoded) {
         let user: User = await this.userService.findOneWhere({ id: decoded.user_id })
         const hasRole = user.roles.some(role => !!roles.find(item => item === role))
         return hasRole
@@ -42,6 +41,4 @@ export class RolesGuard implements CanActivate {
       throw new UnauthorizedException()
     }
   }
-
-
 }

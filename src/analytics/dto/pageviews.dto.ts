@@ -18,7 +18,7 @@ export class PageviewsDTO {
 
   // Tracking metrics
   @ApiProperty({
-    example: 'UTC+2',
+    example: 'Europe/Kiev',
     description: 'User\'s timezone'
   })
   tz: string

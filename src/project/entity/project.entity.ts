@@ -6,7 +6,10 @@ import { User } from '../../user/entities/user.entity'
 @Entity()
 export class Project {
   @ApiProperty()
-  @PrimaryColumn('varchar', { unique: true })
+  @PrimaryColumn('varchar', {
+    unique: true,
+    length: 12,
+  })
   id: string
 
   @ApiProperty()
@@ -20,7 +23,16 @@ export class Project {
   })
   origins: string
 
+  @ApiProperty()
+  @Column({
+    default: true,
+  })
+  active: boolean
+
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.projects)
   admin: User
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created: Date
 }
