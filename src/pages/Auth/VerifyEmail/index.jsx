@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import Spinner from 'react-bootstrap/Spinner'
+import React, { useState, useEffect, memo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
+import { CheckCircleIcon } from '@heroicons/react/solid'
+import { XCircleIcon } from '@heroicons/react/solid'
 
 import { authActions } from 'redux/actions/auth'
+import Loader from 'ui/Loader'
 
 const VerifyEmail = () => {
   const dispatch = useDispatch()
@@ -24,19 +26,45 @@ const VerifyEmail = () => {
       }))
   }, [dispatch, id])
 
+  if (loading) {
+    return (
+      <Loader />
+    )
+  }
+
+  if (error) {
+    return (
+      <div className='flex justify-center pt-10'>
+        <div className='rounded-md p-4 w-11/12 bg-red-50 lg:w-4/6'>
+          <div className='flex'>
+            <div className='flex-shrink-0'>
+              <XCircleIcon className='h-5 w-5 text-red-400' aria-hidden='true' />
+            </div>
+            <div className='ml-3'>
+              <h3 className='text-sm font-medium text-red-800'>{error}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="container d-flex justify-content-center">
-      {loading
-        ? (
-          <Spinner animation="border" role="status" variant="primary" className="spinner-lg">
-            <span className="sr-only">Loading...</span>
-          </Spinner>
-        )
-        : (
-          <p>{ error ? error : 'Your email has been successfully verified!' }</p>
-        )}
+    <div className='flex justify-center pt-10'>
+      <div className='rounded-md p-4 w-11/12 bg-green-50 lg:w-4/6'>
+        <div className='flex'>
+          <div className='flex-shrink-0'>
+            <CheckCircleIcon className='h-5 w-5 text-green-400' aria-hidden='true' />
+          </div>
+          <div className='ml-3'>
+            <h3 className='text-sm font-medium text-green-800'>
+              Your email has been successfully verified!
+            </h3>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-export default VerifyEmail
+export default memo(VerifyEmail)

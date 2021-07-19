@@ -105,8 +105,8 @@ const ProjectSettings = ({
       allErrors.name = 'Please enter a project name.'
     }
 
-    if (form.name.length > 80) {
-      allErrors.name = 'Project name cannot be longer than 80 characters.'
+    if (form.name.length > 50) {
+      allErrors.name = 'Project name cannot be longer than 50 characters.'
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -147,7 +147,7 @@ const ProjectSettings = ({
           error={beenSubmitted && errors.id}
           disabled
         />
-        {isSettings && (
+        {isSettings ? (
           <>
             <Input
               name='origins'
@@ -159,16 +159,18 @@ const ProjectSettings = ({
               onChange={handleInput}
               error={beenSubmitted && errors.origins}
             />
-             <Checkbox
-                checked={Boolean(form.active)}
-                onChange={handleInput}
-                name='active'
-                id='active'
-                className='mt-4'
-                label='Is project enabled'
-                hint={'Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project\'s analytics in dashboard.'}
-              />
+            <Checkbox
+              checked={Boolean(form.active)}
+              onChange={handleInput}
+              name='active'
+              id='active'
+              className='mt-4'
+              label='Is project enabled'
+              hint={'Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project\'s analytics in dashboard.'}
+            />
           </>
+        ) : (
+          <p className='text-gray-500 italic mt-2 text-sm'>*you will be able to set up your project more thoroughly after you have created it</p>
         )}
         <div className='flex justify-between mt-4'>
           <div>

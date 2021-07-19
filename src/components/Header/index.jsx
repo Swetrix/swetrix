@@ -17,19 +17,19 @@ const Header = ({ authenticated }) => {
               <span className='sr-only'>Analytics</span>
               <img className='h-10 w-auto' src='https://tailwindui.com/img/logos/workflow-mark.svg?color=white' alt='' />
             </Link>
-            <div className='hidden ml-10 space-x-8 lg:block'>
-              <Link to='/' className='text-base font-medium text-white hover:text-indigo-50' key='Features'>Features</Link>
-              <Link to='/' className='text-base font-medium text-white hover:text-indigo-50' key='Pricing'>Pricing</Link>
-              <Link to='/' className='text-base font-medium text-white hover:text-indigo-50' key='FAQs'>FAQs</Link>
-              <Link to='/' className='text-base font-medium text-white hover:text-indigo-50' key='Docs'>Docs</Link>
+            <div className='hidden ml-10 space-x-1 lg:block'>
+              <Link to='/' className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='Features'>Features</Link>
+              <Link to='/' className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='Pricing'>Pricing</Link>
+              <Link to='/' className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='FAQs'>FAQs</Link>
+              <Link to='/' className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='Docs'>Docs</Link>
             </div>
           </div>
           <div className='ml-10 space-x-4'>
             {authenticated ? (
               <>
-                <Link to={routes.user_settings} className='text-base font-medium text-white hover:text-indigo-50'>You</Link>
+                <Link to={routes.user_settings} className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md'>You</Link>
                 <Link to={routes.dashboard} className='inline-block bg-white py-2 px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>Dashboard</Link>
-                <Link to='#' className='text-base font-medium text-white hover:text-indigo-50' onClick={() => dispatch(authActions.logout())}>Logout</Link>
+                <Link to='#' className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' onClick={() => dispatch(authActions.logout())}>Logout</Link>
               </>
             ) : (
               <>
@@ -39,11 +39,11 @@ const Header = ({ authenticated }) => {
             )}
           </div>
         </div>
-        <div className='py-4 flex flex-wrap justify-center space-x-6 lg:hidden'>
-          <Link to='/' className='text-base font-medium text-white hover:text-indigo-50' key='Features'>Features</Link>
-          <Link to='/' className='text-base font-medium text-white hover:text-indigo-50' key='Pricing'>Pricing</Link>
-          <Link to='/' className='text-base font-medium text-white hover:text-indigo-50' key='FAQs'>FAQs</Link>
-          <Link to='/' className='text-base font-medium text-white hover:text-indigo-50' key='Docs'>Docs</Link>
+        <div className='py-4 flex flex-wrap justify-center space-x-2 lg:hidden'>
+          <Link to='/' className='text-base font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' key='Features'>Features</Link>
+          <Link to='/' className='text-base font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' key='Pricing'>Pricing</Link>
+          <Link to='/' className='text-base font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' key='FAQs'>FAQs</Link>
+          <Link to='/' className='text-base font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' key='Docs'>Docs</Link>
         </div>
       </nav>
     </header>

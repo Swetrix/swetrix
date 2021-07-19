@@ -14,7 +14,7 @@ export default (state = initialState, { type, payload }) => {
     case types.CREATE_NEW_PROJECT_SUCCESS:
       return { ...state, message: payload.message, type: payload.type }
 
-    case types.CLEAR_ERRORS:
+    case types.CLEAR_ALERTS:
       return { ...state, message: null, type: 'info' }
 
     default:

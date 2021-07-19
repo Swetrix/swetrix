@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { store } from 'redux/store'
 import Debug from 'debug'
+import _map from 'lodash/map'
 import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
@@ -172,6 +173,15 @@ export const deleteProject = (id) =>
 export const getProjectData = (pid, tb = 'hour', period = '3d', from = '', to = '') =>
   api
     .get(`log?pid=${pid}&timeBucket=${tb}&period=${period}&from=${from}&to=${to}`)
+    .then(response => response.data)
+    .catch(error => {
+      debug('%s', error)
+      throw error.response.data
+    })
+
+export const getOverallStats = (pids) =>
+  api
+    .get(`log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)

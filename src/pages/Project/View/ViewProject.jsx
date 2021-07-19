@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import bb, { area, zoom } from 'billboard.js'
+import cx from 'classnames'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import _keys from 'lodash/keys'
@@ -8,6 +9,8 @@ import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import _size from 'lodash/size'
 import _isNull from 'lodash/isNull'
+import _includes from 'lodash/includes'
+import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
@@ -53,7 +56,7 @@ const ViewProject = ({
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(tbPeriodPairs[1].period)
   const [timeBucket, setTimebucket] = useState(tbPeriodPairs[1].tbs[1])
-  const periodLabel = useMemo(() => _find(tbPeriodPairs, p => p.period === period).label, [period])
+  const activePeriod = useMemo(() => _find(tbPeriodPairs, p => p.period === period), [period])
   // const [bbChart, setBbChart] = useState([])
 
   const { name } = project
@@ -62,19 +65,19 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(project)) {
       try {
         const data = await getProjectData(id, timeBucket, period)
-  
+
         if (_isEmpty(data)) {
           setAnalyticsLoading(false)
           return
         }
-  
+
         const { chart, params } = data
-  
+
         setPanelsData({
           types: _keys(params),
           data: params,
         })
-  
+
         const bbSettings = {
           data: {
             x: 'x',
@@ -110,7 +113,7 @@ const ViewProject = ({
           },
           bindto: '#dataChart',
         }
-  
+
         bb.generate(bbSettings)
         setAnalyticsLoading(false)
       } catch (e) {
@@ -121,7 +124,18 @@ const ViewProject = ({
 
   useEffect(() => {
     loadAnalytics()
-  }, [project, period])
+  }, [project, period, timeBucket])
+
+  const updatePeriod = (newPeriod) => {
+    const newPeriodFull = _find(tbPeriodPairs, (el) => el.period === newPeriod)
+    if (_isEmpty(newPeriodFull)) return
+
+    if (!_includes(newPeriodFull.tbs, timeBucket)) {
+      setTimebucket(_last(newPeriodFull.tbs))
+    }
+
+    setPeriod(newPeriod)
+  }
 
   if (!isLoading && _isEmpty(project)) {
     showError('The selected project does not exist')
@@ -135,15 +149,34 @@ const ViewProject = ({
   if (!isLoading) {
     return (
       <div className='min-h-page bg-gray-50 py-6 sm:px-6 lg:px-8'>
-        <div className='flex justify-between h-10 mb-10'>
-          <h2 className='text-3xl font-extrabold text-gray-900'>{name}</h2>
-          <div className='flex'>
+        <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mb-10 pb-10'>
+          <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
+          <div className='flex mt-3 md:mt-0'>
+            <div className='md:border-r border-gray-200 md:pr-3 mr-3'>
+              <span className='relative z-0 inline-flex shadow-sm rounded-md'>
+                {_map(activePeriod.tbs, (tb, index, { length }) => (
+                  <button
+                    key={tb}
+                    type='button'
+                    onClick={() => setTimebucket(tb)}
+                    className={cx('relative capitalize inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
+                      '-ml-px': index > 0,
+                      'rounded-l-md': index === 0,
+                      'rounded-r-md': 1 + index === length,
+                      'z-10 border-indigo-500 text-indigo-600': timeBucket === tb,
+                    })}
+                  >
+                    {tb}
+                  </button>
+                ))}
+              </span>
+            </div>
             <Dropdown
               items={tbPeriodPairs}
-              title={periodLabel}
+              title={activePeriod.label}
               labelExtractor={pair => pair.label}
               keyExtractor={pair => pair.label}
-              onSelect={pair => setPeriod(pair.period)}
+              onSelect={pair => updatePeriod(pair.period)}
             />
             <div className='h-full ml-3'>
               <Button onClick={openSettingsHandler} className='py-2.5' secondary large>
@@ -159,8 +192,8 @@ const ViewProject = ({
             <NoEvents />
           )
         ) : (
-          <div>
-            <div id='dataChart' className='h4' />
+          <div className='pt-4 md:pt-0'>
+            <div id='dataChart' />
             <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
               {_map(panelsData.types, type => (
                 <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
