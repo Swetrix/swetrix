@@ -1,7 +1,10 @@
-import { Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete, BadRequestException, 
-  HttpCode, NotFoundException } from '@nestjs/common'
+import {
+  Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete,
+  BadRequestException, HttpCode, NotFoundException, UnprocessableEntityException,
+} from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _size from 'lodash/size'
 
 import { ProjectService } from './project.service'
 import { UserType } from '../user/entities/user.entity'
@@ -62,7 +65,8 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
-    if (!isValidPID(projectDTO.id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+    if (!isValidPID(projectDTO.id)) throw new UnprocessableEntityException('The provided Project ID (pid) is incorrect')
+    if (_size(projectDTO.name) > 50) throw new UnprocessableEntityException('The project name is too long')
 
     await this.projectService.checkIfIDUnique(projectDTO.id)
 
@@ -96,6 +100,7 @@ export class ProjectController {
   async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<any> {
     this.logger.log({ projectDTO, userId, id }, 'PUT /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+    if (_size(projectDTO.name) > 50) throw new UnprocessableEntityException('The project name is too long')
 
     let project = await this.projectService.findOneWithRelations(id)
 
@@ -103,8 +108,12 @@ export class ProjectController {
       throw new NotFoundException()
     }
 
+    project.active = projectDTO.active
+    project.origins = projectDTO.origins
+    project.name = projectDTO.name
+
     await this.projectService.allowedToManage(project, userId)
-    await this.projectService.update(id, projectDTO)
+    await this.projectService.update(id, project)
 
     project = await this.projectService.findOne(id)
 

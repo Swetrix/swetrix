@@ -2,6 +2,7 @@ import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
+import * as _round from 'lodash/round'
 require('dotenv').config()
 
 const redis = new Redis({
@@ -29,6 +30,22 @@ const clickhouse = new ClickHouse({
   },
 })
 
+/**
+ * Calculates in percent, the change between 2 numbers.
+ * e.g from 1000 to 500 = 50%
+ * 
+ * @param oldVal The initial value
+ * @param newVal The value that changed
+ */
+function getPercentageChange(oldVal: number, newVal: number, round: number = 2) {
+  if (oldVal === 0) {
+    return _round(-100 * newVal, round)
+  }
+
+  const decrease = oldVal - newVal
+  return _round((decrease / oldVal) * 100, round)
+}
+
 const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
 
@@ -43,5 +60,5 @@ const redisProjectCacheTimeout = 3600
 
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
-  redisProjectCacheTimeout,
+  redisProjectCacheTimeout, getPercentageChange,
 }

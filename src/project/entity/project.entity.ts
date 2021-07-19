@@ -13,7 +13,7 @@ export class Project {
   id: string
 
   @ApiProperty()
-  @Column('varchar', { length: 80 })
+  @Column('varchar', { length: 50 })
   name: string
 
   @ApiProperty()
