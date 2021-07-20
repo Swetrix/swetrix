@@ -25,9 +25,11 @@ const setProjectsLoading = (isLoading) => ({
   }
 })
 
-export default {
+const UIActions = {
   loadProjects,
   setProjects,
   setProjectsError,
   setProjectsLoading,
 }
+
+export default UIActions

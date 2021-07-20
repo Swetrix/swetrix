@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import { useSelector } from 'react-redux'
 import { MailIcon } from '@heroicons/react/outline'
 
@@ -24,7 +24,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
 
   useEffect(() => {
     validate()
-  }, [form])
+  }, [form]) // eslint-disable-line
 
   const handleInput = event => {
     const t = event.target
@@ -68,7 +68,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   }
 
   return (
-    <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+    <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
       <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
           Profile settings
@@ -82,7 +82,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
           placeholder='you@example.com'
           className='mt-4'
           onChange={handleInput}
-          error={beenSubmitted && errors.email}
+          error={beenSubmitted ? errors.email : null}
         />
         <div className='grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mt-4'>
           <Input
@@ -95,7 +95,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
             placeholder='Password'
             className='sm:col-span-3'
             onChange={handleInput}
-            error={beenSubmitted && errors.password}
+            error={beenSubmitted ? errors.password : null}
           />
           <Input
             name='repeat'
@@ -106,7 +106,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
             placeholder='Repeat password'
             className='sm:col-span-3'
             onChange={handleInput}
-            error={beenSubmitted && errors.repeat}
+            error={beenSubmitted ? errors.repeat : null}
           />
         </div>
         <Button className='mt-4' type='submit' primary large>
@@ -171,4 +171,4 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   )
 }
 
-export default React.memo(UserSettings)
+export default memo(UserSettings)

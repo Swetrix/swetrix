@@ -6,7 +6,7 @@ import UIActions from 'redux/actions/ui'
 
 const debug = Debug('analytics:rx:s:initialise')
 
-export default function* () {
+export default function* initialise() {
   try {
     const token = yield call(getAccessToken)
 

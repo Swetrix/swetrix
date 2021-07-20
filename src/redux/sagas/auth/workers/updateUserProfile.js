@@ -1,9 +1,10 @@
 import { call, put } from 'redux-saga/effects'
+
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { changeUserDetails } from 'api'
 
-export default function* ({ payload: { data, successfulCallback } }) {
+export default function* updateUserProfileWorker({ payload: { data, successfulCallback } }) {
   try {
     const user = yield call(changeUserDetails, data)
 

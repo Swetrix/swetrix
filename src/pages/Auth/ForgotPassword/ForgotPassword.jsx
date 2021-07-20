@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import { isValidEmail, isValidPassword } from 'utils/validator'
+import { isValidEmail } from 'utils/validator'
 
-export default ({ onSubmit }) => {
+const ForgotPassword = ({ onSubmit }) => {
   const [form, setForm] = useState({
     email: '',
   })
@@ -16,7 +16,7 @@ export default ({ onSubmit }) => {
 
   useEffect(() => {
     validate()
-  }, [form])
+  }, [form]) // eslint-disable-line
 
   const handleInput = event => {
     const t = event.target
@@ -80,3 +80,5 @@ export default ({ onSubmit }) => {
     </div>
   )
 }
+
+export default memo(ForgotPassword)

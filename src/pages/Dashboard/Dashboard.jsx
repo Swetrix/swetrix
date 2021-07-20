@@ -37,36 +37,36 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
           </div>
           <div className='mt-2 sm:flex sm:justify-between'>
             <div className='sm:flex flex-col'>
-              <p className='flex items-center mt-2 text-sm text-gray-500'>
+              <div className='flex items-center mt-2 text-sm text-gray-500'>
                 <EyeIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
                 Pageviews:&nbsp;
-                <dd class="flex items-baseline">
-                  <p class="h-5 w-5 text-gray-500">
+                <dd className='flex items-baseline'>
+                  <p className='h-5 w-5 text-gray-500'>
                     {overall.thisWeek}
                   </p>
-                  <p class={cx('flex text-xs -ml-1 items-baseline', {
+                  <p className={cx('flex text-xs -ml-1 items-baseline', {
                     'text-green-600': statsDidGrowUp,
                     'text-red-600': !statsDidGrowUp,
                   })}>
                     {statsDidGrowUp ? (
                       <>
                         <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
-                        <span class="sr-only">
+                        <span className='sr-only'>
                           Increased by
-                        </span>
+                          </span>
                       </>
                     ) : (
                       <>
                         <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
-                        <span class="sr-only">
+                        <span className='sr-only'>
                           Descreased by
-                        </span>
+                          </span>
                       </>
                     )}
                     {overall.percChange}%
-                  </p>
+                    </p>
                 </dd>
-              </p>
+              </div>
               {/* <p className='mt-2 flex items-center text-sm text-gray-500 sm:mt-0'>
                 <ChartBarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
                 Average load time
@@ -75,7 +75,7 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
             <div className='mt-2 flex items-center text-sm text-gray-500'>
               <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
               <p>
-                Created at <time datetime='2020-01-07'>{dayjs(created).format('MMMM D, YYYY')}</time>
+                Created at <time dateTime={dayjs(created).format('YYYY-MM-DD')}>{dayjs(created).format('MMMM D, YYYY')}</time>
               </p>
             </div>
           </div>
@@ -104,14 +104,14 @@ const NoProjects = () => (
 const Dashboard = ({ projects, isLoading, error }) => {
   if (error && !isLoading) {
     return (
-      <div className="flex justify-center pt-10">
-        <div className="rounded-md bg-red-50 p-4 w-11/12 lg:w-4/6">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+      <div className='flex justify-center pt-10'>
+        <div className='rounded-md bg-red-50 p-4 w-11/12 lg:w-4/6'>
+          <div className='flex'>
+            <div className='flex-shrink-0'>
+              <XCircleIcon className='h-5 w-5 text-red-400' aria-hidden='true' />
             </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">{error}</h3>
+            <div className='ml-3'>
+              <h3 className='text-sm font-medium text-red-800'>{error}</h3>
             </div>
           </div>
         </div>
@@ -121,7 +121,7 @@ const Dashboard = ({ projects, isLoading, error }) => {
 
   if (!isLoading) {
     return (
-      <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <div className='max-w-7xl w-full mx-auto'>
           <div className='flex justify-between'>
             <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>Dashboard</h2>

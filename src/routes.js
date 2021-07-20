@@ -11,4 +11,5 @@ export default Object.freeze({
   new_project: '/projects/new',
   project_settings: '/projects/settings/:id',
   project: '/projects/:id',
+  docs: '/docs',
 })

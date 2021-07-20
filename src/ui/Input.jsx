@@ -15,7 +15,7 @@ const Input = ({
       <div className={cx({
         'flex justify-between': label && hint,
       })}>
-        <label for={identifier} className='block text-sm font-medium text-gray-700'>{label}</label>
+        <label htmlFor={identifier} className='block text-sm font-medium text-gray-700'>{label}</label>
         <span className='text-sm text-gray-500' id={`${identifier}-optional`}>{hint}</span>
       </div>
       <div className='mt-1 relative'>

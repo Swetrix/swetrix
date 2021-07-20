@@ -24,8 +24,17 @@ const InactivePin = ({ label, className }) => (
   </p>
 )
 
+const WarningPin = ({ label, className }) => (
+  <p className={cx('px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-600', className)}>
+    {label}
+  </p>
+)
+
 ActivePin.propTypes = propTypes
 ActivePin.defaultProps = defaultProps
+
+WarningPin.propTypes = propTypes
+WarningPin.defaultProps = defaultProps
 
 InactivePin.propTypes = propTypes
 InactivePin.defaultProps = defaultProps
@@ -33,4 +42,5 @@ InactivePin.defaultProps = defaultProps
 export {
   ActivePin,
   InactivePin,
+  WarningPin,
 }

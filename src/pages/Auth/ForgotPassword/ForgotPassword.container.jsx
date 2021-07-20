@@ -7,7 +7,7 @@ import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import routes from 'routes'
 
-export default () => {
+const ForgotPasswordContainer = () => {
   const dispatch = useDispatch()
   const history = useHistory()
 
@@ -26,3 +26,5 @@ export default () => {
     <ForgotPassword onSubmit={onSubmit} />
   )
 }
+
+export default ForgotPasswordContainer

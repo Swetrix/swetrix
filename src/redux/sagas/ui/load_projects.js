@@ -7,7 +7,7 @@ import UIActions from 'redux/actions/ui'
 
 const debug = Debug('analytics:rx:s:load-projects')
 
-export default function* () {
+export default function* loadProjects() {
   try {
     let { results } = yield call(getProjects)
     const pids = _map(results, result => result.id)

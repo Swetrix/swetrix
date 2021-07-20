@@ -6,9 +6,6 @@ import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import _reduce from 'lodash/reduce'
-import _size from 'lodash/size'
-import _isNull from 'lodash/isNull'
 import _includes from 'lodash/includes'
 import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
@@ -51,7 +48,7 @@ const ViewProject = ({
 }) => {
   const { id } = useParams()
   const history = useHistory()
-  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects])
+  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const [panelsData, setPanelsData] = useState({})
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(tbPeriodPairs[1].period)
@@ -124,7 +121,7 @@ const ViewProject = ({
 
   useEffect(() => {
     loadAnalytics()
-  }, [project, period, timeBucket])
+  }, [project, period, timeBucket]) // eslint-disable-line
 
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(tbPeriodPairs, (el) => el.period === newPeriod)
@@ -148,7 +145,7 @@ const ViewProject = ({
 
   if (!isLoading) {
     return (
-      <div className='min-h-page bg-gray-50 py-6 sm:px-6 lg:px-8'>
+      <div className='min-h-page bg-gray-50 py-6 px-4 sm:px-6 lg:px-8'>
         <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mb-10 pb-10'>
           <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
           <div className='flex mt-3 md:mt-0'>

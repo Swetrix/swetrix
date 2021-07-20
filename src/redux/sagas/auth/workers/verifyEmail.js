@@ -1,8 +1,9 @@
 import { call, put } from 'redux-saga/effects'
-import { authActions } from 'redux/actions/auth'
-import { verifyEmail } from "api"
 
-export default function* ({ payload: { data, successfulCallback, errorCallback } }) {
+import { authActions } from 'redux/actions/auth'
+import { verifyEmail } from 'api'
+
+export default function* verifyEmailWorker({ payload: { data, successfulCallback, errorCallback } }) {
   try {
     yield call(verifyEmail, data)
     yield put(authActions.emailVerifySuccess())

@@ -5,7 +5,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/outline'
 import { ExclamationIcon } from '@heroicons/react/outline'
 
-// todo: onClose, onSubmit, closeText, submitText
+// todo: onClose, onSubmit, closeText, submitText, create a redux endpoint to operate all the modals
 const Modal = ({ className, type, title, message }) => {
   const [open, setOpen] = useState(true)
 
@@ -42,8 +42,8 @@ const Modal = ({ className, type, title, message }) => {
               <div>
                 {type === 'success' && (
                   <div className='mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100'>
-                  <CheckIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
-                </div>
+                    <CheckIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
+                  </div>
                 )}
                 {type === 'error' && (
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">

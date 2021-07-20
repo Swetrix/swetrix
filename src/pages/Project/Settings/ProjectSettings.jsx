@@ -19,7 +19,7 @@ const ProjectSettings = ({
 }) => {
   const { pathname } = useLocation()
   const { id } = useParams()
-  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects])
+  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
   const history = useHistory()
   const [form, setForm] = useState({
@@ -33,6 +33,7 @@ const ProjectSettings = ({
   const [showDelete, setShowDelete] = useState(false)
 
   useEffect(() => {
+    console.log('rerender')
     if (!isLoading && isSettings) {
       if (_isEmpty(project)) {
         showError('The selected project does not exist')
@@ -41,7 +42,7 @@ const ProjectSettings = ({
         setForm(project)
       }
     }
-  }, [project, isLoading, isSettings])
+  }, [project, isLoading, isSettings, history, showError])
 
   const onSubmit = async (data) => {
     try {
@@ -76,7 +77,7 @@ const ProjectSettings = ({
 
   useEffect(() => {
     validate()
-  }, [form])
+  }, [form]) // eslint-disable-line
 
   const handleInput = event => {
     const t = event.target
@@ -120,7 +121,7 @@ const ProjectSettings = ({
   }
 
   return (
-    <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+    <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
       <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
           {isSettings ? `${form.name} settings` : 'Create a new project'}

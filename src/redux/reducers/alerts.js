@@ -5,7 +5,7 @@ const initialState = {
   type: 'info'
 }
 
-export default (state = initialState, { type, payload }) => {
+const alertsReducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case types.ACCOUNT_DELETED:
     case types.ACCOUNT_UPDATED:
@@ -21,3 +21,5 @@ export default (state = initialState, { type, payload }) => {
       return state
   }
 }
+
+export default alertsReducer

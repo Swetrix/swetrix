@@ -6,7 +6,7 @@ import UIActions from 'redux/actions/ui'
 import { setAccessToken } from 'utils/accessToken'
 import { signup } from 'api'
 
-export default function* ({ payload: { data, resetRecaptcha = () => {} } }) {
+export default function* signupWorder({ payload: { data, resetRecaptcha = () => {} } }) {
   try {
     const response = yield call(signup, data)
 

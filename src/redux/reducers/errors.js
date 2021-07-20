@@ -4,7 +4,7 @@ const initialState = {
   error: null
 }
 
-export default (state = initialState, { type, payload }) => {
+const errorsReducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case types.GENERIC_ERROR:
     case types.LOGIN_FAILED:
@@ -24,3 +24,5 @@ export default (state = initialState, { type, payload }) => {
       return state
   }
 }
+
+export default errorsReducer

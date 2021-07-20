@@ -4,11 +4,11 @@ const getInitialState = () => {
   return {
     projects: [],
     isLoading: true,
-		error: null,
+    error: null,
   }
 }
 
-export default (state = getInitialState(), { type, payload }) => {
+const projectsReducer = (state = getInitialState(), { type, payload }) => {
   switch (type) {
     case types.SET_PROJECTS: {
       const { projects } = payload
@@ -23,7 +23,7 @@ export default (state = getInitialState(), { type, payload }) => {
       const { error } = payload
       return {
         ...state,
-				error,
+        error,
       }
     }
 
@@ -39,3 +39,5 @@ export default (state = getInitialState(), { type, payload }) => {
       return state
   }
 }
+
+export default projectsReducer

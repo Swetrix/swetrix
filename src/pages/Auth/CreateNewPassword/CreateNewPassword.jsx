@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 
 import routes from 'routes'
@@ -6,7 +6,7 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { isValidPassword } from 'utils/validator'
 
-export default ({ onSubmit }) => {
+const CreateNewPassword = ({ onSubmit }) => {
   const [form, setForm] = useState({
     password: '',
     repeat: '',
@@ -17,7 +17,7 @@ export default ({ onSubmit }) => {
 
   useEffect(() => {
     validate()
-  }, [form])
+  }, [form]) // eslint-disable-line
 
   const handleInput = event => {
     const t = event.target
@@ -97,3 +97,5 @@ export default ({ onSubmit }) => {
     </div>
   )
 }
+
+export default memo(CreateNewPassword)

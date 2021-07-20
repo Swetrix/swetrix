@@ -11,6 +11,7 @@ import SignIn from 'pages/Auth/Signin'
 import ForgotPassword from 'pages/Auth/ForgotPassword'
 import CreateNewPassword from 'pages/Auth/CreateNewPassword'
 import Dashboard from 'pages/Dashboard'
+import Docs from 'pages/Docs'
 import UserSettings from 'pages/UserSettings'
 import VerifyEmail from 'pages/Auth/VerifyEmail'
 import ProjectSettings from 'pages/Project/Settings'
@@ -63,7 +64,7 @@ const App = () => {
         }
       })
     }
-  }, [error])
+  }, [error]) // eslint-disable-line
 
   useEffect(() => {
     if (message && type) {
@@ -74,7 +75,7 @@ const App = () => {
         }
       })
     }
-  }, [message, type])
+  }, [message, type]) // eslint-disable-line
 
   return (
     (!accessToken || !loading) && (
@@ -93,6 +94,7 @@ const App = () => {
           <Route path={routes.new_project} component={ProtectedProjectSettings} exact />
           <Route path={routes.project_settings} component={ProtectedProjectSettings} exact />
           <Route path={routes.project} component={ProtectedViewProject} exact />
+          <Route path={routes.docs} component={Docs} exact />
           <Redirect to={routes.main} />
         </Switch>
       </>

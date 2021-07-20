@@ -3,7 +3,6 @@ import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import cx from 'classnames'
 import _map from 'lodash/map'
-import _isObject from 'lodash/isObject'
 import PropTypes from 'prop-types'
 
 const Dropdown = ({

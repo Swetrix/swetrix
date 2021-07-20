@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 
 import routes from 'routes'
 import Input from 'ui/Input'
@@ -7,7 +8,7 @@ import Checkbox from 'ui/Checkbox'
 import Button from 'ui/Button'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
-export default ({ onSubmit }) => {
+const Signup = ({ onSubmit }) => {
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -21,7 +22,7 @@ export default ({ onSubmit }) => {
 
   useEffect(() => {
     validate()
-  }, [form])
+  }, [form]) // eslint-disable-line
 
   const handleInput = event => {
     const t = event.target
@@ -136,3 +137,9 @@ export default ({ onSubmit }) => {
     </div>
   )
 }
+
+Signup.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+}
+
+export default memo(Signup)

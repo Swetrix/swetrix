@@ -18,7 +18,7 @@ const Panel = ({ name, data }) => {
   const currentIndex = page * ENTRIES_PER_PANEL
   const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])
   const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + 5), [keys, currentIndex])
-  const total = useMemo(() => _reduce(keys, (prev, curr) => prev + data[curr], 0), [keys])
+  const total = useMemo(() => _reduce(keys, (prev, curr) => prev + data[curr], 0), [keys]) // eslint-disable-line
 
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor(_size(keys) / ENTRIES_PER_PANEL)

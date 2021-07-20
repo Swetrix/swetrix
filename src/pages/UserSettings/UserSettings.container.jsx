@@ -9,7 +9,7 @@ import { confirmEmail, exportUserData } from 'api'
 
 import UserSettings from './UserSettings'
 
-export default () => {
+const UserSettingsContainer = () => {
   const dispatch = useDispatch()
 
   const onDelete = () => {
@@ -76,6 +76,8 @@ export default () => {
       onExport={onExport}
       onSubmit={onSubmit}
       onEmailConfirm={onEmailConfirm}
-      />
+    />
   )
 }
+
+export default UserSettingsContainer

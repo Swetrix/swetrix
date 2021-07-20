@@ -6,7 +6,7 @@ import UIActions from 'redux/actions/ui'
 import { setAccessToken } from 'utils/accessToken'
 import { login } from 'api'
 
-export default function* ({ payload: { credentials } }) {
+export default function* singinWorker({ payload: { credentials } }) {
   try {
     const response = yield call(login, credentials)
 

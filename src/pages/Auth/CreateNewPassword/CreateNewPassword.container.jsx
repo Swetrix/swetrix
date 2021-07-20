@@ -7,7 +7,7 @@ import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import routes from 'routes'
 
-export default () => {
+const CreateNewPasswordContainer = () => {
   const dispatch = useDispatch()
   const history = useHistory()
   const { id } = useParams()
@@ -28,3 +28,5 @@ export default () => {
     <CreateNewPassword onSubmit={onSubmit} />
   )
 }
+
+export default CreateNewPasswordContainer
