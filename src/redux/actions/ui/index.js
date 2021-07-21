@@ -11,6 +11,13 @@ const setProjects = (projects) => ({
   }
 })
 
+const removeProject = (pid) => ({
+  type: types.REMOVE_PROJECT,
+  payload: {
+    pid,
+  },
+})
+
 const setProjectsError = (error) => ({
   type: types.SET_PROJECTS_ERROR,
   payload: {
@@ -30,6 +37,7 @@ const UIActions = {
   setProjects,
   setProjectsError,
   setProjectsLoading,
+  removeProject,
 }
 
 export default UIActions

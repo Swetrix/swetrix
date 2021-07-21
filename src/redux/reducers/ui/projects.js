@@ -1,4 +1,5 @@
 import { types } from 'redux/actions/ui/types'
+import _filter from 'lodash/filter'
 
 const getInitialState = () => {
   return {
@@ -24,6 +25,14 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       return {
         ...state,
         error,
+      }
+    }
+
+    case types.REMOVE_PROJECT: {
+      const { pid } = payload
+      return {
+        ...state,
+        projects: _filter(state.projects, (project) => project.id !== pid)
       }
     }
 
