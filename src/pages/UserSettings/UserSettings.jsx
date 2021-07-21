@@ -1,10 +1,12 @@
 import React, { useState, useEffect, memo } from 'react'
 import { useSelector } from 'react-redux'
+import _size from 'lodash/size'
+import _isEmpty from 'lodash/isEmpty'
 import { MailIcon } from '@heroicons/react/outline'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import Modal from 'components/Modal'
+import Modal from 'ui/Modal'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
 const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
@@ -20,7 +22,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     validate()
@@ -53,7 +55,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
       allErrors.email = 'Please provide a valid email.'
     }
 
-    if (form.password.length > 0 && !isValidPassword(form.password)) {
+    if (_size(form.password) > 0 && !isValidPassword(form.password)) {
       allErrors.password = 'The entered password is incorrect.'
     }
 
@@ -61,7 +63,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
       allErrors.repeat = 'Passwords have to match.'
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(Object.keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)
@@ -116,7 +118,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
         {!user?.isActive && (
           <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
             <MailIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
-              Didn't receive a link to confirm the email address? Request a new one!
+            Didn't receive a link to confirm the email address? Request a new one!
           </div>
         )}
         <div className='flex justify-between mt-4'>
@@ -138,35 +140,35 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
         </div>
       </form>
 
-      {showExportModal && (
-        <Modal
-          onCancel={() => setShowExportModal(false)}
-          onSubmit={() => { setShowExportModal(false); onExport() }}
-          submitText='Continue'
-          cancelText='Close'
-          title='Data export'
-          text={'As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store.\nThe data export will be ready within 24 hours and sent to your email account.\nNote: you can request the data export only once per two weeks.'}
-        />
-      )}
-      {showModal && (
-        <Modal
-          onCancel={() => setShowModal(false)}
-          onSubmit={() => { setShowModal(false); onDelete() }}
-          submitText='Delete my account'
-          cancelText='Close'
-          title='Delete your account?'
-          text={'By pressing \'Delete my account\' you understand, that this action is irreversible.\nAll your data will be deleted from our servers.'}
-        />
-      )}
-      {error && (
-        <Modal
-          onSubmit={() => { setError('') }}
-          onCancel={() => { setError('') }}
-          submitText='Got it'
-          title='Error'
-          text={error}
-        />
-      )}
+      <Modal
+        onClose={() => setShowExportModal(false)}
+        onSubmit={() => { setShowExportModal(false); onExport() }}
+        submitText='Continue'
+        closeText='Close'
+        title='Data export'
+        type='info'
+        message={'As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store.\nThe data export will be ready within 24 hours and sent to your email account.\nNote: you can request the data export only once per two weeks.'}
+        isOpened={showExportModal}
+      />
+      <Modal
+        onClose={() => setShowModal(false)}
+        onSubmit={() => { setShowModal(false); onDelete() }}
+        submitText='Delete my account'
+        closeText='Close'
+        title='Delete your account?'
+        submitType='danger'
+        type='error'
+        message={'Are you sure you want to deactivate your account?\nAll of your data will be permanently removed from our servers forever.\nThis action cannot be undone. '}
+        isOpened={showModal}
+      />
+      <Modal
+        onClose={() => { setError('') }}
+        closeText='Got it'
+        type='error'
+        title='Error'
+        message={error}
+        isOpened={Boolean(error)}
+      />
     </div>
   )
 }

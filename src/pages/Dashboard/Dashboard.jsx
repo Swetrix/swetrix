@@ -60,7 +60,7 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
                         <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                         <span className='sr-only'>
                           Descreased by
-                          </span>
+                        </span>
                       </>
                     )}
                     {overall.percChange}%
