@@ -43,7 +43,7 @@ const ProjectSettings = ({
         setForm(project)
       }
     }
-  }, [project, isLoading, isSettings, history, showError])
+  }, [project, isLoading, isSettings, history, showError, projectDeleting])
 
   const onSubmit = async (data) => {
     if (!projectSaving) {
