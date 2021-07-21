@@ -29,6 +29,9 @@ const mapDispatchToProps = (dispatch) => ({
   loadProjects: () => {
     dispatch(UIActions.loadProjects())
   },
+  removeProject: (pid) => {
+    dispatch(UIActions.removeProject(pid))
+  },
   showError: (message) => {
     dispatch(errorsActions.genericError(message))
   },

@@ -9,13 +9,13 @@ import { createProject, updateProject, deleteProject } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
+import Modal from 'ui/Modal'
 import { nanoid } from 'utils/random'
 import routes from 'routes'
-import Modal from 'components/Modal'
 
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
-  loadProjects, isLoading, projects, showError,
+  loadProjects, isLoading, projects, showError, removeProject,
 }) => {
   const { pathname } = useLocation()
   const { id } = useParams()
@@ -31,10 +31,11 @@ const ProjectSettings = ({
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
+  const [projectDeleting, setProjectDeleting] = useState(false)
+  const [projectSaving, setProjectSaving] = useState(false)
 
   useEffect(() => {
-    console.log('rerender')
-    if (!isLoading && isSettings) {
+    if (!isLoading && isSettings && !projectDeleting) {
       if (_isEmpty(project)) {
         showError('The selected project does not exist')
         history.push(routes.dashboard)
@@ -45,33 +46,45 @@ const ProjectSettings = ({
   }, [project, isLoading, isSettings, history, showError])
 
   const onSubmit = async (data) => {
-    try {
-      if (isSettings) {
-        await updateProject(id, data)
-        newProject('The project\'s settings were updated')
-      } else {
-        await createProject(data)
-        newProject('The project has been created')
-      }
+    if (!projectSaving) {
+      setProjectSaving(true)
+      try {
+        if (isSettings) {
+          await updateProject(id, data)
+          newProject('The project\'s settings were updated')
+        } else {
+          await createProject(data)
+          newProject('The project has been created')
+        }
 
-      loadProjects()
-      history.push(routes.dashboard)
-    } catch (e) {
-      if (isSettings) {
-        updateProjectFailed(e.message)
-      } else {
-        createNewProjectFailed(e.message)
+        loadProjects()
+        history.push(routes.dashboard)
+      } catch (e) {
+        if (isSettings) {
+          updateProjectFailed(e.message)
+        } else {
+          createNewProjectFailed(e.message)
+        }
+      } finally {
+        setProjectSaving(false)
       }
     }
   }
 
   const onDelete = async () => {
-    try {
-      await deleteProject(id)
-      projectDeleted()
-      history.push(routes.dashboard)
-    } catch (e) {
-      deleteProjectFailed(e.message)
+    setShowDelete(false)
+    if (!projectDeleting) {
+      setProjectDeleting(true)
+      try {
+        await deleteProject(id)
+        removeProject(id)
+        projectDeleted()
+        history.push(routes.dashboard)
+      } catch (e) {
+        deleteProjectFailed(e.message)
+      } finally {
+        setProjectDeleting(false)
+      }
     }
   }
 
@@ -135,7 +148,7 @@ const ProjectSettings = ({
           placeholder='My awesome project'
           className='mt-4'
           onChange={handleInput}
-          error={beenSubmitted && errors.name}
+          error={beenSubmitted ? errors.name : null}
         />
         <Input
           name='id'
@@ -145,7 +158,7 @@ const ProjectSettings = ({
           value={form.id}
           className='mt-4'
           onChange={handleInput}
-          error={beenSubmitted && errors.id}
+          error={beenSubmitted ? errors.id : null}
           disabled
         />
         {isSettings ? (
@@ -158,7 +171,7 @@ const ProjectSettings = ({
               value={form.origins}
               className='mt-4'
               onChange={handleInput}
-              error={beenSubmitted && errors.origins}
+              error={beenSubmitted ? errors.origins : null}
             />
             <Checkbox
               checked={Boolean(form.active)}
@@ -178,28 +191,29 @@ const ProjectSettings = ({
             <Button className='mr-2' onClick={onCancel} secondary regular>
               Cancel
             </Button>
-            <Button type='submit' primary regular>
+            <Button type='submit' loading={projectSaving} primary regular>
               Save
             </Button>
           </div>
           {isSettings && (
-            <Button onClick={() => setShowDelete(true)} danger large>
+            <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger large>
               Delete project
             </Button>
           )}
         </div>
       </form>
 
-      {showDelete &&
-        <Modal
-          onCancel={() => setShowDelete(false)}
-          onSubmit={() => { setShowDelete(false); onDelete() }}
-          submitText='Delete project'
-          cancelText='Close'
-          title={`Delete ${form.name || 'the project'}?`}
-          text={'By pressing \'Delete project\' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers.'}
-        />
-      }
+      <Modal
+        onClose={() => setShowDelete(false)}
+        onSubmit={onDelete}
+        submitText='Delete project'
+        closeText='Close'
+        title={`Delete ${form.name || 'the project'}?`}
+        message={'By pressing \'Delete project\' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers.'}
+        submitType='danger'
+        type='error'
+        isOpened={showDelete}
+      />
     </div>
   )
 }
