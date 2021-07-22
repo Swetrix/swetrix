@@ -58,7 +58,10 @@ const getRedisProjectKey = (pid: string) => `pid_${pid}`
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
 
+// 30 minues -> the amount of time analytics requests within one session are counted as non-unique
+const UNIQUE_SESSION_LIFE_TIME = 1800
+
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
-  redisProjectCacheTimeout, getPercentageChange,
+  redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME,
 }

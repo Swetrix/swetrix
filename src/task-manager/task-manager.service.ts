@@ -11,8 +11,8 @@ export class TaskManagerService {
     private readonly httpService: HttpService
   ) {}
 
-  @Cron(CronExpression.EVERY_6_MONTHS)
-  async someTask(): Promise<void> {
+  // @Cron(CronExpression.EVERY_MINUTE)
+  // async someTask(): Promise<void> {
     
-  }
+  // }
 }

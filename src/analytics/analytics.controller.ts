@@ -6,12 +6,12 @@ import * as _last from 'lodash/last'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
+import { hash } from 'blake3'
 import {
-  Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete, BadRequestException,
+  Controller, Body, Query, Param, UseGuards, Get, Post, Ip, Headers, Put, Delete, BadRequestException,
   HttpCode, NotFoundException, InternalServerErrorException, NotAcceptableException, NotImplementedException, UnprocessableEntityException,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
-import { Between } from 'typeorm'
 
 import { AnalyticsService } from './analytics.service'
 import { ProjectService } from '../project/project.service'
@@ -31,8 +31,20 @@ import ct from '../common/countriesTimezones'
 
 dayjs.extend(utc)
 
-// temp
-const allKeys = ['id', 'pid', 'ev', 'pg', 'lc', 'ref', 'sw', 'so', 'me', 'ca', 'lt', 'cc', 'created']
+// todo: implement random salts
+// store them in redis storage and reset every 24 hours
+const getSessionKey = (ip: string, ua: string, salt: string = '') => hash(`${ua}${ip}${salt}`).toString('hex')
+
+// todo: return string, not array
+const analyticsDTO = (pid: string, ev: string, pg: string, lc: string, ref: string, sw: number | string, so: string, me: string, ca: string, lt: number | string, tz: string, unique: number): Array<string | number> => {
+  const cc = tz === 'NULL' ? 'NULL' : ct.getCountryForTimezone(tz)?.id
+  return [uuidv4(), pid, ev, pg, lc, ref, sw, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
+}
+
+const getElValue = (el) => {
+  if (el === undefined || el === null || el === 'NULL') return 'NULL'
+  return `'${el}'`
+}
 
 @ApiTags('Analytics')
 @UseGuards(RolesGuard)
@@ -147,35 +159,29 @@ export class AnalyticsController {
   }
 
   @Post('/')
-  async log(@Body() logDTO: PageviewsDTO): Promise<any> {
-    this.logger.log({ logDTO }, 'POST /log')
-    await this.analyticsService.validate(logDTO)
-    const dto = {
-      id: uuidv4(),
-      pid: logDTO.pid,
-      ev: logDTO.ev,
-      pg: logDTO.pg,
-      lc: logDTO.lc,
-      ref: logDTO.ref,
-      sw: logDTO.sw,
-      so: logDTO.so,
-      me: logDTO.me,
-      ca: logDTO.ca,
-      lt: logDTO.lt,
-      cc: ct.getCountryForTimezone(logDTO.tz)?.id,
-      nupw: 0, // todo: increment this value on every user's new pageview in a session range
-      created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+  async log(@Body() logDTO: PageviewsDTO, @Ip() ip, @Headers() headers): Promise<any> {
+    this.logger.log({ logDTO, ip, headers }, 'POST /log')
+    const { 'user-agent': userAgent, origin } = headers
+    await this.analyticsService.validate(logDTO, origin)
+
+    const sessionHash = getSessionKey(ip, userAgent)
+    const unique = await this.analyticsService.isUnique(sessionHash)
+    let dto: Array<string | number>
+
+    if (unique) {
+      dto = analyticsDTO(logDTO.pid, logDTO.ev, logDTO.pg, logDTO.lc, logDTO.ref, logDTO.sw, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, logDTO.tz, 1)
+    } else {
+      dto = analyticsDTO(logDTO.pid, logDTO.ev, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
     }
+
+    const values = dto.map(getElValue).join(',')
 
     // may be vulnerable to sql injection attack
     // use only validated project IDs gained from redis store and other data
     // todo: refactor; put into redis cache and next upload data chunks from redis into clickhouse
-    const absentKeys = allKeys.filter(el => dto[el] === undefined)
-    const query = `INSERT INTO analytics (* EXCEPT(${absentKeys.join(', ')})) VALUES (${Object.values(dto).filter(el => el !== undefined).map(el => `'${el}'`).join(',')})`
-
+    const query = `INSERT INTO analytics (*) VALUES (${values})`
     try {
       await clickhouse.query(query).toPromise()
-
       return
     } catch (e) {
       this.logger.log(e)
