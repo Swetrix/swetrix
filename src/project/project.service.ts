@@ -1,12 +1,16 @@
-import { ForbiddenException, Injectable, BadRequestException } from '@nestjs/common'
+import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import * as _isEmpty from 'lodash/isEmpty'
+import * as _isArray from 'lodash/isArray'
+import * as _size from 'lodash/size'
+import * as _join from 'lodash/join'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
-import { User, UserType } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
+import { isValidPID } from '../common/constants'
 
 @Injectable()
 export class ProjectService {
@@ -80,5 +84,12 @@ export class ProjectService {
     if (project) {
       throw new BadRequestException('Selected project ID is already in use')
     }
+  }
+
+  validateProject(projectDTO: ProjectDTO) {
+    if (!isValidPID(projectDTO.id)) throw new UnprocessableEntityException('The provided Project ID (pid) is incorrect')
+    if (_size(projectDTO.name) > 50) throw new UnprocessableEntityException('The project name is too long')
+    if (!_isArray(projectDTO.origins)) throw new UnprocessableEntityException('The list of allowed origins has to be an array of strings')
+    if (_size(_join(projectDTO.origins, ',')) > 300) throw new UnprocessableEntityException('The list of allowed origins has to be smaller than 300 symbols')
   }
 }

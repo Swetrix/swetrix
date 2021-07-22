@@ -17,11 +17,8 @@ export class Project {
   name: string
 
   @ApiProperty()
-  @Column('varchar', {
-    length: 500, 
-    nullable: true,
-  })
-  origins: string
+  @Column('simple-array')
+  origins: string[]
 
   @ApiProperty()
   @Column({

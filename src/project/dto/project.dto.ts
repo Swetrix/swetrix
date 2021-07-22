@@ -21,9 +21,9 @@ export class ProjectDTO {
   @ApiProperty({
     example: 'localhost:3000,example.com',
     required: false,
-    description: 'Coma-separated allowed origins'
+    description: 'An array allowed origins'
   })
-  origins: string
+  origins: string[]
 
   @ApiProperty({
     required: false,

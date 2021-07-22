@@ -1,10 +1,11 @@
 import {
   Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete,
-  BadRequestException, HttpCode, NotFoundException, UnprocessableEntityException,
+  BadRequestException, HttpCode, NotFoundException,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
-import * as _size from 'lodash/size'
+import * as _map from 'lodash/map'
+import * as _trim from 'lodash/trim'
 
 import { ProjectService } from './project.service'
 import { UserType } from '../user/entities/user.entity'
@@ -65,14 +66,14 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
-    if (!isValidPID(projectDTO.id)) throw new UnprocessableEntityException('The provided Project ID (pid) is incorrect')
-    if (_size(projectDTO.name) > 50) throw new UnprocessableEntityException('The project name is too long')
+    this.projectService.validateProject(projectDTO)
 
     await this.projectService.checkIfIDUnique(projectDTO.id)
 
     try {
       const project = new Project()
       Object.assign(project, projectDTO)
+      project.origins = _map(projectDTO.origins, _trim)
 
       const newProject = await this.projectService.create(project)
       const user = await this.userService.findOneWithRelations(userId, ['projects'])
@@ -99,8 +100,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<any> {
     this.logger.log({ projectDTO, userId, id }, 'PUT /project/:id')
-    if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
-    if (_size(projectDTO.name) > 50) throw new UnprocessableEntityException('The project name is too long')
+    this.projectService.validateProject(projectDTO)
 
     let project = await this.projectService.findOneWithRelations(id)
 
@@ -109,7 +109,7 @@ export class ProjectController {
     }
 
     project.active = projectDTO.active
-    project.origins = projectDTO.origins
+    project.origins = _map(projectDTO.origins, _trim)
     project.name = projectDTO.name
 
     await this.projectService.allowedToManage(project, userId)
