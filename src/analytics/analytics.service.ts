@@ -2,6 +2,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _filter from 'lodash/filter'
 import * as _size from 'lodash/size'
 import * as _isNull from 'lodash/isNull'
+import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
@@ -13,6 +14,7 @@ import { Repository } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
+  UNIQUE_SESSION_LIFE_TIME,
 } from '../common/constants'
 import { Analytics } from './entities/analytics.entity'
 import { PageviewsDTO } from './dto/pageviews.dto'
@@ -73,7 +75,7 @@ export class AnalyticsService {
     return this.analyticsRepository.find({ where })
   }
 
-  async validate(logDTO: PageviewsDTO): Promise<string | null> {
+  async validate(logDTO: PageviewsDTO, origin: string): Promise<string | null> {
     if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
     const { pid } = logDTO 
 
@@ -96,7 +98,20 @@ export class AnalyticsService {
 
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
+    if (!_isEmpty(project.origins) && !_isEmpty(origin)) {
+      const hostname = new URL(origin).hostname
+      if (!_includes(project.origins, hostname)) {
+        throw new BadRequestException('This origin is prohibited by the project\'s origins policy')
+      }
+    }
+
     return null
+  }
+
+  async isUnique(hash: string) {
+    const session = await redis.get(hash)
+    await redis.set(hash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    return !Boolean(session)
   }
 
   processData(data: object): object {
@@ -164,10 +179,14 @@ export class AnalyticsService {
     while (groupDateIterator < iterateTo) {
       const nextIteration = groupDateIterator.add(1, timeBucket)
       const temp = []
+      const tempUnique = []
       
       clone = _filter(clone, el => {
         const createdAt = dayjs.utc(el.created)
         if (groupDateIterator <= createdAt && createdAt < nextIteration) {
+          if (el.unique) {
+            tempUnique.push(el)
+          }
           temp.push(el)
           return false
         } else {
@@ -178,23 +197,18 @@ export class AnalyticsService {
       res.push({
         data: temp,
         total: _size(temp),
+        totalUnique: _size(tempUnique),
         timeFrame: groupDateIterator.format('YYYY-MM-DD HH:mm:ss'),
       })
       groupDateIterator = nextIteration
     }
 
-    // const b = {
-    //   params: this.processData(res),
-    //   chart: {
-    //     x: _map(res, el => el.timeFrame),
-    //     visits: _map(res, el => el.total),
-    //   },
-    // }
     return Promise.resolve({
       params: this.processData(res),
       chart: {
         x: _map(res, el => el.timeFrame),
         visits: _map(res, el => el.total),
+        uniques: _map(res, el => el.totalUnique),
       },
     })
   }
