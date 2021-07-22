@@ -16,7 +16,6 @@ const Input = ({
         'flex justify-between': label && hint,
       })}>
         <label htmlFor={identifier} className='block text-sm font-medium text-gray-700'>{label}</label>
-        <span className='text-sm text-gray-500' id={`${identifier}-optional`}>{hint}</span>
       </div>
       <div className='mt-1 relative'>
         <input
@@ -38,6 +37,7 @@ const Input = ({
           </div>
         )}
       </div>
+      <p className='mt-2 text-sm text-gray-500 whitespace-pre-line' id={`${identifier}-optional`}>{hint}</p>
       {isError && (
         <p className='mt-2 text-sm text-red-600' id='email-error'>{error}</p>
       )}

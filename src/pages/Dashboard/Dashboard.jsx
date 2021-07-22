@@ -53,7 +53,7 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
                         <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                         <span className='sr-only'>
                           Increased by
-                          </span>
+                        </span>
                       </>
                     ) : (
                       <>

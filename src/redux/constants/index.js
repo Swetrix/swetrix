@@ -30,4 +30,11 @@ export const tbPeriodPairs = [{
   access: 'paid',
 }]
 
+export const tbsFormatMapper = {
+  'hour': '%d %B %H:%M',
+  'day': '%d %B',
+  'week': '%d %B',
+  'month': '%d %B',
+}
+
 export const TOKEN = 'access_token'

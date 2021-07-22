@@ -13,19 +13,19 @@ const defaultProps = {
 }
 
 const ActivePin = ({ label, className }) => (
-  <p className={cx('px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800', className)}>
+  <p className={cx('px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-green-100 text-green-800', className)}>
     {label}
   </p>
 )
 
 const InactivePin = ({ label, className }) => (
-  <p className={cx('px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800', className)}>
+  <p className={cx('px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-red-100 text-red-800', className)}>
     {label}
   </p>
 )
 
 const WarningPin = ({ label, className }) => (
-  <p className={cx('px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-600', className)}>
+  <p className={cx('px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-yellow-100 text-yellow-600', className)}>
     {label}
   </p>
 )
