@@ -13,13 +13,53 @@ import _replace from 'lodash/replace'
 import _find from 'lodash/find'
 import PropTypes from 'prop-types'
 
-import { tbPeriodPairs } from 'redux/constants'
+import { tbPeriodPairs, tbsFormatMapper } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
+import Checkbox from 'ui/Checkbox'
 import { Panel } from './Panels'
 import routes from 'routes'
 import { getProjectData } from 'api'
+
+const getJSON = (chart, showTotal) => ({
+  x: _map(chart.x, el => dayjs(el).toDate()),
+  'Unique visitors': chart.uniques,
+  ...(showTotal && { 'Total page views': chart.visits }),
+})
+
+const getSettings = (chart, timeBucket, showTotal = true) => ({
+  data: {
+    x: 'x',
+    json: getJSON(chart, showTotal),
+    type: area(),
+    xFormat: '%y-%m-%d %H:%M:%S',
+  },
+  axis: {
+    x: {
+      tick: {
+        fit: false,
+        count: 5,
+      },
+      type: 'timeseries',
+    },
+  },
+  zoom: {
+    enabled: zoom(),
+    type: 'drag',
+  },
+  tooltip: {
+    format: {
+      title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+    }
+  },
+  point: {
+    focus: {
+      only: true,
+    }
+  },
+  bindto: '#dataChart',
+})
 
 const typeNameMapping = {
   cc: 'Country',
@@ -54,7 +94,9 @@ const ViewProject = ({
   const [period, setPeriod] = useState(tbPeriodPairs[1].period)
   const [timeBucket, setTimebucket] = useState(tbPeriodPairs[1].tbs[1])
   const activePeriod = useMemo(() => _find(tbPeriodPairs, p => p.period === period), [period])
-  // const [bbChart, setBbChart] = useState([])
+  const [showTotal, setShowTotal] = useState(false) // todo: put a string here with other metrics like loadTime, bounce rate, etc.
+  const [chartData, setChartData] = useState({})
+  const [mainChart, setMainChart] = useState(null)
 
   const { name } = project
 
@@ -69,55 +111,35 @@ const ViewProject = ({
         }
 
         const { chart, params } = data
+        setChartData(chart)
 
         setPanelsData({
           types: _keys(params),
           data: params,
         })
 
-        const bbSettings = {
-          data: {
-            x: 'x',
-            json: {
-              x: _map(chart.x, el => dayjs(el).toDate()),
-              visits: chart.visits,
-            },
-            type: area(),
-            xFormat: '%y-%m-%d %H:%M:%S',
-          },
-          axis: {
-            x: {
-              tick: {
-                fit: false,
-                count: 5,
-              },
-              type: 'timeseries',
-            },
-          },
-          zoom: {
-            enabled: zoom(),
-            type: 'drag',
-          },
-          tooltip: {
-            format: {
-              title: (x) => d3.timeFormat('%Y-%m-%d %H:%M:%S')(x),
-            }
-          },
-          point: {
-            focus: {
-              only: true,
-            }
-          },
-          bindto: '#dataChart',
-        }
-
-        bb.generate(bbSettings)
+        const bbSettings = getSettings(chart, timeBucket, showTotal)
+        setMainChart(bb.generate(bbSettings))
         setAnalyticsLoading(false)
       } catch (e) {
         console.error(e)
       }
     }
   }
+
+  useEffect(() => {
+    if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
+      if (showTotal) {
+        mainChart.load({
+          json: getJSON(chartData, true),
+        })
+      } else {
+        mainChart.unload({
+          ids: ['Total page views'],
+        })
+      }
+    }
+  }, [isLoading, showTotal, chartData, mainChart])
 
   useEffect(() => {
     loadAnalytics()
@@ -146,7 +168,7 @@ const ViewProject = ({
   if (!isLoading) {
     return (
       <div className='min-h-page bg-gray-50 py-6 px-4 sm:px-6 lg:px-8'>
-        <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mb-10 pb-10'>
+        <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
           <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
           <div className='flex mt-3 md:mt-0'>
             <div className='md:border-r border-gray-200 md:pr-3 mr-3'>
@@ -181,6 +203,9 @@ const ViewProject = ({
               </Button>
             </div>
           </div>
+        </div>
+        <div className='flex flex-col md:flex-row items-center md:items-start justify-end h-10 mt-10 md:mt-5 mb-4'>
+          <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
         </div>
         {_isEmpty(panelsData) ? (
           analyticsLoading ? (
