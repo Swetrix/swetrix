@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useLocation, useHistory, useParams } from 'react-router-dom'
 import _isEmpty from 'lodash/isEmpty'
+import _size from 'lodash/size'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
+import _join from 'lodash/join'
+import _split from 'lodash/split'
 import PropTypes from 'prop-types'
 
 import { createProject, updateProject, deleteProject } from 'api'
@@ -40,7 +43,10 @@ const ProjectSettings = ({
         showError('The selected project does not exist')
         history.push(routes.dashboard)
       } else {
-        setForm(project)
+        setForm({
+          ...project,
+          origins: _join(project.origins, ', '),
+        })
       }
     }
   }, [project, isLoading, isSettings, history, showError, projectDeleting])
@@ -49,11 +55,16 @@ const ProjectSettings = ({
     if (!projectSaving) {
       setProjectSaving(true)
       try {
+        const formalisedData = {
+          ...data,
+          origins: _split(data.origins, ','),
+        }
+
         if (isSettings) {
-          await updateProject(id, data)
+          await updateProject(id, formalisedData)
           newProject('The project\'s settings were updated')
         } else {
-          await createProject(data)
+          await createProject(formalisedData)
           newProject('The project has been created')
         }
 
@@ -115,12 +126,16 @@ const ProjectSettings = ({
   const validate = () => {
     const allErrors = {}
 
-    if (!form.name) {
+    if (_isEmpty(form.name)) {
       allErrors.name = 'Please enter a project name.'
     }
 
-    if (form.name.length > 50) {
+    if (_size(form.name) > 50) {
       allErrors.name = 'Project name cannot be longer than 50 characters.'
+    }
+
+    if (_size(form.origins) > 300) {
+      allErrors.origins = 'A list of allowed origins has to be smaller than 300 symbols'
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -168,6 +183,7 @@ const ProjectSettings = ({
               id='origins'
               type='text'
               label='Allowed origins'
+              hint={'A list of allowed origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua'}
               value={form.origins}
               className='mt-4'
               onChange={handleInput}
