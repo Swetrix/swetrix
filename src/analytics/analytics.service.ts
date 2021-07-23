@@ -99,9 +99,15 @@ export class AnalyticsService {
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
     if (!_isEmpty(project.origins) && !_isEmpty(origin)) {
-      const hostname = new URL(origin).hostname
-      if (!_includes(project.origins, hostname)) {
-        throw new BadRequestException('This origin is prohibited by the project\'s origins policy')
+      if (origin === 'null') {
+        if (!_includes(project.origins, 'null')) {
+          throw new BadRequestException('\'null\' origin is not added to your project\'s whitelist. To send requests from this origin either add it to your origins policy or leave it empty.')
+        }
+      } else {
+        const hostname = new URL(origin).hostname
+        if (!_includes(project.origins, hostname)) {
+          throw new BadRequestException('This origin is prohibited by the project\'s origins policy')
+        }
       }
     }
 

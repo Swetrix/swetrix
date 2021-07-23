@@ -8,24 +8,21 @@ import * as utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import {
-  Controller, Body, Query, Param, UseGuards, Get, Post, Ip, Headers, Put, Delete, BadRequestException,
-  HttpCode, NotFoundException, InternalServerErrorException, NotAcceptableException, NotImplementedException, UnprocessableEntityException,
+  Controller, Body, Query, UseGuards, Get, Post, Ip, Headers, BadRequestException,
+  InternalServerErrorException, NotImplementedException, UnprocessableEntityException,
 } from '@nestjs/common'
-import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ApiTags } from '@nestjs/swagger'
 
 import { AnalyticsService } from './analytics.service'
 import { ProjectService } from '../project/project.service'
 import { UserType } from '../user/entities/user.entity'
-import { Pagination } from '../common/pagination/pagination'
-import { Analytics } from './entities/analytics.entity'
-import { UserService } from '../user/user.service'
 import { Roles } from '../common/decorators/roles.decorator'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  clickhouse, isValidPID, getPercentageChange,
+  clickhouse, isValidPID, getPercentageChange, REDIS_LOG_DATA_CACHE_KEY, redis,
 } from '../common/constants'
 import ct from '../common/countriesTimezones'
 
@@ -35,7 +32,6 @@ dayjs.extend(utc)
 // store them in redis storage and reset every 24 hours
 const getSessionKey = (ip: string, ua: string, salt: string = '') => hash(`${ua}${ip}${salt}`).toString('hex')
 
-// todo: return string, not array
 const analyticsDTO = (pid: string, ev: string, pg: string, lc: string, ref: string, sw: number | string, so: string, me: string, ca: string, lt: number | string, tz: string, unique: number): Array<string | number> => {
   const cc = tz === 'NULL' ? 'NULL' : ct.getCountryForTimezone(tz)?.id
   return [uuidv4(), pid, ev, pg, lc, ref, sw, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
@@ -74,7 +70,7 @@ export class AnalyticsController {
     let query = `SELECT * FROM analytics WHERE pid='${pid}' `
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
-      throw new NotImplementedException('Filter by from/to params is currently not available')
+      throw new NotImplementedException('Filtering by from/to params is currently not available')
       if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
         throw new BadRequestException('The timeframe \'from\' parameter cannot be greater than \'to\'')
       }
@@ -100,7 +96,7 @@ export class AnalyticsController {
 
   @Get('/birdseye')
   @UseGuards(RolesGuard)
-  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   // returns overall short statistics per project
   async getOverallStats(@Query() data): Promise<any> {
     this.logger.log({ ...data }, 'GET /birdseye')
@@ -174,17 +170,13 @@ export class AnalyticsController {
       dto = analyticsDTO(logDTO.pid, logDTO.ev, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
     }
 
-    const values = dto.map(getElValue).join(',')
-
-    // may be vulnerable to sql injection attack
-    // use only validated project IDs gained from redis store and other data
-    // todo: refactor; put into redis cache and next upload data chunks from redis into clickhouse
-    const query = `INSERT INTO analytics (*) VALUES (${values})`
+    // todo: fix: may be vulnerable to sql injection attack
+    const values = `(${dto.map(getElValue).join(',')})`
     try {
-      await clickhouse.query(query).toPromise()
+      await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
       return
     } catch (e) {
-      this.logger.log(e)
+      this.logger.error(e)
       throw new InternalServerErrorException(`Error error while saving the data: ${e}`)
     }
   }

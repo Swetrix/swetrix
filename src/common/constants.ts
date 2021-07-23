@@ -55,6 +55,8 @@ const isValidPID = (pid: string) => _size(pid) === 12
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 
+const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
+
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
 
@@ -63,5 +65,5 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
-  redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME,
+  redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
 }
