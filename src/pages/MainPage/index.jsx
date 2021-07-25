@@ -1,32 +1,6 @@
-import React from 'react'
-
+import React, { memo }  from 'react'
 import SignUp from '../Auth/Signup/BasicSignup'
-
-// const SquareDots = ({ className }) => (
-//   <div className='hidden sm:block sm:absolute sm:inset-0' aria-hidden='true'>
-//     <svg
-//       className={className}
-//       width={364}
-//       height={384}
-//       viewBox='0 0 364 384'
-//       fill='none'
-//     >
-//       <defs>
-//         <pattern
-//           id='eab71dd9-9d7a-47bd-8044-256344ee00d0'
-//           x={0}
-//           y={0}
-//           width={20}
-//           height={20}
-//           patternUnits='userSpaceOnUse'
-//         >
-//           <rect x={0} y={0} width={4} height={4} fill='currentColor' />
-//         </pattern>
-//       </defs>
-//       <rect width={364} height={384} fill='url(#eab71dd9-9d7a-47bd-8044-256344ee00d0)' />
-//     </svg>
-//   </div>
-// )
+import Pricing from './Pricing'
 
 const features = [
   {
@@ -80,9 +54,35 @@ const faqs = [
   },
 ]
 
+const SquareDots = ({ className }) => (
+  <div className='hidden sm:block sm:absolute sm:inset-0 pointer-events-none' aria-hidden='true'>
+    <svg
+      className={className}
+      width={364}
+      height={384}
+      viewBox='0 0 364 384'
+      fill='none'
+    >
+      <defs>
+        <pattern
+          id='eab71dd9-9d7a-47bd-8044-256344ee00d0'
+          x={0}
+          y={0}
+          width={20}
+          height={20}
+          patternUnits='userSpaceOnUse'
+        >
+          <rect x={0} y={0} width={4} height={4} fill='currentColor' />
+        </pattern>
+      </defs>
+      <rect width={364} height={384} fill='url(#eab71dd9-9d7a-47bd-8044-256344ee00d0)' />
+    </svg>
+  </div>
+)
+
 const FAQs = () => (
   <div className='bg-gray-50'>
-    <div className='max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:py-20 lg:px-8'>
+    <div className='w-11/12 mx-auto py-16 px-4 sm:px-6 lg:py-20 lg:px-8'>
       <div className='lg:grid lg:grid-cols-3 lg:gap-8'>
         <div>
           <h2 className='text-3xl font-extrabold text-gray-900'>Frequently asked questions</h2>
@@ -111,7 +111,7 @@ const FAQs = () => (
 
 const Features = () => (
   <div className='bg-white'>
-    <div className='max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8'>
+    <div className='w-11/12 mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8'>
       <h2 className='text-3xl font-extrabold text-gray-900 text-center'>Why us</h2>
       <div className='mt-12'>
         <dl className='space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:grid-rows-2 md:gap-x-8 md:gap-y-12 lg:grid-cols-3'>
@@ -130,23 +130,23 @@ const Features = () => (
 const Main = () => {
   return (
     <div className='relative bg-gray-800'>
-      {/* <SquareDots className='absolute bottom-0 left-0 transform translate-x-0 mb-0 text-gray-700 lg:top-0 xl:transform-none lg:mt-72' /> */}
-      {/* <SquareDots className='absolute bottom-0 right-0 transform translate-x-1/2 mb-48 text-gray-700 lg:top-0 lg:mb-0 xl:transform-none xl:translate-x-0 lg:mt-16' /> */}
+      <SquareDots className='absolute bottom-0 left-0 transform translate-x-0 mb-0 text-gray-700 lg:top-0 xl:transform-none lg:mt-72' />
+      <SquareDots className='absolute bottom-0 right-0 transform translate-x-1/2 mb-48 text-gray-700 lg:top-0 lg:mb-0 xl:transform-none xl:translate-x-0 lg:mt-16' />
       <div className='relative pt-6 pb-16 sm:pb-24'>
         <main className='mt-16 sm:mt-24'>
-          <div className='mx-auto max-w-7xl'>
+          <div className='mx-auto w-11/12'>
             <div className='lg:grid lg:grid-cols-12 lg:gap-8'>
               <div className='px-4 sm:px-6 sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left lg:flex lg:items-center'>
                 <div>
                   <h1 className='mt-4 text-4xl tracking-tight font-extrabold text-white sm:mt-5 sm:leading-none lg:mt-6 lg:text-5xl xl:text-6xl'>
-                    <span className='text-indigo-400 md:block'>Powerful</span>{' '}
-                    <span className='md:block'>analytics platform that respects</span>{' '}
-                    <span className='text-indigo-400 md:block'>user privacy</span>
+                    <span className='text-indigo-400'>Powerful</span>{' '}
+                    <span>analytics platform that respects</span>{' '}
+                    <span className='text-indigo-400'>user privacy</span>
                   </h1>
                   <p className='mt-3 text-base text-gray-300 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl'>
                     Swetrix brings an advanced and customisable analytics service for your web applications.<br />
-                      Track every metric your bisuness needs without invading your users privacy.
-                    </p>
+                    Track every metric your bisuness needs without invading your users privacy.
+                  </p>
                 </div>
               </div>
               <div className='mt-16 sm:mt-24 lg:mt-0 lg:col-span-6'>
@@ -182,7 +182,7 @@ const Main = () => {
           <div className='flex-1' />
           <div className='flex-1 w-full bg-white' />
         </div>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6'>
+        <div className='w-11/12 mx-auto px-4 sm:px-6'>
           <img
             className='relative rounded-lg shadow-lg'
             src='/assets/test_screenshot.png'
@@ -192,12 +192,36 @@ const Main = () => {
       </div>
 
       <Features />
-
+      <div className='bg-indigo-600'>
+        <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:w-11/12 lg:px-8 lg:flex lg:items-center lg:justify-between'>
+          <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
+            <span className='block text-white'>Want to know more technical details?</span>
+            <span className='block text-gray-300'>
+              Look at the documentation and features pags.
+            </span>
+          </h2>
+          <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
+            <a
+              href='#/'
+              className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+            >
+              Features
+            </a>
+            <a
+              href='#/'
+              className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+            >
+              Docs
+            </a>
+          </div>
+        </div>
+      </div>
+      <Pricing />
       <FAQs />
 
       <div className='bg-white'>
-        <div className='max-w-4xl mx-auto py-16 px-4 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8 lg:flex lg:items-center lg:justify-between'>
-          <h2 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-4xl'>
+        <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:w-11/12 lg:px-8 lg:flex lg:items-center lg:justify-between'>
+          <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
             <span className='block'>Ready to get started?</span>
             <span className='block bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent'>
               Explore our service or create an account.
@@ -223,4 +247,4 @@ const Main = () => {
   )
 }
 
-export default Main
+export default memo(Main)

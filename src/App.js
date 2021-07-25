@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
 
 import Header from 'components/Header'
+import Footer from 'components/Footer'
 import MainPage from 'pages/MainPage'
 import SignUp from 'pages/Auth/Signup'
 import SignIn from 'pages/Auth/Signin'
@@ -97,6 +98,7 @@ const App = () => {
           <Route path={routes.docs} component={Docs} exact />
           <Redirect to={routes.main} />
         </Switch>
+        <Footer />
       </>
     )
   )
