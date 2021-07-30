@@ -30,7 +30,7 @@ dayjs.extend(utc)
 
 // todo: implement random salts
 // store them in redis storage and reset every 24 hours
-const getSessionKey = (ip: string, ua: string, salt: string = '') => hash(`${ua}${ip}${salt}`).toString('hex')
+const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => hash(`${ua}${ip}${pid}${salt}`).toString('hex')
 
 const analyticsDTO = (pid: string, ev: string, pg: string, lc: string, ref: string, sw: number | string, so: string, me: string, ca: string, lt: number | string, tz: string, unique: number): Array<string | number> => {
   const cc = tz === 'NULL' ? 'NULL' : ct.getCountryForTimezone(tz)?.id
@@ -160,7 +160,7 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
     await this.analyticsService.validate(logDTO, origin)
 
-    const sessionHash = getSessionKey(ip, userAgent)
+    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid)
     const unique = await this.analyticsService.isUnique(sessionHash)
     let dto: Array<string | number>
 
