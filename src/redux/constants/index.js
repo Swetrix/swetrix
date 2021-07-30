@@ -38,3 +38,5 @@ export const tbsFormatMapper = {
 }
 
 export const TOKEN = 'access_token'
+
+export const TITLE_SUFFIX = process.env.REACT_APP_TITLE_SUFFIX

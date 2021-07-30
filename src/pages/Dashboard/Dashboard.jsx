@@ -12,6 +12,7 @@ import { ArrowSmUpIcon } from '@heroicons/react/solid'
 import { ArrowSmDownIcon } from '@heroicons/react/solid'
 import { XCircleIcon } from '@heroicons/react/solid'
 
+import Title from 'components/Title'
 import Loader from 'ui/Loader'
 import { ActivePin, InactivePin } from 'ui/Pin'
 import routes from 'routes'
@@ -104,49 +105,55 @@ const NoProjects = () => (
 const Dashboard = ({ projects, isLoading, error }) => {
   if (error && !isLoading) {
     return (
-      <div className='flex justify-center pt-10'>
-        <div className='rounded-md bg-red-50 p-4 w-11/12 lg:w-4/6'>
-          <div className='flex'>
-            <div className='flex-shrink-0'>
-              <XCircleIcon className='h-5 w-5 text-red-400' aria-hidden='true' />
-            </div>
-            <div className='ml-3'>
-              <h3 className='text-sm font-medium text-red-800'>{error}</h3>
+      <Title title='Dashboard'>
+        <div className='flex justify-center pt-10'>
+          <div className='rounded-md bg-red-50 p-4 w-11/12 lg:w-4/6'>
+            <div className='flex'>
+              <div className='flex-shrink-0'>
+                <XCircleIcon className='h-5 w-5 text-red-400' aria-hidden='true' />
+              </div>
+              <div className='ml-3'>
+                <h3 className='text-sm font-medium text-red-800'>{error}</h3>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </Title>
     )
   }
 
   if (!isLoading) {
     return (
-      <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-        <div className='max-w-7xl w-full mx-auto'>
-          <div className='flex justify-between'>
-            <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>Dashboard</h2>
-            <Link to={routes.new_project} className='inline-flex items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
-              New project
-            </Link>
-          </div>
-          {_isEmpty(projects) ? (
-            <NoProjects />
-          ) : (
-            <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
-              <ul className='divide-y divide-gray-200'>
-                {_map(projects, ({ name, id, created, active, overall }) => (
-                  <ProjectCart key={id} name={name} created={created} active={active} overall={overall} url={routes.project.replace(':id', id)} />
-                ))}
-              </ul>
+      <Title title='Dashboard'>
+        <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+          <div className='max-w-7xl w-full mx-auto'>
+            <div className='flex justify-between'>
+              <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>Dashboard</h2>
+              <Link to={routes.new_project} className='inline-flex items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
+                New project
+              </Link>
             </div>
-          )}
+            {_isEmpty(projects) ? (
+              <NoProjects />
+            ) : (
+              <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
+                <ul className='divide-y divide-gray-200'>
+                  {_map(projects, ({ name, id, created, active, overall }) => (
+                    <ProjectCart key={id} name={name} created={created} active={active} overall={overall} url={routes.project.replace(':id', id)} />
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </Title>
     )
   }
 
   return (
-    <Loader />
+    <Title title='Dashboard'>
+      <Loader />
+    </Title>
   )
 }
 

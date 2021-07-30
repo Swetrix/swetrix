@@ -8,6 +8,7 @@ import _join from 'lodash/join'
 import _split from 'lodash/split'
 import PropTypes from 'prop-types'
 
+import Title from 'components/Title'
 import { createProject, updateProject, deleteProject } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -148,89 +149,93 @@ const ProjectSettings = ({
     history.push(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
   }
 
-  return (
-    <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
-          {isSettings ? `${form.name} settings` : 'Create a new project'}
-        </h2>
-        <Input
-          name='name'
-          id='name'
-          type='text'
-          label='Project name'
-          value={form.name}
-          placeholder='My awesome project'
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted ? errors.name : null}
-        />
-        <Input
-          name='id'
-          id='id'
-          type='text'
-          label='Project ID'
-          value={form.id}
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted ? errors.id : null}
-          disabled
-        />
-        {isSettings ? (
-          <>
-            <Input
-              name='origins'
-              id='origins'
-              type='text'
-              label='Allowed origins'
-              hint={'A list of allowed origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua'}
-              value={form.origins}
-              className='mt-4'
-              onChange={handleInput}
-              error={beenSubmitted ? errors.origins : null}
-            />
-            <Checkbox
-              checked={Boolean(form.active)}
-              onChange={handleInput}
-              name='active'
-              id='active'
-              className='mt-4'
-              label='Is project enabled'
-              hint={'Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project\'s analytics in dashboard.'}
-            />
-          </>
-        ) : (
-          <p className='text-gray-500 italic mt-2 text-sm'>*you will be able to set up your project more thoroughly after you have created it</p>
-        )}
-        <div className='flex justify-between mt-4'>
-          <div>
-            <Button className='mr-2' onClick={onCancel} secondary regular>
-              Cancel
-            </Button>
-            <Button type='submit' loading={projectSaving} primary regular>
-              Save
-            </Button>
-          </div>
-          {isSettings && (
-            <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger large>
-              Delete project
-            </Button>
-          )}
-        </div>
-      </form>
+  const title = isSettings ? `${form.name} settings` : 'Create a new project'
 
-      <Modal
-        onClose={() => setShowDelete(false)}
-        onSubmit={onDelete}
-        submitText='Delete project'
-        closeText='Close'
-        title={`Delete ${form.name || 'the project'}?`}
-        message={'By pressing \'Delete project\' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers.'}
-        submitType='danger'
-        type='error'
-        isOpened={showDelete}
-      />
-    </div>
+  return (
+    <Title title={title}>
+      <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+          <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+            {title}
+          </h2>
+          <Input
+            name='name'
+            id='name'
+            type='text'
+            label='Project name'
+            value={form.name}
+            placeholder='My awesome project'
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted ? errors.name : null}
+          />
+          <Input
+            name='id'
+            id='id'
+            type='text'
+            label='Project ID'
+            value={form.id}
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted ? errors.id : null}
+            disabled
+          />
+          {isSettings ? (
+            <>
+              <Input
+                name='origins'
+                id='origins'
+                type='text'
+                label='Allowed origins'
+                hint={'A list of allowed origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua'}
+                value={form.origins}
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.origins : null}
+              />
+              <Checkbox
+                checked={Boolean(form.active)}
+                onChange={handleInput}
+                name='active'
+                id='active'
+                className='mt-4'
+                label='Is project enabled'
+                hint={'Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project\'s analytics in dashboard.'}
+              />
+            </>
+          ) : (
+            <p className='text-gray-500 italic mt-2 text-sm'>*you will be able to set up your project more thoroughly after you have created it</p>
+          )}
+          <div className='flex justify-between mt-4'>
+            <div>
+              <Button className='mr-2' onClick={onCancel} secondary regular>
+                Cancel
+          </Button>
+              <Button type='submit' loading={projectSaving} primary regular>
+                Save
+          </Button>
+            </div>
+            {isSettings && (
+              <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger large>
+                Delete project
+              </Button>
+            )}
+          </div>
+        </form>
+
+        <Modal
+          onClose={() => setShowDelete(false)}
+          onSubmit={onDelete}
+          submitText='Delete project'
+          closeText='Close'
+          title={`Delete ${form.name || 'the project'}?`}
+          message={'By pressing \'Delete project\' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers.'}
+          submitType='danger'
+          type='error'
+          isOpened={showDelete}
+        />
+      </div>
+    </Title>
   )
 }
 

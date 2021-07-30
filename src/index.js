@@ -6,6 +6,7 @@ import { Provider } from 'react-redux'
 import { transitions, positions, Provider as AlertProvider } from 'react-alert'
 import AlertTemplate from 'ui/Alert'
 import 'billboard.js/dist/billboard.min.css'
+import 'prismjs/themes/prism-tomorrow.css'
 
 import App from './App'
 import reportWebVitals from './reportWebVitals'

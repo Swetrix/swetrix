@@ -13,6 +13,7 @@ import _replace from 'lodash/replace'
 import _find from 'lodash/find'
 import PropTypes from 'prop-types'
 
+import Title from 'components/Title'
 import { tbPeriodPairs, tbsFormatMapper } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -167,68 +168,72 @@ const ViewProject = ({
 
   if (!isLoading) {
     return (
-      <div className='min-h-page bg-gray-50 py-6 px-4 sm:px-6 lg:px-8'>
-        <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
-          <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
-          <div className='flex mt-3 md:mt-0'>
-            <div className='md:border-r border-gray-200 md:pr-3 mr-3'>
-              <span className='relative z-0 inline-flex shadow-sm rounded-md'>
-                {_map(activePeriod.tbs, (tb, index, { length }) => (
-                  <button
-                    key={tb}
-                    type='button'
-                    onClick={() => setTimebucket(tb)}
-                    className={cx('relative capitalize inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
-                      '-ml-px': index > 0,
-                      'rounded-l-md': index === 0,
-                      'rounded-r-md': 1 + index === length,
-                      'z-10 border-indigo-500 text-indigo-600': timeBucket === tb,
-                    })}
-                  >
-                    {tb}
-                  </button>
-                ))}
-              </span>
-            </div>
-            <Dropdown
-              items={tbPeriodPairs}
-              title={activePeriod.label}
-              labelExtractor={pair => pair.label}
-              keyExtractor={pair => pair.label}
-              onSelect={pair => updatePeriod(pair.period)}
-            />
-            <div className='h-full ml-3'>
-              <Button onClick={openSettingsHandler} className='py-2.5' secondary large>
-                Settings
-              </Button>
+      <Title title={name}>
+        <div className='min-h-page bg-gray-50 py-6 px-4 sm:px-6 lg:px-8'>
+          <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
+            <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
+            <div className='flex mt-3 md:mt-0'>
+              <div className='md:border-r border-gray-200 md:pr-3 mr-3'>
+                <span className='relative z-0 inline-flex shadow-sm rounded-md'>
+                  {_map(activePeriod.tbs, (tb, index, { length }) => (
+                    <button
+                      key={tb}
+                      type='button'
+                      onClick={() => setTimebucket(tb)}
+                      className={cx('relative capitalize inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
+                        '-ml-px': index > 0,
+                        'rounded-l-md': index === 0,
+                        'rounded-r-md': 1 + index === length,
+                        'z-10 border-indigo-500 text-indigo-600': timeBucket === tb,
+                      })}
+                    >
+                      {tb}
+                    </button>
+                  ))}
+                </span>
+              </div>
+              <Dropdown
+                items={tbPeriodPairs}
+                title={activePeriod.label}
+                labelExtractor={pair => pair.label}
+                keyExtractor={pair => pair.label}
+                onSelect={pair => updatePeriod(pair.period)}
+              />
+              <div className='h-full ml-3'>
+                <Button onClick={openSettingsHandler} className='py-2.5' secondary large>
+                  Settings
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-        <div className='flex flex-col md:flex-row items-center md:items-start justify-end h-10 mt-10 md:mt-5 mb-4'>
-          <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
-        </div>
-        {_isEmpty(panelsData) ? (
-          analyticsLoading ? (
-            <Loader />
+          <div className='flex flex-col md:flex-row items-center md:items-start justify-end h-10 mt-10 md:mt-5 mb-4'>
+            <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
+          </div>
+          {_isEmpty(panelsData) ? (
+            analyticsLoading ? (
+              <Loader />
+            ) : (
+              <NoEvents />
+            )
           ) : (
-            <NoEvents />
-          )
-        ) : (
-          <div className='pt-4 md:pt-0'>
-            <div id='dataChart' />
-            <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-              {_map(panelsData.types, type => (
-                <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
-              ))}
+            <div className='pt-4 md:pt-0'>
+              <div id='dataChart' />
+              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                {_map(panelsData.types, type => (
+                  <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </Title>
     )
   }
 
   return (
-    <Loader />
+    <Title title={name}>
+      <Loader />
+    </Title>
   )
 }
 

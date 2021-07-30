@@ -1,5 +1,6 @@
 module.exports = {
   // mode: 'jit',
+  important: true,
   purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   darkMode: false, // or 'media' or 'class'
   theme: {
@@ -14,8 +15,10 @@ module.exports = {
   },
   variants: {
     extend: {},
+    scrollBehavior: ['motion-safe', 'motion-reduce', 'responsive'],
   },
   plugins: [
     require('@tailwindcss/forms'),
+    require('tailwind-scroll-behavior')(),
   ]
 }

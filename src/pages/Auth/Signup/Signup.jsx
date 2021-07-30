@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
+import Title from 'components/Title'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
@@ -70,71 +71,73 @@ const Signup = ({ onSubmit }) => {
   }
 
   return (
-    <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
-          Sign up
-        </h2>
-        <Input
-          name='email'
-          id='email'
-          type='email'
-          label='Email'
-          value={form.email}
-          placeholder='you@example.com'
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted && errors.email}
-        />
-        <Input
-          name='password'
-          id='password'
-          type='password'
-          label='Password'
-          hint='Longer than 8 chars'
-          value={form.password}
-          placeholder='Password'
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted && errors.password}
-        />
-        <Input
-          name='repeat'
-          id='repeat'
-          type='password'
-          label='Repeat password'
-          value={form.repeat}
-          placeholder='Repeat password'
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted && errors.repeat}
-        />
-        <Checkbox
-          checked={form.tos}
-          onChange={handleInput}
-          name='tos'
-          id='tos'
-          className='mt-4'
-          label='I do accept terms and conditions and the privacy policy.'
-        />
-        <Checkbox
-          checked={form.keep_signedin}
-          onChange={handleInput}
-          name='keep_signedin'
-          id='keep_signedin'
-          className='mt-4'
-          label={'Don\'t remember me.'}
-        />
-        <div className='pt-1 flex justify-between mt-3'>
-          <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800'>
-            Sign in instead
-          </Link>
-          <Button type='submit' primary large>
+    <Title title='Sign up'>
+      <div className='min-h-page bg-gray-50 flex flex-col py-6 sm:px-6 lg:px-8'>
+        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+          <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
             Sign up
-          </Button>
-        </div>
-      </form>
-    </div>
+          </h2>
+          <Input
+            name='email'
+            id='email'
+            type='email'
+            label='Email'
+            value={form.email}
+            placeholder='you@example.com'
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted && errors.email}
+          />
+          <Input
+            name='password'
+            id='password'
+            type='password'
+            label='Password'
+            hint='Longer than 8 chars'
+            value={form.password}
+            placeholder='Password'
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted && errors.password}
+          />
+          <Input
+            name='repeat'
+            id='repeat'
+            type='password'
+            label='Repeat password'
+            value={form.repeat}
+            placeholder='Repeat password'
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted && errors.repeat}
+          />
+          <Checkbox
+            checked={form.tos}
+            onChange={handleInput}
+            name='tos'
+            id='tos'
+            className='mt-4'
+            label='I do accept terms and conditions and the privacy policy.'
+          />
+          <Checkbox
+            checked={form.keep_signedin}
+            onChange={handleInput}
+            name='keep_signedin'
+            id='keep_signedin'
+            className='mt-4'
+            label={'Don\'t remember me.'}
+          />
+          <div className='pt-1 flex justify-between mt-3'>
+            <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800'>
+              Sign in instead
+            </Link>
+            <Button type='submit' primary large>
+              Sign up
+            </Button>
+          </div>
+        </form>
+      </div>
+    </Title>
   )
 }
 

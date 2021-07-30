@@ -93,7 +93,7 @@ const Pricing = () => {
                 </p>
                   {_isNil(tier.priceMonthly) ? (
                     <Link
-                      className='mt-8 block w-full bg-gray-800 border border-gray-800 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-gray-900'
+                      className='mt-8 block w-full bg-indigo-600 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
                       to={routes.signup}
                     >
                       Get started
@@ -101,7 +101,7 @@ const Pricing = () => {
                   ) : (
                     <a
                       href={tier.href}
-                      className='mt-8 block w-full bg-gray-800 border border-gray-800 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-gray-900'
+                      className='mt-8 block w-full bg-indigo-600 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
                     >
                       Buy {tier.name}
                     </a>
