@@ -1,4 +1,4 @@
-export default Object.freeze({
+const routes = Object.freeze({
   signin: '/login',
   signup: '/signup',
   reset_password: '/recovery',
@@ -12,4 +12,7 @@ export default Object.freeze({
   project_settings: '/projects/settings/:id',
   project: '/projects/:id',
   docs: '/docs',
+  features: '/features',
 })
+
+export default routes

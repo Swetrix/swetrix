@@ -13,6 +13,7 @@ import ForgotPassword from 'pages/Auth/ForgotPassword'
 import CreateNewPassword from 'pages/Auth/CreateNewPassword'
 import Dashboard from 'pages/Dashboard'
 import Docs from 'pages/Docs'
+import Features from 'pages/Features'
 import UserSettings from 'pages/UserSettings'
 import VerifyEmail from 'pages/Auth/VerifyEmail'
 import ProjectSettings from 'pages/Project/Settings'
@@ -96,6 +97,7 @@ const App = () => {
           <Route path={routes.project_settings} component={ProtectedProjectSettings} exact />
           <Route path={routes.project} component={ProtectedViewProject} exact />
           <Route path={routes.docs} component={Docs} exact />
+          <Route path={routes.features} component={Features} exact />
           <Redirect to={routes.main} />
         </Switch>
         <Footer />
