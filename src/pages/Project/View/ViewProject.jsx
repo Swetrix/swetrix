@@ -14,7 +14,9 @@ import _find from 'lodash/find'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
-import { tbPeriodPairs, tbsFormatMapper } from 'redux/constants'
+import {
+  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey,
+} from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -52,12 +54,12 @@ const getSettings = (chart, timeBucket, showTotal = true) => ({
   tooltip: {
     format: {
       title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
-    }
+    },
   },
   point: {
     focus: {
       only: true,
-    }
+    },
   },
   bindto: '#dataChart',
 })
@@ -85,17 +87,17 @@ const NoEvents = () => (
 )
 
 const ViewProject = ({
-  projects, isLoading, showError,
+  projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs,
 }) => {
   const { id } = useParams()
   const history = useHistory()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const [panelsData, setPanelsData] = useState({})
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState(tbPeriodPairs[1].period)
-  const [timeBucket, setTimebucket] = useState(tbPeriodPairs[1].tbs[1])
+  const [period, setPeriod] = useState(projectViewPrefs[id]?.period || tbPeriodPairs[1].period)
+  const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || tbPeriodPairs[1].tbs[1])
   const activePeriod = useMemo(() => _find(tbPeriodPairs, p => p.period === period), [period])
-  const [showTotal, setShowTotal] = useState(false) // todo: put a string here with other metrics like loadTime, bounce rate, etc.
+  const [showTotal, setShowTotal] = useState(false)
   const [chartData, setChartData] = useState({})
   const [mainChart, setMainChart] = useState(null)
 
@@ -104,7 +106,15 @@ const ViewProject = ({
   const loadAnalytics = async () => {
     if (!isLoading && !_isEmpty(project)) {
       try {
-        const data = await getProjectData(id, timeBucket, period)
+        let data
+        const key = getProjectCacheKey(period, timeBucket)
+
+        if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
+          data = cache[id][key]
+        } else {
+          data = await getProjectData(id, timeBucket, period)
+          setProjectCache(id, period, timeBucket, data || {})
+        }
 
         if (_isEmpty(data)) {
           setAnalyticsLoading(false)
@@ -148,13 +158,21 @@ const ViewProject = ({
 
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(tbPeriodPairs, (el) => el.period === newPeriod)
+    let tb = timeBucket
     if (_isEmpty(newPeriodFull)) return
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
-      setTimebucket(_last(newPeriodFull.tbs))
+      tb = _last(newPeriodFull.tbs)
+      setTimebucket(tb)
     }
 
     setPeriod(newPeriod)
+    setProjectViewPrefs(id, newPeriod, tb)
+  }
+
+  const updateTimebucket = (newTimebucket) => {
+    setTimebucket(newTimebucket)
+    setProjectViewPrefs(id, period, newTimebucket)
   }
 
   if (!isLoading && _isEmpty(project)) {
@@ -179,7 +197,7 @@ const ViewProject = ({
                     <button
                       key={tb}
                       type='button'
-                      onClick={() => setTimebucket(tb)}
+                      onClick={() => updateTimebucket(tb)}
                       className={cx('relative capitalize inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
                         '-ml-px': index > 0,
                         'rounded-l-md': index === 0,
@@ -239,7 +257,11 @@ const ViewProject = ({
 
 ViewProject.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  cache: PropTypes.objectOf(PropTypes.object).isRequired,
+  projectViewPrefs: PropTypes.objectOf(PropTypes.object).isRequired,
   showError: PropTypes.func.isRequired,
+  setProjectCache: PropTypes.func.isRequired,
+  setProjectViewPrefs: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
 }
 
