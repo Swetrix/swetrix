@@ -1,5 +1,5 @@
 export enum LetterTemplate {
-  SignUp = 'guest_sign-up',
+  SignUp = 'customer_sign-up',
   ConfirmPasswordChange = 'password-change_confirmation',
   PasswordChanged = 'password-change_information',
   MailAddressChangeConfirmation = 'mailaddress-change_confirmation',

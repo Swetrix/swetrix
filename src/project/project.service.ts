@@ -60,6 +60,10 @@ export class ProjectService {
     return this.projectsRepository.findOne(id)
   }
 
+  findWhere(where: Record<string, unknown>): Promise<Project[]> {
+    return this.projectsRepository.find({ where })
+  }
+
   findOneWhere(where: Record<string, unknown>): Promise<Project> {
     return this.projectsRepository.findOne({ where })
   }

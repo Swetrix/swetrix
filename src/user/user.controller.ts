@@ -5,6 +5,7 @@ import { Request } from 'express'
 import { ApiTags, ApiQuery } from '@nestjs/swagger'
 
 import { UserService } from './user.service'
+import { ProjectService } from '../project/project.service'
 import { User, UserType, MAX_EMAIL_REQUESTS } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -26,9 +27,10 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
+    private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-    private readonly logger: AppLoggerService
+    private readonly logger: AppLoggerService,
   ) {}
 
   @Get('/')
@@ -184,10 +186,15 @@ export class UserController {
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /user/export')
     const user = await this.userService.findOneWhere({ id: user_id })
+    const where = Object({ admin: user_id })
+    const projects = await this.projectService.findWhere(where)
+    console.log(user, projects)
 
     // TODO: Add related projects and other user controlled objects into report
     // TODO: Allow users to request exports only once per day
-    await this.mailerService.sendEmail(user.email, LetterTemplate.GDPRDataExport)
+    await this.mailerService.sendEmail(user.email, LetterTemplate.GDPRDataExport, {
+      user, projects,
+    })
 
     return user
   }
