@@ -23,32 +23,32 @@ const Header = ({ authenticated }) => {
               <img className='h-10 w-auto' src='https://tailwindui.com/img/logos/workflow-mark.svg?color=white' alt='' />
             </Link>
             <div className='hidden ml-10 space-x-1 lg:block'>
-              <NavLink to={routes.features} className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Features'>Features</NavLink>
-              <HashLink to={`${routes.main}#pricing`} className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='Pricing'>Pricing</HashLink>
-              <HashLink to={`${routes.main}#faqs`} className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='FAQs'>FAQs</HashLink>
-              <NavLink to={routes.docs} className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Docs'>Docs</NavLink>
+              <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Features'>Features</NavLink>
+              <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='Pricing'>Pricing</HashLink>
+              <HashLink to={`${routes.main}#faqs`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='FAQs'>FAQs</HashLink>
+              <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Docs'>Docs</NavLink>
             </div>
           </div>
           <div className='ml-10 space-x-4'>
             {authenticated ? (
               <>
-                <NavLink to={routes.user_settings} className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700'>You</NavLink>
-                <Link to={routes.dashboard} className='inline-block bg-white py-2 px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>Dashboard</Link>
-                <Link to='#' className='text-base font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' onClick={logoutHandler}>Logout</Link>
+                <NavLink to={routes.user_settings} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700'>You</NavLink>
+                <Link to={routes.dashboard} className='inline-block select-none bg-white py-2 px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>Dashboard</Link>
+                <Link to='#' className='text-base font-medium select-none text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' onClick={logoutHandler}>Logout</Link>
               </>
             ) : (
               <>
-                <Link to={routes.signin} className='inline-block bg-indigo-500 py-2 px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75'>Sign in</Link>
-                <Link to={routes.signup} className='inline-block bg-white py-2 px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>Get started</Link>
+                <Link to={routes.signin} className='inline-block select-none bg-indigo-500 py-2 px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75'>Sign in</Link>
+                <Link to={routes.signup} className='inline-block select-none bg-white py-2 px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>Get started</Link>
               </>
             )}
           </div>
         </div>
         <div className='py-4 flex flex-wrap justify-center space-x-2 lg:hidden'>
-          <NavLink to={routes.features} className='text-base font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Features'>Features</NavLink>
-          <HashLink to={`${routes.main}#pricing`} className='text-base font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' key='Pricing'>Pricing</HashLink>
-          <HashLink to={`${routes.main}#faqs`} className='text-base font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' key='FAQs'>FAQs</HashLink>
-          <NavLink to={routes.docs} className='text-base font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Docs'>Docs</NavLink>
+          <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Features'>Features</NavLink>
+          <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' key='Pricing'>Pricing</HashLink>
+          <HashLink to={`${routes.main}#faqs`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' key='FAQs'>FAQs</HashLink>
+          <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Docs'>Docs</NavLink>
         </div>
       </nav>
     </header>

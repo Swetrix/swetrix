@@ -10,7 +10,7 @@ const Button = ({
   <button
     type={type}
     onClick={onClick}
-    className={cx('inline-flex items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', {
+    className={cx('inline-flex select-none items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', {
       'shadow-sm text-white bg-indigo-600 hover:bg-indigo-700': primary,
       'text-indigo-700 bg-indigo-100 hover:bg-indigo-200': secondary,
       'text-gray-700 bg-white hover:bg-gray-50': white,

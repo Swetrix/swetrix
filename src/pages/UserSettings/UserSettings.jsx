@@ -115,7 +115,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
           </div>
           <Button className='mt-4' type='submit' primary large>
             Update profile
-        </Button>
+          </Button>
           <hr className='mt-3' />
           {!user?.isActive && (
             <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
@@ -149,7 +149,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
           closeText='Close'
           title='Data export'
           type='info'
-          message={'As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store.\nThe data export will be ready within 24 hours and sent to your email account.\nNote: you can request the data export only once per two weeks.'}
+          message={'As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store. This report does not include events data per project.\nThe data report will be sent to your email address.\nNote: you can request the data export only once per two weeks.'}
           isOpened={showExportModal}
         />
         <Modal
