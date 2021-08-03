@@ -38,9 +38,16 @@ const cacheReducer = (state = getInitialState(), { type, payload }) => {
       const key = getProjectCacheKey(period, timeBucket)
 
       if (_isEmpty(period) || _isEmpty(timeBucket)) {
-        return {
-          ...state,
-          analytics: _filter(state.analytics, (project) => project !== pid),
+        if (_isEmpty(pid)) {
+          return {
+            ...state,
+            analytics: {},
+          }
+        } else {
+          return {
+            ...state,
+            analytics: _filter(state.analytics, (project) => project !== pid),
+          }
         }
       }
 
