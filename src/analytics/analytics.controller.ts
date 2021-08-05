@@ -64,10 +64,8 @@ export class AnalyticsController {
     let groupFrom = from, groupTo = to
     // TODO: data validation
     // TODO: automatic timeBucket detection based on period provided
-    // TODO: origins validation
 
-    // const where = Object({ pid })
-    let query = `SELECT * FROM analytics WHERE pid='${pid}' `
+    let query = `SELECT * FROM analytics WHERE pid='${pid}'`
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       throw new NotImplementedException('Filtering by from/to params is currently not available')
