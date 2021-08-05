@@ -200,7 +200,7 @@ const ViewProject = ({
   if (!isLoading) {
     return (
       <Title title={name}>
-        <div className='min-h-page bg-gray-50 py-6 px-4 sm:px-6 lg:px-8' ref={dashboardRef}>
+        <div className='min-h-min-footer bg-gray-50 py-6 px-4 sm:px-6 lg:px-8' ref={dashboardRef}>
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
             <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
             <div className='flex mt-3 md:mt-0'>

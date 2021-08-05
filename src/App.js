@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react'
-import { Switch, Route, Redirect } from 'react-router-dom'
+import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
 import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
+import _some from 'lodash/some'
+import _includes from 'lodash/includes'
 
 import Header from 'components/Header'
 import Footer from 'components/Footer'
@@ -35,13 +37,20 @@ const ProtectedUserSettings = isAuthenticated(UserSettings)
 const ProtectedProjectSettings = isAuthenticated(ProjectSettings)
 const ProtectedViewProject = isAuthenticated(ViewProject)
 
+const minimalFooterPages = [
+  '/projects', '/dashboard',
+]
+
 const App = () => {
   const dispatch = useDispatch()
+  const location = useLocation()
   const alert = useAlert()
   const { loading, authenticated } = useSelector(state => state.auth)
   const { error } = useSelector(state => state.errors)
   const { message, type } = useSelector(state => state.alerts)
   const accessToken = getAccessToken()
+
+  console.log(location.pathname)
 
   useEffect(() => {
     (async () => {
@@ -79,6 +88,8 @@ const App = () => {
     }
   }, [message, type]) // eslint-disable-line
 
+  const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(location.pathname, page))
+
   return (
     (!accessToken || !loading) && (
       <>
@@ -100,7 +111,7 @@ const App = () => {
           <Route path={routes.features} component={Features} exact />
           <Redirect to={routes.main} />
         </Switch>
-        <Footer />
+        <Footer minimal={isMinimalFooter} />
       </>
     )
   )

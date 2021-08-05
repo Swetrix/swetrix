@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import _map from 'lodash/map'
+import PropTypes from 'prop-types'
 
 const navigation = {
   support: [
@@ -33,7 +34,43 @@ const navigation = {
   ],
 }
 
-const Footer = () => {
+const Footer = ({ minimal }) => {
+  if (minimal) {
+    return (
+      <footer className='bg-gray-800'>
+        <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
+          <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
+            <div className='px-5 py-2'>
+              <a href='#/' className='text-base text-gray-300 hover:text-white'>
+                About
+              </a>
+            </div>
+            <div className='px-5 py-2'>
+              <a href='#/' className='text-base text-gray-300 hover:text-white'>
+                Privacy Policy
+              </a>
+            </div>
+            <div className='px-5 py-2'>
+              <a href='#/' className='text-base text-gray-300 hover:text-white'>
+                Terms of Service
+              </a>
+            </div>
+            <div className='px-5 py-2'>
+              <a href='#/' className='text-base text-gray-300 hover:text-white'>
+                Docs
+              </a>
+            </div>
+            <div className='px-5 py-2'>
+              <a href='#/' className='text-base text-gray-300 hover:text-white'>
+                Blog
+              </a>
+            </div>
+          </nav>
+        </div>
+      </footer>
+    )
+  }
+
   return (
     <footer className='bg-gray-800' aria-labelledby='footer-heading'>
       <h2 id='footer-heading' className='sr-only'>
@@ -106,6 +143,14 @@ const Footer = () => {
       </div>
     </footer>
   )
+}
+
+Footer.propTypes = {
+  minimal: PropTypes.bool,
+}
+
+Footer.defaultProps = {
+  minimal: false,
 }
 
 export default memo(Footer)

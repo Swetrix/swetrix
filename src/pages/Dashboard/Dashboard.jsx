@@ -125,7 +125,7 @@ const Dashboard = ({ projects, isLoading, error }) => {
   if (!isLoading) {
     return (
       <Title title='Dashboard'>
-        <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <div className='min-h-min-footer bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
           <div className='max-w-7xl w-full mx-auto'>
             <div className='flex justify-between'>
               <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>Dashboard</h2>
@@ -152,7 +152,7 @@ const Dashboard = ({ projects, isLoading, error }) => {
 
   return (
     <Title title='Dashboard'>
-      <div className='min-h-page'>
+      <div className='min-h-min-footer'>
         <Loader />
       </div>
     </Title>

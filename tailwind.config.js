@@ -10,7 +10,8 @@ module.exports = {
       }
     },
     minHeight: {
-     'page': 'calc(100vh - 74px)', // header height -> 80px
+     'page': 'calc(100vh - 74px)', // header height -> 74px
+     'min-footer': 'calc(100vh - 162px)', // 74px + 88px footer height
     }
   },
   variants: {
