@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { HashLink } from 'react-router-hash-link'
 
 import Title from 'components/Title'
 import routes from 'routes'
@@ -14,7 +15,7 @@ const Features = () => {
           <h3 className='text-2xl font-normal text-gray-900 tracking-tight mt-4'>Transparency</h3>
           <p className='text-lg text-gray-900 tracking-tight'>
             At Swetrix, we believe that everyone has a right to privacy and transparency, especially when it comes to analytics.<br />
-            We do not collect more information than we <Link className='text-indigo-600 hover:text-indigo-500' to={`${routes.docs}#docs-tv`}>claim</Link>, all data is stored on servers physically located in the European Union and our analytics script is publicly available and accessible to all on our <a className='text-indigo-600 hover:text-indigo-500' href='https://github.com/Swetrix' target='_blank' rel='noopener noreferrer'>Github</a>.<br />
+            We do not collect more information than we <HashLink className='text-indigo-600 hover:text-indigo-500' to={`${routes.docs}#docs-tv`}>claim</HashLink>, all data is stored on servers physically located in the European Union and our analytics script is publicly available and accessible to all on our <a className='text-indigo-600 hover:text-indigo-500' href='https://github.com/Swetrix' target='_blank' rel='noopener noreferrer'>Github</a>.<br />
           </p>
 
           <h3 className='text-2xl font-normal text-gray-900 tracking-tight mt-4'>Simplicity</h3>

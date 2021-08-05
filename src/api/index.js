@@ -2,6 +2,7 @@ import axios from 'axios'
 import { store } from 'redux/store'
 import Debug from 'debug'
 import _map from 'lodash/map'
+import _isEmpty from 'lodash/isEmpty'
 import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
@@ -42,7 +43,7 @@ export const authMe = () =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const login = (credentials) =>
@@ -51,7 +52,7 @@ export const login = (credentials) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const signup = (data) =>
@@ -92,7 +93,7 @@ export const forgotPassword = (email) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const confirmEmail = () =>
@@ -101,7 +102,7 @@ export const confirmEmail = () =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const exportUserData = () =>
@@ -110,7 +111,7 @@ export const exportUserData = () =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const createNewPassword = (id, password) =>
@@ -131,7 +132,7 @@ export const verifyEmail = ({ path, id }) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getProjects = () =>
@@ -140,7 +141,7 @@ export const getProjects = () =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const createProject = (data) =>
@@ -149,7 +150,7 @@ export const createProject = (data) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const updateProject = (id, data) =>
@@ -158,7 +159,7 @@ export const updateProject = (id, data) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const deleteProject = (id) =>
@@ -167,7 +168,7 @@ export const deleteProject = (id) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getProjectData = (pid, tb = 'hour', period = '3d', from = '', to = '') =>
@@ -176,7 +177,7 @@ export const getProjectData = (pid, tb = 'hour', period = '3d', from = '', to = 
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getOverallStats = (pids) =>
@@ -185,5 +186,5 @@ export const getOverallStats = (pids) =>
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)
-      throw error.response.data
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

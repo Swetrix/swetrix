@@ -42,7 +42,7 @@ const Footer = () => {
       <div className='w-11/12 mx-auto py-12 px-4 sm:px-6 lg:px-8'>
         <div className='xl:grid xl:grid-cols-3 xl:gap-8'>
           <div className='space-y-8 xl:col-span-1'>
-            <img className='h-10' src='https://tailwindui.com/img/logos/workflow-mark-gray-300.svg' alt='Swetrix Analytics' />
+            <img className='h-10' src='assets/logo_white.png' alt='Swetrix Analytics' />
             <p className='text-gray-300 text-base'>
               The best apps need the best services.<br />
               Swetrix is a powerful analytics platform that respects user privacy.

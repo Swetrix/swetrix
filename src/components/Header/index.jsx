@@ -19,8 +19,8 @@ const Header = ({ authenticated }) => {
         <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 lg:border-none'>
           <div className='flex items-center'>
             <Link to={routes.main}>
-              <span className='sr-only'>Analytics</span>
-              <img className='h-10 w-auto' src='https://tailwindui.com/img/logos/workflow-mark.svg?color=white' alt='' />
+              <span className='sr-only'>Swetrix</span>
+              <img className='h-10 w-auto' src='assets/logo_white.png' alt='' />
             </Link>
             <div className='hidden ml-10 space-x-1 lg:block'>
               <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Features'>Features</NavLink>

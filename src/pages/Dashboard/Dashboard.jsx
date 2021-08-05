@@ -152,7 +152,9 @@ const Dashboard = ({ projects, isLoading, error }) => {
 
   return (
     <Title title='Dashboard'>
-      <Loader />
+      <div className='min-h-page'>
+        <Loader />
+      </div>
     </Title>
   )
 }
