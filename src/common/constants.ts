@@ -63,7 +63,11 @@ const redisProjectCacheTimeout = 3600
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
 
+// how often can user request a fresh GDPR export of their data; in days.
+const GDPR_EXPORT_TIMEFRAME = 14
+
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
+  GDPR_EXPORT_TIMEFRAME,
 }

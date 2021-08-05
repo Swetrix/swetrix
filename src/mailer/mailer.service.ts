@@ -40,7 +40,7 @@ const metaInfoJson = {
   },
   [LetterTemplate.GDPRDataExport]: {
     subject: {
-      en: 'Swetrix account data export',
+      en: 'Swetrix Account data export',
     },
   },
 }

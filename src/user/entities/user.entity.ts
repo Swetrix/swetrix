@@ -60,6 +60,9 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updated: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  exportedAt: Date;
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date;

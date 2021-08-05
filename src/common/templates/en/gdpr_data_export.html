@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Swetrix Account Data Export</title>
+      <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet" />
+   </head>
+   <body style="margin: 0; padding: 0; background-color: #f0f4f7;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background: #f0f4f7; min-width: 340px; font-size: 1px; line-height: normal;">
+         <tr>
+            <td align="center" valign="top" bgcolor="#f0f4f7">
+               <!--[if (gte mso 9)|(IE)]>
+         <table border="0" cellspacing="0" cellpadding="0">
+         <tr><td align="center" valign="top" width="750"><![endif]-->
+               <table cellpadding="0" cellspacing="0" border="0" width="750" style="width: 100%; max-width: 750px; min-width: 340px; background: #f0f4f7;">
+                  <tr>
+                     <td width="25" style="width: 25px; max-width: 25px; min-width: 25px;">&nbsp;</td>
+                     <td align="center" valign="top" style="background: #ffffff;">
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100% !important; min-width: 100%; max-width: 100%; background: #f0f4f7;">
+                           <tr>
+                              <td align="right" valign="top">
+                                 <div style="height: 25px; line-height: 25px; font-size: 23px;">&nbsp;</div>
+                              </td>
+                           </tr>
+                        </table>
+                        <table cellpadding="0" cellspacing="0" border="0" width="88%" style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                           <tr>
+                              <td align="center" valign="top">
+                                 <div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
+                                 <a href="https://swetrix.com" target="_blank" style="display: block; max-width: 173px;">
+                                    <img src="file:///home/rand/Downloads/blue_logo.png" alt="Swetrix Analytics" width="175" border="0" style="display: block; width: 175px;" />
+                                 </a>
+                                 <div style="height: 40px; line-height: 40px; font-size: 40px;">&nbsp;</div>
+                              </td>
+                           </tr>
+                        </table>
+                        <table cellpadding="0" cellspacing="0" border="0" width="88%" style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                           <tr>
+                              <td align="center" valign="top">
+                                 <font align="center" style="font-size: 52px; line-height: 55px; font-weight: 300; letter-spacing: -1.5px;">
+                                    <span
+                                       align="center"
+                                       style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; font-size: 44px; color: #1a1a1a;"
+                                    >
+                                      What we know about you
+                                    </span>
+                                 </font>
+                                 <div style="height: 10px; line-height: 10px; font-size: 9px;">&nbsp;</div>
+                                 <font style="font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;">
+                                    <span
+                                       style="
+                                          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                          color: #5e5e5e;
+                                          font-size: 30px;
+                                          line-height: 45px;
+                                          font-weight: 300;
+                                          letter-spacing: -1px;
+                                       "
+                                    >
+                                      GDPR Account Data Export
+                                    </span>
+                                 </font>
+                                 <div style="height: 38px; line-height: 38px; font-size: 36px;">&nbsp;</div>
+                                 <table cellpadding="0" cellspacing="0" border="0" width="88%" style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                                    <tr>
+                                       <td align="left" valign="top">
+                                          <font face="'Source Sans Pro', sans-serif" color="#7f7f7f" style="font-size: 17px; line-height: 23px;">
+                                             <span
+                                                style="
+                                                   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                   color: #7f7f7f;
+                                                   font-size: 17px;
+                                                   line-height: 23px;
+                                                "
+                                             >
+                                                <i>Note: All times are Greenwich Mean Time.</i><br />
+                                                Below is the list of your Swetrix account information and settings (including your created projects) that you can request at any time.<br />
+                                                Our <a href="https://swetrix.com" target="_blank">Privacy Policy</a> has more information about what data we collect and how we use it.
+
+                                                <div style="height: 5px; line-height: 5px; font-size: 3px;">&nbsp;</div>
+                                                <h3 style="margin-bottom: 5px;">Account Information:</h3>
+                                                <b>Email address:</b>&nbsp;{{user.email}}<br />
+                                                <b>Email confirmed:</b>&nbsp;{{#if user.isActive}} Yes {{else}} No {{/if}}<br />
+                                                <b>Verification emails sent:</b>&nbsp;{{user.emailRequests}}<br />
+                                                <b>Account created at:</b>&nbsp;{{user.created}}<br />
+                                                <b>Account updated at:</b>&nbsp;{{user.updated}}<br />
+                                                <b>Last report generation time:</b>&nbsp;{{user.exportedAt}}
+
+                                                <div style="height: 10px; line-height: 10px; font-size: 8px;">&nbsp;</div>
+                                                <h3 style="margin-bottom: 5px;">Projects Information:</h3>
+                                                {{#each projects}}
+                                                  <b>Project Identifier:</b>&nbsp;{{id}}<br />
+                                                  <b>Name:</b>&nbsp;{{name}}<br />
+                                                  <b>Active:</b>&nbsp;{{#if active}} Yes {{else}} No {{/if}}<br />
+                                                  <b>Allowed origins:</b>&nbsp;{{#if origins}}{{origins}}{{else}}*{{/if}}<br />
+                                                  <b>Created at:</b>&nbsp;{{created}}
+                                                {{else}}
+                                                  There are no projects associated with this account.
+                                                {{/each}}
+                                             </span>
+                                          </font>
+                                          <div style="height: 30px; line-height: 30px; font-size: 28px;">&nbsp;</div>
+                                       </td>
+                                    </tr>
+                                 </table>
+                              </td>
+                           </tr>
+                        </table>
+
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100% !important; min-width: 100%; max-width: 100%; background: #f0f4f7;">
+                           <tr>
+                              <td align="center" valign="top">
+                                 <div style="height: 25px; line-height: 25px; font-size: 32px;">&nbsp;</div>
+                                 <table cellpadding="0" cellspacing="0" border="0" width="88%" style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                                    <tr>
+                                       <td align="center" valign="top">
+                                          <font style="font-size: 17px; line-height: 20px;">
+                                             <span
+                                                style="
+                                                   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                   color: #3c4858;
+                                                   font-size: 17px;
+                                                   line-height: 20px;
+                                                "
+                                             >
+                                                <a
+                                                   href="https://swetrix.com"
+                                                   target="_blank"
+                                                   style="
+                                                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                      color: #3c4858;
+                                                      font-size: 17px;
+                                                      line-height: 20px;
+                                                      text-decoration: none;
+                                                   "
+                                                >
+                                                   Terms of Service
+                                                </a>
+                                             </span>
+                                          </font>
+                                          <font face="'Source Sans Pro', sans-serif" color="#3c4858" style="font-size: 17px; line-height: 20px;">
+                                             <span
+                                                style="
+                                                   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                   color: #1a1a1a;
+                                                   font-size: 17px;
+                                                   line-height: 20px;
+                                                "
+                                             >
+                                                &nbsp;&nbsp;|&nbsp;&nbsp;
+                                             </span>
+                                          </font>
+                                          <font style="font-size: 17px; line-height: 20px;">
+                                             <span
+                                                style="
+                                                   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                   color: #1a1a1a;
+                                                   font-size: 17px;
+                                                   line-height: 20px;
+                                                "
+                                             >
+                                                <a
+                                                   href="https://swetrix.com"
+                                                   target="_blank"
+                                                   style="
+                                                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                      color: #3c4858;
+                                                      font-size: 17px;
+                                                      line-height: 20px;
+                                                      text-decoration: none;
+                                                   "
+                                                >
+                                                   Privacy Policy
+                                                </a>
+                                             </span>
+                                          </font>
+                                       </td>
+                                    </tr>
+                                 </table>
+                                 <div style="height: 25px; line-height: 25px; font-size: 28px;">&nbsp;</div>
+                              </td>
+                           </tr>
+                        </table>
+                     </td>
+                     <td width="25" style="width: 25px; max-width: 25px; min-width: 25px;">&nbsp;</td>
+                  </tr>
+               </table>
+               <!--[if (gte mso 9)|(IE)]>
+         </td></tr>
+         </table><![endif]-->
+            </td>
+         </tr>
+      </table>
+   </body>
+</html>

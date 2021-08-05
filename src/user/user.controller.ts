@@ -1,14 +1,20 @@
 import { 
-  Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards,
+  Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards, MethodNotAllowedException,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags, ApiQuery } from '@nestjs/swagger'
+import * as dayjs from 'dayjs'
+import * as utc from 'dayjs/plugin/utc'
+import * as _map from 'lodash/map'
+import * as _join from 'lodash/join'
+import * as _isNull from 'lodash/isNull'
 
 import { UserService } from './user.service'
 import { ProjectService } from '../project/project.service'
 import { User, UserType, MAX_EMAIL_REQUESTS } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
+import { GDPR_EXPORT_TIMEFRAME } from '../common/constants'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
@@ -19,6 +25,8 @@ import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { AppLoggerService } from 'src/logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
+
+dayjs.extend(utc)
 
 @ApiTags('User')
 @Controller('user')
@@ -188,12 +196,28 @@ export class UserController {
     const user = await this.userService.findOneWhere({ id: user_id })
     const where = Object({ admin: user_id })
     const projects = await this.projectService.findWhere(where)
-    console.log(user, projects)
 
-    // TODO: Add related projects and other user controlled objects into report
-    // TODO: Allow users to request exports only once per day
-    await this.mailerService.sendEmail(user.email, LetterTemplate.GDPRDataExport, {
-      user, projects,
+    if (!_isNull(user.exportedAt) && !dayjs().isAfter(dayjs.utc(user.exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'), 'day')) {
+      throw new MethodNotAllowedException(`Please, try again later. You can request a GDPR Export only once per ${GDPR_EXPORT_TIMEFRAME} days.`)
+    }
+
+    const data = {
+      user: {
+        ...user,
+        created: dayjs(user.created).format('YYYY/MM/DD HH:mm:ss'),
+        updated: dayjs(user.updated).format('YYYY/MM/DD HH:mm:ss'),
+        exportedAt: _isNull(user.exportedAt) ? '-' : dayjs(user.exportedAt).format('YYYY/MM/DD HH:mm:ss'),
+      },
+      projects: _map(projects, project => ({
+        ...project,
+        created: dayjs(project.created).format('YYYY/MM/DD HH:mm:ss'),
+        origins: _join(project.origins, ', '),
+      }))
+    }
+
+    await this.mailerService.sendEmail(user.email, LetterTemplate.GDPRDataExport, data)
+    await this.userService.update(user.id, {
+      exportedAt: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
     })
 
     return user
