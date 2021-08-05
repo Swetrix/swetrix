@@ -98,7 +98,7 @@ const Modal = ({
 }
 
 Modal.propTypes = {
-  type: PropTypes.oneOfType(['error', 'success', 'info']),
+  type: PropTypes.oneOf(['error', 'success', 'info']),
   title: PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired,
   message: PropTypes.string,
