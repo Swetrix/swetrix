@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useMemo, memo } from 'react'
+import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+import domToImage from 'dom-to-image'
+import { saveAs } from 'file-saver'
 import bb, { area, zoom } from 'billboard.js'
 import cx from 'classnames'
 import * as d3 from 'd3'
@@ -89,6 +91,7 @@ const NoEvents = () => (
 const ViewProject = ({
   projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs,
 }) => {
+  const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
@@ -184,10 +187,20 @@ const ViewProject = ({
     history.push(_replace(routes.project_settings, ':id', id))
   }
 
+  const exportAsImageHandler = async () => {
+    try {
+      const blob = await domToImage.toBlob(dashboardRef.current)
+      saveAs(blob, `swetrix-${dayjs().format('YYYY-MM-DD-HH-mm-ss')}.png`)
+    } catch (e) {
+      console.error('[ERROR] Error while generating export image.')
+      console.error(e)
+    }
+  }
+
   if (!isLoading) {
     return (
       <Title title={name}>
-        <div className='min-h-page bg-gray-50 py-6 px-4 sm:px-6 lg:px-8'>
+        <div className='min-h-page bg-gray-50 py-6 px-4 sm:px-6 lg:px-8' ref={dashboardRef}>
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
             <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
             <div className='flex mt-3 md:mt-0'>
@@ -198,7 +211,7 @@ const ViewProject = ({
                       key={tb}
                       type='button'
                       onClick={() => updateTimebucket(tb)}
-                      className={cx('relative capitalize inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
+                      className={cx('relative capitalize inline-flex items-center px-3 md:px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
                         '-ml-px': index > 0,
                         'rounded-l-md': index === 0,
                         'rounded-r-md': 1 + index === length,
@@ -218,14 +231,11 @@ const ViewProject = ({
                 onSelect={pair => updatePeriod(pair.period)}
               />
               <div className='h-full ml-3'>
-                <Button onClick={openSettingsHandler} className='py-2.5' secondary large>
+                <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
                   Settings
                 </Button>
               </div>
             </div>
-          </div>
-          <div className='flex flex-col md:flex-row items-center md:items-start justify-end h-10 mt-10 md:mt-5 mb-4'>
-            <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
           </div>
           {_isEmpty(panelsData) ? (
             analyticsLoading ? (
@@ -234,14 +244,24 @@ const ViewProject = ({
               <NoEvents />
             )
           ) : (
-            <div className='pt-4 md:pt-0'>
-              <div id='dataChart' />
-              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                {_map(panelsData.types, type => (
-                  <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
-                ))}
+            <>
+              <div className='flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
+                <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
+                <div className='h-full ml-3'>
+                  <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
+                    Export as image
+                  </Button>
+                </div>
               </div>
-            </div>
+              <div className='pt-4 md:pt-0'>
+                <div id='dataChart' />
+                <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                  {_map(panelsData.types, type => (
+                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
       </Title>
