@@ -15,6 +15,7 @@ const errorsReducer = (state = initialState, { type, payload }) => {
     case types.CREATE_NEW_PROJECT_FAILED:
     case types.UPDATE_PROJECT_FAILED:
     case types.DELETE_PROJECT_FAILED:
+    case types.GDPR_EXPORT_FAILED:
       return { ...state, error: payload.error }
 
     case types.CLEAR_ERRORS:

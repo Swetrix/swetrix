@@ -30,13 +30,6 @@ export const errorsActions = {
     }
   },
 
-  canteensErrors(error) {
-    return {
-      type: types.CANTEENS_ERRORS,
-      payload: { error },
-    }
-  },
-
   deleteAccountFailed(error) {
     return {
       type: types.DELETE_ACCOUNT_FAILED,
@@ -61,6 +54,13 @@ export const errorsActions = {
   deleteProjectFailed(error) {
     return {
       type: types.DELETE_PROJECT_FAILED,
+      payload: { error },
+    }
+  },
+
+  GDPRExportFailed(error) {
+    return {
+      type: types.GDPR_EXPORT_FAILED,
       payload: { error },
     }
   },

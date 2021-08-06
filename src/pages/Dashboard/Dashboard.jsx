@@ -1,5 +1,5 @@
-import React, { memo } from 'react'
-import { Link } from 'react-router-dom'
+import React, { memo, useState } from 'react'
+import { Link, useHistory } from 'react-router-dom'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
@@ -12,6 +12,7 @@ import { ArrowSmUpIcon } from '@heroicons/react/solid'
 import { ArrowSmDownIcon } from '@heroicons/react/solid'
 import { XCircleIcon } from '@heroicons/react/solid'
 
+import Modal from 'ui/Modal'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
 import { ActivePin, InactivePin } from 'ui/Pin'
@@ -102,7 +103,18 @@ const NoProjects = () => (
   </div>
 )
 
-const Dashboard = ({ projects, isLoading, error }) => {
+const Dashboard = ({ projects, isLoading, error, user }) => {
+  const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
+  const history = useHistory()
+
+  const onNewProject = () => {
+    if (user.isActive) {
+      history.push(routes.new_project)
+    } else {
+      setShowActivateEmailModal(true)
+    }
+  }
+
   if (error && !isLoading) {
     return (
       <Title title='Dashboard'>
@@ -129,9 +141,9 @@ const Dashboard = ({ projects, isLoading, error }) => {
           <div className='max-w-7xl w-full mx-auto'>
             <div className='flex justify-between'>
               <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>Dashboard</h2>
-              <Link to={routes.new_project} className='inline-flex items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
+              <span onClick={onNewProject} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
                 New project
-              </Link>
+              </span>
             </div>
             {_isEmpty(projects) ? (
               <NoProjects />
@@ -146,6 +158,15 @@ const Dashboard = ({ projects, isLoading, error }) => {
             )}
           </div>
         </div>
+        <Modal
+          onClose={() => setShowActivateEmailModal(false)}
+          onSubmit={() => setShowActivateEmailModal(false)}
+          submitText='Got it'
+          title='Please, verify the email address first'
+          type='info'
+          message={'To start using our service and creating your projects, you first need to confirm your email address.\n\nA link to confirm your account was sent to the email address you provided during registration, if it was not delivered - you can request the link again in your account settings.'}
+          isOpened={showActivateEmailModal}
+        />
       </Title>
     )
   }
@@ -161,6 +182,7 @@ const Dashboard = ({ projects, isLoading, error }) => {
 
 Dashboard.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  user: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
   error: PropTypes.string,
 }

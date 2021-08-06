@@ -3,6 +3,9 @@ import { useHistory, useParams } from 'react-router-dom'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb, { area, zoom } from 'billboard.js'
+import Flag from 'react-flagkit'
+import countries from 'i18n-iso-countries'
+import countriesEn from 'i18n-iso-countries/langs/en.json'
 import cx from 'classnames'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
@@ -26,6 +29,8 @@ import Checkbox from 'ui/Checkbox'
 import { Panel } from './Panels'
 import routes from 'routes'
 import { getProjectData } from 'api'
+
+countries.registerLocale(countriesEn)
 
 const getJSON = (chart, showTotal) => ({
   x: _map(chart.x, el => dayjs(el).toDate()),
@@ -71,7 +76,9 @@ const typeNameMapping = {
   pg: 'Page',
   lc: 'Locale',
   ref: 'Referrer',
-  sw: 'Screen width',
+  dv: 'Device type',
+  br: 'Browser',
+  os: 'OS name',
   so: 'utm_source',
   me: 'utm_medium',
   ca: 'utm_campaign',
@@ -197,6 +204,8 @@ const ViewProject = ({
     }
   }
 
+  const isPanelsDataEmpty = _isEmpty(panelsData)
+
   if (!isLoading) {
     return (
       <Title title={name}>
@@ -237,32 +246,49 @@ const ViewProject = ({
               </div>
             </div>
           </div>
-          {_isEmpty(panelsData) ? (
+          {isPanelsDataEmpty && (
             analyticsLoading ? (
               <Loader />
             ) : (
               <NoEvents />
             )
-          ) : (
-            <>
-              <div className='flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-                <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
-                <div className='h-full ml-3'>
-                  <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
-                    Export as image
-                  </Button>
-                </div>
-              </div>
-              <div className='pt-4 md:pt-0'>
-                <div id='dataChart' />
-                <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                  {_map(panelsData.types, type => (
-                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
-                  ))}
-                </div>
-              </div>
-            </>
           )}
+          <div className={cx('flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4', { hidden: isPanelsDataEmpty })}>
+            <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
+            <div className='h-full ml-3'>
+              <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
+                Export as image
+              </Button>
+            </div>
+          </div>
+          <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty })}>
+            <div className='h-80' id='dataChart' />
+            <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+              {_map(panelsData.types, type => {
+                if (type === 'cc') {
+                  return (
+                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
+                      <>
+                        <Flag className='rounded-md' country={name} size={21} alt='' />
+                            &nbsp;&nbsp;
+                            {countries.getName(name, 'en')}
+                      </>
+                    )} />
+                  )
+                }
+
+                if (type === 'dv') {
+                  return (
+                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} capitalize />
+                  )
+                }
+
+                return (
+                  <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
+                )
+              })}
+            </div>
+          </div>
         </div>
       </Title>
     )
@@ -270,7 +296,9 @@ const ViewProject = ({
 
   return (
     <Title title={name}>
-      <Loader />
+      <div className='min-h-min-footer'>
+        <Loader />
+      </div>
     </Title>
   )
 }

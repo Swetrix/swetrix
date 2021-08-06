@@ -19,7 +19,7 @@ import routes from 'routes'
 
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
-  loadProjects, isLoading, projects, showError, removeProject,
+  loadProjects, isLoading, projects, showError, removeProject, user,
 }) => {
   const { pathname } = useLocation()
   const { id } = useParams()
@@ -39,6 +39,11 @@ const ProjectSettings = ({
   const [projectSaving, setProjectSaving] = useState(false)
 
   useEffect(() => {
+    if (!user.isActive) {
+      showError('Please, verify your email address first')
+      history.push(routes.dashboard)
+    }
+
     if (!isLoading && isSettings && !projectDeleting) {
       if (_isEmpty(project)) {
         showError('The selected project does not exist')
@@ -50,7 +55,7 @@ const ProjectSettings = ({
         })
       }
     }
-  }, [project, isLoading, isSettings, history, showError, projectDeleting])
+  }, [user, project, isLoading, isSettings, history, showError, projectDeleting])
 
   const onSubmit = async (data) => {
     if (!projectSaving) {
@@ -73,9 +78,9 @@ const ProjectSettings = ({
         history.push(routes.dashboard)
       } catch (e) {
         if (isSettings) {
-          updateProjectFailed(e.message)
+          updateProjectFailed(e)
         } else {
-          createNewProjectFailed(e.message)
+          createNewProjectFailed(e)
         }
       } finally {
         setProjectSaving(false)
@@ -93,7 +98,7 @@ const ProjectSettings = ({
         projectDeleted()
         history.push(routes.dashboard)
       } catch (e) {
-        deleteProjectFailed(e.message)
+        deleteProjectFailed(e)
       } finally {
         setProjectDeleting(false)
       }
@@ -249,6 +254,7 @@ ProjectSettings.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   showError: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
+  user: PropTypes.object.isRequired,
 }
 
 export default ProjectSettings

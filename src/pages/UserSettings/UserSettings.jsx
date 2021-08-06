@@ -4,10 +4,12 @@ import _size from 'lodash/size'
 import _isEmpty from 'lodash/isEmpty'
 import { MailIcon } from '@heroicons/react/outline'
 
+import { reportFrequencies } from 'redux/constants'
 import Title from 'components/Title'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
+import Select from 'ui/Select'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
 const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
@@ -18,6 +20,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
     password: '',
     repeat: '',
   })
+  const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
@@ -49,6 +52,17 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
     }
   }
 
+  const handleReportSave = () => {
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit({
+        ...form,
+        reportFrequency,
+      })
+    }
+  }
+
   const validate = () => {
     const allErrors = {}
 
@@ -72,11 +86,14 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
 
   return (
     <Title title='Profile settings'>
-      <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='min-h-min-footer bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
             Profile settings
-        </h2>
+          </h2>
+          <h3 className='mt-2 text-lg font-bold text-gray-900'>
+            General settings
+          </h3>
           <Input
             name='email'
             id='email'
@@ -116,11 +133,29 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
           <Button className='mt-4' type='submit' primary large>
             Update profile
           </Button>
-          <hr className='mt-3' />
-          {!user?.isActive && (
+          <hr className='mt-5' />
+          <h3 className='mt-2 text-lg font-bold text-gray-900'>
+            Email reports
+          </h3>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+            <div>
+              <Select
+                title={reportFrequency}
+                label='How often should we send you an email summary about your websites?'
+                className='w-full'
+                items={reportFrequencies}
+                onSelect={setReportFrequency}
+              />
+            </div>
+          </div>
+          <Button className='mt-4' onClick={handleReportSave} primary large>
+            Save
+          </Button>
+          <hr className='mt-5' />
+          {!user.isActive && (
             <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
               <MailIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
-            Didn't receive a link to confirm the email address? Request a new one!
+              Didn't receive a link to confirm the email address? Request a new one!
             </div>
           )}
           <div className='flex justify-between mt-4'>
@@ -130,7 +165,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
               primary
             >
               Request data export
-          </Button>
+            </Button>
             <Button
               className='ml-3'
               onClick={() => setShowModal(true)}
@@ -138,13 +173,13 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
               danger
             >
               Delete account
-          </Button>
+            </Button>
           </div>
         </form>
 
         <Modal
           onClose={() => setShowExportModal(false)}
-          onSubmit={() => { setShowExportModal(false); onExport() }}
+          onSubmit={() => { setShowExportModal(false); onExport(user.exportedAt) }}
           submitText='Continue'
           closeText='Close'
           title='Data export'

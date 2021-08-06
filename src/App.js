@@ -38,7 +38,7 @@ const ProtectedProjectSettings = isAuthenticated(ProjectSettings)
 const ProtectedViewProject = isAuthenticated(ViewProject)
 
 const minimalFooterPages = [
-  '/projects', '/dashboard',
+  '/projects', '/dashboard', '/settings'
 ]
 
 const App = () => {
@@ -49,8 +49,6 @@ const App = () => {
   const { error } = useSelector(state => state.errors)
   const { message, type } = useSelector(state => state.alerts)
   const accessToken = getAccessToken()
-
-  console.log(location.pathname)
 
   useEffect(() => {
     (async () => {

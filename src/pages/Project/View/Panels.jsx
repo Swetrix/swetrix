@@ -1,8 +1,10 @@
 import React, { memo, useState, useMemo, Fragment } from 'react'
 import cx from 'classnames'
+import PropTypes from 'prop-types'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
+import _isFunction from 'lodash/isFunction'
 import _reduce from 'lodash/reduce'
 import _round from 'lodash/round'
 import _floor from 'lodash/floor'
@@ -13,7 +15,9 @@ import Progress from 'ui/Progress'
 
 const ENTRIES_PER_PANEL = 5
 
-const Panel = ({ name, data }) => {
+const Panel = ({
+  name, data, rowMapper, capitalize,
+}) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
   const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])
@@ -47,9 +51,12 @@ const Panel = ({ name, data }) => {
           return (
             <Fragment key={key}>
               <div className='flex justify-between mt-1'>
-                <span className='label'>{key}</span>
+                <span className={cx('flex label', { capitalize })}>
+                  {_isFunction(rowMapper) ? rowMapper(key) : key}
+                </span>
                 <span className='ml-3'>
-                  {data[key]}&nbsp;
+                  {data[key]}
+                  &nbsp;
                   <span className='text-gray-500 font-light'>({perc}%)</span>
                 </span>
               </div>
@@ -86,6 +93,18 @@ const Panel = ({ name, data }) => {
       </div>
     </div>
   )
+}
+
+Panel.propTypes = {
+  name: PropTypes.string.isRequired,
+  data: PropTypes.objectOf(PropTypes.number).isRequired,
+  rowMapper: PropTypes.func,
+  capitalize: PropTypes.bool,
+}
+
+Panel.defaultProps = {
+  rowMapper: null,
+  capitalize: false,
 }
 
 const PanelMemo = memo(Panel)

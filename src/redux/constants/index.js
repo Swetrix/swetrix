@@ -37,9 +37,17 @@ export const tbsFormatMapper = {
   'month': '%d %B',
 }
 
+export const reportFrequencies = ['weekly', 'monthly', 'never']
+
+export const GDPR_EXPORT_TIMEFRAME = 14 // days
+
 export const TOKEN = 'access_token'
 
 export const TITLE_SUFFIX = process.env.REACT_APP_TITLE_SUFFIX
 
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
+
+// Cookies
+export const GDPR_REQUEST = 'gdpr_request'
+export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'

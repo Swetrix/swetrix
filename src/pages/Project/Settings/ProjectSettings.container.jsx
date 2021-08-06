@@ -8,6 +8,7 @@ import ProjectSettings from './ProjectSettings'
 const mapStateToProps = (state) => ({
   projects: state.ui.projects.projects,
   isLoading: state.ui.projects.isLoading,
+  user: state.auth.user,
 })
 
 const mapDispatchToProps = (dispatch) => ({
