@@ -27,8 +27,8 @@
                            <tr>
                               <td align="center" valign="top">
                                  <div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
-                                 <a href="https://swetrix.com" target="_blank" style="display: block; max-width: 173px;">
-                                    <img src="file:///home/rand/Downloads/blue_logo.png" alt="Swetrix Analytics" width="175" border="0" style="display: block; width: 175px;" />
+                                 <a href="https://swetrix.com" target="_blank" style="display: block; max-width: 173px;text-decoration: none;">
+                                    <img src="file:///home/rand/Downloads/blue_logo.png" alt="Swetrix" width="175" border="0" style="display: block; width: 175px; font-size: 32px;" />
                                  </a>
                                  <div style="height: 40px; line-height: 40px; font-size: 40px;">&nbsp;</div>
                               </td>
@@ -82,6 +82,7 @@
                                                 <b>Email address:</b>&nbsp;{{user.email}}<br />
                                                 <b>Email confirmed:</b>&nbsp;{{#if user.isActive}} Yes {{else}} No {{/if}}<br />
                                                 <b>Verification emails sent:</b>&nbsp;{{user.emailRequests}}<br />
+                                                <b>Summary report frequency:</b>&nbsp;{{user.reportFrequency}}<br />
                                                 <b>Account created at:</b>&nbsp;{{user.created}}<br />
                                                 <b>Account updated at:</b>&nbsp;{{user.updated}}<br />
                                                 <b>Last report generation time:</b>&nbsp;{{user.exportedAt}}
