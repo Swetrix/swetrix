@@ -1,14 +1,6 @@
 import {
-  isInBrowser,
-  isLocalhost,
-  isAutomated,
-  getLocale,
-  getTimezone,
-  getRefferer,
-  getUTMCampaign,
-  getUTMMedium,
-  getUTMSource,
-  getPath,
+  isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer,
+  getUTMCampaign, getUTMMedium, getUTMSource, getPath,
 } from './utils'
 
 /**
@@ -19,7 +11,7 @@ interface Map<T> {
 }
 
 export interface LibOptions {
-  // When set to `true`, all libraries logs (including possible errors) will be
+  // When set to `true`, all tracking logs will be
   // printed to console and localhost events will be sent to server.
   debug?: boolean
 
@@ -117,7 +109,7 @@ export class Lib {
       ev: 'pageviews',
       lc: getLocale(),
       tz: getTimezone(),
-      ref: getRefferer(),
+      ref: getReferrer(),
       so: getUTMSource(),
       me: getUTMMedium(),
       ca: getUTMCampaign(),

@@ -1,5 +1,3 @@
-const ua = navigator.userAgent || ''
-
 const findInSearch = (exp: RegExp): string | undefined => {
   const res = location.search.match(exp)
   return (res && res[2]) || undefined
@@ -33,7 +31,7 @@ export const getTimezone = () => {
   }
 }
 
-export const getRefferer = (): string | undefined => {
+export const getReferrer = (): string | undefined => {
   return document.referrer || undefined
 }
 
