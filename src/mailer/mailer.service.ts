@@ -10,37 +10,42 @@ const TEMPLATES_PATH = path.join(__dirname, '..', 'common', 'templates')
 const metaInfoJson = {
   [LetterTemplate.SignUp]: {
     subject: {
-      en: 'Please verify your account registration',
+      en: () => 'Please verify your account registration',
     },
   },
   [LetterTemplate.ConfirmPasswordChange]: {
     subject: {
-      en: 'Please confirm the password change',
+      en: () => 'Please confirm the password change',
     },
   },
   [LetterTemplate.MailAddressChangeConfirmation]: {
     subject: {
-      en: 'Please confirm the new e-mail address',
+      en: () => 'Please confirm the new e-mail address',
     },
   },
   [LetterTemplate.MailAddressHadChanged]: {
     subject: {
-      en: 'A new e-mail-address has been saved',
+      en: () => 'A new e-mail-address has been saved',
     },
   },
   [LetterTemplate.PasswordChangeRequest]: {
     subject: {
-      en: 'Changing your password',
+      en: () => 'Changing your password',
     },
   },
   [LetterTemplate.PasswordChanged]: {
     subject: {
-      en: 'Your password was successfully changed',
+      en: () => 'Your password was successfully changed',
     },
   },
   [LetterTemplate.GDPRDataExport]: {
     subject: {
-      en: 'Swetrix Account data export',
+      en: () => 'Swetrix Account data export',
+    },
+  },
+  [LetterTemplate.ProjectReport]: {
+    subject: {
+      en: (p: Params) => `${p.type === 'w' ? 'Weekly' : 'Monthly'} Report: ${p.date}`,
     },
   },
 }
@@ -49,17 +54,28 @@ interface Params {
   [name: string]: any
 }
 
+handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
+  return (arg1 == arg2) ? options.fn(this) : options.inverse(this)
+})
+
+handlebars.registerHelper('greater', function (v1, v2, options) {
+  if (v1 > v2) {
+    return options.fn(this)
+  }
+  return options.inverse(this)
+})
+
 @Injectable()
 export class MailerService {
   constructor(
     private readonly logger: AppLoggerService,
-  ) {}
+  ) { }
 
   async sendEmail(email: string, templateName: LetterTemplate, params: Params = null): Promise<void> {
     try {
       const templatePath = `${TEMPLATES_PATH}/en/${templateName}.html`
       const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
-      const subject = metaInfoJson[templateName].subject.en
+      const subject = metaInfoJson[templateName].subject.en(params)
       const template = handlebars.compile(letter)
       const htmlToSend = template(params)
 
@@ -85,7 +101,7 @@ export class MailerService {
         html: htmlToSend,
         attachments: [],
       }
-  
+
       if (process.env.SMTP_MOCK) {
         this.logger.log(message, 'sendEmail')
       } else {

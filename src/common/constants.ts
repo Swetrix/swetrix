@@ -39,7 +39,11 @@ const clickhouse = new ClickHouse({
  */
 function getPercentageChange(oldVal: number, newVal: number, round: number = 2) {
   if (oldVal === 0) {
-    return _round(-100 * newVal, round)
+    if (newVal === 0) {
+      return 0
+    } else {
+      return _round(-100 * newVal, round)
+    }
   }
 
   const decrease = oldVal - newVal

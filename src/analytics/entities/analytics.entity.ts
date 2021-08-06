@@ -50,10 +50,23 @@ export class Analytics {
    }) // same question as pg
   ref: string
 
-  @Column({
+  @Column('varchar', {
+    length: 32,
     nullable: true,
   })
-  sw: number
+  br: string // browser name
+
+  @Column('varchar', {
+    length: 32,
+    nullable: true,
+  })
+  os: string // OS name
+
+  @Column('varchar', {
+    length: 32,
+    nullable: true,
+  })
+  dv: string // device type [desktop, console, mobile, tablet, smarttv, wearable, embedded]
 
   @Column('varchar', {
     length: 100,
@@ -74,15 +87,7 @@ export class Analytics {
   ca: string
 
   @Column({ nullable: true })
-  lt: number
-
-  // the record itself is a unique view
-  // every additional pageview request coming from the user will be set as
-  // nupw -> non-unique page views
-  // @Column({
-  //   default: 0,
-  // })
-  // nupw: number
+  lt: number // load time
 
   @CreateDateColumn()
   created: Date;

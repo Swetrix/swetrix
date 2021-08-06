@@ -28,6 +28,12 @@ export enum UserType {
   ADMIN = 'admin',
 }
 
+export enum ReportFrequency {
+  Never = 'never',
+  Weekly = 'weekly',
+  Monthly = 'monthly'
+}
+
 export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 additional ones
 
 @Entity()
@@ -50,6 +56,13 @@ export class User {
 
   @Column({ default: false })
   isActive: boolean
+
+  @Column({
+    type: 'enum',
+    enum: ReportFrequency,
+    default: ReportFrequency.Monthly,
+  })
+  reportFrequency: ReportFrequency
 
   @Column('int', { default: 1 })
   emailRequests: number

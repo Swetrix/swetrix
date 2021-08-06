@@ -42,12 +42,6 @@ export class PageviewsDTO {
   ref: string
 
   @ApiProperty({
-    example: 1920,
-    description: 'Screen width'
-  })
-  sw: number
-
-  @ApiProperty({
     example: 'duckduckgo',
     description: 'utm_source URL parameter'
   })

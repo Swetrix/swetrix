@@ -50,6 +50,12 @@ export class UserService {
     return this.usersRepository.findOne(id, { relations })
   }
 
+  findWhereWithRelations(where: Record<string, unknown>, relations: string[]): Promise<User[]> {
+    return this.usersRepository.find({
+      where, relations,
+    })
+  }
+
   findWhere(where: Record<string, unknown>): Promise<User[]> {
     return this.usersRepository.find({ where })
   }

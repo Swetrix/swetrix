@@ -1,6 +1,6 @@
 import {
   Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete,
-  BadRequestException, HttpCode, NotFoundException,
+  BadRequestException, HttpCode, NotFoundException, ForbiddenException,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -66,6 +66,12 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
+    const user = await this.userService.findOneWithRelations(userId, ['projects'])
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
+
     this.projectService.validateProject(projectDTO)
 
     await this.projectService.checkIfIDUnique(projectDTO.id)
@@ -76,7 +82,6 @@ export class ProjectController {
       project.origins = _map(projectDTO.origins, _trim)
 
       const newProject = await this.projectService.create(project)
-      const user = await this.userService.findOneWithRelations(userId, ['projects'])
       user.projects.push(project)
 
       await this.userService.create(user)

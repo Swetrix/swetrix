@@ -12,6 +12,7 @@ import {
   InternalServerErrorException, NotImplementedException, UnprocessableEntityException,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
+import * as UAParser from 'ua-parser-js'
 
 import { AnalyticsService } from './analytics.service'
 import { ProjectService } from '../project/project.service'
@@ -22,7 +23,7 @@ import { PageviewsDTO } from './dto/pageviews.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  clickhouse, isValidPID, getPercentageChange, REDIS_LOG_DATA_CACHE_KEY, redis,
+  clickhouse, isValidPID, REDIS_LOG_DATA_CACHE_KEY, redis,
 } from '../common/constants'
 import ct from '../common/countriesTimezones'
 
@@ -32,9 +33,9 @@ dayjs.extend(utc)
 // store them in redis storage and reset every 24 hours
 const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => hash(`${ua}${ip}${pid}${salt}`).toString('hex')
 
-const analyticsDTO = (pid: string, ev: string, pg: string, lc: string, ref: string, sw: number | string, so: string, me: string, ca: string, lt: number | string, tz: string, unique: number): Array<string | number> => {
+const analyticsDTO = (pid: string, ev: string, pg: string, dv: string, br: string, os: string, lc: string, ref: string, so: string, me: string, ca: string, lt: number | string, tz: string, unique: number): Array<string | number> => {
   const cc = tz === 'NULL' ? 'NULL' : ct.getCountryForTimezone(tz)?.id
-  return [uuidv4(), pid, ev, pg, lc, ref, sw, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
+  return [uuidv4(), pid, ev, pg, dv, br, os, lc, ref, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
 }
 
 const getElValue = (el) => {
@@ -108,8 +109,6 @@ export class AnalyticsController {
       pids = JSON.stringify([pid])
     }
 
-    const result = { }
-
     try {
       pids = JSON.parse(pids)
     } catch (e) {
@@ -120,36 +119,7 @@ export class AnalyticsController {
       throw new UnprocessableEntityException('An array of Project ID\'s has to be provided as a \'pids\' param')
     }
 
-    for (let i = 0; i < _size(pids); ++i) {
-      const pid = pids[i]
-      if (!isValidPID(pid)) throw new BadRequestException(`The provided Project ID (${pid}) is incorrect`)
-
-      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      const oneWRaw = dayjs.utc().subtract(1, 'w')
-      const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
-      const twoWeeks = oneWRaw.subtract(1, 'w').format('YYYY-MM-DD HH:mm:ss')
-
-      let query1 = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${oneWeek}' AND '${now}'`
-      let query2 = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${twoWeeks}' AND '${oneWeek}'`
-
-      // todo: save to redis
-      try {
-        const res1 = await clickhouse.query(query1).toPromise()
-        const res2 = await clickhouse.query(query2).toPromise()
-        const thisWeek = res1[0]['count()']
-        const lastWeek = res2[0]['count()']
-
-        result[pid] = {
-          thisWeek,
-          lastWeek,
-          percChange: getPercentageChange(thisWeek, lastWeek),
-        }
-      } catch {
-        throw new InternalServerErrorException('Can\'t process the provided PID. Please, try again later.')
-      }
-    }
-
-    return result
+    return this.analyticsService.getSummary(pids)
   }
 
   @Post('/')
@@ -163,9 +133,13 @@ export class AnalyticsController {
     let dto: Array<string | number>
 
     if (unique) {
-      dto = analyticsDTO(logDTO.pid, logDTO.ev, logDTO.pg, logDTO.lc, logDTO.ref, logDTO.sw, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, logDTO.tz, 1)
+      const ua = UAParser(userAgent)
+      const dv = ua.device.type || 'desktop'
+      const br = ua.browser.name
+      const os = ua.os.name
+      dto = analyticsDTO(logDTO.pid, logDTO.ev, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, logDTO.tz, 1)
     } else {
-      dto = analyticsDTO(logDTO.pid, logDTO.ev, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
+      dto = analyticsDTO(logDTO.pid, logDTO.ev, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
     }
 
     // todo: fix: may be vulnerable to sql injection attack

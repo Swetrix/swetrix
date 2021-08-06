@@ -7,6 +7,7 @@ import * as _map from 'lodash/map'
 import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+// import { OpUnitType } from 'dayjs/index'
 import { ForbiddenException, Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -14,7 +15,7 @@ import { Repository } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
-  UNIQUE_SESSION_LIFE_TIME,
+  UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange,
 } from '../common/constants'
 import { Analytics } from './entities/analytics.entity'
 import { PageviewsDTO } from './dto/pageviews.dto'
@@ -123,13 +124,15 @@ export class AnalyticsService {
   processData(data: object): object {
     const res = {
       cc: {},
-      pg: {}, 
+      pg: {},
       lc: {},
+      br: {},
+      os: {},
+      dv: {},
       ref: {},
-      sw: {},
-      so: {}, 
+      so: {},
       me: {},
-      ca: {}, 
+      ca: {},
       lt: {},
     }
     const whitelist = _keys(res)
@@ -148,6 +151,58 @@ export class AnalyticsService {
     }
   
     return res
+  }
+
+  async getSummary(pids: string[], period: 'w' | 'M' = 'w', advanced: boolean = false): Promise<Object> {
+    const result = {}
+    for (let i = 0; i < _size(pids); ++i) {
+      const pid = pids[i]
+      if (!isValidPID(pid)) throw new BadRequestException(`The provided Project ID (${pid}) is incorrect`)
+
+      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+      const oneWRaw = dayjs.utc().subtract(1, period)
+      const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
+      const twoWeeks = oneWRaw.subtract(1, period).format('YYYY-MM-DD HH:mm:ss')
+
+      const query1_pageviews = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${oneWeek}' AND '${now}'`
+      const query2_pageviews = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${twoWeeks}' AND '${oneWeek}'`
+      const query1_unique = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND unique=1 AND created BETWEEN '${oneWeek}' AND '${now}'`
+      const query2_unique = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND unique=1 AND created BETWEEN '${twoWeeks}' AND '${oneWeek}'`
+
+      // todo: save to redis
+      try {
+        const res1_pageviews = await clickhouse.query(query1_pageviews).toPromise()
+        const res2_pageviews = await clickhouse.query(query2_pageviews).toPromise()
+        const thisWeekPV = res1_pageviews[0]['count()']
+        const lastWeekPV = res2_pageviews[0]['count()']
+        
+        if (advanced) {
+          const res1_unique = await clickhouse.query(query1_unique).toPromise()
+          const res2_unique = await clickhouse.query(query2_unique).toPromise()
+          const thisWeekUnique = res1_unique[0]['count()']
+          const lastWeekUnique = res2_unique[0]['count()']
+
+          result[pid] = {
+            thisWeek: thisWeekPV,
+            lastWeek: lastWeekPV,
+            thisWeekUnique,
+            lastWeekUnique,
+            percChange: getPercentageChange(thisWeekPV, lastWeekPV),
+            percChangeUnique: getPercentageChange(thisWeekUnique, lastWeekUnique),
+          }
+        } else {
+          result[pid] = {
+            thisWeek: thisWeekPV,
+            lastWeek: lastWeekPV,
+            percChange: getPercentageChange(thisWeekPV, lastWeekPV),
+          }
+        }
+      } catch {
+        throw new InternalServerErrorException('Can\'t process the provided PID. Please, try again later.')
+      }
+    }
+
+    return result
   }
 
   // TODO: Refactor; check if there's no date/time shifts
