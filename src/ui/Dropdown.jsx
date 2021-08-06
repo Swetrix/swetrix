@@ -3,16 +3,23 @@ import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/solid'
 import cx from 'classnames'
 import _map from 'lodash/map'
+import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
 
 const Dropdown = ({
-  title, className, items, labelExtractor, keyExtractor, onSelect,
+  title, desc, className, items, labelExtractor, keyExtractor, onSelect, aside,
 }) => (
   <Menu as='div' className={cx('relative inline-block text-left', className)}>
     {({ open }) => (
       <>
+        {!_isEmpty(desc) && (
+          <p className='mb-2 text-sm text-gray-900'>{desc}</p>
+        )}
         <div>
-          <Menu.Button className='inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500'>
+          <Menu.Button className={cx('inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500', {
+            'justify-between': aside,
+            'justify-center': !aside,
+          })}>
             {title}
             <ChevronDownIcon className='-mr-1 ml-2 h-5 w-5' aria-hidden='true' />
           </Menu.Button>
@@ -60,12 +67,16 @@ Dropdown.propTypes = {
   className: PropTypes.string,
   labelExtractor: PropTypes.func,
   keyExtractor: PropTypes.func,
+  aside: PropTypes.bool,
+  desc: PropTypes.string,
 }
 
 Dropdown.defaultProps = {
   className: '',
   labelExtractor: null,
   keyExtractor: null,
+  aside: false,
+  desc: '',
 }
 
 export default memo(Dropdown)
