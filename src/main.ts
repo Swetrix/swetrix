@@ -22,4 +22,4 @@ async function bootstrap() {
 
   await app.listen(5005)
 }
-bootstrap();
+bootstrap()

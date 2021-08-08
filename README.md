@@ -2,30 +2,6 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
 ## Installation
 
 ```bash
@@ -58,16 +34,122 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+## Deployment
+### The beployment process has been tested on Debian, but should work well on other APT-based OS as well
+Install MySQL, Clickhouse and Redis databases:
+```bash
+sudo apt-get install apt-transport-https ca-certificates dirmngr
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E0C56BD4
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+echo "deb https://repo.clickhouse.tech/deb/stable/ main/" | sudo tee /etc/apt/sources.list.d/clickhouse.list
 
-## Stay in touch
+sudo apt -y update
+sudo apt -y upgrade
+sudo apt -y install mariadb-server redis-server clickhouse-server clickhouse-client
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+sudo service clickhouse-server start
+```
 
-## License
+MySQL DB setup:
+```bash
+mysql -uroot
 
-Nest is [MIT licensed](LICENSE).
+# Inside the MySQL shell:
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'root_password';
+flush privileges;
+exit;
+
+# Logging into the MySQL again
+mysql -uroot -proot_password
+
+create database analytics;
+```
+
+Clickhouse DB setup:
+```bash
+create database analytics;
+
+use analytics;
+
+CREATE TABLE analytics.analytics
+(
+    `id` UUID,
+    `pid` FixedString(12),
+    `ev` String,
+    `pg` Nullable(String),
+    `dv` Nullable(String),
+    `br` Nullable(String),
+    `os` Nullable(String),
+    `lc` Nullable(String),
+    `ref` Nullable(String),
+    `so` Nullable(String),
+    `me` Nullable(String),
+    `ca` Nullable(String),
+    `lt` Nullable(UInt16),
+    `cc` Nullable(FixedString(2)),
+    `unique` UInt8,
+    `created` DateTime
+)
+ENGINE = MergeTree()
+PARTITION BY toYYYYMM(created)
+ORDER BY (id, created, pid);
+```
+
+For Redis please run `redis-cli` to test if it's working well.\
+
+NodeJS (v14 LTS) & NPM (and PM2) installation:
+```bash
+curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
+sudo apt -y install nodejs gcc g++ make
+
+npm i -g pm2
+```
+
+Copy the API source code (or `dist` build only, don't forget to copy `.env` into `dist` folder) into the `/root/swetrix/api`:
+```bash
+# Run on the server
+mkdir /root/swetrix/api
+
+# Run this command in the local machine in context of the API directory:
+scp -rp ./* ./.env.example ./.eslintrc.js ./.prettierrc  root@SERVER_IP_ADDRESS:/root/swetrix/api
+```
+Make sure to set up `.env` variables
+
+Install API's dependencies, create a build (please, make sure the `common/templates` **are included** into the `dist` build):
+```bash
+cd /root/swetrix/api
+npm i
+npm run build
+```
+
+Set up NGINX ( https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10 )
+
+NGINX set up:
+```
+server {
+  listen 80;
+  server_name swetrix.com
+
+  root /var/www/html;
+
+  location / {
+    try_files $uri $uri/ =404;
+  }
+}
+
+server {
+  listen 80;
+  server_name api.swetrix.com;
+
+  location / {
+    proxy_pass http://localhost:5005;
+  }
+}
+
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+  server_name "";
+  return 404;
+}
+```
