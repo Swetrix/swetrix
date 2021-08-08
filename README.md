@@ -97,13 +97,15 @@ ORDER BY (id, created, pid);
 
 For Redis please run `redis-cli` to test if it's working well.\
 
-NodeJS (v14 LTS) & NPM installation:
+NodeJS (v14 LTS) & NPM (and PM2) installation:
 ```bash
 curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
 sudo apt -y install nodejs gcc g++ make
+
+npm i -g pm2
 ```
 
-Copy the API source code (or `dist` build only) into the `/root/swetrix/api`:
+Copy the API source code (or `dist` build only, don't forget to copy `.env` into `dist` folder) into the `/root/swetrix/api`:
 ```bash
 # Run on the server
 mkdir /root/swetrix/api
@@ -120,4 +122,4 @@ npm i
 npm run build
 ```
 
-Set up NGINX (https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10)\
+Set up NGINX ( https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10 )\
