@@ -8,7 +8,7 @@ import * as utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import {
-  Controller, Body, Query, UseGuards, Get, Post, Ip, Headers, BadRequestException,
+  Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException,
   InternalServerErrorException, NotImplementedException, UnprocessableEntityException,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
@@ -55,7 +55,7 @@ export class AnalyticsController {
 
   @Get('/')
   @UseGuards(RolesGuard)
-  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getData(@Query() data: AnalyticsGET_DTO): Promise<any> {
     this.logger.log({ ...data }, 'GET /log')
 
@@ -123,10 +123,15 @@ export class AnalyticsController {
   }
 
   @Post('/')
-  async log(@Body() logDTO: PageviewsDTO, @Ip() ip, @Headers() headers): Promise<any> {
-    this.logger.log({ logDTO, ip, headers }, 'POST /log')
+  async log(@Body() logDTO: PageviewsDTO, @Headers() headers): Promise<any> {
+    this.logger.log({ logDTO, headers }, 'POST /log')
+
     const { 'user-agent': userAgent, origin } = headers
     await this.analyticsService.validate(logDTO, origin)
+
+    // the NestJS server HAS TO be proxied either by Cloudflare or by NGINX, which are setting the request IP
+    // if the app is hosted raw, @nestjs/common @Ip module should be used to retreive the request IP address
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || ''
 
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid)
     const unique = await this.analyticsService.isUnique(sessionHash)
