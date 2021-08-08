@@ -123,3 +123,33 @@ npm run build
 ```
 
 Set up NGINX ( https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10 )\
+
+NGINX set up:
+```
+server {
+  listen 80;
+  server_name swetrix.com
+
+  root /var/www/html;
+
+  location / {
+    try_files $uri $uri/ =404;
+  }
+}
+
+server {
+  listen 80;
+  server_name api.swetrix.com;
+
+  location / {
+    proxy_pass http://localhost:5005;
+  }
+}
+
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+  server_name "";
+  return 404;
+}
+```
