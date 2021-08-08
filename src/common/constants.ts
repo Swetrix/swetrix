@@ -58,11 +58,15 @@ const isValidPID = (pid: string) => _size(pid) === 12
 
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
+const getRedisProjectCountKey = (pid: string) => `pid_c_${pid}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
+
+// 15 minutes
+const redisProjectCountCacheTimeout = 900
 
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
@@ -73,5 +77,5 @@ const GDPR_EXPORT_TIMEFRAME = 14
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
-  GDPR_EXPORT_TIMEFRAME,
+  GDPR_EXPORT_TIMEFRAME, getRedisProjectCountKey, redisProjectCountCacheTimeout,
 }

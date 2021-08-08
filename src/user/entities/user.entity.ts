@@ -2,25 +2,30 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BeforeUpdate } from 
 import { ActionToken } from 'src/action-tokens/action-token.entity'
 import { Project } from 'src/project/entity/project.entity'
 
-const FREE_PLAN = {
-  code: 'free',
-  displayName: 'Free plan',
-  monthlyUsageLimit: 5000,
-  stripePriceID: '',
+export const ACCOUNT_PLANS = {
+  free: {
+    displayName: 'Free plan',
+    monthlyUsageLimit: 3000,
+  },
+  freelancer: {
+    displayName: 'Freelancer plan',
+    monthlyUsageLimit: 100000,
+  },
+  startup: {
+    displayName: 'Startup plan',
+    monthlyUsageLimit: 500000,
+  },
+  enterprise: {
+    displayName: 'Enterprise plan',
+    monthlyUsageLimit: 1000000,
+  },
 }
 
-const BASIC_PLAN = {
-  code: 'free',
-  displayName: 'Free plan',
-  monthlyUsageLimit: 5000,
-  stripePriceID: '',
-}
-
-const ENTERPRISE_PLAN = {
-  code: 'free',
-  displayName: 'Free plan',
-  monthlyUsageLimit: 5000,
-  stripePriceID: '',
+export enum PlanCode {
+  free = 'free',
+  freelancer = 'freelancer',
+  startup = 'startup',
+  enterprise = 'enterprise',
 }
 
 export enum UserType {
@@ -47,6 +52,13 @@ export class User {
     default: UserType.CUSTOMER,
   })
   roles: UserType[]
+
+  @Column({
+    type: 'enum',
+    enum: PlanCode,
+    default: PlanCode.free,
+  })
+  planCode: PlanCode
 
   @Column('varchar', { length: 254, unique: true })
   email: string

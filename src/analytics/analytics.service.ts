@@ -7,15 +7,17 @@ import * as _map from 'lodash/map'
 import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
-// import { OpUnitType } from 'dayjs/index'
-import { ForbiddenException, Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common'
+import {
+  Injectable, BadRequestException, InternalServerErrorException, ForbiddenException,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
-import { Pagination, PaginationOptionsInterface } from '../common/pagination'
+import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
-  UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange,
+  UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisProjectCountKey,
+  redisProjectCountCacheTimeout,
 } from '../common/constants'
 import { Analytics } from './entities/analytics.entity'
 import { PageviewsDTO } from './dto/pageviews.dto'
@@ -31,22 +33,6 @@ export class AnalyticsService {
     private analyticsRepository: Repository<Analytics>,
     private readonly projectService: ProjectService,
   ) { }
-
-  // async paginate(options: PaginationOptionsInterface, where: Record<string, unknown> | undefined): Promise<Pagination<Analytics>> {
-  //   const [results, total] = await this.analyticsRepository.findAndCount({
-  //     take: options.take || 10,
-  //     skip: options.skip || 0,
-  //     where: where,
-  //     order: {
-  //       name: 'ASC',
-  //     }
-  //   })
-
-  //   return new Pagination<Analytics>({
-  //     results,
-  //     total,
-  //   })
-  // }
 
   count(): Promise<number> {
     return this.analyticsRepository.count()
@@ -86,7 +72,7 @@ export class AnalyticsService {
     const pidKey = getRedisProjectKey(pid)
     let project = await redis.get(pidKey)
     if (_isEmpty(project)) {
-      project = await this.projectService.findOne(pid)
+      project = await this.projectService.findOneWithRelations(pid)
       if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
       await redis.set(pidKey, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
     } else {
@@ -98,6 +84,33 @@ export class AnalyticsService {
     }
 
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
+
+    const countKey = getRedisProjectCountKey(pid)
+    let count = await redis.get(countKey)
+    if (_isEmpty(count)) {
+      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+      const monthStart = dayjs.utc().startOf('month').format('YYYY-MM-DD HH:mm:ss')
+      const count_query = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${monthStart}' AND '${now}'`
+      const result = await clickhouse.query(count_query).toPromise()
+
+      const pageviews = result[0]['count()']
+      count = pageviews
+
+      await redis.set(countKey, `${pageviews}`, 'EX', redisProjectCountCacheTimeout)
+    } else {
+      try {
+        count = Number(count)
+      } catch (e) {
+        console.error(e)
+        throw new InternalServerErrorException('Error while processing project')
+      }
+    }
+
+    const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
+
+    if (count >= maxCount) {
+      throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+    }
 
     if (!_isEmpty(project.origins) && !_isEmpty(origin)) {
       if (origin === 'null') {

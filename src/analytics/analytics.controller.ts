@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import {
   Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException,
-  InternalServerErrorException, NotImplementedException, UnprocessableEntityException,
+  InternalServerErrorException, NotImplementedException, UnprocessableEntityException, PreconditionFailedException,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
@@ -71,7 +71,7 @@ export class AnalyticsController {
     if (!_isEmpty(from) && !_isEmpty(to)) {
       throw new NotImplementedException('Filtering by from/to params is currently not available')
       if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
-        throw new BadRequestException('The timeframe \'from\' parameter cannot be greater than \'to\'')
+        throw new PreconditionFailedException('The timeframe \'from\' parameter cannot be greater than \'to\'')
       }
 
       if (dayjs.utc(to).isAfter(dayjs.utc(), 'second')) {
