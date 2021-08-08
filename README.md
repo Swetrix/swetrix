@@ -122,7 +122,7 @@ npm i
 npm run build
 ```
 
-Set up NGINX ( https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10 )\
+Set up NGINX ( https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10 )
 
 NGINX set up:
 ```
