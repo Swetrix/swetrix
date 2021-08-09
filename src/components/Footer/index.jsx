@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import _map from 'lodash/map'
+import Flag from 'react-flagkit'
 import PropTypes from 'prop-types'
 
 const navigation = {
@@ -20,7 +21,7 @@ const navigation = {
   social: [
     {
       name: 'GitHub',
-      href: '#',
+      href: 'https://github.com/Swetrix',
       icon: (props) => (
         <svg fill='currentColor' viewBox='0 0 24 24' {...props}>
           <path
@@ -76,13 +77,23 @@ const Footer = ({ minimal }) => {
       <h2 id='footer-heading' className='sr-only'>
         Footer
       </h2>
-      <div className='w-11/12 mx-auto py-12 px-4 sm:px-6 lg:px-8'>
+      <div className='w-11/12 mx-auto py-8 px-4 sm:px-6 lg:px-8'>
         <div className='xl:grid xl:grid-cols-3 xl:gap-8'>
           <div className='space-y-8 xl:col-span-1'>
             <img className='h-10' src='/assets/logo_white.png' alt='Swetrix Analytics' />
             <p className='text-gray-300 text-base'>
               The best apps need the best services.<br />
               Swetrix is a powerful analytics platform that respects user privacy.
+            </p>
+            <p className='flex text-gray-300 text-base'>
+              Made in
+              <a className='hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/Ukraine' target='_blank' rel='noopener noreferrer'>
+                <Flag className='pt-1.5' country='UA' size={18} alt='Ukraine' title='Ukraine' />
+              </a>
+              , hosted in
+              <a className='hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/European_Union' target='_blank' rel='noopener noreferrer'>
+                <Flag className='pt-1.5' country='EU' size={18} alt='the European Union' title='The European Union' />
+              </a>
             </p>
             <div className='flex space-x-6'>
               {_map(navigation.social, (item) => (
@@ -137,7 +148,7 @@ const Footer = ({ minimal }) => {
             </div>
           </div>
         </div>
-        <div className='mt-12 border-t border-gray-200 pt-8'>
+        <div className='mt-8 border-t border-gray-200 pt-8'>
           <p className='text-base text-gray-400 xl:text-center'>&copy; 2021 Swetrix Analytics. All rights reserved.</p>
         </div>
       </div>
