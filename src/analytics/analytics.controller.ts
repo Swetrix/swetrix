@@ -119,7 +119,7 @@ export class AnalyticsController {
       throw new UnprocessableEntityException('An array of Project ID\'s has to be provided as a \'pids\' param')
     }
 
-    return this.analyticsService.getSummary(pids)
+    return this.analyticsService.getSummary(pids, 'w', true)
   }
 
   @Post('/')
@@ -154,7 +154,7 @@ export class AnalyticsController {
       return
     } catch (e) {
       this.logger.error(e)
-      throw new InternalServerErrorException(`Error error while saving the data: ${e}`)
+      throw new InternalServerErrorException('Error occured while saving the log data')
     }
   }
 }
