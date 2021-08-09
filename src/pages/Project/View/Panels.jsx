@@ -1,4 +1,6 @@
 import React, { memo, useState, useMemo, Fragment } from 'react'
+import { ArrowSmUpIcon } from '@heroicons/react/solid'
+import { ArrowSmDownIcon } from '@heroicons/react/solid'
 import cx from 'classnames'
 import PropTypes from 'prop-types'
 import _keys from 'lodash/keys'
@@ -10,13 +12,128 @@ import _round from 'lodash/round'
 import _floor from 'lodash/floor'
 import _size from 'lodash/size'
 import _slice from 'lodash/slice'
+import _sum from 'lodash/sum'
 
 import Progress from 'ui/Progress'
 
 const ENTRIES_PER_PANEL = 5
 
+const PanelContainer = ({
+  name, children,
+}) => (
+  <div className='relative bg-white pt-5 px-4 pb-12 h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden'>
+    <h3 className='text-lg leading-6 font-semibold mb-2 text-gray-900'>{name}</h3>
+    <div className='flex flex-col h-full'>
+      {children}
+    </div>
+  </div>
+)
+
+PanelContainer.propTypes = {
+  name: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+}
+
+const Overview = ({
+  overall, chartData, activePeriod,
+}) => {
+  const pageviewsDidGrowUp = overall.percChange >= 0
+  const uniqueDidGrowUp = overall.percChangeUnique >= 0
+  const pageviews = _sum(chartData.visits)
+  const uniques = _sum(chartData.uniques)
+
+  return (
+    <PanelContainer name='Overview'>
+      {!_isEmpty(chartData) && (
+        <>
+          <p className='text-lg font-semibold'>
+            Stats for
+            <span className='lowercase'> {activePeriod.label}</span>
+          </p>
+
+          <div className='flex justify-between'>
+            <p className='text-lg'>Pageviews:</p>
+            <p className='h-5 w-5 mr-2 text-gray-900 text-xl'>
+              {pageviews}
+            </p>
+          </div>
+
+          <div className='flex justify-between'>
+            <p className='text-lg'>Unique views:</p>
+            <p className='h-5 w-5 mr-2 text-gray-900 text-xl'>
+              {uniques}
+            </p>
+          </div>
+          <hr className='my-2' />
+        </>
+      )}
+      <p className='text-lg font-semibold'>
+        Weekly stats
+      </p>
+      <div className='flex justify-between'>
+        <p className='text-lg'>Pageviews:</p>
+        <dd className='flex items-baseline'>
+          <p className='h-5 w-5 mr-2 text-gray-900 text-lg'>
+            {overall.thisWeek}
+          </p>
+          <p className={cx('flex text-sm -ml-1 items-baseline', {
+            'text-green-600': pageviewsDidGrowUp,
+            'text-red-600': !pageviewsDidGrowUp,
+          })}>
+            {pageviewsDidGrowUp ? (
+              <>
+                <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <span className='sr-only'>
+                  Increased by
+                </span>
+              </>
+            ) : (
+              <>
+                <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <span className='sr-only'>
+                  Descreased by
+                </span>
+              </>
+            )}
+            {overall.percChange}%
+          </p>
+        </dd>
+      </div>
+      <div className='flex justify-between'>
+        <p className='text-lg'>Unique views:</p>
+        <dd className='flex items-baseline'>
+          <p className='h-5 w-5 mr-2 text-gray-900 text-lg'>
+            {overall.thisWeekUnique}
+          </p>
+          <p className={cx('flex text-sm -ml-1 items-baseline', {
+            'text-green-600': uniqueDidGrowUp,
+            'text-red-600': !uniqueDidGrowUp,
+          })}>
+            {uniqueDidGrowUp ? (
+              <>
+                <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <span className='sr-only'>
+                  Increased by
+                </span>
+              </>
+            ) : (
+              <>
+                <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <span className='sr-only'>
+                  Descreased by
+                </span>
+              </>
+            )}
+            {overall.percChangeUnique}%
+          </p>
+        </dd>
+      </div>
+    </PanelContainer>
+  )
+}
+
 const Panel = ({
-  name, data, rowMapper, capitalize,
+  name, data, rowMapper, capitalize, linkContent,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -40,58 +157,62 @@ const Panel = ({
   }
 
   return (
-    <div className='relative bg-white pt-5 px-4 pb-12 h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden'>
-      <h3 className='text-lg leading-6 font-semibold mb-2 text-gray-900'>{name}</h3>
-      <div className='flex flex-col h-full'>
-        {_isEmpty(data) ? (
-          <p className="mt-1 text-base text-gray-700">There's currently no data for this parameter</p>
-        ) : _map(keysToDisplay, key => {
-          const perc = _round(data[key] / total * 100, 2)
+    <PanelContainer name={name}>
+      {_isEmpty(data) ? (
+        <p className="mt-1 text-base text-gray-700">There's currently no data for this parameter</p>
+      ) : _map(keysToDisplay, key => {
+        const perc = _round(data[key] / total * 100, 2)
+        const rowData = _isFunction(rowMapper) ? rowMapper(key) : key
 
-          return (
-            <Fragment key={key}>
-              <div className='flex justify-between mt-1'>
+        return (
+          <Fragment key={key}>
+            <div className='flex justify-between mt-1'>
+              {linkContent ? (
+                <a className={cx('flex label hover:underline text-blue-600', { capitalize })} href={rowData} target='_blank' rel='noopener noreferrer'>
+                  {rowData}
+                </a>
+              ) : (
                 <span className={cx('flex label', { capitalize })}>
-                  {_isFunction(rowMapper) ? rowMapper(key) : key}
+                  {rowData}
                 </span>
-                <span className='ml-3'>
-                  {data[key]}
-                  &nbsp;
-                  <span className='text-gray-500 font-light'>({perc}%)</span>
-                </span>
-              </div>
-              <Progress now={perc} />
-            </Fragment>
-          )
-        })}
-        {_size(keys) > 5 && (
-          <div className="absolute bottom-0 w-card-toggle">
-            <div className='flex justify-between select-none mb-2'>
-            <span
-              className={cx('text-gray-500 font-light', {
-                hoverable: canGoPrev(),
-                disabled: !canGoPrev(),
-              })}
-              role='button'
-              onClick={onPrevious}
-            >
-            &lt; Previous
-            </span>
-            <span
-              className={cx('text-gray-500 font-light', {
-                hoverable: canGoNext(),
-                disabled: !canGoNext(),
-              })}
-              role='button'
-              onClick={onNext}
-            >
-              Next &gt;
-            </span>
-          </div>
-          </div>
-        )}
-      </div>
-    </div>
+              )}
+              <span className='ml-3'>
+                {data[key]}
+                &nbsp;
+                <span className='text-gray-500 font-light'>({perc}%)</span>
+              </span>
+            </div>
+            <Progress now={perc} />
+          </Fragment>
+        )
+      })}
+      {_size(keys) > 5 && (
+        <div className="absolute bottom-0 w-card-toggle">
+          <div className='flex justify-between select-none mb-2'>
+          <span
+            className={cx('text-gray-500 font-light', {
+              hoverable: canGoPrev(),
+              disabled: !canGoPrev(),
+            })}
+            role='button'
+            onClick={onPrevious}
+          >
+          &lt; Previous
+          </span>
+          <span
+            className={cx('text-gray-500 font-light', {
+              hoverable: canGoNext(),
+              disabled: !canGoNext(),
+            })}
+            role='button'
+            onClick={onNext}
+          >
+            Next &gt;
+          </span>
+        </div>
+        </div>
+      )}
+    </PanelContainer>
   )
 }
 
@@ -100,15 +221,19 @@ Panel.propTypes = {
   data: PropTypes.objectOf(PropTypes.number).isRequired,
   rowMapper: PropTypes.func,
   capitalize: PropTypes.bool,
+  linkContent: PropTypes.bool,
 }
 
 Panel.defaultProps = {
   rowMapper: null,
   capitalize: false,
+  linkContent: false,
 }
 
 const PanelMemo = memo(Panel)
+const OverviewMemo = memo(Overview)
 
 export {
   PanelMemo as Panel,
+  OverviewMemo as Overview,
 }
