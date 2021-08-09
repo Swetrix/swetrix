@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
-import bb, { area, zoom } from 'billboard.js'
+import bb, { area, zoom } from 'billboard.js' // eslint-disable-line
 import Flag from 'react-flagkit'
 import countries from 'i18n-iso-countries'
 import countriesEn from 'i18n-iso-countries/langs/en.json'
@@ -26,7 +26,7 @@ import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
-import { Panel } from './Panels'
+import { Panel, Overview } from './Panels'
 import routes from 'routes'
 import { getProjectData } from 'api'
 
@@ -44,6 +44,10 @@ const getSettings = (chart, timeBucket, showTotal = true) => ({
     json: getJSON(chart, showTotal),
     type: area(),
     xFormat: '%y-%m-%d %H:%M:%S',
+    colors: {
+      'Unique visitors': '#2563EB',
+      'Total page views': '#D97706',
+    }
   },
   axis: {
     x: {
@@ -54,18 +58,46 @@ const getSettings = (chart, timeBucket, showTotal = true) => ({
       type: 'timeseries',
     },
   },
-  zoom: {
-    enabled: zoom(),
-    type: 'drag',
-  },
+  // zoom: {
+  //   enabled: zoom(),
+  //   type: 'drag',
+  // },
   tooltip: {
     format: {
       title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+    },
+    contents: {
+      template: `
+        <ul class='bg-gray-100 rounded-md shadow-md px-3 py-1'>
+          <li class='font-semibold'>{=TITLE}</li>
+          <hr />
+          {{
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                <span>{=NAME}</span>
+              </div>
+              <span class='pl-4'>{=VALUE}</span>
+            </li>
+          }}
+        </ul>`,
     },
   },
   point: {
     focus: {
       only: true,
+    },
+    pattern: [
+      'circle',
+    ],
+    r: 3,
+  },
+  legend: {
+    usePoint: true,
+    item: {
+      tile: {
+        width: 10,
+      },
     },
   },
   bindto: '#dataChart',
@@ -264,14 +296,15 @@ const ViewProject = ({
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty })}>
             <div className='h-80' id='dataChart' />
             <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+              <Overview overall={project.overall} chartData={chartData} activePeriod={activePeriod} />
               {_map(panelsData.types, type => {
                 if (type === 'cc') {
                   return (
                     <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
                       <>
                         <Flag className='rounded-md' country={name} size={21} alt='' />
-                            &nbsp;&nbsp;
-                            {countries.getName(name, 'en')}
+                        &nbsp;&nbsp;
+                        {countries.getName(name, 'en')}
                       </>
                     )} />
                   )
@@ -280,6 +313,12 @@ const ViewProject = ({
                 if (type === 'dv') {
                   return (
                     <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} capitalize />
+                  )
+                }
+
+                if (type === 'ref') {
+                  return (
+                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} linkContent />
                   )
                 }
 
