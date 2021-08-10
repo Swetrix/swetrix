@@ -25,11 +25,11 @@ export interface LibOptions {
 }
 
 export interface TrackEventOptions {
-  // Unique ID for the event
-  id: string
+  // The event name
+  ev: string
 
-  // Parameters for the event, e.g. { ref: 'duckduckgo', plan: 'gold+' }
-  params?: Map<string>
+  // If true, only 1 event with the same ID will be saved per user session
+  unique?: boolean
 }
 
 export interface PageData {
@@ -61,10 +61,9 @@ export class Lib {
 
     const data = {
       pid: this.projectID,
-      ev: event.id,
-      params: event.params,
+      ...event,
     }
-    this.submitData(data)
+    this.submitCustom(data)
   }
 
   // Tracks page views
@@ -106,7 +105,6 @@ export class Lib {
 
     const data = {
       pid: this.projectID,
-      ev: 'pageviews',
       lc: getLocale(),
       tz: getTimezone(),
       ref: getReferrer(),
@@ -150,6 +148,17 @@ export class Lib {
 
   private submitData(body: object) {
     return fetch(host, {
+      method: 'post',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+  }
+
+  private submitCustom(body: object) {
+    return fetch(`${host}/custom`, {
       method: 'post',
       headers: {
         'Accept': 'application/json',
