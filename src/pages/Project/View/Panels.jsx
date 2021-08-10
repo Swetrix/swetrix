@@ -132,6 +132,41 @@ const Overview = ({
   )
 }
 
+const CustomEvents = ({
+  customs, chartData,
+}) => {
+  const keys = _keys(customs)
+  const uniques = _sum(chartData.uniques)
+
+  // TODO: Fix col layout
+  return (
+    <PanelContainer name='Custom events'>
+      <div className='flex justify-between'>
+        <span className='font-semibold text-lg w-4/6'>Event</span>
+        <div className='flex justify-between w-2/6'>
+          <span className='font-semibold text-lg'>Quantity</span>
+          <span className='font-semibold text-lg'>Conversion</span>
+        </div>
+      </div>
+      {_map(keys, (ev) => (
+        <div key={ev} className='flex justify-between'>
+          <span className='text-lg w-4/6'>{ev}</span>
+          <div className='flex justify-between w-2/6'>
+            <div className='text-right w-1/2'>
+              <span className='text-gray-900 text-xl'>{customs[ev]}</span>
+            </div>
+            <span className='text-gray-900 text-xl'>{(customs[ev] / uniques) * 100}%</span>
+          </div>
+        </div>
+      ))}
+    </PanelContainer>
+  )
+}
+
+CustomEvents.propTypes = {
+  customs: PropTypes.objectOf(PropTypes.number).isRequired,
+}
+
 const Panel = ({
   name, data, rowMapper, capitalize, linkContent,
 }) => {
@@ -232,8 +267,10 @@ Panel.defaultProps = {
 
 const PanelMemo = memo(Panel)
 const OverviewMemo = memo(Overview)
+const CustomEventsMemo = memo(CustomEvents)
 
 export {
   PanelMemo as Panel,
   OverviewMemo as Overview,
+  CustomEventsMemo as CustomEvents,
 }

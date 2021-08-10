@@ -26,7 +26,9 @@ import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
-import { Panel, Overview } from './Panels'
+import {
+  Panel, Overview, CustomEvents,
+} from './Panels'
 import routes from 'routes'
 import { getProjectData } from 'api'
 
@@ -163,12 +165,13 @@ const ViewProject = ({
           return
         }
 
-        const { chart, params } = data
+        const { chart, params, customs } = data
         setChartData(chart)
 
         setPanelsData({
           types: _keys(params),
           data: params,
+          customs,
         })
 
         const bbSettings = getSettings(chart, timeBucket, showTotal)
@@ -326,6 +329,9 @@ const ViewProject = ({
                   <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
                 )
               })}
+              {!_isEmpty(panelsData.customs) && (
+                <CustomEvents customs={panelsData.customs} chartData={chartData} />
+              )}
             </div>
           </div>
         </div>
