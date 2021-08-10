@@ -3,10 +3,6 @@ import { ApiProperty } from '@nestjs/swagger'
 
 import { Project } from '../../project/entity/project.entity'
 
-enum EventType {
-  PAGEVIEWS = 'pageviews',
-}
-
 @Entity()
 export class Analytics {
   @PrimaryGeneratedColumn('uuid')
@@ -18,13 +14,6 @@ export class Analytics {
   // @ApiProperty({ type: () => Project })
   // @ManyToOne(() => Project, proj => proj.id)
   // pid: Project
-
-  @Column({
-    type: 'enum',
-    enum: EventType,
-    default: EventType.PAGEVIEWS,
-  })
-  ev: string
 
   @Column('varchar', {
     length: 64,

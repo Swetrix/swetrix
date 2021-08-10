@@ -10,12 +10,6 @@ export class PageviewsDTO {
   @IsNotEmpty()
   pid: string
 
-  @ApiProperty({
-    example: 'pageviews',
-    description: 'Event type'
-  })
-  ev: string
-
   // Tracking metrics
   @ApiProperty({
     example: 'Europe/Kiev',

@@ -5,24 +5,21 @@ export class EventsDTO {
   @ApiProperty({
     example: 'aUn1quEid-3',
     required: true,
-    description: 'The project ID'
+    description: 'The project ID',
   })
   @IsNotEmpty()
   pid: string
 
   @ApiProperty({
     example: 'user-subscribed',
-    description: 'Event type'
+    description: 'Event name',
+    maxLength: 64,
   })
+  @IsNotEmpty()
   ev: string
 
-  // Tracking metrics
   @ApiProperty({
-    example: {
-      ref: 'duckduckgo',
-      plan: 'gold+',
-    },
-    description: 'Custom parameters related to the event'
+    description: 'If true, only 1 event with the same ID will be saved per user session',
   })
-  params: object
+  unique: object
 }

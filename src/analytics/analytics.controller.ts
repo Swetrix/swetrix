@@ -3,6 +3,7 @@ import * as _isNumber from 'lodash/isNumber'
 import * as _isArray from 'lodash/isArray'
 import * as _size from 'lodash/size'
 import * as _last from 'lodash/last'
+import * as _countBy from 'lodash/countBy'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
@@ -20,10 +21,11 @@ import { UserType } from '../user/entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
+import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  clickhouse, isValidPID, REDIS_LOG_DATA_CACHE_KEY, redis,
+  clickhouse, isValidPID, REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
 } from '../common/constants'
 import ct from '../common/countriesTimezones'
 
@@ -33,9 +35,15 @@ dayjs.extend(utc)
 // store them in redis storage and reset every 24 hours
 const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => hash(`${ua}${ip}${pid}${salt}`).toString('hex')
 
-const analyticsDTO = (pid: string, ev: string, pg: string, dv: string, br: string, os: string, lc: string, ref: string, so: string, me: string, ca: string, lt: number | string, tz: string, unique: number): Array<string | number> => {
+const getSessionKeyCustom = (ip: string, ua: string, pid: string, ev: string, salt: string = '') => hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')
+
+const analyticsDTO = (pid: string, pg: string, dv: string, br: string, os: string, lc: string, ref: string, so: string, me: string, ca: string, lt: number | string, tz: string, unique: number): Array<string | number> => {
   const cc = tz === 'NULL' ? 'NULL' : ct.getCountryForTimezone(tz)?.id
-  return [uuidv4(), pid, ev, pg, dv, br, os, lc, ref, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
+  return [uuidv4(), pid, pg, dv, br, os, lc, ref, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
+}
+
+const customLogDTO = (pid: string, ev: string): Array<string> => {
+  return [uuidv4(), pid, ev, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
 }
 
 const getElValue = (el) => {
@@ -67,6 +75,7 @@ export class AnalyticsController {
     // TODO: automatic timeBucket detection based on period provided
 
     let query = `SELECT * FROM analytics WHERE pid='${pid}'`
+    let queryCustoms = `SELECT ev FROM customEV WHERE pid='${pid}'`
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       throw new NotImplementedException('Filtering by from/to params is currently not available')
@@ -77,20 +86,29 @@ export class AnalyticsController {
       if (dayjs.utc(to).isAfter(dayjs.utc(), 'second')) {
         groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
         query += `AND created BETWEEN ${from} AND ${groupTo}`
+        queryCustoms += `AND created BETWEEN ${from} AND ${groupTo}`
       } else {
         query += `AND created BETWEEN ${from} AND ${to}`
+        queryCustoms += `AND created BETWEEN ${from} AND ${to}`
       }
     } else if (!_isEmpty(period)) {
       groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD HH:mm:ss')
       groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       query += `AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
+      queryCustoms += `AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
     } else {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
     }
 
     const response = await clickhouse.query(query).toPromise()
     const result = await this.analyticsService.groupByTimeBucket(response, timeBucket, groupFrom, groupTo)
-    return result
+
+    const customs = await clickhouse.query(queryCustoms).toPromise()
+
+    return {
+      ...result,
+      customs: _countBy(customs, 'ev'),
+    }
   }
 
   @Get('/birdseye')
@@ -122,6 +140,39 @@ export class AnalyticsController {
     return this.analyticsService.getSummary(pids, 'w', true)
   }
 
+  // Log custom event
+  @Post('/custom')
+  async logCustom(@Body() eventsDTO: EventsDTO, @Headers() headers): Promise<any> {
+    this.logger.log({ eventsDTO, headers }, 'POST /log/custom')
+
+    const { 'user-agent': userAgent, origin } = headers
+    await this.analyticsService.validate(eventsDTO, origin)
+
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || ''
+
+    if (eventsDTO.unique) {
+      const sessionHash = getSessionKeyCustom(ip, userAgent, eventsDTO.pid, eventsDTO.ev)
+      const unique = await this.analyticsService.isUnique(sessionHash)
+
+      if (!unique) {
+        return
+      }
+    }
+
+    const dto = customLogDTO(eventsDTO.pid, eventsDTO.ev)
+
+    // todo: fix: may be vulnerable to sql injection attack
+    const values = `(${dto.map(getElValue).join(',')})`
+    try {
+      await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, values)
+      return
+    } catch (e) {
+      this.logger.error(e)
+      throw new InternalServerErrorException('Error occured while saving the custom event')
+    }
+  }
+
+  // Log pageview event
   @Post('/')
   async log(@Body() logDTO: PageviewsDTO, @Headers() headers): Promise<any> {
     this.logger.log({ logDTO, headers }, 'POST /log')
@@ -142,9 +193,9 @@ export class AnalyticsController {
       const dv = ua.device.type || 'desktop'
       const br = ua.browser.name
       const os = ua.os.name
-      dto = analyticsDTO(logDTO.pid, logDTO.ev, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, logDTO.tz, 1)
+      dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, logDTO.tz, 1)
     } else {
-      dto = analyticsDTO(logDTO.pid, logDTO.ev, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
+      dto = analyticsDTO(logDTO.pid, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
     }
 
     // todo: fix: may be vulnerable to sql injection attack

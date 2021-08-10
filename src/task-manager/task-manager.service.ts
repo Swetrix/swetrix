@@ -14,7 +14,9 @@ import { UserService } from '../user/user.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { ReportFrequency } from '../user/entities/user.entity'
-import { clickhouse, REDIS_LOG_DATA_CACHE_KEY, redis } from '../common/constants'
+import {
+  clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY,
+} from '../common/constants'
 
 dayjs.extend(utc)
 
@@ -28,13 +30,28 @@ export class TaskManagerService {
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async someTask(): Promise<void> {
+  async saveLogData(): Promise<void> {
     const data = await redis.lrange(REDIS_LOG_DATA_CACHE_KEY, 0, -1)
+    const customData = await redis.lrange(REDIS_LOG_CUSTOM_CACHE_KEY, 0, -1)
 
     if (!_isEmpty(data)) {
       await redis.del(REDIS_LOG_DATA_CACHE_KEY)
       const query = `INSERT INTO analytics (*) VALUES ${_join(data, ',')}`
-      await clickhouse.query(query).toPromise()
+      try {
+        await clickhouse.query(query).toPromise()
+      } catch (e) {
+        console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
+      }
+    }
+
+    if (!_isEmpty(customData)) {
+      await redis.del(REDIS_LOG_CUSTOM_CACHE_KEY)
+      const query = `INSERT INTO customEV (*) VALUES ${_join(customData, ',')}`
+      try {
+        await clickhouse.query(query).toPromise()
+      } catch (e) {
+        console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
+      }
     }
   }
 

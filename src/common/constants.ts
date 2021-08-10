@@ -62,6 +62,8 @@ const getRedisProjectCountKey = (pid: string) => `pid_c_${pid}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
 
+const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache'
+
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
 
@@ -77,5 +79,5 @@ const GDPR_EXPORT_TIMEFRAME = 14
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
-  GDPR_EXPORT_TIMEFRAME, getRedisProjectCountKey, redisProjectCountCacheTimeout,
+  GDPR_EXPORT_TIMEFRAME, getRedisProjectCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
 }

@@ -21,7 +21,9 @@ import {
 } from '../common/constants'
 import { Analytics } from './entities/analytics.entity'
 import { PageviewsDTO } from './dto/pageviews.dto'
+import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
+import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
 
 dayjs.extend(utc)
@@ -62,13 +64,7 @@ export class AnalyticsService {
     return this.analyticsRepository.find({ where })
   }
 
-  async validate(logDTO: PageviewsDTO, origin: string): Promise<string | null> {
-    if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
-    const { pid } = logDTO 
-
-    if (_isEmpty(pid)) throw new BadRequestException('The Project ID (pid) has to be provided')
-    if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
-
+  async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
     let project = await redis.get(pidKey)
     if (_isEmpty(project)) {
@@ -83,8 +79,11 @@ export class AnalyticsService {
       }
     }
 
-    if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
+    return project
+  }
 
+  // Returns amount of existing events starting from month
+  async getRedisCount(pid: string): Promise<number | null> {
     const countKey = getRedisProjectCountKey(pid)
     let count = await redis.get(countKey)
     if (_isEmpty(count)) {
@@ -95,7 +94,7 @@ export class AnalyticsService {
 
       const pageviews = result[0]['count()']
       count = pageviews
-
+      
       await redis.set(countKey, `${pageviews}`, 'EX', redisProjectCountCacheTimeout)
     } else {
       try {
@@ -105,13 +104,11 @@ export class AnalyticsService {
         throw new InternalServerErrorException('Error while processing project')
       }
     }
+    
+    return count
+  }
 
-    const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
-
-    if (count >= maxCount) {
-      throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
-    }
-
+  checkOrigin(project: Project, origin: string): void {
     if (!_isEmpty(project.origins) && !_isEmpty(origin)) {
       if (origin === 'null') {
         if (!_includes(project.origins, 'null')) {
@@ -124,6 +121,32 @@ export class AnalyticsService {
         }
       }
     }
+  }
+  
+  // TODO: Remove unnecessary checks (because some of them are already checked in the DTO)
+  async validate(logDTO: PageviewsDTO | EventsDTO, origin: string): Promise<string | null> {
+    if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
+    const { pid } = logDTO
+
+    if (_isEmpty(pid)) throw new BadRequestException('The Project ID (pid) has to be provided')
+    if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+
+    if (logDTO instanceof EventsDTO && !_isEmpty(logDTO.ev) && _size(logDTO.ev) > 64) {
+      throw new BadRequestException('An incorrect event name (ev) is provided')
+    }
+
+    const project = await this.getRedisProject(pid)
+
+    if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
+
+    const count = await this.getRedisCount(pid)
+    const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
+
+    if (count >= maxCount) {
+      throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+    }
+
+    this.checkOrigin(project, origin)
 
     return null
   }
