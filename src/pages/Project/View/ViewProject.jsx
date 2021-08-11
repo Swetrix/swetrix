@@ -321,7 +321,20 @@ const ViewProject = ({
 
                 if (type === 'ref') {
                   return (
-                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} linkContent />
+                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
+                      const url = new URL(name)
+                      console.log(url)
+
+                      return (
+                        <a className='flex label hover:underline text-blue-600' href={name} target='_blank' rel='noopener noreferrer'>
+                          {!_isEmpty(url.hostname) && (
+                            <img className='w-5 h-5 mr-1.5' src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`} alt='' />
+                          )}
+                          {name}
+                        </a>
+                      )
+                    }}
+                    />
                   )
                 }
 

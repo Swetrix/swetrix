@@ -14,6 +14,25 @@ export const umdBuildExample = `<script src="./analytics_script/dist/analytics.u
 
 export const trackPageView = `analytics.trackViews()`
 
+export const track = `analytics.track({
+  // The event identifier you want to track.
+  // This has to be a string, which:
+  // - only contains English letters (a-Z A-Z), numbers (0-9), underscores (_),
+  //   dashes (-) and dots (.).
+  // - is fewer than 64 characters.
+  ev: 'YOUR_EVENT_NAME',
+
+  // If true, only 1 event with the same ID will be saved per user session.
+  // The principle of this parameter is similar to page views and unique views.
+  unique: false,
+})
+`
+
+export const trackExample = `analytics.track({
+  ev: 'USER_SIGN_UP',
+})
+`
+
 export const init = `analytics.init('YOUR_PROJECT_ID', {
   // When set to true, all tracking logs will be
   // printed to console and localhost events will be sent to server.

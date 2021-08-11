@@ -21,9 +21,9 @@ const ENTRIES_PER_PANEL = 5
 const PanelContainer = ({
   name, children,
 }) => (
-  <div className='relative bg-white pt-5 px-4 pb-12 h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden'>
+  <div className='relative bg-white pt-5 px-4 pb-12 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden'>
     <h3 className='text-lg leading-6 font-semibold mb-2 text-gray-900'>{name}</h3>
-    <div className='flex flex-col h-full'>
+    <div className='flex flex-col h-full scroll-auto'>
       {children}
     </div>
   </div>
@@ -138,27 +138,26 @@ const CustomEvents = ({
   const keys = _keys(customs)
   const uniques = _sum(chartData.uniques)
 
-  // TODO: Fix col layout
   return (
     <PanelContainer name='Custom events'>
-      <div className='flex justify-between'>
-        <span className='font-semibold text-lg w-4/6'>Event</span>
-        <div className='flex justify-between w-2/6'>
-          <span className='font-semibold text-lg'>Quantity</span>
-          <span className='font-semibold text-lg'>Conversion</span>
-        </div>
-      </div>
-      {_map(keys, (ev) => (
-        <div key={ev} className='flex justify-between'>
-          <span className='text-lg w-4/6'>{ev}</span>
-          <div className='flex justify-between w-2/6'>
-            <div className='text-right w-1/2'>
-              <span className='text-gray-900 text-xl'>{customs[ev]}</span>
-            </div>
-            <span className='text-gray-900 text-xl'>{(customs[ev] / uniques) * 100}%</span>
-          </div>
-        </div>
-      ))}
+      <table className='table-fixed'>
+        <thead>
+          <tr>
+            <th className='w-4/6 text-left text-gray-900'>Event</th>
+            <th className='w-1/6 text-right text-gray-900'>Quantity&nbsp;&nbsp;</th>
+            <th className='w-1/6 text-right text-gray-900'>Conversion</th>
+          </tr>
+        </thead>
+        <tbody>
+          {_map(keys, (ev) => (
+            <tr key={ev}>
+              <td className='text-left'>{ev}</td>
+              <td className='text-right'>{customs[ev]}&nbsp;&nbsp;</td>
+              <td className='text-right'>{_round((customs[ev] / uniques) * 100, 2)}%</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </PanelContainer>
   )
 }
@@ -194,7 +193,7 @@ const Panel = ({
   return (
     <PanelContainer name={name}>
       {_isEmpty(data) ? (
-        <p className="mt-1 text-base text-gray-700">There's currently no data for this parameter</p>
+        <p className='mt-1 text-base text-gray-700'>No data for this parameter yet</p>
       ) : _map(keysToDisplay, key => {
         const perc = _round(data[key] / total * 100, 2)
         const rowData = _isFunction(rowMapper) ? rowMapper(key) : key
@@ -222,29 +221,29 @@ const Panel = ({
         )
       })}
       {_size(keys) > 5 && (
-        <div className="absolute bottom-0 w-card-toggle">
+        <div className='absolute bottom-0 w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
-          <span
-            className={cx('text-gray-500 font-light', {
-              hoverable: canGoPrev(),
-              disabled: !canGoPrev(),
-            })}
-            role='button'
-            onClick={onPrevious}
-          >
-          &lt; Previous
+            <span
+              className={cx('text-gray-500 font-light', {
+                hoverable: canGoPrev(),
+                disabled: !canGoPrev(),
+              })}
+              role='button'
+              onClick={onPrevious}
+            >
+              &lt; Previous
           </span>
-          <span
-            className={cx('text-gray-500 font-light', {
-              hoverable: canGoNext(),
-              disabled: !canGoNext(),
-            })}
-            role='button'
-            onClick={onNext}
-          >
-            Next &gt;
+            <span
+              className={cx('text-gray-500 font-light', {
+                hoverable: canGoNext(),
+                disabled: !canGoNext(),
+              })}
+              role='button'
+              onClick={onNext}
+            >
+              Next &gt;
           </span>
-        </div>
+          </div>
         </div>
       )}
     </PanelContainer>

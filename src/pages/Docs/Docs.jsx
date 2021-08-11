@@ -5,7 +5,7 @@ import Prism from 'prismjs'
 import Title from 'components/Title'
 import Code from 'ui/Code'
 import {
-  umdBuildExample, trackPageView, init, trackViews,
+  umdBuildExample, trackPageView, init, trackViews, track, trackExample,
 } from './examples'
 
 const contents = [{
@@ -100,6 +100,14 @@ const Docs = () => {
             </p>
             <Code text={trackPageView} language='javascript' />
 
+            <CSection id='docs-ce' name='Track custom events' />
+            <p className='text-lg text-gray-900 tracking-tight'>
+              In addition to tracking pageviews we provide an ability to track custom events. <br />
+              For example, if you want to track an event like 'Sign up' or 'Newsletter subscription', this feature would be very useful.<br />
+              Under the screen, the principle of this function is similar to trackViews.
+            </p>
+            <Code text={trackExample} language='javascript' />
+
             <CHeader id='docs-api' name='API' />
 
             <CSection id='docs-init' name='init' />
@@ -111,8 +119,10 @@ const Docs = () => {
 
             <CSection id='docs-tr' name='track' />
             <p className='text-lg text-gray-900 tracking-tight'>
-              This section is not ready yet..
+              With this function you are able to track any custom events you want.<br />
+              You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
             </p>
+            <Code text={track} language='javascript' />
 
             <CSection id='docs-tv' name='trackViews' />
             <p className='text-lg text-gray-900 tracking-tight'>
