@@ -41,20 +41,20 @@ const features = [
 
 const faqs = [
   {
-    question: 'Question 1?',
-    answer: 'Blah blah blah blah blah.',
+    question: 'Does Swetrix tracking require cookies?',
+    answer: 'No, it does not, our analytics script is fully cookieless as well as our website. You can use our service without a need to use a cookie notification on your website.',
   },
   {
-    question: 'Question 2?',
-    answer: 'Blah blah blah blah blah.',
+    question: 'Do you use/share/sell the end users\' data?',
+    answer: 'No, we do not. Also, all of the data we collect is anonymised. We do not store any data that would allow us to identify a specific user. We try to be as transparent and respectful of privacy as possible.',
   },
   {
-    question: 'Question 3?',
-    answer: 'Blah blah blah blah blah.',
+    question: 'Do I have to pay for your service?',
+    answer: 'We provide free accounts as well as paid accounts. Most of the features of the paid account are included in the free account, as well as more events per month. You can upgrade or downgrade your account subscription at any time.',
   },
   {
-    question: 'Question 4?',
-    answer: 'Blah blah blah blah blah.',
+    question: 'Is my data secure?',
+    answer: 'We adhere to all standards regarding the security of data storage and processing. All data is securely stored, cannot be accessed by third parties and all communication is always through encrypted channels (HTTPS).',
   },
 ]
 
@@ -92,7 +92,7 @@ const FAQs = () => (
           <h2 className='text-3xl font-extrabold text-gray-900'>Get some questions answered</h2>
           <p className='mt-4 text-lg text-gray-500'>
             Can’t find the answer you’re looking for? Reach out to our{' '}
-            <a href='#/' className='font-medium text-indigo-600 hover:text-indigo-500'>
+            <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500'>
               customer support
             </a>{' '}
             team.
