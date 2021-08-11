@@ -68,17 +68,21 @@ export const authActions = {
   },
 
   // Asynchronous
-  loginAsync(credentials) {
+  loginAsync(credentials, callback = () => { }) {
     return {
       type: types.LOGIN_ASYNC,
-      payload: { credentials }
+      payload: {
+        credentials, callback,
+      },
     }
   },
 
-  signupAsync(data, resetRecaptcha) {
+  signupAsync(data, callback = () => { }) {
     return {
       type: types.SIGNUP_ASYNC,
-      payload: { data, resetRecaptcha }
+      payload: {
+        data, callback,
+      },
     }
   },
 
@@ -89,7 +93,7 @@ export const authActions = {
     }
   },
 
-  updateUserProfileAsync(data, successfulCallback = () => {}) {
+  updateUserProfileAsync(data, successfulCallback = () => { }) {
     return {
       type: types.UPDATE_USER_PROFILE_ASYNC,
       payload: { data, successfulCallback }

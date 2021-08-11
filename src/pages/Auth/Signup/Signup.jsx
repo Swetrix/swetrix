@@ -9,7 +9,7 @@ import Checkbox from 'ui/Checkbox'
 import Button from 'ui/Button'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
-const Signup = ({ onSubmit }) => {
+const Signup = ({ signup }) => {
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -20,10 +20,20 @@ const Signup = ({ onSubmit }) => {
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
+
+  const onSubmit = data => {
+    if (!isLoading) {
+      setIsLoading(true)
+      signup(data, () => {
+        setIsLoading(false)
+      })
+    }
+  }
 
   const handleInput = event => {
     const t = event.target
@@ -86,7 +96,7 @@ const Signup = ({ onSubmit }) => {
             placeholder='you@example.com'
             className='mt-4'
             onChange={handleInput}
-            error={beenSubmitted && errors.email}
+            error={beenSubmitted ? errors.email : ''}
           />
           <Input
             name='password'
@@ -98,7 +108,7 @@ const Signup = ({ onSubmit }) => {
             placeholder='Password'
             className='mt-4'
             onChange={handleInput}
-            error={beenSubmitted && errors.password}
+            error={beenSubmitted ? errors.password : ''}
           />
           <Input
             name='repeat'
@@ -109,7 +119,7 @@ const Signup = ({ onSubmit }) => {
             placeholder='Repeat password'
             className='mt-4'
             onChange={handleInput}
-            error={beenSubmitted && errors.repeat}
+            error={beenSubmitted ? errors.repeat : ''}
           />
           <Checkbox
             checked={form.tos}
@@ -118,6 +128,7 @@ const Signup = ({ onSubmit }) => {
             id='tos'
             className='mt-4'
             label='I do accept terms and conditions and the privacy policy.'
+            hint={beenSubmitted ? errors.tos : ''}
           />
           <Checkbox
             checked={form.keep_signedin}
@@ -131,7 +142,7 @@ const Signup = ({ onSubmit }) => {
             <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800'>
               Sign in instead
             </Link>
-            <Button type='submit' primary large>
+            <Button type='submit' loading={isLoading} primary large>
               Sign up
             </Button>
           </div>
@@ -142,7 +153,7 @@ const Signup = ({ onSubmit }) => {
 }
 
 Signup.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  signup: PropTypes.func.isRequired,
 }
 
 export default memo(Signup)

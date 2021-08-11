@@ -1,32 +1,15 @@
-import { useDispatch } from 'react-redux'
-import { useHistory, useParams } from 'react-router-dom'
-
-import CreateNewPassword from './CreateNewPassword'
-import { createNewPassword } from 'api'
+import { connect } from 'react-redux'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
-import routes from 'routes'
+import CreateNewPassword from './CreateNewPassword'
 
-const CreateNewPasswordContainer = () => {
-  const dispatch = useDispatch()
-  const history = useHistory()
-  const { id } = useParams()
+const mapDispatchToProps = (dispatch) => ({
+  createNewPasswordFailed: (e) => {
+    dispatch(errorsActions.createNewPasswordFailed(e.toString()))
+  },
+  newPassword: (message) => {
+    dispatch(alertsActions.newPassword(message))
+  },
+})
 
-  const onSubmit = async (data) => {
-    try {
-      const { password } = data
-      await createNewPassword(id, password)
-
-      dispatch(alertsActions.newPassword('Your password has been updated'))
-      history.push(routes.signin)
-    } catch (e) {
-      dispatch(errorsActions.createNewPasswordFailed(e.toString()))
-    }
-  }
-
-  return (
-    <CreateNewPassword onSubmit={onSubmit} />
-  )
-}
-
-export default CreateNewPasswordContainer
+export default connect(null, mapDispatchToProps)(CreateNewPassword)

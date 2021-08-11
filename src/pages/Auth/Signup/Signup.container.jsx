@@ -1,18 +1,11 @@
-import Signup from './Signup'
-import { useDispatch } from 'react-redux'
+import { connect } from 'react-redux'
 import { authActions } from 'redux/actions/auth'
+import Signup from './Signup'
 
-const SignupContainer = () => {
-  const dispatch = useDispatch()
+const mapDispatchToProps = (dispatch) => ({
+  signup: (data, callback) => {
+    dispatch(authActions.signupAsync(data, callback))
+  },
+})
 
-  const onSubmit = data => {
-    delete data.repeat
-    dispatch(authActions.signupAsync(data, () => {}))
-  }
-
-  return (
-    <Signup onSubmit={onSubmit} />
-  )
-}
-
-export default SignupContainer
+export default connect(null, mapDispatchToProps)(Signup)

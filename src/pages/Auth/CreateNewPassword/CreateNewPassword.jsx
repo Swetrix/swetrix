@@ -1,13 +1,18 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useHistory, useParams } from 'react-router-dom'
 
+import { createNewPassword } from 'api'
 import Title from 'components/Title'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { isValidPassword } from 'utils/validator'
 
-const CreateNewPassword = ({ onSubmit }) => {
+const CreateNewPassword = ({
+  createNewPasswordFailed, newPassword,
+}) => {
+  const history = useHistory()
+  const { id } = useParams()
   const [form, setForm] = useState({
     password: '',
     repeat: '',
@@ -15,10 +20,28 @@ const CreateNewPassword = ({ onSubmit }) => {
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
+
+  const onSubmit = async (data) => {
+    if (!isLoading) {
+      setIsLoading(true)
+      try {
+        const { password } = data
+        await createNewPassword(id, password)
+  
+        newPassword('Your password has been updated')
+        history.push(routes.signin)
+      } catch (e) {
+        createNewPasswordFailed(e.toString())
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
 
   const handleInput = event => {
     const t = event.target
@@ -90,10 +113,10 @@ const CreateNewPassword = ({ onSubmit }) => {
           <div className='flex justify-between mt-3'>
             <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800'>
               Sign in instead
-          </Link>
-            <Button type='submit' primary large>
+            </Link>
+            <Button type='submit' loading={isLoading} primary large>
               Save new password
-          </Button>
+            </Button>
           </div>
         </form>
       </div>

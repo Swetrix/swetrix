@@ -1,23 +1,45 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 
+import { forgotPassword } from 'api'
 import Title from 'components/Title'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { isValidEmail } from 'utils/validator'
 
-const ForgotPassword = ({ onSubmit }) => {
+const ForgotPassword = ({
+  createNewPasswordFailed, newPassword,
+}) => {
+  const history = useHistory()
   const [form, setForm] = useState({
     email: '',
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
+
+  const onSubmit = async (data) => {
+    if (!isLoading) {
+      setIsLoading(true)
+
+      try {
+        await forgotPassword(data)
+  
+        newPassword('A password reset e-mail has been sent to the specified address')
+        history.push(routes.main)
+      } catch (e) {
+        createNewPasswordFailed(e.toString())
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
 
   const handleInput = event => {
     const t = event.target
@@ -73,10 +95,10 @@ const ForgotPassword = ({ onSubmit }) => {
           <div className='flex justify-between mt-3'>
             <Link to={routes.signin} className='mt-1 underline text-blue-600 hover:text-indigo-800'>
               Sign in
-          </Link>
-            <Button type='submit' primary large>
+            </Link>
+            <Button type='submit' loading={isLoading} primary large>
               Reset password
-          </Button>
+            </Button>
           </div>
         </form>
       </div>

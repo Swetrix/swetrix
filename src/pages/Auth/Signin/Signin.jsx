@@ -9,7 +9,7 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import { isValidEmail, isValidPassword } from 'utils/validator'
 
-const Signin = ({ onSubmit }) => {
+const Signin = ({ login }) => {
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -18,10 +18,20 @@ const Signin = ({ onSubmit }) => {
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
+
+  const onSubmit = data => {
+    if (!isLoading) {
+      setIsLoading(true)
+      login(data, () => {
+        setIsLoading(false)
+      })
+    }
+  }
 
   const handleInput = event => {
     const t = event.target
@@ -108,7 +118,7 @@ const Signin = ({ onSubmit }) => {
                 Sign up instead
               </Link>
             </div>
-            <Button type='submit' primary large>
+            <Button type='submit' loading={isLoading} primary large>
               Sign in
             </Button>
           </div>
@@ -119,7 +129,7 @@ const Signin = ({ onSubmit }) => {
 }
 
 Signin.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  login: PropTypes.func.isRequired,
 }
 
 export default memo(Signin)

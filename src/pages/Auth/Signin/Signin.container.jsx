@@ -1,17 +1,11 @@
-import Signin from './Signin'
-import { useDispatch } from 'react-redux'
+import { connect } from 'react-redux'
 import { authActions } from 'redux/actions/auth'
+import Signin from './Signin'
 
-const SigninContainer = () => {
-  const dispatch = useDispatch()
+const mapDispatchToProps = (dispatch) => ({
+  login: (data, callback) => {
+    dispatch(authActions.loginAsync(data, callback))
+  },
+})
 
-  const onSubmit = data => {
-    dispatch(authActions.loginAsync(data))
-  }
-
-  return (
-    <Signin onSubmit={onSubmit} />
-  )
-}
-
-export default SigninContainer
+export default connect(null, mapDispatchToProps)(Signin)

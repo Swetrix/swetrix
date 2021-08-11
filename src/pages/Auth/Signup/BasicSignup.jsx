@@ -18,10 +18,15 @@ const BasicSignup = () => {
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const onSubmit = (data) => {
-    delete data.repeat
-    dispatch(authActions.signupAsync(data, () => { }))
+    if (!isLoading) {
+      setIsLoading(true)
+      dispatch(authActions.signupAsync(data, () => {
+        setIsLoading(false)
+      }))
+    }
   }
 
   useEffect(() => {
@@ -99,7 +104,7 @@ const BasicSignup = () => {
         onChange={handleInput}
         error={beenSubmitted && errors.repeat}
       />
-      <Button className='w-full flex justify-center' type='submit' primary large>
+      <Button className='w-full flex justify-center' type='submit' loading={isLoading} primary large>
         Create your account
       </Button>
     </form>
