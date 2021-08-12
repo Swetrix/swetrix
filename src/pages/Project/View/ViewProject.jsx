@@ -166,16 +166,20 @@ const ViewProject = ({
         }
 
         const { chart, params, customs } = data
-        setChartData(chart)
 
-        setPanelsData({
-          types: _keys(params),
-          data: params,
-          customs,
-        })
+        if (!_isEmpty(params)) {
+          setChartData(chart)
+  
+          setPanelsData({
+            types: _keys(params),
+            data: params,
+            customs,
+          })
+  
+          const bbSettings = getSettings(chart, timeBucket, showTotal)
+          setMainChart(bb.generate(bbSettings))
+        }
 
-        const bbSettings = getSettings(chart, timeBucket, showTotal)
-        setMainChart(bb.generate(bbSettings))
         setAnalyticsLoading(false)
       } catch (e) {
         console.error(e)
@@ -323,7 +327,6 @@ const ViewProject = ({
                   return (
                     <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
                       const url = new URL(name)
-                      console.log(url)
 
                       return (
                         <a className='flex label hover:underline text-blue-600' href={name} target='_blank' rel='noopener noreferrer'>

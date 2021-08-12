@@ -39,8 +39,8 @@ const Overview = ({
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
-  const pageviews = _sum(chartData.visits)
-  const uniques = _sum(chartData.uniques)
+  const pageviews = _sum(chartData?.visits) || 0
+  const uniques = _sum(chartData?.uniques) || 0
 
   return (
     <PanelContainer name='Overview'>
