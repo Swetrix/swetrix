@@ -53,13 +53,13 @@ const tiers = [
 
 const Pricing = () => (
   <div id='pricing' className='bg-white'>
-    <div className='max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:px-8'>
+    <div className='w-11/12 max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:px-8'>
       <div className='sm:flex sm:flex-col sm:align-center'>
         <h1 className='text-3xl font-extrabold text-gray-900 sm:text-center'>Pricing Plans</h1>
         <p className='mt-5 text-xl text-gray-500 sm:text-center'>
           Start out for free, no credit card needed.<br />
-            When your business grows, you can upgrade your plan at any time.
-          </p>
+          When your business grows, you can upgrade your plan at any time.
+        </p>
         {/* <div className='relative self-center mt-6 bg-gray-100 rounded-lg p-0.5 flex sm:mt-8'>
             <button
               type='button'

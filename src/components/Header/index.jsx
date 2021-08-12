@@ -20,7 +20,7 @@ const Header = ({ authenticated }) => {
           <div className='flex items-center'>
             <Link to={routes.main}>
               <span className='sr-only'>Swetrix</span>
-              <img className='h-10 w-auto' src='/assets/logo_white.png' alt='' />
+              <img className='h-10 w-28' src='/assets/logo_white.png' alt='' />
             </Link>
             <div className='hidden ml-10 space-x-1 lg:block'>
               <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Features'>Features</NavLink>
@@ -29,7 +29,7 @@ const Header = ({ authenticated }) => {
               <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Docs'>Docs</NavLink>
             </div>
           </div>
-          <div className='ml-10 space-x-4'>
+          <div className='flex justify-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
             {authenticated ? (
               <>
                 <NavLink to={routes.user_settings} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700'>You</NavLink>
@@ -38,8 +38,8 @@ const Header = ({ authenticated }) => {
               </>
             ) : (
               <>
-                <Link to={routes.signin} className='inline-block select-none bg-indigo-500 py-2 px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75'>Sign in</Link>
-                <Link to={routes.signup} className='inline-block select-none bg-white py-2 px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>Get started</Link>
+                <Link to={routes.signin} className='inline-block select-none bg-indigo-500 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75'>Sign in</Link>
+                <Link to={routes.signup} className='inline-block select-none bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>Get started</Link>
               </>
             )}
           </div>

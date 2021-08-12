@@ -186,9 +186,9 @@ const Main = () => (
           <div className='flex-1' />
           <div className='flex-1 w-full bg-white' />
         </div>
-        <div className='w-11/12 mx-auto px-4 sm:px-6'>
+        <div className='w-11/12 mx-auto'>
           <img
-            className='relative rounded-lg shadow-lg'
+            className='relative rounded-md md:rounded-lg shadow-lg'
             src='/assets/test_screenshot.png'
             alt='App screenshot'
           />
@@ -197,7 +197,7 @@ const Main = () => (
 
       <Features />
       <div className='bg-indigo-600'>
-        <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:w-11/12 lg:px-8 lg:flex lg:items-center lg:justify-between'>
+        <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
           <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
             <span className='block text-white'>Want to know more technical details?</span>
             <span className='block text-gray-300'>
