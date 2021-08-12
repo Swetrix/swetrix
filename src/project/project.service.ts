@@ -64,6 +64,10 @@ export class ProjectService {
     return this.projectsRepository.find({ where })
   }
 
+  find(params: object): Promise<Project[]> {
+    return this.projectsRepository.find(params)
+  }
+
   findOneWhere(where: Record<string, unknown>): Promise<Project> {
     return this.projectsRepository.findOne({ where })
   }

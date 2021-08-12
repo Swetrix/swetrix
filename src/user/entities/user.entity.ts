@@ -6,18 +6,22 @@ export const ACCOUNT_PLANS = {
   free: {
     displayName: 'Free plan',
     monthlyUsageLimit: 3000,
+    maxProjects: 5,
   },
   freelancer: {
     displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
+    maxProjects: 10,
   },
   startup: {
     displayName: 'Startup plan',
     monthlyUsageLimit: 500000,
+    maxProjects: 10,
   },
   enterprise: {
     displayName: 'Enterprise plan',
     monthlyUsageLimit: 1000000,
+    maxProjects: 10,
   },
 }
 

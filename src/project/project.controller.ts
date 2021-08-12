@@ -6,9 +6,10 @@ import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
+import * as _size from 'lodash/size'
 
 import { ProjectService } from './project.service'
-import { UserType } from '../user/entities/user.entity'
+import { UserType, ACCOUNT_PLANS } from '../user/entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
@@ -67,9 +68,14 @@ export class ProjectController {
   async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
     const user = await this.userService.findOneWithRelations(userId, ['projects'])
+    const maxProjects = ACCOUNT_PLANS[user.planCode].maxProjects
 
     if (!user.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    if (_size(user.projects) >= (maxProjects || 5)) {
+      throw new ForbiddenException(`You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`)
     }
 
     this.projectService.validateProject(projectDTO)

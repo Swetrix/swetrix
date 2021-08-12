@@ -4,6 +4,7 @@ import * as _size from 'lodash/size'
 import * as _isNull from 'lodash/isNull'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
+import * as _join from 'lodash/join'
 import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -16,7 +17,7 @@ import { Repository } from 'typeorm'
 import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
-  UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisProjectCountKey,
+  UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
   redisProjectCountCacheTimeout,
 } from '../common/constants'
 import { Analytics } from './entities/analytics.entity'
@@ -83,13 +84,21 @@ export class AnalyticsService {
   }
 
   // Returns amount of existing events starting from month
-  async getRedisCount(pid: string): Promise<number | null> {
-    const countKey = getRedisProjectCountKey(pid)
+  async getRedisCount(uid: string): Promise<number | null> {
+    const countKey = getRedisUserCountKey(uid)
     let count = await redis.get(countKey)
+
     if (_isEmpty(count)) {
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       const monthStart = dayjs.utc().startOf('month').format('YYYY-MM-DD HH:mm:ss')
-      const count_query = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${monthStart}' AND '${now}'`
+      const pids = await this.projectService.find({
+        where: {
+          admin: uid,
+        },
+        select: ['id'],
+      })
+
+      const count_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${now}'`
       const result = await clickhouse.query(count_query).toPromise()
 
       const pageviews = result[0]['count()']
@@ -139,7 +148,7 @@ export class AnalyticsService {
 
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
-    const count = await this.getRedisCount(pid)
+    const count = await this.getRedisCount(project.admin.id)
     const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
 
     if (count >= maxCount) {

@@ -58,7 +58,7 @@ const isValidPID = (pid: string) => _size(pid) === 12
 
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
-const getRedisProjectCountKey = (pid: string) => `pid_c_${pid}`
+const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
 
@@ -79,5 +79,5 @@ const GDPR_EXPORT_TIMEFRAME = 14
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
-  GDPR_EXPORT_TIMEFRAME, getRedisProjectCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
+  GDPR_EXPORT_TIMEFRAME, getRedisUserCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
 }
