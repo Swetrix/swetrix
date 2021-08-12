@@ -95,11 +95,6 @@ const NoProjects = () => (
     <p className='text-center'>
       Create a new project here to start using our service
     </p>
-    <p className='text-center'>
-      <Link to={routes.new_project} className='btn btn-primary h-100 mt-3'>
-        Create a project
-      </Link>
-    </p>
   </div>
 )
 

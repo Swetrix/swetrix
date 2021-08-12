@@ -28,6 +28,7 @@ import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 
+const ProtectedMain = notAuthenticated(MainPage)
 const ProtectedSignIn = notAuthenticated(SignIn)
 const ProtectedSignUp = notAuthenticated(SignUp)
 const ProtectedForgotPassword = notAuthenticated(ForgotPassword)
@@ -38,7 +39,7 @@ const ProtectedProjectSettings = isAuthenticated(ProjectSettings)
 const ProtectedViewProject = isAuthenticated(ViewProject)
 
 const minimalFooterPages = [
-  '/projects', '/dashboard', '/settings'
+  '/projects', '/dashboard', '/settings',
 ]
 
 const App = () => {
@@ -93,7 +94,7 @@ const App = () => {
       <>
         <Header authenticated={authenticated} />
         <Switch>
-          <Route path={routes.main} component={MainPage} exact />
+          <Route path={routes.main} component={ProtectedMain} exact />
           <Route path={routes.signin} component={ProtectedSignIn} exact />
           <Route path={routes.signup} component={ProtectedSignUp} exact />
           <Route path={routes.dashboard} component={ProtectedDashboard} exact />
