@@ -8,7 +8,6 @@ import { UserModule } from './user/user.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { User } from './user/entities/user.entity'
 import { Project } from './project/entity/project.entity'
-import { Analytics } from './analytics/entities/analytics.entity'
 import { ProjectModule } from './project/project.module'
 import { MailerModule } from './mailer/mailer.module'
 import { ActionTokensModule } from './action-tokens/action-tokens.module'
@@ -26,7 +25,7 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
       password: process.env.MYSQL_ROOT_PASSWORD,
       database: process.env.MYSQL_DATABASE,
       synchronize: true,
-      entities: [User, ActionToken, Project, Analytics],
+      entities: [User, ActionToken, Project],
     }),
     ScheduleModule.forRoot(),
     TaskManagerModule,
@@ -40,4 +39,3 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
 })
 
 export class AppModule {}
-

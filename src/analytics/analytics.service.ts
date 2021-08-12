@@ -11,8 +11,6 @@ import * as utc from 'dayjs/plugin/utc'
 import {
   Injectable, BadRequestException, InternalServerErrorException, ForbiddenException,
 } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
 
 import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
@@ -20,7 +18,6 @@ import {
   UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
   redisProjectCountCacheTimeout,
 } from '../common/constants'
-import { Analytics } from './entities/analytics.entity'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -32,44 +29,18 @@ dayjs.extend(utc)
 @Injectable()
 export class AnalyticsService {
   constructor(
-    @InjectRepository(Analytics)
-    private analyticsRepository: Repository<Analytics>,
     private readonly projectService: ProjectService,
   ) { }
-
-  count(): Promise<number> {
-    return this.analyticsRepository.count()
-  }
-
-  async create(project: PageviewsDTO | Analytics): Promise<PageviewsDTO | Analytics> {
-    return this.analyticsRepository.save(project)
-  }
-
-  async update(id: string, eventsDTO: PageviewsDTO): Promise<any> {
-    return this.analyticsRepository.update(id, eventsDTO)
-  }
-
-  async delete(id: string): Promise<any> {
-    return this.analyticsRepository.delete(id)
-  }
-
-  findOne(id: string): Promise<Analytics | null> {
-    return this.analyticsRepository.findOne(id)
-  }
-
-  findOneWhere(where: Record<string, unknown>): Promise<Analytics> {
-    return this.analyticsRepository.findOne({ where })
-  }
-
-  findWhere(where: Record<string, unknown>): Promise<Analytics[]> {
-    return this.analyticsRepository.find({ where })
-  }
 
   async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
     let project = await redis.get(pidKey)
+
     if (_isEmpty(project)) {
-      project = await this.projectService.findOneWithRelations(pid)
+      project = await this.projectService.findOne(pid, {
+        relations: ['admin'],
+        select: ['origins', 'active', 'admin']
+      })
       if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
       await redis.set(pidKey, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
     } else {

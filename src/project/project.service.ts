@@ -56,8 +56,8 @@ export class ProjectService {
     return this.projectsRepository.findOne(id, { relations: ['admin'] })
   }
 
-  findOne(id: string): Promise<Project | null> {
-    return this.projectsRepository.findOne(id)
+  findOne(id: string, params: Object = {}): Promise<Project | null> {
+    return this.projectsRepository.findOne(id, params)
   }
 
   findWhere(where: Record<string, unknown>): Promise<Project[]> {

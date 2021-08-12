@@ -7,7 +7,6 @@ import * as _isNull from 'lodash/isNull'
 import * as _join from 'lodash/join'
 import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
-import * as _keys from 'lodash/keys'
 
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
@@ -58,9 +57,13 @@ export class TaskManagerService {
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')
   async weeklyReportsHandler(): Promise<void> {
-    const users = await this.userService.findWhereWithRelations({
-      reportFrequency: ReportFrequency.Weekly,
-    }, ['projects'])
+    const users = await this.userService.find({
+      where: {
+        reportFrequency: ReportFrequency.Weekly,
+      },
+      relations: ['projects'],
+      select: ['email'],
+    })
     const now = dayjs.utc().format('DD.MM.YYYY')
     const weekAgo = dayjs.utc().subtract(1, 'w').format('DD.MM.YYYY')
     const date = `${weekAgo} - ${now}`
@@ -90,9 +93,13 @@ export class TaskManagerService {
   // ON THE FIRST DAY OF EVERY MONTH AT 2 AM
   @Cron('0 02 1 * *')
   async monthlyReportsHandler(): Promise<void> {
-    const users = await this.userService.findWhereWithRelations({
-      reportFrequency: ReportFrequency.Weekly,
-    }, ['projects'])
+    const users = await this.userService.find({
+      where: {
+        reportFrequency: ReportFrequency.Monthly,
+      },
+      relations: ['projects'],
+      select: ['email'],
+    })
     const now = dayjs.utc().format('DD.MM.YYYY')
     const weekAgo = dayjs.utc().subtract(1, 'M').format('DD.MM.YYYY')
     const date = `${weekAgo} - ${now}`

@@ -56,6 +56,10 @@ export class UserService {
     })
   }
 
+  find(params: object): Promise<User[]> {
+    return this.usersRepository.find(params)
+  }
+
   findWhere(where: Record<string, unknown>): Promise<User[]> {
     return this.usersRepository.find({ where })
   }
