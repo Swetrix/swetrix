@@ -8,13 +8,14 @@ import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
 import * as _join from 'lodash/join'
 import * as _isNull from 'lodash/isNull'
+import * as _isEmpty from 'lodash/isEmpty'
 
 import { UserService } from './user.service'
 import { ProjectService } from '../project/project.service'
 import { User, UserType, MAX_EMAIL_REQUESTS } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
-import { GDPR_EXPORT_TIMEFRAME } from '../common/constants'
+import { GDPR_EXPORT_TIMEFRAME, clickhouse } from '../common/constants'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
@@ -86,25 +87,59 @@ export class UserController {
   @Roles(UserType.ADMIN)
   async delete(@Param('id') id: string, @CurrentUserId() uid: string): Promise<any> {
     this.logger.log({ id, uid }, 'DELETE /user/:id')
-    const userToDelete = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne(id, {
+      relations: ['projects'],
+      select: ['id'],
+    })
 
-    if (!userToDelete) {
+    if (_isEmpty(user)) {
       throw new BadRequestException(`User with id ${id} does not exist`)
     }
-    
-    await this.userService.delete(id)
-    return
+
+    const pids = _join(_map(user.projects, el => `'${el.id}'`), ',')
+    const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`
+    const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`
+
+    try {
+      await this.projectService.deleteMultiple(pids)
+      await clickhouse.query(query1).toPromise()
+      await clickhouse.query(query2).toPromise()
+      await this.userService.delete(id)
+      
+      return 'Account has been deleted'
+    } catch(e) {
+      this.logger.error(e)
+      return 'Error while deleting user account'
+    }
   }
 
   @Delete('/')
   @HttpCode(204)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async deleteSelf(@CurrentUserId() uid: string): Promise<any> {
-    this.logger.log({ uid }, 'DELETE /user')
-    // TODO: Delete all users projects
-    await this.userService.delete(uid)
-    return
+  async deleteSelf(@CurrentUserId() id: string): Promise<any> {
+    this.logger.log({ id }, 'DELETE /user')
+
+    const user = await this.userService.findOne(id, {
+      relations: ['projects'],
+      select: ['id'],
+    })
+
+    const pids = _join(_map(user.projects, el => `'${el.id}'`), ',')
+    const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`
+    const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`
+
+    try {
+      await this.projectService.deleteMultiple(pids)
+      await clickhouse.query(query1).toPromise()
+      await clickhouse.query(query2).toPromise()
+      await this.userService.delete(id)
+      
+      return 'Account has been deleted'
+    } catch(e) {
+      this.logger.error(e)
+      return 'Error while deleting your account'
+    }
   }
 
   @Post('/confirm_email')

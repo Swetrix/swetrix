@@ -52,6 +52,13 @@ export class ProjectService {
     return this.projectsRepository.delete(id)
   }
 
+  async deleteMultiple(pids: string[]): Promise<any> {
+    return this.projectsRepository.createQueryBuilder()
+      .delete()
+      .where(`id IN (${pids})`)
+      .execute()
+  }
+
   findOneWithRelations(id: string): Promise<Project | null> {
     return this.projectsRepository.findOne(id, { relations: ['admin'] })
   }
@@ -68,8 +75,8 @@ export class ProjectService {
     return this.projectsRepository.find(params)
   }
 
-  findOneWhere(where: Record<string, unknown>): Promise<Project> {
-    return this.projectsRepository.findOne({ where })
+  findOneWhere(where: Record<string, unknown>, params: object = {}): Promise<Project> {
+    return this.projectsRepository.findOne({ where, ...params })
   }
 
   ifAllowedToManage(userId: string, project: Project): boolean {

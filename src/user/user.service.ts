@@ -42,8 +42,10 @@ export class UserService {
     return this.usersRepository.findOne({ where, relations })
   }
 
-  findOne(id: string): Promise<User> {
-    return this.findOneWhere({ id })
+  findOne(id: string, params: object = {}): Promise<User> {
+    return this.usersRepository.findOne({
+      where: { id }, ...params,
+    })
   }
 
   findOneWithRelations(id: string, relations: string[]): Promise<User> {

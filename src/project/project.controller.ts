@@ -19,7 +19,7 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
+  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse,
 } from '../common/constants'
 
 @ApiTags('Project')
@@ -146,18 +146,27 @@ export class ProjectController {
     this.logger.log({ userId, id }, 'DELETE /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
-    const project = await this.projectService.findOneWithRelations(id)
+    const project = await this.projectService.findOneWhere({ id }, {
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
     }
     await this.projectService.allowedToManage(project, userId)
 
+    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+
     try {
       await this.projectService.delete(id)
+      await clickhouse.query(query1).toPromise()
+      await clickhouse.query(query2).toPromise()
       return 'Project deleted successfully'
     } catch(e) {
-      return e
+      this.logger.error(e)
+      return 'Error while deleting your project'
     }
   }
 }
