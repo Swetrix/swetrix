@@ -1,14 +1,17 @@
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
+import { HashLink } from 'react-router-hash-link'
 import _map from 'lodash/map'
 import Flag from 'react-flagkit'
 import PropTypes from 'prop-types'
 
+import routes from 'routes'
+
 const navigation = {
   support: [
-    { name: 'Pricing', href: '#' },
-    { name: 'Documentation', href: '#' },
-    { name: 'Guides', href: '#' },
+    { name: 'Pricing', href: `${routes.main}#pricing` },
+    { name: 'Documentation', href: routes.docs },
+    { name: 'Guides', href: `${routes.docs}#docs-ht` },
   ],
   company: [
     { name: 'About', href: '#' },
@@ -57,9 +60,9 @@ const Footer = ({ minimal }) => {
               </a>
             </div>
             <div className='px-5 py-2'>
-              <a href='#/' className='text-base text-gray-300 hover:text-white'>
+              <Link to={routes.docs} className='text-base text-gray-300 hover:text-white'>
                 Docs
-              </a>
+              </Link>
             </div>
             <div className='px-5 py-2'>
               <a href='#/' className='text-base text-gray-300 hover:text-white'>
@@ -112,9 +115,9 @@ const Footer = ({ minimal }) => {
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.support, (item) => (
                     <li key={item.name}>
-                      <Link to={item.href} className='text-base text-gray-300 hover:text-white'>
+                      <HashLink to={item.href} className='text-base text-gray-300 hover:text-white'>
                         {item.name}
-                      </Link>
+                      </HashLink>
                     </li>
                   ))}
                 </ul>
