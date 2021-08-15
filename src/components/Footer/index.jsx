@@ -18,8 +18,8 @@ const navigation = {
     { name: 'Blog', href: '#' },
   ],
   legal: [
-    { name: 'Privacy', href: '#' },
-    { name: 'Terms', href: '#' },
+    { name: 'Privacy', href: routes.privacy },
+    { name: 'Terms', href: routes.terms },
   ],
   social: [
     {
@@ -50,14 +50,14 @@ const Footer = ({ minimal }) => {
               </a>
             </div>
             <div className='px-5 py-2'>
-              <a href='#/' className='text-base text-gray-300 hover:text-white'>
+              <Link to={routes.privacy} className='text-base text-gray-300 hover:text-white'>
                 Privacy Policy
-              </a>
+              </Link>
             </div>
             <div className='px-5 py-2'>
-              <a href='#/' className='text-base text-gray-300 hover:text-white'>
+              <Link to={routes.terms} className='text-base text-gray-300 hover:text-white'>
                 Terms of Service
-              </a>
+              </Link>
             </div>
             <div className='px-5 py-2'>
               <Link to={routes.docs} className='text-base text-gray-300 hover:text-white'>

@@ -127,7 +127,19 @@ const Signup = ({ signup }) => {
             name='tos'
             id='tos'
             className='mt-4'
-            label='I do accept terms and conditions and the privacy policy.'
+            label={
+              <span>
+                I do accept&nbsp;
+                <Link to={routes.terms} className='font-medium text-gray-900 hover:underline'>
+                  Terms and Conditions
+                </Link>
+                &nbsp;and the&nbsp;
+                <Link to={routes.privacy} className='font-medium text-gray-900 hover:underline'>
+                  Privacy Policy
+                </Link>
+                .
+              </span>
+            }
             hint={beenSubmitted ? errors.tos : ''}
           />
           <Checkbox

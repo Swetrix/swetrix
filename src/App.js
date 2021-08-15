@@ -21,6 +21,8 @@ import VerifyEmail from 'pages/Auth/VerifyEmail'
 import ProjectSettings from 'pages/Project/Settings'
 import ViewProject from 'pages/Project/View'
 import Billing from 'pages/Billing'
+import Privacy from 'pages/Privacy'
+import Terms from 'pages/Terms'
 
 import ScrollToTop from 'hoc/ScrollToTop'
 import { isAuthenticated, notAuthenticated } from './hoc/protected'
@@ -96,8 +98,8 @@ const App = () => {
     (!accessToken || !loading) && (
       <>
         <Header authenticated={authenticated} />
-        <Switch>
-          <ScrollToTop>
+        <ScrollToTop>
+          <Switch>
             <Route path={routes.main} component={ProtectedMain} exact />
             <Route path={routes.signin} component={ProtectedSignIn} exact />
             <Route path={routes.signup} component={ProtectedSignUp} exact />
@@ -113,9 +115,11 @@ const App = () => {
             <Route path={routes.billing} component={ProtectedBilling} exact />
             <Route path={routes.docs} component={Docs} exact />
             <Route path={routes.features} component={Features} exact />
+            <Route path={routes.privacy} component={Privacy} exact />
+            <Route path={routes.terms} component={Terms} exact />
             <Redirect to={routes.main} />
-          </ScrollToTop>
-        </Switch>
+          </Switch>
+        </ScrollToTop>
         <Footer minimal={isMinimalFooter} />
       </>
     )

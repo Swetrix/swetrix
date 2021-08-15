@@ -5,7 +5,7 @@ import Prism from 'prismjs'
 import Title from 'components/Title'
 import Code from 'ui/Code'
 import {
-  umdBuildExample, trackPageView, init, trackViews, track, trackExample,
+  umdBuildExample, trackPageView, init, track, trackExample,
 } from './examples'
 
 const contents = [{
@@ -146,7 +146,7 @@ const Docs = () => {
               <b>We DO NOT store neither IP Address or User Agent as a raw strings</b>, such data is stored as a salted hash for no longer than 30 minutes or 12:00 AM UTC, whatever happens first.<br />
               After this timeframe the identifiable data is forever deleted from our servers.
             </p>
-            <Code text={trackViews} language='javascript' />
+            <Code text={trackPageView} language='javascript' />
           </div>
         </div>
       </div>

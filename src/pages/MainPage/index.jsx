@@ -25,7 +25,7 @@ const features = [
   {
     id: 4,
     name: 'No cookie banners needed',
-    description: 'We don\'t do targeted advertising or profiling, and we don\'t rely on cookies at all. Our business model is to sell software, not data.',
+    description: 'We don\'t do targeted advertising or profiling, and we don\'t rely on tracking cookies at all. Our business model is to sell software, not data.',
   },
   {
     id: 5,
@@ -42,7 +42,7 @@ const features = [
 const faqs = [
   {
     question: 'Does Swetrix tracking require cookies?',
-    answer: 'No, it does not, our analytics script is fully cookieless as well as our website. You can use our service without a need to use a cookie notification on your website.',
+    answer: 'No, it does not, our analytics script is fully cookieless. You can use our service without a need to use a cookie notification on your website.',
   },
   {
     question: 'Do you use/share/sell the end users\' data?',
@@ -164,13 +164,13 @@ const Main = () => (
                   <div className='px-4 py-6 bg-gray-50 border-t-2 border-gray-200 sm:px-10'>
                     <p className='text-xs leading-5 text-gray-500'>
                       By signing up, you agree to our{' '}
-                      <a href='#/' className='font-medium text-gray-900 hover:underline'>
-                        Terms of Service
-                      </a>
+                      <Link to={routes.terms} className='font-medium text-gray-900 hover:underline'>
+                        Terms and Conditions
+                      </Link>
                       {' '}and{' '}
-                      <a href='#/' className='font-medium text-gray-900 hover:underline'>
+                      <Link to={routes.privacy} className='font-medium text-gray-900 hover:underline'>
                         Privacy Policy
-                      </a>
+                      </Link>
                       .
                     </p>
                   </div>
@@ -187,11 +187,7 @@ const Main = () => (
           <div className='flex-1 w-full bg-white' />
         </div>
         <div className='w-11/12 mx-auto'>
-          <img
-            className='relative rounded-md md:rounded-lg shadow-lg'
-            src='/assets/test_screenshot.png'
-            alt='App screenshot'
-          />
+          <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot.png' alt='' />
         </div>
       </div>
 

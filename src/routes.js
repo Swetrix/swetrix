@@ -14,6 +14,8 @@ const routes = Object.freeze({
   docs: '/docs',
   features: '/features',
   billing: '/billing',
+  privacy: '/privacy',
+  terms: '/terms',
 })
 
 export default routes

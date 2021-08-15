@@ -1,20 +1,20 @@
-export const umdBuildExample = `<script src="./analytics_script/dist/analytics.umd.min.js" defer></script>
+export const umdBuildExample = `<script src="https://cdn.jsdelivr.net/gh/Swetrix/swetrix-js@main/dist/swetrix.js" defer></script>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     // Initialising the script with the Project ID
     // you can find in the dashboard
-    analytics.init('YOUR_PROJECT_ID')
+    swetrix.init('YOUR_PROJECT_ID')
 
     // Tracking page views
-    analytics.trackViews()
+    swetrix.trackViews()
   })
 </script>
 `
 
-export const trackPageView = `analytics.trackViews()`
+export const trackPageView = `swetrix.trackViews()`
 
-export const track = `analytics.track({
+export const track = `swetrix.track({
   // The event identifier you want to track.
   // This has to be a string, which:
   // - only contains English letters (a-Z A-Z), numbers (0-9), underscores (_),
@@ -28,12 +28,12 @@ export const track = `analytics.track({
 })
 `
 
-export const trackExample = `analytics.track({
+export const trackExample = `swetrix.track({
   ev: 'USER_SIGN_UP',
 })
 `
 
-export const init = `analytics.init('YOUR_PROJECT_ID', {
+export const init = `swetrix.init('YOUR_PROJECT_ID', {
   // When set to true, all tracking logs will be
   // printed to console and localhost events will be sent to server.
   debug: false,
@@ -50,5 +50,3 @@ export const init = `analytics.init('YOUR_PROJECT_ID', {
   respectDNT: false,
 })
 `
-
-export const trackViews = `analytics.trackViews()`
