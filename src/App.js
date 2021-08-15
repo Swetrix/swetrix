@@ -20,7 +20,9 @@ import UserSettings from 'pages/UserSettings'
 import VerifyEmail from 'pages/Auth/VerifyEmail'
 import ProjectSettings from 'pages/Project/Settings'
 import ViewProject from 'pages/Project/View'
+import Billing from 'pages/Billing'
 
+import ScrollToTop from 'hoc/ScrollToTop'
 import { isAuthenticated, notAuthenticated } from './hoc/protected'
 import { getAccessToken } from 'utils/accessToken'
 import { authMe } from './api'
@@ -29,6 +31,7 @@ import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 
 const ProtectedMain = notAuthenticated(MainPage)
+const ProtectedBilling = isAuthenticated(Billing)
 const ProtectedSignIn = notAuthenticated(SignIn)
 const ProtectedSignUp = notAuthenticated(SignUp)
 const ProtectedForgotPassword = notAuthenticated(ForgotPassword)
@@ -94,21 +97,24 @@ const App = () => {
       <>
         <Header authenticated={authenticated} />
         <Switch>
-          <Route path={routes.main} component={ProtectedMain} exact />
-          <Route path={routes.signin} component={ProtectedSignIn} exact />
-          <Route path={routes.signup} component={ProtectedSignUp} exact />
-          <Route path={routes.dashboard} component={ProtectedDashboard} exact />
-          <Route path={routes.user_settings} component={ProtectedUserSettings} exact />
-          <Route path={routes.verify} component={VerifyEmail} exact />
-          <Route path={routes.change_email} component={VerifyEmail} exact />
-          <Route path={routes.reset_password} component={ProtectedForgotPassword} exact />
-          <Route path={routes.new_password_form} component={ProtectedNewPasswordForm} exact />
-          <Route path={routes.new_project} component={ProtectedProjectSettings} exact />
-          <Route path={routes.project_settings} component={ProtectedProjectSettings} exact />
-          <Route path={routes.project} component={ProtectedViewProject} exact />
-          <Route path={routes.docs} component={Docs} exact />
-          <Route path={routes.features} component={Features} exact />
-          <Redirect to={routes.main} />
+          <ScrollToTop>
+            <Route path={routes.main} component={ProtectedMain} exact />
+            <Route path={routes.signin} component={ProtectedSignIn} exact />
+            <Route path={routes.signup} component={ProtectedSignUp} exact />
+            <Route path={routes.dashboard} component={ProtectedDashboard} exact />
+            <Route path={routes.user_settings} component={ProtectedUserSettings} exact />
+            <Route path={routes.verify} component={VerifyEmail} exact />
+            <Route path={routes.change_email} component={VerifyEmail} exact />
+            <Route path={routes.reset_password} component={ProtectedForgotPassword} exact />
+            <Route path={routes.new_password_form} component={ProtectedNewPasswordForm} exact />
+            <Route path={routes.new_project} component={ProtectedProjectSettings} exact />
+            <Route path={routes.project_settings} component={ProtectedProjectSettings} exact />
+            <Route path={routes.project} component={ProtectedViewProject} exact />
+            <Route path={routes.billing} component={ProtectedBilling} exact />
+            <Route path={routes.docs} component={Docs} exact />
+            <Route path={routes.features} component={Features} exact />
+            <Redirect to={routes.main} />
+          </ScrollToTop>
         </Switch>
         <Footer minimal={isMinimalFooter} />
       </>

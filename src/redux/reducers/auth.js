@@ -4,7 +4,7 @@ const initialState = {
   redirectPath: null,
   authenticated: false,
   loading: true,
-  user: null
+  user: {},
 }
 
 const authReducer = (state = initialState, { type, payload }) => {
@@ -24,7 +24,7 @@ const authReducer = (state = initialState, { type, payload }) => {
 
     case types.LOGOUT:
     case types.DELETE_ACCOUNT_SUCCESS:
-      return { ...state, authenticated: false, user: null }
+      return { ...state, authenticated: false, user: {} }
 
     case types.FINISH_LOADING:
       return { ...state, loading: false }

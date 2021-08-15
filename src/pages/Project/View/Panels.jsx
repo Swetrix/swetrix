@@ -53,14 +53,14 @@ const Overview = ({
 
           <div className='flex justify-between'>
             <p className='text-lg'>Pageviews:</p>
-            <p className='h-5 w-5 mr-2 text-gray-900 text-xl'>
+            <p className='h-5 mr-2 text-gray-900 text-xl'>
               {pageviews}
             </p>
           </div>
 
           <div className='flex justify-between'>
             <p className='text-lg'>Unique views:</p>
-            <p className='h-5 w-5 mr-2 text-gray-900 text-xl'>
+            <p className='h-5 mr-2 text-gray-900 text-xl'>
               {uniques}
             </p>
           </div>
@@ -73,7 +73,7 @@ const Overview = ({
       <div className='flex justify-between'>
         <p className='text-lg'>Pageviews:</p>
         <dd className='flex items-baseline'>
-          <p className='h-5 w-5 mr-2 text-gray-900 text-lg'>
+          <p className='h-5 mr-2 text-gray-900 text-lg'>
             {overall.thisWeek}
           </p>
           <p className={cx('flex text-sm -ml-1 items-baseline', {
@@ -102,7 +102,7 @@ const Overview = ({
       <div className='flex justify-between'>
         <p className='text-lg'>Unique views:</p>
         <dd className='flex items-baseline'>
-          <p className='h-5 w-5 mr-2 text-gray-900 text-lg'>
+          <p className='h-5 mr-2 text-gray-900 text-lg'>
             {overall.thisWeekUnique}
           </p>
           <p className={cx('flex text-sm -ml-1 items-baseline', {

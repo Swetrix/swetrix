@@ -43,7 +43,7 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
                 <EyeIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
                 Pageviews:&nbsp;
                 <dd className='flex items-baseline'>
-                  <p className='h-5 w-5 text-gray-500'>
+                  <p className='h-5 mr-1 text-gray-500'>
                     {overall.thisWeek}
                   </p>
                   <p className={cx('flex text-xs -ml-1 items-baseline', {

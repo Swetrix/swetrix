@@ -13,6 +13,7 @@ const routes = Object.freeze({
   project: '/projects/:id',
   docs: '/docs',
   features: '/features',
+  billing: '/billing',
 })
 
 export default routes

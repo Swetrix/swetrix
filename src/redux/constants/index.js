@@ -45,6 +45,8 @@ export const TOKEN = 'access_token'
 
 export const TITLE_SUFFIX = process.env.REACT_APP_TITLE_SUFFIX
 
+export const STRIPE_PUBLIC_KEY = process.env.REACT_APP_STRIPE_PUB_KEY
+
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
 
