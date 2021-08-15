@@ -1,9 +1,10 @@
 import {
-  Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException,
-  InternalServerErrorException, NotImplementedException, UnprocessableEntityException, PreconditionFailedException,
+  Controller, Body, Post, Headers, BadRequestException,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
+import { PlanCode } from '../user/entities/user.entity'
+import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { STRIPE_WH_SECRET, STRIPE_SECRET } from '../common/constants'
 
@@ -14,10 +15,11 @@ const stripe = require('stripe')(STRIPE_SECRET)
 export class WebhookController {
   constructor(
     private readonly logger: AppLoggerService,
+    private readonly userService: UserService,
   ) { }
 
   @Post('/')
-  async logCustom(@Body() body: Buffer, @Headers() headers): Promise<any> {
+  async stripeWebhook(@Body() body: Buffer, @Headers() headers): Promise<any> {
     let event
 
     try {
@@ -29,54 +31,31 @@ export class WebhookController {
       throw new BadRequestException('Webhook signature verification failed')
     }
 
-    // Extract the object from the event.
     const dataObject = event.data.object
+    const { uid, planCode } = dataObject['metadata']
 
-    // Handle the event
-    // Review important events for Billing webhooks
-    // https://stripe.com/docs/billing/webhooks
-    // Remove comment to see the various objects sent for this sample
     switch (event.type) {
       case 'checkout.session.completed':
-        // Payment is successful and the subscription is created.
-        // You should provision the subscription and save the customer ID to your database.
+        await this.userService.update(uid, { planCode })
         break
       case 'invoice.paid':
         if (dataObject['billing_reason'] == 'subscription_create') {
-          // The subscription automatically activates after successful payment
-          // Set the payment method used to pay the first invoice
-          // as the default payment method for that subscription
+          // Setting default payment method for subscription
           const subscription_id = dataObject['subscription']
           const payment_intent_id = dataObject['payment_intent']
-
-          // Retrieve the payment intent used to pay the subscription
           const payment_intent = await stripe.paymentIntents.retrieve(payment_intent_id)
-
-          const subscription = await stripe.subscriptions.update(subscription_id, {
+          await stripe.subscriptions.update(subscription_id, {
             default_payment_method: payment_intent.payment_method,
           })
-
-          console.log('Default payment method set for subscription:' + payment_intent.payment_method)
+          await this.userService.update(uid, { planCode })
         }
 
         break
       case 'invoice.payment_failed':
-        // If the payment fails or the customer does not have a valid payment method,
-        //  an invoice.payment_failed event is sent, the subscription becomes past_due.
-        // Use this webhook to notify your user that their payment has
-        // failed and to retrieve new card details.
+        await this.userService.update(uid, { planCode: PlanCode.free })
         break
       case 'customer.subscription.deleted':
-        if (event.request !== null) {
-          // handle a subscription cancelled by your request
-          // from above.
-        } else {
-          // handle subscription cancelled automatically based
-          // upon your subscription settings.
-        }
-        break
-      case 'customer.subscription.trial_will_end':
-        // Send notification to your user that the trial will end
+        await this.userService.update(uid, { planCode: PlanCode.free })
         break
       default:
         throw new BadRequestException('Unexpected event type')

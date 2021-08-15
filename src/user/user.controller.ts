@@ -1,5 +1,5 @@
 import { 
-  Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards, MethodNotAllowedException, Redirect, Header,
+  Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards, MethodNotAllowedException,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags, ApiQuery } from '@nestjs/swagger'
@@ -162,7 +162,7 @@ export class UserController {
 
     const token = await this.actionTokensService.createForUser(user, ActionTokenType.EMAIL_VERIFICATION, user.email)
     const url = `${request.headers.origin}/verify/${token.id}`
-    
+
     await this.userService.update(id, { emailRequests: 1 + user.emailRequests })
     await this.mailerService.sendEmail(user.email, LetterTemplate.SignUp, { url })
     return true
@@ -234,13 +234,12 @@ export class UserController {
   @Post('/upgrade')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  // @Redirect('https://swetrix.com/billing', 303)
   async upgradePlan(@Body() body: UpgradeUserProfileDTO, @CurrentUserId() user_id: string): Promise<object> {
     this.logger.log({ body, user_id }, 'POST /user/upgrade')
     const user = await this.userService.findOne(user_id, {
-      select: ['email'],
+      select: ['email', 'id'],
     })
-    
+
     const { planCode } = body
     const priceId = ACCOUNT_PLANS[planCode]?.priceId
 
@@ -260,9 +259,10 @@ export class UserController {
       ],
       success_url: 'https://swetrix.com/billing?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'https://swetrix.com/billing',
+      metadata: {
+        uid: user.id, planCode,
+      }
     })
-
-    console.log(session)
 
     return {
       url: session.url,
