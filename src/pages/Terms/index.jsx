@@ -1,13 +1,10 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { HashLink } from 'react-router-hash-link'
 
 import Title from 'components/Title'
-import routes from 'routes'
 
 const Features = () => {
   return (
-    <Title title='Privacy Policy'>
+    <Title title='Terms and Conditions'>
       <div className='bg-gray-50'>
         <div className='w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
           <h1 className='text-4xl font-extrabold text-gray-900 tracking-tight'>Swetrix Terms and Conditions</h1>
