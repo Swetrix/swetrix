@@ -23,7 +23,7 @@ export class WebhookController {
     let event
 
     try {
-      event = stripe.webhooks.constructEvent(body, headers['Stripe-Signature'], STRIPE_WH_SECRET)
+      event = stripe.webhooks.constructEvent(body, headers['stripe-signature'], STRIPE_WH_SECRET)
     } catch (err) {
       this.logger.error(err)
       this.logger.error('Webhook signature verification failed.')
@@ -33,7 +33,6 @@ export class WebhookController {
 
     // Extract the object from the event.
     const dataObject = event.data.object
-    console.log(event.type, event.data)
 
     // Handle the event
     // Review important events for Billing webhooks
