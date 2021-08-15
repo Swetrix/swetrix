@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core'
 // import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { ValidationPipe } from '@nestjs/common'
 import * as cookieParser from 'cookie-parser'
+import * as bodyParser from 'body-parser'
 
 import { AppModule } from './app.module'
 
@@ -20,6 +21,7 @@ async function bootstrap() {
   // const document = SwaggerModule.createDocument(app, options)
   // SwaggerModule.setup('', app, document)
 
+  app.use('/webhook', bodyParser.raw({ type: 'application/json' }))
   await app.listen(5005)
 }
 bootstrap()
