@@ -88,16 +88,22 @@ const Footer = ({ minimal }) => {
               The best apps need the best services.<br />
               Swetrix is a powerful analytics platform that respects user privacy.
             </p>
-            <p className='flex text-gray-300 text-base'>
-              Made in
-              <a className='hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/Ukraine' target='_blank' rel='noopener noreferrer'>
-                <Flag className='pt-1.5' country='UA' size={18} alt='Ukraine' title='Ukraine' />
-              </a>
-              , hosted in
-              <a className='hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/European_Union' target='_blank' rel='noopener noreferrer'>
-                <Flag className='pt-1.5' country='EU' size={18} alt='the European Union' title='The European Union' />
-              </a>
-            </p>
+            <div>
+              {/* <p className='flex text-gray-300 text-base'>
+                Made in
+                <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/Sweden' target='_blank' rel='noopener noreferrer'>
+                  <Flag country='SE' size={18} alt='' />
+                  &nbsp;Sweden
+                </a>
+              </p> */}
+              <p className='flex text-gray-300 text-base'>
+                Made and hosted in the
+                <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/European_Union' target='_blank' rel='noopener noreferrer'>
+                  <Flag country='EU' size={18} alt='' />
+                  &nbsp;European Union
+                </a>
+              </p>
+            </div>
             <div className='flex space-x-6'>
               {_map(navigation.social, (item) => (
                 <a key={item.name} href={item.href} target='_blank' rel='noopener noreferrer' className='text-gray-400 hover:text-gray-300'>
