@@ -57,9 +57,6 @@ export class WebhookController {
       case 'customer.subscription.deleted':
         await this.userService.update(uid, { planCode: PlanCode.free })
         break
-      case 'customer.subscription.updated':
-        // await this.userService.update(uid, { planCode: PlanCode.free })
-        break
       default:
         throw new BadRequestException('Unexpected event type')
     }
