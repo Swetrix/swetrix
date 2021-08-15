@@ -12,17 +12,19 @@ export const ACCOUNT_PLANS = {
     displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
     maxProjects: 10,
+    priceId: 'price_1JORmHCQYBdiXzBatNEKQmP9',
   },
   startup: {
     displayName: 'Startup plan',
     monthlyUsageLimit: 500000,
     maxProjects: 10,
-    priceId: 'price_1JOUvrCQYBdiXzBaYbOu3wnB',
+    priceId: 'price_1JORmfCQYBdiXzBawbn1yoeu',
   },
   enterprise: {
     displayName: 'Enterprise plan',
     monthlyUsageLimit: 1000000,
     maxProjects: 10,
+    priceId: 'price_1JORn3CQYBdiXzBaOdcNvHHP',
   },
 }
 
