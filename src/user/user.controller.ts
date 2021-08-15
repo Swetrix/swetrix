@@ -262,9 +262,6 @@ export class UserController {
       subscription_data: {
         metadata: { uid: user.id, planCode },
       },
-      payment_intent_data: {
-        metadata: { uid: user.id, planCode },
-      },
       metadata: { uid: user.id, planCode },
     })
 
