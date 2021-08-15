@@ -17,6 +17,7 @@ export const ACCOUNT_PLANS = {
     displayName: 'Startup plan',
     monthlyUsageLimit: 500000,
     maxProjects: 10,
+    priceId: 'price_1JOUvrCQYBdiXzBaYbOu3wnB',
   },
   enterprise: {
     displayName: 'Enterprise plan',

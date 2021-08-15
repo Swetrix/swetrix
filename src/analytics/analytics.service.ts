@@ -149,7 +149,7 @@ export class AnalyticsService {
       so: {},
       me: {},
       ca: {},
-      lt: {},
+      // lt: {},
     }
     const whitelist = _keys(res)
   

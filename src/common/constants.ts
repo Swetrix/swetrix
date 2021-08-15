@@ -3,6 +3,7 @@ import Redis from 'ioredis'
 import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
 import * as _round from 'lodash/round'
+
 require('dotenv').config()
 
 const redis = new Redis({
@@ -76,8 +77,12 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 // how often can user request a fresh GDPR export of their data; in days.
 const GDPR_EXPORT_TIMEFRAME = 14
 
+const STRIPE_SECRET = process.env.STRIPE_SECRET
+const STRIPE_WH_SECRET = process.env.STRIPE_WH_SECRET
+
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME, getRedisUserCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
+  STRIPE_SECRET, STRIPE_WH_SECRET,
 }
