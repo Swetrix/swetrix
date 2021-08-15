@@ -119,7 +119,7 @@ export class Lib {
 
   private debug(message: string) {
     if (this.options?.debug) {
-      console.log('[Analytics]', message)
+      console.log('[Swetrix]', message)
     }
   }
 
