@@ -9,7 +9,7 @@ export default [
   {
     input: 'src/index.ts',
     output: [
-      { file: pkg.browser, format: 'umd', name: 'analytics' },
+      { file: pkg.browser, format: 'umd', name: 'swetrix' },
       { file: pkg.main, format: 'cjs' },
       { file: pkg.module, format: 'es' },
     ],
@@ -20,7 +20,7 @@ export default [
   {
     input: 'src/index.ts',
     output: [
-      { file: 'dist/analytics.umd.min.js', format: 'umd', name: 'analytics' },
+      { file: 'dist/swetrix.js', format: 'umd', name: 'swetrix' },
     ],
     plugins: [
       typescript(), resolve(), commonjs(), uglify(),
