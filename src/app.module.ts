@@ -13,6 +13,7 @@ import { MailerModule } from './mailer/mailer.module'
 import { ActionTokensModule } from './action-tokens/action-tokens.module'
 import { ActionToken } from './action-tokens/action-token.entity'
 import { TaskManagerModule } from './task-manager/task-manager.module'
+import { WebhookModule } from './webhook/webhook.module'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
     ActionTokensModule,
     ProjectModule,
     AnalyticsModule,
+    WebhookModule,
   ],
 })
 

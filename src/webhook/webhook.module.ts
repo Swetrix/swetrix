@@ -11,4 +11,4 @@ import { AppLoggerModule } from '../logger/logger.module'
   ],
   controllers: [WebhookController],
 })
-export class AnalyticsModule {}
+export class WebhookModule {}
