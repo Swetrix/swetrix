@@ -18,8 +18,6 @@ export class WebhookController {
 
   @Post('/')
   async logCustom(@Body() body: Buffer, @Headers() headers): Promise<any> {
-    this.logger.log({ body, headers }, 'POST /webhook')
-
     let event
 
     try {
