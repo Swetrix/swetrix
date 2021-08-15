@@ -2,6 +2,7 @@ import {
   Controller, Body, Post, Headers, BadRequestException,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
+import * as _isEmpty from 'lodash/isEmpty'
 
 import { PlanCode } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
@@ -32,14 +33,17 @@ export class WebhookController {
     }
 
     const dataObject = event.data.object
-    const { uid, planCode } = dataObject['metadata']
 
     switch (event.type) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
+        const { uid, planCode } = dataObject.metadata
         await this.userService.update(uid, { planCode })
         break
-      case 'invoice.paid':
+      }
+      case 'invoice.paid': {
         if (dataObject['billing_reason'] == 'subscription_create') {
+          const { uid, planCode } = dataObject.lines.data[0].metadata
+
           // Setting default payment method for subscription
           const subscription_id = dataObject['subscription']
           const payment_intent_id = dataObject['payment_intent']
@@ -51,12 +55,19 @@ export class WebhookController {
         }
 
         break
-      case 'invoice.payment_failed':
+      }
+      case 'invoice.payment_failed': {
+        const { uid } = _isEmpty(dataObject.metadata) ? dataObject.lines.data[0].metadata : dataObject.metadata
+
         await this.userService.update(uid, { planCode: PlanCode.free })
         break
-      case 'customer.subscription.deleted':
+      }
+      case 'customer.subscription.deleted': {
+        const { uid } = dataObject.metadata
+
         await this.userService.update(uid, { planCode: PlanCode.free })
         break
+      }
       default:
         throw new BadRequestException('Unexpected event type')
     }
