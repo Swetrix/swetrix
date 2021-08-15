@@ -257,11 +257,15 @@ export class UserController {
           quantity: 1,
         },
       ],
-      success_url: 'https://swetrix.com/billing?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'https://swetrix.com/billing',
-      metadata: {
-        uid: user.id, planCode,
-      }
+      success_url: 'https://swetrix.com/billing?sub_success=true',
+      cancel_url: 'https://swetrix.com/billing?sub_success=false',
+      subscription_data: {
+        metadata: { uid: user.id, planCode },
+      },
+      payment_intent_data: {
+        metadata: { uid: user.id, planCode },
+      },
+      metadata: { uid: user.id, planCode },
     })
 
     return {
