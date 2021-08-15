@@ -35,9 +35,9 @@ export class WebhookController {
     const { uid, planCode } = dataObject['metadata']
 
     switch (event.type) {
-      // case 'checkout.session.completed':
-      //   await this.userService.update(uid, { planCode })
-      //   break
+      case 'checkout.session.completed':
+        await this.userService.update(uid, { planCode })
+        break
       case 'invoice.paid':
         if (dataObject['billing_reason'] == 'subscription_create') {
           // Setting default payment method for subscription
