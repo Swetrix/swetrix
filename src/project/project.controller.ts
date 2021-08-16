@@ -127,11 +127,12 @@ export class ProjectController {
     await this.projectService.update(id, project)
 
     project = await this.projectService.findOne(id)
+    const key = getRedisProjectKey(id)
 
     try {
-      await redis.set(getRedisProjectKey(id), JSON.stringify(project), 'EX', redisProjectCacheTimeout)
+      await redis.set(key, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
     } catch {
-      await redis.del()
+      await redis.del(key)
     }
 
     return project
