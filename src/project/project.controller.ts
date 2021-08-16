@@ -113,7 +113,7 @@ export class ProjectController {
     this.logger.log({ projectDTO, userId, id }, 'PUT /project/:id')
     this.projectService.validateProject(projectDTO)
 
-    let project = await this.projectService.findOneWithRelations(id)
+    const project = await this.projectService.findOneWithRelations(id)
 
     if (_isEmpty(project)) {
       throw new NotFoundException()
@@ -126,7 +126,6 @@ export class ProjectController {
     await this.projectService.allowedToManage(project, userId)
     await this.projectService.update(id, project)
 
-    project = await this.projectService.findOne(id)
     const key = getRedisProjectKey(id)
 
     try {
