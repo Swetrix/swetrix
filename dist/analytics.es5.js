@@ -68,6 +68,7 @@ var Lib = /** @class */ (function () {
         this.projectID = projectID;
         this.options = options;
         this.pageData = null;
+        this.trackPathChange = this.trackPathChange.bind(this);
     }
     // Tracks a custom event
     Lib.prototype.track = function (event) {
@@ -85,15 +86,16 @@ var Lib = /** @class */ (function () {
         if (this.pageData) {
             return this.pageData.actions;
         }
-        var interval = setInterval(this.trackPathChange, 1000);
+        var interval = setInterval(this.trackPathChange, 2000);
         var path = getPath();
         this.pageData = {
             path: path,
             actions: {
                 stop: function () { return clearInterval(interval); }
-            }
+            },
         };
         this.trackPage(path);
+        return this.pageData.actions;
     };
     // Tracking path changes. If path changes -> calling this.trackPage method
     Lib.prototype.trackPathChange = function () {

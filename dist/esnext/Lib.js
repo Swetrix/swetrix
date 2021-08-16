@@ -5,6 +5,7 @@ export class Lib {
         this.projectID = projectID;
         this.options = options;
         this.pageData = null;
+        this.trackPathChange = this.trackPathChange.bind(this);
     }
     // Tracks a custom event
     track(event) {
@@ -25,15 +26,16 @@ export class Lib {
         if (this.pageData) {
             return this.pageData.actions;
         }
-        const interval = setInterval(this.trackPathChange, 1000);
+        const interval = setInterval(this.trackPathChange, 2000);
         const path = getPath();
         this.pageData = {
             path,
             actions: {
                 stop: () => clearInterval(interval)
-            }
+            },
         };
         this.trackPage(path);
+        return this.pageData.actions;
     }
     // Tracking path changes. If path changes -> calling this.trackPage method
     trackPathChange() {
