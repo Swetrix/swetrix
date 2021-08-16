@@ -6,7 +6,7 @@ const Features = () => {
   return (
     <Title title='Terms and Conditions'>
       <div className='bg-gray-50'>
-        <div className='w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
+        <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
           <h1 className='text-4xl font-extrabold text-gray-900 tracking-tight'>Swetrix Terms and Conditions</h1>
           <p className='mt-4 text-lg text-gray-900 tracking-tight'>
             These Swetrix Terms and Conditions ("Terms", "Terms and Conditions") govern your relationship with swetrix.com ("Service") operated by Andrii Romasiun ("Swetrix", "Swetrix Analytics", "Company", "us", "we", or "our").<br />

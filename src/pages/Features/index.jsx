@@ -9,7 +9,7 @@ const Features = () => {
   return (
     <Title title='Features'>
       <div className='bg-gray-50'>
-        <div className='w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
+        <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
           <h1 className='text-4xl font-extrabold text-gray-900 tracking-tight'>Features</h1>
 
           <h3 className='text-2xl font-normal text-gray-900 tracking-tight mt-4'>Transparency</h3>

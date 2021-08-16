@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory, useParams, Link } from 'react-router-dom'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb, { area, zoom } from 'billboard.js' // eslint-disable-line
@@ -123,8 +123,12 @@ const NoEvents = () => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
     <div className='max-w-7xl w-full mx-auto'>
       <h2 className='text-4xl text-center leading-tight my-3'>No events yet</h2>
-      <h2 className='text-2xl mb-8 text-center leading-snug'>No events have been captured yet.</h2>
-      {/* todo: detailed description on how to create event, code example; link to docs & cdn / npm library */}
+      <h2 className='text-2xl mb-8 text-center leading-snug'>
+        No events have been captured for the specified timeframe.<br />
+        If you haven't tracked any events yet, you can check out our&nbsp;
+        <Link to={routes.docs} className='hover:underline text-blue-600'>Docs</Link>
+        &nbsp;to easily integrate tracking into your app.
+      </h2>
     </div>
   </div>
 )

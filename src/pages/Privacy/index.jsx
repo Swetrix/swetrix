@@ -8,7 +8,7 @@ const Features = () => {
   return (
     <Title title='Privacy Policy'>
       <div className='bg-gray-50'>
-        <div className='w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
+        <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
           <h1 className='text-4xl font-extrabold text-gray-900 tracking-tight'>Privacy Policy</h1>
           <p className='mt-4 text-lg text-gray-900 tracking-tight'>
             This Swetrix Privacy Policy (“Policy”, "Privacy Policy") outlines the personal information that we gather, how we use that personal information, and the options you have to access, correct, or delete such personal information.<br />
