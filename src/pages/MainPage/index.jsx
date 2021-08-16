@@ -59,7 +59,7 @@ const faqs = [
 ]
 
 const SquareDots = ({ className }) => (
-  <div className='hidden sm:block sm:absolute sm:inset-0 pointer-events-none' aria-hidden='true'>
+  <div className='hidden lg:block lg:absolute lg:inset-0 pointer-events-none' aria-hidden='true'>
     <svg
       className={className}
       width={364}
