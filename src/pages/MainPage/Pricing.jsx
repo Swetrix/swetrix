@@ -6,6 +6,7 @@ import _map from 'lodash/map'
 import _isNil from 'lodash/isNil'
 import _isString from 'lodash/isString'
 import _isEmpty from 'lodash/isEmpty'
+import _findIndex from 'lodash/findIndex'
 import cx from 'classnames'
 
 import Spin from '../../ui/icons/Spin'
@@ -66,7 +67,7 @@ const Pricing = () => {
   const [planCodeLoading, setPlanCodeLoading] = useState(null)
 
   const onPlanChange = async (planCode) => {
-    if (planCodeLoading === null) {
+    if (planCodeLoading === null && user.planCode !== planCode) {
       setPlanCodeLoading(planCode)
       try {
         const { data: { url } } = await upgradePlan(planCode)
@@ -85,6 +86,8 @@ const Pricing = () => {
       }
     }
   }
+
+  const userPlancodeID = _findIndex(tiers, (el) => el.planCode === user.planCode)
 
   return (
     <div id='pricing' className={cx({ 'bg-white': !authenticated })}>
@@ -115,77 +118,95 @@ const Pricing = () => {
             </div> */}
         </div>
         <div className='mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-4'>
-          {_map(tiers, (tier) => (
-            <div key={tier.name} className={cx('relative border rounded-lg shadow-sm divide-y divide-gray-200', {
-              'border-indigo-400': user.planCode === tier.planCode,
-              'border-gray-200': user.planCode !== tier.planCode,
-            })}>
-              {user.planCode === tier.planCode && (
-                <div className='absolute inset-x-0 top-0 transform translate-y-px'>
-                  <div className='flex justify-center transform -translate-y-1/2'>
-                    <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider uppercase text-white'>
-                      Current plan
-                    </span>
+          {_map(tiers, (tier) => {
+            const planCodeID = _findIndex(tiers, (el) => el.planCode === tier.planCode)
+
+            return (
+              <div key={tier.name} className={cx('relative border rounded-lg shadow-sm divide-y divide-gray-200', {
+                'border-indigo-400': user.planCode === tier.planCode,
+                'border-gray-200': user.planCode !== tier.planCode,
+              })}>
+                {user.planCode === tier.planCode && (
+                  <div className='absolute inset-x-0 top-0 transform translate-y-px'>
+                    <div className='flex justify-center transform -translate-y-1/2'>
+                      <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider uppercase text-white'>
+                        Current plan
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )}
-              <div className='p-6'>
-                <h2 className='text-lg leading-6 font-medium text-gray-900'>{tier.name}</h2>
-                <p className='mt-4'>
-                  {_isNil(tier.priceMonthly) ? (
-                    <span className='text-4xl font-extrabold text-gray-900'>Free</span>
-                  ) : (
-                    <>
-                      <span className='text-4xl font-extrabold text-gray-900'>${tier.priceMonthly}</span>{' '}
-                      <span className='text-base font-medium text-gray-500'>/mo</span>
-                    </>
-                  )}
-                </p>
-                {_isNil(tier.priceMonthly) ? (
-                  <Link
-                    className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
-                      'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null,
-                      'bg-indigo-400': planCodeLoading !== null,
-                    })}
-                    to={routes.signup}
-                  >
-                    Get started
-                  </Link>
-                ) : authenticated ? (
-                  <span
-                    onClick={() => onPlanChange(tier.planCode)}
-                    className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
-                      'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null,
-                      'bg-indigo-400': planCodeLoading !== null,
-                    })}
-                  >
-                    {planCodeLoading === tier.planCode && (
-                      <Spin />
-                    )}
-                    Upgrade
-                  </span>
-                ) : (
-                  <Link
-                    className='mt-8 block w-full bg-indigo-600 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
-                    to={routes.signup}
-                  >
-                    Upgrade
-                  </Link>
                 )}
+                <div className='p-6'>
+                  <h2 className='text-lg leading-6 font-medium text-gray-900'>{tier.name}</h2>
+                  <p className='mt-4'>
+                    {_isNil(tier.priceMonthly) ? (
+                      <span className='text-4xl font-extrabold text-gray-900'>Free</span>
+                    ) : (
+                      <>
+                        <span className='text-4xl font-extrabold text-gray-900'>${tier.priceMonthly}</span>{' '}
+                        <span className='text-base font-medium text-gray-500'>/mo</span>
+                      </>
+                    )}
+                  </p>
+                  {_isNil(tier.priceMonthly) ? (
+                    authenticated ? (
+                      <span
+                        className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
+                          'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null && tier.planCode !== user.planCode,
+                          'bg-indigo-400': planCodeLoading !== null || tier.planCode === user.planCode,
+                        })}
+                      >
+                        {planCodeLoading === tier.planCode && (
+                          <Spin />
+                        )}
+                        {tier.planCode === user.planCode ? 'Your plan' : 'Downgrade'}
+                      </span>
+                    ) : (
+                      <Link
+                        className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
+                          'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null && tier.planCode !== user.planCode,
+                          'bg-indigo-400': planCodeLoading !== null || tier.planCode === user.planCode,
+                        })}
+                        to={routes.signup}
+                      >
+                        Get started
+                      </Link>
+                    )
+                  ) : authenticated ? (
+                    <span
+                      onClick={() => onPlanChange(tier.planCode)}
+                      className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
+                        'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null,
+                        'bg-indigo-400': planCodeLoading !== null,
+                      })}
+                    >
+                      {planCodeLoading === tier.planCode && (
+                        <Spin />
+                      )}
+                      {planCodeID > userPlancodeID ? 'Upgrade' : planCodeID < userPlancodeID ? 'Downgrade' : 'Your plan'}
+                    </span>
+                  ) : (
+                    <Link
+                      className='mt-8 block w-full bg-indigo-600 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
+                      to={routes.signup}
+                    >
+                      Upgrade
+                    </Link>
+                  )}
+                </div>
+                <div className='pt-6 pb-8 px-6'>
+                  <h3 className='text-xs font-medium text-gray-900 tracking-wide uppercase'>What's included</h3>
+                  <ul className='mt-6 space-y-4'>
+                    {_map(tier.includedFeatures, (feature) => (
+                      <li key={feature} className='flex space-x-3'>
+                        <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-500' aria-hidden='true' />
+                        <span className='text-sm text-gray-500'>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className='pt-6 pb-8 px-6'>
-                <h3 className='text-xs font-medium text-gray-900 tracking-wide uppercase'>What's included</h3>
-                <ul className='mt-6 space-y-4'>
-                  {_map(tier.includedFeatures, (feature) => (
-                    <li key={feature} className='flex space-x-3'>
-                      <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-500' aria-hidden='true' />
-                      <span className='text-sm text-gray-500'>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
