@@ -1,5 +1,7 @@
-export const umdBuildExample = `<script src="https://cdn.jsdelivr.net/gh/Swetrix/swetrix-js@main/dist/swetrix.js" defer></script>
+export const umdBuildExample = `<!-- Put this at the end of the <head> tag -->
+<script src="https://cdn.jsdelivr.net/gh/Swetrix/swetrix-js@main/dist/swetrix.js" defer></script>
 
+<!-- Put this at the end of the <body> tag -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     // Initialising the script with the Project ID
