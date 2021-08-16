@@ -131,7 +131,6 @@ const Docs = () => {
               <div className='mb-5'>
                 <ul className='ml-10'>
                   <li><b>pid</b> - the unique Project ID request is related to.</li>
-                  <li><b>ev</b> ('pageviews') - the name of the event. Basically, the <i>trackViews</i> does the same job as <a href='#docs-tr'>track</a>, but with already predefined parameters.</li>
                   <li><b>lc</b> - users locale (e.g. en_US or uk_UA).</li>
                   <li><b>tz</b> - users timezone (e.g. Europe/Helsinki).</li>
                   <li><b>ref</b> - the URL of the previous webpage from which a page was opened.</li>
@@ -143,7 +142,7 @@ const Docs = () => {
               </div>
               On the server side we also gather users IP Address and User Agent.<br />
               This data is used to detect whether the page view is unique or not.<br />
-              <b>We DO NOT store neither IP Address or User Agent as a raw strings</b>, such data is stored as a salted hash for no longer than 30 minutes or 12:00 AM UTC, whatever happens first.<br />
+              <b>We DO NOT store neither IP Address nor User Agent as a raw strings</b>, such data is stored as a salted hash for no longer than 30 minutes or 12:00 AM UTC, whatever happens first.<br />
               After this timeframe the identifiable data is forever deleted from our servers.
             </p>
             <Code text={trackPageView} language='javascript' />
