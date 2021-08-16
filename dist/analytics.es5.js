@@ -62,7 +62,7 @@ var getPath = function () {
     return location.pathname || '';
 };
 
-var host = 'http://localhost:5005/log';
+var host = 'https://api.swetrix.com/log';
 var Lib = /** @class */ (function () {
     function Lib(projectID, options) {
         this.projectID = projectID;
@@ -124,7 +124,7 @@ var Lib = /** @class */ (function () {
     Lib.prototype.debug = function (message) {
         var _a;
         if ((_a = this.options) === null || _a === void 0 ? void 0 : _a.debug) {
-            console.log('[Analytics]', message);
+            console.log('[Swetrix]', message);
         }
     };
     Lib.prototype.canTrack = function () {

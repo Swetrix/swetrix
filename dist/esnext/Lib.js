@@ -1,5 +1,5 @@
 import { isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer, getUTMCampaign, getUTMMedium, getUTMSource, getPath, } from './utils';
-const host = 'http://localhost:5005/log';
+const host = 'https://api.swetrix.com/log';
 export class Lib {
     constructor(projectID, options) {
         this.projectID = projectID;
@@ -63,7 +63,7 @@ export class Lib {
     }
     debug(message) {
         if (this.options?.debug) {
-            console.log('[Analytics]', message);
+            console.log('[Swetrix]', message);
         }
     }
     canTrack() {

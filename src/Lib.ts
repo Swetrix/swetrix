@@ -44,7 +44,7 @@ export interface PageViewsOptions {
   
 }
 
-const host = 'http://localhost:5005/log'
+const host = 'https://api.swetrix.com/log'
 
 export class Lib {
   private pageData: PageData | null = null
