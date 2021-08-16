@@ -20,7 +20,7 @@ import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 
-
+// TODO: Add logout endpoint to delete the token
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {

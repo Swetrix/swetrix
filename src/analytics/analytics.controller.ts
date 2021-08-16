@@ -195,7 +195,7 @@ export class AnalyticsController {
       const os = ua.os.name
       dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, logDTO.tz, 1)
     } else {
-      dto = analyticsDTO(logDTO.pid, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
+      dto = analyticsDTO(logDTO.pid, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
     }
 
     // todo: fix: may be vulnerable to sql injection attack
