@@ -120,7 +120,7 @@ const App = () => {
             <Redirect to={routes.main} />
           </Switch>
         </ScrollToTop>
-        <Footer minimal={isMinimalFooter} />
+        <Footer minimal={isMinimalFooter} authenticated={authenticated} />
       </>
     )
   )

@@ -9,9 +9,9 @@ import routes from 'routes'
 
 const navigation = {
   support: [
-    { name: 'Pricing', href: `${routes.main}#pricing` },
-    { name: 'Documentation', href: routes.docs },
-    { name: 'Guides', href: `${routes.docs}#docs-ht` },
+    (authenticated) => (authenticated ? { name: 'Billing', href: routes.billing } : { name: 'Pricing', href: `${routes.main}#pricing` }),
+    () => ({ name: 'Documentation', href: routes.docs }),
+    () => ({ name: 'Guides', href: `${routes.docs}#docs-ht` }),
   ],
   company: [
     { name: 'About', href: '#' },
@@ -38,7 +38,7 @@ const navigation = {
   ],
 }
 
-const Footer = ({ minimal }) => {
+const Footer = ({ minimal, authenticated }) => {
   if (minimal) {
     return (
       <footer className='bg-gray-800'>
@@ -119,13 +119,17 @@ const Footer = ({ minimal }) => {
               <div className='mt-12 md:mt-0'>
                 <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>Support</h3>
                 <ul className='mt-4 space-y-4'>
-                  {_map(navigation.support, (item) => (
-                    <li key={item.name}>
-                      <HashLink to={item.href} className='text-base text-gray-300 hover:text-white'>
-                        {item.name}
-                      </HashLink>
-                    </li>
-                  ))}
+                  {_map(navigation.support, (func) => {
+                    const item = func(authenticated)
+
+                    return (
+                      <li key={item.name}>
+                        <HashLink to={item.href} className='text-base text-gray-300 hover:text-white'>
+                          {item.name}
+                        </HashLink>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             </div>
@@ -166,6 +170,7 @@ const Footer = ({ minimal }) => {
 }
 
 Footer.propTypes = {
+  authenticated: PropTypes.bool.isRequired,
   minimal: PropTypes.bool,
 }
 
