@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useLocation, useHistory, useParams } from 'react-router-dom'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
@@ -9,6 +9,7 @@ import _split from 'lodash/split'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
+import { isAuthenticated } from '../../../hoc/protected'
 import { createProject, updateProject, deleteProject } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -257,4 +258,4 @@ ProjectSettings.propTypes = {
   user: PropTypes.object.isRequired,
 }
 
-export default ProjectSettings
+export default isAuthenticated(memo(ProjectSettings))

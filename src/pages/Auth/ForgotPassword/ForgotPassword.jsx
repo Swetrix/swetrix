@@ -3,6 +3,7 @@ import { Link, useHistory } from 'react-router-dom'
 
 import { forgotPassword } from 'api'
 import Title from 'components/Title'
+import { notAuthenticated } from '../../../hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -106,4 +107,4 @@ const ForgotPassword = ({
   )
 }
 
-export default memo(ForgotPassword)
+export default notAuthenticated(memo(ForgotPassword))

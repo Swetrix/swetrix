@@ -13,6 +13,7 @@ import { ArrowSmDownIcon } from '@heroicons/react/solid'
 import { XCircleIcon } from '@heroicons/react/solid'
 
 import Modal from 'ui/Modal'
+import { isAuthenticated } from 'hoc/protected'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
 import { ActivePin, InactivePin } from 'ui/Pin'
@@ -186,4 +187,4 @@ Dashboard.defaultProps = {
   error: '',
 }
 
-export default memo(Dashboard)
+export default isAuthenticated(memo(Dashboard))

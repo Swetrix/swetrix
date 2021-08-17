@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 import routes from 'routes'
+import { notAuthenticated } from '../../hoc/protected'
 import Title from 'components/Title'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
@@ -247,4 +248,4 @@ const Main = () => (
   </Title>
 )
 
-export default Main
+export default notAuthenticated(Main)

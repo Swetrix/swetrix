@@ -22,6 +22,7 @@ import Title from 'components/Title'
 import {
   tbPeriodPairs, tbsFormatMapper, getProjectCacheKey,
 } from 'redux/constants'
+import { isAuthenticated } from '../../../hoc/protected'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -378,4 +379,4 @@ ViewProject.propTypes = {
   isLoading: PropTypes.bool.isRequired,
 }
 
-export default memo(ViewProject)
+export default isAuthenticated(memo(ViewProject))

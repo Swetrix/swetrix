@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
+import { notAuthenticated } from '../../../hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -132,4 +133,4 @@ Signin.propTypes = {
   login: PropTypes.func.isRequired,
 }
 
-export default memo(Signin)
+export default notAuthenticated(memo(Signin))

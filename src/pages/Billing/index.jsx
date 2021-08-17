@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Pricing from '../MainPage/Pricing'
+import { isAuthenticated } from '../../hoc/protected'
 import Title from 'components/Title'
 
 const Features = () => {
@@ -30,4 +31,4 @@ const Features = () => {
   )
 }
 
-export default Features
+export default isAuthenticated(Features)
