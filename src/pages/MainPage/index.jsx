@@ -136,7 +136,7 @@ const Main = () => (
   <Title title='Privacy Respecting Web Analytics Platform'>
     <div className='relative bg-gray-800'>
       <SquareDots className='absolute bottom-0 left-0 transform translate-x-0 mb-0 text-gray-700 lg:top-0 xl:transform-none lg:mt-72' />
-      <SquareDots className='absolute bottom-0 right-0 transform translate-x-1/2 mb-48 text-gray-700 lg:top-0 lg:mb-0 xl:transform-none xl:translate-x-0 lg:mt-16' />
+      <SquareDots className='absolute bottom-0 right-0 transform translate-x-0 mb-48 text-gray-700 lg:top-0 lg:mb-0 xl:transform-none lg:mt-16' />
       <div className='relative pt-6 pb-16 sm:pb-24'>
         <main className='mt-16 sm:mt-24'>
           <div className='mx-auto w-11/12'>
