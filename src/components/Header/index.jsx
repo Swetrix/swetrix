@@ -20,7 +20,7 @@ const Header = ({ authenticated }) => {
           <div className='flex items-center'>
             <Link to={routes.main}>
               <span className='sr-only'>Swetrix</span>
-              <img className='h-10 w-28' src='/assets/logo_white.png' height='40' w alt='' />
+              <img className='h-10 w-28' src='/assets/logo_white.png' height='40' width='112' alt='' />
             </Link>
             <div className='hidden ml-10 space-x-1 lg:block'>
               <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Features'>Features</NavLink>
