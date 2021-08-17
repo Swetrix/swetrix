@@ -149,6 +149,9 @@ const ViewProject = ({
   const [showTotal, setShowTotal] = useState(false)
   const [chartData, setChartData] = useState({})
   const [mainChart, setMainChart] = useState(null)
+  // That is needed when using 'Export as image' feature
+  // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
+  const [showIcons, setShowIcons] = useState(true)
 
   const { name } = project
 
@@ -239,12 +242,15 @@ const ViewProject = ({
   }
 
   const exportAsImageHandler = async () => {
+    setShowIcons(false)
     try {
       const blob = await domToImage.toBlob(dashboardRef.current)
       saveAs(blob, `swetrix-${dayjs().format('YYYY-MM-DD-HH-mm-ss')}.png`)
     } catch (e) {
       console.error('[ERROR] Error while generating export image.')
       console.error(e)
+    } finally {
+      setShowIcons(true)
     }
   }
 
@@ -335,7 +341,7 @@ const ViewProject = ({
 
                       return (
                         <a className='flex label hover:underline text-blue-600' href={name} target='_blank' rel='noopener noreferrer'>
-                          {!_isEmpty(url.hostname) && (
+                          {showIcons && !_isEmpty(url.hostname) && (
                             <img className='w-5 h-5 mr-1.5' src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`} alt='' />
                           )}
                           {name}
