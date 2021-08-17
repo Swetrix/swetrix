@@ -1,4 +1,4 @@
-import React, { useEffect, lazy, Suspense } from 'react'
+import React, { useEffect, lazy, Suspense, useState } from 'react'
 import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
 import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
@@ -9,6 +9,7 @@ import _includes from 'lodash/includes'
 
 import Header from 'components/Header'
 import Footer from 'components/Footer'
+import Loader from 'ui/Loader'
 
 import ScrollToTop from 'hoc/ScrollToTop'
 import { getAccessToken } from 'utils/accessToken'
@@ -36,6 +37,22 @@ const Terms = lazy(() => import('pages/Terms'))
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings',
 ]
+
+const Fallback = ({ isMinimalFooter }) => {
+  const [showLoader, setShowLoader] = useState(false)
+
+  useEffect(() => {
+    setTimeout(() => setShowLoader(true), 1000)
+  }, [])
+
+  return (
+    <div className={cx({ 'min-h-page': !isMinimalFooter, 'min-h-min-footer': isMinimalFooter })}>
+      {showLoader && (
+        <Loader />
+      )}
+    </div>
+  )
+}
 
 const App = () => {
   const dispatch = useDispatch()
@@ -89,7 +106,7 @@ const App = () => {
       <>
         <Header authenticated={authenticated} />
         <ScrollToTop>
-          <Suspense fallback={<div className={cx({ 'min-h-page': !isMinimalFooter, 'min-h-min-footer': isMinimalFooter })} />}>
+          <Suspense fallback={<Fallback isMinimalFooter={isMinimalFooter} />}>
             <Switch>
               <Route path={routes.main} component={MainPage} exact />
               <Route path={routes.signin} component={SignIn} exact />
