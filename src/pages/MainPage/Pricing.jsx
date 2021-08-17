@@ -152,7 +152,7 @@ const Pricing = () => {
                       <span
                         className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
                           'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null && tier.planCode !== user.planCode,
-                          'bg-indigo-400': planCodeLoading !== null || tier.planCode === user.planCode,
+                          'bg-indigo-400 cursor-default': planCodeLoading !== null || tier.planCode === user.planCode,
                         })}
                       >
                         {planCodeLoading === tier.planCode && (
@@ -162,10 +162,7 @@ const Pricing = () => {
                       </span>
                     ) : (
                       <Link
-                        className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
-                          'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null && tier.planCode !== user.planCode,
-                          'bg-indigo-400': planCodeLoading !== null || tier.planCode === user.planCode,
-                        })}
+                        className='inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none bg-indigo-600 hover:bg-indigo-700'
                         to={routes.signup}
                       >
                         Get started
@@ -175,8 +172,8 @@ const Pricing = () => {
                     <span
                       onClick={() => onPlanChange(tier.planCode)}
                       className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
-                        'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null,
-                        'bg-indigo-400': planCodeLoading !== null,
+                        'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null && tier.planCode !== user.planCode,
+                        'bg-indigo-400 cursor-default': planCodeLoading !== null || tier.planCode === user.planCode,
                       })}
                     >
                       {planCodeLoading === tier.planCode && (
