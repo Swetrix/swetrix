@@ -233,7 +233,7 @@ const Main = () => (
               to={routes.features}
               className='flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 bg-origin-border px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white hover:from-purple-700 hover:to-indigo-700'
             >
-              Learn more
+              Features
             </Link>
             <Link
               to={routes.signup}
