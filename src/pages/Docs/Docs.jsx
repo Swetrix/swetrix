@@ -5,7 +5,7 @@ import Prism from 'prismjs'
 import Title from 'components/Title'
 import Code from 'ui/Code'
 import {
-  umdBuildExample, trackPageView, init, track, trackExample,
+  umdBuildExample, trackPageView, trackPVAPI, init, track, trackExample,
 } from './examples'
 
 const contents = [{
@@ -67,12 +67,12 @@ const CHeader = ({ id, name, addHr = true }) => (
     {addHr && (
       <hr className='mt-10' />
     )}
-    <h2 id={id} className='text-3xl font-bold text-gray-900 tracking-tight mt-2'>{name}</h2>
+    <h2 id={id} className='text-3xl font-bold text-gray-900 tracking-tight mt-2 -mb-5'>{name}</h2>
   </>
 )
 
 const CSection = ({ id, name }) => (
-  <h3 id={id} className='text-2xl font-normal text-gray-900 tracking-tight mt-3'>{name}</h3>
+  <h3 id={id} className='text-2xl font-normal text-gray-900 tracking-tight mt-8'>{name}</h3>
 )
 
 const Docs = () => {
@@ -120,7 +120,8 @@ const Docs = () => {
             <CSection id='docs-tr' name='track' />
             <p className='text-lg text-gray-900 tracking-tight'>
               With this function you are able to track any custom events you want.<br />
-              You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
+              You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.<br />
+              The total number of track calls and their conversion rate will be saved.
             </p>
             <Code text={track} language='javascript' />
 
@@ -145,7 +146,17 @@ const Docs = () => {
               <b>We DO NOT store neither IP Address nor User Agent as a raw strings</b>, such data is stored as a salted hash for no longer than 30 minutes or 12:00 AM UTC, whatever happens first.<br />
               After this timeframe the identifiable data is forever deleted from our servers.
             </p>
-            <Code text={trackPageView} language='javascript' />
+            <Code text={trackPVAPI} language='javascript' />
+
+            <hr className='mt-10 mb-4' />
+            <p className='text-lg text-gray-900 tracking-tight'>
+              <i>Last updated: August 19, 2021.</i><br />
+              Added&nbsp;
+              <span className='text-gray-700'>unique</span>
+              &nbsp;param to&nbsp;
+              <a className='hover:underline text-gray-700' href='#docs-tv'>trackViews</a>
+              &nbsp;method.
+            </p>
           </div>
         </div>
       </div>

@@ -52,3 +52,9 @@ export const init = `swetrix.init('YOUR_PROJECT_ID', {
   respectDNT: false,
 })
 `
+
+export const trackPVAPI = `swetrix.trackViews({
+  // If true, only unique events will be saved.
+  // This param is useful when tracking single-page landing websites.
+  unique: false,
+})`
