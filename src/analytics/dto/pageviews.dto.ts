@@ -53,6 +53,12 @@ export class PageviewsDTO {
   })
   ca: string
 
+  @ApiProperty({
+    example: false,
+    description: 'If true, only unique events will be saved'
+  })
+  unique: boolean
+
   // Performance metrics
   @ApiProperty({
     example: 261,

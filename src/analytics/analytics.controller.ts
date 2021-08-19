@@ -194,8 +194,10 @@ export class AnalyticsController {
       const br = ua.browser.name
       const os = ua.os.name
       dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, logDTO.tz, 1)
-    } else {
+    } else if (!logDTO.unique) {
       dto = analyticsDTO(logDTO.pid, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
+    } else {
+      throw new BadRequestException('Event was not saved because it was not unique while unique only param is provided')
     }
 
     // todo: fix: may be vulnerable to sql injection attack
