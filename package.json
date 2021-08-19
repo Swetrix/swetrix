@@ -1,10 +1,10 @@
 {
-  "name": "analytics_script",
-  "version": "1.0.0",
+  "name": "swetrix",
+  "version": "1.0.3",
   "description": "",
-  "main": "dist/analytics.cjs.js",
-  "module": "dist/analytics.es5.js",
-  "browser": "dist/analytics.umd.js",
+  "main": "dist/swetrix.cjs.js",
+  "module": "dist/swetrix.es5.js",
+  "browser": "dist/swetrix.js",
   "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
   "scripts": {
@@ -16,14 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Blaumaus/analytics_script.git"
+    "url": "git+https://github.com/Swetrix/swetrix-js.git"
   },
-  "author": "Blaumaus <durexp@protonmail.ch>",
+  "author": "Swetrix <contact@swetrix.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/Blaumaus/analytics_script/issues"
+    "url": "https://github.com/Swetrix/swetrix-js/issues"
   },
-  "homepage": "https://github.com/Blaumaus/analytics_script#readme",
+  "homepage": "https://swetrix.com/docs",
   "dependencies": {
     "@types/node": "^14.14.41"
   },
