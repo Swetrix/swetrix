@@ -14,6 +14,12 @@ export const umdBuildExample = `<!-- Put this at the end of the <head> tag -->
 </script>
 `
 
+export const npmInstall = `npm install swetrix`
+export const npmImport = `import * as Swetrix from 'swetrix'`
+export const esExample = `Swetrix.init('YOUR_PROJECT_ID')
+Swetrix.trackViews()
+`
+
 export const trackPageView = `swetrix.trackViews()`
 
 export const track = `swetrix.track({

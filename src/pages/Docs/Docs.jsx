@@ -5,7 +5,7 @@ import Prism from 'prismjs'
 import Title from 'components/Title'
 import Code from 'ui/Code'
 import {
-  umdBuildExample, trackPageView, trackPVAPI, init, track, trackExample,
+  umdBuildExample, trackPageView, trackPVAPI, init, track, trackExample, npmInstall, esExample, npmImport,
 } from './examples'
 
 const contents = [{
@@ -14,6 +14,9 @@ const contents = [{
   content: [{
     name: 'UMD Build',
     id: 'docs-umd',
+  }, {
+    name: 'NPM Package',
+    id: 'docs-npm',
   }]
 }, {
   name: 'How to..',
@@ -92,6 +95,21 @@ const Docs = () => {
             <CSection id='docs-umd' name='UMD Build' />
             <Code text={umdBuildExample} language='html' />
 
+            <CSection id='docs-npm' name='NPM Package' />
+            <p className='text-lg text-gray-900 tracking-tight'>
+              You can also install the tracking script with NPM or Yarn:
+            </p>
+            <Code text={npmInstall} language='bash' />
+            <p className='text-lg text-gray-900 tracking-tight'>
+              Next you should import module into your project's root, for example:
+            </p>
+            <Code text={npmImport} language='javascript' />
+            <p className='text-lg text-gray-900 tracking-tight'>
+              After you can track anything you want.<br />
+              Read the detailed documentation on tracking params below.
+            </p>
+            <Code text={esExample} language='javascript' />
+
             <CHeader id='docs-ht' name='How to..' />
             <CSection id='docs-pv' name='Track pageviews' />
             <p className='text-lg text-gray-900 tracking-tight'>
@@ -151,11 +169,18 @@ const Docs = () => {
             <hr className='mt-10 mb-4' />
             <p className='text-lg text-gray-900 tracking-tight'>
               <i>Last updated: August 19, 2021.</i><br />
-              Added&nbsp;
-              <span className='text-gray-700'>unique</span>
-              &nbsp;param to&nbsp;
-              <a className='hover:underline text-gray-700' href='#docs-tv'>trackViews</a>
-              &nbsp;method.
+              <div>
+                - Added&nbsp;
+                <span className='text-gray-700'>unique</span>
+                &nbsp;param to&nbsp;
+                <a className='hover:underline text-gray-700' href='#docs-tv'>trackViews</a>
+                &nbsp;method.
+              </div>
+              <div>
+                - Added documentation for using swetrix.js as an&nbsp;
+                <a className='hover:underline text-gray-700' href='#docs-npm'>NPM Package</a>
+                .
+              </div>
             </p>
           </div>
         </div>
