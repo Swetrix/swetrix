@@ -1,3 +1,7 @@
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
 
@@ -86,15 +90,18 @@ var Lib = /** @class */ (function () {
         if (this.pageData) {
             return this.pageData.actions;
         }
-        var interval = setInterval(this.trackPathChange, 2000);
+        var interval;
+        if (!(options === null || options === void 0 ? void 0 : options.unique)) {
+            interval = setInterval(this.trackPathChange, 2000);
+        }
         var path = getPath();
         this.pageData = {
             path: path,
             actions: {
-                stop: function () { return clearInterval(interval); }
+                stop: (options === null || options === void 0 ? void 0 : options.unique) ? function () { } : function () { return clearInterval(interval); },
             },
         };
-        this.trackPage(path);
+        this.trackPage(path, options === null || options === void 0 ? void 0 : options.unique);
         return this.pageData.actions;
     };
     // Tracking path changes. If path changes -> calling this.trackPage method
@@ -104,10 +111,11 @@ var Lib = /** @class */ (function () {
         var newPath = getPath();
         var path = this.pageData.path;
         if (path !== newPath) {
-            this.trackPage(newPath);
+            this.trackPage(newPath, false);
         }
     };
-    Lib.prototype.trackPage = function (pg) {
+    Lib.prototype.trackPage = function (pg, unique) {
+        if (unique === void 0) { unique = false; }
         if (!this.pageData)
             return;
         this.pageData.path = pg;
@@ -119,6 +127,7 @@ var Lib = /** @class */ (function () {
             so: getUTMSource(),
             me: getUTMMedium(),
             ca: getUTMCampaign(),
+            unique: unique,
             pg: pg,
         };
         this.submitData(data);
@@ -171,25 +180,27 @@ var Lib = /** @class */ (function () {
     return Lib;
 }());
 
-var LIB_INSTANCE = null;
+exports.LIB_INSTANCE = null;
 // Initialise the tracking library instance (other methods won't work if the library
 // is not initialised)
 function init(pid, options) {
-    if (!LIB_INSTANCE) {
-        LIB_INSTANCE = new Lib(pid, options);
+    if (!exports.LIB_INSTANCE) {
+        exports.LIB_INSTANCE = new Lib(pid, options);
     }
-    return LIB_INSTANCE;
+    return exports.LIB_INSTANCE;
 }
 // Tracks custom events
 function track(event) {
-    if (!LIB_INSTANCE)
+    if (!exports.LIB_INSTANCE)
         return;
-    LIB_INSTANCE.track(event);
+    exports.LIB_INSTANCE.track(event);
 }
 function trackViews(options) {
-    if (!LIB_INSTANCE)
+    if (!exports.LIB_INSTANCE)
         return;
-    LIB_INSTANCE.trackPageViews(options);
+    exports.LIB_INSTANCE.trackPageViews(options);
 }
 
-export { LIB_INSTANCE, init, track, trackViews };
+exports.init = init;
+exports.track = track;
+exports.trackViews = trackViews;

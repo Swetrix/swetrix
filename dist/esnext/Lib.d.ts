@@ -12,6 +12,7 @@ export interface PageData {
     actions: object;
 }
 export interface PageViewsOptions {
+    unique?: boolean;
 }
 export declare class Lib {
     private projectID;

@@ -3,13 +3,6 @@ import {
   getUTMCampaign, getUTMMedium, getUTMSource, getPath,
 } from './utils'
 
-/**
- * A map of key / value pairs.
- */
-interface Map<T> {
-  [key: string]: T
-}
-
 export interface LibOptions {
   // When set to `true`, all tracking logs will be
   // printed to console and localhost events will be sent to server.
@@ -41,7 +34,9 @@ export interface PageData {
 }
 
 export interface PageViewsOptions {
-  
+  // If true, only unique events will be saved
+  // This param is useful when tracking single-page landing websites
+  unique?: boolean
 }
 
 const host = 'https://api.swetrix.com/log'
@@ -75,17 +70,21 @@ export class Lib {
       return this.pageData.actions
     }
 
-    const interval = setInterval(this.trackPathChange, 2000)
+    let interval: NodeJS.Timeout
+    if (!options?.unique) {
+      interval = setInterval(this.trackPathChange, 2000)
+    }
+
     const path = getPath()
 
     this.pageData = {
       path,
       actions: {
-        stop: () => clearInterval(interval)
+        stop: options?.unique ? () => { } : () => clearInterval(interval),
       },
     }
 
-    this.trackPage(path)
+    this.trackPage(path, options?.unique)
     return this.pageData.actions
   }
 
@@ -96,11 +95,11 @@ export class Lib {
     const { path } = this.pageData
 
     if (path !== newPath) {
-      this.trackPage(newPath)
+      this.trackPage(newPath, false)
     }
   }
 
-  private trackPage(pg: string) {
+  private trackPage(pg: string, unique: boolean = false) {
     if (!this.pageData) return
     this.pageData.path = pg
 
@@ -112,6 +111,7 @@ export class Lib {
       so: getUTMSource(),
       me: getUTMMedium(),
       ca: getUTMCampaign(),
+      unique,
       pg,
     }
 

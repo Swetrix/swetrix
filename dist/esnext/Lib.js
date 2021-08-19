@@ -26,15 +26,18 @@ export class Lib {
         if (this.pageData) {
             return this.pageData.actions;
         }
-        const interval = setInterval(this.trackPathChange, 2000);
+        let interval;
+        if (!options?.unique) {
+            interval = setInterval(this.trackPathChange, 2000);
+        }
         const path = getPath();
         this.pageData = {
             path,
             actions: {
-                stop: () => clearInterval(interval)
+                stop: options?.unique ? () => { } : () => clearInterval(interval),
             },
         };
-        this.trackPage(path);
+        this.trackPage(path, options?.unique);
         return this.pageData.actions;
     }
     // Tracking path changes. If path changes -> calling this.trackPage method
@@ -44,10 +47,10 @@ export class Lib {
         const newPath = getPath();
         const { path } = this.pageData;
         if (path !== newPath) {
-            this.trackPage(newPath);
+            this.trackPage(newPath, false);
         }
     }
-    trackPage(pg) {
+    trackPage(pg, unique = false) {
         if (!this.pageData)
             return;
         this.pageData.path = pg;
@@ -59,6 +62,7 @@ export class Lib {
             so: getUTMSource(),
             me: getUTMMedium(),
             ca: getUTMCampaign(),
+            unique,
             pg,
         };
         this.submitData(data);
