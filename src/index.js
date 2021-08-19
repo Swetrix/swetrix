@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { store } from 'redux/store'
 import { Provider } from 'react-redux'
 import { transitions, positions, Provider as AlertProvider } from 'react-alert'
+import * as Swetrix from 'swetrix'
 import * as Sentry from '@sentry/react'
 import { Integrations } from '@sentry/tracing'
 import 'billboard.js/dist/billboard.min.css'
@@ -13,6 +14,12 @@ import AlertTemplate from 'ui/Alert'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
 import './index.css'
+
+Swetrix.init('STEzHcB1rALV', {
+  debug: true,
+})
+
+Swetrix.trackViews()
 
 Sentry.init({
   dsn: 'https://ce538bac7e64484d9a30dcb2eadfe69b@o920340.ingest.sentry.io/5865898',
