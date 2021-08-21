@@ -76,7 +76,7 @@ const App = () => {
         }
       }
     })()
-  }, [dispatch, accessToken])
+  }, [dispatch, accessToken, authenticated])
 
   useEffect(() => {
     if (error) {
