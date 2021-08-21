@@ -127,7 +127,6 @@ Set up NGINX ( https://www.digitalocean.com/community/tutorials/how-to-install-n
 NGINX set up:
 ```
 server {
-  listen 80;
   server_name swetrix.com
 
   root /var/www/html;
@@ -135,15 +134,26 @@ server {
   location / {
     try_files $uri $uri/ =404;
   }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/swetrix.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/swetrix.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
 
 server {
-  listen 80;
   server_name api.swetrix.com;
 
   location / {
     proxy_pass http://localhost:5005;
   }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/swetrix.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/swetrix.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
 
 server {
