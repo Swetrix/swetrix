@@ -37,7 +37,11 @@ export class AuthController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async me(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /auth/me')
-    return this.userService.findOneWhere({ id: user_id })
+
+    const user = await this.userService.findOneWhere({ id: user_id })
+    delete user.password
+
+    return user
   }
 
   @Post('/login')
@@ -64,9 +68,9 @@ export class AuthController {
       await this.mailerService.sendEmail(userDTO.email, LetterTemplate.SignUp, { url })
 
       return await this.authService.login(user, request.res)
-    } catch(e){
-      if(e.code === 'ER_DUP_ENTRY'){
-        if(e.sqlMessage.includes(userDTO.email)) {
+    } catch(e) {
+      if (e.code === 'ER_DUP_ENTRY') {
+        if (e.sqlMessage.includes(userDTO.email)) {
           throw new BadRequestException('A user with this email already exists')
         }
       }
@@ -75,7 +79,7 @@ export class AuthController {
 
   @Get('/verify/:id')
   async verify(@Param('id') id: string): Promise<User> {
-    this.logger.log({id}, 'GET /auth/verify/:id')
+    this.logger.log({ id }, 'GET /auth/verify/:id')
     let actionToken
 
     try {
@@ -84,7 +88,7 @@ export class AuthController {
       throw new BadRequestException('Wrong token')
     }
 
-    if(actionToken.action === ActionTokenType.EMAIL_VERIFICATION){
+    if (actionToken.action === ActionTokenType.EMAIL_VERIFICATION) {
       await this.userService.update(actionToken.user.id, { ...actionToken.user, isActive: true})
       await this.actionTokensService.delete(actionToken.id)
       return
@@ -93,7 +97,7 @@ export class AuthController {
 
   @Get('/change-email/:id')
   async changeEmail(@Param('id') id: string): Promise<User> {
-    this.logger.log({id}, 'GET /auth/change-emai/:id')
+    this.logger.log({ id }, 'GET /auth/change-email/:id')
     let actionToken
 
     try {
@@ -102,7 +106,7 @@ export class AuthController {
       throw new BadRequestException('Wrong token')
     }
 
-    if(actionToken.action === ActionTokenType.EMAIL_CHANGE){
+    if (actionToken.action === ActionTokenType.EMAIL_CHANGE) {
       await this.userService.update(actionToken.user.id,
         { ...actionToken.user, email: actionToken.newValue })
       await this.mailerService.sendEmail(actionToken.user.email,
@@ -116,15 +120,15 @@ export class AuthController {
   async requestReset(@Body() body: RequestPasswordChangeDTO, @Req() request: Request): Promise<string> {
     const user = await this.userService.findOneWhere({ email: body.email })
 
-    if(!user){
-      return 'A password reset URL has been sent to your email!'
+    if (!user) {
+      return 'A password reset URL has been sent to your email'
     }
 
     const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PASSWORD_RESET)
     const url = `${request.headers.origin}/password-reset/${actionToken.id}`
 
     await this.mailerService.sendEmail(body.email, LetterTemplate.ConfirmPasswordChange, { url })
-    return 'A password reset URL has been sent to your email!'
+    return 'A password reset URL has been sent to your email'
   }
 
   @Post('/password-reset/:id')
@@ -139,10 +143,10 @@ export class AuthController {
       throw new BadRequestException('Wrong token')
     }
 
-    if(actionToken.action === ActionTokenType.PASSWORD_RESET) {
+    if (actionToken.action === ActionTokenType.PASSWORD_RESET) {
       const password = this.authService.hashPassword(body.password)
 
-      await this.userService.update(actionToken.user.id, { ...actionToken.user, password})
+      await this.userService.update(actionToken.user.id, { ...actionToken.user, password })
       await this.actionTokensService.delete(actionToken.id)
       return 
     }

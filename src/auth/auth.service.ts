@@ -45,6 +45,7 @@ export class AuthService {
     })
 
     res.cookie('token', token, options)
+    delete user.password
     return { access_token: token, user }
   }
 }
