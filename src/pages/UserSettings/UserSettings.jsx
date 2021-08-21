@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import _size from 'lodash/size'
 import _isEmpty from 'lodash/isEmpty'
@@ -11,7 +11,6 @@ import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
 import { isValidEmail, isValidPassword } from 'utils/validator'
-import { isAuthenticated } from 'hoc/protected'
 
 const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   const { user } = useSelector(state => state.auth)
@@ -212,4 +211,4 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   )
 }
 
-export default isAuthenticated(memo(UserSettings))
+export default UserSettings

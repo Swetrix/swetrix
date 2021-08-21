@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { memo } from 'react'
+import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -7,25 +8,28 @@ import _isNull from 'lodash/isNull'
 import {
   CONFIRMATION_TIMEOUT, GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME,
 } from 'redux/constants'
+import { isAuthenticated } from 'hoc/protected'
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import { getCookie, setCookie } from 'utils/cookie'
 import { confirmEmail, exportUserData } from 'api'
-
+import routes from 'routes'
 import UserSettings from './UserSettings'
 
 dayjs.extend(utc)
 
 const UserSettingsContainer = () => {
   const dispatch = useDispatch()
+  const history = useHistory()
 
   const onDelete = () => {
     dispatch(
       authActions.deleteAccountAsync(
         (error) => dispatch(
           errorsActions.deleteAccountFailed(error.description),
-        )
+        ),
+        () => history.push(routes.main),
       )
     )
   }
@@ -93,4 +97,4 @@ const UserSettingsContainer = () => {
   )
 }
 
-export default UserSettingsContainer
+export default isAuthenticated(memo(UserSettingsContainer))
