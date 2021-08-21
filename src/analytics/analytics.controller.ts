@@ -37,8 +37,7 @@ const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') =
 
 const getSessionKeyCustom = (ip: string, ua: string, pid: string, ev: string, salt: string = '') => hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')
 
-const analyticsDTO = (pid: string, pg: string, dv: string, br: string, os: string, lc: string, ref: string, so: string, me: string, ca: string, lt: number | string, tz: string, unique: number): Array<string | number> => {
-  const cc = tz === 'NULL' ? 'NULL' : ct.getCountryForTimezone(tz)?.id
+const analyticsDTO = (pid: string, pg: string, dv: string, br: string, os: string, lc: string, ref: string, so: string, me: string, ca: string, lt: number | string, cc: string, unique: number): Array<string | number> => {
   return [uuidv4(), pid, pg, dv, br, os, lc, ref, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
 }
 
@@ -65,7 +64,7 @@ export class AnalyticsController {
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getData(@Query() data: AnalyticsGET_DTO): Promise<any> {
-    this.logger.log({ ...data }, 'GET /log')
+    // this.logger.log({ ...data }, 'GET /log')
 
     const { pid, period, timeBucket, from, to } = data
     if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
@@ -116,7 +115,7 @@ export class AnalyticsController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   // returns overall short statistics per project
   async getOverallStats(@Query() data): Promise<any> {
-    this.logger.log({ ...data }, 'GET /birdseye')
+    // this.logger.log({ ...data }, 'GET /birdseye')
 
     let { pids, pid } = data
     const pidsEmpty = _isEmpty(pids)
@@ -143,7 +142,7 @@ export class AnalyticsController {
   // Log custom event
   @Post('/custom')
   async logCustom(@Body() eventsDTO: EventsDTO, @Headers() headers): Promise<any> {
-    this.logger.log({ eventsDTO, headers }, 'POST /log/custom')
+    // this.logger.log({ eventsDTO, headers }, 'POST /log/custom')
 
     const { 'user-agent': userAgent, origin } = headers
     await this.analyticsService.validate(eventsDTO, origin)
@@ -175,7 +174,7 @@ export class AnalyticsController {
   // Log pageview event
   @Post('/')
   async log(@Body() logDTO: PageviewsDTO, @Headers() headers): Promise<any> {
-    this.logger.log({ logDTO, headers }, 'POST /log')
+    // this.logger.log({ logDTO }, 'POST /log')
 
     const { 'user-agent': userAgent, origin } = headers
     await this.analyticsService.validate(logDTO, origin)
@@ -193,7 +192,9 @@ export class AnalyticsController {
       const dv = ua.device.type || 'desktop'
       const br = ua.browser.name
       const os = ua.os.name
-      dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, logDTO.tz, 1)
+      // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
+      const cc = ct.getCountryForTimezone(logDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+      dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, cc, 1)
     } else if (!logDTO.unique) {
       dto = analyticsDTO(logDTO.pid, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
     } else {
