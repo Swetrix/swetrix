@@ -65,7 +65,7 @@ const App = () => {
 
   useEffect(() => {
     (async () => {
-      if (accessToken) {
+      if (accessToken && !authenticated) {
         try {
           const me = await authMe()
 
