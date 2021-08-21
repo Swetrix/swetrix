@@ -314,7 +314,9 @@ const ViewProject = ({
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty })}>
             <div className='h-80' id='dataChart' />
             <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-              <Overview overall={project.overall} chartData={chartData} activePeriod={activePeriod} />
+              {!_isEmpty(project.overall) && (
+                <Overview overall={project.overall} chartData={chartData} activePeriod={activePeriod} />
+              )}  
               {_map(panelsData.types, type => {
                 if (type === 'cc') {
                   return (
