@@ -95,11 +95,11 @@ const Features = () => {
             We do not rent or sell personal information.<br />
             We may disclose personal information to third parties who help us run the Services and our business (“Service Providers”). These Service Providers may only process personal information pursuant to our instructions and in compliance both with this Privacy Policy and other applicable security measures and regulations.<br />
             The following third parties may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.<br />
-             - <b>Stripe:</b> Payment processing;
-             - <b>Cloudflare</b>:	Security, hosting, cloud infrastructure;
-             - <b>Sentry:</b>	Error tracking;
-             - <b>Postmark:</b>	Transactional and marketing emails;
-             - <b>Fastmail:</b>	Business emails.
+             - <b>Stripe:</b> Payment processing;<br />
+             - <b>Cloudflare</b>:	Security, hosting, cloud infrastructure;<br />
+             - <b>Sentry:</b>	Error tracking;<br />
+             - <b>Postmark:</b>	Transactional and marketing emails;<br />
+             - <b>Fastmail:</b>	Business emails.<br />
             In addition to sharing with Service Providers as described above, we also may share your information with others in the following circumstances:<br />
              - In the event of a merger, sale, change in control, or reorganization of all or part of our business.<br />
              - When we are required to disclose personal information to respond to subpoenas, court orders, or legal process, or to establish or exercise our legal rights or defend against legal claims.<br />

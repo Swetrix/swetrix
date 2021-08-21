@@ -43,7 +43,7 @@ const features = [
 const faqs = [
   {
     question: 'Does Swetrix tracking require cookies?',
-    answer: 'No, it does not, our analytics script is fully cookieless. You can use our service without a need to use a cookie notification on your website.',
+    answer: 'No, it does not, our analytics script is fully cookieless. You can use our service without a need to use a cookie notification on your website.\nWe are compliant with such regulations as GDPR, PECR, CCPA, ePrivacy and COPPA.',
   },
   {
     question: 'Do you use/share/sell the end users\' data?',
@@ -104,7 +104,7 @@ const FAQs = () => (
             {faqs.map((faq) => (
               <div key={faq.question}>
                 <dt className='text-lg leading-6 font-medium text-gray-900'>{faq.question}</dt>
-                <dd className='mt-2 text-base text-gray-500'>{faq.answer}</dd>
+                <dd className='mt-2 text-base text-gray-500 whitespace-pre-line'>{faq.answer}</dd>
               </div>
             ))}
           </dl>
