@@ -150,7 +150,7 @@ const Main = () => (
                   </h1>
                   <p className='mt-3 text-base text-gray-300 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl'>
                     Swetrix brings an advanced and customisable analytics service for your web applications.<br />
-                    Track every metric your bisuness needs without invading your users privacy.
+                    Track every metric you need without invading your users privacy.
                   </p>
                 </div>
               </div>
