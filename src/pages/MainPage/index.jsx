@@ -11,7 +11,7 @@ const features = [
   {
     id: 1,
     name: 'Simple yet powerful',
-    description: 'View all your analytics in a simple and straightforward way. Say no more to confusing reports, metrics and notifications.',
+    description: 'View all your analytics in a straightforward way. Say no more to confusing reports, metrics and notifications.',
   },
   {
     id: 2,
@@ -21,17 +21,17 @@ const features = [
   {
     id: 3,
     name: 'Full event tracking',
-    description: 'With us you can not only track your traffic, but also custom events such as button clicks or registrations.',
+    description: 'With us, you can not only track your traffic but also custom events such as button clicks or registrations.',
   },
   {
     id: 4,
     name: 'No cookie banners needed',
-    description: 'We don\'t do targeted advertising or profiling, and we don\'t rely on tracking cookies at all. Our business model is to sell software, not data.',
+    description: 'We are not doing do targeted advertising or profiling and we do not rely on tracking cookies at all. Our business model is to sell software, not data.',
   },
   {
     id: 5,
     name: 'We are fast',
-    description: 'We use the fastest and most advanced technology in our applications, and our analytics script loads times faster than the competitors.',
+    description: 'We use the fastest and most advanced technology in our applications and our analytics script loads times faster than the competitors.',
   },
   {
     id: 6,
@@ -43,7 +43,7 @@ const features = [
 const faqs = [
   {
     question: 'Does Swetrix tracking require cookies?',
-    answer: 'No, it does not, our analytics script is fully cookieless. You can use our service without a need to use a cookie notification on your website.\nWe are compliant with such regulations as GDPR, PECR, CCPA, ePrivacy and COPPA.',
+    answer: 'No, it does not. Our analytics script is fully cookieless. You can use our service without the need to use a cookie notification on your website.\nWe are compliant with such regulations as GDPR, PECR, CCPA, ePrivacy and COPPA.',
   },
   {
     question: 'Do you use/share/sell the end users\' data?',
@@ -92,7 +92,7 @@ const FAQs = () => (
         <div>
           <h2 className='text-3xl font-extrabold text-gray-900'>Get some questions answered</h2>
           <p className='mt-4 text-lg text-gray-500'>
-            Can’t find the answer you’re looking for? Reach out to our{' '}
+            Could not find the answer you’re looking for? Reach out to our{' '}
             <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500'>
               customer support
             </a>{' '}
@@ -144,13 +144,14 @@ const Main = () => (
               <div className='px-4 sm:px-6 sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left lg:flex lg:items-center'>
                 <div>
                   <h1 className='mt-4 text-4xl tracking-tight font-extrabold text-white sm:mt-5 sm:leading-none lg:mt-6 lg:text-5xl xl:text-6xl'>
+                    A{' '}
                     <span className='text-indigo-400'>Powerful</span>{' '}
                     <span>analytics platform that respects</span>{' '}
                     <span className='text-indigo-400'>user privacy</span>
                   </h1>
                   <p className='mt-3 text-base text-gray-300 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl'>
                     Swetrix brings an advanced and customisable analytics service for your web applications.<br />
-                    Track every metric you need without invading your users privacy.
+                    Track every metric you need without invading your users' privacy.
                   </p>
                 </div>
               </div>
@@ -198,7 +199,7 @@ const Main = () => (
           <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
             <span className='block text-white'>Want to know more technical details?</span>
             <span className='block text-gray-300'>
-              Look at the documentation and features pags.
+              Look at the documentation and features pages.
             </span>
           </h2>
           <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
