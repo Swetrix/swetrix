@@ -11,6 +11,13 @@ const setProjects = (projects) => ({
   },
 })
 
+const setProject = (project) => ({
+  type: types.SET_PROJECT,
+  payload: {
+    project,
+  },
+})
+
 const removeProject = (pid) => ({
   type: types.REMOVE_PROJECT,
   payload: {
@@ -62,6 +69,7 @@ const UIActions = {
   setProjectCache,
   deleteProjectCache,
   setProjectViewPrefs,
+  setProject,
 }
 
 export default UIActions

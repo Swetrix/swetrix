@@ -1,5 +1,6 @@
 import { types } from 'redux/actions/ui/types'
 import _filter from 'lodash/filter'
+import _findIndex from 'lodash/findIndex'
 
 const getInitialState = () => {
   return {
@@ -17,6 +18,14 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
         ...state,
         projects,
         isLoading: false,
+      }
+    }
+
+    case types.SET_PROJECT: {
+      const { project } = payload
+      return {
+        ...state,
+        projects: _findIndex(state.projects, (el) => el.id === project.id) >= 0 ? state.projects : [...state.projects, project],
       }
     }
 

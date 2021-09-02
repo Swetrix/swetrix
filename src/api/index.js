@@ -153,7 +153,16 @@ export const verifyEmail = ({ path, id }) =>
 
 export const getProjects = () =>
   api
-    .get(`/project`)
+    .get('/project')
+    .then(response => response.data)
+    .catch(error => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getProject = (pid) =>
+  api
+    .get(`/project/${pid}`)
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)

@@ -8,6 +8,7 @@ const mapStateToProps = (state) => ({
   isLoading: state.ui.projects.isLoading,
   cache: state.ui.cache.analytics,
   projectViewPrefs: state.ui.cache.projectViewPrefs,
+  user: state.auth.user,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -19,6 +20,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   setProjectViewPrefs: (pid, period, timeBucket) => {
     dispatch(UIActions.setProjectViewPrefs(pid, period, timeBucket))
+  },
+  setProject: (project) => {
+    dispatch(UIActions.setProject(project))
   },
 })
 

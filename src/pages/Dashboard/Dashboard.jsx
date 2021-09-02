@@ -20,7 +20,7 @@ import { ActivePin, InactivePin } from 'ui/Pin'
 import routes from 'routes'
 
 const ProjectCart = ({ name, url, created, active, overall }) => {
-  const statsDidGrowUp = overall.percChange >= 0
+  const statsDidGrowUp = overall?.percChange >= 0
 
   return (
     <li>
@@ -45,7 +45,7 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
                 Pageviews:&nbsp;
                 <dd className='flex items-baseline'>
                   <p className='h-5 mr-1 text-gray-500'>
-                    {overall.thisWeek}
+                    {overall?.thisWeek}
                   </p>
                   <p className={cx('flex text-xs -ml-1 items-baseline', {
                     'text-green-600': statsDidGrowUp,
@@ -66,7 +66,7 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
                         </span>
                       </>
                     )}
-                    {overall.percChange}%
+                    {overall?.percChange}%
                     </p>
                 </dd>
               </div>

@@ -22,7 +22,8 @@ import Title from 'components/Title'
 import {
   tbPeriodPairs, tbsFormatMapper, getProjectCacheKey,
 } from 'redux/constants'
-import { isAuthenticated } from '../../../hoc/protected'
+import { isAuthenticated } from 'hoc/protected'
+import { isAdmin } from 'utils/validator'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -31,7 +32,7 @@ import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import routes from 'routes'
-import { getProjectData } from 'api'
+import { getProjectData, getProject } from 'api'
 
 countries.registerLocale(countriesEn)
 
@@ -135,7 +136,7 @@ const NoEvents = () => (
 )
 
 const ViewProject = ({
-  projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs,
+  projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, user, setProject,
 }) => {
   const dashboardRef = useRef(null)
   const { id } = useParams()
@@ -233,8 +234,14 @@ const ViewProject = ({
   }
 
   if (!isLoading && _isEmpty(project)) {
-    showError('The selected project does not exist')
-    history.push(routes.dashboard)
+    if (isAdmin(user)) {
+      getProject(id)
+        .then(setProject)
+        .catch(console.error)
+    } else {
+      showError('The selected project does not exist')
+      history.push(routes.dashboard)
+    }
   }
 
   const openSettingsHandler = () => {
@@ -385,6 +392,8 @@ ViewProject.propTypes = {
   setProjectCache: PropTypes.func.isRequired,
   setProjectViewPrefs: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
+  user: PropTypes.object.isRequired,
+  setProject: PropTypes.func.isRequired,
 }
 
 export default isAuthenticated(memo(ViewProject))
