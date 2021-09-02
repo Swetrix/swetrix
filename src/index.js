@@ -15,6 +15,8 @@ import App from './App'
 import reportWebVitals from './reportWebVitals'
 import './index.css'
 
+console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests can be sent to security@swetrix.com', 'color: #818cf8;background: #1f2937;font-size: 20px;text-shadow: 2px 2px black')
+
 Swetrix.init('STEzHcB1rALV', {
   debug: true,
 })

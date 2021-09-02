@@ -56,7 +56,9 @@ Input.propTypes = {
   id: PropTypes.string,
   type: PropTypes.string,
   className: PropTypes.string,
-  error: PropTypes.string,
+  error: PropTypes.oneOfType([
+    PropTypes.string, PropTypes.bool,
+  ]),
   name: PropTypes.string,
   disabled: PropTypes.bool,
 }
