@@ -83,21 +83,26 @@ const Footer = ({ minimal, authenticated }) => {
       <div className='w-11/12 mx-auto py-8 px-4 sm:px-6 lg:px-8'>
         <div className='xl:grid xl:grid-cols-3 xl:gap-8'>
           <div className='space-y-8 xl:col-span-1'>
-            <img className='h-10 w-28' src='/assets/logo_white.png' height='40' width='112' alt='Swetrix Analytics' />
+            <div className='flex gap-5 flex-wrap'>
+              <img className='h-10 w-28' src='/assets/logo_white.png' height='40' width='112' loading='lazy' alt='Swetrix Analytics' />
+              <img className='h-10 w-28' src='/assets/pci.png' height='40' width='112' loading='lazy' alt='PCI Complaint' />
+              <img className='h-10 w-28' src='/assets/mc.png' height='40' width='112' loading='lazy' alt='' />
+              <img className='h-10 w-28' src='/assets/visa.png' height='40' width='112' loading='lazy' alt='' />
+            </div>
             <p className='text-gray-300 text-base'>
               The best apps need the best services.<br />
               Swetrix is a powerful analytics platform that respects user privacy.
             </p>
             <div>
-              {/* <p className='flex text-gray-300 text-base'>
-                Made in
-                <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/Sweden' target='_blank' rel='noopener noreferrer'>
-                  <Flag country='SE' size={18} alt='' />
-                  &nbsp;Sweden
-                </a>
-              </p> */}
               <p className='flex text-gray-300 text-base'>
-                Made and hosted in the
+                Made in
+                <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/Ukraine' target='_blank' rel='noopener noreferrer'>
+                  <Flag country='UA' size={18} alt='' />
+                  &nbsp;Ukraine
+                </a>
+              </p>
+              <p className='flex text-gray-300 text-base'>
+                Hosted in the
                 <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/European_Union' target='_blank' rel='noopener noreferrer'>
                   <Flag country='EU' size={18} alt='' />
                   &nbsp;European Union
