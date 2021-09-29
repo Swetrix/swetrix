@@ -51,3 +51,17 @@ export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket
 // Cookies
 export const GDPR_REQUEST = 'gdpr_request'
 export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
+
+// List of languages with translations available
+export const whitelist = ['en', 'ru', 'uk']
+export const defaultLanguage = 'en'
+export const languages = {
+  en: 'English',
+  ru: 'Русский',
+  uk: 'Українська',
+}
+export const languageFlag = {
+  en: 'GB',
+  uk: 'UA',
+  ru: 'RU',
+}

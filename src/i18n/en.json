@@ -1,0 +1,96 @@
+{
+  "common": {
+    "features": "Features",
+    "docs": "Docs",
+    "getStarted": "Get started",
+    "billing": "Billing",
+    "pricing": "Pricing",
+    "faqs": "FAQs",
+    "you": "You",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "signin": "Sign in"
+  },
+  "main": {
+    "slogan": "A <span>powerful</span> analytics platform that respects <span>user privacy<span>",
+    "trackEveryMetric": "Track every metric you need without invading your users' privacy.",
+    "description": "Swetrix brings an advanced and customisable analytics service for your web applications.",
+    "signup": "Sign up, it's free!",
+    "signupTerms": "By signing up, you agree to our <tos>Terms and Conditions</tos> and <pp>Privacy Policy.</pp>",
+    "techDetails": "Want to know more technical details?",
+    "lookAtDocs": "Look at the documentation and features pages.",
+    "readyToStart": "Ready to get started?",
+    "exploreService": "Explore our service or create an account.",
+    "faq": {
+      "title": "Get some questions answered",
+      "list": [
+        {
+          "question": "Does Swetrix tracking require cookies?",
+          "answer": "No, it does not. Our analytics script is fully cookieless. You can use our service without the need to use a cookie notification on your website.\nWe are compliant with such regulations as GDPR, PECR, CCPA, ePrivacy and COPPA."
+        },
+        {
+          "question": "Do you use/share/sell the end users' data?",
+          "answer": "No, we do not. Also, all of the data we collect is anonymised. We do not store any data that would allow us to identify a specific user. We try to be as transparent and respectful of privacy as possible."
+        },
+        {
+          "question": "Do I have to pay for your service?",
+          "answer": "We provide free accounts as well as paid accounts. Most of the features of the paid account are included in the free account, as well as more events per month. You can upgrade or downgrade your account subscription at any time."
+        },
+        {
+          "question": "Is my data secure?",
+          "answer": "We adhere to all standards regarding the security of data storage and processing. All data is securely stored, cannot be accessed by third parties and all communication is always through encrypted channels (HTTPS)."
+        }
+      ]
+    },
+    "features": [
+      {
+        "name": "Simple yet powerful",
+        "description": "View all your analytics in a straightforward way. Say no more to confusing reports, metrics and notifications."
+      },
+      {
+        "name": "Open source",
+        "description": "Our tracking script is open sourced and available for everybody to explore. We only track data that we declare."
+      },
+      {
+        "name": "Full event tracking",
+        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
+      },
+      {
+        "name": "No cookie banners needed",
+        "description": "We are not doing do targeted advertising or profiling and we do not rely on tracking cookies at all. Our business model is to sell software, not data."
+      },
+      {
+        "name": "We are fast",
+        "description": "We use the fastest and most advanced technology in our applications and our analytics script loads times faster than the competitors."
+      },
+      {
+        "name": "Compare, explore and enjoy the data",
+        "description": "You can view data by selected categories and also correlate statistics, such as separating unique users from regular page views."
+      }
+    ],
+    "custSupport": "Could not find the answer you’re looking for? Reach out to our <mail>customer support</mail> team.",
+    "whyUs": "Why us"
+  },
+  "footer": {
+    "slogan": "The best apps need the best services.",
+    "description": "Swetrix is a powerful analytics platform that respects user privacy.",
+    "madeIn": "Made in",
+    "hostedIn": "Hosted in the",
+    "ukraine": "Ukraine",
+    "eu": "the European Union",
+    "support": "Support",
+    "company": "Company",
+    "legal": "Legal",
+    "copy": "Swetrix Analytics. All rights reserved.",
+    "about": "About",
+    "pp": "Privacy Policy",
+    "tos": "Terms of Service",
+    "blog": "Blog",
+    "billing": "Billing",
+    "pricing": "Pricing",
+    "docs": "Documentation",
+    "guides": "Guides",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  }
+}

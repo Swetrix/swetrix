@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
+import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import Flag from 'react-flagkit'
 import PropTypes from 'prop-types'
@@ -9,17 +10,17 @@ import routes from 'routes'
 
 const navigation = {
   support: [
-    (authenticated) => (authenticated ? { name: 'Billing', href: routes.billing } : { name: 'Pricing', href: `${routes.main}#pricing` }),
-    () => ({ name: 'Documentation', href: routes.docs }),
-    () => ({ name: 'Guides', href: `${routes.docs}#docs-ht` }),
+    (authenticated) => (authenticated ? { key: 'billing', href: routes.billing } : { key: 'pricing', href: `${routes.main}#pricing` }),
+    () => ({ key: 'docs', href: routes.docs }),
+    () => ({ key: 'guides', href: `${routes.docs}#docs-ht` }),
   ],
   company: [
-    { name: 'About', href: '#' },
-    { name: 'Blog', href: '#' },
+    { key: 'about', href: '#' },
+    { key: 'blog', href: '#' },
   ],
   legal: [
-    { name: 'Privacy', href: routes.privacy },
-    { name: 'Terms', href: routes.terms },
+    { key: 'privacy', href: routes.privacy },
+    { key: 'terms', href: routes.terms },
   ],
   social: [
     {
@@ -39,6 +40,9 @@ const navigation = {
 }
 
 const Footer = ({ minimal, authenticated }) => {
+  const { t, i18n: { language } } = useTranslation('common')
+  const year = new Date().getFullYear()
+
   if (minimal) {
     return (
       <footer className='bg-gray-800'>
@@ -46,27 +50,27 @@ const Footer = ({ minimal, authenticated }) => {
           <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
             <div className='px-5 py-2'>
               <a href='#/' className='text-base text-gray-300 hover:text-white'>
-                About
+                {t('footer.about')}
               </a>
             </div>
             <div className='px-5 py-2'>
               <Link to={routes.privacy} className='text-base text-gray-300 hover:text-white'>
-                Privacy Policy
+                {t('footer.pp')}
               </Link>
             </div>
             <div className='px-5 py-2'>
               <Link to={routes.terms} className='text-base text-gray-300 hover:text-white'>
-                Terms of Service
+                {t('footer.tos')}
               </Link>
             </div>
             <div className='px-5 py-2'>
               <Link to={routes.docs} className='text-base text-gray-300 hover:text-white'>
-                Docs
+                {t('common.docs')}
               </Link>
             </div>
             <div className='px-5 py-2'>
               <a href='#/' className='text-base text-gray-300 hover:text-white'>
-                Blog
+                {t('footer.blog')}
               </a>
             </div>
           </nav>
@@ -90,22 +94,25 @@ const Footer = ({ minimal, authenticated }) => {
               <img className='h-10 w-28' src='/assets/visa.png' height='40' width='112' loading='lazy' alt='' />
             </div>
             <p className='text-gray-300 text-base'>
-              The best apps need the best services.<br />
-              Swetrix is a powerful analytics platform that respects user privacy.
+              {t('footer.slogan')}
+              <br />
+              {t('footer.description')}
             </p>
             <div>
               <p className='flex text-gray-300 text-base'>
-                Made in
-                <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/Ukraine' target='_blank' rel='noopener noreferrer'>
+                {t('footer.madeIn')}
+                <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href={`https://${language}.wikipedia.org/wiki/Ukraine`} target='_blank' rel='noopener noreferrer'>
                   <Flag country='UA' size={18} alt='' />
-                  &nbsp;Ukraine
+                  &nbsp;
+                  {t('footer.ukraine')}
                 </a>
               </p>
               <p className='flex text-gray-300 text-base'>
-                Hosted in the
-                <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href='https://en.wikipedia.org/wiki/European_Union' target='_blank' rel='noopener noreferrer'>
+                {t('footer.hostedIn')}
+                <a className='flex hover:underline hover:opacity-80 text-blue-400 ml-1' href={`https://${language}.wikipedia.org/wiki/European_Union`} target='_blank' rel='noopener noreferrer'>
                   <Flag country='EU' size={18} alt='' />
-                  &nbsp;European Union
+                  &nbsp;
+                  {t('footer.eu')}
                 </a>
               </p>
             </div>
@@ -122,15 +129,17 @@ const Footer = ({ minimal, authenticated }) => {
             <div className='md:grid md:grid-cols-2 md:gap-8'>
               <div />
               <div className='mt-12 md:mt-0'>
-                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>Support</h3>
+                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>
+                  {t('footer.support')}
+                </h3>
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.support, (func) => {
-                    const item = func(authenticated)
+                    const { key, href } = func(authenticated)
 
                     return (
-                      <li key={item.name}>
-                        <HashLink to={item.href} className='text-base text-gray-300 hover:text-white'>
-                          {item.name}
+                      <li key={key}>
+                        <HashLink to={href} className='text-base text-gray-300 hover:text-white'>
+                          {t(`footer.${key}`)}
                         </HashLink>
                       </li>
                     )
@@ -140,24 +149,28 @@ const Footer = ({ minimal, authenticated }) => {
             </div>
             <div className='md:grid md:grid-cols-2 md:gap-8'>
               <div>
-                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>Company</h3>
+                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>
+                  {t('footer.company')}
+                </h3>
                 <ul className='mt-4 space-y-4'>
-                  {_map(navigation.company, (item) => (
-                    <li key={item.name}>
-                      <Link to={item.href} className='text-base text-gray-300 hover:text-white'>
-                        {item.name}
+                  {_map(navigation.company, ({ key, href }) => (
+                    <li key={key}>
+                      <Link to={href} className='text-base text-gray-300 hover:text-white'>
+                        {t(`footer.${key}`)}
                       </Link>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className='mt-12 md:mt-0'>
-                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>Legal</h3>
+                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>
+                  {t('footer.legal')}
+                </h3>
                 <ul className='mt-4 space-y-4'>
-                  {_map(navigation.legal, (item) => (
-                    <li key={item.name}>
-                      <Link to={item.href} className='text-base text-gray-300 hover:text-white'>
-                        {item.name}
+                  {_map(navigation.legal, ({ key, href }) => (
+                    <li key={key}>
+                      <Link to={href} className='text-base text-gray-300 hover:text-white'>
+                        {t(`footer.${key}`)}
                       </Link>
                     </li>
                   ))}
@@ -167,7 +180,13 @@ const Footer = ({ minimal, authenticated }) => {
           </div>
         </div>
         <div className='mt-8 border-t border-gray-200 pt-8'>
-          <p className='text-base text-gray-400 xl:text-center'>&copy; 2021 Swetrix Analytics. All rights reserved.</p>
+          <p className='text-base text-gray-400 xl:text-center'>
+            &copy;
+            {' '}
+            {year}
+            {' '}
+            {t('footer.copy')}
+          </p>
         </div>
       </div>
     </footer>
