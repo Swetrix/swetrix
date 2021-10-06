@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import _size from 'lodash/size'
 import _isEmpty from 'lodash/isEmpty'
+import _findIndex from 'lodash/findIndex'
+import _map from 'lodash/map'
 import { MailIcon } from '@heroicons/react/outline'
 
 import { reportFrequencies } from 'redux/constants'
@@ -10,9 +13,12 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
-import { isValidEmail, isValidPassword } from 'utils/validator'
+import {
+  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
+} from 'utils/validator'
 
 const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
+  const { t } = useTranslation('common')
   const { user } = useSelector(state => state.auth)
 
   const [form, setForm] = useState({
@@ -27,6 +33,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   const [showModal, setShowModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState(null)
+  const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
 
   useEffect(() => {
     validate()
@@ -67,15 +74,15 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
     const allErrors = {}
 
     if (!isValidEmail(form.email)) {
-      allErrors.email = 'Please provide a valid email.'
+      allErrors.email = t('auth.common.badEmailError')
     }
 
     if (_size(form.password) > 0 && !isValidPassword(form.password)) {
-      allErrors.password = 'The entered password is incorrect.'
+      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
     if (form.password !== form.repeat) {
-      allErrors.repeat = 'Passwords have to match.'
+      allErrors.repeat = t('auth.common.noMatchError')
     }
 
     const valid = _isEmpty(Object.keys(allErrors))
@@ -85,20 +92,20 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   }
 
   return (
-    <Title title='Profile settings'>
+    <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
-            Profile settings
+            {t('titles.profileSettings')}
           </h2>
           <h3 className='mt-2 text-lg font-bold text-gray-900'>
-            General settings
+            {t('profileSettings.general')}
           </h3>
           <Input
             name='email'
             id='email'
             type='email'
-            label='Email'
+            label={t('auth.common.email')}
             value={form.email}
             placeholder='you@example.com'
             className='mt-4'
@@ -110,10 +117,10 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
               name='password'
               id='password'
               type='password'
-              label='Password'
-              hint='Longer than 8 chars'
+              label={t('auth.common.password')}
+              hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
               value={form.password}
-              placeholder='Password'
+              placeholder={t('auth.common.password')}
               className='sm:col-span-3'
               onChange={handleInput}
               error={beenSubmitted ? errors.password : null}
@@ -122,40 +129,40 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
               name='repeat'
               id='repeat'
               type='password'
-              label='Repeat password'
+              label={t('auth.common.repeat')}
               value={form.repeat}
-              placeholder='Repeat password'
+              placeholder={t('auth.common.repeat')}
               className='sm:col-span-3'
               onChange={handleInput}
               error={beenSubmitted ? errors.repeat : null}
             />
           </div>
           <Button className='mt-4' type='submit' primary large>
-            Update profile
+            {t('profileSettings.update')}
           </Button>
           <hr className='mt-5' />
           <h3 className='mt-2 text-lg font-bold text-gray-900'>
-            Email reports
+            {t('profileSettings.email')}
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>
               <Select
-                title={reportFrequency}
-                label='How often should we send you an email summary about your websites?'
+                title={t(`profileSettings.${reportFrequency}`)}
+                label={t('profileSettings.frequency')}
                 className='w-full'
-                items={reportFrequencies}
-                onSelect={setReportFrequency}
+                items={translatedFrequencies}
+                onSelect={(f) => setReportFrequency(reportFrequencies[_findIndex(translatedFrequencies, t => t === f)])}
               />
             </div>
           </div>
           <Button className='mt-4' onClick={handleReportSave} primary large>
-            Save
+            {t('common.save')}
           </Button>
           <hr className='mt-5' />
           {!user.isActive && (
             <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
               <MailIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
-              Didn't receive a link to confirm the email address? Request a new one!
+              {t('profileSettings.noLink')}
             </div>
           )}
           <div className='flex justify-between mt-4'>
@@ -164,7 +171,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
               regular
               primary
             >
-              Request data export
+              {t('profileSettings.requestExport')}
             </Button>
             <Button
               className='ml-3'
@@ -172,7 +179,7 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
               regular
               danger
             >
-              Delete account
+              {t('profileSettings.delete')}
             </Button>
           </div>
         </form>
@@ -180,29 +187,29 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
         <Modal
           onClose={() => setShowExportModal(false)}
           onSubmit={() => { setShowExportModal(false); onExport(user.exportedAt) }}
-          submitText='Continue'
-          closeText='Close'
-          title='Data export'
+          submitText={t('common.continue')}
+          closeText={t('common.close')}
+          title={t('profileSettings.dataExport')}
           type='info'
-          message={'As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store. This report does not include events data per project.\nThe data report will be sent to your email address.\nNote: you can request the data export only once per two weeks.'}
+          message={t('profileSettings.exportConfirmation')}
           isOpened={showExportModal}
         />
         <Modal
           onClose={() => setShowModal(false)}
           onSubmit={() => { setShowModal(false); onDelete() }}
-          submitText='Delete my account'
-          closeText='Close'
-          title='Delete your account?'
+          submitText={t('profileSettings.aDelete')}
+          closeText={t('common.close')}
+          title={t('profileSettings.qDelete')}
           submitType='danger'
           type='error'
-          message={'Are you sure you want to deactivate your account?\nAll of your data will be permanently removed from our servers forever.\nThis action cannot be undone. '}
+          message={t('profileSettings.deactivateConfirmation')}
           isOpened={showModal}
         />
         <Modal
           onClose={() => { setError('') }}
-          closeText='Got it'
+          closeText={t('common.gotIt')}
           type='error'
-          title='Error'
+          title={t('common.error')}
           message={error}
           isOpened={Boolean(error)}
         />

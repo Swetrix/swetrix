@@ -9,7 +9,12 @@
     "you": "You",
     "dashboard": "Dashboard",
     "logout": "Logout",
-    "signin": "Sign in"
+    "signin": "Sign in",
+    "save": "Save",
+    "continue": "Continue",
+    "error": "Error",
+    "close": "Close",
+    "gotIt": "Got it"
   },
   "main": {
     "slogan": "A <span>powerful</span> analytics platform that respects <span>user privacy<span>",
@@ -111,11 +116,29 @@
       "signin": "Sign in"
     }
   },
+  "profileSettings": {
+    "general": "General settings",
+    "update": "Update profile",
+    "email": "Email reports",
+    "frequency": "How often should we send you an email summary about your websites?",
+    "noLink": "Didn't receive a link to confirm the email address? Request a new one!",
+    "requestExport": "Request data export",
+    "delete": "Delete account",
+    "deactivateConfirmation": "Are you sure you want to deactivate your account?\nAll of your data will be permanently removed from our servers forever.\nThis action cannot be undone.",
+    "exportConfirmation": "As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store. This report does not include events data per project.\nThe data report will be sent to your email address.\nNote: you can request the data export only once per two weeks.",
+    "dataExport": "Data export",
+    "aDelete": "Delete my account",
+    "qDelete": "Delete your account?",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "never": "Never"
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
     "signup": "Sign up",
-    "verification": "Email verification"
+    "verification": "Email verification",
+    "profileSettings": "Profile settings"
   },
   "footer": {
     "slogan": "The best apps need the best services.",
