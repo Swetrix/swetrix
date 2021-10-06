@@ -115,6 +115,34 @@
       "signin": "Sign in"
     }
   },
+  "features": {
+    "feature1Name": "Transparency",
+    "feature1Content": "At Swetrix, we believe that everyone has a right to privacy and transparency, especially when it comes to analytics.\nWe do not collect more information than we <docs>claim</docs>, all data is stored on servers physically located in the European Union and our analytics script is publicly available and accessible to all on our <gh>Github</gh>.",
+    "ready": "Ready to get to know your users?",
+    "start": "Start using Swetrix today.",
+    "list": [
+      {
+        "name": "Simplicity",
+        "content": "When we created our service we tried to make it as simple and flexible as possible.\nNo more confusing metrics and complicated dashboards - with us you can have control over all your projects and data in a simple and straightforward way."
+      },
+      {
+        "name": "Page Views Tracking",
+        "content": "Swetrix offers the ability to track page views, including unique views as well as user flow.\nAll views include a wide range of data, such as user country, locale, device type, page load time, and more.\nWe do not use cookies or any other type of user profiling to collect data. All incoming data is anonymised, ensuring that users cannot be tracked down in any way based on this."
+      },
+      {
+        "name": "Custom Events Tracking",
+        "content": "In addition to tracking page views, we also offer the ability to track сustom events.\nYou can track any event, such as button clicks, registrations or authorisations.\nAll of this is also completely private to the user, as we don't store any other information about them along with the events.\nYou can read more about custom events in our documentation."
+      },
+      {
+        "name": "Speed",
+        "content": "We are fast. Our analytics script is as optimised as possible and uses CDNs for its delivery, which ensures that the script won't slow down your sites."
+      },
+      {
+        "name": "Trust",
+        "content": "We are a small business, not a big corporation.\nWe are interested in creating a good and quality product that will be used by satisfied customers, not in squeezing as much money as possible from our users or selling your personal data."
+      }
+    ]
+  },
   "profileSettings": {
     "general": "General settings",
     "update": "Update profile",
@@ -137,7 +165,8 @@
     "signin": "Sign in",
     "signup": "Sign up",
     "verification": "Email verification",
-    "profileSettings": "Profile settings"
+    "profileSettings": "Profile settings",
+    "features": "Features"
   },
   "footer": {
     "slogan": "The best apps need the best services.",
