@@ -173,6 +173,39 @@
     "inc": "Increased by",
     "dec": "Descreased by"
   },
+  "docs": {
+    "titles": {
+      "start": "Getting Started",
+      "umd": "UMD Build",
+      "npm": "NPM Package",
+      "how": "How to..",
+      "pv": "Track pageviews",
+      "ce": "Track custom events",
+      "api": "API"
+    },
+    "install": "You can also install the tracking script with NPM or Yarn",
+    "import": "Next you should import module into your project's root, for example",
+    "track": "After you can track anything you want.\nRead the detailed documentation on tracking params below.",
+    "pv": "Swetrix.js tracking script provides a way to collect a page view event once the page has loaded.\nThis can be accomplished via calling the <link>trackViews()</link> function:",
+    "ce": "In addition to tracking pageviews we provide an ability to track custom events.\nFor example, if you want to track an event like 'Sign up' or 'Newsletter subscription', this feature would be very useful.\nUnder the screen, the principle of this function is similar to trackViews.",
+    "init": "This fuction is used to initialise the analytics.\nBasically you're letting the script know which project do you want to use it with, as well as specifying your custom parameters if needed.",
+    "tr": "With this function you are able to track any custom events you want.\nYou should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.\nThe total number of track calls and their conversion rate will be saved.",
+    "tv": {
+      "call": "Calling trackViews will result in sending the data about the user to our servers.\nSuch data will include the next params if available:\n",
+      "gather": "On the server side we also gather users IP Address and User Agent.\nThis data is used to detect whether the page view is unique or not.\n<b>We DO NOT store neither IP Address nor User Agent as a raw strings</b>, such data is stored as a salted hash for no longer than 30 minutes or 12:00 AM UTC, whatever happens first.\nAfter this timeframe the identifiable data is forever deleted from our servers.",
+      "params": {
+        "pid": "the unique Project ID request is related to.",
+        "lc": "users locale (e.g. en_US or uk_UA).",
+        "tz": "users timezone (e.g. Europe/Helsinki).",
+        "ref": "the URL of the previous webpage from which a page was opened.",
+        "so": "the page source ('ref' | 'source' | 'utm_source' GET param).",
+        "me": "UTM medium ('utm_medium' GET param).",
+        "ca": "UTM campaign ('utm_campaign' GET param).",
+        "pg": "the page user currently views (e.g. /hello)."
+      }
+    },
+    "contents": "Contents"
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
@@ -180,7 +213,8 @@
     "verification": "Email verification",
     "profileSettings": "Profile settings",
     "features": "Features",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "docs": "Documentation"
   },
   "footer": {
     "slogan": "The best apps need the best services.",
