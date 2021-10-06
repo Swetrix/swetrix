@@ -1,12 +1,16 @@
 import React, { memo, useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { authActions } from 'redux/actions/auth'
+import { useTranslation } from 'react-i18next'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import { isValidEmail, isValidPassword } from 'utils/validator'
+import {
+  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
+} from 'utils/validator'
 
 const BasicSignup = () => {
+  const { t } = useTranslation('common')
   const dispatch = useDispatch()
   const [form, setForm] = useState({
     email: '',
@@ -56,15 +60,15 @@ const BasicSignup = () => {
     const allErrors = {}
 
     if (!isValidEmail(form.email)) {
-      allErrors.email = 'Please provide a valid email.'
+      allErrors.email = t('auth.common.badEmailError')
     }
 
     if (!isValidPassword(form.password)) {
-      allErrors.password = 'The password has to consist of at least 8 characters.'
+      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
     if (form.password !== form.repeat || form.repeat === '') {
-      allErrors.repeat = 'Passwords have to match.'
+      allErrors.repeat = t('auth.common.noMatchError')
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -80,7 +84,7 @@ const BasicSignup = () => {
         id='email'
         type='email'
         value={form.email}
-        placeholder='Email address'
+        placeholder={t('auth.signup.email')}
         onChange={handleInput}
         error={beenSubmitted && errors.email}
       />
@@ -89,7 +93,7 @@ const BasicSignup = () => {
         id='password'
         type='password'
         value={form.password}
-        placeholder='Password'
+        placeholder={t('auth.common.password')}
         className='mt-4'
         onChange={handleInput}
         error={beenSubmitted && errors.password}
@@ -99,13 +103,13 @@ const BasicSignup = () => {
         id='repeat'
         type='password'
         value={form.repeat}
-        placeholder='Repeat password'
+        placeholder={t('auth.common.repeat')}
         className='mt-4'
         onChange={handleInput}
         error={beenSubmitted && errors.repeat}
       />
       <Button className='w-full flex justify-center' type='submit' loading={isLoading} primary large>
-        Create your account
+        {t('auth.signup.create')}
       </Button>
     </form>
   )

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import { useTranslation, Trans } from 'react-i18next'
 
 import Title from 'components/Title'
 import { notAuthenticated } from '../../../hoc/protected'
@@ -8,9 +9,12 @@ import routes from 'routes'
 import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
 import Button from 'ui/Button'
-import { isValidEmail, isValidPassword } from 'utils/validator'
+import {
+  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
+} from 'utils/validator'
 
 const Signup = ({ signup }) => {
+  const { t } = useTranslation('common')
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -60,19 +64,19 @@ const Signup = ({ signup }) => {
     const allErrors = {}
 
     if (!isValidEmail(form.email)) {
-      allErrors.email = 'Please provide a valid email.'
+      allErrors.email = t('auth.common.badEmailError')
     }
 
     if (!isValidPassword(form.password)) {
-      allErrors.password = 'The password has to consist of at least 8 characters.'
+      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
     if (form.password !== form.repeat || form.repeat === '') {
-      allErrors.repeat = 'Passwords have to match.'
+      allErrors.repeat = t('auth.common.noMatchError')
     }
 
     if (!form.tos) {
-      allErrors.tos = 'You have to accept our TOS and privacy policy in order to use our services.'
+      allErrors.tos = t('auth.common.tosError')
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -82,17 +86,17 @@ const Signup = ({ signup }) => {
   }
 
   return (
-    <Title title='Sign up'>
+    <Title title={t('titles.signup')}>
       <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
-            Sign up
+            {t('titles.signup')}
           </h2>
           <Input
             name='email'
             id='email'
             type='email'
-            label='Email'
+            label={t('auth.common.email')}
             value={form.email}
             placeholder='you@example.com'
             className='mt-4'
@@ -103,10 +107,10 @@ const Signup = ({ signup }) => {
             name='password'
             id='password'
             type='password'
-            label='Password'
-            hint='Longer than 8 chars'
+            label={t('auth.common.password')}
+            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
             value={form.password}
-            placeholder='Password'
+            placeholder={t('auth.common.password')}
             className='mt-4'
             onChange={handleInput}
             error={beenSubmitted ? errors.password : ''}
@@ -115,9 +119,9 @@ const Signup = ({ signup }) => {
             name='repeat'
             id='repeat'
             type='password'
-            label='Repeat password'
+            label={t('auth.common.repeat')}
             value={form.repeat}
-            placeholder='Repeat password'
+            placeholder={t('auth.common.repeat')}
             className='mt-4'
             onChange={handleInput}
             error={beenSubmitted ? errors.repeat : ''}
@@ -130,15 +134,14 @@ const Signup = ({ signup }) => {
             className='mt-4'
             label={
               <span>
-                I do accept&nbsp;
-                <Link to={routes.terms} className='font-medium text-gray-900 hover:underline'>
-                  Terms and Conditions
-                </Link>
-                &nbsp;and the&nbsp;
-                <Link to={routes.privacy} className='font-medium text-gray-900 hover:underline'>
-                  Privacy Policy
-                </Link>
-                .
+                <Trans
+                  t={t}
+                  i18nKey='auth.signup.tos'
+                  components={{
+                    tos: <Link to={routes.terms} className='font-medium text-gray-900 hover:underline' />,
+                    pp: <Link to={routes.privacy} className='font-medium text-gray-900 hover:underline' />,
+                  }}
+                />
               </span>
             }
             hint={beenSubmitted ? errors.tos : ''}
@@ -149,14 +152,14 @@ const Signup = ({ signup }) => {
             name='keep_signedin'
             id='keep_signedin'
             className='mt-4'
-            label={'Don\'t remember me.'}
+            label={t('auth.common.noRemember')}
           />
           <div className='pt-1 flex justify-between mt-3'>
             <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800'>
-              Sign in instead
+              {t('auth.common.signinInstead')}
             </Link>
             <Button type='submit' loading={isLoading} primary large>
-              Sign up
+              {t('auth.signup.button')}
             </Button>
           </div>
         </form>

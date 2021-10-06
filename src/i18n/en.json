@@ -71,6 +71,52 @@
     "custSupport": "Could not find the answer you’re looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "Why us"
   },
+  "auth": {
+    "recovery": {
+      "title": "Account recovery",
+      "save": "Save new password",
+      "newPassword": "Your new password",
+      "updated": "Your password has been updated"
+    },
+    "forgot": {
+      "sent": "A password reset e-mail has been sent to the specified address",
+      "reset": "Reset password"
+    },
+    "signin": {
+      "title": "Sign in to your account",
+      "forgot": "Forgot password?",
+      "button": "Sign in"
+    },
+    "signup": {
+      "button": "Sign up",
+      "tos": "I do accept <tos>Terms and Conditions</tos> and the <pp>Privacy Policy</pp>.",
+      "email": "Email address",
+      "create": "Create your account"
+    },
+    "verification": {
+      "success": "Your email has been successfully verified!"
+    },
+    "common": {
+      "signinInstead": "Sign in instead",
+      "signupInstead": "Sign up instead",
+      "password": "Password",
+      "noRemember": "Don't remember me.",
+      "repeat": "Repeat password",
+      "hint": "Longer than {{amount}} chars",
+      "xCharsError": "The password has to consist of at least {{amount}} characters.",
+      "noMatchError": "Passwords have to match.",
+      "badEmailError": "Please provide a valid email.",
+      "tosError": "You have to accept our TOS and privacy policy in order to use our services.",
+      "email": "Email",
+      "signin": "Sign in"
+    }
+  },
+  "titles": {
+    "recovery": "Account recovery",
+    "signin": "Sign in",
+    "signup": "Sign up",
+    "verification": "Email verification"
+  },
   "footer": {
     "slogan": "The best apps need the best services.",
     "description": "Swetrix is a powerful analytics platform that respects user privacy.",

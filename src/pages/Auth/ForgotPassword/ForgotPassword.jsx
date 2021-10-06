@@ -1,5 +1,6 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link, useHistory } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { forgotPassword } from 'api'
 import Title from 'components/Title'
@@ -12,6 +13,7 @@ import { isValidEmail } from 'utils/validator'
 const ForgotPassword = ({
   createNewPasswordFailed, newPassword,
 }) => {
+  const { t } = useTranslation('common')
   const history = useHistory()
   const [form, setForm] = useState({
     email: '',
@@ -32,7 +34,7 @@ const ForgotPassword = ({
       try {
         await forgotPassword(data)
   
-        newPassword('A password reset e-mail has been sent to the specified address')
+        newPassword(t('auth.forgot.sent'))
         history.push(routes.main)
       } catch (e) {
         createNewPasswordFailed(e.toString())
@@ -66,7 +68,7 @@ const ForgotPassword = ({
     const allErrors = {}
 
     if (!isValidEmail(form.email)) {
-      allErrors.email = 'Please provide a valid email.'
+      allErrors.email = t('auth.common.badEmailError')
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -76,17 +78,17 @@ const ForgotPassword = ({
   }
 
   return (
-    <Title title='Account recovery'>
+    <Title title={t('titles.recovery')}>
       <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
-            Account recovery
-        </h2>
+            {t('titles.recovery')}
+          </h2>
           <Input
             name='email'
             id='email'
             type='email'
-            label='Email'
+            label={t('auth.common.email')}
             value={form.email}
             placeholder='you@example.com'
             className='mt-4'
@@ -95,10 +97,10 @@ const ForgotPassword = ({
           />
           <div className='flex justify-between mt-3'>
             <Link to={routes.signin} className='mt-1 underline text-blue-600 hover:text-indigo-800'>
-              Sign in
+              {t('auth.common.signin')}
             </Link>
             <Button type='submit' loading={isLoading} primary large>
-              Reset password
+              {t('auth.forgot.reset')}
             </Button>
           </div>
         </form>
