@@ -99,7 +99,7 @@ const Docs = () => {
       <div className='bg-gray-50'>
         <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:w-11/12 lg:px-8 lg:flex'>
           <Contents t={t} />
-          <div className='flex-1 lg:order-1'>
+          <div className='flex-1 lg:order-1 whitespace-pre-line'>
             <h1 className='text-4xl font-extrabold text-gray-900 tracking-tight'>
               {t('titles.docs')}
             </h1>
@@ -172,7 +172,13 @@ const Docs = () => {
                   <li><b>pg</b> - {t('docs.tv.params.pg')}</li>
                 </ul>
               </div>
-              {t('docs.tv.gather')}
+              <Trans
+                t={t}
+                i18nKey='docs.tv.gather'
+                components={{
+                  b: <b />,
+                }}
+              />
             </p>
             <Code text={trackPVAPI} language='javascript' />
 

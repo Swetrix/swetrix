@@ -185,7 +185,7 @@ const Main = () => {
             </div>
           </div>
         </div>
-        <Pricing />
+        <Pricing t={t} />
         <FAQs t={t} />
 
         <div className='bg-white'>

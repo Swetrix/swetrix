@@ -265,6 +265,36 @@
       "deleteHint": "By pressing 'Delete project' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers."
     }
   },
+  "billing": {
+    "title": "Billing & Plans",
+    "desc": "It is free to get started and use our services.\nIf you need to handle more traffic, you probably need to upgrade your plan.\nBelow is a list of available plans. No hidden fees or other BS, everything is clear and transparent!",
+    "contact": "Need to track more than 1 million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs."
+  },
+  "pricing": {
+    "title": "Pricing Plans",
+    "adv": "Start out for free, no credit card needed.\nWhen your business grows, you can upgrade your plan at any time.",
+    "currentPlan": "Current plan",
+    "free": "Free",
+    "perMonth": "mo",
+    "yourPlan": "Your plan",
+    "downgrade": "Downgrade",
+    "upgrade": "Upgrade",
+    "whatIncl": "What's included",
+    "tiers": {
+      "hobby": "Hobby",
+      "freelancer": "Freelancer",
+      "startup": "Startup",
+      "enterprise": "Enterprise",
+      "upToXEVMo": "Up to {{amount}} events per month.",
+      "xEvMo": "{{amount}} events per month.",
+      "upToXProjects": "Create up to {{amount}} projects.",
+      "xMoDataRetention": "{{amount}} months of data retention.",
+      "highStandardSec": "High standard security.",
+      "evXPlanIncl": "Everything {{plan}} plan includes.",
+      "smallBusiSupport": "By buying this in you are supporting a small business.",
+      "carbonRemoval": "Your subscription contributes to carbon removal."
+    }
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
@@ -273,7 +303,8 @@
     "profileSettings": "Profile settings",
     "features": "Features",
     "dashboard": "Dashboard",
-    "docs": "Documentation"
+    "docs": "Documentation",
+    "billing": "Billing"
   },
   "footer": {
     "slogan": "The best apps need the best services.",

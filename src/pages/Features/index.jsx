@@ -14,7 +14,7 @@ const Features = () => {
   return (
     <Title title={t('titles.features')}>
       <div className='bg-gray-50'>
-        <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
+        <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
           <h1 className='text-4xl font-extrabold text-gray-900 tracking-tight'>
             {t('titles.features')}
           </h1>

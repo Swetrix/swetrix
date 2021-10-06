@@ -155,7 +155,7 @@ const ViewProject = ({
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[1].period)
   const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[1].tbs[1])
-  const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period])
+  const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period, periodPairs])
   const [showTotal, setShowTotal] = useState(false)
   const [chartData, setChartData] = useState({})
   const [mainChart, setMainChart] = useState(null)

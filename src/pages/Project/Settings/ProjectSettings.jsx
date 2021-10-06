@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useLocation, useHistory, useParams } from 'react-router-dom'
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
@@ -61,7 +61,7 @@ const ProjectSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, history, showError, projectDeleting])
+  }, [user, project, isLoading, isSettings, history, showError, projectDeleting, t])
 
   const onSubmit = async (data) => {
     if (!projectSaving) {
