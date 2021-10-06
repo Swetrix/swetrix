@@ -91,7 +91,7 @@ const Header = ({ authenticated }) => {
             ) : (
               <>
                 <Link to={routes.signin} className='inline-block select-none bg-indigo-500 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75'>
-                  {t('common.signin')}
+                  {t('auth.common.signin')}
                 </Link>
                 <Link to={routes.signup} className='inline-block select-none bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>
                   {t('common.getStarted')}
