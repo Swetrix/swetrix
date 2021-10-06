@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-has-content */
 import React, { memo, Fragment, useEffect } from 'react'
 import _map from 'lodash/map'
 import Prism from 'prismjs'
