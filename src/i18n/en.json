@@ -13,7 +13,9 @@
     "continue": "Continue",
     "error": "Error",
     "close": "Close",
-    "gotIt": "Got it"
+    "cancel": "Cancel",
+    "gotIt": "Got it",
+    "settings": "Settings"
   },
   "main": {
     "slogan": "A <span>powerful</span> analytics platform that respects <span>user privacy<span>",
@@ -169,6 +171,7 @@
     "active": "Active",
     "disabled": "Disabled",
     "pageviews": "Pageviews",
+    "unique": "Unique views",
     "createdAt": "Created at",
     "inc": "Increased by",
     "dec": "Descreased by"
@@ -205,6 +208,62 @@
       }
     },
     "contents": "Contents"
+  },
+  "project": {
+    "noExist": "The selected project does not exist",
+    "exportImg": "Export as image",
+    "noEvTitle": "No events yet",
+    "noEvContent": "No events have been captured for the specified timeframe.\nIf you haven't tracked any events yet, you can check out our <link>Docs</link> to easily integrate tracking into your app.",
+    "mapping": {
+      "cc": "Country",
+      "pg": "Page",
+      "lc": "Locale",
+      "ref": "Referrer",
+      "dv": "Device type",
+      "br": "Browser",
+      "os": "OS name",
+      "lt": "Load time"
+    },
+    "overview": "Overview",
+    "weeklyStats": "Weekly stats",
+    "statsFor": "Stats for",
+    "event": "Event",
+    "quantity": "Quantity",
+    "conversion": "Conversion",
+    "customEv": "Custom events",
+    "noParamData": "No data for this parameter yet",
+    "prev": "Previous",
+    "next": "Next",
+    "unique": "Unique visitors",
+    "total": "Total page views",
+    "today": "Today",
+    "lastXDays": "Last {{amount}} days",
+    "lastXWeeks": "Last {{amount}} weeks",
+    "lastXMonths": "Last {{amount}} months",
+    "hour": "Hour",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "settings": {
+      "verify": "Please, verify your email address first",
+      "updated": "The project's settings were updated",
+      "created": "The project has been created",
+      "pxCharsError": "Project name cannot be longer than {{amount}} characters.",
+      "oxCharsError": "A list of allowed origins has to be smaller than {{amount}} symbols.",
+      "noNameError": "Please enter a project name.",
+      "create": "Create a new project",
+      "settings": "Settings of",
+      "name": "Project name",
+      "pid": "Project ID",
+      "origins": "Allowed origins",
+      "originsHint": "A list of allowed origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua",
+      "enabled": "Is project enabled",
+      "enabledHint": "Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project's analytics in dashboard.",
+      "createHint": "*you will be able to set up your project more thoroughly after you have created it",
+      "delete": "Delete project",
+      "qDelete": "Delete the project?",
+      "deleteHint": "By pressing 'Delete project' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers."
+    }
   },
   "titles": {
     "recovery": "Account recovery",

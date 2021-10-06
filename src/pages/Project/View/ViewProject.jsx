@@ -9,6 +9,7 @@ import countriesEn from 'i18n-iso-countries/langs/en.json'
 import cx from 'classnames'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
+import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
@@ -36,21 +37,21 @@ import { getProjectData, getProject } from 'api'
 
 countries.registerLocale(countriesEn)
 
-const getJSON = (chart, showTotal) => ({
+const getJSON = (chart, showTotal, t) => ({
   x: _map(chart.x, el => dayjs(el).toDate()),
-  'Unique visitors': chart.uniques,
-  ...(showTotal && { 'Total page views': chart.visits }),
+  [t('project.unique')]: chart.uniques,
+  ...(showTotal && { [t('project.total')]: chart.visits }),
 })
 
-const getSettings = (chart, timeBucket, showTotal = true) => ({
+const getSettings = (chart, timeBucket, showTotal = true, t) => ({
   data: {
     x: 'x',
-    json: getJSON(chart, showTotal),
+    json: getJSON(chart, showTotal, t),
     type: area(),
     xFormat: '%y-%m-%d %H:%M:%S',
     colors: {
-      'Unique visitors': '#2563EB',
-      'Total page views': '#D97706',
+      [t('project.unique')]: '#2563EB',
+      [t('project.total')]: '#D97706',
     }
   },
   axis: {
@@ -107,29 +108,34 @@ const getSettings = (chart, timeBucket, showTotal = true) => ({
   bindto: '#dataChart',
 })
 
-const typeNameMapping = {
-  cc: 'Country',
-  pg: 'Page',
-  lc: 'Locale',
-  ref: 'Referrer',
-  dv: 'Device type',
-  br: 'Browser',
-  os: 'OS name',
+const typeNameMapping = (t) => ({
+  cc: t('project.mapping.cc'),
+  pg: t('project.mapping.pg'),
+  lc: t('project.mapping.lc'),
+  ref: t('project.mapping.ref'),
+  dv: t('project.mapping.dv'),
+  br: t('project.mapping.br'),
+  os: t('project.mapping.os'),
   so: 'utm_source',
   me: 'utm_medium',
   ca: 'utm_campaign',
-  lt: 'Load time',
-}
+  lt: t('project.mapping.lt'),
+})
 
-const NoEvents = () => (
+const NoEvents = ({ t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
     <div className='max-w-7xl w-full mx-auto'>
-      <h2 className='text-4xl text-center leading-tight my-3'>No events yet</h2>
+      <h2 className='text-4xl text-center leading-tight my-3'>
+        {t('project.noEvTitle')}
+      </h2>
       <h2 className='text-2xl mb-8 text-center leading-snug'>
-        No events have been captured for the specified timeframe.<br />
-        If you haven't tracked any events yet, you can check out our&nbsp;
-        <Link to={routes.docs} className='hover:underline text-blue-600'>Docs</Link>
-        &nbsp;to easily integrate tracking into your app.
+        <Trans
+          t={t}
+          i18nKey='project.noEvContent'
+          components={{
+            link: <Link to={routes.docs} className='hover:underline text-blue-600' />,
+          }}
+        />
       </h2>
     </div>
   </div>
@@ -138,21 +144,26 @@ const NoEvents = () => (
 const ViewProject = ({
   projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, user, setProject,
 }) => {
+  const { t } = useTranslation('common')
+  const periodPairs = tbPeriodPairs(t)
+
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const [panelsData, setPanelsData] = useState({})
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState(projectViewPrefs[id]?.period || tbPeriodPairs[1].period)
-  const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || tbPeriodPairs[1].tbs[1])
-  const activePeriod = useMemo(() => _find(tbPeriodPairs, p => p.period === period), [period])
+  const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[1].period)
+  const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[1].tbs[1])
+  const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period])
   const [showTotal, setShowTotal] = useState(false)
   const [chartData, setChartData] = useState({})
   const [mainChart, setMainChart] = useState(null)
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
+
+  const tnMapping = typeNameMapping(t)
 
   const { name } = project
 
@@ -178,14 +189,14 @@ const ViewProject = ({
 
         if (!_isEmpty(params)) {
           setChartData(chart)
-  
+
           setPanelsData({
             types: _keys(params),
             data: params,
             customs,
           })
-  
-          const bbSettings = getSettings(chart, timeBucket, showTotal)
+
+          const bbSettings = getSettings(chart, timeBucket, showTotal, t)
           setMainChart(bb.generate(bbSettings))
         }
 
@@ -200,22 +211,22 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
         mainChart.load({
-          json: getJSON(chartData, true),
+          json: getJSON(chartData, true, t),
         })
       } else {
         mainChart.unload({
-          ids: ['Total page views'],
+          ids: [t('project.total')],
         })
       }
     }
-  }, [isLoading, showTotal, chartData, mainChart])
+  }, [isLoading, showTotal, chartData, mainChart, t])
 
   useEffect(() => {
     loadAnalytics()
   }, [project, period, timeBucket]) // eslint-disable-line
 
   const updatePeriod = (newPeriod) => {
-    const newPeriodFull = _find(tbPeriodPairs, (el) => el.period === newPeriod)
+    const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod)
     let tb = timeBucket
     if (_isEmpty(newPeriodFull)) return
 
@@ -239,7 +250,7 @@ const ViewProject = ({
         .then(setProject)
         .catch(console.error)
     } else {
-      showError('The selected project does not exist')
+      showError(t('project.noExist'))
       history.push(routes.dashboard)
     }
   }
@@ -284,13 +295,13 @@ const ViewProject = ({
                         'z-10 border-indigo-500 text-indigo-600': timeBucket === tb,
                       })}
                     >
-                      {tb}
+                      {t(`project.${tb}`)}
                     </button>
                   ))}
                 </span>
               </div>
               <Dropdown
-                items={tbPeriodPairs}
+                items={periodPairs}
                 title={activePeriod.label}
                 labelExtractor={pair => pair.label}
                 keyExtractor={pair => pair.label}
@@ -298,7 +309,7 @@ const ViewProject = ({
               />
               <div className='h-full ml-3'>
                 <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
-                  Settings
+                  {t('common.settings')}
                 </Button>
               </div>
             </div>
@@ -307,14 +318,14 @@ const ViewProject = ({
             analyticsLoading ? (
               <Loader />
             ) : (
-              <NoEvents />
+              <NoEvents t={t} />
             )
           )}
           <div className={cx('flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4', { hidden: isPanelsDataEmpty })}>
             <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
             <div className='h-full ml-3'>
               <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
-                Export as image
+                {t('project.exportImg')}
               </Button>
             </div>
           </div>
@@ -322,12 +333,17 @@ const ViewProject = ({
             <div className='h-80' id='dataChart' />
             <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
               {!_isEmpty(project.overall) && (
-                <Overview overall={project.overall} chartData={chartData} activePeriod={activePeriod} />
-              )}  
+                <Overview
+                  t={t}
+                  overall={project.overall}
+                  chartData={chartData}
+                  activePeriod={activePeriod}
+                />
+              )}
               {_map(panelsData.types, type => {
                 if (type === 'cc') {
                   return (
-                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
+                    <Panel t={t} key={type} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
                       <>
                         <Flag className='rounded-md' country={name} size={21} alt='' />
                         &nbsp;&nbsp;
@@ -339,13 +355,13 @@ const ViewProject = ({
 
                 if (type === 'dv') {
                   return (
-                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} capitalize />
+                    <Panel t={t} key={type} name={tnMapping[type]} data={panelsData.data[type]} capitalize />
                   )
                 }
 
                 if (type === 'ref') {
                   return (
-                    <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
+                    <Panel t={t} key={type} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
                       const url = new URL(name)
 
                       return (
@@ -362,11 +378,11 @@ const ViewProject = ({
                 }
 
                 return (
-                  <Panel key={type} name={typeNameMapping[type]} data={panelsData.data[type]} />
+                  <Panel t={t} key={type} name={tnMapping[type]} data={panelsData.data[type]} />
                 )
               })}
               {!_isEmpty(panelsData.customs) && (
-                <CustomEvents customs={panelsData.customs} chartData={chartData} />
+                <CustomEvents t={t} customs={panelsData.customs} chartData={chartData} />
               )}
             </div>
           </div>

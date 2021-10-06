@@ -35,7 +35,7 @@ PanelContainer.propTypes = {
 }
 
 const Overview = ({
-  overall, chartData, activePeriod,
+  overall, chartData, activePeriod, t,
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
@@ -43,23 +43,29 @@ const Overview = ({
   const uniques = _sum(chartData?.uniques) || 0
 
   return (
-    <PanelContainer name='Overview'>
+    <PanelContainer name={t('project.overview')}>
       {!_isEmpty(chartData) && (
         <>
           <p className='text-lg font-semibold'>
-            Stats for
+            {t('project.statsFor')}
             <span className='lowercase'> {activePeriod.label}</span>
           </p>
 
           <div className='flex justify-between'>
-            <p className='text-lg'>Pageviews:</p>
+            <p className='text-lg'>
+              {t('dashboard.pageviews')}
+              :
+            </p>
             <p className='h-5 mr-2 text-gray-900 text-xl'>
               {pageviews}
             </p>
           </div>
 
           <div className='flex justify-between'>
-            <p className='text-lg'>Unique views:</p>
+            <p className='text-lg'>
+              {t('dashboard.unique')}
+              :
+            </p>
             <p className='h-5 mr-2 text-gray-900 text-xl'>
               {uniques}
             </p>
@@ -68,10 +74,13 @@ const Overview = ({
         </>
       )}
       <p className='text-lg font-semibold'>
-        Weekly stats
+        {t('project.weeklyStats')}
       </p>
       <div className='flex justify-between'>
-        <p className='text-lg'>Pageviews:</p>
+        <p className='text-lg'>
+          {t('dashboard.pageviews')}
+          :
+        </p>
         <dd className='flex items-baseline'>
           <p className='h-5 mr-2 text-gray-900 text-lg'>
             {overall.thisWeek}
@@ -84,14 +93,14 @@ const Overview = ({
               <>
                 <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                 <span className='sr-only'>
-                  Increased by
+                  {t('dashboard.inc')}
                 </span>
               </>
             ) : (
               <>
                 <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                 <span className='sr-only'>
-                  Descreased by
+                  {t('dashboard.dec')}
                 </span>
               </>
             )}
@@ -100,7 +109,10 @@ const Overview = ({
         </dd>
       </div>
       <div className='flex justify-between'>
-        <p className='text-lg'>Unique views:</p>
+        <p className='text-lg'>
+          {t('dashboard.unique')}
+          :
+        </p>
         <dd className='flex items-baseline'>
           <p className='h-5 mr-2 text-gray-900 text-lg'>
             {overall.thisWeekUnique}
@@ -113,14 +125,14 @@ const Overview = ({
               <>
                 <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                 <span className='sr-only'>
-                  Increased by
+                  {t('dashboard.inc')}
                 </span>
               </>
             ) : (
               <>
                 <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                 <span className='sr-only'>
-                  Descreased by
+                  {t('dashboard.dec')}
                 </span>
               </>
             )}
@@ -133,19 +145,19 @@ const Overview = ({
 }
 
 const CustomEvents = ({
-  customs, chartData,
+  customs, chartData, t,
 }) => {
   const keys = _keys(customs)
   const uniques = _sum(chartData.uniques)
 
   return (
-    <PanelContainer name='Custom events'>
+    <PanelContainer name={t('project.customEv')}>
       <table className='table-fixed'>
         <thead>
           <tr>
-            <th className='w-4/6 text-left text-gray-900'>Event</th>
-            <th className='w-1/6 text-right text-gray-900'>Quantity&nbsp;&nbsp;</th>
-            <th className='w-1/6 text-right text-gray-900'>Conversion</th>
+            <th className='w-4/6 text-left text-gray-900'>{t('project.event')}</th>
+            <th className='w-1/6 text-right text-gray-900'>{t('project.quantity')}&nbsp;&nbsp;</th>
+            <th className='w-1/6 text-right text-gray-900'>{t('project.conversion')}</th>
           </tr>
         </thead>
         <tbody>
@@ -167,7 +179,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, capitalize, linkContent,
+  name, data, rowMapper, capitalize, linkContent, t,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -193,7 +205,9 @@ const Panel = ({
   return (
     <PanelContainer name={name}>
       {_isEmpty(data) ? (
-        <p className='mt-1 text-base text-gray-700'>No data for this parameter yet</p>
+        <p className='mt-1 text-base text-gray-700'>
+          {t('project.noParamData')}
+        </p>
       ) : _map(keysToDisplay, key => {
         const perc = _round(data[key] / total * 100, 2)
         const rowData = _isFunction(rowMapper) ? rowMapper(key) : key
@@ -231,7 +245,9 @@ const Panel = ({
               role='button'
               onClick={onPrevious}
             >
-              &lt; Previous
+              &lt;
+              &nbsp;
+              {t('project.prev')}
           </span>
             <span
               className={cx('text-gray-500 font-light', {
@@ -241,7 +257,9 @@ const Panel = ({
               role='button'
               onClick={onNext}
             >
-              Next &gt;
+              {t('project.next')}
+              &nbsp;
+              &gt;
           </span>
           </div>
         </div>

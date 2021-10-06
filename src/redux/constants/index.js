@@ -1,30 +1,30 @@
-export const tbPeriodPairs = [{
-  label: 'Today',
+export const tbPeriodPairs = (t) => [{
+  label: t('project.today'),
   period: '1d',
   tbs: ['hour'],
   access: 'free',
 }, {
-  label: 'Last 7 days',
+  label: t('project.lastXDays', { amount: 7 }),
   period: '7d',
   tbs: ['hour', 'day'],
   access: 'free',
 }, {
-  label: 'Last 4 weeks',
+  label: t('project.lastXWeeks', { amount: 4 }),
   period: '4w',
   tbs: ['day', 'week'],
   access: 'free',
 }, {
-  label: 'Last 3 months',
+  label: t('project.lastXMonths', { amount: 3 }),
   period: '3M',
   tbs: ['week', 'month'],
   access: 'paid',
 }, {
-  label: 'Last 12 months',
+  label: t('project.lastXMonths', { amount: 12 }),
   period: '12M',
   tbs: ['week', 'month'],
   access: 'paid',
 }, {
-  label: 'Last 24 months',
+  label: t('project.lastXMonths', { amount: 24 }),
   period: '24M',
   tbs: ['month'],
   access: 'paid',
