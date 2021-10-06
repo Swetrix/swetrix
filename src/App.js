@@ -3,9 +3,13 @@ import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
 import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
+import { useTranslation } from 'react-i18next'
 import cx from 'classnames'
 import _some from 'lodash/some'
 import _includes from 'lodash/includes'
+import dayjs from 'dayjs'
+import 'dayjs/locale/ru'
+import 'dayjs/locale/uk'
 
 import Header from 'components/Header'
 import Footer from 'components/Footer'
@@ -55,6 +59,7 @@ const Fallback = ({ isMinimalFooter }) => {
 }
 
 const App = () => {
+  const { i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
   const location = useLocation()
   const alert = useAlert()

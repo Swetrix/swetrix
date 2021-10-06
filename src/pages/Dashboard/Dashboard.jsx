@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import { useTranslation } from 'react-i18next'
 import { EyeIcon } from '@heroicons/react/outline'
 // import { ChartBarIcon } from '@heroicons/react/outline'
 import { CalendarIcon } from '@heroicons/react/outline'
@@ -19,7 +20,7 @@ import Loader from 'ui/Loader'
 import { ActivePin, InactivePin } from 'ui/Pin'
 import routes from 'routes'
 
-const ProjectCart = ({ name, url, created, active, overall }) => {
+const ProjectCart = ({ name, url, created, active, overall, t, language }) => {
   const statsDidGrowUp = overall?.percChange >= 0
 
   return (
@@ -32,9 +33,9 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
             </p>
             <div className='ml-2 flex-shrink-0 flex'>
               {active ? (
-                <ActivePin label='Active' />
+                <ActivePin label={t('dashboard.active')} />
               ) : (
-                <InactivePin label='Disabled' />
+                <InactivePin label={t('dashboard.disabled')} />
               )}
             </div>
           </div>
@@ -42,7 +43,9 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
             <div className='sm:flex flex-col'>
               <div className='flex items-center mt-2 text-sm text-gray-500'>
                 <EyeIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
-                Pageviews:&nbsp;
+                {t('dashboard.pageviews')}
+                :
+                &nbsp;
                 <dd className='flex items-baseline'>
                   <p className='h-5 mr-1 text-gray-500'>
                     {overall?.thisWeek}
@@ -55,14 +58,14 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
                       <>
                         <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                         <span className='sr-only'>
-                          Increased by
+                          {t('dashboard.inc')}
                         </span>
                       </>
                     ) : (
                       <>
                         <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                         <span className='sr-only'>
-                          Descreased by
+                          {t('dashboard.dec')}
                         </span>
                       </>
                     )}
@@ -78,7 +81,13 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
             <div className='mt-2 flex items-center text-sm text-gray-500'>
               <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
               <p>
-                Created at <time dateTime={dayjs(created).format('YYYY-MM-DD')}>{dayjs(created).format('MMMM D, YYYY')}</time>
+                {t('dashboard.createdAt')}
+                &nbsp;
+                <time dateTime={dayjs(created).format('YYYY-MM-DD')}>
+                  {language === 'en'
+                    ? dayjs(created).locale(language).format('MMMM D, YYYY')
+                    : dayjs(created).locale(language).format('D MMMM, YYYY')}
+                </time>
               </p>
             </div>
           </div>
@@ -88,18 +97,19 @@ const ProjectCart = ({ name, url, created, active, overall }) => {
   )
 }
 
-const NoProjects = () => (
+const NoProjects = ({ t }) => (
   <div className='mt-5'>
     <h3 className='text-center'>
-      You have not yet created any projects
+      {t('dashboard.noProjects')}
     </h3>
     <p className='text-center'>
-      Create a new project here to start using our service
+      {t('dashboard.createProject')}
     </p>
   </div>
 )
 
 const Dashboard = ({ projects, isLoading, error, user }) => {
+  const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
 
@@ -113,7 +123,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
 
   if (error && !isLoading) {
     return (
-      <Title title='Dashboard'>
+      <Title title={t('titles.dashboard')}>
         <div className='flex justify-center pt-10'>
           <div className='rounded-md bg-red-50 p-4 w-11/12 lg:w-4/6'>
             <div className='flex'>
@@ -132,22 +142,33 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
 
   if (!isLoading) {
     return (
-      <Title title='Dashboard'>
+      <Title title={t('titles.dashboard')}>
         <div className='min-h-min-footer bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
           <div className='max-w-7xl w-full mx-auto'>
             <div className='flex justify-between'>
-              <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>Dashboard</h2>
+              <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+                {t('titles.dashboard')}
+              </h2>
               <span onClick={onNewProject} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
-                New project
+                {t('dashboard.newProject')}
               </span>
             </div>
             {_isEmpty(projects) ? (
-              <NoProjects />
+              <NoProjects t={t} />
             ) : (
               <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
                 <ul className='divide-y divide-gray-200'>
                   {_map(projects, ({ name, id, created, active, overall }) => (
-                    <ProjectCart key={id} name={name} created={created} active={active} overall={overall} url={routes.project.replace(':id', id)} />
+                    <ProjectCart
+                      key={id}
+                      t={t}
+                      language={language}
+                      name={name}
+                      created={created}
+                      active={active}
+                      overall={overall}
+                      url={routes.project.replace(':id', id)}
+                    />
                   ))}
                 </ul>
               </div>
@@ -157,10 +178,10 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
         <Modal
           onClose={() => setShowActivateEmailModal(false)}
           onSubmit={() => setShowActivateEmailModal(false)}
-          submitText='Got it'
-          title='Please, verify the email address first'
+          submitText={t('common.gotIt')}
+          title={t('dashboard.verifyEmailTitle')}
           type='info'
-          message={'To start using our service and creating your projects, you first need to confirm your email address.\n\nA link to confirm your account was sent to the email address you provided during registration, if it was not delivered - you can request the link again in your account settings.'}
+          message={t('dashboard.verifyEmailDesc')}
           isOpened={showActivateEmailModal}
         />
       </Title>
@@ -168,7 +189,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
   }
 
   return (
-    <Title title='Dashboard'>
+    <Title title={t('titles.dashboard')}>
       <div className='min-h-min-footer'>
         <Loader />
       </div>

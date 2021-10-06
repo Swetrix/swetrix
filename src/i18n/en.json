@@ -160,13 +160,27 @@
     "monthly": "Monthly",
     "never": "Never"
   },
+  "dashboard": {
+    "newProject": "New project",
+    "verifyEmailTitle": "Please, verify the email address first",
+    "verifyEmailDesc": "To start using our service and creating your projects, you first need to confirm your email address.\n\nA link to confirm your account was sent to the email address you provided during registration, if it was not delivered - you can request the link again in your account settings.",
+    "noProjects": "You have not yet created any projects",
+    "createProject": "Create a new project here to start using our service",
+    "active": "Active",
+    "disabled": "Disabled",
+    "pageviews": "Pageviews",
+    "createdAt": "Created at",
+    "inc": "Increased by",
+    "dec": "Descreased by"
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
     "signup": "Sign up",
     "verification": "Email verification",
     "profileSettings": "Profile settings",
-    "features": "Features"
+    "features": "Features",
+    "dashboard": "Dashboard"
   },
   "footer": {
     "slogan": "The best apps need the best services.",
