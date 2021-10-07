@@ -25,7 +25,7 @@ import { WebhookModule } from './webhook/webhook.module'
       username: process.env.MYSQL_USER,
       password: process.env.MYSQL_ROOT_PASSWORD,
       database: process.env.MYSQL_DATABASE,
-      synchronize: true,
+      synchronize: false,
       entities: [User, ActionToken, Project],
     }),
     ScheduleModule.forRoot(),
