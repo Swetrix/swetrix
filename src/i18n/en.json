@@ -160,7 +160,13 @@
     "qDelete": "Delete your account?",
     "weekly": "Weekly",
     "monthly": "Monthly",
-    "never": "Never"
+    "never": "Never",
+    "reportSent": "The GDPR data report has been sent to your email address.",
+    "tryAgainInXDays": "Please, try again later. You can request a GDPR Export only once per {{amount}} days.",
+    "updated": "Your account settings have been updated",
+    "confTimeout": "An email has already been sent, check your mailbox or try again in a few minutes",
+    "confSent": "An account confirmation link has been sent to your email",
+    "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service."
   },
   "dashboard": {
     "newProject": "New project",

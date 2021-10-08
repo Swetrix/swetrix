@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, {
+  useState, useEffect, memo,
+} from 'react'
 import { useSelector } from 'react-redux'
-import { useTranslation } from 'react-i18next'
 import _size from 'lodash/size'
 import _isEmpty from 'lodash/isEmpty'
 import _findIndex from 'lodash/findIndex'
@@ -17,8 +18,9 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 
-const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
-  const { t } = useTranslation('common')
+const UserSettings = ({
+  onDelete, onExport, onSubmit, onEmailConfirm, t,
+}) => {
   const { user } = useSelector(state => state.auth)
 
   const [form, setForm] = useState({
@@ -218,4 +220,4 @@ const UserSettings = ({ onDelete, onExport, onSubmit, onEmailConfirm }) => {
   )
 }
 
-export default UserSettings
+export default memo(UserSettings)
