@@ -27,6 +27,13 @@ i18next
     interpolation: {
       escapeValue: false,
     },
+    fallbackLng: 'en',
+    parseMissingKeyHandler: (key) => {
+      if (i18next.isInitialized) {
+        console.warn(`Missing translation for ${key}`)
+      }
+      return key
+    },
     whitelist,
     resources: {
       en: { common: en },
