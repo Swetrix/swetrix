@@ -1,5 +1,6 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { createNewPassword } from 'api'
 import { notAuthenticated } from '../../../hoc/protected'
@@ -7,11 +8,12 @@ import Title from 'components/Title'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import { isValidPassword } from 'utils/validator'
+import { isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
 
 const CreateNewPassword = ({
   createNewPasswordFailed, newPassword,
 }) => {
+  const { t } = useTranslation('common')
   const history = useHistory()
   const { id } = useParams()
   const [form, setForm] = useState({
@@ -34,7 +36,7 @@ const CreateNewPassword = ({
         const { password } = data
         await createNewPassword(id, password)
   
-        newPassword('Your password has been updated')
+        newPassword(t('auth.recovery.updated'))
         history.push(routes.signin)
       } catch (e) {
         createNewPasswordFailed(e.toString())
@@ -68,11 +70,11 @@ const CreateNewPassword = ({
     const allErrors = {}
 
     if (!isValidPassword(form.password)) {
-      allErrors.password = 'The password has to consist of at least 8 characters.'
+      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
     if (form.password !== form.repeat || form.repeat === '') {
-      allErrors.repeat = 'Passwords have to match.'
+      allErrors.repeat = t('auth.common.noMatchError')
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -82,20 +84,20 @@ const CreateNewPassword = ({
   }
 
   return (
-    <Title title='Account recovery'>
+    <Title title={t('titles.recovery')}>
       <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
-            Account recovery
-        </h2>
+            {t('auth.recovery.title')}
+          </h2>
           <Input
             name='password'
             id='password'
             type='password'
-            label='Your new password'
-            hint='Longer than 8 chars'
+            label={t('auth.recovery.newPassword')}
+            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
             value={form.password}
-            placeholder='Password'
+            placeholder={t('auth.common.password')}
             className='mt-4'
             onChange={handleInput}
             error={beenSubmitted && errors.password}
@@ -104,19 +106,19 @@ const CreateNewPassword = ({
             name='repeat'
             id='repeat'
             type='password'
-            label='Repeat password'
+            label={t('auth.common.repeat')}
             value={form.password}
-            placeholder='Password'
+            placeholder={t('auth.common.password')}
             className='mt-4'
             onChange={handleInput}
             error={beenSubmitted && errors.repeat}
           />
           <div className='flex justify-between mt-3'>
             <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800'>
-              Sign in instead
+              {t('auth.common.signinInstead')}
             </Link>
             <Button type='submit' loading={isLoading} primary large>
-              Save new password
+              {t('auth.recovery.save')}
             </Button>
           </div>
         </form>

@@ -1,0 +1,339 @@
+{
+  "common": {
+    "features": "Features",
+    "docs": "Docs",
+    "getStarted": "Get started",
+    "billing": "Billing",
+    "pricing": "Pricing",
+    "faqs": "FAQs",
+    "you": "You",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "save": "Save",
+    "continue": "Continue",
+    "error": "Error",
+    "close": "Close",
+    "cancel": "Cancel",
+    "gotIt": "Got it",
+    "settings": "Settings",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "main": {
+    "slogan": "A <span>powerful</span> analytics platform that respects <span>user privacy<span>",
+    "trackEveryMetric": "Track every metric you need without invading your users' privacy.",
+    "description": "Swetrix brings an advanced and customisable analytics service for your web applications.",
+    "signup": "Sign up, it's free!",
+    "signupTerms": "By signing up, you agree to our <tos>Terms and Conditions</tos> and <pp>Privacy Policy.</pp>",
+    "techDetails": "Want to know more technical details?",
+    "lookAtDocs": "Look at the documentation and features pages.",
+    "readyToStart": "Ready to get started?",
+    "exploreService": "Explore our service or create an account.",
+    "faq": {
+      "title": "Get some questions answered",
+      "list": [
+        {
+          "question": "Does Swetrix tracking require cookies?",
+          "answer": "No, it does not. Our analytics script is fully cookieless. You can use our service without the need to use a cookie notification on your website.\nWe are compliant with such regulations as GDPR, PECR, CCPA, ePrivacy and COPPA."
+        },
+        {
+          "question": "Do you use/share/sell the end users' data?",
+          "answer": "No, we do not. Also, all of the data we collect is anonymised. We do not store any data that would allow us to identify a specific user. We try to be as transparent and respectful of privacy as possible."
+        },
+        {
+          "question": "Do I have to pay for your service?",
+          "answer": "We provide free accounts as well as paid accounts. Most of the features of the paid account are included in the free account, as well as more events per month. You can upgrade or downgrade your account subscription at any time."
+        },
+        {
+          "question": "Is my data secure?",
+          "answer": "We adhere to all standards regarding the security of data storage and processing. All data is securely stored, cannot be accessed by third parties and all communication is always through encrypted channels (HTTPS)."
+        }
+      ]
+    },
+    "features": [
+      {
+        "name": "Simple yet powerful",
+        "description": "View all your analytics in a straightforward way. Say no more to confusing reports, metrics and notifications."
+      },
+      {
+        "name": "Open source",
+        "description": "Our tracking script is open sourced and available for everybody to explore. We only track data that we declare."
+      },
+      {
+        "name": "Full event tracking",
+        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
+      },
+      {
+        "name": "No cookie banners needed",
+        "description": "We are not doing do targeted advertising or profiling and we do not rely on tracking cookies at all. Our business model is to sell software, not data."
+      },
+      {
+        "name": "We are fast",
+        "description": "We use global CDN for serving our applications and our analytics script loads times faster than the competitors."
+      },
+      {
+        "name": "Compare, explore and enjoy the data",
+        "description": "You can view data by selected categories and also correlate statistics, such as separating unique users from regular page views."
+      }
+    ],
+    "custSupport": "Could not find the answer you’re looking for? Reach out to our <mail>customer support</mail> team.",
+    "whyUs": "Why us"
+  },
+  "auth": {
+    "recovery": {
+      "title": "Account recovery",
+      "save": "Save new password",
+      "newPassword": "Your new password",
+      "updated": "Your password has been updated"
+    },
+    "forgot": {
+      "sent": "A password reset e-mail has been sent to the specified address",
+      "reset": "Reset password"
+    },
+    "signin": {
+      "title": "Sign in to your account",
+      "forgot": "Forgot password?",
+      "button": "Sign in"
+    },
+    "signup": {
+      "button": "Sign up",
+      "tos": "I do accept <tos>Terms and Conditions</tos> and the <pp>Privacy Policy</pp>.",
+      "email": "Email address",
+      "create": "Create your account"
+    },
+    "verification": {
+      "success": "Your email has been successfully verified!"
+    },
+    "common": {
+      "signinInstead": "Sign in instead",
+      "signupInstead": "Sign up instead",
+      "password": "Password",
+      "noRemember": "Don't remember me.",
+      "repeat": "Repeat password",
+      "hint": "Longer than {{amount}} chars",
+      "xCharsError": "The password has to consist of at least {{amount}} characters.",
+      "noMatchError": "Passwords have to match.",
+      "badEmailError": "Please provide a valid email.",
+      "tosError": "You have to accept our TOS and privacy policy in order to use our services.",
+      "email": "Email",
+      "signin": "Sign in"
+    }
+  },
+  "features": {
+    "feature1Name": "Transparency",
+    "feature1Content": "At Swetrix, we believe that everyone has a right to privacy and transparency, especially when it comes to analytics.\nWe do not collect more information than we <docs>claim</docs>, all data is stored on servers physically located in the European Union and our analytics script is publicly available and accessible to all on our <gh>Github</gh>.",
+    "ready": "Ready to get to know your users?",
+    "start": "Start using Swetrix today.",
+    "list": [
+      {
+        "name": "Simplicity",
+        "content": "When we created our service we tried to make it as simple and flexible as possible.\nNo more confusing metrics and complicated dashboards - with us you can have control over all your projects and data in a simple and straightforward way."
+      },
+      {
+        "name": "Page Views Tracking",
+        "content": "Swetrix offers the ability to track page views, including unique views as well as user flow.\nAll views include a wide range of data, such as user country, locale, device type, page load time, and more.\nWe do not use cookies or any other type of user profiling to collect data. All incoming data is anonymised, ensuring that users cannot be tracked down in any way based on this."
+      },
+      {
+        "name": "Custom Events Tracking",
+        "content": "In addition to tracking page views, we also offer the ability to track сustom events.\nYou can track any event, such as button clicks, registrations or authorisations.\nAll of this is also completely private to the user, as we don't store any other information about them along with the events.\nYou can read more about custom events in our documentation."
+      },
+      {
+        "name": "Speed",
+        "content": "We are fast. Our analytics script is as optimised as possible and uses CDNs for its delivery, which ensures that the script won't slow down your sites."
+      },
+      {
+        "name": "Trust",
+        "content": "We are a small business, not a big corporation.\nWe are interested in creating a good and quality product that will be used by satisfied customers, not in squeezing as much money as possible from our users or selling your personal data."
+      }
+    ]
+  },
+  "profileSettings": {
+    "general": "General settings",
+    "update": "Update profile",
+    "email": "Email reports",
+    "frequency": "How often should we send you an email summary about your websites?",
+    "noLink": "Didn't receive a link to confirm the email address? Request a new one!",
+    "requestExport": "Request data export",
+    "delete": "Delete account",
+    "deactivateConfirmation": "Are you sure you want to deactivate your account?\nAll of your data will be permanently removed from our servers forever.\nThis action cannot be undone.",
+    "exportConfirmation": "As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store. This report does not include events data per project.\nThe data report will be sent to your email address.\nNote: you can request the data export only once per two weeks.",
+    "dataExport": "Data export",
+    "aDelete": "Delete my account",
+    "qDelete": "Delete your account?",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "never": "Never",
+    "reportSent": "The GDPR data report has been sent to your email address.",
+    "tryAgainInXDays": "Please, try again later. You can request a GDPR Export only once per {{amount}} days.",
+    "updated": "Your account settings have been updated",
+    "confTimeout": "An email has already been sent, check your mailbox or try again in a few minutes",
+    "confSent": "An account confirmation link has been sent to your email",
+    "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service."
+  },
+  "dashboard": {
+    "newProject": "New project",
+    "verifyEmailTitle": "Please, verify the email address first",
+    "verifyEmailDesc": "To start using our service and creating your projects, you first need to confirm your email address.\n\nA link to confirm your account was sent to the email address you provided during registration, if it was not delivered - you can request the link again in your account settings.",
+    "noProjects": "You have not yet created any projects",
+    "createProject": "Create a new project here to start using our service",
+    "active": "Active",
+    "disabled": "Disabled",
+    "pageviews": "Pageviews",
+    "unique": "Unique views",
+    "createdAt": "Created at",
+    "inc": "Increased by",
+    "dec": "Descreased by"
+  },
+  "docs": {
+    "titles": {
+      "start": "Getting Started",
+      "umd": "UMD Build",
+      "npm": "NPM Package",
+      "how": "How to..",
+      "pv": "Track pageviews",
+      "ce": "Track custom events",
+      "api": "API"
+    },
+    "install": "You can also install the tracking script with NPM or Yarn",
+    "import": "Next you should import module into your project's root, for example",
+    "track": "After you can track anything you want.\nRead the detailed documentation on tracking params below.",
+    "pv": "Swetrix.js tracking script provides a way to collect a page view event once the page has loaded.\nThis can be accomplished via calling the <link>trackViews()</link> function:",
+    "ce": "In addition to tracking pageviews we provide an ability to track custom events.\nFor example, if you want to track an event like 'Sign up' or 'Newsletter subscription', this feature would be very useful.\nUnder the screen, the principle of this function is similar to trackViews.",
+    "init": "This fuction is used to initialise the analytics.\nBasically you're letting the script know which project do you want to use it with, as well as specifying your custom parameters if needed.",
+    "tr": "With this function you are able to track any custom events you want.\nYou should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.\nThe total number of track calls and their conversion rate will be saved.",
+    "tv": {
+      "call": "Calling trackViews will result in sending the data about the user to our servers.\nSuch data will include the next params if available:\n",
+      "gather": "On the server side we also gather users IP Address and User Agent.\nThis data is used to detect whether the page view is unique or not.\n<b>We DO NOT store neither IP Address nor User Agent as a raw strings</b>, such data is stored as a salted hash for no longer than 30 minutes or 12:00 AM UTC, whatever happens first.\nAfter this timeframe the identifiable data is forever deleted from our servers.",
+      "params": {
+        "pid": "the unique Project ID request is related to.",
+        "lc": "users locale (e.g. en_US or uk_UA).",
+        "tz": "users timezone (e.g. Europe/Helsinki).",
+        "ref": "the URL of the previous webpage from which a page was opened.",
+        "so": "the page source ('ref' | 'source' | 'utm_source' GET param).",
+        "me": "UTM medium ('utm_medium' GET param).",
+        "ca": "UTM campaign ('utm_campaign' GET param).",
+        "pg": "the page user currently views (e.g. /hello)."
+      }
+    },
+    "contents": "Contents"
+  },
+  "project": {
+    "noExist": "The selected project does not exist",
+    "exportImg": "Export as image",
+    "noEvTitle": "No events yet",
+    "noEvContent": "No events have been captured for the specified timeframe.\nIf you haven't tracked any events yet, you can check out our <link>Docs</link> to easily integrate tracking into your app.",
+    "mapping": {
+      "cc": "Country",
+      "pg": "Page",
+      "lc": "Locale",
+      "ref": "Referrer",
+      "dv": "Device type",
+      "br": "Browser",
+      "os": "OS name",
+      "lt": "Load time"
+    },
+    "overview": "Overview",
+    "weeklyStats": "Weekly stats",
+    "statsFor": "Stats for",
+    "event": "Event",
+    "quantity": "Quantity",
+    "conversion": "Conversion",
+    "customEv": "Custom events",
+    "noParamData": "No data for this parameter yet",
+    "prev": "Previous",
+    "next": "Next",
+    "unique": "Unique visitors",
+    "total": "Total page views",
+    "today": "Today",
+    "lastXDays": "Last {{amount}} days",
+    "lastXWeeks": "Last {{amount}} weeks",
+    "lastXMonths": "Last {{amount}} months",
+    "hour": "Hour",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "settings": {
+      "verify": "Please, verify your email address first",
+      "updated": "The project's settings were updated",
+      "created": "The project has been created",
+      "pxCharsError": "Project name cannot be longer than {{amount}} characters.",
+      "oxCharsError": "A list of allowed origins has to be smaller than {{amount}} symbols.",
+      "noNameError": "Please enter a project name.",
+      "create": "Create a new project",
+      "settings": "Settings of",
+      "name": "Project name",
+      "pid": "Project ID",
+      "origins": "Allowed origins",
+      "originsHint": "A list of allowed origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua",
+      "enabled": "Is project enabled",
+      "enabledHint": "Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project's analytics in dashboard.",
+      "createHint": "*you will be able to set up your project more thoroughly after you have created it",
+      "delete": "Delete project",
+      "qDelete": "Delete the project?",
+      "deleteHint": "By pressing 'Delete project' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers."
+    }
+  },
+  "billing": {
+    "title": "Billing & Plans",
+    "desc": "It is free to get started and use our services.\nIf you need to handle more traffic, you probably need to upgrade your plan.\nBelow is a list of available plans. No hidden fees or other BS, everything is clear and transparent!",
+    "contact": "Need to track more than 1 million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs."
+  },
+  "pricing": {
+    "title": "Pricing Plans",
+    "adv": "Start out for free, no credit card needed.\nWhen your business grows, you can upgrade your plan at any time.",
+    "currentPlan": "Current plan",
+    "free": "Free",
+    "perMonth": "mo",
+    "yourPlan": "Your plan",
+    "downgrade": "Downgrade",
+    "upgrade": "Upgrade",
+    "whatIncl": "What's included",
+    "tiers": {
+      "hobby": "Hobby",
+      "freelancer": "Freelancer",
+      "startup": "Startup",
+      "enterprise": "Enterprise",
+      "upToXEVMo": "Up to {{amount}} events per month.",
+      "xEvMo": "{{amount}} events per month.",
+      "upToXProjects": "Create up to {{amount}} projects.",
+      "xMoDataRetention": "{{amount}} months of data retention.",
+      "highStandardSec": "High standard security.",
+      "evXPlanIncl": "Everything {{plan}} plan includes.",
+      "smallBusiSupport": "By buying this in you are supporting a small business.",
+      "carbonRemoval": "Your subscription contributes to carbon removal."
+    }
+  },
+  "titles": {
+    "recovery": "Account recovery",
+    "signin": "Sign in",
+    "signup": "Sign up",
+    "verification": "Email verification",
+    "profileSettings": "Profile settings",
+    "features": "Features",
+    "dashboard": "Dashboard",
+    "docs": "Documentation",
+    "billing": "Billing"
+  },
+  "footer": {
+    "slogan": "The best apps need the best services.",
+    "description": "Swetrix is a powerful analytics platform that respects user privacy.",
+    "madeIn": "Made in",
+    "hostedIn": "Hosted in the",
+    "ukraine": "Ukraine",
+    "eu": "European Union",
+    "support": "Support",
+    "company": "Company",
+    "legal": "Legal",
+    "copy": "Swetrix Analytics. All rights reserved.",
+    "about": "About",
+    "pp": "Privacy Policy",
+    "tos": "Terms of Service",
+    "blog": "Blog",
+    "billing": "Billing",
+    "pricing": "Pricing",
+    "docs": "Documentation",
+    "guides": "Guides",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  }
+}

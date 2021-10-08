@@ -14,57 +14,58 @@ import { errorsActions } from 'redux/actions/errors'
 import { upgradePlan } from 'api'
 import routes from 'routes'
 
-const tiers = [
+const getTiers = (t) => [
   {
-    name: 'Hobby',
+    name: t('pricing.tiers.hobby'),
     planCode: 'free',
     priceMonthly: null,
     includedFeatures: [
-      'Up to 3000 events per month.',
-      'Create up to 5 projects.',
-      '3 months of data retention.',
-      'High standard security.',
+      t('pricing.tiers.upToXEVMo', { amount: 3000 }),
+      t('pricing.tiers.upToXProjects', { amount: 5 }),
+      t('pricing.tiers.xMoDataRetention', { amount: 3 }),
+      t('pricing.tiers.highStandardSec'),
     ],
   },
   {
-    name: 'Freelancer',
+    name: t('pricing.tiers.freelancer'),
     planCode: 'freelancer',
     priceMonthly: 24,
     includedFeatures: [
-      'Everything \'Hobby\' plan includes.',
-      '100k events per month.',
-      'Create up to 10 projects.',
-      '12 months of data retention.',
-      'By buying this in you are supporting a small business.',
-      'Your subscription contributes to carbon removal.',
+      t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
+      t('pricing.tiers.xEvMo', { amount: '100k' }),
+      t('pricing.tiers.upToXProjects', { amount: 10 }),
+      t('pricing.tiers.xMoDataRetention', { amount: 12 }),
+      t('pricing.tiers.smallBusiSupport'),
+      t('pricing.tiers.carbonRemoval'),
     ],
   },
   {
-    name: 'Startup',
+    name: t('pricing.tiers.startup'),
     planCode: 'startup',
     priceMonthly: 72,
     includedFeatures: [
-      'Everything \'Freelancer\' plan includes.',
-      '500k events per month.',
-      '12 months of data retention.',
+      t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
+      t('pricing.tiers.xEvMo', { amount: '500k' }),
+      t('pricing.tiers.xMoDataRetention', { amount: 12 }),
     ],
   },
   {
-    name: 'Enterprise',
+    name: t('pricing.tiers.enterprise'),
     planCode: 'enterprise',
     priceMonthly: 110,
     includedFeatures: [
-      'Everything \'Startup\' plan includes.',
-      '1m events per month.',
-      '24 months of data retention.',
+      t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.startup') }),
+      t('pricing.tiers.xEvMo', { amount: '1m' }),
+      t('pricing.tiers.xMoDataRetention', { amount: 24 }),
     ],
   },
 ]
 
-const Pricing = () => {
+const Pricing = ({ t }) => {
   const dispatch = useDispatch()
   const { authenticated, user } = useSelector(state => state.auth)
   const [planCodeLoading, setPlanCodeLoading] = useState(null)
+  const tiers = getTiers(t)
 
   const onPlanChange = async (planCode) => {
     if (planCodeLoading === null && user.planCode !== planCode) {
@@ -73,7 +74,7 @@ const Pricing = () => {
         const { data: { url } } = await upgradePlan(planCode)
 
         if (_isEmpty(url)) {
-          dispatch('Payment error: No Stripe URL was provided')
+          console.error('[ERROR] Payment error: No Stripe URL was provided')
         } else {
           window.location.href = url
         }
@@ -91,14 +92,15 @@ const Pricing = () => {
 
   return (
     <div id='pricing' className={cx({ 'bg-white': !authenticated })}>
-      <div className={cx('w-11/12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8', { 'py-24': !authenticated })}>
+      <div className={cx('w-11/12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 whitespace-pre-line', { 'py-24': !authenticated })}>
         <div className='sm:flex sm:flex-col sm:align-center'>
           {!authenticated && (
             <>
-              <h1 className='text-3xl font-extrabold text-gray-900 sm:text-center'>Pricing Plans</h1>
+              <h1 className='text-3xl font-extrabold text-gray-900 sm:text-center'>
+                {t('pricing.title')}
+              </h1>
               <p className='mt-5 text-xl text-gray-500 sm:text-center'>
-                Start out for free, no credit card needed.<br />
-                When your business grows, you can upgrade your plan at any time.
+                {t('pricing.adv')}
               </p>
             </>
           )}
@@ -130,7 +132,7 @@ const Pricing = () => {
                   <div className='absolute inset-x-0 top-0 transform translate-y-px'>
                     <div className='flex justify-center transform -translate-y-1/2'>
                       <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider uppercase text-white'>
-                        Current plan
+                        {t('pricing.currentPlan')}
                       </span>
                     </div>
                   </div>
@@ -139,11 +141,19 @@ const Pricing = () => {
                   <h2 className='text-lg leading-6 font-medium text-gray-900'>{tier.name}</h2>
                   <p className='mt-4'>
                     {_isNil(tier.priceMonthly) ? (
-                      <span className='text-4xl font-extrabold text-gray-900'>Free</span>
+                      <span className='text-4xl font-extrabold text-gray-900'>
+                        {t('pricing.free')}
+                      </span>
                     ) : (
                       <>
-                        <span className='text-4xl font-extrabold text-gray-900'>${tier.priceMonthly}</span>{' '}
-                        <span className='text-base font-medium text-gray-500'>/mo</span>
+                        <span className='text-4xl font-extrabold text-gray-900'>
+                          ${tier.priceMonthly}
+                        </span>
+                        &nbsp;
+                        <span className='text-base font-medium text-gray-500'>
+                          /
+                          {t('pricing.perMonth')}
+                        </span>
                       </>
                     )}
                   </p>
@@ -158,14 +168,14 @@ const Pricing = () => {
                         {planCodeLoading === tier.planCode && (
                           <Spin />
                         )}
-                        {tier.planCode === user.planCode ? 'Your plan' : 'Downgrade'}
+                        {tier.planCode === user.planCode ? t('pricing.yourPlan') : t('pricing.downgrade')}
                       </span>
                     ) : (
                       <Link
                         className='inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none bg-indigo-600 hover:bg-indigo-700'
                         to={routes.signup}
                       >
-                        Get started
+                        {t('common.getStarted')}
                       </Link>
                     )
                   ) : authenticated ? (
@@ -179,19 +189,21 @@ const Pricing = () => {
                       {planCodeLoading === tier.planCode && (
                         <Spin />
                       )}
-                      {planCodeID > userPlancodeID ? 'Upgrade' : planCodeID < userPlancodeID ? 'Downgrade' : 'Your plan'}
+                      {planCodeID > userPlancodeID ? t('pricing.upgrade') : planCodeID < userPlancodeID ? t('pricing.downgrade') : t('pricing.yourPlan')}
                     </span>
                   ) : (
                     <Link
                       className='mt-8 block w-full bg-indigo-600 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
                       to={routes.signup}
                     >
-                      Upgrade
+                      {t('pricing.upgrade')}
                     </Link>
                   )}
                 </div>
                 <div className='pt-6 pb-8 px-6'>
-                  <h3 className='text-xs font-medium text-gray-900 tracking-wide uppercase'>What's included</h3>
+                  <h3 className='text-xs font-medium text-gray-900 tracking-wide uppercase'>
+                    {t('pricing.whatIncl')}
+                  </h3>
                   <ul className='mt-6 space-y-4'>
                     {_map(tier.includedFeatures, (feature) => (
                       <li key={feature} className='flex space-x-3'>

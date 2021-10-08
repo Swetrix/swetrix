@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _isNull from 'lodash/isNull'
@@ -20,6 +21,7 @@ import UserSettings from './UserSettings'
 dayjs.extend(utc)
 
 const UserSettingsContainer = () => {
+  const { t } = useTranslation('common')
   const dispatch = useDispatch()
   const history = useHistory()
 
@@ -37,12 +39,12 @@ const UserSettingsContainer = () => {
   const onExport = async (exportedAt) => {
     try {
       if (getCookie(GDPR_REQUEST) || (!_isNull(exportedAt) && !dayjs().isAfter(dayjs.utc(exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'), 'day'))) {
-        dispatch(errorsActions.GDPRExportFailed(`Please, try again later. You can request a GDPR Export only once per ${GDPR_EXPORT_TIMEFRAME} days.`))
+        dispatch(errorsActions.GDPRExportFailed(t('profileSettings.tryAgainInXDays', { amount: GDPR_EXPORT_TIMEFRAME })))
         return
       }
       await exportUserData()
 
-      dispatch(alertsActions.accountUpdated('The GDPR data report has been sent to your email address.'))
+      dispatch(alertsActions.accountUpdated(t('profileSettings.reportSent')))
       setCookie(GDPR_REQUEST, true, 1209600) // setting cookie for 14 days
     } catch (e) {
       dispatch(errorsActions.updateProfileFailed(e))
@@ -61,7 +63,7 @@ const UserSettingsContainer = () => {
       authActions.updateUserProfileAsync(
         data,
         () => dispatch(
-          alertsActions.accountUpdated('Your account settings have been updated!')
+          alertsActions.accountUpdated(t('profileSettings.updated'))
         )
       )
     );
@@ -69,7 +71,7 @@ const UserSettingsContainer = () => {
 
   const onEmailConfirm = async (errorCallback) => {
     if (getCookie(CONFIRMATION_TIMEOUT)) {
-      dispatch(errorsActions.updateProfileFailed('An email has already been sent, check your mailbox or try again in a few minutes'))
+      dispatch(errorsActions.updateProfileFailed(t('profileSettings.confTimeout')))
       return
     }
 
@@ -78,9 +80,9 @@ const UserSettingsContainer = () => {
 
       if (res) {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
-        dispatch(alertsActions.accountUpdated('An account confirmation link has been sent to your email'))
+        dispatch(alertsActions.accountUpdated(t('profileSettings.confSent')))
       } else {
-        errorCallback('Unfortunately, you\'ve ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service.')
+        errorCallback(t('profileSettings.noConfLeft'))
       }
     } catch (e) {
       dispatch(errorsActions.updateProfileFailed(e))
@@ -89,6 +91,7 @@ const UserSettingsContainer = () => {
 
   return (
     <UserSettings
+      t={t}
       onDelete={onDelete}
       onExport={onExport}
       onSubmit={onSubmit}

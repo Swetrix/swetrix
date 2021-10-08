@@ -6,6 +6,8 @@ import { useAlert } from 'react-alert'
 import cx from 'classnames'
 import _some from 'lodash/some'
 import _includes from 'lodash/includes'
+import 'dayjs/locale/ru'
+import 'dayjs/locale/uk'
 
 import Header from 'components/Header'
 import Footer from 'components/Footer'

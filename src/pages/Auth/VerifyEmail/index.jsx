@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon } from '@heroicons/react/solid'
 import { XCircleIcon } from '@heroicons/react/solid'
 
@@ -9,6 +10,7 @@ import { authActions } from 'redux/actions/auth'
 import Loader from 'ui/Loader'
 
 const VerifyEmail = () => {
+  const { t } = useTranslation('common')
   const dispatch = useDispatch()
   const { id } = useParams()
   const [loading, setLoading] = useState(true)
@@ -29,7 +31,7 @@ const VerifyEmail = () => {
 
   if (loading) {
     return (
-      <Title title='Email verification'>
+      <Title title={t('titles.verification')}>
         <Loader />
       </Title>
     )
@@ -37,7 +39,7 @@ const VerifyEmail = () => {
 
   if (error) {
     return (
-      <Title title='Email verification'>
+      <Title title={t('titles.verification')}>
         <div className='min-h-page'>
           <div className='flex justify-center pt-10'>
             <div className='rounded-md p-4 w-11/12 bg-red-50 lg:w-4/6'>
@@ -67,7 +69,7 @@ const VerifyEmail = () => {
               </div>
               <div className='ml-3'>
                 <h3 className='text-sm font-medium text-green-800'>
-                  Your email has been successfully verified!
+                  {t('auth.verification.success')}
                 </h3>
               </div>
             </div>

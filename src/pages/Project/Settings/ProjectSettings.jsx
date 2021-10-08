@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useLocation, useHistory, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
@@ -18,10 +19,14 @@ import Modal from 'ui/Modal'
 import { nanoid } from 'utils/random'
 import routes from 'routes'
 
+const MAX_NAME_LENGTH = 50
+const MAX_ORIGINS_LENGTH = 300
+
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user,
 }) => {
+  const { t } = useTranslation('common')
   const { pathname } = useLocation()
   const { id } = useParams()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
@@ -41,13 +46,13 @@ const ProjectSettings = ({
 
   useEffect(() => {
     if (!user.isActive) {
-      showError('Please, verify your email address first')
+      showError(t('project.settings.verify'))
       history.push(routes.dashboard)
     }
 
     if (!isLoading && isSettings && !projectDeleting) {
       if (_isEmpty(project)) {
-        showError('The selected project does not exist')
+        showError(t('project.noExist'))
         history.push(routes.dashboard)
       } else {
         setForm({
@@ -56,7 +61,7 @@ const ProjectSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, history, showError, projectDeleting])
+  }, [user, project, isLoading, isSettings, history, showError, projectDeleting, t])
 
   const onSubmit = async (data) => {
     if (!projectSaving) {
@@ -69,10 +74,10 @@ const ProjectSettings = ({
 
         if (isSettings) {
           await updateProject(id, formalisedData)
-          newProject('The project\'s settings were updated')
+          newProject(t('project.settings.updated'))
         } else {
           await createProject(formalisedData)
-          newProject('The project has been created')
+          newProject(t('project.settings.created'))
         }
 
         loadProjects()
@@ -134,15 +139,15 @@ const ProjectSettings = ({
     const allErrors = {}
 
     if (_isEmpty(form.name)) {
-      allErrors.name = 'Please enter a project name.'
+      allErrors.name = t('project.settings.noNameError')
     }
 
-    if (_size(form.name) > 50) {
-      allErrors.name = 'Project name cannot be longer than 50 characters.'
+    if (_size(form.name) > MAX_NAME_LENGTH) {
+      allErrors.name = t('project.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
     }
 
-    if (_size(form.origins) > 300) {
-      allErrors.origins = 'A list of allowed origins has to be smaller than 300 symbols'
+    if (_size(form.origins) > MAX_ORIGINS_LENGTH) {
+      allErrors.origins = t('project.settings.oxCharsError', { amount: MAX_ORIGINS_LENGTH })
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -155,7 +160,7 @@ const ProjectSettings = ({
     history.push(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
   }
 
-  const title = isSettings ? `${form.name} settings` : 'Create a new project'
+  const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
 
   return (
     <Title title={title}>
@@ -168,7 +173,7 @@ const ProjectSettings = ({
             name='name'
             id='name'
             type='text'
-            label='Project name'
+            label={t('project.settings.name')}
             value={form.name}
             placeholder='My awesome project'
             className='mt-4'
@@ -179,7 +184,7 @@ const ProjectSettings = ({
             name='id'
             id='id'
             type='text'
-            label='Project ID'
+            label={t('project.settings.pid')}
             value={form.id}
             className='mt-4'
             onChange={handleInput}
@@ -192,8 +197,8 @@ const ProjectSettings = ({
                 name='origins'
                 id='origins'
                 type='text'
-                label='Allowed origins'
-                hint={'A list of allowed origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua'}
+                label={t('project.settings.origins')}
+                hint={t('project.settings.originsHint')}
                 value={form.origins}
                 className='mt-4'
                 onChange={handleInput}
@@ -205,25 +210,27 @@ const ProjectSettings = ({
                 name='active'
                 id='active'
                 className='mt-4'
-                label='Is project enabled'
-                hint={'Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project\'s analytics in dashboard.'}
+                label={t('project.settings.enabled')}
+                hint={t('project.settings.enabledHint')}
               />
             </>
           ) : (
-            <p className='text-gray-500 italic mt-2 text-sm'>*you will be able to set up your project more thoroughly after you have created it</p>
+            <p className='text-gray-500 italic mt-2 text-sm'>
+              {t('project.settings.createHint')}
+            </p>
           )}
           <div className='flex justify-between mt-4'>
             <div>
               <Button className='mr-2' onClick={onCancel} secondary regular>
-                Cancel
-          </Button>
+                {t('common.cancel')}
+              </Button>
               <Button type='submit' loading={projectSaving} primary regular>
-                Save
-          </Button>
+                {t('common.save')}
+              </Button>
             </div>
             {isSettings && (
               <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger large>
-                Delete project
+                {t('project.settings.delete')}
               </Button>
             )}
           </div>
@@ -232,10 +239,10 @@ const ProjectSettings = ({
         <Modal
           onClose={() => setShowDelete(false)}
           onSubmit={onDelete}
-          submitText='Delete project'
-          closeText='Close'
-          title={`Delete ${form.name || 'the project'}?`}
-          message={'By pressing \'Delete project\' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers.'}
+          submitText={t('project.settings.delete')}
+          closeText={t('common.close')}
+          title={t('project.settings.qDelete')}
+          message={t('project.settings.deleteHint')}
           submitType='danger'
           type='error'
           isOpened={showDelete}

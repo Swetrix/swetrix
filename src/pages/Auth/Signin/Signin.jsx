@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 
 import Title from 'components/Title'
 import { notAuthenticated } from '../../../hoc/protected'
@@ -8,9 +9,12 @@ import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
-import { isValidEmail, isValidPassword } from 'utils/validator'
+import {
+  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
+} from 'utils/validator'
 
 const Signin = ({ login }) => {
+  const { t } = useTranslation('common')
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -58,11 +62,11 @@ const Signin = ({ login }) => {
     const allErrors = {}
 
     if (!isValidEmail(form.email)) {
-      allErrors.email = 'Please provide a valid email.'
+      allErrors.email = t('auth.common.badEmailError')
     }
 
     if (!isValidPassword(form.password)) {
-      allErrors.password = 'The password has to consist of at least 8 characters.'
+      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -72,17 +76,17 @@ const Signin = ({ login }) => {
   }
 
   return (
-    <Title title='Sign in'>
+    <Title title={t('titles.signin')}>
       <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
-            Sign in to your account
+            {t('auth.signin.title')}
           </h2>
           <Input
             name='email'
             id='email'
             type='email'
-            label='Email'
+            label={t('auth.common.email')}
             value={form.email}
             placeholder='you@example.com'
             className='mt-4'
@@ -93,10 +97,10 @@ const Signin = ({ login }) => {
             name='password'
             id='password'
             type='password'
-            label='Password'
-            hint='Longer than 8 chars'
+            label={t('auth.common.password')}
+            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
             value={form.password}
-            placeholder='Password'
+            placeholder={t('auth.common.password')}
             className='mt-4'
             onChange={handleInput}
             error={beenSubmitted && errors.password}
@@ -107,20 +111,20 @@ const Signin = ({ login }) => {
             name='keep_signedin'
             id='keep_signedin'
             className='mt-4'
-            label={'Don\'t remember me.'}
+            label={t('auth.common.noRemember')}
           />
           <div className='flex justify-between mt-3'>
             <div className='pt-1'>
               <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800'>
-                Forgot password?
+                {t('auth.signin.forgot')}
               </Link>
               <span>&nbsp;|&nbsp;</span>
               <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800'>
-                Sign up instead
+                {t('auth.common.signupInstead')}
               </Link>
             </div>
             <Button type='submit' loading={isLoading} primary large>
-              Sign in
+              {t('auth.signin.button')}
             </Button>
           </div>
         </form>
