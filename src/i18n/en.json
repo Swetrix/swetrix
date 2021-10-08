@@ -15,7 +15,9 @@
     "close": "Close",
     "cancel": "Cancel",
     "gotIt": "Got it",
-    "settings": "Settings"
+    "settings": "Settings",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "main": {
     "slogan": "A <span>powerful</span> analytics platform that respects <span>user privacy<span>",
