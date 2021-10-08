@@ -108,7 +108,7 @@ const BasicSignup = () => {
         onChange={handleInput}
         error={beenSubmitted && errors.repeat}
       />
-      <Button className='w-full flex justify-center' type='submit' loading={isLoading} primary large>
+      <Button className='w-full flex justify-center' type='submit' loading={isLoading} primary giant>
         {t('auth.signup.create')}
       </Button>
     </form>
