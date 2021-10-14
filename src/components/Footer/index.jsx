@@ -8,6 +8,8 @@ import PropTypes from 'prop-types'
 
 import routes from 'routes'
 
+const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
+
 const navigation = {
   support: [
     (authenticated) => (authenticated ? { key: 'billing', href: routes.billing } : { key: 'pricing', href: `${routes.main}#pricing` }),
@@ -16,7 +18,7 @@ const navigation = {
   ],
   company: [
     { key: 'about', href: '#' },
-    { key: 'blog', href: '#' },
+    { key: 'status', href: STATUSPAGE_URL },
   ],
   legal: [
     { key: 'privacy', href: routes.privacy },
@@ -69,8 +71,8 @@ const Footer = ({ minimal, authenticated }) => {
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <a href='#/' className='text-base text-gray-300 hover:text-white'>
-                {t('footer.blog')}
+              <a href={STATUSPAGE_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer'>
+                {t('footer.status')}
               </a>
             </div>
           </nav>
@@ -155,9 +157,9 @@ const Footer = ({ minimal, authenticated }) => {
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.company, ({ key, href }) => (
                     <li key={key}>
-                      <Link to={href} className='text-base text-gray-300 hover:text-white'>
+                      <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer'>
                         {t(`footer.${key}`)}
-                      </Link>
+                      </a>
                     </li>
                   ))}
                 </ul>
