@@ -14,6 +14,7 @@ import { ActionTokensModule } from './action-tokens/action-tokens.module'
 import { ActionToken } from './action-tokens/action-token.entity'
 import { TaskManagerModule } from './task-manager/task-manager.module'
 import { WebhookModule } from './webhook/webhook.module'
+import { PingModule } from './ping/ping.module'
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { WebhookModule } from './webhook/webhook.module'
     ProjectModule,
     AnalyticsModule,
     WebhookModule,
+    PingModule,
   ],
 })
 
