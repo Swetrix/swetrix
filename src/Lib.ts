@@ -37,18 +37,21 @@ export interface PageViewsOptions {
   // If true, only unique events will be saved
   // This param is useful when tracking single-page landing websites
   unique?: boolean
+
+  // A list of Regular Expressions or string pathes to ignore
+  ignore?: Array<any>
 }
 
 const host = 'https://api.swetrix.com/log'
 
 export class Lib {
   private pageData: PageData | null = null
+  private pageViewsOptions: PageViewsOptions | null | undefined = null
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
   }
 
-  // Tracks a custom event
   track(event: TrackEventOptions) {
     if (!this.canTrack()) {
       return
@@ -61,15 +64,16 @@ export class Lib {
     this.submitCustom(data)
   }
 
-  // Tracks page views
   trackPageViews(options?: PageViewsOptions) {
     if (!this.canTrack()) {
       return
     }
+
     if (this.pageData) {
       return this.pageData.actions
     }
 
+    this.pageViewsOptions = options
     let interval: NodeJS.Timeout
     if (!options?.unique) {
       interval = setInterval(this.trackPathChange, 2000)
@@ -88,6 +92,18 @@ export class Lib {
     return this.pageData.actions
   }
 
+  private checkIgnore(path: string): boolean {
+    const ignore = this.pageViewsOptions?.ignore
+
+    if (Array.isArray(ignore)) {
+      for (let i = 0; i < ignore.length; ++i) {
+        if (ignore[i] === path) return true
+        if (ignore[i] instanceof RegExp && ignore[i].test(path)) return true
+      }
+    }
+    return false
+  }
+
   // Tracking path changes. If path changes -> calling this.trackPage method
   private trackPathChange() {
     if (!this.pageData) return
@@ -102,6 +118,8 @@ export class Lib {
   private trackPage(pg: string, unique: boolean = false) {
     if (!this.pageData) return
     this.pageData.path = pg
+
+    if (this.checkIgnore(pg)) return
 
     const data = {
       pid: this.projectID,
