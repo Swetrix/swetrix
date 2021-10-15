@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-escape */
+
 export const umdBuildExample = `<!-- Put this at the end of the <head> tag -->
 <script src="https://cdn.jsdelivr.net/gh/Swetrix/swetrix-js@main/dist/swetrix.js" defer></script>
 
@@ -63,4 +65,10 @@ export const trackPVAPI = `swetrix.trackViews({
   // If true, only unique events will be saved.
   // This param is useful when tracking single-page landing websites.
   unique: false,
+
+  // A list of regular expressions or string pathes to ignore
+  // for example: ['/dashboard', /^\/projects/i] setting will force
+  // script to ignore all pathes which start with /projects or equal to /dashboard
+  // Please pay attention, that the pathes always start with /
+  ignore: [],
 })`

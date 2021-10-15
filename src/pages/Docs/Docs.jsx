@@ -184,18 +184,13 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4' />
             <p className='text-lg text-gray-900 tracking-tight'>
-              <i>Last updated: August 19, 2021.</i><br />
+              <i>Last updated: October 15, 2021.</i><br />
               <div>
                 - Added&nbsp;
-                <span className='text-gray-700'>unique</span>
+                <span className='text-gray-700'>ignore</span>
                 &nbsp;param to&nbsp;
                 <a className='hover:underline text-gray-700' href='#docs-tv'>trackViews</a>
                 &nbsp;method.
-              </div>
-              <div>
-                - Added documentation for using swetrix.js as an&nbsp;
-                <a className='hover:underline text-gray-700' href='#docs-npm'>NPM Package</a>
-                .
               </div>
             </p>
           </div>
