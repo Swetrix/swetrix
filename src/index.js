@@ -16,11 +16,14 @@ import App from './App'
 import i18next from './i18next'
 import './index.css'
 
+const SWETRIX_PID = 'STEzHcB1rALV'
+
 console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests can be sent to security@swetrix.com', 'color: #818cf8;background: #1f2937;font-size: 20px;text-shadow: 2px 2px black')
 
-Swetrix.init('STEzHcB1rALV')
-
-Swetrix.trackViews()
+Swetrix.init(SWETRIX_PID)
+Swetrix.trackViews({
+  ignore: [/^\/projects/i, /^\/verify/i],
+})
 
 Sentry.init({
   dsn: 'https://ce538bac7e64484d9a30dcb2eadfe69b@o920340.ingest.sentry.io/5865898',
