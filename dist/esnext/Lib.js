@@ -5,9 +5,9 @@ export class Lib {
         this.projectID = projectID;
         this.options = options;
         this.pageData = null;
+        this.pageViewsOptions = null;
         this.trackPathChange = this.trackPathChange.bind(this);
     }
-    // Tracks a custom event
     track(event) {
         if (!this.canTrack()) {
             return;
@@ -18,7 +18,6 @@ export class Lib {
         };
         this.submitCustom(data);
     }
-    // Tracks page views
     trackPageViews(options) {
         if (!this.canTrack()) {
             return;
@@ -26,6 +25,7 @@ export class Lib {
         if (this.pageData) {
             return this.pageData.actions;
         }
+        this.pageViewsOptions = options;
         let interval;
         if (!options?.unique) {
             interval = setInterval(this.trackPathChange, 2000);
@@ -39,6 +39,18 @@ export class Lib {
         };
         this.trackPage(path, options?.unique);
         return this.pageData.actions;
+    }
+    checkIgnore(path) {
+        const ignore = this.pageViewsOptions?.ignore;
+        if (Array.isArray(ignore)) {
+            for (let i = 0; i < ignore.length; ++i) {
+                if (ignore[i] === path)
+                    return true;
+                if (ignore[i] instanceof RegExp && ignore[i].test(path))
+                    return true;
+            }
+        }
+        return false;
     }
     // Tracking path changes. If path changes -> calling this.trackPage method
     trackPathChange() {
@@ -54,6 +66,8 @@ export class Lib {
         if (!this.pageData)
             return;
         this.pageData.path = pg;
+        if (this.checkIgnore(pg))
+            return;
         const data = {
             pid: this.projectID,
             lc: getLocale(),

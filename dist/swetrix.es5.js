@@ -68,9 +68,9 @@ var Lib = /** @class */ (function () {
         this.projectID = projectID;
         this.options = options;
         this.pageData = null;
+        this.pageViewsOptions = null;
         this.trackPathChange = this.trackPathChange.bind(this);
     }
-    // Tracks a custom event
     Lib.prototype.track = function (event) {
         if (!this.canTrack()) {
             return;
@@ -78,7 +78,6 @@ var Lib = /** @class */ (function () {
         var data = __assign({ pid: this.projectID }, event);
         this.submitCustom(data);
     };
-    // Tracks page views
     Lib.prototype.trackPageViews = function (options) {
         if (!this.canTrack()) {
             return;
@@ -86,6 +85,7 @@ var Lib = /** @class */ (function () {
         if (this.pageData) {
             return this.pageData.actions;
         }
+        this.pageViewsOptions = options;
         var interval;
         if (!(options === null || options === void 0 ? void 0 : options.unique)) {
             interval = setInterval(this.trackPathChange, 2000);
@@ -99,6 +99,19 @@ var Lib = /** @class */ (function () {
         };
         this.trackPage(path, options === null || options === void 0 ? void 0 : options.unique);
         return this.pageData.actions;
+    };
+    Lib.prototype.checkIgnore = function (path) {
+        var _a;
+        var ignore = (_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.ignore;
+        if (Array.isArray(ignore)) {
+            for (var i = 0; i < ignore.length; ++i) {
+                if (ignore[i] === path)
+                    return true;
+                if (ignore[i] instanceof RegExp && ignore[i].test(path))
+                    return true;
+            }
+        }
+        return false;
     };
     // Tracking path changes. If path changes -> calling this.trackPage method
     Lib.prototype.trackPathChange = function () {
@@ -115,6 +128,8 @@ var Lib = /** @class */ (function () {
         if (!this.pageData)
             return;
         this.pageData.path = pg;
+        if (this.checkIgnore(pg))
+            return;
         var data = {
             pid: this.projectID,
             lc: getLocale(),
