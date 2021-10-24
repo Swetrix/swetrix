@@ -184,13 +184,11 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4' />
             <p className='text-lg text-gray-900 tracking-tight'>
-              <i>Last updated: October 15, 2021.</i><br />
+              <i>Last updated: October 24, 2021.</i><br />
               <div>
-                - Added&nbsp;
-                <span className='text-gray-700'>ignore</span>
-                &nbsp;param to&nbsp;
-                <a className='hover:underline text-gray-700' href='#docs-tv'>trackViews</a>
-                &nbsp;method.
+                - Updated&nbsp;
+                <a className='hover:underline text-gray-700' href='#docs-umd'>UMD Build</a>
+                &nbsp;script URL.
               </div>
             </p>
           </div>
