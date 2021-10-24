@@ -17,7 +17,7 @@ const navigation = {
     () => ({ key: 'guides', href: `${routes.docs}#docs-ht` }),
   ],
   company: [
-    { key: 'about', href: '#' },
+    { key: 'contact', href: routes.contact, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
   ],
   legal: [
@@ -51,9 +51,9 @@ const Footer = ({ minimal, authenticated }) => {
         <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
           <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
             <div className='px-5 py-2'>
-              <a href='#/' className='text-base text-gray-300 hover:text-white'>
-                {t('footer.about')}
-              </a>
+              <Link to={routes.contact} className='text-base text-gray-300 hover:text-white'>
+                {t('footer.contact')}
+              </Link>
             </div>
             <div className='px-5 py-2'>
               <Link to={routes.privacy} className='text-base text-gray-300 hover:text-white'>
@@ -155,11 +155,17 @@ const Footer = ({ minimal, authenticated }) => {
                   {t('footer.company')}
                 </h3>
                 <ul className='mt-4 space-y-4'>
-                  {_map(navigation.company, ({ key, href }) => (
+                  {_map(navigation.company, ({ key, href, internal }) => (
                     <li key={key}>
-                      <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer'>
-                        {t(`footer.${key}`)}
-                      </a>
+                      {internal ? (
+                        <Link to={href} className='text-base text-gray-300 hover:text-white'>
+                          {t(`footer.${key}`)}
+                        </Link>
+                      ) : (
+                        <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer'>
+                          {t(`footer.${key}`)}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>

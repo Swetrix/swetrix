@@ -303,6 +303,9 @@
       "carbonRemoval": "Your subscription contributes to carbon removal."
     }
   },
+  "contact": {
+    "desc": "Have something to ask?\nFeel free to drop us an email at <mail>{{email}}</mail>"
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
@@ -312,7 +315,8 @@
     "features": "Features",
     "dashboard": "Dashboard",
     "docs": "Documentation",
-    "billing": "Billing"
+    "billing": "Billing",
+    "contact": "Contact"
   },
   "footer": {
     "slogan": "The best apps need the best services.",
@@ -325,7 +329,7 @@
     "company": "Company",
     "legal": "Legal",
     "copy": "Swetrix Analytics. All rights reserved.",
-    "about": "About",
+    "contact": "Contact",
     "pp": "Privacy Policy",
     "tos": "Terms of Service",
     "blog": "Blog",
