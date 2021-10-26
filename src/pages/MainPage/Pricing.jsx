@@ -11,7 +11,9 @@ import cx from 'classnames'
 
 import Spin from '../../ui/icons/Spin'
 import { errorsActions } from 'redux/actions/errors'
-import { upgradePlan } from 'api'
+import { alertsActions } from 'redux/actions/alerts'
+import { authActions } from 'redux/actions/auth'
+import { upgradePlan, authMe } from 'api'
 import routes from 'routes'
 
 const getTiers = (t) => [
@@ -71,11 +73,21 @@ const Pricing = ({ t }) => {
     if (planCodeLoading === null && user.planCode !== planCode) {
       setPlanCodeLoading(planCode)
       try {
-        const { data: { url } } = await upgradePlan(planCode)
+        const { data: { url, message } } = await upgradePlan(planCode)
 
-        if (_isEmpty(url)) {
-          console.error('[ERROR] Payment error: No Stripe URL was provided')
-        } else {
+        if (_isString(message)) {
+          try {
+            const me = await authMe()
+  
+            dispatch(authActions.loginSuccess(me))
+            dispatch(authActions.finishLoading())
+          } catch (e) {
+            dispatch(authActions.logout())
+          }
+
+          dispatch(alertsActions.accountUpdated(message))
+        }
+        if (!_isEmpty(url)) {
           window.location.href = url
         }
       } catch ({ message }) {
@@ -160,6 +172,7 @@ const Pricing = ({ t }) => {
                   {_isNil(tier.priceMonthly) ? (
                     authenticated ? (
                       <span
+                        onClick={() => onPlanChange(tier.planCode)}
                         className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
                           'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null && tier.planCode !== user.planCode,
                           'bg-indigo-400 cursor-default': planCodeLoading !== null || tier.planCode === user.planCode,
