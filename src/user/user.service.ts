@@ -29,9 +29,12 @@ export class UserService {
     })
    }
 
-
   async update(id: string, update: Record<string, unknown>): Promise<any> {
-    return this.usersRepository.update({id}, update)
+    return this.usersRepository.update({ id }, update)
+  }
+
+  async updateByEmail(email: string, update: Record<string, unknown>): Promise<any> {
+    return this.usersRepository.update({ email }, update)
   }
 
   async delete(id: string): Promise<any> {

@@ -1,15 +1,21 @@
 import {
-  Controller, Body, Post, Headers, BadRequestException,
+  Controller, Body, Post, Headers, BadRequestException, NotFoundException,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _keys from 'lodash/keys'
+import * as _find from 'lodash/find'
 
-import { PlanCode } from '../user/entities/user.entity'
+import {
+  PlanCode, ACCOUNT_PLANS,
+} from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { STRIPE_WH_SECRET, STRIPE_SECRET } from '../common/constants'
 
 const stripe = require('stripe')(STRIPE_SECRET)
+
+const PLANS_LIST = _keys(ACCOUNT_PLANS)
 
 @ApiTags('Webhook')
 @Controller('webhook')
@@ -54,6 +60,21 @@ export class WebhookController {
           await this.userService.update(uid, {
             planCode,
             stripeSubID: subscription_id,
+          })
+        }
+
+        if (dataObject['billing_reason'] == 'subscription_update') {
+          const { customer_email } = dataObject
+          const { id } = dataObject.lines.data[0].price
+
+          const planID = _find(PLANS_LIST, (pid) => ACCOUNT_PLANS[pid].priceId === id)
+
+          if (_isEmpty(planID)) {
+            throw new NotFoundException('The provided price ID seems to be incorrect..')
+          }
+
+          await this.userService.updateByEmail(customer_email, {
+            planCode: planID,
           })
         }
 
