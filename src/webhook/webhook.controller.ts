@@ -51,7 +51,10 @@ export class WebhookController {
           await stripe.subscriptions.update(subscription_id, {
             default_payment_method: payment_intent.payment_method,
           })
-          await this.userService.update(uid, { planCode })
+          await this.userService.update(uid, {
+            planCode,
+            stripeSubID: subscription_id,
+          })
         }
 
         break
@@ -65,7 +68,10 @@ export class WebhookController {
       case 'customer.subscription.deleted': {
         const { uid } = dataObject.metadata
 
-        await this.userService.update(uid, { planCode: PlanCode.free })
+        await this.userService.update(uid, {
+          planCode: PlanCode.free,
+          stripeSubID: null,
+        })
         break
       }
       default:

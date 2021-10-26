@@ -13,7 +13,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import { UserService } from './user.service'
 import { ProjectService } from '../project/project.service'
 import {
-  User, UserType, MAX_EMAIL_REQUESTS, ACCOUNT_PLANS,
+  User, UserType, MAX_EMAIL_REQUESTS, ACCOUNT_PLANS, PlanCode,
 } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -243,6 +243,46 @@ export class UserController {
     const { planCode } = body
     const priceId = ACCOUNT_PLANS[planCode]?.priceId
 
+    if (user.stripeSubID) {
+      if (planCode === PlanCode.free) {
+        await stripe.subscriptions.update(user.stripeSubID, {
+          cancel_at_period_end: true,
+        })
+
+        return {
+          message: 'The subscription has been canceled. No more charges will be made to your card.',
+        }
+      }
+
+      if (_isEmpty(priceId)) {
+        throw new BadRequestException('Incorrect planCode provided')
+      }
+
+      await stripe.subscriptions.update(user.stripeSubID, {
+        cancel_at_period_end: false,
+        proration_behavior: 'always_invoice',
+        items: [{
+          price: priceId,
+          quantity: 1,
+        }]
+      })
+
+      return {
+        message: 'The subscription has been upgraded.',
+      }
+    }
+
+    // If user has no Stripe Subscription ID and wants to downgrade to free tier
+    if (planCode === PlanCode.free) {
+      await this.userService.update(user.id, {
+        planCode: PlanCode.free,
+      })
+
+      return {
+        message: 'Your account have been downgraded to the free tier.',
+      }
+    }
+
     if (_isEmpty(priceId)) {
       throw new BadRequestException('Incorrect planCode provided')
     }
@@ -250,6 +290,7 @@ export class UserController {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
+      customer: user.id,
       customer_email: user.email,
       line_items: [
         {

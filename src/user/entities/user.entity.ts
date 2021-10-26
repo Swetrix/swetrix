@@ -95,6 +95,9 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   exportedAt: Date;
 
+  @Column('varchar', { length: 28, nullable: true })
+  stripeSubID: string
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date;
