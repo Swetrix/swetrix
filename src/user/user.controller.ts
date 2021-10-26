@@ -237,7 +237,7 @@ export class UserController {
   async upgradePlan(@Body() body: UpgradeUserProfileDTO, @CurrentUserId() user_id: string): Promise<object> {
     this.logger.log({ body, user_id }, 'POST /user/upgrade')
     const user = await this.userService.findOne(user_id, {
-      select: ['email', 'id'],
+      select: ['email', 'id', 'stripeSubID'],
     })
 
     const { planCode } = body
@@ -290,7 +290,6 @@ export class UserController {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
-      customer: user.id,
       customer_email: user.email,
       line_items: [
         {
