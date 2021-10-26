@@ -33,7 +33,7 @@ Sentry.init({
 
 const options = {
   position: positions.BOTTOM_RIGHT,
-  timeout: 7000,
+  timeout: 8000,
   offset: '30px',
   transition: transitions.SCALE
 }
