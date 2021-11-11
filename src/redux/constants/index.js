@@ -43,7 +43,7 @@ export const GDPR_EXPORT_TIMEFRAME = 14 // days
 
 export const TOKEN = 'access_token'
 
-export const TITLE_SUFFIX = process.env.REACT_APP_TITLE_SUFFIX
+export const TITLE_SUFFIX = process.env.REACT_APP_TITLE_SUFFIX || '| Swetrix'
 
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
@@ -53,15 +53,17 @@ export const GDPR_REQUEST = 'gdpr_request'
 export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
 
 // List of languages with translations available
-export const whitelist = ['en', 'ru', 'uk']
+export const whitelist = ['en', 'ru', 'uk', 'de']
 export const defaultLanguage = 'en'
 export const languages = {
   en: 'English',
   ru: 'Русский',
   uk: 'Українська',
+  de: 'Deutsch',
 }
 export const languageFlag = {
   en: 'GB',
   uk: 'UA',
   ru: 'RU',
+  de: 'DE',
 }

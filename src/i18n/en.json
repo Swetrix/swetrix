@@ -42,7 +42,7 @@
         },
         {
           "question": "Do I have to pay for your service?",
-          "answer": "We provide free accounts as well as paid accounts. Most of the features of the paid account are included in the free account, as well as more events per month. You can upgrade or downgrade your account subscription at any time."
+          "answer": "We provide free accounts as well as paid accounts. While most of the features of the paid tiers are included in the free tier, the paid tiers offer a greater amount of events per month. You can upgrade or downgrade your account subscription at any time."
         },
         {
           "question": "Is my data secure?",
@@ -265,7 +265,7 @@
       "pid": "Project ID",
       "origins": "Allowed origins",
       "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua",
-      "enabled": "Is project enabled",
+      "enabled": "Project enabled",
       "enabledHint": "Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project's analytics in dashboard.",
       "createHint": "*you will be able to set up your project more thoroughly after you have created it",
       "delete": "Delete project",

@@ -5,6 +5,7 @@ import { setItem } from 'utils/localstorage'
 import en from './i18n/en.json'
 import ru from './i18n/ru.json'
 import uk from './i18n/uk.json'
+import de from './i18n/de.json'
 
 const lngDetector = new LanguageDetector()
 lngDetector.addDetector({
@@ -39,6 +40,7 @@ i18next
       en: { common: en },
       ru: { common: ru },
       uk: { common: uk },
+      de: { common: de },
     },
   })
 

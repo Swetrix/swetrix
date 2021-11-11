@@ -1,0 +1,344 @@
+{
+  "common": {
+    "features": "Funktionen",
+    "docs": "Dokumentation",
+    "getStarted": "Erste Schritte",
+    "billing": "Rechnung",
+    "pricing": "Preise",
+    "faqs": "FAQs",
+    "you": "Konto",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "save": "Speichern",
+    "continue": "Fortfahren",
+    "error": "Fehler",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "gotIt": "Verstanden",
+    "settings": "Einstellungen",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen"
+  },
+  "main": {
+    "slogan": "Eine <span>leistungsstarke</span> Analyse-Plattform, welche die <span>Privatsphäre ihrer Anwender<span> berücksichtigt",
+    "trackEveryMetric": "Analysieren Sie alle benötigten Metriken, ohne die Privatsphäre Ihrer Anwender zu verletzen.",
+    "description": "Swetrix bietet einen fortgeschrittenen und konfigurierbaren Analysedienst für Ihre Webanwendungen.",
+    "signup": "Jetzt gratis registrieren!",
+    "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
+    "techDetails": "Möchten Sie weitere technische Details erfahren?",
+    "lookAtDocs": "Werfen Sie einen Blick auf die Dokumentation und die Funktionen.",
+    "readyToStart": "Sind Sie bereit los zu legen?",
+    "exploreService": "Erkundigen Sie sich über unseren Dienst oder registrieren Sie sich.",
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "list": [
+        {
+          "question": "Benutzt Swetrix Cookies?",
+          "answer": "Nein. Unser Tracking-Script arbeitet komplett ohne den Einsatz von Cookies. Sie können unseren Dienst nutzen, ohne einen Cookie-Banner auf ihrer Webseite einzubauen. \nWir sind mit Richtlinien wie GDPR, PECR, CCPA, ePrivacy und COPPA konform."
+        },
+        {
+          "question": "Werden die Daten der Endnutzer verwendet, weitergegeben oder verkauft?",
+          "answer": "Nein, die Daten werden weder verwendet, weitergegeben oder verkauft. Alle gesammelten Daten werden zudem anonymisiert und wir speichern keine personenbezogenen Daten. Wir versuchen so transparent und respektvoll wie möglich mit Privatsphäre umzugehen."
+        },
+        {
+          "question": "Muss ich für ihren Dienst bezahlen?",
+          "answer": "Wir bieten sowohl kostenfreie als auch kostenpflichtige Abos an. Während die meisten Funktionen des kostenpflichtigen Abos auch im kostenfreien Abo enthalten sind, erhalten Sie in den kostenpflichtigen Abos mehr Tracking-Events pro Monat. Sie können Ihr Abo jederzeit herauf- oder herabstufen."
+        },
+        {
+          "question": "Sind meine Daten sicher?",
+          "answer": "Wir halten uns an alle Standards zur Sicherheit der Datenspeicherung und -verarbeitung. Alle Daten werden sicher gespeichert, können von Dritten nicht eingesehen werden und die gesamte Kommunikation erfolgt stets über verschlüsselte Kanäle (HTTPS)."
+        }
+      ]
+    },
+    "features": [
+      {
+        "name": "Einfach, aber leistungsstark",
+        "description": "Alle Ihre Analysen sind übersichtlich aufbereitet. Vergessen Sie verwirrende Berichte, Metriken und Benachrichtigungen."
+      },
+      {
+        "name": "Open-Source",
+        "description": "Unser Tracking-Script ist quelloffen und frei zugänglich für Jeden. Wir erfassen nur die Daten, die wir ausdrücklich angeben."
+      },
+      {
+        "name": "Vollständige Ereignisverfolgung",
+        "description": "Mit uns können Sie nicht nur Ihren Traffic verfolgen, sondern auch benutzerdefinierte Ereignisse wie Button-Klicks oder Registrierungen analysieren."
+      },
+      {
+        "name": "Keine Cookie-Banner erforderlich",
+        "description": "Wir distanzieren uns bewusst von zielgerichteter Werbung und Profiling und setzen auch keine Tracking-Cookies ein. Unser Geschäftsmodell ist es, Software zu verkaufen, nicht Daten."
+      },
+      {
+        "name": "Wir sind schnell",
+        "description": "Wir verwenden ein globales CDN für die Bereitstellung unserer Anwendungen, und unser Tracking-Script wird um ein Vielfaches schneller geladen als das unserer Konkurrenten."
+      },
+      {
+        "name": "Vergleichen, untersuchen und genießen Sie die Daten",
+        "description": "Sie können Daten nach bestimmten Kategorien sortieren und auch Statistiken korrelieren, wie z. B. einzigartige Nutzer von regelmäßigen Seitenaufrufen unterscheiden."
+      }
+    ],
+    "custSupport": "Ist ihre Frage hier nicht aufgelistet? Wenden Sie sich gerne an unseren <mail>Kundendienst</mail>.",
+    "whyUs": "Warum uns"
+  },
+  "auth": {
+    "recovery": {
+      "title": "Kontenwiederherstellung",
+      "save": "Neues Passwort speichern",
+      "newPassword": "Neues Passwort",
+      "updated": "Das Passwort wurde geändert."
+    },
+    "forgot": {
+      "sent": "Eine E-Mail zum Zurücksetzen des Passworts wurde an die angegebene Adresse gesendet.",
+      "reset": "Passwort zurücksetzen"
+    },
+    "signin": {
+      "title": "Bei Ihrem Konto anmelden",
+      "forgot": "Passwort vergessen?",
+      "button": "Anmelden"
+    },
+    "signup": {
+      "button": "Registrieren",
+      "tos": "Ich akzeptiere die <tos>Allgemeinen Geschäftsbedingungen</tos> und die <pp>Datenschutzerklärung</pp>.",
+      "email": "E-Mail Addresse",
+      "create": "Erstellen Sie ihr Konto"
+    },
+    "verification": {
+      "success": "Deine E-Mail wurde erfolgreich verifiziert!"
+    },
+    "common": {
+      "signinInstead": "Stattdessen anmelden",
+      "signupInstead": "Stattdessen registrieren",
+      "password": "Passwort",
+      "noRemember": "Nicht erinnern",
+      "repeat": "Passwort wiederholen",
+      "hint": "Länger als {{amount}} Zeichen",
+      "xCharsError": "Das Passwort muss aus mindestens {{amount}} Zeichen bestehen.",
+      "noMatchError": "Die Passwörter stimmen nicht überein.",
+      "badEmailError": "Bitte geben Sie eine gültige E-Mail Adresse an.",
+      "tosError": "Sie müssen unsere AGB und Datenschutzerklärung akzeptieren, um unsere Dienste nutzen zu können.",
+      "email": "E-Mail",
+      "signin": "Anmelden"
+    }
+  },
+  "features": {
+    "feature1Name": "Transparenz",
+    "feature1Content": "Wir bei Swetrix glauben, dass jeder ein Recht auf Privatsphäre und Transparenz hat, insbesondere wenn es um Datenanalyse geht.\nWir sammeln nicht mehr Informationen, als wir <docs>angeben</docs>, alle Daten werden auf Servern gespeichert, die sich physisch in der Europäischen Union befinden und unser Tracking-Script ist quelloffen und für alle auf unserem <gh>Github</gh> öffentlich zugänglich.",
+    "ready": "Bereit ihre Nutzer zu verstehen?",
+    "start": "Beginnen Sie noch heute mit Swetrix.",
+    "list": [
+      {
+        "name": "Einfachheit",
+        "content": "Bei der Entwicklung unseres Dienstes haben wir versucht, alles so einfach und flexibel wie möglich zu gestalten.\nSchluss mit verwirrenden Metriken und komplizierten Dashboards - mit uns haben Sie die Kontrolle über alle Ihre Projekte und sehen ihre Daten auf einfache und unkomplizierte Weise."
+      },
+      {
+        "name": "Verfolgung von Seitenaufrufen",
+        "content": "Swetrix bietet die Funktion einzigartige Seitenaufrufe und den User-Flow zu tracken.\nAlle Oberfächen enthalten eine Vielzahl von Daten, wie z. B. das Herkunftsland Nutzers, die Sprache, den Gerätetyp, die Seitenladezeit und vieles mehr.\nWir verwenden keine Cookies oder andere Arten von Profiling, um Daten zu sammeln. Alle eingehenden Daten werden anonymisiert, sodass eine Rückverfolgung auf Personen nicht möglich ist."
+      },
+      {
+        "name": "Benutzerdefiniertes Events-Tracking",
+        "content": "Zusätzlich zur Verfolgung der Seitenaufrufe bieten wir auch die Möglichkeit, benutzerdefinierte Tracking-Events zu erfassen.\nSie können jedes Ereignis nachvollziehen, z. B. Button-Klicks, Registrierungen oder Freigaben.\nAll dies ist auch für den Nutzer völlig unbedenklich, da wir keine anderen Informationen über ihn zusammen mit den Ereignissen speichern.\nWeitere Informationen zu benutzerdefinierten Tracking-Events finden Sie in unserer Dokumentation."
+      },
+      {
+        "name": "Schnelligkeit",
+        "content": "Wir sind schnell. Unser Tracking-Script ist so weit wie möglich optimiert und verwendet globale CDNs für seine Bereitstellung, wodurch gewährleistet wird, dass das Script Ihre Websites nicht verlangsamt."
+      },
+      {
+        "name": "Vertrauen",
+        "content": "Wir sind ein kleines Unternehmen und kein Großkonzern.\nUnser Ziel ist es, ein einwandfreies und hochwertiges Produkt zu entwickeln, das von zufriedenen Kunden genutzt wird und nicht so viel Geld wie möglich aus unseren Nutzern herauszuholen oder Ihre persönlichen Daten zu verkaufen."
+      }
+    ]
+  },
+  "profileSettings": {
+    "general": "Allgemeine Einstellungen",
+    "update": "Konto aktualisieren",
+    "email": "E-Mail Berichte",
+    "frequency": "Wie oft sollen wir Ihnen eine E-Mail-Zusammenfassung über Ihre Websites schicken?",
+    "noLink": "Sie haben keinen Link zur Bestätigung Ihrer E-Mail-Adresse erhalten? Fordern Sie ihn einfach erneut an.",
+    "requestExport": "Datenexport anfordern",
+    "delete": "Konto löschen",
+    "deactivateConfirmation": "Sind Sie sicher, dass Sie Ihr Konto deaktivieren möchten?\nAlle Ihre Daten werden dauerhaft und unwiderruflich von unseren Servern entfernt.\nDiese Aktion kann nicht rückgängig gemacht werden.",
+    "exportConfirmation": "Gemäß Art. 20 der General Data Protection Regulation (GDPR) haben Sie das Recht, Ihre bei uns gespeicherten persönlichen Daten einzusehen. Dieser Bericht enthält keine projektbezogenen Eventdaten.\nDer Datenbericht wird an Ihre E-Mail-Adresse gesendet.\nHinweis: Sie können den Datenexport nur einmal alle zwei Wochen anfordern.",
+    "dataExport": "Datenexport",
+    "aDelete": "Mein Konto Löschen",
+    "qDelete": "Ihr Konto löschen?",
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich",
+    "never": "Nie",
+    "reportSent": "Der GDPR-Datenbericht wurde an Ihre E-Mail-Adresse gesendet.",
+    "tryAgainInXDays": "Bitte versuchen Sie es später noch einmal. Sie können einen GDPR-Datenbericht nur einmal innerhalb von {{amount}} Tagen anfordern.",
+    "updated": "Ihre Kontoeinstellungen wurden aktualisiert",
+    "confTimeout": "Eine E-Mail wurde bereits versendet. Überprüfen Sie Ihr Postfach oder versuchen Sie es in ein paar Minuten erneut.",
+    "confSent": "Ein Link zur Kontobestätigung wurde an Ihre E-Mail-Adresse gesendet.",
+    "noConfLeft": "Leider sind Ihre E-Mail-Bestätigungsanfragen aufgebraucht.\nBitte vergewissern Sie sich, dass Sie in der Lage sind, E-Mails zu empfangen, und überprüfen Sie Ihren Spam-Ordner erneut auf Nachrichten.\nSie können versuchen, eine andere E-Mail-Adresse zu verwenden oder unseren Kundendienst zu kontaktieren."
+  },
+  "dashboard": {
+    "newProject": "Neues Projekt",
+    "verifyEmailTitle": "Bitte bestätigen Sie zuerst die E-Mail-Adresse.",
+    "verifyEmailDesc": "Um unseren Dienst nutzen und Ihre Projekte erstellen zu können, müssen Sie zunächst Ihre E-Mail-Adresse bestätigen.\n\nEin Link zur Bestätigung Ihres Kontos wurde an die E-Mail-Adresse geschickt, die Sie bei der Registrierung angegeben haben. Wenn er nicht zugestellt wurde, können Sie den Link in Ihren Kontoeinstellungen erneut anfordern.",
+    "noProjects": "Sie haben noch keine Projekte erstellt",
+    "createProject": "Erstellen Sie hier ein neues Projekt, um unseren Dienst zu nutzen",
+    "active": "Aktiv",
+    "disabled": "Deaktiviert",
+    "pageviews": "Seitenaufrufe",
+    "unique": "Einzigartige Ansichten",
+    "createdAt": "Erstellt am",
+    "inc": "Gestiegen um",
+    "dec": "Gesunken um"
+  },
+  "docs": {
+    "titles": {
+      "start": "Erste Schritte",
+      "umd": "UMD Build",
+      "npm": "NPM Paket",
+      "how": "Wie Sie..",
+      "pv": "Seitenaufrufe tracken",
+      "ce": "benutzerdefinierte Ereignisse tracken",
+      "api": "API"
+    },
+    "install": "Sie können das Tracking-Script auch mit NPM oder Yarn installieren",
+    "import": "Als nächstes sollten Sie das Modul in das Stammverzeichnis Ihres Projekts importieren, zum Beispiel",
+    "track": "Danach können Sie alles tracken, was Sie wollen.\nLesen Sie die ausführliche Dokumentation zu Tracking-Parametern weiter unten.",
+    "pv": "Das Swetrix.js-Tracking-Script bietet die Möglichkeit, ein Aufrufereignis zu erfassen, sobald die Seite geladen ist.\nDies kann durch den Aufruf der <link>trackViews()</link> Funktion erreicht werden:",
+    "ce": "Zusätzlich zur Verfolgung der Seitenaufrufe bieten wir die Möglichkeit, benutzerdefinierte Tracking-Events zu erfassen.\nWenn Sie zum Beispiel ein Ereignis wie \"Anmeldung\" oder \"Newsletter-Abonnement\" verfolgen möchten, wäre diese Funktion sehr nützlich.\nIm Hintergrund ist das Prinzip dieser Funktion ähnlich zu trackViews.",
+    "init": "Diese Funktion wird zur Initialisierung der Analyse verwendet.\nIm Grunde genommen teilen Sie dem Script mit, für welches Projekt Sie es verwenden möchten, und geben bei Bedarf Ihre eigenen Parameter an.",
+    "tr": "Mit dieser Funktion können Sie beliebige benutzerdefinierte Tracking-Events erfassen.\nSie sollten niemals personenbezogene Daten (wie User-ID, E-Mail, Session-Cookie usw.) als Event-Namen senden.\nDie Gesamtzahl der Tracking-Aufrufe und ihre Konversionsrate werden gespeichert.",
+    "tv": {
+      "call": "Der Aufruf von trackViews führt dazu, dass die Daten über den Benutzer an unsere Server gesendet werden.\nDiese Daten enthalten die folgenden Parameter, falls vorhanden:\n",
+      "gather": "Auf der Serverseite erfassen wir auch die IP-Adresse und den User Agent des Benutzers.\nDiese Daten werden verwendet, um festzustellen, ob Seitenaufrufe einmalig sind oder nicht.\n<b>Wir speichern weder die IP-Adresse noch den User-Agent als einfache Strings</b>, diese Daten werden als salted hash für nicht länger als 30 Minuten oder 12:00 Uhr UTC gespeichert, je nachdem, was zuerst eintritt.\nNach Ablauf dieses Zeitfensters werden die identifizierbaren Daten für immer von unseren Servern gelöscht.",
+      "params": {
+        "pid": "Die eindeutige Projekt-ID, auf die sich die Anfrage bezieht.",
+        "lc": "Die Browser-Sprache des Nutzers (z.B. en_US oder uk_UA).",
+        "tz": "Die Zeitzone des Nutzers (z.B. Europe/Helsinki).",
+        "ref": "Die URL der vorherigen Webseite, von der aus eine Seite geöffnet wurde.",
+        "so": "Die Quelle der Seite ('ref' | 'source' | 'utm_source' GET param).",
+        "me": "Das UTM Medium ('utm_medium' GET param).",
+        "ca": "Die UTM Kampagne ('utm_campaign' GET param).",
+        "pg": "Die Seite, die der Benutzer gerade sieht (z.B. /hello)."
+      }
+    },
+    "contents": "Inhalt"
+  },
+  "project": {
+    "noExist": "Das ausgewählte Projekt existiert nicht",
+    "exportImg": "Als Bild exportieren",
+    "noEvTitle": "Noch keine Tracking-Events",
+    "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <link>Doku</link> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
+    "mapping": {
+      "cc": "Land",
+      "pg": "Seite",
+      "lc": "Sprache",
+      "ref": "Referrer",
+      "dv": "Gerätetyp",
+      "br": "Browser",
+      "os": "Betriebssystem",
+      "lt": "Ladezeit"
+    },
+    "overview": "Übersicht",
+    "weeklyStats": "Wöchentliche Statistik",
+    "statsFor": "Statistik für",
+    "event": "Event",
+    "quantity": "Anzahl",
+    "conversion": "Konversionsrate",
+    "customEv": "benutzerdefinierte Tracking-Events",
+    "noParamData": "Noch keine Daten für diesen Parameter vorhanden.",
+    "prev": "Zurück",
+    "next": "Weitere",
+    "unique": "Einzigartige Besucher",
+    "total": "Seitenaufrufe insgesamt",
+    "today": "Heute",
+    "lastXDays": "Letzte {{amount}} Tage",
+    "lastXWeeks": "Letzte {{amount}} Wochen",
+    "lastXMonths": "Letzte {{amount}} Monate",
+    "hour": "Stunde",
+    "day": "Tag",
+    "week": "Woche",
+    "month": "Monat",
+    "settings": {
+      "verify": "Bitte bestätigen Sie zunächst Ihre E-Mail-Adresse",
+      "updated": "Die Projekteinstellungen wurden aktualisiert",
+      "created": "Das Projekt wurde erstellt",
+      "pxCharsError": "Der Projektname darf nicht länger als {{amount}} Zeichen sein.",
+      "oxCharsError": "Die Liste der Allowed-Origins darf nicht kürzer als {{amount}} Zeichen sein.",
+      "noNameError": "Bitte geben Sie einen Projektnamen ein.",
+      "create": "Neues Projekt erstellen",
+      "settings": "Einstellungen von",
+      "name": "Projektname",
+      "pid": "Projekt-ID",
+      "origins": "Allowed-Origins",
+      "originsHint": "Eine kommaseparierte Liste von Allowed-Origins (Herkunftsdomänen), die Ihre Project-ID in ihrem Tracking-Script verwenden dürfen.\nLassen Sie das Feld leer, um alle Herkünfte zuzulassen (Standardeinstellung).\nBeispiel: cornell.edu, app.example.com, ssu.gov.ua",
+      "enabled": "Projekt aktiviert",
+      "enabledHint": "Deaktivierte Projekte zählen keine neuen Tracking-Events oder Seitenaufrufe.\nSie können weiterhin auf die bisherigen Analysen des Projekts im Dashboard zugreifen.",
+      "createHint": "*Sie können Ihr Projekt im Anschluss an die Erstellung noch weiter einrichten.",
+      "delete": "Projekt löschen",
+      "qDelete": "Das Projekt löschen?",
+      "deleteHint": "Wenn Sie auf \"Projekt löschen\" klicken, verstehen Sie, dass diese Aktion nicht rückgängig zu machen ist.\nDas Projekt und alle damit verbundenen Daten werden von unseren Servern gelöscht."
+    }
+  },
+  "billing": {
+    "title": "Rechnung & Abonnement",
+    "desc": "Der Einstieg und die Nutzung unserer Dienste ist gratis.\nWenn Sie mehr Datenverkehr bewältigen müssen, empfiehlt sich wahrscheinlich ein Upgrade Ihres Abonnements.\nNachstehend finden Sie eine Liste der verfügbaren Abomodelle. Keine versteckten Gebühren oder sonstiger Blödsinn, alles ist klar und transparent!",
+    "contact": "Müssen Sie mehr als 1 Million Tracking-Events pro Monat erfassen?\nKontaktieren Sie uns unter <mail>{{email}}</mail>, um Ihre Wünsche zu besprechen."
+  },
+  "pricing": {
+    "title": "Abomodelle",
+    "adv": "Sie können gratis anfangen. Es wird keine Kreditkarte benötigt.\nWenn Ihr Unternehmen wächst, können Sie Ihr Abonnement jederzeit aufstufen.",
+    "currentPlan": "Derzeitiges Abo",
+    "free": "Gratis",
+    "perMonth": "mo",
+    "yourPlan": "Ihr Abonnement",
+    "downgrade": "Herabstufen",
+    "upgrade": "Aufstufen",
+    "whatIncl": "Was ist enthalten?",
+    "tiers": {
+      "hobby": "Hobby",
+      "freelancer": "Freelancer",
+      "startup": "Startup",
+      "enterprise": "Enterprise",
+      "upToXEVMo": "Bis zu {{amount}} Tracking-Events pro Monat.",
+      "xEvMo": "{{amount}} Tracking-Events pro Monat.",
+      "upToXProjects": "Erstellen Sie bis zu {{amount}} Projekte.",
+      "xMoDataRetention": "{{amount}} Monate Datenspeicherung.",
+      "highStandardSec": "Hoher Sicherheitsstandard.",
+      "evXPlanIncl": "Alles was das {{plan}} Abo enthält.",
+      "smallBusiSupport": "Mit dem Kauf dieses Artikels unterstützen Sie ein kleines Unternehmen.",
+      "carbonRemoval": "Ihr Abonnement trägt zum Klimaschutz bei."
+    }
+  },
+  "contact": {
+    "desc": "Noch Fragen?\nSie können uns gerne eine E-Mail schreiben an <mail>{{email}}</mail>"
+  },
+  "titles": {
+    "recovery": "Kontenwiederherstellung",
+    "signin": "Anmelden",
+    "signup": "Registrieren",
+    "verification": "E-Mail Verifizierung",
+    "profileSettings": "Profil-Einstellungen",
+    "features": "Funktionen",
+    "dashboard": "Dashboard",
+    "docs": "Dokumentation",
+    "billing": "Rechnung",
+    "contact": "Kontakt"
+  },
+  "footer": {
+    "slogan": "Die besten Apps brauchen den besten Service.",
+    "description": "Swetrix ist eine leistungsstarke Analyseplattform, welche die Privatsphäre der Nutzer respektiert.",
+    "madeIn": "Entwickelt in",
+    "hostedIn": "Betrieben in",
+    "ukraine": "Ukraine",
+    "eu": "Europäische Union",
+    "support": "Kundendienst",
+    "company": "Unternehmen",
+    "legal": "Rechtliches",
+    "copy": "Swetrix Analytics. Alle Rechte vorbehalten.",
+    "contact": "Kontakt",
+    "pp": "Datenschutzerklärung",
+    "tos": "Allgemeine Geschäftsbedingungen",
+    "blog": "Blog",
+    "billing": "Rechnung",
+    "pricing": "Preisangaben",
+    "docs": "Dokumentation",
+    "guides": "Anleitungen",
+    "privacy": "Datenschutz",
+    "terms": "AGB",
+    "status": "Status"
+  }
+}
