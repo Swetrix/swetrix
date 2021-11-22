@@ -189,8 +189,8 @@ export class UserController {
       await this.userService.update(id, {...user, ...userDTO})
       return this.userService.findOneWhere({ id })
     } catch (e) {
-      if(e.code === 'ER_DUP_ENTRY'){
-        if(e.sqlMessage.includes(userDTO.email)) {
+      if (e.code === 'ER_DUP_ENTRY'){
+        if (e.sqlMessage.includes(userDTO.email)) {
           throw new BadRequestException('User with this email already exists')
         }
       }

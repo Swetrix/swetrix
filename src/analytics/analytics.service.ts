@@ -102,7 +102,7 @@ export class AnalyticsService {
       }
     }
   }
-  
+
   // TODO: Remove unnecessary checks (because some of them are already checked in the DTO)
   async validate(logDTO: PageviewsDTO | EventsDTO, origin: string): Promise<string | null> {
     if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')

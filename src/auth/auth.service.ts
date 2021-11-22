@@ -1,6 +1,5 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common'
 import { sign } from 'jsonwebtoken'
-import { Response } from 'express'
 import * as bcrypt from 'bcrypt'
 
 import { UserService } from '../user/user.service'
@@ -32,18 +31,11 @@ export class AuthService {
     throw new UnprocessableEntityException('Email or password is incorrect')
   }
 
-  async login(user: User, res: Response): Promise<any> {
-    const options = {
-      httpOnly: true,
-      sameSite: false,
-      hostonly: true
-    }
-
+  async login(user: User): Promise<any> {
     const token = sign({ user_id: user.id }, process.env.JWT_SECRET, {
       expiresIn: JWT_LIFE_TIME,
     })
 
-    res.cookie('token', token, options)
     delete user.password
     return { access_token: token, user }
   }

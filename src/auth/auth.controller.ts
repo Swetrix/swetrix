@@ -50,7 +50,7 @@ export class AuthController {
     // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
 
     const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
-    return await this.authService.login(user, request.res)
+    return await this.authService.login(user)
   }
 
   @Post('/register')
@@ -67,7 +67,7 @@ export class AuthController {
       const url = `${request.headers.origin}/verify/${actionToken.id}`
       await this.mailerService.sendEmail(userDTO.email, LetterTemplate.SignUp, { url })
 
-      return await this.authService.login(user, request.res)
+      return await this.authService.login(user)
     } catch(e) {
       if (e.code === 'ER_DUP_ENTRY') {
         if (e.sqlMessage.includes(userDTO.email)) {
