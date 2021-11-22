@@ -13,20 +13,19 @@ export class AuthService {
     private userService: UserService,
   ) {}
 
-  hashPassword(pass: string): string {
-    return bcrypt.hashSync(pass, process.env.PASSWORD_SALT)
+  async hashPassword(pass: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10)
+    return await bcrypt.hash(pass, salt)
   }
 
-  checkPassword(passToCheck: string, hashedPass: string): boolean {
-    const hashedPassToCheck = this.hashPassword(passToCheck)
-
-    return hashedPassToCheck === hashedPass
+  async checkPassword(passToCheck: string, hashedPass: string): Promise<boolean> {
+    return await bcrypt.compare(passToCheck, hashedPass)
   }
 
   async validateUser(email: string, pass: string): Promise<User> {
     const user = await this.userService.findOneWhere({ email })
 
-    if (user && this.checkPassword(pass, user.password)) {
+    if (user && await this.checkPassword(pass, user.password)) {
       return user
     }
 

@@ -59,7 +59,7 @@ export class AuthController {
 
     // await this.authService.checkCaptcha(recaptcha)
     this.userService.validatePassword(userDTO.password)
-    userDTO.password = this.authService.hashPassword(userDTO.password)
+    userDTO.password = await this.authService.hashPassword(userDTO.password)
     
     try {
       const user = await this.userService.create(userDTO)
@@ -144,7 +144,7 @@ export class AuthController {
     }
 
     if (actionToken.action === ActionTokenType.PASSWORD_RESET) {
-      const password = this.authService.hashPassword(body.password)
+      const password = await this.authService.hashPassword(body.password)
 
       await this.userService.update(actionToken.user.id, { ...actionToken.user, password })
       await this.actionTokensService.delete(actionToken.id)

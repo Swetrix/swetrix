@@ -74,7 +74,7 @@ export class UserController {
   async create(@Body() userDTO: UserProfileDTO): Promise<User> {
     this.logger.log({ userDTO }, 'POST /user')
     this.userService.validatePassword(userDTO.password)
-    userDTO.password = this.authService.hashPassword(userDTO.password)
+    userDTO.password = await this.authService.hashPassword(userDTO.password)
 
     try {
       const user = await this.userService.create({ ...userDTO, isActive: true })
@@ -176,7 +176,7 @@ export class UserController {
     
     if (userDTO.password) {
       this.userService.validatePassword(userDTO.password)
-      userDTO.password = this.authService.hashPassword(userDTO.password)
+      userDTO.password = await this.authService.hashPassword(userDTO.password)
     }
     
     const user = await this.userService.findOneWhere({ id })
@@ -207,7 +207,7 @@ export class UserController {
 
     if (userDTO.password?.length > 0) {
       this.userService.validatePassword(userDTO.password)
-      userDTO.password = this.authService.hashPassword(userDTO.password)
+      userDTO.password = await this.authService.hashPassword(userDTO.password)
       await this.mailerService.sendEmail(userDTO.email, LetterTemplate.PasswordChanged)
     }
 
