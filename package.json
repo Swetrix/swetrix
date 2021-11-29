@@ -1,6 +1,6 @@
 {
   "name": "swetrix",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "The JavaScript analytics client for Swetrix Analytics",
   "main": "dist/swetrix.cjs.js",
   "module": "dist/swetrix.es5.js",
@@ -18,7 +18,7 @@
     "type": "git",
     "url": "git+https://github.com/Swetrix/swetrix-js.git"
   },
-  "author": "Swetrix <contact@swetrix.com>",
+  "author": "Andrii R. <contact@swetrix.com>",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/Swetrix/swetrix-js/issues"
@@ -28,14 +28,14 @@
     "@types/node": "^14.14.41"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-node-resolve": "^13.0.6",
     "rimraf": "^3.0.2",
-    "rollup": "^2.53.0",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-json": "^4.0.0",
+    "rollup": "^2.60.1",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-typescript2": "^0.30.0",
     "rollup-plugin-uglify": "^6.0.4",
-    "typescript": "^4.3.5"
+    "typescript": "^4.5.2"
   }
 }

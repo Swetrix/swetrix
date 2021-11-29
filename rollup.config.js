@@ -1,5 +1,5 @@
-import resolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import typescript from 'rollup-plugin-typescript2'
 import { uglify } from 'rollup-plugin-uglify'
@@ -13,7 +13,7 @@ export default [
       { file: pkg.module, format: 'es' },
     ],
     plugins: [
-      typescript(), resolve(), commonjs(), sourceMaps(),
+      typescript(), nodeResolve(), commonjs(), sourceMaps(),
     ]
   },
   {
@@ -22,7 +22,7 @@ export default [
       { file: pkg.browser, format: 'umd', name: 'swetrix' },
     ],
     plugins: [
-      typescript(), resolve(), commonjs(), uglify(),
+      typescript(), nodeResolve(), commonjs(), uglify(),
     ]
   }
 ]
