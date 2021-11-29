@@ -59,7 +59,7 @@ export class Lib {
     this.heartbeat = this.heartbeat.bind(this)
   }
 
-  track(event: TrackEventOptions) {
+  track(event: TrackEventOptions): void {
     if (!this.canTrack()) {
       return
     }
@@ -71,7 +71,7 @@ export class Lib {
     this.sendRequest('custom', data)
   }
 
-  trackPageViews(options?: PageViewsOptions) {
+  trackPageViews(options?: PageViewsOptions): void | object {
     if (!this.canTrack()) {
       return
     }
@@ -107,7 +107,7 @@ export class Lib {
     return this.pageData.actions
   }
 
-  private heartbeat() {
+  private heartbeat(): void {
     if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
       return
     }
@@ -132,7 +132,7 @@ export class Lib {
   }
 
   // Tracking path changes. If path changes -> calling this.trackPage method
-  private trackPathChange() {
+  private trackPathChange(): void {
     if (!this.pageData) return
     const newPath = getPath()
     const { path } = this.pageData
@@ -142,7 +142,7 @@ export class Lib {
     }
   }
 
-  private trackPage(pg: string, unique: boolean = false) {
+  private trackPage(pg: string, unique: boolean = false): void {
     if (!this.pageData) return
     this.pageData.path = pg
 
@@ -163,13 +163,13 @@ export class Lib {
     this.sendRequest('', data)
   }
 
-  private debug(message: string) {
+  private debug(message: string): void {
     if (this.options?.debug) {
       console.log('[Swetrix]', message)
     }
   }
 
-  private canTrack() {
+  private canTrack(): boolean {
     if (!isInBrowser()) {
       this.debug('Tracking disabled: script does not run in browser environment.')
       return false
@@ -192,14 +192,10 @@ export class Lib {
     return true
   }
 
-  private sendRequest(path: string, body: object) {
-    return fetch(`${host}/${path}`, {
-      method: 'post',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
+  private sendRequest(path: string, body: object): void {
+    const req = new XMLHttpRequest()
+    req.open('POST', `${host}/${path}`, true)
+    req.setRequestHeader('Content-Type', 'application/json')
+    req.send(JSON.stringify(body))
   }
 }
