@@ -188,7 +188,7 @@ var Lib = /** @class */ (function () {
     };
     Lib.prototype.sendRequest = function (path, body) {
         var req = new XMLHttpRequest();
-        req.open('POST', host + "/" + path, true);
+        req.open('POST', "".concat(host, "/").concat(path), true);
         req.setRequestHeader('Content-Type', 'application/json');
         req.send(JSON.stringify(body));
     };
