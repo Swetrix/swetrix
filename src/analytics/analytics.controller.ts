@@ -3,21 +3,22 @@ import * as _isNumber from 'lodash/isNumber'
 import * as _isArray from 'lodash/isArray'
 import * as _size from 'lodash/size'
 import * as _last from 'lodash/last'
+import * as _map from 'lodash/map'
 import * as _countBy from 'lodash/countBy'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import {
-  Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException,
-  InternalServerErrorException, NotImplementedException, UnprocessableEntityException, PreconditionFailedException,
+  Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException, InternalServerErrorException,
+  NotImplementedException, UnprocessableEntityException, PreconditionFailedException, Ip,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 
-import { AnalyticsService } from './analytics.service'
-import { ProjectService } from '../project/project.service'
+import { AnalyticsService, getSessionKey } from './analytics.service'
 import { UserType } from '../user/entities/user.entity'
+import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { Roles } from '../common/decorators/roles.decorator'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
@@ -26,16 +27,13 @@ import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   clickhouse, isValidPID, REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
+  HEARTBEAT_SID_LIFE_TIME, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import ct from '../common/countriesTimezones'
 
 dayjs.extend(utc)
 
-// todo: implement random salts
-// store them in redis storage and reset every 24 hours
-const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => hash(`${ua}${ip}${pid}${salt}`).toString('hex')
-
-const getSessionKeyCustom = (ip: string, ua: string, pid: string, ev: string, salt: string = '') => hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')
+const getSessionKeyCustom = (ip: string, ua: string, pid: string, ev: string, salt: string = '') => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`
 
 const analyticsDTO = (pid: string, pg: string, dv: string, br: string, os: string, lc: string, ref: string, so: string, me: string, ca: string, lt: number | string, cc: string, unique: number): Array<string | number> => {
   return [uuidv4(), pid, pg, dv, br, os, lc, ref, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
@@ -56,18 +54,16 @@ const getElValue = (el) => {
 export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
-    private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
   ) { }
 
   @Get('/')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async getData(@Query() data: AnalyticsGET_DTO): Promise<any> {
-    // this.logger.log({ ...data }, 'GET /log')
-
+  async getData(@Query() data: AnalyticsGET_DTO, @CurrentUserId() uid: string): Promise<any> {
     const { pid, period, timeBucket, from, to } = data
-    if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+    this.analyticsService.validatePID(pid)
+    await this.analyticsService.checkProjectAccess(pid, uid)
 
     let groupFrom = from, groupTo = to
     // TODO: data validation
@@ -114,9 +110,7 @@ export class AnalyticsController {
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   // returns overall short statistics per project
-  async getOverallStats(@Query() data): Promise<any> {
-    // this.logger.log({ ...data }, 'GET /birdseye')
-
+  async getOverallStats(@Query() data, @CurrentUserId() uid: string): Promise<any> {
     let { pids, pid } = data
     const pidsEmpty = _isEmpty(pids)
     const pidEmpty = _isEmpty(pid)
@@ -136,21 +130,39 @@ export class AnalyticsController {
       throw new UnprocessableEntityException('An array of Project ID\'s has to be provided as a \'pids\' param')
     }
 
+    for (let i = 0; i < _size(pids); ++i) {
+      this.analyticsService.validatePID(pids[i])
+      await this.analyticsService.checkProjectAccess(pids[i], uid)
+    }
+
     return this.analyticsService.getSummary(pids, 'w', true)
+  }
+
+  @Get('/hb')
+  // @UseGuards(RolesGuard)
+  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getHeartBeatStats(@Query() data, @CurrentUserId() uid: string): Promise<object> {
+    const { pid } = data
+    this.analyticsService.validatePID(pid)
+    // await this.analyticsService.checkProjectAccess(pid, uid)
+
+    const result = await redis.countKeysByPattern(`hb:${pid}:*`)
+    return {
+      result,
+    }
   }
 
   // Log custom event
   @Post('/custom')
   async logCustom(@Body() eventsDTO: EventsDTO, @Headers() headers): Promise<any> {
-    // this.logger.log({ eventsDTO, headers }, 'POST /log/custom')
-
     const { 'user-agent': userAgent, origin } = headers
     await this.analyticsService.validate(eventsDTO, origin)
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || ''
 
     if (eventsDTO.unique) {
-      const sessionHash = getSessionKeyCustom(ip, userAgent, eventsDTO.pid, eventsDTO.ev)
+      // const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+      const sessionHash = getSessionKeyCustom(ip, userAgent, eventsDTO.pid, eventsDTO.ev/*, salt */)
       const unique = await this.analyticsService.isUnique(sessionHash)
 
       if (!unique) {
@@ -171,19 +183,27 @@ export class AnalyticsController {
     }
   }
 
+  @Post('/hb')
+  async heartbeat(@Body() logDTO: PageviewsDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = logDTO
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+
+    const sessionID = await this.analyticsService.validateHB(logDTO, userAgent, ip)
+    await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME)
+    return
+  }
+
   // Log pageview event
   @Post('/')
-  async log(@Body() logDTO: PageviewsDTO, @Headers() headers): Promise<any> {
-    // this.logger.log({ logDTO }, 'POST /log')
-
+  async log(@Body() logDTO: PageviewsDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
     await this.analyticsService.validate(logDTO, origin)
 
-    // the NestJS server HAS TO be proxied either by Cloudflare or by NGINX, which are setting the request IP
-    // if the app is hosted raw, @nestjs/common @Ip module should be used to retreive the request IP address
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || ''
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
-    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid)
+    // const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid/*, salt */)
     const unique = await this.analyticsService.isUnique(sessionHash)
     let dto: Array<string | number>
 

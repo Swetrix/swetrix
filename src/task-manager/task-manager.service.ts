@@ -1,5 +1,6 @@
 import { Injectable, HttpService } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
+// import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -14,7 +15,7 @@ import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { ReportFrequency } from '../user/entities/user.entity'
 import {
-  clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY,
+  clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 
 dayjs.extend(utc)
@@ -53,6 +54,12 @@ export class TaskManagerService {
       }
     }
   }
+
+  // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  // async generateSessionSalt(): Promise<void> {
+  //   const salt = await bcrypt.genSalt(10)
+  //   await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
+  // }
 
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')

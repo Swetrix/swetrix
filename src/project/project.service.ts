@@ -9,15 +9,13 @@ import * as _join from 'lodash/join'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
-import { UserService } from '../user/user.service'
 import { isValidPID } from '../common/constants'
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
-    private projectsRepository: Repository<Project>,
-    private readonly userService: UserService
+    private projectsRepository: Repository<Project>
   ) {}
 
   async paginate(options: PaginationOptionsInterface, where: Record<string, unknown> | undefined): Promise<Pagination<Project>> {
@@ -79,17 +77,15 @@ export class ProjectService {
     return this.projectsRepository.findOne({ where, ...params })
   }
 
-  ifAllowedToManage(userId: string, project: Project): boolean {
-    return userId === project.admin.id
+  ifAllowedToManage(uid: string, project: Project): boolean {
+    return uid === project.admin.id
   }
 
-  async allowedToManage(project: Project, userId: string): Promise<void> {
-    const user = await this.userService.findOne(userId)
-
-    if (this.ifAllowedToManage(user.id, project)) {
+  allowedToManage(project: Project, uid: string): void {
+    if (this.ifAllowedToManage(uid, project)) {
       return
     } else {
-      throw new ForbiddenException('Not allowed to manage this project')
+      throw new ForbiddenException('You are not allowed to access this project')
     }
   }
 

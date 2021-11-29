@@ -6,6 +6,8 @@ import { UserService } from '../user/user.service'
 import { User } from '../user/entities/user.entity'
 import { JWT_LIFE_TIME } from '../common/constants'
 
+const BCRYPT_SALT_ROUNDS = 10
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -13,7 +15,7 @@ export class AuthService {
   ) {}
 
   async hashPassword(pass: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10)
+    const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS)
     return await bcrypt.hash(pass, salt)
   }
 

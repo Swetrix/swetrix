@@ -8,6 +8,7 @@ import * as _join from 'lodash/join'
 import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import { hash } from 'blake3'
 import {
   Injectable, BadRequestException, InternalServerErrorException, ForbiddenException,
 } from '@nestjs/common'
@@ -16,7 +17,7 @@ import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
-  redisProjectCountCacheTimeout,
+  redisProjectCountCacheTimeout, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -25,6 +26,8 @@ import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
 
 dayjs.extend(utc)
+
+export const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
 @Injectable()
 export class AnalyticsService {
@@ -52,6 +55,11 @@ export class AnalyticsService {
     }
 
     return project
+  }
+
+  async checkProjectAccess(pid: string, uid: string): Promise<void> {
+    const project = await this.getRedisProject(pid)
+    this.projectService.allowedToManage(project, uid)
   }
 
   // Returns amount of existing events starting from month
@@ -103,13 +111,16 @@ export class AnalyticsService {
     }
   }
 
-  // TODO: Remove unnecessary checks (because some of them are already checked in the DTO)
-  async validate(logDTO: PageviewsDTO | EventsDTO, origin: string): Promise<string | null> {
-    if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
-    const { pid } = logDTO
-
+  validatePID(pid: string): void {
     if (_isEmpty(pid)) throw new BadRequestException('The Project ID (pid) has to be provided')
     if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+  }
+
+  async validate(logDTO: PageviewsDTO | EventsDTO, origin: string): Promise<string | null> {
+    if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
+
+    const { pid } = logDTO
+    this.validatePID(pid)
 
     if (logDTO instanceof EventsDTO && !_isEmpty(logDTO.ev) && _size(logDTO.ev) > 64) {
       throw new BadRequestException('An incorrect event name (ev) is provided')
@@ -131,10 +142,30 @@ export class AnalyticsService {
     return null
   }
 
+  async validateHB(logDTO: PageviewsDTO, userAgent: string, ip: string): Promise<string | null> {
+    if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
+
+    const { pid } = logDTO
+    this.validatePID(pid)
+
+    // const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+    const sessionHash = getSessionKey(ip, userAgent, pid/*, salt */)
+    const sessionExists = await this.isSessionOpen(sessionHash)
+
+    if (!sessionExists) throw new ForbiddenException('The Heartbeat session does not exist')
+
+    return sessionHash
+  }
+
   async isUnique(hash: string) {
     const session = await redis.get(hash)
     await redis.set(hash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
     return !Boolean(session)
+  }
+
+  async isSessionOpen(hash: string) {
+    const session = await redis.get(hash)
+    return Boolean(session)
   }
 
   processData(data: object): object {
@@ -221,7 +252,7 @@ export class AnalyticsService {
     return result
   }
 
-  // TODO: Refactor; check if there's no date/time shifts
+  // TODO: REFACTOR THE FUNCTION; check if there's no date/time shifts
   async groupByTimeBucket(data: Object[], timeBucket: TimeBucketType, from: string, to: string): Promise<object | void> {
     if (_isEmpty(data)) return Promise.resolve()
     let groupDateIterator

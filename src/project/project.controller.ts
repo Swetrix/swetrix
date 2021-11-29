@@ -118,12 +118,12 @@ export class ProjectController {
     if (_isEmpty(project)) {
       throw new NotFoundException()
     }
+    this.projectService.allowedToManage(project, userId)
 
     project.active = projectDTO.active
     project.origins = _map(projectDTO.origins, _trim)
     project.name = projectDTO.name
 
-    await this.projectService.allowedToManage(project, userId)
     await this.projectService.update(id, project)
 
     const key = getRedisProjectKey(id)
@@ -154,7 +154,7 @@ export class ProjectController {
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
     }
-    await this.projectService.allowedToManage(project, userId)
+    this.projectService.allowedToManage(project, userId)
 
     const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
     const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`

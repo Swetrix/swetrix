@@ -11,6 +11,11 @@ const redis = new Redis({
   host: process.env.REDIS_HOST,
 })
 
+redis.defineCommand('countKeysByPattern', {
+  numberOfKeys: 0,
+  lua: "return #redis.call('keys', ARGV[1])",
+})
+
 const clickhouse = new ClickHouse({
   url: process.env.CLICKHOUSE_HOST,
   port: _toNumber(process.env.CLICKHOUSE_PORT),
@@ -62,8 +67,8 @@ const getRedisProjectKey = (pid: string) => `pid_${pid}`
 const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
-
 const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache'
+const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -73,6 +78,9 @@ const redisProjectCountCacheTimeout = 900
 
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
+
+// 35 seconds
+const HEARTBEAT_SID_LIFE_TIME = 35
 
 // how often can user request a fresh GDPR export of their data; in days.
 const GDPR_EXPORT_TIMEFRAME = 14
@@ -84,5 +92,5 @@ export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME, getRedisUserCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
-  STRIPE_SECRET, STRIPE_WH_SECRET,
+  STRIPE_SECRET, STRIPE_WH_SECRET, REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME,
 }
