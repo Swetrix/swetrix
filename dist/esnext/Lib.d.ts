@@ -14,6 +14,8 @@ export interface PageData {
 export interface PageViewsOptions {
     unique?: boolean;
     ignore?: Array<any>;
+    noHeartbeat?: boolean;
+    heartbeatOnBackground?: boolean;
 }
 export declare class Lib {
     private projectID;
@@ -22,12 +24,12 @@ export declare class Lib {
     private pageViewsOptions;
     constructor(projectID: string, options?: LibOptions | undefined);
     track(event: TrackEventOptions): void;
-    trackPageViews(options?: PageViewsOptions): object | undefined;
+    trackPageViews(options?: PageViewsOptions): void | object;
+    private heartbeat;
     private checkIgnore;
     private trackPathChange;
     private trackPage;
     private debug;
     private canTrack;
-    private submitData;
-    private submitCustom;
+    private sendRequest;
 }

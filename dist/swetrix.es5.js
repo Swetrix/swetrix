@@ -70,13 +70,14 @@ var Lib = /** @class */ (function () {
         this.pageData = null;
         this.pageViewsOptions = null;
         this.trackPathChange = this.trackPathChange.bind(this);
+        this.heartbeat = this.heartbeat.bind(this);
     }
     Lib.prototype.track = function (event) {
         if (!this.canTrack()) {
             return;
         }
         var data = __assign({ pid: this.projectID }, event);
-        this.submitCustom(data);
+        this.sendRequest('custom', data);
     };
     Lib.prototype.trackPageViews = function (options) {
         if (!this.canTrack()) {
@@ -86,19 +87,36 @@ var Lib = /** @class */ (function () {
             return this.pageData.actions;
         }
         this.pageViewsOptions = options;
-        var interval;
+        var hbInterval, interval;
         if (!(options === null || options === void 0 ? void 0 : options.unique)) {
             interval = setInterval(this.trackPathChange, 2000);
+        }
+        if (!(options === null || options === void 0 ? void 0 : options.noHeartbeat)) {
+            setTimeout(this.heartbeat, 3000);
+            hbInterval = setInterval(this.heartbeat, 28000);
         }
         var path = getPath();
         this.pageData = {
             path: path,
             actions: {
-                stop: (options === null || options === void 0 ? void 0 : options.unique) ? function () { } : function () { return clearInterval(interval); },
+                stop: function () {
+                    clearInterval(interval);
+                    clearInterval(hbInterval);
+                },
             },
         };
         this.trackPage(path, options === null || options === void 0 ? void 0 : options.unique);
         return this.pageData.actions;
+    };
+    Lib.prototype.heartbeat = function () {
+        var _a;
+        if (!((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.heartbeatOnBackground) && document.visibilityState === 'hidden') {
+            return;
+        }
+        var data = {
+            pid: this.projectID,
+        };
+        this.sendRequest('hb', data);
     };
     Lib.prototype.checkIgnore = function (path) {
         var _a;
@@ -141,7 +159,7 @@ var Lib = /** @class */ (function () {
             unique: unique,
             pg: pg,
         };
-        this.submitData(data);
+        this.sendRequest('', data);
     };
     Lib.prototype.debug = function (message) {
         var _a;
@@ -168,25 +186,11 @@ var Lib = /** @class */ (function () {
         }
         return true;
     };
-    Lib.prototype.submitData = function (body) {
-        return fetch(host, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
-    };
-    Lib.prototype.submitCustom = function (body) {
-        return fetch(host + "/custom", {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
+    Lib.prototype.sendRequest = function (path, body) {
+        var req = new XMLHttpRequest();
+        req.open('POST', host + "/" + path, true);
+        req.setRequestHeader('Content-Type', 'application/json');
+        req.send(JSON.stringify(body));
     };
     return Lib;
 }());

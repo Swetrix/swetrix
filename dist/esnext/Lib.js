@@ -7,6 +7,7 @@ export class Lib {
         this.pageData = null;
         this.pageViewsOptions = null;
         this.trackPathChange = this.trackPathChange.bind(this);
+        this.heartbeat = this.heartbeat.bind(this);
     }
     track(event) {
         if (!this.canTrack()) {
@@ -16,7 +17,7 @@ export class Lib {
             pid: this.projectID,
             ...event,
         };
-        this.submitCustom(data);
+        this.sendRequest('custom', data);
     }
     trackPageViews(options) {
         if (!this.canTrack()) {
@@ -26,19 +27,35 @@ export class Lib {
             return this.pageData.actions;
         }
         this.pageViewsOptions = options;
-        let interval;
+        let hbInterval, interval;
         if (!options?.unique) {
             interval = setInterval(this.trackPathChange, 2000);
+        }
+        if (!options?.noHeartbeat) {
+            setTimeout(this.heartbeat, 3000);
+            hbInterval = setInterval(this.heartbeat, 28000);
         }
         const path = getPath();
         this.pageData = {
             path,
             actions: {
-                stop: options?.unique ? () => { } : () => clearInterval(interval),
+                stop: () => {
+                    clearInterval(interval);
+                    clearInterval(hbInterval);
+                },
             },
         };
         this.trackPage(path, options?.unique);
         return this.pageData.actions;
+    }
+    heartbeat() {
+        if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
+            return;
+        }
+        const data = {
+            pid: this.projectID,
+        };
+        this.sendRequest('hb', data);
     }
     checkIgnore(path) {
         const ignore = this.pageViewsOptions?.ignore;
@@ -79,7 +96,7 @@ export class Lib {
             unique,
             pg,
         };
-        this.submitData(data);
+        this.sendRequest('', data);
     }
     debug(message) {
         if (this.options?.debug) {
@@ -104,25 +121,11 @@ export class Lib {
         }
         return true;
     }
-    submitData(body) {
-        return fetch(host, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
-    }
-    submitCustom(body) {
-        return fetch(`${host}/custom`, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
+    sendRequest(path, body) {
+        const req = new XMLHttpRequest();
+        req.open('POST', `${host}/${path}`, true);
+        req.setRequestHeader('Content-Type', 'application/json');
+        req.send(JSON.stringify(body));
     }
 }
 //# sourceMappingURL=Lib.js.map
