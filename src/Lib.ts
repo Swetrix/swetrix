@@ -40,6 +40,12 @@ export interface PageViewsOptions {
 
   // A list of Regular Expressions or string pathes to ignore
   ignore?: Array<any>
+
+  // Do not send Heartbeat requests to the server
+  noHeartbeat?: boolean
+
+  // Send Heartbeat requests when the website tab is not active in the browser
+  heartbeatOnBackground?: boolean
 }
 
 const host = 'https://api.swetrix.com/log'
@@ -50,6 +56,7 @@ export class Lib {
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
+    this.heartbeat = this.heartbeat.bind(this)
   }
 
   track(event: TrackEventOptions) {
@@ -61,7 +68,7 @@ export class Lib {
       pid: this.projectID,
       ...event,
     }
-    this.submitCustom(data)
+    this.sendRequest('custom', data)
   }
 
   trackPageViews(options?: PageViewsOptions) {
@@ -74,9 +81,14 @@ export class Lib {
     }
 
     this.pageViewsOptions = options
-    let interval: NodeJS.Timeout
+    let hbInterval: NodeJS.Timeout, interval: NodeJS.Timeout
     if (!options?.unique) {
       interval = setInterval(this.trackPathChange, 2000)
+    }
+
+    if (!options?.noHeartbeat) {
+      setTimeout(this.heartbeat, 3000)
+      hbInterval = setInterval(this.heartbeat, 28000)
     }
 
     const path = getPath()
@@ -84,12 +96,27 @@ export class Lib {
     this.pageData = {
       path,
       actions: {
-        stop: options?.unique ? () => { } : () => clearInterval(interval),
+        stop: () => {
+          clearInterval(interval)
+          clearInterval(hbInterval)
+        },
       },
     }
 
     this.trackPage(path, options?.unique)
     return this.pageData.actions
+  }
+
+  private heartbeat() {
+    if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
+      return
+    }
+
+    const data = {
+      pid: this.projectID,
+    }
+
+    this.sendRequest('hb', data)
   }
 
   private checkIgnore(path: string): boolean {
@@ -133,7 +160,7 @@ export class Lib {
       pg,
     }
 
-    this.submitData(data)
+    this.sendRequest('', data)
   }
 
   private debug(message: string) {
@@ -165,19 +192,8 @@ export class Lib {
     return true
   }
 
-  private submitData(body: object) {
-    return fetch(host, {
-      method: 'post',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-  }
-
-  private submitCustom(body: object) {
-    return fetch(`${host}/custom`, {
+  private sendRequest(path: string, body: object) {
+    return fetch(`${host}/${path}`, {
       method: 'post',
       headers: {
         'Accept': 'application/json',
