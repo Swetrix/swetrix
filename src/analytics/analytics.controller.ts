@@ -48,6 +48,28 @@ const getElValue = (el) => {
   return `'${el}'`
 }
 
+const getPIDsArray = (pids, pid) => {
+  const pidsEmpty = _isEmpty(pids)
+  const pidEmpty = _isEmpty(pid)
+  if (pidsEmpty && pidEmpty) throw new BadRequestException('An array of Project ID\'s (pids) or a Project ID (pid) has to be provided')
+  else if (!pidsEmpty && !pidEmpty) throw new BadRequestException('Please provide either an array of Project ID\'s (pids) or a Project ID (pid), but not both')
+  else if (!pidEmpty) {
+    pids = JSON.stringify([pid])
+  }
+
+  try {
+    pids = JSON.parse(pids)
+  } catch (e) {
+    throw new UnprocessableEntityException('Cannot process the provided array of Project ID\'s')
+  }
+
+  if (!_isArray(pids)) {
+    throw new UnprocessableEntityException('An array of Project ID\'s has to be provided as a \'pids\' param')
+  }
+
+  return pids
+}
+
 @ApiTags('Analytics')
 @UseGuards(RolesGuard)
 @Controller('log')
@@ -111,45 +133,39 @@ export class AnalyticsController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   // returns overall short statistics per project
   async getOverallStats(@Query() data, @CurrentUserId() uid: string): Promise<any> {
-    let { pids, pid } = data
-    const pidsEmpty = _isEmpty(pids)
-    const pidEmpty = _isEmpty(pid)
-    if (pidsEmpty && pidEmpty) throw new BadRequestException('An array of Project ID\'s (pids) or a Project ID (pid) has to be provided')
-    else if (!pidsEmpty && !pidEmpty) throw new BadRequestException('Please provide either an array of Project ID\'s (pids) or a Project ID (pid), but not both')
-    else if (!pidEmpty) {
-      pids = JSON.stringify([pid])
+    const { pids, pid } = data
+    const pidsArray = getPIDsArray(pids, pid)
+
+    for (let i = 0; i < _size(pidsArray); ++i) {
+      this.analyticsService.validatePID(pidsArray[i])
+      await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
     }
 
-    try {
-      pids = JSON.parse(pids)
-    } catch (e) {
-      throw new UnprocessableEntityException('Cannot process the provided array of Project ID\'s')
-    }
-
-    if (!_isArray(pids)) {
-      throw new UnprocessableEntityException('An array of Project ID\'s has to be provided as a \'pids\' param')
-    }
-
-    for (let i = 0; i < _size(pids); ++i) {
-      this.analyticsService.validatePID(pids[i])
-      await this.analyticsService.checkProjectAccess(pids[i], uid)
-    }
-
-    return this.analyticsService.getSummary(pids, 'w', true)
+    return this.analyticsService.getSummary(pidsArray, 'w', true)
   }
 
   @Get('/hb')
-  // @UseGuards(RolesGuard)
-  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getHeartBeatStats(@Query() data, @CurrentUserId() uid: string): Promise<object> {
-    const { pid } = data
-    this.analyticsService.validatePID(pid)
-    // await this.analyticsService.checkProjectAccess(pid, uid)
+    const { pids, pid } = data
+    const pidsArray = getPIDsArray(pids, pid)
+    const pidsSize = _size(pidsArray)
 
-    const result = await redis.countKeysByPattern(`hb:${pid}:*`)
-    return {
-      result,
+    for (let i = 0; i < pidsSize; ++i) {
+      this.analyticsService.validatePID(pidsArray[i])
+      await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
     }
+
+    const result = {}
+
+    for (let i = 0; i < pidsSize; ++i) {
+      const currentPID = pidsArray[i]
+      const keysAmout = await redis.countKeysByPattern(`hb:${currentPID}:*`)
+      result[currentPID] = keysAmout
+    }
+
+    return result
   }
 
   // Log custom event
