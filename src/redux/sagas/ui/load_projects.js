@@ -3,7 +3,9 @@ import _map from 'lodash/map'
 import _isString from 'lodash/isString'
 import Debug from 'debug'
 
-import { getProjects, getOverallStats } from '../../../api'
+import {
+  getProjects, getOverallStats, getLiveVisitors,
+} from '../../../api'
 import UIActions from 'redux/actions/ui'
 
 const debug = Debug('swetrix:rx:s:load-projects')
@@ -19,6 +21,9 @@ export default function* loadProjects() {
       overall: overall[res.id],
     }))
     yield put(UIActions.setProjects(results))
+
+    const liveStats = yield call(getLiveVisitors, pids)
+    yield put(UIActions.setLiveStats(liveStats))
   } catch ({ message }) {
     if (_isString(message)) {
       yield put(UIActions.setProjectsError(message))
