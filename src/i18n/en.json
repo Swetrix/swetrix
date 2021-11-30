@@ -182,7 +182,8 @@
     "unique": "Unique views",
     "createdAt": "Created at",
     "inc": "Increased by",
-    "dec": "Descreased by"
+    "dec": "Descreased by",
+    "liveVisitors": "Live visitors"
   },
   "docs": {
     "titles": {

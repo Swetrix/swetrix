@@ -182,7 +182,8 @@
     "unique": "Einzigartige Ansichten",
     "createdAt": "Erstellt am",
     "inc": "Gestiegen um",
-    "dec": "Gesunken um"
+    "dec": "Gesunken um",
+    "liveVisitors": "Live visitors"
   },
   "docs": {
     "titles": {

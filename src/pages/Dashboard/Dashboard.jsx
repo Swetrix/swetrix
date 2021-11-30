@@ -78,8 +78,8 @@ const ProjectCart = ({
               </div>
               <div className='mt-2 flex items-center text-sm text-gray-500 sm:mt-0'>
                 <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
-                Live visitors:
-                &nbsp;
+                {t('dashboard.liveVisitors')}
+                :&nbsp;
                 {live}
               </div>
             </div>

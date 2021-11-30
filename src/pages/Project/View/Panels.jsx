@@ -48,7 +48,8 @@ const Overview = ({
       <div className='flex text-lg justify-between'>
         <div className='flex items-center'>
           <PulsatingCircle className='mr-1.5' type='big' />
-          Live visitors:
+          {t('dashboard.liveVisitors')}
+          :
         </div>
         <p className='h-5 mr-2 text-gray-900 text-xl'>
           {live}
