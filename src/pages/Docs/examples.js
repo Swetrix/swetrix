@@ -66,9 +66,20 @@ export const trackPVAPI = `swetrix.trackViews({
   // This param is useful when tracking single-page landing websites.
   unique: false,
 
-  // A list of regular expressions or string pathes to ignore
+  // A list of regular expressions or string pathes to ignore.
   // for example: ['/dashboard', /^\/projects/i] setting will force
   // script to ignore all pathes which start with /projects or equal to /dashboard
   // Please pay attention, that the pathes always start with /
   ignore: [],
+
+  // Do not send Heartbeat requests to the server.
+  // By setting this to true you will not be able to see the realtime amount of
+  // users on your website.
+  noHeartbeat?: boolean
+
+  // Send Heartbeat requests when the website tab is not active in the browser.
+  // Setting this to true means that users who opened your website in inactive
+  // browser tab or window will not be counted into users realtime statistics.
+  // Setting this to true is usually useful for services like Spotify or Youtube
+  heartbeatOnBackground?: boolean
 })`

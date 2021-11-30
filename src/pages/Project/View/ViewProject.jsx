@@ -338,6 +338,7 @@ const ViewProject = ({
                   overall={project.overall}
                   chartData={chartData}
                   activePeriod={activePeriod}
+                  live={project.live}
                 />
               )}
               {_map(panelsData.types, type => {

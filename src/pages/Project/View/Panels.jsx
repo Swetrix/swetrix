@@ -15,6 +15,7 @@ import _slice from 'lodash/slice'
 import _sum from 'lodash/sum'
 
 import Progress from 'ui/Progress'
+import PulsatingCircle from 'ui/icons/PulsatingCircle'
 
 const ENTRIES_PER_PANEL = 5
 
@@ -35,7 +36,7 @@ PanelContainer.propTypes = {
 }
 
 const Overview = ({
-  overall, chartData, activePeriod, t,
+  overall, chartData, activePeriod, t, live,
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
@@ -44,6 +45,15 @@ const Overview = ({
 
   return (
     <PanelContainer name={t('project.overview')}>
+      <div className='flex text-lg justify-between'>
+        <div className='flex items-center'>
+          <PulsatingCircle className='mr-1.5' type='big' />
+          Live visitors:
+        </div>
+        <p className='h-5 mr-2 text-gray-900 text-xl'>
+          {live}
+        </p>
+      </div>
       {!_isEmpty(chartData) && (
         <>
           <p className='text-lg font-semibold'>

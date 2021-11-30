@@ -1,6 +1,7 @@
 import { types } from 'redux/actions/ui/types'
 import _filter from 'lodash/filter'
 import _findIndex from 'lodash/findIndex'
+import _map from 'lodash/map'
 
 const getInitialState = () => {
   return {
@@ -18,6 +19,18 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
         ...state,
         projects,
         isLoading: false,
+      }
+    }
+
+    case types.SET_LIVE_STATS: {
+      const { data } = payload
+
+      return {
+        ...state,
+        projects: _map(state.projects, res => ({
+          ...res,
+          live: data[res.id],
+        }))
       }
     }
 

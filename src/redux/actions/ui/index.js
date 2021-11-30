@@ -11,6 +11,13 @@ const setProjects = (projects) => ({
   },
 })
 
+const setLiveStats = (data) => ({
+  type: types.SET_LIVE_STATS,
+  payload: {
+    data,
+  },
+})
+
 const setProject = (project) => ({
   type: types.SET_PROJECT,
   payload: {
@@ -70,6 +77,7 @@ const UIActions = {
   deleteProjectCache,
   setProjectViewPrefs,
   setProject,
+  setLiveStats,
 }
 
 export default UIActions

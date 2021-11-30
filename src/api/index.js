@@ -7,7 +7,7 @@ import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
 
-const debug = Debug('analytics:api')
+const debug = Debug('swetrix:api')
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -208,6 +208,15 @@ export const getProjectData = (pid, tb = 'hour', period = '3d', from = '', to = 
 export const getOverallStats = (pids) =>
   api
     .get(`log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .then(response => response.data)
+    .catch(error => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getLiveVisitors = (pids) =>
+  api
+    .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
     .then(response => response.data)
     .catch(error => {
       debug('%s', error)

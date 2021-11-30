@@ -4,7 +4,7 @@ import Debug from 'debug'
 import { getAccessToken } from 'utils/accessToken'
 import UIActions from 'redux/actions/ui'
 
-const debug = Debug('analytics:rx:s:initialise')
+const debug = Debug('swetrix:rx:s:initialise')
 
 export default function* initialise() {
   try {

@@ -6,7 +6,7 @@ import Debug from 'debug'
 import { getProjects, getOverallStats } from '../../../api'
 import UIActions from 'redux/actions/ui'
 
-const debug = Debug('analytics:rx:s:load-projects')
+const debug = Debug('swetrix:rx:s:load-projects')
 
 export default function* loadProjects() {
   try {

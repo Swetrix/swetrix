@@ -23,6 +23,7 @@ console.log('%cWelcome, hacker, glad you opened your console, you seem serious a
 Swetrix.init(SWETRIX_PID)
 Swetrix.trackViews({
   ignore: [/^\/projects/i, /^\/verify/i],
+  heartbeatOnBackground: true,
 })
 
 Sentry.init({

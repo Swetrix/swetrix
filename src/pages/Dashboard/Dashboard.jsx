@@ -4,10 +4,10 @@ import cx from 'classnames'
 import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
+import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import { EyeIcon } from '@heroicons/react/outline'
-// import { ChartBarIcon } from '@heroicons/react/outline'
 import { CalendarIcon } from '@heroicons/react/outline'
 import { ArrowSmUpIcon } from '@heroicons/react/solid'
 import { ArrowSmDownIcon } from '@heroicons/react/solid'
@@ -18,9 +18,12 @@ import { isAuthenticated } from 'hoc/protected'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
 import { ActivePin, InactivePin } from 'ui/Pin'
+import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
 
-const ProjectCart = ({ name, url, created, active, overall, t, language }) => {
+const ProjectCart = ({
+  name, url, created, active, overall, t, language, live,
+}) => {
   const statsDidGrowUp = overall?.percChange >= 0
 
   return (
@@ -47,7 +50,7 @@ const ProjectCart = ({ name, url, created, active, overall, t, language }) => {
                 :
                 &nbsp;
                 <dd className='flex items-baseline'>
-                  <p className='h-5 mr-1 text-gray-500'>
+                  <p className='h-5 mr-1'>
                     {overall?.thisWeek}
                   </p>
                   <p className={cx('flex text-xs -ml-1 items-baseline', {
@@ -73,10 +76,12 @@ const ProjectCart = ({ name, url, created, active, overall, t, language }) => {
                     </p>
                 </dd>
               </div>
-              {/* <p className='mt-2 flex items-center text-sm text-gray-500 sm:mt-0'>
-                <ChartBarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
-                Average load time
-              </p> */}
+              <div className='mt-2 flex items-center text-sm text-gray-500 sm:mt-0'>
+                <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
+                Live visitors:
+                &nbsp;
+                {live}
+              </div>
             </div>
             <div className='mt-2 flex items-center text-sm text-gray-500'>
               <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
@@ -158,7 +163,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
             ) : (
               <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
                 <ul className='divide-y divide-gray-200'>
-                  {_map(projects, ({ name, id, created, active, overall }) => (
+                  {_map(projects, ({ name, id, created, active, overall, live }) => (
                     <ProjectCart
                       key={id}
                       t={t}
@@ -167,6 +172,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
                       created={created}
                       active={active}
                       overall={overall}
+                      live={_isNumber(live) ? live : 'N/A'}
                       url={routes.project.replace(':id', id)}
                     />
                   ))}
