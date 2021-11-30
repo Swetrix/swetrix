@@ -75,11 +75,11 @@ export const trackPVAPI = `swetrix.trackViews({
   // Do not send Heartbeat requests to the server.
   // By setting this to true you will not be able to see the realtime amount of
   // users on your website.
-  noHeartbeat?: boolean
+  noHeartbeat: false,
 
   // Send Heartbeat requests when the website tab is not active in the browser.
   // Setting this to true means that users who opened your website in inactive
   // browser tab or window will not be counted into users realtime statistics.
   // Setting this to true is usually useful for services like Spotify or Youtube
-  heartbeatOnBackground?: boolean
+  heartbeatOnBackground: false,
 })`
