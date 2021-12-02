@@ -40,9 +40,7 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async get(@CurrentUserId() userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[]> {
     this.logger.log({ userId, take, skip }, 'GET /project')
-    // const user = await this.userService.findOne(userId)
     const where = Object()
-
     where.admin = userId
 
     return await this.projectService.paginate({ take, skip }, where)
@@ -57,7 +55,7 @@ export class ProjectController {
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
     const project = await this.projectService.findOne(id)
 
-    if (_isEmpty(project)) throw new NotFoundException()
+    if (_isEmpty(project)) throw new NotFoundException('Project was not found in the database')
     return project
   }
 

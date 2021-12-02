@@ -1,5 +1,5 @@
 import { 
-  Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards,
+  Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards, Ip, Headers,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags } from '@nestjs/swagger'
@@ -17,10 +17,11 @@ import { RequestPasswordChangeDTO } from './dto/request-pass-change.dto'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
+import { checkRateLimit } from '../common/utils'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 
-// TODO: Add logout endpoint to delete the token
+// TODO: Add logout endpoint to invalidate the token
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
@@ -45,8 +46,10 @@ export class AuthController {
   }
 
   @Post('/login')
-  async loginUser(@Body() userLoginDTO: UserLoginDTO, @Req() request: Request): Promise<any> {
+  async loginUser(@Body() userLoginDTO: UserLoginDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userLoginDTO }, 'POST /auth/login')
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    await checkRateLimit(ip, 'login', 10, 3600)
     // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
 
     const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
@@ -54,8 +57,10 @@ export class AuthController {
   }
 
   @Post('/register')
-  async register(@Body() userDTO: SignupUserDTO, /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request): Promise<any> {
+  async register(@Body() userDTO: SignupUserDTO, /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userDTO }, 'POST /auth/register')
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    await checkRateLimit(ip, 'register')
 
     // await this.authService.checkCaptcha(recaptcha)
     this.userService.validatePassword(userDTO.password)
@@ -85,7 +90,7 @@ export class AuthController {
     try {
       actionToken = await this.actionTokensService.find(id)
     } catch {
-      throw new BadRequestException('Wrong token')
+      throw new BadRequestException('Incorrect token provided')
     }
 
     if (actionToken.action === ActionTokenType.EMAIL_VERIFICATION) {
@@ -103,7 +108,7 @@ export class AuthController {
     try {
       actionToken = await this.actionTokensService.find(id)
     } catch {
-      throw new BadRequestException('Wrong token')
+      throw new BadRequestException('Incorrect token provided')
     }
 
     if (actionToken.action === ActionTokenType.EMAIL_CHANGE) {
@@ -117,8 +122,14 @@ export class AuthController {
   }
 
   @Post('/reset-password')
-  async requestReset(@Body() body: RequestPasswordChangeDTO, @Req() request: Request): Promise<string> {
-    const user = await this.userService.findOneWhere({ email: body.email })
+  async requestReset(@Body() body: RequestPasswordChangeDTO, @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<string> {
+    this.logger.log({ body }, 'POST /auth/password-reset')
+    const { email } = body
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    await checkRateLimit(ip, 'reset-password')
+    await checkRateLimit(email, 'reset-password')
+
+    const user = await this.userService.findOneWhere({ email })
 
     if (!user) {
       return 'A password reset URL has been sent to your email'
@@ -127,7 +138,7 @@ export class AuthController {
     const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PASSWORD_RESET)
     const url = `${request.headers.origin}/password-reset/${actionToken.id}`
 
-    await this.mailerService.sendEmail(body.email, LetterTemplate.ConfirmPasswordChange, { url })
+    await this.mailerService.sendEmail(email, LetterTemplate.ConfirmPasswordChange, { url })
     return 'A password reset URL has been sent to your email'
   }
 
@@ -140,7 +151,7 @@ export class AuthController {
     try {
       actionToken = await this.actionTokensService.find(id)
     } catch {
-      throw new BadRequestException('Wrong token')
+      throw new BadRequestException('Incorrect token provided')
     }
 
     if (actionToken.action === ActionTokenType.PASSWORD_RESET) {

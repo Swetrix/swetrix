@@ -103,7 +103,7 @@ export class MailerService {
       }
 
       if (process.env.SMTP_MOCK) {
-        this.logger.log(message, 'sendEmail')
+        this.logger.log(message, 'sendEmail', true)
       } else {
         transporter.sendMail(message, (err, info) => {
           if (err) {

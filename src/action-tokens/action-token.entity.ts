@@ -10,16 +10,16 @@ export enum ActionTokenType {
 @Entity()
 export class ActionToken {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @ManyToOne(() => User, user => user.actionTokens, { onDelete: 'CASCADE' })
-  user: User;
+  user: User
 
   @CreateDateColumn()
   created: Timestamp
 
   @Column('varchar', { length: 254, default: null })
-  newValue: string;
+  newValue: string
 
   @Column({
     type: 'enum',

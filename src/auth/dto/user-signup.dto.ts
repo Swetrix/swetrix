@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail, IsNotEmpty, IsEmpty, IsDate } from 'class-validator'
+import { IsEmail, IsNotEmpty } from 'class-validator'
 // import { UserRole, Locale } from '../../users/entities/user.entity'
 
 export class SignupUserDTO {

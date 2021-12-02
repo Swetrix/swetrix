@@ -1,6 +1,8 @@
 import { Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import * as _isEmpty from 'lodash/isEmpty'
+import * as _size  from 'lodash/size'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { User } from './entities/user.entity'
@@ -69,16 +71,20 @@ export class UserService {
     return this.usersRepository.find({ where })
   }
 
-  validatePassword(pass: string): string | null {
-    if(!pass) {
-      return null
+  validatePassword(pass: string): void {
+    const err = []
+    if (_isEmpty(pass)) {
+      err.push('Password cannot be empty')
     }
 
-    const err = []
-    if(pass.length > 50)
+    if(_size(pass) > 50) {
       err.push('Maximum password length is 50 letters')
-    if(pass.length < 8)
+    }
+
+    if(_size(pass) < 8) {
       err.push('at least 8 characters')
+    }
+
     // if(!/[a-z]/.test(pass))
     //   err.push('should contain at least one lower case')
     // if(!/[A-Z]/.test(pass))
@@ -86,10 +92,8 @@ export class UserService {
     // if(!(/[!@#$%^&*(),.?":{}|<>]/g.test(pass)))
     //   err.push('should contain at least one symbol')
 
-    if (err.length > 0)
+    if (!_isEmpty(err)) {
       throw new BadRequestException(err)
-    else {
-      return null
     }
   }
 

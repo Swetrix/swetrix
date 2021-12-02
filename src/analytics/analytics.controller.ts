@@ -26,7 +26,7 @@ import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  clickhouse, isValidPID, REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
+  clickhouse, REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import ct from '../common/countriesTimezones'
@@ -170,11 +170,11 @@ export class AnalyticsController {
 
   // Log custom event
   @Post('/custom')
-  async logCustom(@Body() eventsDTO: EventsDTO, @Headers() headers): Promise<any> {
+  async logCustom(@Body() eventsDTO: EventsDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
     await this.analyticsService.validate(eventsDTO, origin)
 
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || ''
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
     if (eventsDTO.unique) {
       // const salt = await redis.get(REDIS_SESSION_SALT_KEY)

@@ -155,7 +155,7 @@ export class UserController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(@CurrentUserId() id: string, @Req() request: Request): Promise<boolean> {
     this.logger.log({ id }, 'POST /confirm_email')
-    
+
     const user = await this.userService.findOneWhere({ id })
 
     if (!user || !user.email || user.isActive || user.emailRequests >= MAX_EMAIL_REQUESTS) return false

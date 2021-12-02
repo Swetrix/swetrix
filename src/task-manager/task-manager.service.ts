@@ -1,4 +1,4 @@
-import { Injectable, HttpService } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 // import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
@@ -15,8 +15,9 @@ import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { ReportFrequency } from '../user/entities/user.entity'
 import {
-  clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, REDIS_SESSION_SALT_KEY,
+  clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
+import { getRandomTip } from '../common/utils'
 
 dayjs.extend(utc)
 
@@ -24,7 +25,6 @@ dayjs.extend(utc)
 export class TaskManagerService {
   constructor(
     private readonly mailerService: MailerService,
-    private readonly httpService: HttpService,
     private readonly userService: UserService,
     private readonly analyticsService: AnalyticsService,
   ) {}
@@ -74,6 +74,7 @@ export class TaskManagerService {
     const now = dayjs.utc().format('DD.MM.YYYY')
     const weekAgo = dayjs.utc().subtract(1, 'w').format('DD.MM.YYYY')
     const date = `${weekAgo} - ${now}`
+    const tip = getRandomTip()
 
     for (let i = 0; i < _size(users); ++i) {
       if (_isEmpty(users[i]?.projects) || _isNull(users[i]?.projects)) {
@@ -90,6 +91,7 @@ export class TaskManagerService {
           data: data[pid],
           name: users[i].projects[index].name,
         })),
+        tip,
       }
 
       // todo: maybe this should be sent as a broadcast stream
@@ -110,6 +112,7 @@ export class TaskManagerService {
     const now = dayjs.utc().format('DD.MM.YYYY')
     const weekAgo = dayjs.utc().subtract(1, 'M').format('DD.MM.YYYY')
     const date = `${weekAgo} - ${now}`
+    const tip = getRandomTip()
 
     for (let i = 0; i < _size(users); ++i) {
       if (_isEmpty(users[i]?.projects) || _isNull(users[i]?.projects)) {
@@ -126,6 +129,7 @@ export class TaskManagerService {
           data: data[pid],
           name: users[i].projects[index].name,
         })),
+        tip,
       }
 
       // todo: maybe this should be sent as a broadcast stream

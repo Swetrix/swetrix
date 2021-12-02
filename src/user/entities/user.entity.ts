@@ -87,20 +87,20 @@ export class User {
   emailRequests: number
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created: Date;
+  created: Date
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated: Date;
+  updated: Date
 
   @Column({ type: 'timestamp', nullable: true })
-  exportedAt: Date;
+  exportedAt: Date
 
   @Column('varchar', { length: 28, nullable: true })
   stripeSubID: string
 
   @BeforeUpdate()
   updateTimestamp() {
-    this.updated = new Date;
+    this.updated = new Date
   }
 
   // @Column('datetime', { nullable: true, default: null })
