@@ -73,16 +73,14 @@
                                                    line-height: 23px;
                                                 "
                                              >
-                                                <!-- <div style="height: 10px; line-height: 10px; font-size: 8px;">&nbsp;</div> -->
                                                 {{#each projects}}
                                                   <h3 style="margin-bottom: 5px;">{{name}}</h3>
                                                   <b>Unique visitors:</b> {{data.thisWeekUnique}} ({{#greater data.percChangeUnique 0}}<span style="color: #059669;">+{{data.percChangeUnique}}%</span>{{else}}<span style="color: #DC2626;">{{data.percChangeUnique}}%</span>{{/greater}})<br />
                                                   <b>Pageviews:</b> {{data.thisWeek}} ({{#greater data.percChange 0}}<span style="color: #059669;">+{{data.percChange}}%</span>{{else}}<span style="color: #DC2626;">{{data.percChange}}%</span>{{/greater}})<br /><br />
                                                 {{/each}}
 
-
-                                                &#128161;
-                                                <i>
+                                                <i style="white-space: pre-line;">
+                                                   <span style="font-style: normal;">&#128161;</span>
                                                    {{tip}}
                                                 </i>
 
