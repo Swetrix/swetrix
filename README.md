@@ -1,6 +1,4 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# Swetrix Analytics API
 
 ## Installation
 
@@ -21,21 +19,8 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
 ## Deployment
-### The beployment process has been tested on Debian, but should work well on other APT-based OS as well
+### The beployment process has been tested on Debian, but should work well on other APT-based OS as well.
 Install MySQL, Clickhouse and Redis databases:
 ```bash
 sudo apt-get install apt-transport-https ca-certificates dirmngr
@@ -50,7 +35,7 @@ sudo apt -y install mariadb-server redis-server clickhouse-server clickhouse-cli
 sudo service clickhouse-server start
 ```
 
-MySQL DB setup:
+### MySQL DB setup:
 ```bash
 mysql -uroot
 
@@ -65,7 +50,10 @@ mysql -uroot -proot_password
 create database analytics;
 ```
 
-Clickhouse DB setup:
+The tables at `analytics` database should be generated on the first start of the API by the TypeORM module.
+
+
+### Clickhouse DB setup:
 ```bash
 create database analytics;
 
@@ -95,9 +83,9 @@ PARTITION BY toYYYYMM(created)
 ORDER BY (id, created, pid);
 ```
 
-For Redis please run `redis-cli` to test if it's working well.\
+For Redis please run `redis-cli` to test if it's working well.
 
-NodeJS (v14 LTS) & NPM (and PM2) installation:
+### NodeJS (v14 LTS) & NPM (and PM2) installation:
 ```bash
 curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
 sudo apt -y install nodejs gcc g++ make
@@ -122,7 +110,7 @@ npm i
 npm run build
 ```
 
-Set up NGINX ( https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10 )
+Set up NGINX (https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10)
 
 NGINX set up:
 ```
@@ -163,3 +151,7 @@ server {
   return 404;
 }
 ```
+
+Make sure to set up nginx to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.\
+The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.\
+The production swetrix.com API is covered by the Cloudflare proxying.
