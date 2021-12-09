@@ -1,7 +1,5 @@
 <img src="/public/assets/logo_blue.svg" alt="" height="100" />
 
-# Swetrix Analytics - swetrix.com
-
 ## Description
 Swetrix is a privacy-oriented, simple and fully cookie-less web analytics service.\
 It provides lots of metrics like unique visitors, live visitors monitoring, custom events, pageviews and many more.
