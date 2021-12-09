@@ -21,10 +21,9 @@ import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
 import {
-  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey,
+  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL,
 } from 'redux/constants'
 import { isAuthenticated } from 'hoc/protected'
-import { isAdmin } from 'utils/validator'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -33,7 +32,9 @@ import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import routes from 'routes'
-import { getProjectData, getProject } from 'api'
+import {
+  getProjectData, getProject, getOverallStats, getLiveVisitors,
+} from 'api'
 
 countries.registerLocale(countriesEn)
 
@@ -142,7 +143,7 @@ const NoEvents = ({ t }) => (
 )
 
 const ViewProject = ({
-  projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, user, setProject,
+  projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject, setLiveStatsForProject,
 }) => {
   const { t } = useTranslation('common')
   const periodPairs = tbPeriodPairs(t)
@@ -151,6 +152,7 @@ const ViewProject = ({
   const { id } = useParams()
   const history = useHistory()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
+  const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[1].period)
@@ -166,6 +168,11 @@ const ViewProject = ({
   const tnMapping = typeNameMapping(t)
 
   const { name } = project
+
+  const onErrorLoading = () => {
+    showError(t('project.noExist'))
+    history.push(routes.dashboard)
+  }
 
   const loadAnalytics = async () => {
     if (!isLoading && !_isEmpty(project)) {
@@ -225,6 +232,50 @@ const ViewProject = ({
     loadAnalytics()
   }, [project, period, timeBucket]) // eslint-disable-line
 
+  useEffect(() => {
+    let interval
+    if (project.uiHidden) {
+      interval = setInterval(async () => {
+        const { id } = project
+        const result = await getLiveVisitors([id])
+
+        setLiveStatsForProject(id, result[id])
+      }, LIVE_VISITORS_UPDATE_INTERVAL)
+    }
+
+    return () => clearInterval(interval)
+  }, [project])
+
+  useEffect(() => {
+    if (!isLoading && _isEmpty(project)) {
+      getProject(id)
+        .then(projectRes => {
+          if (!_isEmpty(projectRes) && projectRes?.public) {
+            getOverallStats([id])
+              .then(res => {
+                setPublicProject({
+                  ...projectRes,
+                  overall: res[id],
+                  live: 'N/A',
+                })
+              })
+              .catch(e => {
+                console.error(e)
+                onErrorLoading()
+              })
+
+            setIsProjectPublic(true)
+          } else {
+            onErrorLoading()
+          }
+        })
+        .catch(e => {
+          console.error(e)
+          onErrorLoading()
+        })
+    }
+  }, [isLoading, project])
+
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod)
     let tb = timeBucket
@@ -242,17 +293,6 @@ const ViewProject = ({
   const updateTimebucket = (newTimebucket) => {
     setTimebucket(newTimebucket)
     setProjectViewPrefs(id, period, newTimebucket)
-  }
-
-  if (!isLoading && _isEmpty(project)) {
-    if (isAdmin(user)) {
-      getProject(id)
-        .then(setProject)
-        .catch(console.error)
-    } else {
-      showError(t('project.noExist'))
-      history.push(routes.dashboard)
-    }
   }
 
   const openSettingsHandler = () => {
@@ -307,11 +347,13 @@ const ViewProject = ({
                 keyExtractor={pair => pair.label}
                 onSelect={pair => updatePeriod(pair.period)}
               />
-              <div className='h-full ml-3'>
-                <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
-                  {t('common.settings')}
-                </Button>
-              </div>
+              {!isProjectPublic && (
+                <div className='h-full ml-3'>
+                  <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
+                    {t('common.settings')}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           {isPanelsDataEmpty && (
@@ -410,7 +452,8 @@ ViewProject.propTypes = {
   setProjectViewPrefs: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
-  setProject: PropTypes.func.isRequired,
+  setPublicProject: PropTypes.func.isRequired,
+  setLiveStatsForProject: PropTypes.func.isRequired,
 }
 
 export default isAuthenticated(memo(ViewProject))

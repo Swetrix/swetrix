@@ -34,11 +34,37 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
-    case types.SET_PROJECT: {
+    case types.SET_LIVE_STATS_PROJECT: {
+      const { id, count } = payload
+
+      return {
+        ...state,
+        projects: _map(state.projects, res => {
+          if (res.id === id) {
+            return {
+              ...res,
+              live: count,
+            }
+          } else {
+            return res
+          }
+        })
+      }
+    }
+
+    case types.SET_PUBLIC_PROJECT: {
       const { project } = payload
       return {
         ...state,
-        projects: _findIndex(state.projects, (el) => el.id === project.id) >= 0 ? state.projects : [...state.projects, project],
+        projects: _findIndex(state.projects, (el) => el.id === project.id) >= 0
+          ? state.projects
+          : [
+              ...state.projects,
+              {
+                ...project,
+                uiHidden: true,
+              },
+            ],
       }
     }
 
