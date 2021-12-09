@@ -1,3 +1,5 @@
+<img src="/public/assets/logo_blue.svg" alt="" height="100" />
+
 # Swetrix Analytics - swetrix.com
 
 ## Description
