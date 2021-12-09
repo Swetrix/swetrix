@@ -90,7 +90,7 @@ const Footer = ({ minimal, authenticated }) => {
         <div className='xl:grid xl:grid-cols-3 xl:gap-8'>
           <div className='space-y-8 xl:col-span-1'>
             <div className='flex gap-5 flex-wrap'>
-              <img className='h-10 w-28' src='/assets/logo_white.png' height='40' width='112' loading='lazy' alt='Swetrix Analytics' />
+              <img className='h-10' src='/assets/logo_white.svg' loading='lazy' alt='Swetrix Analytics' />
               <img className='h-10 w-28' src='/assets/pci.png' height='40' width='112' loading='lazy' alt='PCI Complaint' />
               <img className='h-10 w-28' src='/assets/mc.png' height='40' width='112' loading='lazy' alt='' />
               <img className='h-10 w-28' src='/assets/visa.png' height='40' width='112' loading='lazy' alt='' />
