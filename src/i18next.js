@@ -23,7 +23,7 @@ i18next
   .use(lngDetector)
   .init({
     detection: {
-      order: ['localStorage', 'customDetector'],
+      order: ['localStorage', 'navigator', 'customDetector'],
       lookupLocalStorage: 'language',
     },
     interpolation: {
