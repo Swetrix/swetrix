@@ -2,7 +2,6 @@
 FROM node:lts-alpine as build
 ENV TZ=Etc/UTC
 ENV REACT_APP_API_URL="https://example.com/api/"
-ENV REACT_APP_TITLE_SUFFIX="| Swetrix"
 ENV CHOKIDAR_USEPOLLING=true
 ENV GENERATE_SOURCEMAP=false
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
