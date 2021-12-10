@@ -6,6 +6,7 @@ import en from './i18n/en.json'
 import ru from './i18n/ru.json'
 import uk from './i18n/uk.json'
 import de from './i18n/de.json'
+import hi from './i18n/hi.json'
 
 const lngDetector = new LanguageDetector()
 lngDetector.addDetector({
@@ -28,7 +29,7 @@ i18next
     interpolation: {
       escapeValue: false,
     },
-    fallbackLng: 'en',
+    fallbackLng: defaultLanguage,
     parseMissingKeyHandler: (key) => {
       if (i18next.isInitialized) {
         console.warn(`Missing translation for ${key}`)
@@ -41,6 +42,7 @@ i18next
       ru: { common: ru },
       uk: { common: uk },
       de: { common: de },
+      hi: { common: hi },
     },
   })
 
