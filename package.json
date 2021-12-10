@@ -25,7 +25,6 @@
     "i18next-browser-languagedetector": "^6.1.2",
     "lodash": "^4.17.21",
     "nanoid": "^3.1.29",
-    "node-sass": "^5.0.0",
     "prismjs": "^1.25.0",
     "prop-types": "^15.7.2",
     "react": "^17.0.2",
@@ -46,9 +45,6 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "build:css": "cross-env sass --no-source-map src:src --load-path ./node_modules --style compressed",
-    "watch:css": "cross-env npm run build-css && cross-env sass --no-source-map src:src --load-path ./node_modules --style compressed --watch",
-    "build:cf-pages": "npm run build:css && npm run build",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
@@ -71,10 +67,10 @@
     ]
   },
   "devDependencies": {
+    "@tailwindcss/postcss7-compat": "^2.2.17",
     "autoprefixer": "^9.8.8",
     "cross-env": "^7.0.3",
     "postcss": "^7.0.39",
-    "sass": "^1.42.1",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.16"
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17"
   }
 }
