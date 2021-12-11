@@ -21,7 +21,7 @@ On production, swetrix.com uses Cloudflare Pages to host the frontend part of th
 
 ### Docker Setup
 
-Swetrix provides Docker a Docker Image based on Alpine, Nginx and Node.
+Swetrix provides a Docker Image based on Alpine, Nginx and Node.
 To use it you just just pull `swetrix/swetrixfe` from dockerhub.
 
 #### Docker Environment Variables
