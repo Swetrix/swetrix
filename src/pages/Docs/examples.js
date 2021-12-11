@@ -58,6 +58,9 @@ export const init = `swetrix.init('YOUR_PROJECT_ID', {
   // anonymises all incoming data and does not pass it on
   // to any third parties under any circumstances
   respectDNT: false,
+
+  // Set a custom URL of the API server (for selfhosted variants of Swetrix)
+  apiURL: 'https://api.swetrix.com/log',
 })
 `
 
