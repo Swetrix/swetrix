@@ -38,10 +38,10 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: [Project] })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async get(@CurrentUserId() userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[]> {
-    this.logger.log({ userId, take, skip }, 'GET /project')
+  async get(@CurrentUserId() uid: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[]> {
+    this.logger.log({ uid, take, skip }, 'GET /project')
     const where = Object()
-    where.admin = userId
+    where.admin = uid
 
     return await this.projectService.paginate({ take, skip }, where)
   }
@@ -50,12 +50,15 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async getOne(@Param('id') id: string): Promise<Project> {
+  async getOne(@Param('id') id: string, @CurrentUserId() uid: string): Promise<Project> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
-    const project = await this.projectService.findOne(id)
 
+    const project = await this.projectService.findOne(id)
     if (_isEmpty(project)) throw new NotFoundException('Project was not found in the database')
+
+    this.projectService.allowedToView(project, uid)
+
     return project
   }
 
@@ -63,9 +66,9 @@ export class ProjectController {
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<Project> {
-    this.logger.log({ projectDTO, userId }, 'POST /project')
-    const user = await this.userService.findOneWithRelations(userId, ['projects'])
+  async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() uid: string): Promise<Project> {
+    this.logger.log({ projectDTO, uid }, 'POST /project')
+    const user = await this.userService.findOneWithRelations(uid, ['projects'])
     const maxProjects = ACCOUNT_PLANS[user.planCode].maxProjects
 
     if (!user.isActive) {
@@ -107,8 +110,8 @@ export class ProjectController {
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
-  async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<any> {
-    this.logger.log({ projectDTO, userId, id }, 'PUT /project/:id')
+  async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() uid: string): Promise<any> {
+    this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
     this.projectService.validateProject(projectDTO)
 
     const project = await this.projectService.findOneWithRelations(id)
@@ -116,11 +119,12 @@ export class ProjectController {
     if (_isEmpty(project)) {
       throw new NotFoundException()
     }
-    this.projectService.allowedToManage(project, userId)
+    this.projectService.allowedToManage(project, uid)
 
     project.active = projectDTO.active
     project.origins = _map(projectDTO.origins, _trim)
     project.name = projectDTO.name
+    project.public = projectDTO.public
 
     await this.projectService.update(id, project)
 
@@ -140,8 +144,8 @@ export class ProjectController {
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
-  async delete(@Param('id') id: string, @CurrentUserId() userId: string): Promise<any> {
-    this.logger.log({ userId, id }, 'DELETE /project/:id')
+  async delete(@Param('id') id: string, @CurrentUserId() uid: string): Promise<any> {
+    this.logger.log({ uid, id }, 'DELETE /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
     const project = await this.projectService.findOneWhere({ id }, {
@@ -152,7 +156,7 @@ export class ProjectController {
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
     }
-    this.projectService.allowedToManage(project, userId)
+    this.projectService.allowedToManage(project, uid)
 
     const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
     const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`

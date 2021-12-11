@@ -42,7 +42,7 @@ export class AnalyticsService {
     if (_isEmpty(project)) {
       project = await this.projectService.findOne(pid, {
         relations: ['admin'],
-        select: ['origins', 'active', 'admin']
+        select: ['origins', 'active', 'admin', 'public']
       })
       if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
       await redis.set(pidKey, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
@@ -59,7 +59,7 @@ export class AnalyticsService {
 
   async checkProjectAccess(pid: string, uid: string): Promise<void> {
     const project = await this.getRedisProject(pid)
-    this.projectService.allowedToManage(project, uid)
+    this.projectService.allowedToView(project, uid)
   }
 
   // Returns amount of existing events starting from month
