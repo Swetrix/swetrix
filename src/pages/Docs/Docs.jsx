@@ -184,17 +184,11 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4' />
             <p className='text-lg text-gray-900 tracking-tight'>
-              <i>Last updated: November 30, 2021. (v1.2.0)</i><br />
+              <i>Last updated: December 11, 2021. (v1.3.0)</i><br />
               <div>
-                - Added a heartbeat mechanism to track realtime visitors.
-                <br />
-                &nbsp;&nbsp;&nbsp;New params noHeartbeat and heartbeatOnBackground have been introduced to the&nbsp;
-                <a className='hover:underline text-gray-700' href='#docs-tv'>trackViews</a>
-                &nbsp;function.
-                <br />
-                - Using XMLHttpRequest instead of Fetch API for better browser compatibility.
-                <br />
-                - Other minor improvements and optimisations.
+                - Added ability to specify the &nbsp;
+                <a className='hover:underline text-gray-700' href='#docs-init'>custom API URL</a>
+                &nbsp;parameter.
               </div>
             </p>
           </div>
