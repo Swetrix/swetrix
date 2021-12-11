@@ -12,6 +12,7 @@ import Checkbox from 'ui/Checkbox'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
+import { isSelfhosted } from 'redux/constants'
 
 const Signin = ({ login }) => {
   const { t } = useTranslation('common')
@@ -115,13 +116,17 @@ const Signin = ({ login }) => {
           />
           <div className='flex justify-between mt-3'>
             <div className='pt-1'>
-              <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800'>
-                {t('auth.signin.forgot')}
-              </Link>
-              <span>&nbsp;|&nbsp;</span>
-              <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800'>
-                {t('auth.common.signupInstead')}
-              </Link>
+            {!isSelfhosted && (
+              <>
+                <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800'>
+                  {t('auth.signin.forgot')}
+                </Link>
+                <span>&nbsp;|&nbsp;</span>
+                <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800'>
+                  {t('auth.common.signupInstead')}
+                </Link>
+              </>
+            )}
             </div>
             <Button type='submit' loading={isLoading} primary large>
               {t('auth.signin.button')}

@@ -14,6 +14,7 @@ import Footer from 'components/Footer'
 import Loader from 'ui/Loader'
 
 import ScrollToTop from 'hoc/ScrollToTop'
+import Selfhosted from 'hoc/Selfhosted'
 import { getAccessToken } from 'utils/accessToken'
 import { authMe } from './api'
 import { authActions } from 'redux/actions/auth'
@@ -109,29 +110,31 @@ const App = () => {
       <>
         <Header authenticated={authenticated} />
         <ScrollToTop>
-          <Suspense fallback={<Fallback isMinimalFooter={isMinimalFooter} />}>
-            <Switch>
-              <Route path={routes.main} component={MainPage} exact />
-              <Route path={routes.signin} component={SignIn} exact />
-              <Route path={routes.signup} component={SignUp} exact />
-              <Route path={routes.dashboard} component={Dashboard} exact />
-              <Route path={routes.user_settings} component={UserSettings} exact />
-              <Route path={routes.verify} component={VerifyEmail} exact />
-              <Route path={routes.change_email} component={VerifyEmail} exact />
-              <Route path={routes.reset_password} component={ForgotPassword} exact />
-              <Route path={routes.new_password_form} component={CreateNewPassword} exact />
-              <Route path={routes.new_project} component={ProjectSettings} exact />
-              <Route path={routes.project_settings} component={ProjectSettings} exact />
-              <Route path={routes.project} component={ViewProject} exact />
-              <Route path={routes.billing} component={Billing} exact />
-              <Route path={routes.docs} component={Docs} exact />
-              <Route path={routes.contact} component={Contact} exact />
-              <Route path={routes.features} component={Features} exact />
-              <Route path={routes.privacy} component={Privacy} exact />
-              <Route path={routes.terms} component={Terms} exact />
-              <Redirect to={routes.main} />
-            </Switch>
-          </Suspense>
+          <Selfhosted>
+            <Suspense fallback={<Fallback isMinimalFooter={isMinimalFooter} />}>
+              <Switch>
+                <Route path={routes.main} component={MainPage} exact />
+                <Route path={routes.signin} component={SignIn} exact />
+                <Route path={routes.signup} component={SignUp} exact />
+                <Route path={routes.dashboard} component={Dashboard} exact />
+                <Route path={routes.user_settings} component={UserSettings} exact />
+                <Route path={routes.verify} component={VerifyEmail} exact />
+                <Route path={routes.change_email} component={VerifyEmail} exact />
+                <Route path={routes.reset_password} component={ForgotPassword} exact />
+                <Route path={routes.new_password_form} component={CreateNewPassword} exact />
+                <Route path={routes.new_project} component={ProjectSettings} exact />
+                <Route path={routes.project_settings} component={ProjectSettings} exact />
+                <Route path={routes.project} component={ViewProject} exact />
+                <Route path={routes.billing} component={Billing} exact />
+                <Route path={routes.docs} component={Docs} exact />
+                <Route path={routes.contact} component={Contact} exact />
+                <Route path={routes.features} component={Features} exact />
+                <Route path={routes.privacy} component={Privacy} exact />
+                <Route path={routes.terms} component={Terms} exact />
+                <Redirect to={routes.main} />
+              </Switch>
+            </Suspense>
+          </Selfhosted>
         </ScrollToTop>
         <Footer minimal={isMinimalFooter} authenticated={authenticated} />
       </>

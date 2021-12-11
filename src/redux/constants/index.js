@@ -45,6 +45,8 @@ export const TOKEN = 'access_token'
 
 export const TITLE_SUFFIX = '| Swetrix'
 
+export const isSelfhosted = process.env.REACT_APP_SELFHOSTED
+
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
 
