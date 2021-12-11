@@ -1,0 +1,347 @@
+{
+  "common": {
+    "features": "功能",
+    "docs": "文档",
+    "getStarted": "开始",
+    "billing": "帐单",
+    "pricing": "定价",
+    "faqs": "常见问题",
+    "you": "您",
+    "dashboard": "管理板面",
+    "logout": "登出",
+    "save": "保存",
+    "continue": "继续",
+    "error": "错误",
+    "close": "关闭",
+    "cancel": "取消",
+    "gotIt": "知道了",
+    "settings": "设置",
+    "openMenu": "开启菜单",
+    "closeMenu": "关闭菜单"
+  },
+  "main": {
+    "slogan": "一个尊重<span>用户隐私<span>的<span>强大</span>分析平台",
+    "trackEveryMetric": "在不侵犯用户隐私的情况下跟踪您需要的每个指标。",
+    "description": " Swetrix 为您的 Web 应用程序带来了高级且可定制的分析服务。",
+    "signup": "注册，免费！",
+    "signupTerms": "注册即表示您同意我们的<tos>条款和条件</tos>以及<pp>隐私政策。</pp>",
+    "techDetails": "想了解更多技术细节？",
+    "lookAtDocs": "查看文档和功能页面。",
+    "readyToStart": "准备好了吗？",
+    "exploreService": "探索我们的服务或创建一个帐户。",
+    "faq": {
+      "title": "得到一些问题的答案",
+      "list": [
+        {
+          "question": " Swetrix 跟踪是否需要 cookie？",
+          "answer": "不，不需要。 我们的分析脚本完全没有 cookie。 您无需在网站上使用 cookie 通知即可使用我们的服务。\n我们遵守 《一般资料保护规范》、《隐私暨电子通讯规则》、《加州消费者隐私法》、《电子隐私指令》和 《儿童在线隐私权保护法》等法规。"
+        },
+        {
+          "question": "您是否使用/共享/出售最终用户的数据？",
+          "answer": "不，我们不会。此外，我们收集的所有数据都是匿名的。 我们不会存储任何可让识别特定用户身份的数据。我们尽量做到透明和尊重隐私。"
+        },
+        {
+          "question": "我需要为您们的服务付费吗？",
+          "answer": "我们提供免费和付费帐户。虽然付费级别的大部分功能都包含在免费级别中，但付费级别每月可提供更多的活动。您可以随时升级或降级您的帐户订阅。"
+        },
+        {
+          "question": "我的数据是否安全？",
+          "answer": "我们遵守有关数据存储和处理安全的所有标准。所有数据都安全存储，第三方无法访问，所有通信始终通过加密通道 (HTTPS) 进行。"
+        }
+      ]
+    },
+    "features": [
+      {
+        "name": "简单而强大",
+        "description": "以直接的方式查看您的所有分析。不用再纠结于令人困惑的报告、指标和通知了。"
+      },
+      {
+        "name": "开源",
+        "description": "我们的跟踪脚本是开源的，可供所有人探索。我们只跟踪我们声明的数据。"
+      },
+      {
+        "name": "完整的活动跟踪",
+        "description": "通过我们，您不仅可以跟踪流量，还可以跟踪自定义活动，例如按钮点击或注册。"
+      },
+      {
+        "name": "无需 cookie 横幅",
+        "description": "我们不做有针对性的广告或分析，我们根本不依赖跟踪 cookie。 我们的商业模式是销售软件，而非数据。"
+      },
+      {
+        "name": "我们速度快",
+        "description": "我们使用全球 CDN 为我们的应用程序提供服务，我们的分析脚本加载速度比竞争对手快."
+      },
+      {
+        "name": "比较、探索和享受数据",
+        "description": "您可以按选定类别查看数据，还可以关联统计信息，例如将唯一用户与常规页面浏览量分开。"
+      }
+    ],
+    "custSupport": "找不到您要找的答案？ 联系我们的<mail>客户支持</mail>团队。",
+    "whyUs": "为何选择我们"
+  },
+  "auth": {
+    "recovery": {
+      "title": "帐户恢复",
+      "save": "保存新密码",
+      "newPassword": "您的新密码",
+      "updated": "您的密码已更新"
+    },
+    "forgot": {
+      "sent": "密码重置邮件已发送至指定地址",
+      "reset": "重置密码"
+    },
+    "signin": {
+      "title": "登录您的账户",
+      "forgot": "忘记密码？",
+      "button": "登录"
+    },
+    "signup": {
+      "button": "注册",
+      "tos": "我接受<tos>条款和条件</tos>以及<pp>隐私政策</pp>。",
+      "email": "电子邮件地址",
+      "create": "创建您的帐户"
+    },
+    "verification": {
+      "success": "您的邮箱已成功验证！"
+    },
+    "common": {
+      "signinInstead": "改为登录",
+      "signupInstead": "改为注册",
+      "password": "密码",
+      "noRemember": "不记得我了。",
+      "repeat": "重复密码",
+      "hint": "长于 {{amount}} 个字符",
+      "xCharsError": "密码必须至少包含 {{amount}} 个字符。",
+      "noMatchError": "密码必须匹配。",
+      "badEmailError": "请提供有效的电子邮件。",
+      "tosError": "您必须接受我们的《服务条款》 和《隐私政策》才能使用我们的服务。",
+      "email": "电子邮件",
+      "signin": "登录"
+    }
+  },
+  "features": {
+    "feature1Name": "透明度",
+    "feature1Content": "在 Swetrix，我们相信每个人都享有隐私权和透明度。尤其是在分析方面。\n我们不会收集超越我们<docs>声明</docs>范围的信息，所有数据都存储在位于欧盟的服务器上，我们的分析脚本是公开可用的，并且可以通过我们的 <gh>Github</gh>访问。",
+    "ready": "准备好了解您的用户了吗？",
+    "start": "立即开始使用 Swetrix。",
+    "list": [
+      {
+        "name": "简单",
+        "content": "当我们创建我们的服务时，我们试图使其尽可能简单和灵活。\n不再有令人困惑的指标和复杂的管理板面 - 通过我们，您可以以简单直接的方式控制您的所有项目和数据。"
+      },
+      {
+        "name": "页面查看跟踪",
+        "content": "Swetrix 提供了跟踪页面浏览量的能力，包括独特的浏览量和用户流。\n所有视图都包含广泛的数据，例如用户国家、区域设置、设备类型、页面加载时间等。\n我们不使用 cookie 或任何其他类型的用户分析来收集数据。"
+      },
+      {
+        "name": "自定义活动跟踪",
+        "content": "除了跟踪页面浏览量，我们还提供跟踪自定义活动的功能。\n您可以跟踪任何活动，例如按钮点击、注册或授权。\n所有这些对用户来说也是完全私有的，因为我们不会将他们的任何其他信息与活动一起存储。\n您可以在我们的文档中阅读有关自定义活动的更多信息。"
+      },
+      {
+        "name": "速度",
+        "content": "我们速度很快。我们的分析脚本尽可能优化并使用 CDN 进行交付，这确保脚本不会减慢您的网站速度。"
+      },
+      {
+        "name": "相信",
+        "content": "我们是一家小企业，不是大公司。\n我们感兴趣的是创造一种优质的产品，以便满意客户使用，而不是从我们的用户那里榨取尽可能多的钱或出售您的个人数据。"
+      }
+    ]
+  },
+  "profileSettings": {
+    "general": "常规设置",
+    "update": "更新个人资料",
+    "email": "电子邮件报告",
+    "frequency": "我们应该多久向您发送一封有关您网站的电子邮件摘要？",
+    "noLink": "没有收到确认电子邮件地址的链接？ 请求一个新的！",
+    "requestExport": "请求数据导出",
+    "delete": "删除帐户",
+    "deactivateConfirmation": "您确定要停用您的帐户吗？\n您的所有数据都将从我们的服务器中永久删除。\n此操作无法撤消。",
+    "exportConfirmation": "根据《一般数据保护条例》 (GDPR) 第 20 条的要求，您有权接收我们存储的您的个人数据。此报告不包括每个项目的活动数据。\n数据报告将发送到您的电子邮件地址。\n注：您每两周只能请求一次数据导出。",
+    "dataExport": "数据导出",
+    "aDelete": "删除我的账户",
+    "qDelete": "要删除您的账户吗？",
+    "weekly": "每周",
+    "monthly": "每月",
+    "never": "从不",
+    "reportSent": " 《一般数据保护条例》数据报告已发送至您的电子邮件地址。",
+    "tryAgainInXDays": "请稍后再试。您每 {{amount}} 天只能请求一次 《一般数据保护条例》导出。",
+    "updated": "您的账户设置已更新",
+    "confTimeout": "电子邮件已发送，请检查您的邮箱或过几分钟再试",
+    "confSent": "账户确认链接已发送至您的邮箱",
+    "noConfLeft": "很遗憾，您的电子邮件确认请求已用完。\n请确保您能够接收电子邮件并再次检查您的垃圾邮件文件夹中的邮件。\n您可以尝试使用其他电子邮件地址或 联系我们的客户支持服务。"
+  },
+  "dashboard": {
+    "newProject": "新项目",
+    "verifyEmailTitle": "请先验证电子邮件地址",
+    "verifyEmailDesc": "若要开始使用我们的服务并创建您的项目，您首先需要确认您的电子邮件地址。\n\n确认您的帐户的链接已发送到您在注册时提供的电子邮件地址，如果未发送 - 您可以在帐户设置中再次请求链接。",
+    "noProjects": "您尚未创建任何项目",
+    "createProject": "在此处创建一个新项目以开始使用我们的服务",
+    "active": "活跃",
+    "disabled": "已禁用",
+    "pageviews": "页面浏览量",
+    "unique": "独特浏览量",
+    "createdAt": "创建时间",
+    "inc": "增加了",
+    "dec": "减少了",
+    "liveVisitors": "实时访客"
+  },
+  "docs": {
+    "titles": {
+      "start": "开始",
+      "umd": "UMD 构建",
+      "npm": "NPM 包",
+      "how": "如何...",
+      "pv": "跟踪浏览量",
+      "ce": "跟踪自定义活动",
+      "api": "API"
+    },
+    "install": "您也可以使用 NPM 或 Yarn 安装跟踪脚本",
+    "import": "接下来您应该将模块导入到您的项目根目录中，例如",
+    "track": "在您可以跟踪任何您想要的内容之后。\n阅读下面关于跟踪参数的详细文档。",
+    "pv": "Swetrix.js 跟踪脚本提供了一种在页面加载后收集页面查看活动的方法。\n这可以通过调用 <link>trackViews()</link> 函数来完成：",
+    "ce": "除了跟踪浏览量之外，我们还提供跟踪自定义活动的功能。\n例如，如果您想跟踪诸如“注册”或“新闻通讯订阅”之类的活动，此功能将非常实用。\n下屏幕，这个功能的原理和trackViews类似。",
+    "init": "这个函数用于初始化分析。\n基本上您让脚本知道您想用哪个项目使用它，并在需要时指定您的自定义参数。",
+    "tr": "使用此功能，您可以跟踪您想要的任何自定义活动。\n您不应将任何可识别数据（如用户 ID、电子邮件、会话 cookie 等）作为活动名称发送。\n总数跟踪通话并保存其转化率。",
+    "tv": {
+      "call": "调用 trackViews 会将有关用户的数据发送到我们的服务器。\n如果可用，此类数据将包括下一个参数：\n",
+      "gather": "在服务器端，我们还收集用户 IP 地址和用户代理。\n此数据用于检测页面视图是否是唯一的。\n<b>我们不存储 IP 地址和用户代理作为原始字符串</b>，此类数据以加盐哈希形式存储，时间不超过 30 分钟或 12:00 AM UTC，无论先发生什么。\n在此时间范围之后，可识别数据将永远从我们的服务器中删除。",
+      "params": {
+        "pid": "唯一的项目 ID 请求与之相关。",
+        "lc": "用户区域设置（例如 en_US 或 uk_UA）。",
+        "tz": "用户时区（例如欧洲/赫尔辛基）。",
+        "ref": "打开页面的上一个网页的 URL。",
+        "so": "页面源('ref' | 'source' | 'utm_source' GET param).",
+        "me": "UTM 介质('utm_medium' GET param).",
+        "ca": "UTM 广告系列 ('utm_campaign' GET param).",
+        "pg": "用户当前查看的页面（例如 /您好）."
+      }
+    },
+    "contents": "内容"
+  },
+  "project": {
+    "noExist": "所选项目不存在",
+    "exportImg": "以图片形式导出",
+    "noEvTitle": "尚无活动",
+    "noEvContent": "在指定的时间范围内没有捕获任何活动。\n如果您还没有跟踪任何活动，您可以查看我们的<link>文档</link>以轻松地将跟踪集成到您的应用中。",
+    "mapping": {
+      "cc": "国家",
+      "pg": "页面",
+      "lc": "语言环境",
+      "ref": "推荐人",
+      "dv": "设备类型",
+      "br": "浏览器",
+      "os": "操作系统名称",
+      "lt": "加载时间"
+    },
+    "overview": "概览",
+    "weeklyStats": "每周统计数据",
+    "statsFor": "统计数据",
+    "event": "活动",
+    "quantity": "数量",
+    "conversion": "转换",
+    "customEv": "自定义获得",
+    "noParamData": "此参数尚无数据",
+    "prev": "上一个",
+    "next": "下一个",
+    "unique": "独特访客",
+    "total": "总页面浏览量",
+    "today": "今天",
+    "lastXDays": "最后 {{amount}} 天",
+    "lastXWeeks": "最近 {{amount}} 周",
+    "lastXMonths": "最近 {{amount}} 个月",
+    "hour": "小时",
+    "day": "天",
+    "week": "周",
+    "month": "月",
+    "settings": {
+      "verify": "请先验证您的电子邮件地址",
+      "updated": "项目的设置已更新",
+      "created": "项目已创建",
+      "pxCharsError": "项目名称不能超过 {{amount}} 个字符。",
+      "oxCharsError": "允许的来源列表必须小于 {{amount}} 符号",
+      "noNameError": "请输入项目名称。",
+      "create": "创建一个新项目",
+      "settings": "设置",
+      "name": "项目名称",
+      "pid": "项目 ID ",
+      "origins": "允许起源",
+      "originsHint": "允许将脚本与您的 ProjectID 一起使用的来源（域）列表，以逗号分隔。\n将其留空以允许所有来源（默认设置）。\n例如：cornell.edu, app.example。 com, ssu.gov.ua ",
+      "enabled": "项目已启用",
+      "public": "管理面板是公开的",
+      "enabledHint": "禁用的项目不会计算任何新传入的活动或浏览量。\n您仍然可以在管理面板中访问项目的分析。",
+      "publicHint": "通过勾选此项，互联网上的任何人（包括 Google）都可以看到该项目的管理面板。\n只有项目的管理员可以编辑设置。",
+      "createHint": "*您在创建项目后将能够更彻底地进行设置",
+      "delete": "删除项目",
+      "qDelete": "删除项目？",
+      "deleteHint": "通过按“删除项目”，您了解此操作是不可逆的。\n该项目及其所有相关数据将从我们的服务器中删除。"
+    }
+  },
+  "billing": {
+    "title": "账单和计划",
+    "desc": "我们提供免费服务。\n如果您需要处理更多流量，您可能需要升级您的计划。\n以下是现有计划列表。没有隐藏费用或其他隐蔽条款，清晰透明！",
+    "contact": "需要每月跟踪超过 100 万个活动？\n请通过 <mail>{{email}}</mail> 与我们联系以讨论您的需求。"
+  },
+  "pricing": {
+    "title": "定价计划",
+    "adv": "免费开始，无需信用卡。\n当您的业务增长时，您可以随时升级您的计划。",
+    "currentPlan": "当前计划",
+    "free": "免费",
+    "perMonth": "月",
+    "yourPlan": "您的计划",
+    "downgrade": "降级",
+    "upgrade": "升级",
+    "whatIncl": "包括什么",
+    "tiers": {
+      "hobby": "爱好",
+      "freelancer": "自由职业者",
+      "startup": "启动",
+      "enterprise": "企业",
+      "upToXEVMo": " 每月最多 {{amount}} 个活动。",
+      "xEvMo": "每月{{amount}} 个活动",
+      "upToXProjects": "最多创建 {{amount}} 个项目。",
+      "xMoDataRetention": "{{amount}} 个月的数据保留期。",
+      "highStandardSec": "高标准安全。",
+      "evXPlanIncl": "包括所有 {{plan}} 计划。",
+      "smallBusiSupport": "通过购买此产品，您是在支持一家小型企业。",
+      "carbonRemoval": "您的订阅有助于去除碳。"
+    }
+  },
+  "contact": {
+    "desc": "有什么想问的吗？\n请给我们发送电子邮件至 <mail>{{email}}</mail>"
+  },
+  "titles": {
+    "recovery": "账户恢复",
+    "signin": "登录",
+    "signup": "注册",
+    "verification": "电子邮箱验证",
+    "profileSettings": "个人资料设置",
+    "features": "功能",
+    "dashboard": "管理面板",
+    "docs": "文档",
+    "billing": "账单",
+    "contact": "联系方式"
+  },
+  "footer": {
+    "slogan": "最好的应用需要最好的服务。",
+    "description": " Swetrix 是一个尊重用户隐私的强大分析平台",
+    "madeIn": "制造",
+    "hostedIn": "托管于",
+    "ukraine": "乌克兰",
+    "eu": "欧盟",
+    "support": "支持",
+    "company": "公司",
+    "legal": "法律",
+    "copy": " Swetrix Analytics。保留所有权利。",
+    "contact": "联系人",
+    "pp": "隐私政策",
+    "tos": "服务条款",
+    "blog": "博客",
+    "billing": "账单",
+    "pricing": "定价",
+    "docs": "文档",
+    "guides": "指南",
+    "privacy": "隐私",
+    "terms": "条款",
+    "status": "状态"
+  }
+}
