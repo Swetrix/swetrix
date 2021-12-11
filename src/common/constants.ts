@@ -36,6 +36,8 @@ const clickhouse = new ClickHouse({
   },
 })
 
+const isSelfhosted = process.env.SELFHOSTED
+
 /**
  * Calculates in percent, the change between 2 numbers.
  * e.g from 1000 to 500 = 50%
@@ -92,5 +94,5 @@ export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME, getRedisUserCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
-  STRIPE_SECRET, STRIPE_WH_SECRET, REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME,
+  STRIPE_SECRET, STRIPE_WH_SECRET, REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME, isSelfhosted,
 }

@@ -19,7 +19,7 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse,
+  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse, isSelfhosted,
 } from '../common/constants'
 
 @ApiTags('Project')
@@ -72,7 +72,7 @@ export class ProjectController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    if (_size(user.projects) >= (maxProjects || 5)) {
+    if (!isSelfhosted && _size(user.projects) >= (maxProjects || 5)) {
       throw new ForbiddenException(`You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`)
     }
 

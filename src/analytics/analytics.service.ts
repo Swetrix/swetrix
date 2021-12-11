@@ -17,7 +17,7 @@ import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
-  redisProjectCountCacheTimeout, // REDIS_SESSION_SALT_KEY,
+  redisProjectCountCacheTimeout, isSelfhosted, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -130,11 +130,13 @@ export class AnalyticsService {
 
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
-    const count = await this.getRedisCount(project.admin.id)
-    const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
-
-    if (count >= maxCount) {
-      throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+    if (!isSelfhosted) {
+      const count = await this.getRedisCount(project.admin.id)
+      const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
+  
+      if (count >= maxCount) {
+        throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+      }
     }
 
     this.checkOrigin(project, origin)

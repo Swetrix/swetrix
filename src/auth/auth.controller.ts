@@ -20,6 +20,7 @@ import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { checkRateLimit } from '../common/utils'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
+import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 
 // TODO: Add logout endpoint to invalidate the token
 @ApiTags('Auth')
@@ -56,6 +57,7 @@ export class AuthController {
     return await this.authService.login(user)
   }
 
+  @UseGuards(SelfhostedGuard)
   @Post('/register')
   async register(@Body() userDTO: SignupUserDTO, /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userDTO }, 'POST /auth/register')
@@ -82,6 +84,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(SelfhostedGuard)
   @Get('/verify/:id')
   async verify(@Param('id') id: string): Promise<User> {
     this.logger.log({ id }, 'GET /auth/verify/:id')
@@ -100,6 +103,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(SelfhostedGuard)
   @Get('/change-email/:id')
   async changeEmail(@Param('id') id: string): Promise<User> {
     this.logger.log({ id }, 'GET /auth/change-email/:id')
@@ -121,6 +125,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(SelfhostedGuard)
   @Post('/reset-password')
   async requestReset(@Body() body: RequestPasswordChangeDTO, @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<string> {
     this.logger.log({ body }, 'POST /auth/password-reset')
@@ -142,6 +147,7 @@ export class AuthController {
     return 'A password reset URL has been sent to your email'
   }
 
+  @UseGuards(SelfhostedGuard)
   @Post('/password-reset/:id')
   async reset(@Param('id') id: string, @Body() body: PasswordChangeDTO): Promise<User> {
     this.logger.log({ id }, 'POST /auth/password-reset/:id')
