@@ -7,6 +7,7 @@ import ru from './i18n/ru.json'
 import uk from './i18n/uk.json'
 import de from './i18n/de.json'
 import hi from './i18n/hi.json'
+import zh from './i18n/zh.json'
 
 const lngDetector = new LanguageDetector()
 lngDetector.addDetector({
@@ -43,6 +44,7 @@ i18next
       uk: { common: uk },
       de: { common: de },
       hi: { common: hi },
+      zh: { common: zh },
     },
   })
 
