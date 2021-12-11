@@ -2,6 +2,7 @@ export interface LibOptions {
     debug?: boolean;
     disabled?: boolean;
     respectDNT?: boolean;
+    apiURL?: string;
 }
 export interface TrackEventOptions {
     ev: string;

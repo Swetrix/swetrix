@@ -62,7 +62,7 @@ var getPath = function () {
     return location.pathname || '';
 };
 
-var host = 'https://api.swetrix.com/log';
+var DEFAULT_API_HOST = 'https://api.swetrix.com/log';
 var Lib = /** @class */ (function () {
     function Lib(projectID, options) {
         this.projectID = projectID;
@@ -187,6 +187,8 @@ var Lib = /** @class */ (function () {
         return true;
     };
     Lib.prototype.sendRequest = function (path, body) {
+        var _a;
+        var host = ((_a = this.options) === null || _a === void 0 ? void 0 : _a.apiURL) || DEFAULT_API_HOST;
         var req = new XMLHttpRequest();
         req.open('POST', "".concat(host, "/").concat(path), true);
         req.setRequestHeader('Content-Type', 'application/json');

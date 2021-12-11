@@ -15,6 +15,9 @@ export interface LibOptions {
   // By setting this flag to `true`, we will not collect ANY kind of data about the user
   // with the DNT setting.
   respectDNT?: boolean
+
+  // Set a custom URL of the API server (for selfhosted variants of Swetrix)
+  apiURL?: string
 }
 
 export interface TrackEventOptions {
@@ -48,7 +51,7 @@ export interface PageViewsOptions {
   heartbeatOnBackground?: boolean
 }
 
-const host = 'https://api.swetrix.com/log'
+const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 
 export class Lib {
   private pageData: PageData | null = null
@@ -193,6 +196,7 @@ export class Lib {
   }
 
   private sendRequest(path: string, body: object): void {
+    const host = this.options?.apiURL || DEFAULT_API_HOST
     const req = new XMLHttpRequest()
     req.open('POST', `${host}/${path}`, true)
     req.setRequestHeader('Content-Type', 'application/json')

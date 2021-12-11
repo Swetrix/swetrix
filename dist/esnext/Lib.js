@@ -1,5 +1,5 @@
 import { isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer, getUTMCampaign, getUTMMedium, getUTMSource, getPath, } from './utils';
-const host = 'https://api.swetrix.com/log';
+const DEFAULT_API_HOST = 'https://api.swetrix.com/log';
 export class Lib {
     constructor(projectID, options) {
         this.projectID = projectID;
@@ -122,6 +122,7 @@ export class Lib {
         return true;
     }
     sendRequest(path, body) {
+        const host = this.options?.apiURL || DEFAULT_API_HOST;
         const req = new XMLHttpRequest();
         req.open('POST', `${host}/${path}`, true);
         req.setRequestHeader('Content-Type', 'application/json');
