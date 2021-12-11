@@ -11,7 +11,7 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import routes from 'routes'
 import { authActions } from 'redux/actions/auth'
 import {
-  whitelist, languages, languageFlag,
+  whitelist, languages, languageFlag, isSelfhosted,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
@@ -41,19 +41,21 @@ const Header = ({ authenticated }) => {
                 <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Features'>
                   {t('common.features')}
                 </NavLink>
-                {authenticated ? (
-                  <NavLink to={routes.billing} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Billing'>
-                    {t('common.billing')}
-                  </NavLink>
-                ) : (
-                  <>
-                    <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='Pricing'>
-                      {t('common.pricing')}
-                    </HashLink>
-                    <HashLink to={`${routes.main}#faqs`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='FAQs'>
-                      {t('common.faqs')}
-                    </HashLink>
-                  </>
+                {!isSelfhosted && (
+                  authenticated ? (
+                    <NavLink to={routes.billing} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Billing'>
+                      {t('common.billing')}
+                    </NavLink>
+                  ) : (
+                    <>
+                      <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                        {t('common.pricing')}
+                      </HashLink>
+                      <HashLink to={`${routes.main}#faqs`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' key='FAQs'>
+                        {t('common.faqs')}
+                      </HashLink>
+                    </>
+                  )
                 )}
                 <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700' key='Docs'>
                   {t('common.docs')}
@@ -81,9 +83,11 @@ const Header = ({ authenticated }) => {
               />
               {authenticated ? (
                 <>
-                  <NavLink to={routes.user_settings} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700'>
-                    {t('common.you')}
-                  </NavLink>
+                  {!isSelfhosted && (
+                    <NavLink to={routes.user_settings} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700'>
+                      {t('common.you')}
+                    </NavLink>
+                  )}
                   <Link to={routes.dashboard} className='inline-block select-none bg-white py-2 px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>
                     {t('common.dashboard')}
                   </Link>
@@ -96,9 +100,11 @@ const Header = ({ authenticated }) => {
                   <Link to={routes.signin} className='inline-block select-none bg-indigo-500 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75'>
                     {t('auth.common.signin')}
                   </Link>
-                  <Link to={routes.signup} className='inline-block select-none bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>
-                    {t('common.getStarted')}
-                  </Link>
+                  {!isSelfhosted && (
+                    <Link to={routes.signup} className='inline-block select-none bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>
+                      {t('common.getStarted')}
+                    </Link>
+                  )}
                 </>
               )}
             </div>

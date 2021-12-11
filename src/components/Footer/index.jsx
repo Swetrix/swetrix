@@ -6,6 +6,7 @@ import _map from 'lodash/map'
 import Flag from 'react-flagkit'
 import PropTypes from 'prop-types'
 
+import { isSelfhosted } from 'redux/constants'
 import routes from 'routes'
 
 const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
@@ -70,11 +71,13 @@ const Footer = ({ minimal, authenticated }) => {
                 {t('common.docs')}
               </Link>
             </div>
-            <div className='px-5 py-2'>
-              <a href={STATUSPAGE_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer'>
-                {t('footer.status')}
-              </a>
-            </div>
+            {!isSelfhosted && (
+              <div className='px-5 py-2'>
+                <a href={STATUSPAGE_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer'>
+                  {t('footer.status')}
+                </a>
+              </div>
+            )}
           </nav>
         </div>
       </footer>
