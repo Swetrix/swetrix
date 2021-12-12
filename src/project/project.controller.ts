@@ -48,8 +48,6 @@ export class ProjectController {
 
   @Get('/:id')
   @ApiResponse({ status: 200, type: Project })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getOne(@Param('id') id: string, @CurrentUserId() uid: string): Promise<Project> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')

@@ -57,7 +57,7 @@ export class AnalyticsService {
     return project
   }
 
-  async checkProjectAccess(pid: string, uid: string): Promise<void> {
+  async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
     const project = await this.getRedisProject(pid)
     this.projectService.allowedToView(project, uid)
   }

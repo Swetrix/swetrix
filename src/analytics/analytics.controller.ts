@@ -80,8 +80,6 @@ export class AnalyticsController {
   ) { }
 
   @Get('/')
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getData(@Query() data: AnalyticsGET_DTO, @CurrentUserId() uid: string): Promise<any> {
     const { pid, period, timeBucket, from, to } = data
     this.analyticsService.validatePID(pid)
@@ -129,8 +127,6 @@ export class AnalyticsController {
   }
 
   @Get('/birdseye')
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   // returns overall short statistics per project
   async getOverallStats(@Query() data, @CurrentUserId() uid: string): Promise<any> {
     const { pids, pid } = data
@@ -145,8 +141,6 @@ export class AnalyticsController {
   }
 
   @Get('/hb')
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getHeartBeatStats(@Query() data, @CurrentUserId() uid: string): Promise<object> {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)

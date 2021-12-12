@@ -77,7 +77,7 @@ export class ProjectService {
     return this.projectsRepository.findOne({ where, ...params })
   }
 
-  allowedToView(project: Project, uid: string): void {
+  allowedToView(project: Project, uid: string | null): void {
     if (project.public || uid === project.admin.id) {
       return
     } else {
