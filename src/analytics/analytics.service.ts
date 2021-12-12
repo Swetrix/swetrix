@@ -47,7 +47,7 @@ export class AnalyticsService {
       } else {
         project = await this.projectService.findOne(pid, {
           relations: ['admin'],
-          select: ['origins', 'active', 'admin']
+          select: ['origins', 'active', 'admin', 'public']
         })
       }
       if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
@@ -63,10 +63,10 @@ export class AnalyticsService {
     return project
   }
 
-  async checkProjectAccess(pid: string, uid: string): Promise<void> {
+  async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
     if (!isSelfhosted) {
       const project = await this.getRedisProject(pid)
-      this.projectService.allowedToManage(project, uid)
+      this.projectService.allowedToView(project, uid)
     }
   }
 

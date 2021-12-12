@@ -60,21 +60,23 @@ export class ProjectController {
 
   @Get('/:id')
   @ApiResponse({ status: 200, type: Project })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async getOne(@Param('id') id: string): Promise<Project> {
+  async getOne(@Param('id') id: string, @CurrentUserId() uid: string): Promise<Project> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+
     let project
 
     if (isSelfhosted) {
       const projects = await getJSONProjects()
       project = projects[id]
     } else {
-      await this.projectService.findOne(id)
+      project = await this.projectService.findOne(id)
     }
 
     if (_isEmpty(project)) throw new NotFoundException('Project was not found in the database')
+
+    this.projectService.allowedToView(project, uid)
+
     return project
   }
 
@@ -144,8 +146,8 @@ export class ProjectController {
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
-  async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<any> {
-    this.logger.log({ projectDTO, userId, id }, 'PUT /project/:id')
+  async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() uid: string): Promise<any> {
+    this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
     this.projectService.validateProject(projectDTO)
     let project
 
@@ -159,6 +161,7 @@ export class ProjectController {
       project.active = projectDTO.active
       project.origins = _map(projectDTO.origins, _trim)
       project.name = projectDTO.name
+      project.public = projectDTO.public
 
       projects[project.id] = project
       await setJSONProjects(projects)
@@ -168,11 +171,12 @@ export class ProjectController {
       if (_isEmpty(project)) {
         throw new NotFoundException()
       }
-      this.projectService.allowedToManage(project, userId)
+      this.projectService.allowedToManage(project, uid)
 
       project.active = projectDTO.active
       project.origins = _map(projectDTO.origins, _trim)
       project.name = projectDTO.name
+      project.public = projectDTO.public
 
       await this.projectService.update(id, project)
     }
@@ -193,8 +197,8 @@ export class ProjectController {
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
-  async delete(@Param('id') id: string, @CurrentUserId() userId: string): Promise<any> {
-    this.logger.log({ userId, id }, 'DELETE /project/:id')
+  async delete(@Param('id') id: string, @CurrentUserId() uid: string): Promise<any> {
+    this.logger.log({ uid, id }, 'DELETE /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
     if (isSelfhosted) {
@@ -227,7 +231,7 @@ export class ProjectController {
       if (_isEmpty(project)) {
         throw new NotFoundException(`Project with ID ${id} does not exist`)
       }
-      this.projectService.allowedToManage(project, userId)
+      this.projectService.allowedToManage(project, uid)
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`

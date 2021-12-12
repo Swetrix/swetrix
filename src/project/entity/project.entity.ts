@@ -26,6 +26,12 @@ export class Project {
   })
   active: boolean
 
+  @ApiProperty()
+  @Column({
+    default: false,
+  })
+  public: boolean
+
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.projects)
   admin: User

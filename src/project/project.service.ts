@@ -77,6 +77,14 @@ export class ProjectService {
     return this.projectsRepository.findOne({ where, ...params })
   }
 
+  allowedToView(project: Project, uid: string | null): void {
+    if (project.public || uid === project.admin.id) {
+      return
+    } else {
+      throw new ForbiddenException('You are not allowed to access this project')
+    }
+  }
+
   allowedToManage(project: Project, uid: string): void {
     if (uid === project.admin.id) {
       return
