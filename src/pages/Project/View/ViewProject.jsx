@@ -23,7 +23,6 @@ import Title from 'components/Title'
 import {
   tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL,
 } from 'redux/constants'
-import { isAuthenticated } from 'hoc/protected'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -143,11 +142,11 @@ const NoEvents = ({ t }) => (
 )
 
 const ViewProject = ({
-  projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject, setLiveStatsForProject,
+  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
+  setLiveStatsForProject, authenticated,
 }) => {
   const { t } = useTranslation('common')
   const periodPairs = tbPeriodPairs(t)
-
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
@@ -164,6 +163,7 @@ const ViewProject = ({
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
+  const isLoading = authenticated ? _isLoading : false 
 
   const tnMapping = typeNameMapping(t)
 
@@ -244,7 +244,7 @@ const ViewProject = ({
     }
 
     return () => clearInterval(interval)
-  }, [project])
+  }, [project, setLiveStatsForProject])
 
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
@@ -274,7 +274,7 @@ const ViewProject = ({
           onErrorLoading()
         })
     }
-  }, [isLoading, project])
+  }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
 
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod)
@@ -317,7 +317,10 @@ const ViewProject = ({
   if (!isLoading) {
     return (
       <Title title={name}>
-        <div className='min-h-min-footer bg-gray-50 py-6 px-4 sm:px-6 lg:px-8' ref={dashboardRef}>
+        <div className={cx('bg-gray-50 py-6 px-4 sm:px-6 lg:px-8', {
+          'min-h-min-footer': authenticated,
+          'min-h-min-footer-ad': !authenticated,
+        })} ref={dashboardRef}>
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
             <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
             <div className='flex mt-3 md:mt-0'>
@@ -430,6 +433,34 @@ const ViewProject = ({
             </div>
           </div>
         </div>
+        {!authenticated && (
+          <div className='bg-indigo-600'>
+            <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
+              <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
+                <span className='block text-white'>
+                  {t('project.ad')}
+                </span>
+                <span className='block text-gray-300'>
+                  {t('main.exploreService')}
+                </span>
+              </h2>
+              <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
+                <Link
+                  to={routes.signup}
+                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                >
+                  {t('common.getStarted')}
+                </Link>
+                <Link
+                  to={routes.main}
+                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                >
+                  {t('common.explore')}
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </Title>
     )
   }
@@ -454,6 +485,7 @@ ViewProject.propTypes = {
   user: PropTypes.object.isRequired,
   setPublicProject: PropTypes.func.isRequired,
   setLiveStatsForProject: PropTypes.func.isRequired,
+  authenticated: PropTypes.bool.isRequired,
 }
 
-export default isAuthenticated(memo(ViewProject))
+export default memo(ViewProject)

@@ -7,6 +7,8 @@
     "pricing": "Pricing",
     "faqs": "FAQs",
     "you": "You",
+    "explore": "Explore",
+    "liveDemo": "Live demo",
     "dashboard": "Dashboard",
     "logout": "Logout",
     "save": "Save",
@@ -26,7 +28,7 @@
     "signup": "Sign up, it's free!",
     "signupTerms": "By signing up, you agree to our <tos>Terms and Conditions</tos> and <pp>Privacy Policy.</pp>",
     "techDetails": "Want to know more technical details?",
-    "lookAtDocs": "Look at the documentation and features pages.",
+    "lookAtDocs": "Look at the documentation and live demonstration pages.",
     "readyToStart": "Ready to get started?",
     "exploreService": "Explore our service or create an account.",
     "faq": {
@@ -219,6 +221,7 @@
     "contents": "Contents"
   },
   "project": {
+    "ad": "Want these stats for your website?",
     "noExist": "The selected project does not exist",
     "exportImg": "Export as image",
     "noEvTitle": "No events yet",

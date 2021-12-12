@@ -8,6 +8,7 @@ const mapStateToProps = (state) => ({
   isLoading: state.ui.projects.isLoading,
   cache: state.ui.cache.analytics,
   projectViewPrefs: state.ui.cache.projectViewPrefs,
+  authenticated: state.auth.authenticated,
 })
 
 const mapDispatchToProps = (dispatch) => ({
