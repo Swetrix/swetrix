@@ -6,6 +6,7 @@ import { ExtractJwt } from 'passport-jwt'
 
 import { UserService } from '../../user/user.service'
 import { User } from '../../user/entities/user.entity'
+import { isSelfhosted } from '../constants'
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -17,7 +18,7 @@ export class RolesGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const secret = process.env.JWT_SECRET
     const roles = this.reflector.get<string[]>('roles', context.getHandler())
-    if (!roles) {
+    if (!roles || isSelfhosted) {
       return true
     }
 
