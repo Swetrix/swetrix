@@ -11,6 +11,7 @@ import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
 import { isAuthenticated } from '../../../hoc/protected'
+import { isSelfhosted } from 'redux/constants'
 import { createProject, updateProject, deleteProject } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -45,7 +46,7 @@ const ProjectSettings = ({
   const [projectSaving, setProjectSaving] = useState(false)
 
   useEffect(() => {
-    if (!user.isActive) {
+    if (!user.isActive && !isSelfhosted) {
       showError(t('project.settings.verify'))
       history.push(routes.dashboard)
     }

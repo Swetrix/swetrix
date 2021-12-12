@@ -20,6 +20,7 @@ import Loader from 'ui/Loader'
 import { ActivePin, InactivePin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
+import { isSelfhosted } from 'redux/constants'
 
 const ProjectCart = ({
   name, url, created, active, overall, t, language, live,
@@ -119,7 +120,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
   const history = useHistory()
 
   const onNewProject = () => {
-    if (user.isActive) {
+    if (user.isActive || isSelfhosted) {
       history.push(routes.new_project)
     } else {
       setShowActivateEmailModal(true)
