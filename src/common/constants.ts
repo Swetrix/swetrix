@@ -1,5 +1,7 @@
 import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
+import { v5 as uuidv5 } from 'uuid'
+import * as fs from 'fs'
 import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
 import * as _round from 'lodash/round'
@@ -35,6 +37,70 @@ const clickhouse = new ClickHouse({
     database: process.env.CLICKHOUSE_DATABASE,
   },
 })
+
+const CLICKHOUSE_INIT_QUERIES = [
+  'CREATE DATABASE IF NOT EXISTS analytics',
+  `CREATE TABLE IF NOT EXISTS analytics.analytics
+  (
+    id UUID,
+    pid FixedString(12),
+    ev String,
+    pg Nullable(String),
+    dv Nullable(String),
+    br Nullable(String),
+    os Nullable(String),
+    lc Nullable(String),
+    ref Nullable(String),
+    so Nullable(String),
+    me Nullable(String),
+    ca Nullable(String),
+    lt Nullable(UInt16),
+    cc Nullable(FixedString(2)),
+    unique UInt8,
+    created DateTime
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (id, created, pid);`,
+  `CREATE TABLE IF NOT EXISTS analytics.customEV
+  (
+      id UUID,
+      pid FixedString(12),
+      ev String,
+      created DateTime
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (id, created, pid);`,
+]
+
+const isSelfhosted = process.env.SELFHOSTED
+
+const initialiseClickhouse = async () => {
+  console.log('Initialising Clickhouse')
+
+  for (const query of CLICKHOUSE_INIT_QUERIES) {
+    await clickhouse.query(query).toPromise()
+  }
+
+  console.log('Initialising Clickhouse: DONE')
+}
+
+const initialiseSelfhosted = () => {
+  if (isSelfhosted) {
+    fs.writeFile('../../projects.json', '{}', { flag: 'wx' }, (err) => {
+      if (err) console.error(err)
+    })
+  }
+}
+
+initialiseClickhouse()
+initialiseSelfhosted()
+
+const SELFHOSTED_EMAIL = process.env.EMAIL
+const SELFHOSTED_PASSWORD = process.env.PASSWORD
+const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
+const SELFHOSTED_UUID = isSelfhosted ? uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE) : ''
 
 /**
  * Calculates in percent, the change between 2 numbers.
@@ -92,5 +158,6 @@ export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME, getRedisUserCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
-  STRIPE_SECRET, STRIPE_WH_SECRET, REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME,
+  STRIPE_SECRET, STRIPE_WH_SECRET, REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME, isSelfhosted, UUIDV5_NAMESPACE,
+  SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD, SELFHOSTED_UUID, CLICKHOUSE_INIT_QUERIES,
 }

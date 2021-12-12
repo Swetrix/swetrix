@@ -9,6 +9,7 @@ import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { hash } from 'blake3'
+import { promises as fs } from 'fs'
 import {
   Injectable, BadRequestException, InternalServerErrorException, ForbiddenException,
 } from '@nestjs/common'
@@ -17,7 +18,7 @@ import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
-  redisProjectCountCacheTimeout, // REDIS_SESSION_SALT_KEY,
+  redisProjectCountCacheTimeout, isSelfhosted, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -40,10 +41,22 @@ export class AnalyticsService {
     let project = await redis.get(pidKey)
 
     if (_isEmpty(project)) {
-      project = await this.projectService.findOne(pid, {
-        relations: ['admin'],
-        select: ['origins', 'active', 'admin']
-      })
+      if (isSelfhosted) {
+        let projects
+
+        try {
+          const rawData = await fs.readFile('../../projects.json', 'utf8')
+          projects = JSON.parse(rawData)
+        } catch (e) {
+          throw new InternalServerErrorException('Error while reading projects data')
+        }
+        project = projects[pid]
+      } else {
+        project = await this.projectService.findOne(pid, {
+          relations: ['admin'],
+          select: ['origins', 'active', 'admin']
+        })
+      }
       if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
       await redis.set(pidKey, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
     } else {
@@ -58,8 +71,10 @@ export class AnalyticsService {
   }
 
   async checkProjectAccess(pid: string, uid: string): Promise<void> {
-    const project = await this.getRedisProject(pid)
-    this.projectService.allowedToManage(project, uid)
+    if (!isSelfhosted) {
+      const project = await this.getRedisProject(pid)
+      this.projectService.allowedToManage(project, uid)
+    }
   }
 
   // Returns amount of existing events starting from month
@@ -70,12 +85,27 @@ export class AnalyticsService {
     if (_isEmpty(count)) {
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       const monthStart = dayjs.utc().startOf('month').format('YYYY-MM-DD HH:mm:ss')
-      const pids = await this.projectService.find({
-        where: {
-          admin: uid,
-        },
-        select: ['id'],
-      })
+
+      let pids
+
+      if (isSelfhosted) {
+        let projects
+
+        try {
+          const rawData = await fs.readFile('../../projects.json', 'utf8')
+          projects = JSON.parse(rawData)
+        } catch (e) {
+          throw new InternalServerErrorException('Error while reading projects data')
+        }
+        pids = _keys(projects)
+      } else {
+        pids = await this.projectService.find({
+          where: {
+            admin: uid,
+          },
+          select: ['id'],
+        })
+      }
 
       const count_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${now}'`
       const result = await clickhouse.query(count_query).toPromise()
@@ -130,11 +160,13 @@ export class AnalyticsService {
 
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
-    const count = await this.getRedisCount(project.admin.id)
-    const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
-
-    if (count >= maxCount) {
-      throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+    if (!isSelfhosted) {
+      const count = await this.getRedisCount(project.admin.id)
+      const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
+  
+      if (count >= maxCount) {
+        throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+      }
     }
 
     this.checkOrigin(project, origin)

@@ -1,8 +1,9 @@
 import {
   Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete,
-  BadRequestException, HttpCode, NotFoundException, ForbiddenException,
+  BadRequestException, HttpCode, NotFoundException, ForbiddenException, InternalServerErrorException,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { promises as fs } from 'fs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
@@ -19,7 +20,7 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse,
+  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse, isSelfhosted,
 } from '../common/constants'
 
 @ApiTags('Project')
@@ -65,40 +66,68 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
-    const user = await this.userService.findOneWithRelations(userId, ['projects'])
-    const maxProjects = ACCOUNT_PLANS[user.planCode].maxProjects
+    
+    if (isSelfhosted) {
+      let projects
 
-    if (!user.isActive) {
-      throw new ForbiddenException('Please, verify your email address first')
-    }
+      try {
+        const rawData = await fs.readFile('../../projects.json', 'utf8')
+        projects = JSON.parse(rawData)
+      } catch (e) {
+        throw new InternalServerErrorException('Error while reading projects data')
+      }
 
-    if (_size(user.projects) >= (maxProjects || 5)) {
-      throw new ForbiddenException(`You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`)
-    }
+      this.projectService.validateProject(projectDTO)
+      this.projectService.checkIfIDUniqueJSON(projects, projectDTO.id)
 
-    this.projectService.validateProject(projectDTO)
-
-    await this.projectService.checkIfIDUnique(projectDTO.id)
-
-    try {
       const project = new Project()
       Object.assign(project, projectDTO)
       project.origins = _map(projectDTO.origins, _trim)
 
-      const newProject = await this.projectService.create(project)
-      user.projects.push(project)
-
-      await this.userService.create(user)
-
-      return newProject
-    } catch(e) {
-      if (e.code === 'ER_DUP_ENTRY'){
-        if (e.sqlMessage.includes(projectDTO.id)){
-          throw new BadRequestException('Project with selected ID already exists')
-        }
+      projects[project.id] = project
+      try {
+        await fs.writeFile('../../projects.json', JSON.stringify(projects), { flag: 'w' })
+      } catch (e) {
+        throw new InternalServerErrorException('Error while saving project')
       }
 
-      throw new BadRequestException(e)
+      return project
+    } else {
+      const user = await this.userService.findOneWithRelations(userId, ['projects'])
+      const maxProjects = ACCOUNT_PLANS[user.planCode].maxProjects
+
+      if (!user.isActive) {
+        throw new ForbiddenException('Please, verify your email address first')
+      }
+
+      if (!isSelfhosted && _size(user.projects) >= (maxProjects || 5)) {
+        throw new ForbiddenException(`You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`)
+      }
+
+      this.projectService.validateProject(projectDTO)
+
+      await this.projectService.checkIfIDUnique(projectDTO.id)
+
+      try {
+        const project = new Project()
+        Object.assign(project, projectDTO)
+        project.origins = _map(projectDTO.origins, _trim)
+
+        const newProject = await this.projectService.create(project)
+        user.projects.push(project)
+
+        await this.userService.create(user)
+
+        return newProject
+      } catch(e) {
+        if (e.code === 'ER_DUP_ENTRY'){
+          if (e.sqlMessage.includes(projectDTO.id)){
+            throw new BadRequestException('Project with selected ID already exists')
+          }
+        }
+
+        throw new BadRequestException(e)
+      }
     }
   }
 
@@ -110,19 +139,46 @@ export class ProjectController {
   async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<any> {
     this.logger.log({ projectDTO, userId, id }, 'PUT /project/:id')
     this.projectService.validateProject(projectDTO)
+    let project
 
-    const project = await this.projectService.findOneWithRelations(id)
+    if (isSelfhosted) {
+      let projects
 
-    if (_isEmpty(project)) {
-      throw new NotFoundException()
+      try {
+        const rawData = await fs.readFile('../../projects.json', 'utf8')
+        projects = JSON.parse(rawData)
+      } catch (e) {
+        throw new InternalServerErrorException('Error while reading projects data')
+      }
+
+      project = projects[id]
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+      project.active = projectDTO.active
+      project.origins = _map(projectDTO.origins, _trim)
+      project.name = projectDTO.name
+
+      projects[project.id] = project
+      try {
+        await fs.writeFile('../../projects.json', JSON.stringify(projects), { flag: 'w' })
+      } catch (e) {
+        throw new InternalServerErrorException('Error while saving project')
+      }
+    } else {
+      project = await this.projectService.findOneWithRelations(id)
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+      this.projectService.allowedToManage(project, userId)
+
+      project.active = projectDTO.active
+      project.origins = _map(projectDTO.origins, _trim)
+      project.name = projectDTO.name
+
+      await this.projectService.update(id, project)
     }
-    this.projectService.allowedToManage(project, userId)
-
-    project.active = projectDTO.active
-    project.origins = _map(projectDTO.origins, _trim)
-    project.name = projectDTO.name
-
-    await this.projectService.update(id, project)
 
     const key = getRedisProjectKey(id)
 
@@ -144,27 +200,62 @@ export class ProjectController {
     this.logger.log({ userId, id }, 'DELETE /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
-    const project = await this.projectService.findOneWhere({ id }, {
-      relations: ['admin'],
-      select: ['id'],
-    })
+    if (isSelfhosted) {
+      let projects
 
-    if (_isEmpty(project)) {
-      throw new NotFoundException(`Project with ID ${id} does not exist`)
-    }
-    this.projectService.allowedToManage(project, userId)
+      try {
+        const rawData = await fs.readFile('../../projects.json', 'utf8')
+        projects = JSON.parse(rawData)
+      } catch (e) {
+        throw new InternalServerErrorException('Error while reading projects data')
+      }
 
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+      const project = projects[id]
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+      delete projects[id]
+      try {
+        await fs.writeFile('../../projects.json', JSON.stringify(projects), { flag: 'w' })
+      } catch (e) {
+        throw new InternalServerErrorException('Error while saving project')
+      }
 
-    try {
-      await this.projectService.delete(id)
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
-      return 'Project deleted successfully'
-    } catch(e) {
-      this.logger.error(e)
-      return 'Error while deleting your project'
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+  
+      try {
+        await this.projectService.delete(id)
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        return 'Project deleted successfully'
+      } catch(e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
+    } else {
+      const project = await this.projectService.findOneWhere({ id }, {
+        relations: ['admin'],
+        select: ['id'],
+      })
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+      this.projectService.allowedToManage(project, userId)
+
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+  
+      try {
+        await this.projectService.delete(id)
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        return 'Project deleted successfully'
+      } catch(e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
     }
   }
 }

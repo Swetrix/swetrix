@@ -1,5 +1,5 @@
 import {
-  Controller, Body, Post, Headers, BadRequestException, NotFoundException,
+  Controller, Body, Post, Headers, BadRequestException, NotFoundException, UseGuards,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -11,6 +11,7 @@ import {
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
+import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { STRIPE_WH_SECRET, STRIPE_SECRET } from '../common/constants'
 
 const stripe = require('stripe')(STRIPE_SECRET)
@@ -25,6 +26,7 @@ export class WebhookController {
     private readonly userService: UserService,
   ) { }
 
+  @UseGuards(SelfhostedGuard)
   @Post('/')
   async stripeWebhook(@Body() body: Buffer, @Headers() headers): Promise<any> {
     let event

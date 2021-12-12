@@ -1,5 +1,5 @@
 import { 
-  Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards, Ip, Headers,
+  Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards, Ip, Headers, UnprocessableEntityException,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags } from '@nestjs/swagger'
@@ -20,6 +20,10 @@ import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { checkRateLimit } from '../common/utils'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
+import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
+import {
+  isSelfhosted, SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD,
+} from 'src/common/constants'
 
 // TODO: Add logout endpoint to invalidate the token
 @ApiTags('Auth')
@@ -52,10 +56,18 @@ export class AuthController {
     await checkRateLimit(ip, 'login', 10, 3600)
     // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
 
-    const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
-    return await this.authService.login(user)
+    if (isSelfhosted) {
+      if (userLoginDTO.email !== SELFHOSTED_EMAIL || userLoginDTO.password !== SELFHOSTED_PASSWORD) {
+        throw new UnprocessableEntityException('Email or password is incorrect')
+      }
+      return await this.authService.login(SELFHOSTED_EMAIL)
+    } else {
+      const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
+      return await this.authService.login(user)
+    }
   }
 
+  @UseGuards(SelfhostedGuard)
   @Post('/register')
   async register(@Body() userDTO: SignupUserDTO, /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userDTO }, 'POST /auth/register')
@@ -65,7 +77,7 @@ export class AuthController {
     // await this.authService.checkCaptcha(recaptcha)
     this.userService.validatePassword(userDTO.password)
     userDTO.password = await this.authService.hashPassword(userDTO.password)
-    
+
     try {
       const user = await this.userService.create(userDTO)
       const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.EMAIL_VERIFICATION)
@@ -82,6 +94,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(SelfhostedGuard)
   @Get('/verify/:id')
   async verify(@Param('id') id: string): Promise<User> {
     this.logger.log({ id }, 'GET /auth/verify/:id')
@@ -100,6 +113,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(SelfhostedGuard)
   @Get('/change-email/:id')
   async changeEmail(@Param('id') id: string): Promise<User> {
     this.logger.log({ id }, 'GET /auth/change-email/:id')
@@ -121,6 +135,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(SelfhostedGuard)
   @Post('/reset-password')
   async requestReset(@Body() body: RequestPasswordChangeDTO, @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<string> {
     this.logger.log({ body }, 'POST /auth/password-reset')
@@ -142,6 +157,7 @@ export class AuthController {
     return 'A password reset URL has been sent to your email'
   }
 
+  @UseGuards(SelfhostedGuard)
   @Post('/password-reset/:id')
   async reset(@Param('id') id: string, @Body() body: PasswordChangeDTO): Promise<User> {
     this.logger.log({ id }, 'POST /auth/password-reset/:id')

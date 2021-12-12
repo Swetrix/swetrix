@@ -21,6 +21,7 @@ import {
   GDPR_EXPORT_TIMEFRAME, clickhouse, STRIPE_SECRET,
 } from '../common/constants'
 import { RolesGuard } from 'src/common/guards/roles.guard'
+import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { UpgradeUserProfileDTO } from './dto/upgrade-user.dto'
 import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
@@ -53,6 +54,7 @@ export class UserController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async get(@Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<User> | User[]> {
     this.logger.log({ take, skip }, 'GET /user')
@@ -62,6 +64,7 @@ export class UserController {
   @Get('/search')
   @ApiQuery({ name: 'query', required: false })
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async searchUsers(@Query('query') query: string | undefined): Promise<User[]> {
     this.logger.log({ query }, 'GET /user/search')
@@ -70,6 +73,7 @@ export class UserController {
 
   @Post('/')
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async create(@Body() userDTO: UserProfileDTO): Promise<User> {
     this.logger.log({ userDTO }, 'POST /user')
@@ -91,6 +95,7 @@ export class UserController {
   @Delete('/:id')
   @HttpCode(204)
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async delete(@Param('id') id: string, @CurrentUserId() uid: string): Promise<any> {
     this.logger.log({ id, uid }, 'DELETE /user/:id')
@@ -123,6 +128,7 @@ export class UserController {
   @Delete('/')
   @HttpCode(204)
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteSelf(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
@@ -152,6 +158,7 @@ export class UserController {
 
   @Post('/confirm_email')
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(@CurrentUserId() id: string, @Req() request: Request): Promise<boolean> {
     this.logger.log({ id }, 'POST /confirm_email')
@@ -170,6 +177,7 @@ export class UserController {
 
   @Put('/:id')
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async update(@Body() userDTO: UpdateUserProfileDTO, @Param('id') id: string): Promise<User> {
     this.logger.log({ userDTO, id }, 'DELETE /user/:id')
@@ -200,6 +208,7 @@ export class UserController {
 
   @Put('/')
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async updateCurrentUser(@Body() userDTO: UpdateUserProfileDTO, @CurrentUserId() id: string, @Req() request: Request): Promise<User> {
     this.logger.log({ userDTO, id }, 'PUT /user')
@@ -233,6 +242,7 @@ export class UserController {
 
   @Post('/upgrade')
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async upgradePlan(@Body() body: UpgradeUserProfileDTO, @CurrentUserId() user_id: string): Promise<object> {
     this.logger.log({ body, user_id }, 'POST /user/upgrade')
@@ -312,6 +322,7 @@ export class UserController {
 
   @Get('/export')
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /user/export')
