@@ -9,7 +9,6 @@ import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { hash } from 'blake3'
-import { promises as fs } from 'fs'
 import {
   Injectable, BadRequestException, InternalServerErrorException, ForbiddenException,
 } from '@nestjs/common'
@@ -20,6 +19,7 @@ import {
   UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
   redisProjectCountCacheTimeout, isSelfhosted, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
+import { getJSONProjects } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -42,14 +42,7 @@ export class AnalyticsService {
 
     if (_isEmpty(project)) {
       if (isSelfhosted) {
-        let projects
-
-        try {
-          const rawData = await fs.readFile('../../projects.json', 'utf8')
-          projects = JSON.parse(rawData)
-        } catch (e) {
-          throw new InternalServerErrorException('Error while reading projects data')
-        }
+        const projects = await getJSONProjects()
         project = projects[pid]
       } else {
         project = await this.projectService.findOne(pid, {
@@ -89,14 +82,7 @@ export class AnalyticsService {
       let pids
 
       if (isSelfhosted) {
-        let projects
-
-        try {
-          const rawData = await fs.readFile('../../projects.json', 'utf8')
-          projects = JSON.parse(rawData)
-        } catch (e) {
-          throw new InternalServerErrorException('Error while reading projects data')
-        }
+        const projects = await getJSONProjects()
         pids = _keys(projects)
       } else {
         pids = await this.projectService.find({

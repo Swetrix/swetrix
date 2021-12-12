@@ -88,7 +88,7 @@ const initialiseClickhouse = async () => {
 
 const initialiseSelfhosted = () => {
   if (isSelfhosted) {
-    fs.writeFile('../../projects.json', '{}', { flag: 'wx' }, () => {})
+    fs.writeFile('../projects.json', '{}', { flag: 'wx' }, () => {})
   }
 }
 

@@ -3,11 +3,11 @@ import {
   BadRequestException, HttpCode, NotFoundException, ForbiddenException, InternalServerErrorException,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
-import { promises as fs } from 'fs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
+import * as _values from 'lodash/values'
 
 import { ProjectService } from './project.service'
 import { UserType, ACCOUNT_PLANS } from '../user/entities/user.entity'
@@ -22,6 +22,7 @@ import { AppLoggerService } from '../logger/logger.service'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse, isSelfhosted,
 } from '../common/constants'
+import { getJSONProjects, setJSONProjects } from '../common/utils'
 
 @ApiTags('Project')
 @Controller('project')
@@ -39,12 +40,22 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: [Project] })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async get(@CurrentUserId() userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[]> {
+  async get(@CurrentUserId() userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
-    const where = Object()
-    where.admin = userId
+    if (isSelfhosted) {
+      const projects = await getJSONProjects()
+      const results = _values(projects)
+      return {
+        results,
+        page_total: _size(results),
+        total: _size(results),
+      }
+    } else {
+      const where = Object()
+      where.admin = userId
 
-    return await this.projectService.paginate({ take, skip }, where)
+      return await this.projectService.paginate({ take, skip }, where)
+    }
   }
 
   @Get('/:id')
@@ -54,7 +65,14 @@ export class ProjectController {
   async getOne(@Param('id') id: string): Promise<Project> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
-    const project = await this.projectService.findOne(id)
+    let project
+
+    if (isSelfhosted) {
+      const projects = await getJSONProjects()
+      project = projects[id]
+    } else {
+      await this.projectService.findOne(id)
+    }
 
     if (_isEmpty(project)) throw new NotFoundException('Project was not found in the database')
     return project
@@ -68,14 +86,7 @@ export class ProjectController {
     this.logger.log({ projectDTO, userId }, 'POST /project')
     
     if (isSelfhosted) {
-      let projects
-
-      try {
-        const rawData = await fs.readFile('../../projects.json', 'utf8')
-        projects = JSON.parse(rawData)
-      } catch (e) {
-        throw new InternalServerErrorException('Error while reading projects data')
-      }
+      const projects = await getJSONProjects()
 
       this.projectService.validateProject(projectDTO)
       this.projectService.checkIfIDUniqueJSON(projects, projectDTO.id)
@@ -83,13 +94,10 @@ export class ProjectController {
       const project = new Project()
       Object.assign(project, projectDTO)
       project.origins = _map(projectDTO.origins, _trim)
+      project.active = true
 
       projects[project.id] = project
-      try {
-        await fs.writeFile('../../projects.json', JSON.stringify(projects))
-      } catch (e) {
-        throw new InternalServerErrorException('Error while saving project')
-      }
+      await setJSONProjects(projects)
 
       return project
     } else {
@@ -142,14 +150,7 @@ export class ProjectController {
     let project
 
     if (isSelfhosted) {
-      let projects
-
-      try {
-        const rawData = await fs.readFile('../../projects.json', 'utf8')
-        projects = JSON.parse(rawData)
-      } catch (e) {
-        throw new InternalServerErrorException('Error while reading projects data')
-      }
+      const projects = await getJSONProjects()
 
       project = projects[id]
       if (_isEmpty(project)) {
@@ -160,11 +161,7 @@ export class ProjectController {
       project.name = projectDTO.name
 
       projects[project.id] = project
-      try {
-        await fs.writeFile('../../projects.json', JSON.stringify(projects))
-      } catch (e) {
-        throw new InternalServerErrorException('Error while saving project')
-      }
+      await setJSONProjects(projects)
     } else {
       project = await this.projectService.findOneWithRelations(id)
 
@@ -201,25 +198,13 @@ export class ProjectController {
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
     if (isSelfhosted) {
-      let projects
-
-      try {
-        const rawData = await fs.readFile('../../projects.json', 'utf8')
-        projects = JSON.parse(rawData)
-      } catch (e) {
-        throw new InternalServerErrorException('Error while reading projects data')
-      }
-
+      const projects = await getJSONProjects()
       const project = projects[id]
       if (_isEmpty(project)) {
         throw new NotFoundException(`Project with ID ${id} does not exist`)
       }
       delete projects[id]
-      try {
-        await fs.writeFile('../../projects.json', JSON.stringify(projects))
-      } catch (e) {
-        throw new InternalServerErrorException('Error while saving project')
-      }
+      await setJSONProjects(projects)
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
