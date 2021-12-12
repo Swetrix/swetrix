@@ -1,6 +1,7 @@
 import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import { v5 as uuidv5 } from 'uuid'
+import * as fs from 'fs'
 import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
 import * as _round from 'lodash/round'
@@ -73,6 +74,8 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (id, created, pid);`,
 ]
 
+const isSelfhosted = process.env.SELFHOSTED
+
 const initialiseClickhouse = async () => {
   console.log('Initialising Clickhouse')
 
@@ -83,9 +86,17 @@ const initialiseClickhouse = async () => {
   console.log('Initialising Clickhouse: DONE')
 }
 
-initialiseClickhouse()
+const initialiseSelfhosted = () => {
+  if (isSelfhosted) {
+    fs.writeFile('../../projects.json', '{}', { flag: 'wx' }, (err) => {
+      if (err) console.error(err)
+    })
+  }
+}
 
-const isSelfhosted = process.env.SELFHOSTED
+initialiseClickhouse()
+initialiseSelfhosted()
+
 const SELFHOSTED_EMAIL = process.env.EMAIL
 const SELFHOSTED_PASSWORD = process.env.PASSWORD
 const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
