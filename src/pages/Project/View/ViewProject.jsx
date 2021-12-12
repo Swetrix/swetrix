@@ -21,10 +21,8 @@ import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
 import {
-  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey,
+  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL,
 } from 'redux/constants'
-import { isAuthenticated } from 'hoc/protected'
-import { isAdmin } from 'utils/validator'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -33,7 +31,9 @@ import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import routes from 'routes'
-import { getProjectData, getProject } from 'api'
+import {
+  getProjectData, getProject, getOverallStats, getLiveVisitors,
+} from 'api'
 
 countries.registerLocale(countriesEn)
 
@@ -142,15 +142,16 @@ const NoEvents = ({ t }) => (
 )
 
 const ViewProject = ({
-  projects, isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, user, setProject,
+  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
+  setLiveStatsForProject, authenticated,
 }) => {
   const { t } = useTranslation('common')
   const periodPairs = tbPeriodPairs(t)
-
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
+  const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[1].period)
@@ -162,10 +163,16 @@ const ViewProject = ({
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
+  const isLoading = authenticated ? _isLoading : false 
 
   const tnMapping = typeNameMapping(t)
 
   const { name } = project
+
+  const onErrorLoading = () => {
+    showError(t('project.noExist'))
+    history.push(routes.dashboard)
+  }
 
   const loadAnalytics = async () => {
     if (!isLoading && !_isEmpty(project)) {
@@ -225,6 +232,50 @@ const ViewProject = ({
     loadAnalytics()
   }, [project, period, timeBucket]) // eslint-disable-line
 
+  useEffect(() => {
+    let interval
+    if (project.uiHidden) {
+      interval = setInterval(async () => {
+        const { id } = project
+        const result = await getLiveVisitors([id])
+
+        setLiveStatsForProject(id, result[id])
+      }, LIVE_VISITORS_UPDATE_INTERVAL)
+    }
+
+    return () => clearInterval(interval)
+  }, [project, setLiveStatsForProject])
+
+  useEffect(() => {
+    if (!isLoading && _isEmpty(project)) {
+      getProject(id)
+        .then(projectRes => {
+          if (!_isEmpty(projectRes) && projectRes?.public) {
+            getOverallStats([id])
+              .then(res => {
+                setPublicProject({
+                  ...projectRes,
+                  overall: res[id],
+                  live: 'N/A',
+                })
+              })
+              .catch(e => {
+                console.error(e)
+                onErrorLoading()
+              })
+
+            setIsProjectPublic(true)
+          } else {
+            onErrorLoading()
+          }
+        })
+        .catch(e => {
+          console.error(e)
+          onErrorLoading()
+        })
+    }
+  }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
+
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod)
     let tb = timeBucket
@@ -242,17 +293,6 @@ const ViewProject = ({
   const updateTimebucket = (newTimebucket) => {
     setTimebucket(newTimebucket)
     setProjectViewPrefs(id, period, newTimebucket)
-  }
-
-  if (!isLoading && _isEmpty(project)) {
-    if (isAdmin(user)) {
-      getProject(id)
-        .then(setProject)
-        .catch(console.error)
-    } else {
-      showError(t('project.noExist'))
-      history.push(routes.dashboard)
-    }
   }
 
   const openSettingsHandler = () => {
@@ -277,7 +317,10 @@ const ViewProject = ({
   if (!isLoading) {
     return (
       <Title title={name}>
-        <div className='min-h-min-footer bg-gray-50 py-6 px-4 sm:px-6 lg:px-8' ref={dashboardRef}>
+        <div className={cx('bg-gray-50 py-6 px-4 sm:px-6 lg:px-8', {
+          'min-h-min-footer': authenticated,
+          'min-h-min-footer-ad': !authenticated,
+        })} ref={dashboardRef}>
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
             <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
             <div className='flex mt-3 md:mt-0'>
@@ -307,11 +350,13 @@ const ViewProject = ({
                 keyExtractor={pair => pair.label}
                 onSelect={pair => updatePeriod(pair.period)}
               />
-              <div className='h-full ml-3'>
-                <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
-                  {t('common.settings')}
-                </Button>
-              </div>
+              {!isProjectPublic && (
+                <div className='h-full ml-3'>
+                  <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
+                    {t('common.settings')}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           {isPanelsDataEmpty && (
@@ -388,6 +433,34 @@ const ViewProject = ({
             </div>
           </div>
         </div>
+        {!authenticated && (
+          <div className='bg-indigo-600'>
+            <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
+              <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
+                <span className='block text-white'>
+                  {t('project.ad')}
+                </span>
+                <span className='block text-gray-300'>
+                  {t('main.exploreService')}
+                </span>
+              </h2>
+              <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
+                <Link
+                  to={routes.signup}
+                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                >
+                  {t('common.getStarted')}
+                </Link>
+                <Link
+                  to={routes.main}
+                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                >
+                  {t('common.explore')}
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </Title>
     )
   }
@@ -410,7 +483,9 @@ ViewProject.propTypes = {
   setProjectViewPrefs: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
-  setProject: PropTypes.func.isRequired,
+  setPublicProject: PropTypes.func.isRequired,
+  setLiveStatsForProject: PropTypes.func.isRequired,
+  authenticated: PropTypes.bool.isRequired,
 }
 
-export default isAuthenticated(memo(ViewProject))
+export default memo(ViewProject)

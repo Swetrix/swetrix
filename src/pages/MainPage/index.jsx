@@ -10,6 +10,8 @@ import Title from 'components/Title'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
 
+const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
+
 const SquareDots = ({ className }) => (
   <div className='hidden lg:block lg:absolute lg:inset-0 pointer-events-none' aria-hidden='true'>
     <svg
@@ -171,10 +173,10 @@ const Main = () => {
             </h2>
             <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
               <Link
-                to={routes.features}
+                to={LIVE_DEMO_URL}
                 className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
               >
-                {t('common.features')}
+                {t('common.liveDemo')}
               </Link>
               <Link
                 to={routes.docs}

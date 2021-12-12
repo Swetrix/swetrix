@@ -40,7 +40,7 @@ const options = {
 }
 
 if (process.env.NODE_ENV !== 'production') {
-  localStorage.debug = 'analytics:*'
+  localStorage.debug = 'swetrix:*'
 }
 
 ReactDOM.render(

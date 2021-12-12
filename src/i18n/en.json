@@ -7,6 +7,8 @@
     "pricing": "Pricing",
     "faqs": "FAQs",
     "you": "You",
+    "explore": "Explore",
+    "liveDemo": "Live demo",
     "dashboard": "Dashboard",
     "logout": "Logout",
     "save": "Save",
@@ -26,7 +28,7 @@
     "signup": "Sign up, it's free!",
     "signupTerms": "By signing up, you agree to our <tos>Terms and Conditions</tos> and <pp>Privacy Policy.</pp>",
     "techDetails": "Want to know more technical details?",
-    "lookAtDocs": "Look at the documentation and features pages.",
+    "lookAtDocs": "Look at the documentation and live demonstration pages.",
     "readyToStart": "Ready to get started?",
     "exploreService": "Explore our service or create an account.",
     "faq": {
@@ -219,6 +221,7 @@
     "contents": "Contents"
   },
   "project": {
+    "ad": "Want these stats for your website?",
     "noExist": "The selected project does not exist",
     "exportImg": "Export as image",
     "noEvTitle": "No events yet",
@@ -267,7 +270,9 @@
       "origins": "Allowed origins",
       "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua",
       "enabled": "Project enabled",
+      "public": "Dashboard is public",
       "enabledHint": "Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project's analytics in dashboard.",
+      "publicHint": "By checking this, anyone on the internet (including Google) would be able to see this project's Dashboard.\nOnly project's administrator can edit the settings.",
       "createHint": "*you will be able to set up your project more thoroughly after you have created it",
       "delete": "Delete project",
       "qDelete": "Delete the project?",

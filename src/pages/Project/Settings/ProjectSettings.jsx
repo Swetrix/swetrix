@@ -37,6 +37,7 @@ const ProjectSettings = ({
     name: '',
     id: id || nanoid(),
     origins: '', // origins string, ',' is used as a separator. converted to an array on the backend side.
+    public: false,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -52,7 +53,7 @@ const ProjectSettings = ({
     }
 
     if (!isLoading && isSettings && !projectDeleting) {
-      if (_isEmpty(project)) {
+      if (_isEmpty(project) || project?.uiHidden) {
         showError(t('project.noExist'))
         history.push(routes.dashboard)
       } else {
@@ -213,6 +214,15 @@ const ProjectSettings = ({
                 className='mt-4'
                 label={t('project.settings.enabled')}
                 hint={t('project.settings.enabledHint')}
+              />
+              <Checkbox
+                checked={Boolean(form.public)}
+                onChange={handleInput}
+                name='public'
+                id='public'
+                className='mt-4'
+                label={t('project.settings.public')}
+                hint={t('project.settings.publicHint')}
               />
             </>
           ) : (

@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
+import _filter from 'lodash/filter'
 import { useTranslation } from 'react-i18next'
 import { EyeIcon } from '@heroicons/react/outline'
 import { CalendarIcon } from '@heroicons/react/outline'
@@ -164,7 +165,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
             ) : (
               <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
                 <ul className='divide-y divide-gray-200'>
-                  {_map(projects, ({ name, id, created, active, overall, live }) => (
+                  {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({ name, id, created, active, overall, live }) => (
                     <ProjectCart
                       key={id}
                       t={t}

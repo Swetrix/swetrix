@@ -18,8 +18,15 @@ const setLiveStats = (data) => ({
   },
 })
 
-const setProject = (project) => ({
-  type: types.SET_PROJECT,
+const setLiveStatsForProject = (id, count) => ({
+  type: types.SET_LIVE_STATS_PROJECT,
+  payload: {
+    id, count,
+  },
+})
+
+const setPublicProject = (project) => ({
+  type: types.SET_PUBLIC_PROJECT,
   payload: {
     project,
   },
@@ -76,7 +83,8 @@ const UIActions = {
   setProjectCache,
   deleteProjectCache,
   setProjectViewPrefs,
-  setProject,
+  setPublicProject,
+  setLiveStatsForProject,
   setLiveStats,
 }
 
