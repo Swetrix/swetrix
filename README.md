@@ -54,39 +54,6 @@ create database analytics;
 
 The tables at `analytics` database should be generated on the first start of the API by the TypeORM module.
 
-
-### Clickhouse DB setup:
-```bash
-create database analytics;
-
-use analytics;
-
-CREATE TABLE analytics.analytics
-(
-    `id` UUID,
-    `pid` FixedString(12),
-    `ev` String,
-    `pg` Nullable(String),
-    `dv` Nullable(String),
-    `br` Nullable(String),
-    `os` Nullable(String),
-    `lc` Nullable(String),
-    `ref` Nullable(String),
-    `so` Nullable(String),
-    `me` Nullable(String),
-    `ca` Nullable(String),
-    `lt` Nullable(UInt16),
-    `cc` Nullable(FixedString(2)),
-    `unique` UInt8,
-    `created` DateTime
-)
-ENGINE = MergeTree()
-PARTITION BY toYYYYMM(created)
-ORDER BY (id, created, pid);
-```
-
-For Redis please run `redis-cli` to test if it's working well.
-
 ### NodeJS (v14 LTS) & NPM (and PM2) installation:
 ```bash
 curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -

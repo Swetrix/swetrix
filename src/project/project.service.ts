@@ -93,10 +93,16 @@ export class ProjectService {
     }
   }
 
-  async checkIfIDUnique(projectId: string): Promise<void> {
-    const project = await this.findOne(projectId)
+  async checkIfIDUnique(projectID: string): Promise<void> {
+    const project = await this.findOne(projectID)
 
     if (project) {
+      throw new BadRequestException('Selected project ID is already in use')
+    }
+  }
+
+  async checkIfIDUniqueJSON(projects: object, projectID: string): Promise<void> {
+    if (!_isEmpty(projects?.[projectID])) {
       throw new BadRequestException('Selected project ID is already in use')
     }
   }

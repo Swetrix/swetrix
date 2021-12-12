@@ -15,7 +15,7 @@ import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { ReportFrequency } from '../user/entities/user.entity'
 import {
-  clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, // REDIS_SESSION_SALT_KEY,
+  clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, isSelfhosted, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 
@@ -64,6 +64,10 @@ export class TaskManagerService {
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')
   async weeklyReportsHandler(): Promise<void> {
+    if (isSelfhosted) {
+      return
+    }
+
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.Weekly,
@@ -102,6 +106,10 @@ export class TaskManagerService {
   // ON THE FIRST DAY OF EVERY MONTH AT 2 AM
   @Cron('0 02 1 * *')
   async monthlyReportsHandler(): Promise<void> {
+    if (isSelfhosted) {
+      return
+    }
+
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.Monthly,

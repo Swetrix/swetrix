@@ -1,6 +1,7 @@
-import * as _sample from 'lodash/sample'
-import { ForbiddenException } from '@nestjs/common'
+import { ForbiddenException, InternalServerErrorException } from '@nestjs/common'
 import { hash } from 'blake3'
+import { promises as fs } from 'fs'
+import * as _sample from 'lodash/sample'
 import * as _toNumber from 'lodash/toNumber'
 import { redis } from './constants'
 
@@ -47,6 +48,23 @@ const checkRateLimit = async (ip: string, action: string, reqAmount = RATE_LIMIT
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
 }
 
+const getJSONProjects = async () => {
+  try {
+    const rawData = await fs.readFile('../projects.json', 'utf8')
+    return JSON.parse(rawData)
+  } catch (e) {
+    throw new InternalServerErrorException('Error while reading projects data')
+  }
+}
+
+const setJSONProjects = async (projects) => {
+  try {
+    await fs.writeFile('../projects.json', JSON.stringify(projects))
+  } catch (e) {
+    throw new InternalServerErrorException('Error while saving projects data')
+  }
+}
+
 export {
-  getRandomTip, checkRateLimit,
+  getRandomTip, checkRateLimit, getJSONProjects, setJSONProjects,
 }

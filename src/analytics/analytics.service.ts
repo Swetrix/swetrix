@@ -17,8 +17,9 @@ import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
-  redisProjectCountCacheTimeout, // REDIS_SESSION_SALT_KEY,
+  redisProjectCountCacheTimeout, isSelfhosted, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
+import { getJSONProjects } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -40,10 +41,15 @@ export class AnalyticsService {
     let project = await redis.get(pidKey)
 
     if (_isEmpty(project)) {
-      project = await this.projectService.findOne(pid, {
-        relations: ['admin'],
-        select: ['origins', 'active', 'admin', 'public']
-      })
+      if (isSelfhosted) {
+        const projects = await getJSONProjects()
+        project = projects[pid]
+      } else {
+        project = await this.projectService.findOne(pid, {
+          relations: ['admin'],
+          select: ['origins', 'active', 'admin', 'public']
+        })
+      }
       if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
       await redis.set(pidKey, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
     } else {
@@ -58,8 +64,10 @@ export class AnalyticsService {
   }
 
   async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
-    const project = await this.getRedisProject(pid)
-    this.projectService.allowedToView(project, uid)
+    if (!isSelfhosted) {
+      const project = await this.getRedisProject(pid)
+      this.projectService.allowedToView(project, uid)
+    }
   }
 
   // Returns amount of existing events starting from month
@@ -70,12 +78,20 @@ export class AnalyticsService {
     if (_isEmpty(count)) {
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       const monthStart = dayjs.utc().startOf('month').format('YYYY-MM-DD HH:mm:ss')
-      const pids = await this.projectService.find({
-        where: {
-          admin: uid,
-        },
-        select: ['id'],
-      })
+
+      let pids
+
+      if (isSelfhosted) {
+        const projects = await getJSONProjects()
+        pids = _keys(projects)
+      } else {
+        pids = await this.projectService.find({
+          where: {
+            admin: uid,
+          },
+          select: ['id'],
+        })
+      }
 
       const count_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${now}'`
       const result = await clickhouse.query(count_query).toPromise()
@@ -130,11 +146,13 @@ export class AnalyticsService {
 
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
-    const count = await this.getRedisCount(project.admin.id)
-    const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
-
-    if (count >= maxCount) {
-      throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+    if (!isSelfhosted) {
+      const count = await this.getRedisCount(project.admin.id)
+      const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
+  
+      if (count >= maxCount) {
+        throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+      }
     }
 
     this.checkOrigin(project, origin)

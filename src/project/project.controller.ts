@@ -1,12 +1,13 @@
 import {
   Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete,
-  BadRequestException, HttpCode, NotFoundException, ForbiddenException,
+  BadRequestException, HttpCode, NotFoundException, ForbiddenException, InternalServerErrorException,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
+import * as _values from 'lodash/values'
 
 import { ProjectService } from './project.service'
 import { UserType, ACCOUNT_PLANS } from '../user/entities/user.entity'
@@ -19,8 +20,9 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse,
+  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse, isSelfhosted,
 } from '../common/constants'
+import { getJSONProjects, setJSONProjects } from '../common/utils'
 
 @ApiTags('Project')
 @Controller('project')
@@ -38,12 +40,22 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: [Project] })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async get(@CurrentUserId() uid: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[]> {
-    this.logger.log({ uid, take, skip }, 'GET /project')
-    const where = Object()
-    where.admin = uid
+  async get(@CurrentUserId() userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
+    this.logger.log({ userId, take, skip }, 'GET /project')
+    if (isSelfhosted) {
+      const projects = await getJSONProjects()
+      const results = _values(projects)
+      return {
+        results,
+        page_total: _size(results),
+        total: _size(results),
+      }
+    } else {
+      const where = Object()
+      where.admin = userId
 
-    return await this.projectService.paginate({ take, skip }, where)
+      return await this.projectService.paginate({ take, skip }, where)
+    }
   }
 
   @Get('/:id')
@@ -52,7 +64,15 @@ export class ProjectController {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
-    const project = await this.projectService.findOne(id)
+    let project
+
+    if (isSelfhosted) {
+      const projects = await getJSONProjects()
+      project = projects[id]
+    } else {
+      project = await this.projectService.findOne(id)
+    }
+
     if (_isEmpty(project)) throw new NotFoundException('Project was not found in the database')
 
     this.projectService.allowedToView(project, uid)
@@ -64,42 +84,60 @@ export class ProjectController {
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() uid: string): Promise<Project> {
-    this.logger.log({ projectDTO, uid }, 'POST /project')
-    const user = await this.userService.findOneWithRelations(uid, ['projects'])
-    const maxProjects = ACCOUNT_PLANS[user.planCode].maxProjects
+  async create(@Body() projectDTO: ProjectDTO, @CurrentUserId() userId: string): Promise<Project> {
+    this.logger.log({ projectDTO, userId }, 'POST /project')
+    
+    if (isSelfhosted) {
+      const projects = await getJSONProjects()
 
-    if (!user.isActive) {
-      throw new ForbiddenException('Please, verify your email address first')
-    }
+      this.projectService.validateProject(projectDTO)
+      this.projectService.checkIfIDUniqueJSON(projects, projectDTO.id)
 
-    if (_size(user.projects) >= (maxProjects || 5)) {
-      throw new ForbiddenException(`You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`)
-    }
-
-    this.projectService.validateProject(projectDTO)
-
-    await this.projectService.checkIfIDUnique(projectDTO.id)
-
-    try {
       const project = new Project()
       Object.assign(project, projectDTO)
       project.origins = _map(projectDTO.origins, _trim)
+      project.active = true
 
-      const newProject = await this.projectService.create(project)
-      user.projects.push(project)
+      projects[project.id] = project
+      await setJSONProjects(projects)
 
-      await this.userService.create(user)
+      return project
+    } else {
+      const user = await this.userService.findOneWithRelations(userId, ['projects'])
+      const maxProjects = ACCOUNT_PLANS[user.planCode].maxProjects
 
-      return newProject
-    } catch(e) {
-      if (e.code === 'ER_DUP_ENTRY'){
-        if (e.sqlMessage.includes(projectDTO.id)){
-          throw new BadRequestException('Project with selected ID already exists')
-        }
+      if (!user.isActive) {
+        throw new ForbiddenException('Please, verify your email address first')
       }
 
-      throw new BadRequestException(e)
+      if (!isSelfhosted && _size(user.projects) >= (maxProjects || 5)) {
+        throw new ForbiddenException(`You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`)
+      }
+
+      this.projectService.validateProject(projectDTO)
+
+      await this.projectService.checkIfIDUnique(projectDTO.id)
+
+      try {
+        const project = new Project()
+        Object.assign(project, projectDTO)
+        project.origins = _map(projectDTO.origins, _trim)
+
+        const newProject = await this.projectService.create(project)
+        user.projects.push(project)
+
+        await this.userService.create(user)
+
+        return newProject
+      } catch(e) {
+        if (e.code === 'ER_DUP_ENTRY'){
+          if (e.sqlMessage.includes(projectDTO.id)){
+            throw new BadRequestException('Project with selected ID already exists')
+          }
+        }
+
+        throw new BadRequestException(e)
+      }
     }
   }
 
@@ -111,20 +149,37 @@ export class ProjectController {
   async update(@Param('id') id: string, @Body() projectDTO: ProjectDTO, @CurrentUserId() uid: string): Promise<any> {
     this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
     this.projectService.validateProject(projectDTO)
+    let project
 
-    const project = await this.projectService.findOneWithRelations(id)
+    if (isSelfhosted) {
+      const projects = await getJSONProjects()
 
-    if (_isEmpty(project)) {
-      throw new NotFoundException()
+      project = projects[id]
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+      project.active = projectDTO.active
+      project.origins = _map(projectDTO.origins, _trim)
+      project.name = projectDTO.name
+      project.public = projectDTO.public
+
+      projects[project.id] = project
+      await setJSONProjects(projects)
+    } else {
+      project = await this.projectService.findOneWithRelations(id)
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+      this.projectService.allowedToManage(project, uid)
+
+      project.active = projectDTO.active
+      project.origins = _map(projectDTO.origins, _trim)
+      project.name = projectDTO.name
+      project.public = projectDTO.public
+
+      await this.projectService.update(id, project)
     }
-    this.projectService.allowedToManage(project, uid)
-
-    project.active = projectDTO.active
-    project.origins = _map(projectDTO.origins, _trim)
-    project.name = projectDTO.name
-    project.public = projectDTO.public
-
-    await this.projectService.update(id, project)
 
     const key = getRedisProjectKey(id)
 
@@ -146,27 +201,50 @@ export class ProjectController {
     this.logger.log({ uid, id }, 'DELETE /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
-    const project = await this.projectService.findOneWhere({ id }, {
-      relations: ['admin'],
-      select: ['id'],
-    })
+    if (isSelfhosted) {
+      const projects = await getJSONProjects()
+      const project = projects[id]
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+      delete projects[id]
+      await setJSONProjects(projects)
 
-    if (_isEmpty(project)) {
-      throw new NotFoundException(`Project with ID ${id} does not exist`)
-    }
-    this.projectService.allowedToManage(project, uid)
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+  
+      try {
+        await this.projectService.delete(id)
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        return 'Project deleted successfully'
+      } catch(e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
+    } else {
+      const project = await this.projectService.findOneWhere({ id }, {
+        relations: ['admin'],
+        select: ['id'],
+      })
 
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+      this.projectService.allowedToManage(project, uid)
 
-    try {
-      await this.projectService.delete(id)
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
-      return 'Project deleted successfully'
-    } catch(e) {
-      this.logger.error(e)
-      return 'Error while deleting your project'
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+  
+      try {
+        await this.projectService.delete(id)
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        return 'Project deleted successfully'
+      } catch(e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
     }
   }
 }
