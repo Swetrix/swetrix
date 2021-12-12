@@ -15,17 +15,18 @@ import { ActionToken } from './action-tokens/action-token.entity'
 import { TaskManagerModule } from './task-manager/task-manager.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
+import { isSelfhosted } from './common/constants'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath: '.env' }),
     TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.MYSQL_HOST,
-      port: 3306,
-      username: process.env.MYSQL_USER,
-      password: process.env.MYSQL_ROOT_PASSWORD,
-      database: process.env.MYSQL_DATABASE,
+      type: isSelfhosted ? 'mysql' : 'sqlite',
+      host: isSelfhosted && process.env.MYSQL_HOST,
+      port: isSelfhosted && 3306,
+      username: isSelfhosted && process.env.MYSQL_USER,
+      password: isSelfhosted && process.env.MYSQL_ROOT_PASSWORD,
+      database: isSelfhosted ? process.env.MYSQL_DATABASE : './dummy.sql',
       synchronize: false,
       entities: [User, ActionToken, Project],
     }),
