@@ -1,7 +1,7 @@
 import { 
   Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards, Ip, Headers, UnprocessableEntityException,
 } from '@nestjs/common'
-import { Request } from 'express'
+import e, { Request } from 'express'
 import { ApiTags } from '@nestjs/swagger'
 
 import { AuthService } from './auth.service'
@@ -22,7 +22,7 @@ import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
-  isSelfhosted, SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD,
+  isSelfhosted, SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD, SELFHOSTED_UUID,
 } from 'src/common/constants'
 
 // TODO: Add logout endpoint to invalidate the token
@@ -42,9 +42,17 @@ export class AuthController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async me(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /auth/me')
+    let user
 
-    const user = await this.userService.findOneWhere({ id: user_id })
-    delete user.password
+    if (isSelfhosted) {
+      user = {
+        id: SELFHOSTED_UUID,
+        email: SELFHOSTED_EMAIL,
+      }
+    } else {
+      user = await this.userService.findOneWhere({ id: user_id })
+      delete user.password
+    }
 
     return user
   }

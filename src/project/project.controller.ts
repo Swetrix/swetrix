@@ -86,7 +86,7 @@ export class ProjectController {
 
       projects[project.id] = project
       try {
-        await fs.writeFile('../../projects.json', JSON.stringify(projects), { flag: 'w' })
+        await fs.writeFile('../../projects.json', JSON.stringify(projects))
       } catch (e) {
         throw new InternalServerErrorException('Error while saving project')
       }
@@ -161,7 +161,7 @@ export class ProjectController {
 
       projects[project.id] = project
       try {
-        await fs.writeFile('../../projects.json', JSON.stringify(projects), { flag: 'w' })
+        await fs.writeFile('../../projects.json', JSON.stringify(projects))
       } catch (e) {
         throw new InternalServerErrorException('Error while saving project')
       }
@@ -216,7 +216,7 @@ export class ProjectController {
       }
       delete projects[id]
       try {
-        await fs.writeFile('../../projects.json', JSON.stringify(projects), { flag: 'w' })
+        await fs.writeFile('../../projects.json', JSON.stringify(projects))
       } catch (e) {
         throw new InternalServerErrorException('Error while saving project')
       }
