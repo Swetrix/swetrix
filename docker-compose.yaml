@@ -3,6 +3,10 @@ services:
   swetrix-api:
     image: swetrix/swetrix-api:latest
     restart: always
+    environment:
+      - REDIS_HOST=redis
+      - MYSQL_HOST=mariadb
+      - CLICKHOUSE_HOST=http://clickhouse
     links:
       - 'redis'
       - 'mariadb'
