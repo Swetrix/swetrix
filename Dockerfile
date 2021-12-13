@@ -30,4 +30,4 @@ COPY --from=build /build/dist/ ./dist/
 COPY --from=build /build/node_modules/ ./node_modules/
 CMD [ "npm", "run", "start:prod" ]
 EXPOSE 80
-HEALTHCHECK CMD curl -f http://localhost/ping || exit 1
+HEALTHCHECK CMD wget -nv -t1 --spider 'http://localhost/ping' || exit 1
