@@ -74,4 +74,6 @@ Below you will find the Environment Variables that are required to run the API. 
 
 Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.  
 The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.  
-The production swetrix.com API is covered by the Cloudflare proxying.
+The production swetrix.com API is covered by the Cloudflare proxying.  
+  
+The API should be available under port 5005.  
