@@ -27,7 +27,7 @@ services:
   clickhouse:
     image: yandex/clickhouse-server:latest-alpine
     environment:
-      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_DB=analytics
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=password
     restart: always

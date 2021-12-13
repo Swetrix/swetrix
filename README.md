@@ -54,7 +54,8 @@ Below you will find the Environment Variables that are required to run the API. 
 
 `REDIS_HOST`=localhost  
 `REDIS_PORT`=6379
-`REDIS_PASSWORD`=
+`REDIS_USER`=default
+`REDIS_PASSWORD`=password
 
 #### Clickhouse Database
 
