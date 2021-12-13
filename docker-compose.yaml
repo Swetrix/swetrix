@@ -1,5 +1,15 @@
 version: '3.9'
 services:
+  # uncomment if you need the frontend
+  # swetrix:
+  #   image: swetrix/swetrix-fe:latest
+  #   restart: always
+  #   depends_on:
+  #     - swetrix-api
+  #   ports:
+  #     - '80:80'
+  #   environment:
+  #     - API_URL=http://localhost:8080/api/
   swetrix-api:
     image: swetrix/swetrix-api:latest
     restart: always
