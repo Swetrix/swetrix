@@ -8,9 +8,7 @@ import * as _round from 'lodash/round'
 
 require('dotenv').config()
 
-const redis = new Redis({
-  port: process.env.REDIS_PORT,
-  host: process.env.REDIS_HOST,
+const redis = new Redis(_toNumber(process.env.REDIS_PORT), process.env.REDIS_HOST, {
   password: process.env.REDIS_PASSWORD,
 })
 

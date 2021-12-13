@@ -38,7 +38,7 @@ export class AnalyticsService {
 
   async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
-    let project = await redis.get(pidKey)
+    let project: string | Project = await redis.get(pidKey)
 
     if (_isEmpty(project)) {
       if (isSelfhosted) {
@@ -60,6 +60,7 @@ export class AnalyticsService {
       }
     }
 
+    // @ts-ignore
     return project
   }
 
@@ -102,13 +103,15 @@ export class AnalyticsService {
       await redis.set(countKey, `${pageviews}`, 'EX', redisProjectCountCacheTimeout)
     } else {
       try {
+        // @ts-ignore
         count = Number(count)
       } catch (e) {
         console.error(e)
         throw new InternalServerErrorException('Error while processing project')
       }
     }
-    
+
+    // @ts-ignore
     return count
   }
 

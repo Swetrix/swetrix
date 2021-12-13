@@ -17,9 +17,7 @@ import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 
 import { AnalyticsService, getSessionKey } from './analytics.service'
-import { UserType } from '../user/entities/user.entity'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
-import { Roles } from '../common/decorators/roles.decorator'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -155,6 +153,7 @@ export class AnalyticsController {
 
     for (let i = 0; i < pidsSize; ++i) {
       const currentPID = pidsArray[i]
+      // @ts-ignore
       const keysAmout = await redis.countKeysByPattern(`hb:${currentPID}:*`)
       result[currentPID] = keysAmout
     }

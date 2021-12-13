@@ -37,10 +37,9 @@ const getRandomTip = (language: string = 'en'): string => {
 }
 
 // 'action' is used as a salt to differ rate limiting routes
-const checkRateLimit = async (ip: string, action: string, reqAmount = RATE_LIMIT_REQUESTS_AMOUNT, reqTimeout = RATE_LIMIT_TIMEOUT): Promise<void> => {
+const checkRateLimit = async (ip: string, action: string, reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT, reqTimeout: number = RATE_LIMIT_TIMEOUT): Promise<void> => {
   const rlHash = _getRateLimitHash(ip, action)
-  let rlCount = await redis.get(rlHash)
-  rlCount = _toNumber(rlCount) || 0
+  let rlCount: number = _toNumber(await redis.get(rlHash)) || 0
 
   if (rlCount >= reqAmount) {
     throw new ForbiddenException('Too many requests, please try again later')
