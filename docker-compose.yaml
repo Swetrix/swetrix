@@ -12,8 +12,8 @@ services:
     restart: always
     environment:
       - REDIS_PASSWORD=password
-    volumes:
-      - '/opt/redis-volume:/data'
+  #   volumes:
+  #     - '/opt/redis-volume:/data'
   mariadb:
     image: linuxserver/mariadb:alpine
     restart: always
@@ -22,8 +22,8 @@ services:
       - MYSQL_DATABASE=analytics
       - MYSQL_USER=swetrix
       - MYSQL_PASSWORD=password
-    volumes:
-      - '/opt/mysql-volume:/var/lib/mysql'
+  #   volumes:
+  #    - '/opt/mysql-volume:/var/lib/mysql'
   clickhouse:
     image: yandex/clickhouse-server:latest-alpine
     environment:
@@ -31,8 +31,8 @@ services:
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=password
     restart: always
-    volumes:
-      - '/opt/clickhouse-volume:/var/lib/clickhouse'
+    #   volumes:
+    #    - '/opt/clickhouse-volume:/var/lib/clickhouse'
     ulimits:
       nofile:
         soft: 262144
