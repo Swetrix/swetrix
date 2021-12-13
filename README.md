@@ -27,10 +27,8 @@ To use it you just just pull `swetrix/swetrixfe` from dockerhub.
 #### Docker Environment Variables
 
 The following environment variables are available, alongside their default values.  
+`API_URL` = `https://example.com/api/` | The URL of the Swetrix API  
 `TZ` = `Etc/UTC` | Sets the Timezone of the Container  
-`REACT_APP_API_URL` = `https://example.com/api/` | The URL of the Swetrix API  
-`CHOKIDAR_USEPOLLING` = `true` | Toggles polling in Chokidar  
-`GENERATE_SOURCEMAP` = `false` | Toggles Sourcemap Generation
 
 ## Bugs and security
 
