@@ -10,6 +10,8 @@ services:
   redis:
     image: redis:alpine
     restart: always
+    environment:
+      - REDIS_PASSWORD=password
     volumes:
       - '/opt/redis-volume:/data'
   mariadb:
