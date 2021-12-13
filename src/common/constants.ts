@@ -10,6 +10,7 @@ require('dotenv').config()
 
 const redis = new Redis(_toNumber(process.env.REDIS_PORT), process.env.REDIS_HOST, {
   password: process.env.REDIS_PASSWORD,
+  username: process.env.REDIS_USER,
 })
 
 redis.defineCommand('countKeysByPattern', {
