@@ -1,10 +1,9 @@
 # Stage 1
 FROM node:lts-alpine as build
-ARG REACT_APP_API_URL="https://example.com/api/" \
-    REACT_APP_SELFHOSTED=true
+ARG REACT_APP_API_URL="https://example.com/api/"
 ENV TZ=Etc/UTC \
     REACT_APP_API_URL=${REACT_APP_API_URL} \
-    REACT_APP_SELFHOSTED=${REACT_APP_SELFHOSTED}} \
+    REACT_APP_SELFHOSTED=true \
     CHOKIDAR_USEPOLLING=true \
     GENERATE_SOURCEMAP=false
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
