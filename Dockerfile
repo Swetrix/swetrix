@@ -19,9 +19,9 @@ ENV TZ=UTC \
     CLICKHOUSE_PORT=8123 \
     CLICKHOUSE_PASSWORD=password \
     CLICKHOUSE_DATABASE=analytics \
-    SMTP_MOCK=true \ 
     EMAIL=test@test.com \
     PASSWORD=12345678 \
+    SMTP_MOCK=true \ 
     SELFHOSTED=true
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 WORKDIR /app
