@@ -32,4 +32,4 @@ COPY --from=build /build/dist/ ./dist/
 COPY --from=build /build/node_modules/ ./node_modules/
 CMD [ "npm", "run", "start:prod" ]
 EXPOSE 5005
-HEALTHCHECK CMD wget -nv -t1 --spider 'http://localhost/ping' || exit 1
+HEALTHCHECK CMD wget -nv -t1 --spider 'http://localhost:5005/ping' || exit 1

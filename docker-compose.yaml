@@ -3,6 +3,8 @@ services:
   swetrix-api:
     image: swetrix/swetrix-api:latest
     restart: always
+    ports:
+      - '8080:5005'
     environment:
       - REDIS_HOST=redis
       - MYSQL_HOST=mariadb
