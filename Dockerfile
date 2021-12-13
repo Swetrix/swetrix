@@ -1,9 +1,11 @@
 # Stage 1
 FROM node:lts-alpine as build
+ARG REACT_APP_API_URL="https://example.com/api/" \
+    REACT_APP_SELFHOSTED=true
 ENV TZ=Etc/UTC \
-    REACT_APP_API_URL="https://example.com/api/" \
+    REACT_APP_API_URL=${REACT_APP_API_URL} \
+    REACT_APP_SELFHOSTED=${REACT_APP_SELFHOSTED}} \
     CHOKIDAR_USEPOLLING=true \
-    REACT_APP_SELFHOSTED=true \
     GENERATE_SOURCEMAP=false
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 WORKDIR /app
@@ -12,11 +14,7 @@ RUN npm install -g pnpm && pnpm install && npm run build
 
 # Stage 2
 FROM nginx:stable-alpine
-ENV TZ=Etc/UTC \
-    REACT_APP_API_URL="https://example.com/api/" \
-    CHOKIDAR_USEPOLLING=true \
-    REACT_APP_SELFHOSTED=true \
-    GENERATE_SOURCEMAP=false
+ENV TZ=Etc/UTC
 RUN rm -rf /usr/share/nginx/html/*
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 COPY --from=build /app/deployment/default.conf /etc/nginx/conf.d/default.conf
