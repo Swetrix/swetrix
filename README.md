@@ -2,15 +2,12 @@
 
 # Swetrix Analytics API
 
-## Installation
+## Development
 
 ```bash
+# install dependencies with package manager of your choice
 $ npm install
-```
 
-## Running the app
-
-```bash
 # development
 $ npm run start
 
@@ -21,106 +18,59 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Deployment
-### The beployment process has been tested on Debian, but should work well on other APT-based OS as well.
-Install MySQL, Clickhouse and Redis databases:
-```bash
-sudo apt-get install apt-transport-https ca-certificates dirmngr
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E0C56BD4
+## Selfhosted Deployment
 
-echo "deb https://repo.clickhouse.tech/deb/stable/ main/" | sudo tee /etc/apt/sources.list.d/clickhouse.list
+### Prerequisites
 
-sudo apt -y update
-sudo apt -y upgrade
-sudo apt -y install mariadb-server redis-server clickhouse-server clickhouse-client
+To run Swetrix-API on your own servers you need to setup 3 databases.
 
-sudo service clickhouse-server start
-```
+> Why we need three databases?
+>
+> - MYSQL for projects, users and tokens
+> - Clickhouse for Analytics and Custom Events
+> - Redis for Caching
 
-### MySQL DB setup:
-```bash
-mysql -uroot
+We recommend using the Docker-Compose file we provided.
 
-# Inside the MySQL shell:
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'root_password';
-flush privileges;
-exit;
+Setup MySQL, Clickhouse and Redis databases as Docker Containers.
+Then fill out the Environment Variables below accordingly.
 
-# Logging into the MySQL again
-mysql -uroot -proot_password
+### Environment Variables
 
-create database analytics;
-```
+Below you will find the Environment Variables that are required to run the API. The values next to them are their default values. You can change them to your own values or just not set them if they suit you anyway. (e.g. Ports, Username, etc.)
 
-The tables at `analytics` database should be generated on the first start of the API by the TypeORM module.
+#### Security
 
-### NodeJS (v14 LTS) & NPM (and PM2) installation:
-```bash
-curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
-sudo apt -y install nodejs gcc g++ make
+`JWT_SECRET`=SOME_SECRET_TOKEN
 
-npm i -g pm2
-```
+#### MySQL Database
 
-Copy the API source code (or `dist` build only, don't forget to copy `.env` into `dist` folder) into the `/root/swetrix/api`:
-```bash
-# Run on the server
-mkdir /root/swetrix/api
+`MYSQL_HOST`=localhost  
+`MYSQL_USER`=root
+`MYSQL_ROOT_PASSWORD`=password  
+`MYSQL_DATABASE`=analytics
 
-# Run this command in the local machine in context of the API directory:
-scp -rp ./* ./.env.example ./.eslintrc.js ./.prettierrc  root@SERVER_IP_ADDRESS:/root/swetrix/api
-```
-Make sure to set up `.env` variables
+#### Redis Database
 
-Install API's dependencies, create a build (please, make sure the `common/templates` **are included** into the `dist` build):
-```bash
-cd /root/swetrix/api
-npm i
-npm run build
-```
+`REDIS_HOST`=localhost  
+`REDIS_PORT`=6379
+`REDIS_PASSWORD`=
 
-Set up NGINX (https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-10)
+#### Clickhouse Database
 
-NGINX set up:
-```
-server {
-  server_name swetrix.com
+`CLICKHOUSE_HOST`=http://localhost  
+`CLICKHOUSE_USER`=default  
+`CLICKHOUSE_PORT`=8123  
+`CLICKHOUSE_PASSWORD`=password  
+`CLICKHOUSE_DATABASE`=analytics
 
-  root /var/www/html;
+#### Swetrix Admin Account
 
-  location / {
-    try_files $uri $uri/ =404;
-  }
+`EMAIL`=test@test.com
+`PASSWORD`=12345678
 
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/swetrix.com/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/swetrix.com/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-}
+### Running Swetrix-API behind a Reverse Proxy
 
-server {
-  server_name api.swetrix.com;
-
-  location / {
-    proxy_pass http://localhost:5005;
-  }
-
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/swetrix.com/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/swetrix.com/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-}
-
-server {
-  listen 80 default_server;
-  listen [::]:80 default_server;
-  server_name "";
-  return 404;
-}
-```
-
-Make sure to set up nginx to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.\
-The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.\
+Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.  
+The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.  
 The production swetrix.com API is covered by the Cloudflare proxying.
