@@ -3,6 +3,10 @@ services:
   swetrix-api:
     image: swetrix/swetrix-api:latest
     restart: always
+    links:
+      - 'redis'
+      - 'mariadb'
+      - 'clickhouse'
     depends_on:
       - 'redis'
       - 'mariadb'
