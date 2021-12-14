@@ -1,7 +1,7 @@
 # Stage 1
 FROM node:lts-alpine as build
-ARG API_URL="https://full.master/api"
 ENV TZ=Etc/UTC \
+    API_URL="https://example.com/api" \
     REACT_APP_SELFHOSTED=true \
     CHOKIDAR_USEPOLLING=true \
     GENERATE_SOURCEMAP=false \
