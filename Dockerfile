@@ -21,6 +21,7 @@ ENV TZ=UTC \
     CLICKHOUSE_PORT=8123 \
     CLICKHOUSE_PASSWORD=password \
     CLICKHOUSE_DATABASE=analytics \
+    API_ORIGINS=\
     EMAIL=test@test.com \
     PASSWORD=12345678 \
     SMTP_MOCK=true \ 
