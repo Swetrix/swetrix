@@ -21,7 +21,7 @@ ENV TZ=Etc/UTC
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/deployment/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/start-nginx.sh /usr/bin/start-nginx.sh
+COPY --from=build /app/deployment/start-nginx.sh /usr/bin/start-nginx.sh
 RUN chmod +x /usr/bin/start-nginx.sh
 COPY --from=build /app/build /usr/share/nginx/html
 ENTRYPOINT ["/usr/bin/start-nginx.sh"]
