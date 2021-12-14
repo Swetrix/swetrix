@@ -6,11 +6,12 @@ import _isEmpty from 'lodash/isEmpty'
 import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
+import config from '../config.json'
 
 const debug = Debug('swetrix:api')
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: process.env.REACT_APP_API_URL || config.API_URL,
 })
 
 api.interceptors.request.use(
