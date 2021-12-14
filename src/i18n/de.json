@@ -7,6 +7,8 @@
     "pricing": "Preise",
     "faqs": "FAQs",
     "you": "Konto",
+    "explore": "Entdecken",
+    "liveDemo": "Live Demo",
     "dashboard": "Dashboard",
     "logout": "Logout",
     "save": "Speichern",
@@ -26,7 +28,7 @@
     "signup": "Jetzt gratis registrieren!",
     "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
     "techDetails": "Möchten Sie weitere technische Details erfahren?",
-    "lookAtDocs": "Werfen Sie einen Blick auf die Dokumentation und die Funktionen.",
+    "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
     "readyToStart": "Sind Sie bereit los zu legen?",
     "exploreService": "Erkundigen Sie sich über unseren Dienst oder registrieren Sie sich.",
     "faq": {
@@ -219,6 +221,7 @@
     "contents": "Inhalt"
   },
   "project": {
+    "ad": "Sie möchten diese Statistiken für Ihre eigene Webseite?",
     "noExist": "Das ausgewählte Projekt existiert nicht",
     "exportImg": "Als Bild exportieren",
     "noEvTitle": "Noch keine Tracking-Events",
@@ -267,7 +270,9 @@
       "origins": "Allowed-Origins",
       "originsHint": "Eine kommaseparierte Liste von Allowed-Origins (Herkunftsdomänen), die Ihre Project-ID in ihrem Tracking-Script verwenden dürfen.\nLassen Sie das Feld leer, um alle Herkünfte zuzulassen (Standardeinstellung).\nBeispiel: cornell.edu, app.example.com, ssu.gov.ua",
       "enabled": "Projekt aktiviert",
+      "public": "Das Dashboard ist öffentlich",
       "enabledHint": "Deaktivierte Projekte zählen keine neuen Tracking-Events oder Seitenaufrufe.\nSie können weiterhin auf die bisherigen Analysen des Projekts im Dashboard zugreifen.",
+      "publicHint": "Wenn Sie diese Option aktivieren, kann jeder im Internet (einschließlich Google) das Dashboard dieses Projekts sehen. Nur der Projektadministrator kann die Einstellungen bearbeiten.",
       "createHint": "*Sie können Ihr Projekt im Anschluss an die Erstellung noch weiter einrichten.",
       "delete": "Projekt löschen",
       "qDelete": "Das Projekt löschen?",
