@@ -7,11 +7,12 @@ import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
 import config from '../config.json'
+import { isSelfhosted } from 'redux/constants'
 
 const debug = Debug('swetrix:api')
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || config.API_URL,
+  baseURL: isSelfhosted ? config.API_URL : process.env.REACT_APP_API_URL,
 })
 
 api.interceptors.request.use(
