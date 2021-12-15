@@ -27,8 +27,8 @@ To use it you just just pull `swetrix/swetrixfe` from dockerhub.
 #### Docker Environment Variables
 
 The following environment variables are available, alongside their default values.  
-`API_URL` = `https://example.com/api/` | The URL of the Swetrix API  
-`TZ` = `Etc/UTC` | Sets the Timezone of the Container  
+`API_URL` = `https://example.com/` | The URL of the Swetrix API  
+`TZ` = `Etc/UTC` | Sets the Timezone of the Container
 
 ## Bugs and security
 
