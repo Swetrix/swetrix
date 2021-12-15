@@ -1,9 +1,17 @@
-import { ForbiddenException, InternalServerErrorException } from '@nestjs/common'
+import { ForbiddenException, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { hash } from 'blake3'
 import { promises as fs } from 'fs'
 import * as _sample from 'lodash/sample'
+import * as _join from 'lodash/join'
+import * as _values from 'lodash/values'
+import * as _keys from 'lodash/keys'
 import * as _toNumber from 'lodash/toNumber'
+import * as _isEmpty from 'lodash/isEmpty'
+import * as _head from 'lodash/head'
+import * as _map from 'lodash/map'
 import { redis } from './constants'
+import { clickhouse } from './constants'
+import { Project } from 'src/project/entity/project.entity'
 
 const marketingTips = {
   en: [
@@ -47,23 +55,39 @@ const checkRateLimit = async (ip: string, action: string, reqAmount: number = RA
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
 }
 
-const getJSONProjects = async () => {
-  try {
-    const rawData = await fs.readFile('../projects.json', 'utf8')
-    return JSON.parse(rawData)
-  } catch (e) {
-    throw new InternalServerErrorException('Error while reading projects data')
+const getProjectsClickhouse = async (id = null) => {
+  if (!id) {
+    const query = 'SELECT * FROM project;'
+    return await clickhouse.query(query).toPromise()
   }
+
+  const query = `SELECT * FROM project WHERE id=${id};`
+  const project = await clickhouse.query(query).toPromise()
+
+  if (_isEmpty(project)) {
+    throw new NotFoundException(`Project ${id} was not found in the database`)
+  }
+
+  return _head(project)
 }
 
-const setJSONProjects = async (projects) => {
-  try {
-    await fs.writeFile('../projects.json', JSON.stringify(projects))
-  } catch (e) {
-    throw new InternalServerErrorException('Error while saving projects data')
-  }
+const updateProjectClickhouse = async (project: Project) => {
+  const columns = _keys(project)
+  const values = _values(project)
+  const query = `ALTER table project UPDATE ${_join(_map(columns, (col, id) => `${col} = ${values[id]}`), ', ')} WHERE id='${project.id}'`
+  return await clickhouse.query(query).toPromise()
+}
+
+const deleteProjectClickhouse = async (id) => {
+  const query = `ALTER table project DELETE WHERE WHERE id='${id}'`
+  return await clickhouse.query(query).toPromise()
+}
+
+const createProjectClickhouse = async (project: Project) => {
+  const query = `INSERT INTO project (*) VALUES ${_join(_values(project), ',')}`
+  return await clickhouse.query(query).toPromise()
 }
 
 export {
-  getRandomTip, checkRateLimit, getJSONProjects, setJSONProjects,
+  getRandomTip, checkRateLimit, createProjectClickhouse, getProjectsClickhouse, updateProjectClickhouse, deleteProjectClickhouse,
 }

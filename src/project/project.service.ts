@@ -5,6 +5,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _isArray from 'lodash/isArray'
 import * as _size from 'lodash/size'
 import * as _join from 'lodash/join'
+import * as _find from 'lodash/find'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
@@ -101,8 +102,8 @@ export class ProjectService {
     }
   }
 
-  async checkIfIDUniqueJSON(projects: object, projectID: string): Promise<void> {
-    if (!_isEmpty(projects?.[projectID])) {
+  async checkIfIDUniqueClickhouse(projects: Array<object>, projectID: string): Promise<void> {
+    if (!_find(projects, ({ id }) => id === projectID)) {
       throw new BadRequestException('Selected project ID is already in use')
     }
   }

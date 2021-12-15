@@ -19,7 +19,7 @@ import {
   UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
   redisProjectCountCacheTimeout, isSelfhosted, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
-import { getJSONProjects } from '../common/utils'
+import { getProjectsClickhouse } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -42,8 +42,7 @@ export class AnalyticsService {
 
     if (_isEmpty(project)) {
       if (isSelfhosted) {
-        const projects = await getJSONProjects()
-        project = projects[pid]
+        project = await getProjectsClickhouse(pid)
       } else {
         project = await this.projectService.findOne(pid, {
           relations: ['admin'],
@@ -83,8 +82,8 @@ export class AnalyticsService {
       let pids
 
       if (isSelfhosted) {
-        const projects = await getJSONProjects()
-        pids = _keys(projects)
+        const projects = await getProjectsClickhouse()
+        pids = _map(projects, ({ id }) => id)
       } else {
         pids = await this.projectService.find({
           where: {

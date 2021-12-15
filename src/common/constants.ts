@@ -38,13 +38,14 @@ const clickhouse = new ClickHouse({
   },
 })
 
+const isSelfhosted = Boolean(process.env.SELFHOSTED)
+
 const CLICKHOUSE_INIT_QUERIES = [
   'CREATE DATABASE IF NOT EXISTS analytics',
   `CREATE TABLE IF NOT EXISTS analytics.analytics
   (
     id UUID,
     pid FixedString(12),
-    ev String,
     pg Nullable(String),
     dv Nullable(String),
     br Nullable(String),
@@ -72,28 +73,35 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (id, created, pid);`,
+  isSelfhosted && `CREATE TABLE IF NOT EXISTS analytics.project
+  (
+      id FixedString(12),
+      name String,
+      origins String,
+      active Int8,
+      public Int8,
+      admin FixedString(36),
+      created DateTime
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (id, admin, created);`,
 ]
-
-const isSelfhosted = process.env.SELFHOSTED
 
 const initialiseClickhouse = async () => {
   console.log('Initialising Clickhouse')
 
   for (const query of CLICKHOUSE_INIT_QUERIES) {
-    await clickhouse.query(query).toPromise()
+    if (query) {
+      await clickhouse.query(query).toPromise()
+    }
   }
 
   console.log('Initialising Clickhouse: DONE')
-}
-
-const initialiseSelfhosted = () => {
-  if (isSelfhosted) {
-    fs.writeFile('../projects.json', '{}', { flag: 'wx' }, () => {})
-  }
+  console.log(`Swetrix API version is: ${process.env.npm_package_version}`)
 }
 
 initialiseClickhouse()
-initialiseSelfhosted()
 
 const SELFHOSTED_EMAIL = process.env.EMAIL
 const SELFHOSTED_PASSWORD = process.env.PASSWORD

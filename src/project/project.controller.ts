@@ -22,7 +22,9 @@ import { AppLoggerService } from '../logger/logger.service'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, clickhouse, isSelfhosted,
 } from '../common/constants'
-import { getJSONProjects, setJSONProjects } from '../common/utils'
+import {
+  getProjectsClickhouse, createProjectClickhouse, updateProjectClickhouse, deleteProjectClickhouse,
+} from '../common/utils'
 
 @ApiTags('Project')
 @Controller('project')
@@ -43,8 +45,7 @@ export class ProjectController {
   async get(@CurrentUserId() userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
     if (isSelfhosted) {
-      const projects = await getJSONProjects()
-      const results = _values(projects)
+      const results = await getProjectsClickhouse()
       return {
         results,
         page_total: _size(results),
@@ -67,8 +68,7 @@ export class ProjectController {
     let project
 
     if (isSelfhosted) {
-      const projects = await getJSONProjects()
-      project = projects[id]
+      project = await getProjectsClickhouse(id)
     } else {
       project = await this.projectService.findOne(id)
     }
@@ -88,18 +88,17 @@ export class ProjectController {
     this.logger.log({ projectDTO, userId }, 'POST /project')
     
     if (isSelfhosted) {
-      const projects = await getJSONProjects()
+      const projects = await getProjectsClickhouse()
 
       this.projectService.validateProject(projectDTO)
-      this.projectService.checkIfIDUniqueJSON(projects, projectDTO.id)
+      this.projectService.checkIfIDUniqueClickhouse(projects, projectDTO.id)
 
       const project = new Project()
       Object.assign(project, projectDTO)
       project.origins = _map(projectDTO.origins, _trim)
       project.active = true
 
-      projects[project.id] = project
-      await setJSONProjects(projects)
+      await createProjectClickhouse(project)
 
       return project
     } else {
@@ -152,9 +151,8 @@ export class ProjectController {
     let project
 
     if (isSelfhosted) {
-      const projects = await getJSONProjects()
+      const project = await getProjectsClickhouse(id)
 
-      project = projects[id]
       if (_isEmpty(project)) {
         throw new NotFoundException()
       }
@@ -163,8 +161,7 @@ export class ProjectController {
       project.name = projectDTO.name
       project.public = projectDTO.public
 
-      projects[project.id] = project
-      await setJSONProjects(projects)
+      await updateProjectClickhouse(project)
     } else {
       project = await this.projectService.findOneWithRelations(id)
 
@@ -202,19 +199,12 @@ export class ProjectController {
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
     if (isSelfhosted) {
-      const projects = await getJSONProjects()
-      const project = projects[id]
-      if (_isEmpty(project)) {
-        throw new NotFoundException(`Project with ID ${id} does not exist`)
-      }
-      delete projects[id]
-      await setJSONProjects(projects)
+      await deleteProjectClickhouse(id)
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
-  
+
       try {
-        await this.projectService.delete(id)
         await clickhouse.query(query1).toPromise()
         await clickhouse.query(query2).toPromise()
         return 'Project deleted successfully'
