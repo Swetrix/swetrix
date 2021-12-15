@@ -9,7 +9,7 @@ services:
     ports:
       - '80:80'
     environment:
-      - API_URL=http://localhost:8080/api/
+      - API_URL=http://localhost:8080/
   swetrix-api:
     image: swetrix/swetrix-api:latest
     restart: always
