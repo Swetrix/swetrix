@@ -2,8 +2,10 @@ import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntit
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _isString from 'lodash/isString'
 import * as _isArray from 'lodash/isArray'
 import * as _size from 'lodash/size'
+import * as _split from 'lodash/split'
 import * as _join from 'lodash/join'
 import * as _find from 'lodash/find'
 
@@ -106,6 +108,29 @@ export class ProjectService {
     if (_find(projects, ({ id }) => id === projectID)) {
       throw new BadRequestException('Selected project ID is already in use')
     }
+  }
+
+  formatToClickhouse(project: Project): object {
+    const updProject = { ...project }
+    // @ts-ignore
+    updProject.active = Number(updProject.active)
+    // @ts-ignore
+    updProject.public = Number(updProject.public)
+    // @ts-ignore
+    updProject.origins = _isString(updProject.origins) ? updProject.origins : _join(updProject.origins, ',')
+
+    return updProject
+
+  }
+
+  formatFromClickhouse(project: object): object {
+    const updProject = { ...project }
+    // @ts-ignore
+    updProject.active = Boolean(updProject.active)
+    // @ts-ignore
+    updProject.public = Boolean(updProject.public)
+
+    return updProject
   }
 
   validateProject(projectDTO: ProjectDTO) {

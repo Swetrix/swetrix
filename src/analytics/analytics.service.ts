@@ -1,4 +1,6 @@
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _isString from 'lodash/isString'
+import * as _split from 'lodash/split'
 import * as _filter from 'lodash/filter'
 import * as _size from 'lodash/size'
 import * as _isNull from 'lodash/isNull'

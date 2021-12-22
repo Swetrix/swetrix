@@ -80,12 +80,11 @@ const CLICKHOUSE_INIT_QUERIES = [
       origins String,
       active Int8,
       public Int8,
-      admin FixedString(36),
       created DateTime
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
-  ORDER BY (id, admin, created);`,
+  ORDER BY (created);`,
 ]
 
 const initialiseClickhouse = async () => {

@@ -1,6 +1,6 @@
 import {
   Controller, Body, Query, Param, UseGuards, Get, Post, Put, Delete,
-  BadRequestException, HttpCode, NotFoundException, ForbiddenException, InternalServerErrorException,
+  BadRequestException, HttpCode, NotFoundException, ForbiddenException,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -46,10 +46,11 @@ export class ProjectController {
     this.logger.log({ userId, take, skip }, 'GET /project')
     if (isSelfhosted) {
       const results = await getProjectsClickhouse()
+      const formatted = _map(results, this.projectService.formatFromClickhouse)
       return {
         results,
-        page_total: _size(results),
-        total: _size(results),
+        page_total: _size(formatted),
+        total: _size(formatted),
       }
     } else {
       const where = Object()
@@ -61,7 +62,7 @@ export class ProjectController {
 
   @Get('/:id')
   @ApiResponse({ status: 200, type: Project })
-  async getOne(@Param('id') id: string, @CurrentUserId() uid: string): Promise<Project> {
+  async getOne(@Param('id') id: string, @CurrentUserId() uid: string): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
 
@@ -76,6 +77,10 @@ export class ProjectController {
     if (_isEmpty(project)) throw new NotFoundException('Project was not found in the database')
 
     this.projectService.allowedToView(project, uid)
+
+    if (isSelfhosted) {
+      return this.projectService.formatFromClickhouse(project)
+    }
 
     return project
   }
@@ -161,7 +166,7 @@ export class ProjectController {
       project.name = projectDTO.name
       project.public = projectDTO.public
 
-      await updateProjectClickhouse(project)
+      await updateProjectClickhouse(this.projectService.formatToClickhouse(project))
     } else {
       project = await this.projectService.findOneWithRelations(id)
 

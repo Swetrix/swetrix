@@ -1,17 +1,22 @@
-import { ForbiddenException, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import { ForbiddenException, NotFoundException } from '@nestjs/common'
 import { hash } from 'blake3'
-import { promises as fs } from 'fs'
 import * as _sample from 'lodash/sample'
 import * as _join from 'lodash/join'
+import * as _filter from 'lodash/filter'
 import * as _values from 'lodash/values'
+import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
 import * as _toNumber from 'lodash/toNumber'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _head from 'lodash/head'
+import * as dayjs from 'dayjs'
+import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
 import { redis } from './constants'
 import { clickhouse } from './constants'
 import { Project } from 'src/project/entity/project.entity'
+
+dayjs.extend(utc)
 
 const marketingTips = {
   en: [
@@ -38,6 +43,8 @@ const marketingTips = {
 const RATE_LIMIT_REQUESTS_AMOUNT = 3
 const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
+const allowedToUpdateKeys = ['name', 'origins', 'active', 'public']
+
 const _getRateLimitHash = (ip: string, salt: string = '') => `rl:${hash(`${ip}${salt}`).toString('hex')}`
 
 const getRandomTip = (language: string = 'en'): string => {
@@ -61,7 +68,7 @@ const getProjectsClickhouse = async (id = null) => {
     return await clickhouse.query(query).toPromise()
   }
 
-  const query = `SELECT * FROM project WHERE id=${id};`
+  const query = `SELECT * FROM project WHERE id='${id}';`
   const project = await clickhouse.query(query).toPromise()
 
   if (_isEmpty(project)) {
@@ -71,10 +78,15 @@ const getProjectsClickhouse = async (id = null) => {
   return _head(project)
 }
 
-const updateProjectClickhouse = async (project: Project) => {
-  const columns = _keys(project)
-  const values = _values(project)
-  const query = `ALTER table project UPDATE ${_join(_map(columns, (col, id) => `${col} = ${values[id]}`), ', ')} WHERE id='${project.id}'`
+const updateProjectClickhouse = async (project: object) => {
+  const filtered = _reduce(_filter(_keys(project), key => allowedToUpdateKeys.includes(key)), (obj, key) => {
+    obj[key] = project[key]
+    return obj
+  }, {})
+  const columns = _keys(filtered)
+  const values = _values(filtered)
+  // @ts-ignore
+  const query = `ALTER table project UPDATE ${_join(_map(columns, (col, id) => `${col}='${values[id]}'`), ', ')} WHERE id='${project.id}'`
   return await clickhouse.query(query).toPromise()
 }
 
@@ -84,7 +96,7 @@ const deleteProjectClickhouse = async (id) => {
 }
 
 const createProjectClickhouse = async (project: Project) => {
-  const query = `INSERT INTO project (*) VALUES ${_join(_values(project), ',')}`
+  const query = `INSERT INTO project (*) VALUES ('${project.id}','${project.name}','',1,0,'${dayjs.utc().format('YYYY-MM-DD HH:mm:ss')}')`
   return await clickhouse.query(query).toPromise()
 }
 
