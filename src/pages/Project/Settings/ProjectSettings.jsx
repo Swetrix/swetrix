@@ -6,6 +6,7 @@ import _size from 'lodash/size'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
 import _join from 'lodash/join'
+import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import PropTypes from 'prop-types'
 
@@ -59,7 +60,7 @@ const ProjectSettings = ({
       } else {
         setForm({
           ...project,
-          origins: _join(project.origins, ', '),
+          origins: _isString(project.origins) ? project.origins : _join(project.origins, ', '),
         })
       }
     }
