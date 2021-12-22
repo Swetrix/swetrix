@@ -102,8 +102,8 @@ export class ProjectService {
     }
   }
 
-  async checkIfIDUniqueClickhouse(projects: Array<object>, projectID: string): Promise<void> {
-    if (!_find(projects, ({ id }) => id === projectID)) {
+  checkIfIDUniqueClickhouse(projects: Array<object>, projectID: string): void {
+    if (_find(projects, ({ id }) => id === projectID)) {
       throw new BadRequestException('Selected project ID is already in use')
     }
   }
