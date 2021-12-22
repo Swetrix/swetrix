@@ -51,8 +51,8 @@ services:
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=password
     restart: always
-    #   volumes:
-    #    - '/opt/clickhouse-volume:/var/lib/clickhouse'
+    volumes:
+      - '/opt/clickhouse-volume:/var/lib/clickhouse'
     ulimits:
       nofile:
         soft: 262144
