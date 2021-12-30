@@ -43,6 +43,10 @@ export class UserService {
     return this.usersRepository.delete(id)
   }
 
+  async count(): Promise<number> {
+    return await this.usersRepository.count()
+  }
+
   findOneWhere(where: Record<string, unknown>, relations: string[] = []): Promise<User> {
     return this.usersRepository.findOne({ where, relations })
   }

@@ -140,6 +140,8 @@ const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
 const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
+const REDIS_USERS_COUNT_KEY = 'stats:users_count'
+const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -164,5 +166,5 @@ export {
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME, getRedisUserCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
   STRIPE_SECRET, STRIPE_WH_SECRET, REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME, isSelfhosted, UUIDV5_NAMESPACE,
-  SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD, SELFHOSTED_UUID, CLICKHOUSE_INIT_QUERIES,
+  SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD, SELFHOSTED_UUID, CLICKHOUSE_INIT_QUERIES, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY
 }

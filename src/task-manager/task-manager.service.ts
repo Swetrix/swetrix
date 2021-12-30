@@ -11,11 +11,13 @@ import * as _map from 'lodash/map'
 
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
+import { ProjectService } from '../project/project.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { ReportFrequency } from '../user/entities/user.entity'
 import {
   clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, isSelfhosted, // REDIS_SESSION_SALT_KEY,
+  REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 
@@ -27,6 +29,7 @@ export class TaskManagerService {
     private readonly mailerService: MailerService,
     private readonly userService: UserService,
     private readonly analyticsService: AnalyticsService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -142,6 +145,22 @@ export class TaskManagerService {
 
       // todo: maybe this should be sent as a broadcast stream
       await this.mailerService.sendEmail(users[i].email, LetterTemplate.ProjectReport, result)
+    }
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async getGeneralStats(): Promise<object> {
+    if (isSelfhosted) {
+      return
+    }
+
+    const users = await this.userService.count()
+    const projects = await this.projectService.count()
+    await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
+    await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
+
+    return {
+      users, projects,
     }
   }
 }

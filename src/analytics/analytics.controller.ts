@@ -1,6 +1,7 @@
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isNumber from 'lodash/isNumber'
 import * as _isArray from 'lodash/isArray'
+import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
 import * as _last from 'lodash/last'
 import * as _map from 'lodash/map'
@@ -17,15 +18,17 @@ import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 
 import { AnalyticsService, getSessionKey } from './analytics.service'
+import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { AppLoggerService } from '../logger/logger.service'
+import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   clickhouse, REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
-  HEARTBEAT_SID_LIFE_TIME, // REDIS_SESSION_SALT_KEY,
+  HEARTBEAT_SID_LIFE_TIME, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import ct from '../common/countriesTimezones'
 
@@ -75,6 +78,7 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
+    private readonly taskManagerService: TaskManagerService,
   ) { }
 
   @Get('/')
@@ -136,6 +140,21 @@ export class AnalyticsController {
     }
 
     return this.analyticsService.getSummary(pidsArray, 'w', true)
+  }
+
+  @UseGuards(SelfhostedGuard)
+  @Get('/generalStats')
+  async getGeneralStats(): Promise<object> {
+    const users = _toNumber(await redis.get(REDIS_USERS_COUNT_KEY))
+    const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
+
+    if (!_isNumber(users) || !_isNumber(projects)) {
+      return await this.taskManagerService.getGeneralStats()
+    }
+
+    return {
+      users, projects,
+    }
   }
 
   @Get('/hb')

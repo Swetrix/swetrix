@@ -37,8 +37,8 @@ export class ProjectService {
     })
   }
 
-  count(): Promise<number> {
-    return this.projectsRepository.count()
+  async count(): Promise<number> {
+    return await this.projectsRepository.count()
   }
 
   async create(project: ProjectDTO | Project): Promise<Project> {
