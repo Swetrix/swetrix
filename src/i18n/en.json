@@ -79,7 +79,12 @@
       }
     ],
     "custSupport": "Could not find the answer you’re looking for? Reach out to our <mail>customer support</mail> team.",
-    "whyUs": "Why us"
+    "whyUs": "Why us",
+    "ourStats": "Our statistics",
+    "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
+    "users": "Registered users",
+    "websites": "Added websites",
+    "pageviews": "Tracked pageviews"
   },
   "auth": {
     "recovery": {

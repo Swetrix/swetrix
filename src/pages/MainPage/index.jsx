@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 import _map from 'lodash/map'
 
 import routes from 'routes'
+// import { nFormatter } from 'utils/generic'
 import { notAuthenticated } from '../../hoc/protected'
 import Title from 'components/Title'
 import SignUp from '../Auth/Signup/BasicSignup'
@@ -59,12 +60,12 @@ const FAQs = ({ t }) => (
         </div>
         <div className='mt-12 lg:mt-0 lg:col-span-2'>
           <dl className='space-y-12'>
-          {_map(t('main.faq.list', { returnObjects: true }), (faq) => (
-            <div key={faq.question}>
-              <dt className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>{faq.question}</dt>
-              <dd className='mt-2 text-base text-gray-500 dark:text-gray-300 whitespace-pre-line'>{faq.answer}</dd>
-            </div>
-          ))}
+            {_map(t('main.faq.list', { returnObjects: true }), (faq) => (
+              <div key={faq.question}>
+                <dt className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>{faq.question}</dt>
+                <dd className='mt-2 text-base text-gray-500 dark:text-gray-300 whitespace-pre-line'>{faq.answer}</dd>
+              </div>
+            ))}
           </dl>
         </div>
       </div>
@@ -95,6 +96,8 @@ const Features = ({ t }) => (
 const Main = () => {
   const { t } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
+  const { stats } = useSelector(state => state.ui.misc)
+  console.log(stats)
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
@@ -167,6 +170,50 @@ const Main = () => {
         </div>
 
         <Features t={t} />
+
+        {/* <div className='py-6 overflow-hidden bg-white'>
+          <div className='w-11/12 container mx-auto'>
+            <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 text-center'>
+              {t('main.ourStats')}
+            </h2>
+            <p className='max-w-3xl mx-auto mt-3 text-xl text-center text-gray-500 dark:text-gray-200 sm:mt-4'>
+              {t('main.statsDesc')}
+            </p>
+            <div className='pb-12 mt-10 bg-white sm:pb-16'>
+              <div className='relative w-full'>
+                <div className='mx-auto'>
+                  <dl className='bg-white rounded-lg sm:grid sm:grid-cols-3'>
+                    <div className='flex flex-col p-6 text-center border-b border-gray-100 sm:border-0 sm:border-r'>
+                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 leading-6'>
+                        {t('main.users')}
+                      </dt>
+                      <dd className='order-1 text-5xl font-extrabold text-indigo-600'>
+                        {Number(stats.users).toLocaleString()}
+                      </dd>
+                    </div>
+                    <div className='flex flex-col p-6 text-center border-t border-b border-gray-100 sm:border-0 sm:border-l sm:border-r'>
+                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 leading-6'>
+                        {t('main.websites')}
+                      </dt>
+                      <dd className='order-1 text-5xl font-extrabold text-indigo-600'>
+                        {Number(stats.projects).toLocaleString()}
+                      </dd>
+                    </div>
+                    <div className='flex flex-col p-6 text-center border-t border-gray-100 sm:border-0 sm:border-l'>
+                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 leading-6'>
+                        {t('main.pageviews')}
+                      </dt>
+                      <dd className='order-1 text-5xl font-extrabold text-indigo-600'>
+                        {nFormatter(Number(stats.pageviews), 1)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> */}
+
         <div className='bg-indigo-600 dark:bg-indigo-800'>
           <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
             <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight'>

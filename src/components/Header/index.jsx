@@ -70,7 +70,7 @@ const Header = ({ authenticated, theme }) => {
             </div>
             <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
               {theme === 'dark' ? (
-                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 cursor-pointer' />
+                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
               ) : (
                 <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
               )}
@@ -121,7 +121,7 @@ const Header = ({ authenticated, theme }) => {
             </div>
             <div className='md:hidden flex justify-center items-center'>
               {theme === 'dark' ? (
-                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 cursor-pointer' />
+                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
               ) : (
                 <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
               )}

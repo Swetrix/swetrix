@@ -22,9 +22,9 @@ const getTiers = (t) => [
     planCode: 'free',
     priceMonthly: null,
     includedFeatures: [
-      t('pricing.tiers.upToXEVMo', { amount: 3000 }),
-      t('pricing.tiers.upToXProjects', { amount: 5 }),
-      t('pricing.tiers.xMoDataRetention', { amount: 3 }),
+      t('pricing.tiers.upToXEVMo', { amount: 5000 }),
+      t('pricing.tiers.upToXProjects', { amount: 10 }),
+      // t('pricing.tiers.xMoDataRetention', { amount: 3 }),
       t('pricing.tiers.highStandardSec'),
     ],
   },
@@ -35,8 +35,8 @@ const getTiers = (t) => [
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
       t('pricing.tiers.xEvMo', { amount: '100k' }),
-      t('pricing.tiers.upToXProjects', { amount: 10 }),
-      t('pricing.tiers.xMoDataRetention', { amount: 12 }),
+      t('pricing.tiers.upToXProjects', { amount: 20 }),
+      // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
       t('pricing.tiers.smallBusiSupport'),
       t('pricing.tiers.carbonRemoval'),
     ],
@@ -48,7 +48,7 @@ const getTiers = (t) => [
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
       t('pricing.tiers.xEvMo', { amount: '500k' }),
-      t('pricing.tiers.xMoDataRetention', { amount: 12 }),
+      // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
     ],
   },
   {
@@ -58,7 +58,8 @@ const getTiers = (t) => [
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.startup') }),
       t('pricing.tiers.xEvMo', { amount: '1m' }),
-      t('pricing.tiers.xMoDataRetention', { amount: 24 }),
+      t('pricing.tiers.upToXProjects', { amount: 30 }),
+      // t('pricing.tiers.xMoDataRetention', { amount: 24 }),
     ],
   },
 ]

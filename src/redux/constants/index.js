@@ -52,6 +52,7 @@ export const DONATE_URL = 'https://ko-fi.com/andriir'
 export const isSelfhosted = Boolean(process.env.REACT_APP_SELFHOSTED)
 
 export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
+export const GENERAL_STATS_UPDATE_INTERVAL = 60000
 
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`

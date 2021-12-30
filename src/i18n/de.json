@@ -79,7 +79,12 @@
       }
     ],
     "custSupport": "Ist ihre Frage hier nicht aufgelistet? Wenden Sie sich gerne an unseren <mail>Kundendienst</mail>.",
-    "whyUs": "Warum uns"
+    "whyUs": "Warum uns",
+    "ourStats": "Our statistics",
+    "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
+    "users": "Registrierte Nutzer",
+    "websites": "Hinzugefügte Webseiten",
+    "pageviews": "Getrackte Aufrufe"
   },
   "auth": {
     "recovery": {

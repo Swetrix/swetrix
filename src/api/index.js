@@ -256,3 +256,14 @@ export const getLiveVisitors = (pids) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const getGeneralStats = () =>
+  api
+    .get('log/generalStats')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

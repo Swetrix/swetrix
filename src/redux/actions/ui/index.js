@@ -81,6 +81,13 @@ const setTheme = (theme) => ({
   }
 })
 
+const setGeneralStats = (stats) => ({
+  type: types.SET_GENERAL_STATS,
+  payload: {
+    stats,
+  }
+})
+
 const UIActions = {
   loadProjects,
   setProjects,
@@ -94,6 +101,7 @@ const UIActions = {
   setLiveStatsForProject,
   setLiveStats,
   setTheme,
+  setGeneralStats,
 }
 
 export default UIActions
