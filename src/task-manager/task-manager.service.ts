@@ -148,16 +148,17 @@ export class TaskManagerService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async getGeneralStats(): Promise<object> {
     if (isSelfhosted) {
       return
     }
 
-    const query = 'SELECT count(*) from analytics'
+    const PVquery = 'SELECT count(*) from analytics'
+    const CEquery = 'SELECT count(*) from customEV'
     const users = await this.userService.count()
     const projects = await this.projectService.count()
-    const pageviews = (await clickhouse.query(query).toPromise())[0]['count()']
+    const pageviews = ((await clickhouse.query(PVquery).toPromise())[0]['count()']) + ((await clickhouse.query(CEquery).toPromise())[0]['count()'])
 
     await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
     await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
