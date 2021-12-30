@@ -12,16 +12,16 @@ const Features = () => {
 
   return (
     <Title title={t('titles.billing')}>
-      <div className='bg-gray-50'>
+      <div className='bg-gray-50 dark:bg-gray-800'>
         <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-          <h1 className='text-4xl mb-4 font-extrabold text-gray-900 tracking-tight'>
+          <h1 className='text-4xl mb-4 font-extrabold text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('billing.title')}
           </h1>
-          <p className='text-lg text-gray-900 tracking-tight'>
+          <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('billing.desc')}
           </p>
           <Pricing t={t} />
-          <p className='text-lg text-gray-900 tracking-tight mt-10'>
+          <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
             <Trans
               t={t}
               i18nKey='billing.contact'

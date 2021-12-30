@@ -34,6 +34,7 @@ import routes from 'routes'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors,
 } from 'api'
+import './styles.css'
 
 countries.registerLocale(countriesEn)
 
@@ -317,12 +318,12 @@ const ViewProject = ({
   if (!isLoading) {
     return (
       <Title title={name}>
-        <div className={cx('bg-gray-50 py-6 px-4 sm:px-6 lg:px-8', {
+        <div className={cx('bg-gray-50 dark:bg-gray-800 py-6 px-4 sm:px-6 lg:px-8', {
           'min-h-min-footer': authenticated,
           'min-h-min-footer-ad': !authenticated,
         })} ref={dashboardRef}>
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
-            <h2 className='text-3xl font-extrabold text-gray-900 break-words'>{name}</h2>
+            <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 break-words'>{name}</h2>
             <div className='flex mt-3 md:mt-0'>
               <div className='md:border-r border-gray-200 md:pr-3 mr-3'>
                 <span className='relative z-0 inline-flex shadow-sm rounded-md'>
@@ -467,7 +468,7 @@ const ViewProject = ({
 
   return (
     <Title title={name}>
-      <div className='min-h-min-footer'>
+      <div className='min-h-min-footer dark:bg-gray-800'>
         <Loader />
       </div>
     </Title>

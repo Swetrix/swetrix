@@ -78,9 +78,9 @@ const Signin = ({ login }) => {
 
   return (
     <Title title={t('titles.signin')}>
-      <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='min-h-page bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
             {t('auth.signin.title')}
           </h2>
           <Input
@@ -118,11 +118,11 @@ const Signin = ({ login }) => {
             <div className='pt-1'>
             {!isSelfhosted && (
               <>
-                <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800'>
+                <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
                   {t('auth.signin.forgot')}
                 </Link>
                 <span>&nbsp;|&nbsp;</span>
-                <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800'>
+                <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
                   {t('auth.common.signupInstead')}
                 </Link>
               </>

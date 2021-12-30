@@ -1,7 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import React from 'react'
+import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import _map from 'lodash/map'
 
 import routes from 'routes'
@@ -39,19 +40,19 @@ const SquareDots = ({ className }) => (
 )
 
 const FAQs = ({ t }) => (
-  <div id='faqs' className='bg-gray-50'>
+  <div id='faqs' className='bg-gray-50 dark:bg-gray-800'>
     <div className='w-11/12 mx-auto py-16 px-4 sm:px-6 lg:py-20 lg:px-8'>
       <div className='lg:grid lg:grid-cols-3 lg:gap-8'>
         <div>
-          <h2 className='text-3xl font-extrabold text-gray-900'>
+          <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
             {t('main.faq.title')}
           </h2>
-          <p className='mt-4 text-lg text-gray-500'>
+          <p className='mt-4 text-lg text-gray-500 dark:text-gray-200'>
             <Trans
               t={t}
               i18nKey='main.custSupport'
               components={{
-                mail: <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500' />,
+                mail: <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
               }}
             />
           </p>
@@ -60,8 +61,8 @@ const FAQs = ({ t }) => (
           <dl className='space-y-12'>
           {_map(t('main.faq.list', { returnObjects: true }), (faq) => (
             <div key={faq.question}>
-              <dt className='text-lg leading-6 font-medium text-gray-900'>{faq.question}</dt>
-              <dd className='mt-2 text-base text-gray-500 whitespace-pre-line'>{faq.answer}</dd>
+              <dt className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>{faq.question}</dt>
+              <dd className='mt-2 text-base text-gray-500 dark:text-gray-300 whitespace-pre-line'>{faq.answer}</dd>
             </div>
           ))}
           </dl>
@@ -72,17 +73,17 @@ const FAQs = ({ t }) => (
 )
 
 const Features = ({ t }) => (
-  <div className='bg-white'>
+  <div className='bg-white dark:bg-gray-800'>
     <div className='w-11/12 mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8'>
-      <h2 className='text-3xl font-extrabold text-gray-900 text-center'>
+      <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 text-center'>
         {t('main.whyUs')}
       </h2>
       <div className='mt-12'>
         <dl className='space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:grid-rows-2 md:gap-x-8 md:gap-y-12 lg:grid-cols-3'>
           {_map(t('main.features', { returnObjects: true }), (feature) => (
             <div key={feature.name}>
-              <dt className='text-lg leading-6 font-semibold text-gray-900'>{feature.name}</dt>
-              <dd className='mt-2 text-base text-gray-500'>{feature.description}</dd>
+              <dt className='text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>{feature.name}</dt>
+              <dd className='mt-2 text-base text-gray-500 dark:text-gray-300'>{feature.description}</dd>
             </div>
           ))}
         </dl>
@@ -93,6 +94,7 @@ const Features = ({ t }) => (
 
 const Main = () => {
   const { t } = useTranslation('common')
+  const { theme } = useSelector(state => state.ui.theme)
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
@@ -122,23 +124,23 @@ const Main = () => {
                   </div>
                 </div>
                 <div className='mt-16 sm:mt-24 lg:mt-0 lg:col-span-6'>
-                  <div className='bg-white sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
+                  <div className='bg-white dark:bg-gray-700 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
-                      <p className='text-lg text-gray-900 text-center'>
+                      <p className='text-lg text-gray-900 dark:text-white text-center'>
                         {t('main.signup')}
                       </p>
                       <div className='mt-6'>
                         <SignUp />
                       </div>
                     </div>
-                    <div className='px-4 py-6 bg-gray-50 border-t-2 border-gray-200 sm:px-10'>
-                      <p className='text-xs leading-5 text-gray-500'>
+                    <div className='px-4 py-6 bg-gray-50 dark:bg-gray-700 border-t-2 border-gray-200 sm:px-10'>
+                      <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
                         <Trans
                           t={t}
                           i18nKey='main.signupTerms'
                           components={{
-                            tos: <Link to={routes.terms} className='font-medium text-gray-900 hover:underline' />,
-                            pp: <Link to={routes.privacy} className='font-medium text-gray-900 hover:underline' />,
+                            tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
+                            pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
                           }}
                         />
                       </p>
@@ -153,34 +155,38 @@ const Main = () => {
         <div className='relative'>
           <div className='absolute inset-0 flex flex-col' aria-hidden='true'>
             <div className='flex-1' />
-            <div className='flex-1 w-full bg-white' />
+            <div className='flex-1 w-full bg-white dark:bg-gray-800' />
           </div>
           <div className='w-11/12 mx-auto'>
-            <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot.png' alt='' />
+            {theme === 'dark' ? (
+              <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot_dark.png' alt='' />
+            ) : (
+              <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot_light.png' alt='' />
+            )}
           </div>
         </div>
 
         <Features t={t} />
-        <div className='bg-indigo-600'>
+        <div className='bg-indigo-600 dark:bg-indigo-800'>
           <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-            <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
+            <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight'>
               <span className='block text-white'>
                 {t('main.description')}
               </span>
-              <span className='block text-gray-300'>
+              <span className='block text-gray-300 dark:text-gray-200'>
                 {t('main.lookAtDocs')}
               </span>
             </h2>
             <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
               <Link
                 to={LIVE_DEMO_URL}
-                className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-100 dark:hover:bg-indigo-200'
               >
                 {t('common.liveDemo')}
               </Link>
               <Link
                 to={routes.docs}
-                className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-100 dark:hover:bg-indigo-200'
               >
                 {t('common.docs')}
               </Link>
@@ -190,13 +196,13 @@ const Main = () => {
         <Pricing t={t} />
         <FAQs t={t} />
 
-        <div className='bg-white'>
+        <div className='bg-white dark:bg-gray-750'>
           <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:w-11/12 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-            <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
+            <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50'>
               <span className='block'>
                 {t('main.readyToStart')}
               </span>
-              <span className='block bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent'>
+              <span className='block bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-indigo-300 dark:to-indigo-500 bg-clip-text text-transparent'>
                 {t('main.exploreService')}
               </span>
             </h2>
@@ -221,4 +227,4 @@ const Main = () => {
   )
 }
 
-export default notAuthenticated(Main)
+export default memo(notAuthenticated(Main))

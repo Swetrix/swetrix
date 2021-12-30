@@ -50,7 +50,7 @@ const Contents = ({ t }) => {
 
   return (
     <div className='lg:flex flex-1 items-start justify-center lg:order-2'>
-      <h2 className='block lg:hidden text-3xl font-bold text-gray-900 tracking-tight'>
+      <h2 className='block lg:hidden text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
         {t('docs.contents')}
         :
       </h2>
@@ -58,12 +58,12 @@ const Contents = ({ t }) => {
         {_map(tContents, ({ name, id, content }) => (
           <Fragment key={id}>
             <li className='mt-3'>
-              <a className='hover:underline text-2xl text-blue-600 font-bold' href={`#${id}`}>{name}</a>
+              <a className='hover:underline text-2xl text-blue-600 dark:text-gray-50 font-bold' href={`#${id}`}>{name}</a>
             </li>
             <ol>
               {_map(content, ({ name: cname, id: cid }) => (
                 <li key={cid}>
-                  <a className='hover:underline text-lg text-blue-500 px-4' href={`#${cid}`}>{cname}</a>
+                  <a className='hover:underline text-lg text-blue-500 dark:text-gray-200 px-4' href={`#${cid}`}>{cname}</a>
                 </li>
               ))}
             </ol>
@@ -79,12 +79,12 @@ const CHeader = ({ id, name, addHr = true }) => (
     {addHr && (
       <hr className='mt-10' />
     )}
-    <h2 id={id} className='text-3xl font-bold text-gray-900 tracking-tight mt-2 -mb-5'>{name}</h2>
+    <h2 id={id} className='text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-2 -mb-5'>{name}</h2>
   </>
 )
 
 const CSection = ({ id, name }) => (
-  <h3 id={id} className='text-2xl font-normal text-gray-900 tracking-tight mt-8'>{name}</h3>
+  <h3 id={id} className='text-2xl font-normal text-gray-900 dark:text-gray-50 tracking-tight mt-8'>{name}</h3>
 )
 
 const Docs = () => {
@@ -96,11 +96,11 @@ const Docs = () => {
 
   return (
     <Title title={t('titles.docs')}>
-      <div className='bg-gray-50'>
+      <div className='bg-gray-50 dark:bg-gray-800'>
         <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:w-11/12 lg:px-8 lg:flex'>
           <Contents t={t} />
           <div className='flex-1 lg:order-1 whitespace-pre-line'>
-            <h1 className='text-4xl font-extrabold text-gray-900 tracking-tight'>
+            <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('titles.docs')}
             </h1>
 
@@ -109,24 +109,24 @@ const Docs = () => {
             <Code text={umdBuildExample} language='html' />
 
             <CSection id='docs-npm' name={t('docs.titles.npm')} />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('docs.install')}
               :
             </p>
             <Code text={npmInstall} language='bash' />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('docs.import')}
               :
             </p>
             <Code text={npmImport} language='javascript' />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('docs.track')}
             </p>
             <Code text={esExample} language='javascript' />
 
             <CHeader id='docs-ht' name={t('docs.titles.how')} />
             <CSection id='docs-pv' name={t('docs.titles.pv')} />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <Trans
                 t={t}
                 i18nKey='docs.pv'
@@ -138,7 +138,7 @@ const Docs = () => {
             <Code text={trackPageView} language='javascript' />
 
             <CSection id='docs-ce' name={t('docs.titles.ce')} />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('docs.ce')}
             </p>
             <Code text={trackExample} language='javascript' />
@@ -146,19 +146,19 @@ const Docs = () => {
             <CHeader id='docs-api' name={t('docs.titles.api')} />
 
             <CSection id='docs-init' name='init' />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('docs.init')}
             </p>
             <Code text={init} language='javascript' />
 
             <CSection id='docs-tr' name='track' />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('docs.tr')}
             </p>
             <Code text={track} language='javascript' />
 
             <CSection id='docs-tv' name='trackViews' />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('docs.tv.call')}
               <div className='mb-5'>
                 <ul className='ml-10'>
@@ -183,11 +183,11 @@ const Docs = () => {
             <Code text={trackPVAPI} language='javascript' />
 
             <hr className='mt-10 mb-4' />
-            <p className='text-lg text-gray-900 tracking-tight'>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <i>Last updated: December 11, 2021. (v1.3.0)</i><br />
               <div>
-                - Added ability to specify the &nbsp;
-                <a className='hover:underline text-gray-700' href='#docs-init'>custom API URL</a>
+                - Added ability to specify the&nbsp;
+                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-init'>custom API URL</a>
                 &nbsp;parameter.
               </div>
             </p>

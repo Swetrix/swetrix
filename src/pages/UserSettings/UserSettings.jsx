@@ -95,12 +95,12 @@ const UserSettings = ({
 
   return (
     <Title title={t('titles.profileSettings')}>
-      <div className='min-h-min-footer bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
             {t('titles.profileSettings')}
           </h2>
-          <h3 className='mt-2 text-lg font-bold text-gray-900'>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.general')}
           </h3>
           <Input
@@ -143,7 +143,7 @@ const UserSettings = ({
             {t('profileSettings.update')}
           </Button>
           <hr className='mt-5' />
-          <h3 className='mt-2 text-lg font-bold text-gray-900'>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.email')}
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>

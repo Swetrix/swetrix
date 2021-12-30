@@ -24,7 +24,7 @@ console.log('%cWelcome, hacker, glad you opened your console, you seem serious a
 if (!isSelfhosted) {
   Swetrix.init(SWETRIX_PID)
   Swetrix.trackViews({
-    ignore: [/^\/projects/i, /^\/verify/i],
+    ignore: [/^\/projects/i, /^\/verify/i, /^\/password-reset/i],
     heartbeatOnBackground: true,
   })
 }

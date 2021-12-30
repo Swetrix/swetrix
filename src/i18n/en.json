@@ -179,6 +179,7 @@
     "noProjects": "You have not yet created any projects",
     "createProject": "Create a new project here to start using our service",
     "active": "Active",
+    "public": "Public",
     "disabled": "Disabled",
     "pageviews": "Pageviews",
     "unique": "Unique views",

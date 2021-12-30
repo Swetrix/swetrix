@@ -103,15 +103,15 @@ const Pricing = ({ t }) => {
   const userPlancodeID = _findIndex(tiers, (el) => el.planCode === user.planCode)
 
   return (
-    <div id='pricing' className={cx({ 'bg-white': !authenticated })}>
+    <div id='pricing' className={cx({ 'bg-white dark:bg-gray-750': !authenticated })}>
       <div className={cx('w-11/12 max-w-7xl mx-auto whitespace-pre-line', { 'px-4 sm:px-6 lg:px-8 py-24': !authenticated })}>
         <div className='sm:flex sm:flex-col sm:align-center'>
           {!authenticated && (
             <>
-              <h1 className='text-3xl font-extrabold text-gray-900 sm:text-center'>
+              <h1 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 sm:text-center'>
                 {t('pricing.title')}
               </h1>
-              <p className='mt-5 text-xl text-gray-500 sm:text-center'>
+              <p className='mt-5 text-xl text-gray-500 dark:text-gray-200 sm:text-center'>
                 {t('pricing.adv')}
               </p>
             </>
@@ -150,19 +150,19 @@ const Pricing = ({ t }) => {
                   </div>
                 )}
                 <div className='p-6'>
-                  <h2 className='text-lg leading-6 font-medium text-gray-900'>{tier.name}</h2>
+                  <h2 className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>{tier.name}</h2>
                   <p className='mt-4'>
                     {_isNil(tier.priceMonthly) ? (
-                      <span className='text-4xl font-extrabold text-gray-900'>
+                      <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
                         {t('pricing.free')}
                       </span>
                     ) : (
                       <>
-                        <span className='text-4xl font-extrabold text-gray-900'>
+                        <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
                           ${tier.priceMonthly}
                         </span>
                         &nbsp;
-                        <span className='text-base font-medium text-gray-500'>
+                        <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
                           /
                           {t('pricing.perMonth')}
                         </span>
@@ -214,14 +214,14 @@ const Pricing = ({ t }) => {
                   )}
                 </div>
                 <div className='pt-6 pb-8 px-6'>
-                  <h3 className='text-xs font-medium text-gray-900 tracking-wide uppercase'>
+                  <h3 className='text-xs font-medium text-gray-900 dark:text-gray-50 tracking-wide uppercase'>
                     {t('pricing.whatIncl')}
                   </h3>
                   <ul className='mt-6 space-y-4'>
                     {_map(tier.includedFeatures, (feature) => (
                       <li key={feature} className='flex space-x-3'>
                         <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-500' aria-hidden='true' />
-                        <span className='text-sm text-gray-500'>{feature}</span>
+                        <span className='text-sm text-gray-500 dark:text-gray-200'>{feature}</span>
                       </li>
                     ))}
                   </ul>
