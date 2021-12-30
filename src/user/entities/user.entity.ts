@@ -5,25 +5,25 @@ import { Project } from 'src/project/entity/project.entity'
 export const ACCOUNT_PLANS = {
   free: {
     displayName: 'Free plan',
-    monthlyUsageLimit: 3000,
-    maxProjects: 5,
+    monthlyUsageLimit: 5000,
+    maxProjects: 10,
   },
   freelancer: {
     displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
-    maxProjects: 10,
+    maxProjects: 20,
     priceId: 'price_1JORmHCQYBdiXzBatNEKQmP9',
   },
   startup: {
     displayName: 'Startup plan',
     monthlyUsageLimit: 500000,
-    maxProjects: 10,
+    maxProjects: 20,
     priceId: 'price_1JORmfCQYBdiXzBawbn1yoeu',
   },
   enterprise: {
     displayName: 'Enterprise plan',
     monthlyUsageLimit: 1000000,
-    maxProjects: 10,
+    maxProjects: 30,
     priceId: 'price_1JORn3CQYBdiXzBaOdcNvHHP',
   },
 }
