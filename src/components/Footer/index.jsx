@@ -6,7 +6,7 @@ import _map from 'lodash/map'
 import Flag from 'react-flagkit'
 import PropTypes from 'prop-types'
 
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted, DONATE_URL } from 'redux/constants'
 import routes from 'routes'
 
 const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
@@ -20,6 +20,7 @@ const navigation = {
   company: [
     { key: 'contact', href: routes.contact, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
+    { key: 'donate', href: DONATE_URL },
   ],
   legal: [
     { key: 'privacy', href: routes.privacy },

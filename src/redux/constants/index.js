@@ -47,6 +47,8 @@ export const TITLE_SUFFIX = '| Swetrix'
 
 export const LS_THEME_SETTING = 'colour-theme'
 
+export const DONATE_URL = 'https://ko-fi.com/andriir'
+
 export const isSelfhosted = Boolean(process.env.REACT_APP_SELFHOSTED)
 
 export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
