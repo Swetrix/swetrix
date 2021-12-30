@@ -45,35 +45,33 @@ Below you will find the Environment Variables that are required to run the API. 
 
 #### MySQL Database
 
-`MYSQL_HOST`=localhost  
-`MYSQL_USER`=root
-`MYSQL_ROOT_PASSWORD`=password  
+`MYSQL_HOST`=localhost\
+`MYSQL_USER`=root\
+`MYSQL_ROOT_PASSWORD`=password\
 `MYSQL_DATABASE`=analytics
 
 #### Redis Database
 
-`REDIS_HOST`=localhost  
-`REDIS_PORT`=6379
-`REDIS_USER`=default
+`REDIS_HOST`=localhost\
+`REDIS_PORT`=6379\
+`REDIS_USER`=default\
 `REDIS_PASSWORD`=password
 
 #### Clickhouse Database
 
-`CLICKHOUSE_HOST`=http://localhost  
-`CLICKHOUSE_USER`=default  
-`CLICKHOUSE_PORT`=8123  
-`CLICKHOUSE_PASSWORD`=password  
+`CLICKHOUSE_HOST`=http://localhost \
+`CLICKHOUSE_USER`=default\
+`CLICKHOUSE_PORT`=8123\
+`CLICKHOUSE_PASSWORD`=password\
 `CLICKHOUSE_DATABASE`=analytics
 
 #### Swetrix Admin Account
 
-`EMAIL`=test@test.com
+`EMAIL`=test@test.com\
 `PASSWORD`=12345678
 
 ### Running Swetrix-API behind a Reverse Proxy
 
-Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.  
-The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.  
-The production swetrix.com API is covered by the Cloudflare proxying.  
-  
-The API should be available under port 5005.  
+Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.\
+The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.\
+The production swetrix.com API is covered by the Cloudflare proxying.
