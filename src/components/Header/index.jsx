@@ -68,9 +68,9 @@ const Header = ({ authenticated, theme }) => {
                 </NavLink>
               </div>
             </div>
-            <div className='hidden md:flex justify-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
+            <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
               {theme === 'dark' ? (
-                <SunIcon onClick={switchTheme} className='h-10 w-10 text-yellow-400 cursor-pointer' />
+                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 cursor-pointer' />
               ) : (
                 <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
               )}
@@ -119,8 +119,13 @@ const Header = ({ authenticated, theme }) => {
                 </>
               )}
             </div>
-            <div className='md:hidden'>
-              <Popover.Button className='bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
+            <div className='md:hidden flex justify-center items-center'>
+              {theme === 'dark' ? (
+                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 cursor-pointer' />
+              ) : (
+                <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+              )}
+              <Popover.Button className='bg-white rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
                 <span className='sr-only'>
                   {t('common.openMenu')}
                 </span>
