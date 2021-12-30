@@ -1,7 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import React from 'react'
+import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import _map from 'lodash/map'
 
 import routes from 'routes'
@@ -93,6 +94,7 @@ const Features = ({ t }) => (
 
 const Main = () => {
   const { t } = useTranslation('common')
+  const { theme } = useSelector(state => state.ui.theme)
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
@@ -156,7 +158,11 @@ const Main = () => {
             <div className='flex-1 w-full bg-white dark:bg-gray-800' />
           </div>
           <div className='w-11/12 mx-auto'>
-            <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot.png' alt='' />
+            {theme === 'dark' ? (
+              <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot_dark.png' alt='' />
+            ) : (
+              <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot_light.png' alt='' />
+            )}
           </div>
         </div>
 
@@ -221,4 +227,4 @@ const Main = () => {
   )
 }
 
-export default notAuthenticated(Main)
+export default memo(notAuthenticated(Main))
