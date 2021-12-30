@@ -159,9 +159,9 @@ const Main = () => {
           </div>
           <div className='w-11/12 mx-auto'>
             {theme === 'dark' ? (
-              <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot_dark.png' alt='' />
+              <img className='relative rounded-md md:rounded-lg shadow-lg w-full' src='/assets/screenshot_dark.png' alt='' />
             ) : (
-              <img className='relative rounded-md md:rounded-lg shadow-lg' src='/assets/screenshot_light.png' alt='' />
+              <img className='relative rounded-md md:rounded-lg shadow-lg w-full' src='/assets/screenshot_light.png' alt='' />
             )}
           </div>
         </div>
