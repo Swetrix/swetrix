@@ -168,16 +168,20 @@ var Lib = /** @class */ (function () {
         }
     };
     Lib.prototype.canTrack = function () {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
+        if ((_a = this.options) === null || _a === void 0 ? void 0 : _a.disabled) {
+            this.debug('Tracking disabled: the \'disabled\' setting is set to true.');
+            return false;
+        }
         if (!isInBrowser()) {
             this.debug('Tracking disabled: script does not run in browser environment.');
             return false;
         }
-        if (((_a = this.options) === null || _a === void 0 ? void 0 : _a.respectDNT) && ((_b = window.navigator) === null || _b === void 0 ? void 0 : _b.doNotTrack) === '1') {
+        if (((_b = this.options) === null || _b === void 0 ? void 0 : _b.respectDNT) && ((_c = window.navigator) === null || _c === void 0 ? void 0 : _c.doNotTrack) === '1') {
             this.debug('Tracking disabled: respecting user\'s \'Do Not Track\' preference.');
             return false;
         }
-        if (!((_c = this.options) === null || _c === void 0 ? void 0 : _c.debug) && isLocalhost()) {
+        if (!((_d = this.options) === null || _d === void 0 ? void 0 : _d.debug) && isLocalhost()) {
             return false;
         }
         if (isAutomated()) {

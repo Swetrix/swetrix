@@ -173,6 +173,11 @@ export class Lib {
   }
 
   private canTrack(): boolean {
+    if (this.options?.disabled) {
+      this.debug('Tracking disabled: the \'disabled\' setting is set to true.')
+      return false
+    }
+
     if (!isInBrowser()) {
       this.debug('Tracking disabled: script does not run in browser environment.')
       return false
