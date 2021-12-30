@@ -1,5 +1,4 @@
 import * as _isEmpty from 'lodash/isEmpty'
-import * as _isNumber from 'lodash/isNumber'
 import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
@@ -145,16 +144,18 @@ export class AnalyticsController {
   @UseGuards(SelfhostedGuard)
   @Get('/generalStats')
   async getGeneralStats(): Promise<object> {
-    const users = _toNumber(await redis.get(REDIS_USERS_COUNT_KEY))
-    const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
+    const exists = await redis.exists(REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY)
 
-    if (!_isNumber(users) || !_isNumber(projects)) {
-      return await this.taskManagerService.getGeneralStats()
+    if (exists) {
+      const users = _toNumber(await redis.get(REDIS_USERS_COUNT_KEY))
+      const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
+
+      return {
+        users, projects,
+      }
     }
 
-    return {
-      users, projects,
-    }
+    return await this.taskManagerService.getGeneralStats()
   }
 
   @Get('/hb')

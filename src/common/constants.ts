@@ -1,7 +1,6 @@
 import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import { v5 as uuidv5 } from 'uuid'
-import * as fs from 'fs'
 import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
 import * as _round from 'lodash/round'
