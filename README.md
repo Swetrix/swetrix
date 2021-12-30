@@ -11,7 +11,7 @@ The project's purpose is to fight web analytics giants like Google Analytics whi
 
 ## License
 
-Swetrix is released under the GPL v3.0 licence, see [LICENSE](LICENSE).
+Swetrix is released under the AGPL v3.0 licence, see [LICENSE](LICENSE).
 
 ## Install Swetrix
 
