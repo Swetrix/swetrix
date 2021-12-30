@@ -27,7 +27,7 @@ import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   clickhouse, REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
-  HEARTBEAT_SID_LIFE_TIME, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, // REDIS_SESSION_SALT_KEY,
+  HEARTBEAT_SID_LIFE_TIME, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import ct from '../common/countriesTimezones'
 
@@ -144,14 +144,15 @@ export class AnalyticsController {
   @UseGuards(SelfhostedGuard)
   @Get('/generalStats')
   async getGeneralStats(): Promise<object> {
-    const exists = await redis.exists(REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY)
+    const exists = await redis.exists(REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY)
 
     if (exists) {
       const users = _toNumber(await redis.get(REDIS_USERS_COUNT_KEY))
       const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
+      const pageviews = _toNumber(await redis.get(REDIS_PAGEVIEWS_COUNT_KEY))
 
       return {
-        users, projects,
+        users, projects, pageviews,
       }
     }
 
