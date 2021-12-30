@@ -38,3 +38,7 @@ For severe security issues, please contact us at security@swetrix.com
 ## Contact
 
 You can contact us via email at contact@swetrix.com
+
+## Donate
+You can support the project by donating us at https://ko-fi.com/andriir \
+We can only run our services by once again asking for your financial support!
