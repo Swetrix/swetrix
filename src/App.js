@@ -50,7 +50,7 @@ const Fallback = ({ isMinimalFooter }) => {
   }, [])
 
   return (
-    <div className={cx({ 'min-h-page': !isMinimalFooter, 'min-h-min-footer': isMinimalFooter })}>
+    <div className={cx('bg-gray-50 dark:bg-gray-800', { 'min-h-page': !isMinimalFooter, 'min-h-min-footer': isMinimalFooter })}>
       {showLoader && (
         <Loader />
       )}
@@ -112,7 +112,7 @@ const App = () => {
         <Header authenticated={authenticated} theme={theme} />
         <ScrollToTop>
           <Selfhosted>
-            <Suspense fallback={<Fallback isMinimalFooter={isMinimalFooter} />}>
+            <Suspense fallback={<Fallback theme={theme} isMinimalFooter={isMinimalFooter} />}>
               <Switch>
                 <Route path={routes.main} component={MainPage} exact />
                 <Route path={routes.signin} component={SignIn} exact />
