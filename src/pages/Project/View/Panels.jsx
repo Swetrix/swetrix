@@ -22,8 +22,8 @@ const ENTRIES_PER_PANEL = 5
 const PanelContainer = ({
   name, children,
 }) => (
-  <div className='relative bg-white pt-5 px-4 pb-12 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden'>
-    <h3 className='text-lg leading-6 font-semibold mb-2 text-gray-900'>{name}</h3>
+  <div className='relative bg-white dark:bg-gray-750 pt-5 px-4 pb-12 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden'>
+    <h3 className='text-lg leading-6 font-semibold mb-2 text-gray-900 dark:text-gray-50'>{name}</h3>
     <div className='flex flex-col h-full scroll-auto'>
       {children}
     </div>
@@ -46,54 +46,54 @@ const Overview = ({
   return (
     <PanelContainer name={t('project.overview')}>
       <div className='flex text-lg justify-between'>
-        <div className='flex items-center'>
+        <div className='flex items-center dark:text-gray-50'>
           <PulsatingCircle className='mr-1.5' type='big' />
           {t('dashboard.liveVisitors')}
           :
         </div>
-        <p className='h-5 mr-2 text-gray-900 text-xl'>
+        <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
           {live}
         </p>
       </div>
       {!_isEmpty(chartData) && (
         <>
-          <p className='text-lg font-semibold'>
+          <p className='text-lg font-semibold dark:text-gray-50'>
             {t('project.statsFor')}
             <span className='lowercase'> {activePeriod.label}</span>
           </p>
 
           <div className='flex justify-between'>
-            <p className='text-lg'>
+            <p className='text-lg dark:text-gray-50'>
               {t('dashboard.pageviews')}
               :
             </p>
-            <p className='h-5 mr-2 text-gray-900 text-xl'>
+            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {pageviews}
             </p>
           </div>
 
           <div className='flex justify-between'>
-            <p className='text-lg'>
+            <p className='text-lg dark:text-gray-50'>
               {t('dashboard.unique')}
               :
             </p>
-            <p className='h-5 mr-2 text-gray-900 text-xl'>
+            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {uniques}
             </p>
           </div>
           <hr className='my-2' />
         </>
       )}
-      <p className='text-lg font-semibold'>
+      <p className='text-lg font-semibold dark:text-gray-50'>
         {t('project.weeklyStats')}
       </p>
       <div className='flex justify-between'>
-        <p className='text-lg'>
+        <p className='text-lg dark:text-gray-50'>
           {t('dashboard.pageviews')}
           :
         </p>
         <dd className='flex items-baseline'>
-          <p className='h-5 mr-2 text-gray-900 text-lg'>
+          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
             {overall.thisWeek}
           </p>
           <p className={cx('flex text-sm -ml-1 items-baseline', {
@@ -120,12 +120,12 @@ const Overview = ({
         </dd>
       </div>
       <div className='flex justify-between'>
-        <p className='text-lg'>
+        <p className='text-lg dark:text-gray-50'>
           {t('dashboard.unique')}
           :
         </p>
         <dd className='flex items-baseline'>
-          <p className='h-5 mr-2 text-gray-900 text-lg'>
+          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
             {overall.thisWeekUnique}
           </p>
           <p className={cx('flex text-sm -ml-1 items-baseline', {
@@ -166,9 +166,9 @@ const CustomEvents = ({
       <table className='table-fixed'>
         <thead>
           <tr>
-            <th className='w-4/6 text-left text-gray-900'>{t('project.event')}</th>
-            <th className='w-1/6 text-right text-gray-900'>{t('project.quantity')}&nbsp;&nbsp;</th>
-            <th className='w-1/6 text-right text-gray-900'>{t('project.conversion')}</th>
+            <th className='w-4/6 text-left text-gray-900 dark:text-gray-50'>{t('project.event')}</th>
+            <th className='w-1/6 text-right text-gray-900 dark:text-gray-50'>{t('project.quantity')}&nbsp;&nbsp;</th>
+            <th className='w-1/6 text-right text-gray-900 dark:text-gray-50'>{t('project.conversion')}</th>
           </tr>
         </thead>
         <tbody>
@@ -216,7 +216,7 @@ const Panel = ({
   return (
     <PanelContainer name={name}>
       {_isEmpty(data) ? (
-        <p className='mt-1 text-base text-gray-700'>
+        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}
         </p>
       ) : _map(keysToDisplay, key => {
@@ -225,9 +225,9 @@ const Panel = ({
 
         return (
           <Fragment key={key}>
-            <div className='flex justify-between mt-1'>
+            <div className='flex justify-between mt-1 dark:text-gray-50'>
               {linkContent ? (
-                <a className={cx('flex label hover:underline text-blue-600', { capitalize })} href={rowData} target='_blank' rel='noopener noreferrer'>
+                <a className={cx('flex label hover:underline text-blue-600 dark:text-blue-500', { capitalize })} href={rowData} target='_blank' rel='noopener noreferrer'>
                   {rowData}
                 </a>
               ) : (
@@ -235,10 +235,10 @@ const Panel = ({
                   {rowData}
                 </span>
               )}
-              <span className='ml-3'>
+              <span className='ml-3 dark:text-gray-50'>
                 {data[key]}
                 &nbsp;
-                <span className='text-gray-500 font-light'>({perc}%)</span>
+                <span className='text-gray-500 dark:text-gray-200 font-light'>({perc}%)</span>
               </span>
             </div>
             <Progress now={perc} />
@@ -249,7 +249,7 @@ const Panel = ({
         <div className='absolute bottom-0 w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <span
-              className={cx('text-gray-500 font-light', {
+              className={cx('text-gray-500 dark:text-gray-200 font-light', {
                 hoverable: canGoPrev(),
                 disabled: !canGoPrev(),
               })}
@@ -259,9 +259,9 @@ const Panel = ({
               &lt;
               &nbsp;
               {t('project.prev')}
-          </span>
+            </span>
             <span
-              className={cx('text-gray-500 font-light', {
+              className={cx('text-gray-500 dark:text-gray-200 font-light', {
                 hoverable: canGoNext(),
                 disabled: !canGoNext(),
               })}
@@ -271,7 +271,7 @@ const Panel = ({
               {t('project.next')}
               &nbsp;
               &gt;
-          </span>
+            </span>
           </div>
         </div>
       )}

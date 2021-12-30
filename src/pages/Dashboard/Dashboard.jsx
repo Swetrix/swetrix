@@ -30,10 +30,10 @@ const ProjectCart = ({
 
   return (
     <li>
-      <Link to={url} className='block hover:bg-gray-50'>
+      <Link to={url} className='block hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-800 dark:border-gray-700'>
         <div className='px-4 py-4 sm:px-6'>
           <div className='flex items-center justify-between'>
-            <p className='text-lg font-medium text-indigo-600 truncate'>
+            <p className='text-lg font-medium text-indigo-600 dark:text-gray-50 truncate'>
               {name}
             </p>
             <div className='ml-2 flex-shrink-0 flex'>
@@ -49,8 +49,8 @@ const ProjectCart = ({
           </div>
           <div className='mt-2 sm:flex sm:justify-between'>
             <div className='sm:flex flex-col'>
-              <div className='flex items-center mt-2 text-sm text-gray-500'>
-                <EyeIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
+              <div className='flex items-center mt-2 text-sm text-gray-500 dark:text-gray-300'>
+                <EyeIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300' />
                 {t('dashboard.pageviews')}
                 :
                 &nbsp;
@@ -81,15 +81,15 @@ const ProjectCart = ({
                     </p>
                 </dd>
               </div>
-              <div className='mt-2 flex items-center text-sm text-gray-500 sm:mt-0'>
+              <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300 sm:mt-0'>
                 <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
                 {t('dashboard.liveVisitors')}
                 :&nbsp;
                 {live}
               </div>
             </div>
-            <div className='mt-2 flex items-center text-sm text-gray-500'>
-              <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400' />
+            <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300'>
+              <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300' />
               <p>
                 {t('dashboard.createdAt')}
                 &nbsp;
@@ -153,10 +153,10 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
   if (!isLoading) {
     return (
       <Title title={t('titles.dashboard')}>
-        <div className='min-h-min-footer bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
           <div className='max-w-7xl w-full mx-auto'>
             <div className='flex justify-between'>
-              <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+              <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
                 {t('titles.dashboard')}
               </h2>
               <span onClick={onNewProject} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>

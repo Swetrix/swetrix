@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import cx from 'classnames'
 
 const Code = ({ text, className, language }) => (
-  <pre className={cx('w-full rounded-md bg-gray-800', className)}>
+  <pre className={cx('w-full rounded-md bg-gray-800 dark:bg-gray-750', className)}>
     <code className={`whitespace-pre-wrap language-${language}`}>{text}</code>
   </pre>
 )

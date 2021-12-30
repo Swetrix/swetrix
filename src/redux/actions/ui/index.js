@@ -74,6 +74,13 @@ const setProjectViewPrefs = (pid, period, timeBucket) => ({
   },
 })
 
+const setTheme = (theme) => ({
+  type: types.SET_THEME,
+  payload: {
+    theme,
+  }
+})
+
 const UIActions = {
   loadProjects,
   setProjects,
@@ -86,6 +93,7 @@ const UIActions = {
   setPublicProject,
   setLiveStatsForProject,
   setLiveStats,
+  setTheme,
 }
 
 export default UIActions

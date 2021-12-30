@@ -21,9 +21,9 @@ const Checkbox = ({
         />
       </div>
       <div className='ml-3 text-sm'>
-        <label htmlFor={identifier} className='font-medium text-gray-700 cursor-pointer'>{label}</label>
+        <label htmlFor={identifier} className='font-medium text-gray-700 dark:text-gray-200 cursor-pointer'>{label}</label>
         {hint && (
-          <p id={`${identifier}-description`} className='text-gray-500'>{hint}</p>
+          <p id={`${identifier}-description`} className='text-gray-500 dark:text-gray-300'>{hint}</p>
         )}
       </div>
     </div>

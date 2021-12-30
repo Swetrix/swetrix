@@ -79,9 +79,9 @@ const ForgotPassword = ({
 
   return (
     <Title title={t('titles.recovery')}>
-      <div className='min-h-page bg-gray-50 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='min-h-page bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900'>
+          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
             {t('titles.recovery')}
           </h2>
           <Input
@@ -96,7 +96,7 @@ const ForgotPassword = ({
             error={beenSubmitted && errors.email}
           />
           <div className='flex justify-between mt-3'>
-            <Link to={routes.signin} className='mt-1 underline text-blue-600 hover:text-indigo-800'>
+            <Link to={routes.signin} className='mt-1 underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
               {t('auth.common.signin')}
             </Link>
             <Button type='submit' loading={isLoading} primary large>

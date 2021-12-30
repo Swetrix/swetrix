@@ -45,6 +45,8 @@ export const TOKEN = 'access_token'
 
 export const TITLE_SUFFIX = '| Swetrix'
 
+export const LS_THEME_SETTING = 'colour-theme'
+
 export const isSelfhosted = Boolean(process.env.REACT_APP_SELFHOSTED)
 
 export const LIVE_VISITORS_UPDATE_INTERVAL = 40000

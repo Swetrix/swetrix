@@ -63,6 +63,7 @@ const App = () => {
   const location = useLocation()
   const alert = useAlert()
   const { loading, authenticated } = useSelector(state => state.auth)
+  const { theme } = useSelector(state => state.ui.theme)
   const { error } = useSelector(state => state.errors)
   const { message, type } = useSelector(state => state.alerts)
   const accessToken = getAccessToken()
@@ -108,7 +109,7 @@ const App = () => {
   return (
     (!accessToken || !loading) && (
       <>
-        <Header authenticated={authenticated} />
+        <Header authenticated={authenticated} theme={theme} />
         <ScrollToTop>
           <Selfhosted>
             <Suspense fallback={<Fallback isMinimalFooter={isMinimalFooter} />}>
