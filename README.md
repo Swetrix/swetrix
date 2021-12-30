@@ -10,3 +10,7 @@ For any questions, you can open an issue ticket, refer to our [FAQs](https://swe
 
 # Selfhosted API
 If you are selfhosting the [Swetrix-API](https://github.com/Swetrix/swetrix-api), be sure to point the `apiUrl` parameter to: `https://yourapiinstance.com/log`
+
+# Donate
+You can support the project by donating us at https://ko-fi.com/andriir \
+We can only run our services by once again asking for your financial support!
