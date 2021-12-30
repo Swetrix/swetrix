@@ -24,7 +24,7 @@ import routes from 'routes'
 import { isSelfhosted } from 'redux/constants'
 
 const ProjectCart = ({
-  name, url, created, active, overall, t, language, live,
+  name, url, created, active, overall, t, language, live, isPublic,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
 
@@ -41,6 +41,9 @@ const ProjectCart = ({
                 <ActivePin label={t('dashboard.active')} />
               ) : (
                 <InactivePin label={t('dashboard.disabled')} />
+              )}
+              {isPublic && (
+                <ActivePin label={t('dashboard.public')} className='ml-2' />
               )}
             </div>
           </div>
@@ -165,7 +168,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
             ) : (
               <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
                 <ul className='divide-y divide-gray-200'>
-                  {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({ name, id, created, active, overall, live }) => (
+                  {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({ name, id, created, active, overall, live, public: isPublic }) => (
                     <ProjectCart
                       key={id}
                       t={t}
@@ -173,6 +176,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
                       name={name}
                       created={created}
                       active={active}
+                      isPublic={isPublic}
                       overall={overall}
                       live={_isNumber(live) ? live : 'N/A'}
                       url={routes.project.replace(':id', id)}
