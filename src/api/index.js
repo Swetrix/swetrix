@@ -221,7 +221,7 @@ export const getProjectData = (
   tb = 'hour',
   period = '3d',
   from = '',
-  to = ''
+  to = '',
 ) =>
   api
     .get(

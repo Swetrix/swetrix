@@ -1,5 +1,6 @@
 import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
+import _isString from 'lodash/isString'
 import { whitelist, defaultLanguage } from 'redux/constants'
 import { setItem } from 'utils/localstorage'
 import en from './i18n/en.json'
@@ -13,6 +14,12 @@ const lngDetector = new LanguageDetector()
 lngDetector.addDetector({
   name: 'customDetector',
   lookup() {
+    const language = navigator.language || navigator.userLanguage
+
+    if (_isString(language)) {
+      return language.substring(0, 2)
+    }
+
     return defaultLanguage
   },
   cacheUserLanguage(lng) {
@@ -24,7 +31,7 @@ i18next
   .use(lngDetector)
   .init({
     detection: {
-      order: ['localStorage', 'navigator', 'customDetector'],
+      order: ['localStorage', 'customDetector'],
       lookupLocalStorage: 'language',
     },
     interpolation: {
