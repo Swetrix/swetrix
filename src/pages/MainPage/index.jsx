@@ -96,8 +96,6 @@ const Features = ({ t }) => (
 const Main = () => {
   const { t } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
-  const { stats } = useSelector(state => state.ui.misc)
-  console.log(stats)
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>

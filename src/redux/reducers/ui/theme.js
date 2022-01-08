@@ -18,7 +18,7 @@ const getInitialTheme = () => {
 }
 
 const setTheme = (rawTheme) => {
-  const root = window.document.documentElement
+  const root = window.document.body
   const isDark = rawTheme === 'dark'
 
   root.classList.remove(isDark ? 'light' : 'dark')
