@@ -6,6 +6,11 @@ import bb, { area, zoom } from 'billboard.js' // eslint-disable-line
 import Flag from 'react-flagkit'
 import countries from 'i18n-iso-countries'
 import countriesEn from 'i18n-iso-countries/langs/en.json'
+import countriesDe from 'i18n-iso-countries/langs/de.json'
+import countriesHi from 'i18n-iso-countries/langs/hi.json'
+import countriesUk from 'i18n-iso-countries/langs/uk.json'
+import countriesZh from 'i18n-iso-countries/langs/zh.json'
+import countriesRu from 'i18n-iso-countries/langs/ru.json'
 import cx from 'classnames'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
@@ -37,6 +42,11 @@ import {
 import './styles.css'
 
 countries.registerLocale(countriesEn)
+countries.registerLocale(countriesDe)
+countries.registerLocale(countriesRu)
+countries.registerLocale(countriesHi)
+countries.registerLocale(countriesUk)
+countries.registerLocale(countriesZh)
 
 const getJSON = (chart, showTotal, t) => ({
   x: _map(chart.x, el => dayjs(el).toDate()),
@@ -146,7 +156,7 @@ const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated,
 }) => {
-  const { t } = useTranslation('common')
+  const { t, i18n: { language } } = useTranslation('common')
   const periodPairs = tbPeriodPairs(t)
   const dashboardRef = useRef(null)
   const { id } = useParams()
@@ -394,7 +404,7 @@ const ViewProject = ({
                       <>
                         <Flag className='rounded-md' country={name} size={21} alt='' />
                         &nbsp;&nbsp;
-                        {countries.getName(name, 'en')}
+                        {countries.getName(name, language)}
                       </>
                     )} />
                   )
