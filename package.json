@@ -19,6 +19,7 @@
     "url": "git+https://github.com/Swetrix/swetrix-js.git"
   },
   "author": "Andrii R. <contact@swetrix.com>",
+  "funding": "https://ko-fi.com/andriir",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Swetrix/swetrix-js/issues"
