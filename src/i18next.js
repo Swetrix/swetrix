@@ -1,14 +1,9 @@
 import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
+import backend from 'i18next-http-backend'
 import _isString from 'lodash/isString'
 import { whitelist, defaultLanguage } from 'redux/constants'
 import { setItem } from 'utils/localstorage'
-import en from './i18n/en.json'
-import ru from './i18n/ru.json'
-import uk from './i18n/uk.json'
-import de from './i18n/de.json'
-import hi from './i18n/hi.json'
-import zh from './i18n/zh.json'
 
 const lngDetector = new LanguageDetector()
 lngDetector.addDetector({
@@ -28,8 +23,12 @@ lngDetector.addDetector({
 })
 
 i18next
+  .use(backend)
   .use(lngDetector)
   .init({
+    backend: {
+      loadPath: '/locales/{{lng}}.json',
+    },
     detection: {
       order: ['localStorage', 'customDetector'],
       lookupLocalStorage: 'language',
@@ -45,14 +44,8 @@ i18next
       return key
     },
     whitelist,
-    resources: {
-      en: { common: en },
-      ru: { common: ru },
-      uk: { common: uk },
-      de: { common: de },
-      hi: { common: hi },
-      zh: { common: zh },
-    },
+    ns: ['common'],
+    defaultNS: 'common',
   })
 
 export default i18next
