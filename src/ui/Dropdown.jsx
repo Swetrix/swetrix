@@ -1,7 +1,7 @@
 import React, { memo, Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/solid'
-import cx from 'classnames'
+import cx from 'clsx'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'

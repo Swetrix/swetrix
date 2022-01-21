@@ -1,5 +1,5 @@
 import { Fragment, memo } from 'react'
-import cx from 'classnames'
+import cx from 'clsx'
 import PropTypes from 'prop-types'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'

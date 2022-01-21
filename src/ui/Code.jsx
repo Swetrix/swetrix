@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 import PropTypes from 'prop-types'
-import cx from 'classnames'
+import cx from 'clsx'
 
 const Code = ({ text, className, language }) => (
   <pre className={cx('w-full rounded-md bg-gray-800 dark:bg-gray-750', className)}>

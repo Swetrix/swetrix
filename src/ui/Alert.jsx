@@ -1,6 +1,6 @@
 // Custom Alert template for react-alert
 import React, { memo } from 'react'
-import cx from 'classnames'
+import cx from 'clsx'
 import PropTypes from 'prop-types'
 import { CheckCircleIcon } from '@heroicons/react/solid'
 import { InformationCircleIcon } from '@heroicons/react/solid'

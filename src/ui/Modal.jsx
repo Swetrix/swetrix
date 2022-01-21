@@ -1,6 +1,6 @@
 import React, { Fragment, memo } from 'react'
 import PropTypes from 'prop-types'
-import cx from 'classnames'
+import cx from 'clsx'
 import { Dialog, Transition } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/outline'
 import { ExclamationIcon } from '@heroicons/react/outline'

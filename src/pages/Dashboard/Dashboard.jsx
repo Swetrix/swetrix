@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import cx from 'classnames'
+import cx from 'clsx'
 import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'

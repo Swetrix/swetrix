@@ -7,7 +7,7 @@ import _isNil from 'lodash/isNil'
 import _isString from 'lodash/isString'
 import _isEmpty from 'lodash/isEmpty'
 import _findIndex from 'lodash/findIndex'
-import cx from 'classnames'
+import cx from 'clsx'
 
 import Spin from '../../ui/icons/Spin'
 import { errorsActions } from 'redux/actions/errors'
