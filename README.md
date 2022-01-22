@@ -20,7 +20,8 @@ Swetrix is released under the AGPL v3.0 licence, see [LICENSE](LICENSE).
 
 See the API installation process at https://github.com/Swetrix/swetrix-api#readme. \
 To selfhost the frontend part of Swetrix, you simply need to set up `.env` variables, install the dependencies (`npm i`), build the code (`npm run build:css` and `npm run build` commands) and host it as a regular React application ([how to host react apps](https://create-react-app.dev/docs/deployment/)).\
-On production, swetrix.com uses Cloudflare Pages to host the frontend part of the application.
+On production, swetrix.com uses Cloudflare Pages to host the frontend part of the application.\
+The minimum supported NodeJS version is v14.
 
 ### Docker Setup
 
