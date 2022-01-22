@@ -19,7 +19,7 @@ import './index.css'
 
 const SWETRIX_PID = 'STEzHcB1rALV'
 
-console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests can be sent to security@swetrix.com', 'color: #818cf8;background: #1f2937;font-size: 20px;text-shadow: 2px 2px black')
+console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests are welcome to be sent to security@swetrix.com', 'color: #818cf8;background: #1f2937;font-size: 20px;text-shadow: 2px 2px black')
 
 if (!isSelfhosted) {
   Swetrix.init(SWETRIX_PID)
@@ -48,7 +48,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 ReactDOM.render(
   <React.StrictMode>
-    <Sentry.ErrorBoundary fallback={<p>The app crashed.. :(<br />Please, tell us about it at contact@swetrix.com</p>}>
+    <Sentry.ErrorBoundary fallback={<p>The app crashed, sorry about that.. :(<br />Please, tell us about it at contact@swetrix.com<br /><br />To continue using the website, please reload the page.</p>}>
       <AlertProvider template={AlertTemplate} {...options}>
         <Provider store={store}>
           <BrowserRouter>
