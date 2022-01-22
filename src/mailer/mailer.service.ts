@@ -71,7 +71,7 @@ export class MailerService {
     private readonly logger: AppLoggerService,
   ) { }
 
-  async sendEmail(email: string, templateName: LetterTemplate, params: Params = null): Promise<void> {
+  async sendEmail(email: string, templateName: LetterTemplate, params: Params = null, messageStream: 'broadcast' | 'outbound' = 'outbound'): Promise<void> {
     try {
       const templatePath = `${TEMPLATES_PATH}/en/${templateName}.html`
       const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
@@ -87,7 +87,7 @@ export class MailerService {
           pass: process.env.SMTP_PASSWORD,
         },
         headers: {
-          'X-PM-Message-Stream': 'outbound',
+          'X-PM-Message-Stream': messageStream,
         }
       })
 

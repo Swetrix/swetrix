@@ -101,8 +101,7 @@ export class TaskManagerService {
         tip,
       }
 
-      // todo: maybe this should be sent as a broadcast stream
-      await this.mailerService.sendEmail(users[i].email, LetterTemplate.ProjectReport, result)
+      await this.mailerService.sendEmail(users[i].email, LetterTemplate.ProjectReport, result, 'broadcast')
     }
   }
 
@@ -143,8 +142,7 @@ export class TaskManagerService {
         tip,
       }
 
-      // todo: maybe this should be sent as a broadcast stream
-      await this.mailerService.sendEmail(users[i].email, LetterTemplate.ProjectReport, result)
+      await this.mailerService.sendEmail(users[i].email, LetterTemplate.ProjectReport, result, 'broadcast')
     }
   }
 
