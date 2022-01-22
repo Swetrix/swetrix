@@ -109,10 +109,10 @@ const App = () => {
   return (
     (!accessToken || !loading) && (
       <>
-        <Header authenticated={authenticated} theme={theme} />
-        <ScrollToTop>
-          <Selfhosted>
-            <Suspense fallback={<Fallback theme={theme} isMinimalFooter={isMinimalFooter} />}>
+        <Suspense fallback={<Fallback theme={theme} isMinimalFooter={isMinimalFooter} />}>
+          <Header authenticated={authenticated} theme={theme} />
+          <ScrollToTop>
+            <Selfhosted>
               <Switch>
                 <Route path={routes.main} component={MainPage} exact />
                 <Route path={routes.signin} component={SignIn} exact />
@@ -134,10 +134,10 @@ const App = () => {
                 <Route path={routes.terms} component={Terms} exact />
                 <Redirect to={routes.main} />
               </Switch>
-            </Suspense>
-          </Selfhosted>
-        </ScrollToTop>
-        <Footer minimal={isMinimalFooter} authenticated={authenticated} />
+            </Selfhosted>
+          </ScrollToTop>
+          <Footer minimal={isMinimalFooter} authenticated={authenticated} />
+        </Suspense>
       </>
     )
   )
