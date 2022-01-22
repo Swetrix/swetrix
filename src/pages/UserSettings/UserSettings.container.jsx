@@ -9,7 +9,7 @@ import _isNull from 'lodash/isNull'
 import {
   CONFIRMATION_TIMEOUT, GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME,
 } from 'redux/constants'
-import { isAuthenticated } from 'hoc/protected'
+import { withAuthentication, auth } from 'hoc/protected'
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
@@ -100,4 +100,4 @@ const UserSettingsContainer = () => {
   )
 }
 
-export default isAuthenticated(memo(UserSettingsContainer))
+export default memo(withAuthentication(UserSettingsContainer, auth.authenticated))

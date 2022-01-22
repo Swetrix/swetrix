@@ -7,7 +7,7 @@ import _map from 'lodash/map'
 
 import routes from 'routes'
 // import { nFormatter } from 'utils/generic'
-import { notAuthenticated } from '../../hoc/protected'
+import { withAuthentication, auth } from '../../hoc/protected'
 import Title from 'components/Title'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
@@ -272,4 +272,4 @@ const Main = () => {
   )
 }
 
-export default memo(notAuthenticated(Main))
+export default memo(withAuthentication(Main, auth.notAuthenticated))

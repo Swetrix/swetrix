@@ -11,7 +11,7 @@ import _split from 'lodash/split'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
-import { isAuthenticated } from '../../../hoc/protected'
+import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted } from 'redux/constants'
 import { createProject, updateProject, deleteProject } from 'api'
 import Input from 'ui/Input'
@@ -277,4 +277,4 @@ ProjectSettings.propTypes = {
   user: PropTypes.object.isRequired,
 }
 
-export default isAuthenticated(memo(ProjectSettings))
+export default memo(withAuthentication(ProjectSettings, auth.authenticated))

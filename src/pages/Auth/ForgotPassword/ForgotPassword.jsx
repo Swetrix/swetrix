@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { forgotPassword } from 'api'
 import Title from 'components/Title'
-import { notAuthenticated } from '../../../hoc/protected'
+import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -109,4 +109,4 @@ const ForgotPassword = ({
   )
 }
 
-export default notAuthenticated(memo(ForgotPassword))
+export default memo(withAuthentication(ForgotPassword, auth.notAuthenticated))

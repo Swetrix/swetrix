@@ -3,7 +3,7 @@ import { Link, useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { createNewPassword } from 'api'
-import { notAuthenticated } from '../../../hoc/protected'
+import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import routes from 'routes'
 import Input from 'ui/Input'
@@ -127,4 +127,4 @@ const CreateNewPassword = ({
   )
 }
 
-export default notAuthenticated(memo(CreateNewPassword))
+export default memo(withAuthentication(CreateNewPassword, auth.notAuthenticated))

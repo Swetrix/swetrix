@@ -3,7 +3,7 @@ import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
 import Pricing from '../MainPage/Pricing'
-import { isAuthenticated } from '../../hoc/protected'
+import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 
 // todo: create CONTACT_EMAIL variable and use it in the app
@@ -37,4 +37,4 @@ const Features = () => {
   )
 }
 
-export default isAuthenticated(Features)
+export default withAuthentication(Features, auth.authenticated)

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 
 import Title from 'components/Title'
-import { notAuthenticated } from '../../../hoc/protected'
+import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
@@ -172,4 +172,4 @@ Signup.propTypes = {
   signup: PropTypes.func.isRequired,
 }
 
-export default notAuthenticated(memo(Signup))
+export default memo(withAuthentication(Signup, auth.notAuthenticated))
