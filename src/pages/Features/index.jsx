@@ -6,6 +6,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import _map from 'lodash/map'
 
 import Title from 'components/Title'
+import { CHROME_EXTENSION_URL, FIREFOX_ADDON_URL } from 'redux/constants'
 import routes from 'routes'
 
 const Features = () => {
@@ -29,6 +30,20 @@ const Features = () => {
               components={{
                 docs: <HashLink className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' to={`${routes.docs}#docs-tv`} />,
                 gh: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href='https://github.com/Swetrix' target='_blank' rel='noopener noreferrer' />,
+              }}
+            />
+          </p>
+
+          <h3 className='text-2xl font-normal text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+            {t('features.feature2Name')}
+          </h3>
+          <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            <Trans
+              t={t}
+              i18nKey='features.feature2Content'
+              components={{
+                firefox: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href={FIREFOX_ADDON_URL} target='_blank' rel='noopener noreferrer' />,
+                chrome: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href={CHROME_EXTENSION_URL} target='_blank' rel='noopener noreferrer' />,
               }}
             />
           </p>
