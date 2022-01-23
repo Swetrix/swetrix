@@ -1,6 +1,7 @@
-import { Injectable, BadRequestException } from '@nestjs/common'
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common'
 import * as crypto from 'crypto'
 import * as Serialize from 'php-serialize'
+import * as _includes from 'lodash/includes'
 import { AppLoggerService } from '../logger/logger.service'
 
 const PADDLE_PUB_KEY = ` -----BEGIN PUBLIC KEY-----
@@ -77,6 +78,8 @@ export class WebhookService {
   }
 
   verifyIP(reqIP: string) {
-    // TODO
+    if (!_includes(paddleWhitelistIPs, reqIP)) {
+      throw new ForbiddenException('You have no access to this endpoint')
+    }
   }
 }
