@@ -4,7 +4,7 @@ import * as Serialize from 'php-serialize'
 import * as _includes from 'lodash/includes'
 import { AppLoggerService } from '../logger/logger.service'
 
-const PADDLE_PUB_KEY = ` -----BEGIN PUBLIC KEY-----
+const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqFcHslKkXcJlTYg4FL6j
 XIKu0jM8PUMHRNbseLVqXS81DX7C5rZbacs6mU9MpyZv0QEXjiyZ9zXbQH5200Nx
 7Jv/e5ZdXwIZc6jIMSdxY5Oxuw3ZSRZnHxZp3CD56QfbtnzKsvgRYKMfwdiYE9iC
