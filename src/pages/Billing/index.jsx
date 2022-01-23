@@ -8,7 +8,7 @@ import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 
 const Features = () => {
-  const { t } = useTranslation('common')
+  const { t, i18n: { language } } = useTranslation('common')
 
   return (
     <Title title={t('titles.billing')}>
@@ -20,7 +20,7 @@ const Features = () => {
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('billing.desc')}
           </p>
-          <Pricing t={t} />
+          <Pricing t={t} language={language} />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
             <Trans
               t={t}

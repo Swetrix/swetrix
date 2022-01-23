@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { CheckIcon } from '@heroicons/react/solid'
@@ -40,6 +40,7 @@ const getTiers = (t) => [
       t('pricing.tiers.smallBusiSupport'),
       t('pricing.tiers.carbonRemoval'),
     ],
+    pid: 752316,
   },
   {
     name: t('pricing.tiers.startup'),
@@ -50,6 +51,7 @@ const getTiers = (t) => [
       t('pricing.tiers.xEvMo', { amount: '500k' }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
     ],
+    pid: 752317,
   },
   {
     name: t('pricing.tiers.enterprise'),
@@ -61,43 +63,71 @@ const getTiers = (t) => [
       t('pricing.tiers.upToXProjects', { amount: 30 }),
       // t('pricing.tiers.xMoDataRetention', { amount: 24 }),
     ],
+    pid: 752318,
   },
 ]
 
-const Pricing = ({ t }) => {
+const paddleLanguageMapping = {
+  zh: 'zh-Hans',
+  uk: 'ru',
+}
+
+const Pricing = ({ t, language }) => {
   const dispatch = useDispatch()
   const { authenticated, user } = useSelector(state => state.auth)
+  const { theme } = useSelector(state => state.ui.theme)
+  const { lastEvent } = useSelector(state => state.ui.misc.paddle)
   const [planCodeLoading, setPlanCodeLoading] = useState(null)
   const tiers = getTiers(t)
 
-  const onPlanChange = async (planCode) => {
-    if (planCodeLoading === null && user.planCode !== planCode) {
-      setPlanCodeLoading(planCode)
-      try {
-        const { data: { url, message } } = await upgradePlan(planCode)
+  const lastEventHandler = async (data) => {
+    if (_isNil(data)) {
+      return
+    }
 
-        if (_isString(message)) {
-          try {
-            const me = await authMe()
+    if (data.event === 'Checkout.Complete') {
+      // giving some time to the API to process tier upgrate via Paddle webhook
+      setTimeout(async () => {
+        try {
+          const me = await authMe()
   
-            dispatch(authActions.loginSuccess(me))
-            dispatch(authActions.finishLoading())
-          } catch (e) {
-            dispatch(authActions.logout())
-          }
+          dispatch(authActions.loginSuccess(me))
+          dispatch(authActions.finishLoading())
+        } catch (e) {
+          dispatch(authActions.logout())
+        }
+  
+        // @TODO: add 'sub downgraded' message
+        dispatch(alertsActions.accountUpdated('The subscription has been upgraded.'))
+      }, 1000)
+      setPlanCodeLoading(null)
+    } else if (data.event === 'Checkout.Close') {
+      setPlanCodeLoading(null)
+    }
+  }
 
-          dispatch(alertsActions.accountUpdated(message))
-        }
-        if (!_isEmpty(url)) {
-          window.location.href = url
-        }
-      } catch ({ message }) {
-        if (_isString(message)) {
-          dispatch(errorsActions.genericError(message))
-        }
-      } finally {
+  useEffect(() => {
+    lastEventHandler(lastEvent)
+  }, [lastEvent])
+
+  const onPlanChange = (tier) => {
+    if (planCodeLoading === null && user.planCode !== tier.planCode) {
+      setPlanCodeLoading(tier.planCode)
+
+      if (!window.Paddle) {
+        dispatch(errorsActions.genericError('Payment script has not yet loaded! Please, try again.'))
         setPlanCodeLoading(null)
+        return
       }
+
+      window.Paddle.Checkout.open({
+        product: tier.pid,
+        email: user.email,
+        passthrough: `{"uid": ${user.id}}`,
+        locale: paddleLanguageMapping[language] || language,
+        title: tier.name,
+        displayModeTheme: theme,
+      })
     }
   }
 
@@ -173,7 +203,7 @@ const Pricing = ({ t }) => {
                   {_isNil(tier.priceMonthly) ? (
                     authenticated ? (
                       <span
-                        onClick={() => onPlanChange(tier.planCode)}
+                        onClick={() => onPlanChange(tier)}
                         className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
                           'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null && tier.planCode !== user.planCode,
                           'bg-indigo-400 cursor-default': planCodeLoading !== null || tier.planCode === user.planCode,
@@ -194,7 +224,7 @@ const Pricing = ({ t }) => {
                     )
                   ) : authenticated ? (
                     <span
-                      onClick={() => onPlanChange(tier.planCode)}
+                      onClick={() => onPlanChange(tier)}
                       className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center cursor-pointer select-none', {
                         'bg-indigo-600 hover:bg-indigo-700': planCodeLoading === null && tier.planCode !== user.planCode,
                         'bg-indigo-400 cursor-default': planCodeLoading !== null || tier.planCode === user.planCode,

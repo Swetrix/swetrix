@@ -95,7 +95,7 @@ const Features = ({ t }) => (
 )
 
 const Main = () => {
-  const { t } = useTranslation('common')
+  const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
 
   return (
@@ -239,7 +239,7 @@ const Main = () => {
             </div>
           </div>
         </div>
-        <Pricing t={t} />
+        <Pricing t={t} language={language} />
         <FAQs t={t} />
 
         <div className='bg-white dark:bg-gray-750'>
