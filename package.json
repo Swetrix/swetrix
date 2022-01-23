@@ -58,7 +58,8 @@
     "stripe": "^8.195.0",
     "typeorm": "^0.2.41",
     "ua-parser-js": "^0.7.31",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "verify-paddle-webhook": "^1.1.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.6.0",
