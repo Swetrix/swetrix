@@ -1,7 +1,6 @@
 import {
   Controller, Body, Post, Headers, BadRequestException, NotFoundException, UseGuards, Ip,
 } from '@nestjs/common'
-import * as querystring from 'query-string'
 import { ApiTags } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _keys from 'lodash/keys'
@@ -135,10 +134,9 @@ export class WebhookController {
   @Post('/paddle')
   async paddleWebhook(@Body() body, @Headers() headers, @Ip() reqIP): Promise<any> {
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    const webhookData = querystring.parse(body)
-    console.log(webhookData, webhookData.toString(), querystring.stringify(body))
+    console.log(body)
 
-    if (verifyPaddleWebhook(PADDLE_PUB_KEY, webhookData)) {
+    if (verifyPaddleWebhook(PADDLE_PUB_KEY, body)) {
       console.log(headers, ip)
       return
     }
