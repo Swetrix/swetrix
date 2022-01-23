@@ -39,6 +39,10 @@ The following environment variables are available, alongside their default value
 Swetrix is open to pull-requests. Feel free to propose new features or submit bug requests via pull reuqests.\
 For severe security issues, please contact us at security@swetrix.com
 
+## Contributions
+Contributions are welcome!\
+You can also contribute translations on your [Crowdin](https://crowdin.com/project/swetrix) page.
+
 ## Contact
 
 You can contact us via email at contact@swetrix.com
