@@ -7,6 +7,8 @@
     "pricing": "मूल्य निर्धारण",
     "faqs": "सामान्य प्रश्न/एफ ए क्यू",
     "you": "आप",
+    "explore": "Explore",
+    "liveDemo": "Live demo",
     "dashboard": "डैशबोर्ड",
     "logout": "लॉगआउट",
     "save": "सेव करें",
@@ -77,7 +79,12 @@
       }
     ],
     "custSupport": "क्या आप जिस उत्तर की तलाश कर रहे हैं वह नहीं मिल रहा? हमारे <mail>ग्राहक सहायता</mail> टीम से संपर्क करें।",
-    "whyUs": "हम क्यों?"
+    "whyUs": "हम क्यों?",
+    "ourStats": "Our statistics",
+    "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
+    "users": "Registered users",
+    "websites": "Added websites",
+    "pageviews": "Tracked pageviews"
   },
   "auth": {
     "recovery": {
@@ -177,6 +184,7 @@
     "noProjects": "आपने अभी तक कोई प्रोजेक्ट नहीं बनाया है",
     "createProject": "हमारी सेवा का उपयोग शुरू करने के लिए यहां एक नया प्रोजेक्ट बनाएं",
     "active": "सक्रिय",
+    "public": "Public",
     "disabled": "अक्षम",
     "pageviews": "पेज व्यूज",
     "unique": "विशिष्ट व्यूज",
@@ -219,6 +227,7 @@
     "contents": "सामग्री"
   },
   "project": {
+    "ad": "Want these stats for your website?",
     "noExist": "चयनित प्रोजेक्ट मौजूद नहीं है",
     "exportImg": "छवि के रूप में निर्यात करें",
     "noEvTitle": "अभी तक कोई इवेंट नहीं",

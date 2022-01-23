@@ -105,7 +105,7 @@
     "signup": {
       "button": "Registrieren",
       "tos": "Ich akzeptiere die <tos>Allgemeinen Geschäftsbedingungen</tos> und die <pp>Datenschutzerklärung</pp>.",
-      "email": "E-Mail Addresse",
+      "email": "E-Mail-Adresse",
       "create": "Erstellen Sie ihr Konto"
     },
     "verification": {
@@ -120,7 +120,7 @@
       "hint": "Länger als {{amount}} Zeichen",
       "xCharsError": "Das Passwort muss aus mindestens {{amount}} Zeichen bestehen.",
       "noMatchError": "Die Passwörter stimmen nicht überein.",
-      "badEmailError": "Bitte geben Sie eine gültige E-Mail Adresse an.",
+      "badEmailError": "Bitte geben Sie eine gültige E-Mail-Adresse an.",
       "tosError": "Sie müssen unsere AGB und Datenschutzerklärung akzeptieren, um unsere Dienste nutzen zu können.",
       "email": "E-Mail",
       "signin": "Anmelden"
@@ -138,7 +138,7 @@
       },
       {
         "name": "Verfolgung von Seitenaufrufen",
-        "content": "Swetrix bietet die Funktion einzigartige Seitenaufrufe und den User-Flow zu tracken.\nAlle Oberfächen enthalten eine Vielzahl von Daten, wie z. B. das Herkunftsland Nutzers, die Sprache, den Gerätetyp, die Seitenladezeit und vieles mehr.\nWir verwenden keine Cookies oder andere Arten von Profiling, um Daten zu sammeln. Alle eingehenden Daten werden anonymisiert, sodass eine Rückverfolgung auf Personen nicht möglich ist."
+        "content": "Swetrix bietet die Funktion einzigartige Seitenaufrufe und den User-Flow zu tracken.\nAlle Oberflächen enthalten eine Vielzahl von Daten, wie z. B. das Herkunftsland Nutzers, die Sprache, den Gerätetyp, die Seitenladezeit und vieles mehr.\nWir verwenden keine Cookies oder andere Arten von Profiling, um Daten zu sammeln. Alle eingehenden Daten werden anonymisiert, sodass eine Rückverfolgung auf Personen nicht möglich ist."
       },
       {
         "name": "Benutzerdefiniertes Events-Tracking",
@@ -184,6 +184,7 @@
     "noProjects": "Sie haben noch keine Projekte erstellt",
     "createProject": "Erstellen Sie hier ein neues Projekt, um unseren Dienst zu nutzen",
     "active": "Aktiv",
+    "public": "Öffentliche",
     "disabled": "Deaktiviert",
     "pageviews": "Seitenaufrufe",
     "unique": "Einzigartige Ansichten",
@@ -197,7 +198,7 @@
       "start": "Erste Schritte",
       "umd": "UMD Build",
       "npm": "NPM Paket",
-      "how": "Wie Sie..",
+      "how": "Wie Sie...",
       "pv": "Seitenaufrufe tracken",
       "ce": "benutzerdefinierte Ereignisse tracken",
       "api": "API"
