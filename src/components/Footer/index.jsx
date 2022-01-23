@@ -6,7 +6,7 @@ import _map from 'lodash/map'
 import Flag from 'react-flagkit'
 import PropTypes from 'prop-types'
 
-import { isSelfhosted, DONATE_URL } from 'redux/constants'
+import { isSelfhosted, DONATE_URL, FIREFOX_ADDON_URL, CHROME_EXTENSION_URL } from 'redux/constants'
 import routes from 'routes'
 
 const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
@@ -38,6 +38,20 @@ const navigation = {
             clipRule='evenodd'
           />
         </svg>
+      ),
+    },
+    {
+      name: 'Firefox Addon',
+      href: FIREFOX_ADDON_URL,
+      icon: () => (
+        <img className='h-6 w-6 opacity-75 hover:opacity-90' aria-hidden='true' src='/assets/firefox.svg' alt='' />
+      ),
+    },
+    {
+      name: 'Chrome Extension',
+      href: CHROME_EXTENSION_URL,
+      icon: () => (
+        <img className='h-6 w-6 opacity-75 hover:opacity-90' aria-hidden='true' src='/assets/chrome.svg' alt='' />
       ),
     },
   ],
@@ -122,9 +136,9 @@ const Footer = ({ minimal, authenticated }) => {
                 </a>
               </p>
             </div>
-            <div className='flex space-x-6'>
+            <div className='flex space-x-4'>
               {_map(navigation.social, (item) => (
-                <a key={item.name} href={item.href} target='_blank' rel='noopener noreferrer' className='text-gray-400 hover:text-gray-300'>
+                <a key={item.name} href={item.href} title={item.name} target='_blank' rel='noopener noreferrer' className='text-gray-400 hover:text-gray-300'>
                   <span className='sr-only'>{item.name}</span>
                   <item.icon className='h-6 w-6' aria-hidden='true' />
                 </a>
