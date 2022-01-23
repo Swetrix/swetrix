@@ -41,6 +41,8 @@ For severe security issues, please contact us at security@swetrix.com
 
 ## Contributions
 Contributions are welcome!\
+You can find and pick any of the roadmap tasks on our [Trello](https://trello.com/b/qzL3qlCM/swetrix-analytics) page (if you do so, please notify about it at the [Issues](https://github.com/swetrix/swetrix-fe/issues) section so others won't pick the same task too).\
+Feel free to also offer any feature or improvement proposal, all of it is highly appreciated!\
 You can also contribute translations on your [Crowdin](https://crowdin.com/project/swetrix) page.
 
 ## Contact
