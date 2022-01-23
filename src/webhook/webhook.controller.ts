@@ -1,6 +1,7 @@
 import {
   Controller, Body, Post, Headers, BadRequestException, NotFoundException, UseGuards, Ip,
 } from '@nestjs/common'
+import * as querystring from 'querystring'
 import { ApiTags } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _keys from 'lodash/keys'
@@ -134,9 +135,12 @@ export class WebhookController {
   @Post('/paddle')
   async paddleWebhook(@Body() body, @Headers() headers, @Ip() reqIP): Promise<any> {
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const webhookData = querystring.parse(body)
+    console.log(webhookData)
 
-    if (verifyPaddleWebhook(PADDLE_PUB_KEY, body)) {
-      console.log(body, headers, ip)
+    if (verifyPaddleWebhook(PADDLE_PUB_KEY, webhookData)) {
+      console.log(headers, ip)
+      return
     }
 
     this.logger.error('Webhook signature verification failed.')
