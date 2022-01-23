@@ -8,6 +8,7 @@ import _map from 'lodash/map'
 import routes from 'routes'
 // import { nFormatter } from 'utils/generic'
 import { withAuthentication, auth } from '../../hoc/protected'
+import { CONTACT_EMAIL } from 'redux/constants'
 import Title from 'components/Title'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
@@ -53,7 +54,7 @@ const FAQs = ({ t }) => (
               t={t}
               i18nKey='main.custSupport'
               components={{
-                mail: <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
+                mail: <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
               }}
             />
           </p>

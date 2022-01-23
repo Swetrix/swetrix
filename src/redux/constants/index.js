@@ -51,6 +51,9 @@ export const DONATE_URL = 'https://ko-fi.com/andriir'
 export const FIREFOX_ADDON_URL = 'https://addons.mozilla.org/en-US/firefox/addon/swetrix/'
 export const CHROME_EXTENSION_URL = 'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
 
+export const CONTACT_EMAIL = 'contact@swetrix.com'
+export const SECURITY_EMAIL = 'security@swetrix.com'
+
 export const isSelfhosted = Boolean(process.env.REACT_APP_SELFHOSTED)
 
 export const LIVE_VISITORS_UPDATE_INTERVAL = 40000

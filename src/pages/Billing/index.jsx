@@ -3,10 +3,10 @@ import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
 import Pricing from '../MainPage/Pricing'
+import { CONTACT_EMAIL } from 'redux/constants'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 
-// todo: create CONTACT_EMAIL variable and use it in the app
 const Features = () => {
   const { t } = useTranslation('common')
 
@@ -25,9 +25,9 @@ const Features = () => {
             <Trans
               t={t}
               i18nKey='billing.contact'
-              values={{ email: 'contact@swetrix.com'}}
+              values={{ email: CONTACT_EMAIL }}
               components={{
-                mail: <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500' />,
+                mail: <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500' />,
               }}
             />
           </p>
