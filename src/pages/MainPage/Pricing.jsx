@@ -13,7 +13,7 @@ import Spin from '../../ui/icons/Spin'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import { authActions } from 'redux/actions/auth'
-import { upgradePlan, authMe } from 'api'
+import { authMe } from 'api'
 import routes from 'routes'
 
 const getTiers = (t) => [
@@ -31,7 +31,7 @@ const getTiers = (t) => [
   {
     name: t('pricing.tiers.freelancer'),
     planCode: 'freelancer',
-    priceMonthly: 24,
+    priceMonthly: 15,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
       t('pricing.tiers.xEvMo', { amount: '100k' }),
@@ -45,7 +45,7 @@ const getTiers = (t) => [
   {
     name: t('pricing.tiers.startup'),
     planCode: 'startup',
-    priceMonthly: 72,
+    priceMonthly: 59,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
       t('pricing.tiers.xEvMo', { amount: '500k' }),
@@ -96,8 +96,7 @@ const Pricing = ({ t, language }) => {
         } catch (e) {
           dispatch(authActions.logout())
         }
-  
-        // @TODO: add 'sub downgraded' message
+
         dispatch(alertsActions.accountUpdated('The subscription has been upgraded.'))
       }, 1000)
       setPlanCodeLoading(null)
