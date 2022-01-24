@@ -272,4 +272,4 @@ const Main = () => {
   )
 }
 
-export default withAuthentication(memo(Main), auth.notAuthenticated)
+export default memo(withAuthentication(Main, auth.notAuthenticated))

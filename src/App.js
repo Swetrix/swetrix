@@ -1,5 +1,5 @@
 import React, { useEffect, lazy, Suspense, useState } from 'react'
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
 import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
@@ -8,9 +8,11 @@ import _some from 'lodash/some'
 import _includes from 'lodash/includes'
 import 'dayjs/locale/ru'
 import 'dayjs/locale/uk'
+
 import Header from 'components/Header'
 import Footer from 'components/Footer'
 import Loader from 'ui/Loader'
+
 import ScrollToTop from 'hoc/ScrollToTop'
 import Selfhosted from 'hoc/Selfhosted'
 import { getAccessToken } from 'utils/accessToken'
@@ -106,37 +108,37 @@ const App = () => {
 
   return (
     (!accessToken || !loading) && (
-        <Suspense fallback={<></>}>
-          <Header authenticated={authenticated} theme={theme} />
-          <ScrollToTop>
-            <Selfhosted>
-              <Suspense fallback={<Fallback theme={theme} isMinimalFooter={isMinimalFooter} />}>
-                <Routes>
-                  <Route path={routes.main} element={<MainPage/>} />
-                  <Route path={routes.signin} element={<SignIn/>} />
-                  <Route path={routes.signup} element={<SignUp/>} />
-                  <Route path={routes.dashboard} element={<Dashboard/>} />
-                  <Route path={routes.user_settings} element={<UserSettings/>} />
-                  <Route path={routes.verify} element={<VerifyEmail/>} />
-                  <Route path={routes.change_email} element={<VerifyEmail/>} />
-                  <Route path={routes.reset_password} element={<ForgotPassword/>} />
-                  <Route path={routes.new_password_form} element={<CreateNewPassword/>} />
-                  <Route path={routes.new_project} element={<ProjectSettings/>} />
-                  <Route path={routes.project_settings} element={<ProjectSettings/>} />
-                  <Route path={routes.project} element={<ViewProject/>} />
-                  <Route path={routes.billing} element={<Billing/>} />
-                  <Route path={routes.docs} element={<Docs/>} />
-                  <Route path={routes.contact} element={<Contact/>} />
-                  <Route path={routes.features} element={<Features/>} />
-                  <Route path={routes.privacy} element={<Privacy/>} />
-                  <Route path={routes.terms} element={<Terms/>} />
-                  <Route path='*' element={<Navigate to={routes.main} />} />
-                </Routes>
-              </Suspense>
-            </Selfhosted>
-          </ScrollToTop>
-          <Footer minimal={isMinimalFooter} authenticated={authenticated} />
-        </Suspense>
+      <Suspense fallback={<></>}>
+        <Header authenticated={authenticated} theme={theme} />
+        <ScrollToTop>
+          <Selfhosted>
+            <Suspense fallback={<Fallback theme={theme} isMinimalFooter={isMinimalFooter} />}>
+              <Switch>
+                <Route path={routes.main} component={MainPage} exact />
+                <Route path={routes.signin} component={SignIn} exact />
+                <Route path={routes.signup} component={SignUp} exact />
+                <Route path={routes.dashboard} component={Dashboard} exact />
+                <Route path={routes.user_settings} component={UserSettings} exact />
+                <Route path={routes.verify} component={VerifyEmail} exact />
+                <Route path={routes.change_email} component={VerifyEmail} exact />
+                <Route path={routes.reset_password} component={ForgotPassword} exact />
+                <Route path={routes.new_password_form} component={CreateNewPassword} exact />
+                <Route path={routes.new_project} component={ProjectSettings} exact />
+                <Route path={routes.project_settings} component={ProjectSettings} exact />
+                <Route path={routes.project} component={ViewProject} exact />
+                <Route path={routes.billing} component={Billing} exact />
+                <Route path={routes.docs} component={Docs} exact />
+                <Route path={routes.contact} component={Contact} exact />
+                <Route path={routes.features} component={Features} exact />
+                <Route path={routes.privacy} component={Privacy} exact />
+                <Route path={routes.terms} component={Terms} exact />
+                <Redirect to={routes.main} />
+              </Switch>
+            </Suspense>
+          </Selfhosted>
+        </ScrollToTop>
+        <Footer minimal={isMinimalFooter} authenticated={authenticated} />
+      </Suspense>
     )
   )
 }

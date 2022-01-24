@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
@@ -23,7 +23,7 @@ dayjs.extend(utc)
 const UserSettingsContainer = () => {
   const { t } = useTranslation('common')
   const dispatch = useDispatch()
-  const history = useNavigate()
+  const history = useHistory()
 
   const onDelete = () => {
     dispatch(
@@ -31,7 +31,7 @@ const UserSettingsContainer = () => {
         (error) => dispatch(
           errorsActions.deleteAccountFailed(error.description),
         ),
-        () => history(routes.main),
+        () => history.push(routes.main),
       )
     )
   }

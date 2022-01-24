@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 /**
   * A HOC which listens to history changes and scrolls to top of the page when triggered.
@@ -8,18 +8,21 @@ import { useLocation } from 'react-router-dom'
   * @param {HTMLElement} children The children covered by the listener.
   */
 const ScrollToTop = ({ children }) => {
-  const location = useLocation()
+  const history = useHistory()
 
   useEffect(() => {
-    if (location.hash === '') {
-      setTimeout(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth',
-        })
-      }, 0)
-    }
-  }, [location])
+    const unlisten = history.listen(({ hash }) => {
+      if (hash === '') {
+        setTimeout(() => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+          })
+        }, 0)
+      }
+    })
+    return unlisten
+  }, [history])
 
   return <>{children}</>
 }

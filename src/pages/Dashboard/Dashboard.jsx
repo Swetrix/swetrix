@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
@@ -121,11 +121,11 @@ const NoProjects = ({ t }) => (
 const Dashboard = ({ projects, isLoading, error, user }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
-  const history = useNavigate()
+  const history = useHistory()
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
-      history(routes.new_project)
+      history.push(routes.new_project)
     } else {
       setShowActivateEmailModal(true)
     }

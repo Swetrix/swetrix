@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { createNewPassword } from 'api'
@@ -14,7 +14,7 @@ const CreateNewPassword = ({
   createNewPasswordFailed, newPassword,
 }) => {
   const { t } = useTranslation('common')
-  const history = useNavigate()
+  const history = useHistory()
   const { id } = useParams()
   const [form, setForm] = useState({
     password: '',
@@ -37,7 +37,7 @@ const CreateNewPassword = ({
         await createNewPassword(id, password)
   
         newPassword(t('auth.recovery.updated'))
-        history(routes.signin)
+        history.push(routes.signin)
       } catch (e) {
         createNewPasswordFailed(e.toString())
       } finally {
