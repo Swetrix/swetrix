@@ -96,7 +96,7 @@ const Features = () => {
             We do not rent or sell personal information.<br />
             We may disclose personal information to third parties who help us run the Services and our business (“Service Providers”). These Service Providers may only process personal information pursuant to our instructions and in compliance both with this Privacy Policy and other applicable security measures and regulations.<br />
             The following third parties may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.<br />
-             - <b>Stripe:</b> Payment processing;<br />
+             - <b>Paddle:</b> Payment processing;<br />
              - <b>Cloudflare</b>:	Security, hosting, cloud infrastructure;<br />
              - <b>Sentry:</b>	Error tracking;<br />
              - <b>Postmark:</b>	Transactional and marketing emails;<br />
@@ -164,7 +164,7 @@ const Features = () => {
 
           <hr className='mt-10 mb-4' />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            <i>Last updated: August 16, 2021.</i>
+            <i>Last updated: January 24, 2022.</i>
           </p>
         </div>
       </div>
