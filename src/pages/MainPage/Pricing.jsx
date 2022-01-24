@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom'
 import { CheckIcon } from '@heroicons/react/solid'
 import _map from 'lodash/map'
 import _isNil from 'lodash/isNil'
-import _isString from 'lodash/isString'
-import _isEmpty from 'lodash/isEmpty'
 import _findIndex from 'lodash/findIndex'
 import cx from 'clsx'
 
@@ -80,34 +78,34 @@ const Pricing = ({ t, language }) => {
   const [planCodeLoading, setPlanCodeLoading] = useState(null)
   const tiers = getTiers(t)
 
-  const lastEventHandler = async (data) => {
-    if (_isNil(data)) {
-      return
-    }
-
-    if (data.event === 'Checkout.Complete') {
-      // giving some time to the API to process tier upgrate via Paddle webhook
-      setTimeout(async () => {
-        try {
-          const me = await authMe()
-  
-          dispatch(authActions.loginSuccess(me))
-          dispatch(authActions.finishLoading())
-        } catch (e) {
-          dispatch(authActions.logout())
-        }
-
-        dispatch(alertsActions.accountUpdated('The subscription has been upgraded.'))
-      }, 1000)
-      setPlanCodeLoading(null)
-    } else if (data.event === 'Checkout.Close') {
-      setPlanCodeLoading(null)
-    }
-  }
-
   useEffect(() => {
+    const lastEventHandler = async (data) => {
+      if (_isNil(data)) {
+        return
+      }
+  
+      if (data.event === 'Checkout.Complete') {
+        // giving some time to the API to process tier upgrate via Paddle webhook
+        setTimeout(async () => {
+          try {
+            const me = await authMe()
+    
+            dispatch(authActions.loginSuccess(me))
+            dispatch(authActions.finishLoading())
+          } catch (e) {
+            dispatch(authActions.logout())
+          }
+  
+          dispatch(alertsActions.accountUpdated('The subscription has been upgraded.'))
+        }, 1000)
+        setPlanCodeLoading(null)
+      } else if (data.event === 'Checkout.Close') {
+        setPlanCodeLoading(null)
+      }
+    }
+
     lastEventHandler(lastEvent)
-  }, [lastEvent])
+  }, [lastEvent, dispatch])
 
   const onPlanChange = (tier) => {
     if (planCodeLoading === null && user.planCode !== tier.planCode) {
