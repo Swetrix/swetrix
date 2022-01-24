@@ -29,12 +29,11 @@ const ProjectSettings = ({
   loadProjects, isLoading, projects, showError, removeProject, user,
 }) => {
   const { t } = useTranslation('common')
-  const location = useLocation()
   const { pathname } = useLocation()
   const { id } = useParams()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
-  const history = useNavigate()
+  const navigate = useNavigate()
   const [form, setForm] = useState({
     name: '',
     id: id || nanoid(),
@@ -51,13 +50,13 @@ const ProjectSettings = ({
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
       showError(t('project.settings.verify'))
-      history(routes.dashboard)
+      navigate(routes.dashboard)
     }
 
     if (!isLoading && isSettings && !projectDeleting) {
       if (_isEmpty(project) || project?.uiHidden) {
         showError(t('project.noExist'))
-        history(routes.dashboard)
+        navigate(routes.dashboard)
       } else {
         setForm({
           ...project,
@@ -65,7 +64,7 @@ const ProjectSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, location, showError, projectDeleting, t])
+  }, [user, project, isLoading, isSettings, showError, projectDeleting, t, navigate])
 
   const onSubmit = async (data) => {
     if (!projectSaving) {
@@ -85,7 +84,7 @@ const ProjectSettings = ({
         }
 
         loadProjects()
-        history(routes.dashboard)
+        navigate(routes.dashboard)
       } catch (e) {
         if (isSettings) {
           updateProjectFailed(e)
@@ -106,7 +105,7 @@ const ProjectSettings = ({
         await deleteProject(id)
         removeProject(id)
         projectDeleted()
-        history(routes.dashboard)
+        navigate(routes.dashboard)
       } catch (e) {
         deleteProjectFailed(e)
       } finally {
@@ -161,7 +160,7 @@ const ProjectSettings = ({
   }
 
   const onCancel = () => {
-    history(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
+    navigate(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
   }
 
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')

@@ -1,5 +1,5 @@
 import React, { useEffect, lazy, Suspense, useState } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
@@ -130,6 +130,7 @@ const App = () => {
                   <Route path={routes.features} element={<Features/>} />
                   <Route path={routes.privacy} element={<Privacy/>} />
                   <Route path={routes.terms} element={<Terms/>} />
+                  <Route path='*' element={<Navigate to={routes.main} />} />
                 </Routes>
               </Suspense>
             </Selfhosted>
