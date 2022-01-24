@@ -21,7 +21,6 @@ export const ACCOUNT_PLANS = {
     displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
     maxProjects: 20,
-    priceId: 'price_1JORmHCQYBdiXzBatNEKQmP9',
     pid: 752316,
   },
   startup: {
@@ -29,7 +28,6 @@ export const ACCOUNT_PLANS = {
     displayName: 'Startup plan',
     monthlyUsageLimit: 500000,
     maxProjects: 20,
-    priceId: 'price_1JORmfCQYBdiXzBawbn1yoeu',
     pid: 752317,
   },
   enterprise: {
@@ -37,7 +35,6 @@ export const ACCOUNT_PLANS = {
     displayName: 'Enterprise plan',
     monthlyUsageLimit: 1000000,
     maxProjects: 30,
-    priceId: 'price_1JORn3CQYBdiXzBaOdcNvHHP',
     pid: 752318,
   },
 }
