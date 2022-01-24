@@ -45,24 +45,24 @@ export class WebhookService {
     return sortedObj
   }
 
-  validateWebhook(jsonObj) {
+  validateWebhook(data) {
     // Grab p_signature
-    const mySig = Buffer.from(jsonObj.p_signature, 'base64')
+    const mySig = Buffer.from(data.p_signature, 'base64')
     // Remove p_signature from object - not included in array of fields used in verification.
-    delete jsonObj.p_signature
+    delete data.p_signature
     // Need to sort array by key in ascending order
-    jsonObj = this.ksort(jsonObj)
-    for (let property in jsonObj) {
-      if (jsonObj.hasOwnProperty(property) && (typeof jsonObj[property]) !== "string") {
-        if (Array.isArray(jsonObj[property])) { // is it an array
-          jsonObj[property] = jsonObj[property].toString()
+    data = this.ksort(data)
+    for (let property in data) {
+      if (data.hasOwnProperty(property) && (typeof data[property]) !== "string") {
+        if (Array.isArray(data[property])) { // is it an array
+          data[property] = data[property].toString()
         } else { // if its not an array and not a string, then it is a JSON obj
-          jsonObj[property] = JSON.stringify(jsonObj[property])
+          data[property] = JSON.stringify(data[property])
         }
       }
     }
     // Serialise remaining fields of jsonObj
-    const serialized = Serialize.serialize(jsonObj)
+    const serialized = Serialize.serialize(data)
     // verify the serialized array against the signature using SHA1 with your public key.
     const verifier = crypto.createVerify('sha1')
     verifier.update(serialized)
@@ -71,8 +71,7 @@ export class WebhookService {
     const verification = verifier.verify(PADDLE_PUB_KEY, mySig)
 
     if (!verification) {
-      this.logger.error('Webhook signature verification failed.')
-      this.logger.error('Check the .env file and enter the correct webhook secret.')
+      this.logger.error(`Webhook signature verification failed: ${data}`)
       throw new BadRequestException('Webhook signature verification failed')
     }
   }
