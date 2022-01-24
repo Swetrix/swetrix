@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { forgotPassword } from 'api'
@@ -14,7 +14,7 @@ const ForgotPassword = ({
   createNewPasswordFailed, newPassword,
 }) => {
   const { t } = useTranslation('common')
-  const history = useHistory()
+  const history = useNavigate()
   const [form, setForm] = useState({
     email: '',
   })
@@ -35,7 +35,7 @@ const ForgotPassword = ({
         await forgotPassword(data)
   
         newPassword(t('auth.forgot.sent'))
-        history.push(routes.main)
+        history(routes.main)
       } catch (e) {
         createNewPasswordFailed(e.toString())
       } finally {

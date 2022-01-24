@@ -139,7 +139,7 @@ const Main = () => {
                         <Trans
                           t={t}
                           i18nKey='main.signupTerms'
-                          components={{
+                          components={{ 
                             tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
                             pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
                           }}

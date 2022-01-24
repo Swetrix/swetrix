@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, memo } from 'react'
-import { useLocation, useHistory, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
@@ -29,11 +29,12 @@ const ProjectSettings = ({
   loadProjects, isLoading, projects, showError, removeProject, user,
 }) => {
   const { t } = useTranslation('common')
+  const location = useLocation()
   const { pathname } = useLocation()
   const { id } = useParams()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
-  const history = useHistory()
+  const history = useNavigate()
   const [form, setForm] = useState({
     name: '',
     id: id || nanoid(),
@@ -50,13 +51,13 @@ const ProjectSettings = ({
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
       showError(t('project.settings.verify'))
-      history.push(routes.dashboard)
+      history(routes.dashboard)
     }
 
     if (!isLoading && isSettings && !projectDeleting) {
       if (_isEmpty(project) || project?.uiHidden) {
         showError(t('project.noExist'))
-        history.push(routes.dashboard)
+        history(routes.dashboard)
       } else {
         setForm({
           ...project,
@@ -64,7 +65,7 @@ const ProjectSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, history, showError, projectDeleting, t])
+  }, [user, project, isLoading, isSettings, location, showError, projectDeleting, t])
 
   const onSubmit = async (data) => {
     if (!projectSaving) {
@@ -84,7 +85,7 @@ const ProjectSettings = ({
         }
 
         loadProjects()
-        history.push(routes.dashboard)
+        history(routes.dashboard)
       } catch (e) {
         if (isSettings) {
           updateProjectFailed(e)
@@ -105,7 +106,7 @@ const ProjectSettings = ({
         await deleteProject(id)
         removeProject(id)
         projectDeleted()
-        history.push(routes.dashboard)
+        history(routes.dashboard)
       } catch (e) {
         deleteProjectFailed(e)
       } finally {
@@ -160,7 +161,7 @@ const ProjectSettings = ({
   }
 
   const onCancel = () => {
-    history.push(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
+    history(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
   }
 
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')

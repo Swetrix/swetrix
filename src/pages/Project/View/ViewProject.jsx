@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
-import { useHistory, useParams, Link } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb, { area, zoom } from 'billboard.js' // eslint-disable-line
@@ -160,7 +160,7 @@ const ViewProject = ({
   const periodPairs = tbPeriodPairs(t)
   const dashboardRef = useRef(null)
   const { id } = useParams()
-  const history = useHistory()
+  const history = useNavigate()
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [panelsData, setPanelsData] = useState({})
@@ -182,7 +182,7 @@ const ViewProject = ({
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
-    history.push(routes.dashboard)
+    history(routes.dashboard)
   }
 
   const loadAnalytics = async () => {
@@ -307,7 +307,7 @@ const ViewProject = ({
   }
 
   const openSettingsHandler = () => {
-    history.push(_replace(routes.project_settings, ':id', id))
+    history(_replace(routes.project_settings, ':id', id))
   }
 
   const exportAsImageHandler = async () => {

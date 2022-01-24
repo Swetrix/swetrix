@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import _includes from 'lodash/includes'
 
 import { isSelfhosted } from 'redux/constants'
@@ -12,24 +12,22 @@ const selfHostedBlacklist = [
 const DEFAULT_PAGE = routes.signin
 
 const Selfhosted = ({ children }) => {
-  const history = useHistory()
-
+  const navigate = useNavigate()
+  const location = useLocation()
   useEffect(() => {
     if (isSelfhosted) {
       if (_includes(selfHostedBlacklist, window.location.pathname)) {
-        history.push(DEFAULT_PAGE)
+        navigate(DEFAULT_PAGE)
       }
-  
-      const unlisten = history.listen(({ pathname }) => {
-        if (_includes(selfHostedBlacklist, pathname)) {
-          history.push(DEFAULT_PAGE)
-        }
-      })
-      return unlisten
+
+      if (_includes(selfHostedBlacklist, location.pathname)) {
+        navigate(DEFAULT_PAGE)
+      }
     }
-  }, [history])
+  }, [location])
 
   return <>{children}</>
+  
 }
 
 export default Selfhosted

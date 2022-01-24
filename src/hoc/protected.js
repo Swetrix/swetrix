@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import routes from 'routes'
 
 export const auth = {
@@ -16,10 +16,10 @@ export const auth = {
 export const withAuthentication = (WrappedComponent, authParam) => {
   const WithAuthentication = (params) => {
     const selector = useSelector(authParam.selector)
-    const history = useHistory()
+    const history = useNavigate()
     
     if (!selector) {
-      history.push(authParam.redirectPath)
+      history(authParam.redirectPath)
     }
 
     return <WrappedComponent {...params} />
