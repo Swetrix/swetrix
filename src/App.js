@@ -75,7 +75,7 @@ const App = () => {
       loaderEl.classList.add('available')
       setTimeout(() => {
         loaderEl.outerHTML = ''
-      }, 2000)
+      }, 1000)
     }
   }, [])
 
