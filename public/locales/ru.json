@@ -54,16 +54,16 @@
     },
     "features": [
       {
-        "name": "Простой, но мощный",
-        "description": "Просматривайте все метрики в удобной форме. Больше никаких запутанных отчетов, показателей или уведомлений."
+        "name": "Open source",
+        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
       },
       {
-        "name": "Открытый исходный код",
-        "description": "Код нашего скрипта аналитики является открытым и доступен для всех желающих. Мы отслеживаем только те данные, о которых заявляем."
+        "name": "Full event tracking",
+        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
       },
       {
-        "name": "Широкий спектр функций",
-        "description": "С нами вы можете отслеживать не только трафик, но и пользовательские события, такие как нажатия на кнопки или регистрации."
+        "name": "Browser Addons",
+        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
       },
       {
         "name": "Без использования Cookie",
@@ -129,6 +129,8 @@
   "features": {
     "feature1Name": "Прозрачность",
     "feature1Content": "В Swetrix мы считаем, что каждый человек имеет право на конфиденциальность и прозрачность, особенно когда дело касается аналитики.\nМы не собираем больше информации, чем <docs>заявляем</docs>, все данные хранятся на серверах, физически расположенных в Европейском Союзе, а наш скрипт аналитики находится в открытом доступе и доступен для всех на <gh>Github</gh>.",
+    "feature2Name": "Browser Addons",
+    "feature2Content": "Need to quickly view statistics for your website?\nWe have developed <chrome>Chrome</chrome> and <firefox>Firefox</firefox> extensions for this purpose.\nUsing these, you can instantly view the most important insights, receive traffic spikes notifications and much more!",
     "ready": "Готовы начать?",
     "start": "Зарегистрируйтесь уже сегодня.",
     "list": [

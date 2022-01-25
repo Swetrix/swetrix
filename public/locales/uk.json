@@ -54,16 +54,16 @@
     },
     "features": [
       {
-        "name": "Простий, але потужний",
-        "description": "Переглядайте всі метрики в зручній формі. Більше ніяких заплутаних звітів, показників або сповіщень."
+        "name": "Open source",
+        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
       },
       {
-        "name": "Відкритий код",
-        "description": "Код нашого скрипта аналітики є відкритим і доступним для всіх бажаючих. Ми відстежуємо тільки ті дані, про які заявляємо."
+        "name": "Full event tracking",
+        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
       },
       {
-        "name": "Широкий спектр функцій",
-        "description": "З нами ви можете відстежувати не тільки трафік, але і користувацькі події, такі як натискання на кнопки або реєстрації."
+        "name": "Browser Addons",
+        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
       },
       {
         "name": "Без використання Cookie",
@@ -129,6 +129,8 @@
   "features": {
     "feature1Name": "Прозорість",
     "feature1Content": "У Swetrix ми вважаємо, що кожна людина має право на конфіденційність і прозорість, особливо коли справа стосується аналітики.\nМи не збираємо більше інформації, ніж <docs>заявляємо</docs>, всі дані зберігаються на серверах, фізично розташованих в Європейському Союзі, а наш скрипт аналітики знаходиться у відкритому доступі і доступний на <gh>Github</gh>.",
+    "feature2Name": "Browser Addons",
+    "feature2Content": "Need to quickly view statistics for your website?\nWe have developed <chrome>Chrome</chrome> and <firefox>Firefox</firefox> extensions for this purpose.\nUsing these, you can instantly view the most important insights, receive traffic spikes notifications and much more!",
     "ready": "Готові розпочати?",
     "start": "Зареєструйтесь вже сьогодні.",
     "list": [

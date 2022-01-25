@@ -54,16 +54,16 @@
     },
     "features": [
       {
-        "name": "简单而强大",
-        "description": "以直接的方式查看您的所有分析。不用再纠结于令人困惑的报告、指标和通知了。"
+        "name": "Open source",
+        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
       },
       {
-        "name": "开源",
-        "description": "我们的跟踪脚本是开源的，可供所有人探索。我们只跟踪我们声明的数据。"
+        "name": "Full event tracking",
+        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
       },
       {
-        "name": "完整的活动跟踪",
-        "description": "通过我们，您不仅可以跟踪流量，还可以跟踪自定义活动，例如按钮点击或注册。"
+        "name": "Browser Addons",
+        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
       },
       {
         "name": "无需 cookie 横幅",
@@ -129,6 +129,8 @@
   "features": {
     "feature1Name": "透明度",
     "feature1Content": "在 Swetrix，我们相信每个人都享有隐私权和透明度。尤其是在分析方面。\n我们不会收集超越我们<docs>声明</docs>范围的信息，所有数据都存储在位于欧盟的服务器上，我们的分析脚本是公开可用的，并且可以通过我们的 <gh>Github</gh>访问。",
+    "feature2Name": "Browser Addons",
+    "feature2Content": "Need to quickly view statistics for your website?\nWe have developed <chrome>Chrome</chrome> and <firefox>Firefox</firefox> extensions for this purpose.\nUsing these, you can instantly view the most important insights, receive traffic spikes notifications and much more!",
     "ready": "准备好了解您的用户了吗？",
     "start": "立即开始使用 Swetrix。",
     "list": [

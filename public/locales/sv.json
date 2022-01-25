@@ -54,16 +54,16 @@
     },
     "features": [
       {
-        "name": "Simple yet powerful",
-        "description": "View all your analytics in a straightforward way. Say no more to confusing reports, metrics and notifications."
-      },
-      {
         "name": "Open source",
-        "description": "Our tracking script is open sourced and available for everybody to explore. We only track data that we declare."
+        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
       },
       {
         "name": "Full event tracking",
         "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
+      },
+      {
+        "name": "Browser Addons",
+        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
       },
       {
         "name": "No cookie banners needed",
@@ -129,6 +129,8 @@
   "features": {
     "feature1Name": "Transparency",
     "feature1Content": "At Swetrix, we believe that everyone has a right to privacy and transparency, especially when it comes to analytics.\nWe do not collect more information than we <docs>claim</docs>, all data is stored on servers physically located in the European Union and our analytics script is publicly available and accessible to all on our <gh>Github</gh>.",
+    "feature2Name": "Browser Addons",
+    "feature2Content": "Need to quickly view statistics for your website?\nWe have developed <chrome>Chrome</chrome> and <firefox>Firefox</firefox> extensions for this purpose.\nUsing these, you can instantly view the most important insights, receive traffic spikes notifications and much more!",
     "ready": "Ready to get to know your users?",
     "start": "Start using Swetrix today.",
     "list": [

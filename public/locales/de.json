@@ -5,12 +5,12 @@
     "getStarted": "Erste Schritte",
     "billing": "Rechnung",
     "pricing": "Preise",
-    "faqs": "FAQs",
+    "faqs": "FAQ",
     "you": "Konto",
     "explore": "Entdecken",
     "liveDemo": "Live Demo",
     "dashboard": "Dashboard",
-    "logout": "Logout",
+    "logout": "Abmelden",
     "save": "Speichern",
     "continue": "Fortfahren",
     "error": "Fehler",
@@ -54,16 +54,16 @@
     },
     "features": [
       {
-        "name": "Einfach, aber leistungsstark",
-        "description": "Alle Ihre Analysen sind übersichtlich aufbereitet. Vergessen Sie verwirrende Berichte, Metriken und Benachrichtigungen."
-      },
-      {
         "name": "Open-Source",
         "description": "Unser Tracking-Script ist quelloffen und frei zugänglich für Jeden. Wir erfassen nur die Daten, die wir ausdrücklich angeben."
       },
       {
         "name": "Vollständige Ereignisverfolgung",
         "description": "Mit uns können Sie nicht nur Ihren Traffic verfolgen, sondern auch benutzerdefinierte Ereignisse wie Button-Klicks oder Registrierungen analysieren."
+      },
+      {
+        "name": "Browser-Addons",
+        "description": "Sehen Sie sofort die wichtigsten Einblicke, erhalten Sie Traffic-Spike-Benachrichtigungen und vieles mehr, ohne jemals die Website aufzurufen."
       },
       {
         "name": "Keine Cookie-Banner erforderlich",
@@ -80,8 +80,8 @@
     ],
     "custSupport": "Ist ihre Frage hier nicht aufgelistet? Wenden Sie sich gerne an unseren <mail>Kundendienst</mail>.",
     "whyUs": "Warum uns",
-    "ourStats": "Our statistics",
-    "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
+    "ourStats": "Unsere Statistiken",
+    "statsDesc": "Swetrix basiert auf dem Vertrauen der Nutzer in den Dienst und ist auch in der Lage, Tausende von Benutzern und Websites zu verwalten.",
     "users": "Registrierte Nutzer",
     "websites": "Hinzugefügte Webseiten",
     "pageviews": "Getrackte Aufrufe"
@@ -129,6 +129,8 @@
   "features": {
     "feature1Name": "Transparenz",
     "feature1Content": "Wir bei Swetrix glauben, dass jeder ein Recht auf Privatsphäre und Transparenz hat, insbesondere wenn es um Datenanalyse geht.\nWir sammeln nicht mehr Informationen, als wir <docs>angeben</docs>, alle Daten werden auf Servern gespeichert, die sich physisch in der Europäischen Union befinden und unser Tracking-Script ist quelloffen und für alle auf unserem <gh>Github</gh> öffentlich zugänglich.",
+    "feature2Name": "Browser-Addons",
+    "feature2Content": "Benötigen Sie schnell Statistiken für Ihre Website?\nZu diesem Zweck haben wir <chrome>Chrome</chrome> und <firefox>Firefox</firefox> Erweiterungen entwickelt.\nMit diesen ershalten Sie sofort die wichtigsten Einblicke und erhalten Benachrichtigungen zu Traffic-Spikes und vieles mehr!",
     "ready": "Bereit ihre Nutzer zu verstehen?",
     "start": "Beginnen Sie noch heute mit Swetrix.",
     "list": [
@@ -196,7 +198,7 @@
   "docs": {
     "titles": {
       "start": "Erste Schritte",
-      "umd": "UMD Build",
+      "umd": "UMD-Build",
       "npm": "NPM Paket",
       "how": "Wie Sie...",
       "pv": "Seitenaufrufe tracken",
@@ -245,7 +247,7 @@
     "overview": "Übersicht",
     "weeklyStats": "Wöchentliche Statistik",
     "statsFor": "Statistik für",
-    "event": "Event",
+    "event": "Ereignis",
     "quantity": "Anzahl",
     "conversion": "Konversionsrate",
     "customEv": "benutzerdefinierte Tracking-Events",
