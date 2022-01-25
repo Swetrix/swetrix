@@ -127,6 +127,7 @@
       "xCharsError": "The password has to consist of at least {{amount}} characters.",
       "noMatchError": "Passwords have to match.",
       "badEmailError": "Please provide a valid email.",
+      "passwordTooLong": "The provided password is too long, maximum length is 100 characters",
       "tosError": "You have to accept our TOS and privacy policy in order to use our services.",
       "email": "Email",
       "signin": "Sign in",

@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
+import _size from 'lodash/size'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -76,6 +77,10 @@ const Signup = ({ signup }) => {
 
     if (form.password !== form.repeat || form.repeat === '') {
       allErrors.repeat = t('auth.common.noMatchError')
+    }
+
+    if (_size(form.password) > 100) {
+      allErrors.password = t('auth.common.passwordTooLong')
     }
 
     if (!form.tos) {

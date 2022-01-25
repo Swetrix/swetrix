@@ -2,6 +2,7 @@ import React, { memo, useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { authActions } from 'redux/actions/auth'
 import { useTranslation, Trans } from 'react-i18next'
+import _size from 'lodash/size'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -74,6 +75,10 @@ const BasicSignup = () => {
 
     if (form.password !== form.repeat || form.repeat === '') {
       allErrors.repeat = t('auth.common.noMatchError')
+    }
+
+    if (_size(form.password) > 100) {
+      allErrors.password = t('auth.common.passwordTooLong')
     }
 
     const valid = Object.keys(allErrors).length === 0
