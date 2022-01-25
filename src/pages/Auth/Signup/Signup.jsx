@@ -79,7 +79,7 @@ const Signup = ({ signup }) => {
       allErrors.repeat = t('auth.common.noMatchError')
     }
 
-    if (_size(form.password) > 100) {
+    if (_size(form.password) > 50) {
       allErrors.password = t('auth.common.passwordTooLong')
     }
 
