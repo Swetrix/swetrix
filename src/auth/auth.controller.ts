@@ -80,7 +80,7 @@ export class AuthController {
   async register(@Body() userDTO: SignupUserDTO, /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userDTO }, 'POST /auth/register')
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    await checkRateLimit(ip, 'register', 4)
+    await checkRateLimit(ip, 'register', 6)
 
     // await this.authService.checkCaptcha(recaptcha)
     this.userService.validatePassword(userDTO.password)
