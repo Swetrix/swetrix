@@ -1,4 +1,10 @@
 {
+  "apiNotifications": {
+    "somethingWentWrong": "Something went wrong, please try again",
+    "emailRegistered": "A user with this email already exists",
+    "leakedPassword": "The provided password is leaked, please use another one",
+    "rateLimitHit": "Too many requests, please try again later"
+  },
   "common": {
     "features": "विशेषताएं",
     "docs": "दस्तावेज़",
@@ -121,9 +127,12 @@
       "xCharsError": "पासवर्ड में कम से कम {{amount}} अक्षर होने चाहिए।",
       "noMatchError": "पासवर्ड आपस में मिलने चाहिए।",
       "badEmailError": "कृपया एक वैध ईमेल डालें।",
+      "passwordTooLong": "The provided password is too long, maximum length is {{amount}} characters",
       "tosError": "हमारी सेवाओं का उपयोग करने के लिए आपको हमारी टीओएस और गोपनीयता नीति को स्वीकार करना होगा।",
       "email": "ईमेल",
-      "signin": "साइन इन"
+      "signin": "साइन इन",
+      "checkLeakedPassword": "Check if password is leaked",
+      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text."
     }
   },
   "features": {
