@@ -9,9 +9,12 @@ import routes from 'routes'
 import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
 import Button from 'ui/Button'
+import Tooltip from 'ui/Tooltip'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
+
+const HAVE_I_BEEN_PWNED_URL = 'https://haveibeenpwned.com/passwords'
 
 const Signup = ({ signup }) => {
   const { t } = useTranslation('common')
@@ -20,7 +23,8 @@ const Signup = ({ signup }) => {
     password: '',
     repeat: '',
     tos: false,
-    keep_signedin: false
+    keep_signedin: false,
+    checkIfLeaked: true,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -146,6 +150,31 @@ const Signup = ({ signup }) => {
             }
             hint={beenSubmitted ? errors.tos : ''}
           />
+          <div className='flex mt-4'>
+            <Checkbox
+              checked={form.checkIfLeaked}
+              onChange={handleInput}
+              name='checkIfLeaked'
+              id='checkIfLeaked'
+              label={t('auth.common.checkLeakedPassword')}
+            />
+            <Tooltip
+              className='ml-2'
+              text={(
+                <Trans
+                  t={t}
+                  i18nKey='auth.common.checkLeakedPasswordDesc'
+                  components={{
+                    // eslint-disable-next-line jsx-a11y/anchor-has-content
+                    db: <a href={HAVE_I_BEEN_PWNED_URL} className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' />,
+                  }}
+                  values={{
+                    database: 'haveibeenpwned.com',
+                  }}
+                />
+              )}
+            />
+          </div>
           <Checkbox
             checked={form.keep_signedin}
             onChange={handleInput}
