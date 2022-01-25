@@ -77,11 +77,11 @@ export const authActions = {
     }
   },
 
-  signupAsync(data, callback = () => { }) {
+  signupAsync(data, t, callback = () => { }) {
     return {
       type: types.SIGNUP_ASYNC,
       payload: {
-        data, callback,
+        data, callback, t,
       },
     }
   },

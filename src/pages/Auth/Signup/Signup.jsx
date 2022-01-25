@@ -8,13 +8,12 @@ import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
-import Button from 'ui/Button'
 import Tooltip from 'ui/Tooltip'
+import Button from 'ui/Button'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
-
-const HAVE_I_BEEN_PWNED_URL = 'https://haveibeenpwned.com/passwords'
+import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 
 const Signup = ({ signup }) => {
   const { t } = useTranslation('common')
@@ -38,7 +37,7 @@ const Signup = ({ signup }) => {
   const onSubmit = data => {
     if (!isLoading) {
       setIsLoading(true)
-      signup(data, () => {
+      signup(data, t, () => {
         setIsLoading(false)
       })
     }
