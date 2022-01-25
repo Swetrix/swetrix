@@ -68,10 +68,10 @@ export class AuthController {
       if (userLoginDTO.email !== SELFHOSTED_EMAIL || userLoginDTO.password !== SELFHOSTED_PASSWORD) {
         throw new UnprocessableEntityException('Email or password is incorrect')
       }
-      return await this.authService.login(SELFHOSTED_EMAIL)
+      return this.authService.login(SELFHOSTED_EMAIL)
     } else {
       const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
-      return await this.authService.login(user)
+      return this.authService.login(user)
     }
   }
 
@@ -80,10 +80,23 @@ export class AuthController {
   async register(@Body() userDTO: SignupUserDTO, /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userDTO }, 'POST /auth/register')
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    await checkRateLimit(ip, 'register')
+    await checkRateLimit(ip, 'register', 4)
 
     // await this.authService.checkCaptcha(recaptcha)
     this.userService.validatePassword(userDTO.password)
+
+    const doesEmailExist = await this.userService.findOneWhere({
+      email: userDTO.email,
+    })
+
+    if (doesEmailExist) {
+      throw new BadRequestException('emailRegistered')
+    }
+
+    if (userDTO.checkIfLeaked) {
+      await this.authService.checkIfPasswordLeaked(userDTO.password)
+    }
+
     userDTO.password = await this.authService.hashPassword(userDTO.password)
 
     try {
@@ -92,13 +105,9 @@ export class AuthController {
       const url = `${request.headers.origin}/verify/${actionToken.id}`
       await this.mailerService.sendEmail(userDTO.email, LetterTemplate.SignUp, { url })
 
-      return await this.authService.login(user)
+      return this.authService.login(user)
     } catch(e) {
-      if (e.code === 'ER_DUP_ENTRY') {
-        if (e.sqlMessage.includes(userDTO.email)) {
-          throw new BadRequestException('A user with this email already exists')
-        }
-      }
+      this.logger.log(`[ERROR WHILE CREATING ACCOUNT]: ${e}`, 'POST /auth/register', true)
     }
   }
 

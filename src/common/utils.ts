@@ -47,6 +47,8 @@ const allowedToUpdateKeys = ['name', 'origins', 'active', 'public']
 
 const _getRateLimitHash = (ip: string, salt: string = '') => `rl:${hash(`${ip}${salt}`).toString('hex')}`
 
+const splitAt = (x, index): Array<Array<any> | string> => [x.slice(0, index), x.slice(index)]
+
 const getRandomTip = (language: string = 'en'): string => {
   return _sample(marketingTips[language])
 }
@@ -101,5 +103,5 @@ const createProjectClickhouse = async (project: Project) => {
 }
 
 export {
-  getRandomTip, checkRateLimit, createProjectClickhouse, getProjectsClickhouse, updateProjectClickhouse, deleteProjectClickhouse,
+  getRandomTip, checkRateLimit, createProjectClickhouse, getProjectsClickhouse, updateProjectClickhouse, deleteProjectClickhouse, splitAt,
 }
