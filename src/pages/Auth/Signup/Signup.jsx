@@ -12,7 +12,7 @@ import Checkbox from 'ui/Checkbox'
 import Tooltip from 'ui/Tooltip'
 import Button from 'ui/Button'
 import {
-  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
+  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS,
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 
@@ -80,7 +80,7 @@ const Signup = ({ signup }) => {
     }
 
     if (_size(form.password) > 50) {
-      allErrors.password = t('auth.common.passwordTooLong')
+      allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
     }
 
     if (!form.tos) {

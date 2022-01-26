@@ -9,7 +9,7 @@ import Title from 'components/Title'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import { isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
+import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
 
 const CreateNewPassword = ({
   createNewPasswordFailed, newPassword,
@@ -79,7 +79,7 @@ const CreateNewPassword = ({
     }
 
     if (_size(form.password) > 50) {
-      allErrors.password = t('auth.common.passwordTooLong')
+      allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
     }
 
     const valid = Object.keys(allErrors).length === 0
