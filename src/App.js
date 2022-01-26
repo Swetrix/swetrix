@@ -92,6 +92,17 @@ const App = () => {
   }, [])
 
   useEffect(() => {
+    const loaderEl = document.getElementById('loader')
+
+    if (loaderEl) {
+      loaderEl.classList.add('available')
+      setTimeout(() => {
+        loaderEl.outerHTML = ''
+      }, 1000)
+    }
+  }, [])
+
+  useEffect(() => {
     (async () => {
       if (accessToken && !authenticated) {
         try {

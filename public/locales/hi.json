@@ -1,4 +1,10 @@
 {
+  "apiNotifications": {
+    "somethingWentWrong": "Something went wrong, please try again",
+    "emailRegistered": "A user with this email already exists",
+    "leakedPassword": "The provided password is leaked, please use another one",
+    "rateLimitHit": "Too many requests, please try again later"
+  },
   "common": {
     "features": "विशेषताएं",
     "docs": "दस्तावेज़",
@@ -54,16 +60,16 @@
     },
     "features": [
       {
-        "name": "सरल लेकिन शक्तिशाली",
-        "description": "अपने सभी एनालिटिक्स को सरल तरीके से देखें। अब भ्रमित करने वाले रिपोर्ट्स, मेट्रिक और सूचनाओं को 'ना' कहें।"
+        "name": "Open source",
+        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
       },
       {
-        "name": "मुक्त स्रोत",
-        "description": "हमारी ट्रैकिंग स्क्रिप्ट मुक्त स्रोत है और सभी के लिए लिए उपलब्ध है। हम केवल उस डेटा को ट्रैक करते हैं जिसे हम घोषित करते हैं।"
+        "name": "Full event tracking",
+        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
       },
       {
-        "name": "पूरी इवेंट ट्रैकिंग",
-        "description": "हमारे साथ, आप न केवल अपने ट्रैफ़िक को ट्रैक कर सकते हैं बल्कि कस्टम ईवेंट जैसे बटन क्लिक या पंजीकरण को भी ट्रैक कर सकते हैं।"
+        "name": "Browser Addons",
+        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
       },
       {
         "name": "कुकी बैनर की जरूरत नहीं",
@@ -121,14 +127,19 @@
       "xCharsError": "पासवर्ड में कम से कम {{amount}} अक्षर होने चाहिए।",
       "noMatchError": "पासवर्ड आपस में मिलने चाहिए।",
       "badEmailError": "कृपया एक वैध ईमेल डालें।",
+      "passwordTooLong": "The provided password is too long, maximum length is {{amount}} characters",
       "tosError": "हमारी सेवाओं का उपयोग करने के लिए आपको हमारी टीओएस और गोपनीयता नीति को स्वीकार करना होगा।",
       "email": "ईमेल",
-      "signin": "साइन इन"
+      "signin": "साइन इन",
+      "checkLeakedPassword": "Check if password is leaked",
+      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text."
     }
   },
   "features": {
     "feature1Name": "पारदर्शिता",
     "feature1Content": "स्वेट्रिक्स में हम मानते हैं कि हर किसी को गोपनीयता और पारदर्शिता का अधिकार है, खासकर एनालिटिक्स के लिए।\nहम जितना <docs>दावा</docs> करते हैं उससे अधिक जानकारी एकत्र नहीं करते, सभी डेटा यूरोपीय संघ में भौतिक रूप से स्थित सर्वर पर संग्रहीत हैं और हमारी एनालिटिक्स स्क्रिप्ट सार्वजनिक रूप से उपलब्ध है और सभी के देखने के लिए हमारे <gh>गिटहब</gh> पर है।",
+    "feature2Name": "Browser Addons",
+    "feature2Content": "Need to quickly view statistics for your website?\nWe have developed <chrome>Chrome</chrome> and <firefox>Firefox</firefox> extensions for this purpose.\nUsing these, you can instantly view the most important insights, receive traffic spikes notifications and much more!",
     "ready": "अपने उपयोगकर्ताओं को जानने के लिए तैयार हैं?",
     "start": "आज ही स्वेट्रिक्स का उपयोग करना शुरू करें।",
     "list": [

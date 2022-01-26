@@ -1,13 +1,17 @@
 import React, { memo, useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { authActions } from 'redux/actions/auth'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
+import _size from 'lodash/size'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
+import Checkbox from 'ui/Checkbox'
+import Tooltip from 'ui/Tooltip'
 import {
-  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
+  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS,
 } from 'utils/validator'
+import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 
 const BasicSignup = () => {
   const { t } = useTranslation('common')
@@ -18,6 +22,7 @@ const BasicSignup = () => {
     repeat: '',
     tos: true,
     keep_signedin: true,
+    checkIfLeaked: true,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -27,7 +32,7 @@ const BasicSignup = () => {
   const onSubmit = (data) => {
     if (!isLoading) {
       setIsLoading(true)
-      dispatch(authActions.signupAsync(data, () => {
+      dispatch(authActions.signupAsync(data, t, () => {
         setIsLoading(false)
       }))
     }
@@ -38,11 +43,12 @@ const BasicSignup = () => {
   }, [form]) // eslint-disable-line
 
   const handleInput = (event) => {
-    const { name, value } = event.target
+    const t = event.target
+    const value = t.type === 'checkbox' ? t.checked : t.value
 
     setForm(form => ({
       ...form,
-      [name]: value,
+      [t.name]: value,
     }))
   }
 
@@ -69,6 +75,10 @@ const BasicSignup = () => {
 
     if (form.password !== form.repeat || form.repeat === '') {
       allErrors.repeat = t('auth.common.noMatchError')
+    }
+
+    if (_size(form.password) > 50) {
+      allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
     }
 
     const valid = Object.keys(allErrors).length === 0
@@ -108,6 +118,31 @@ const BasicSignup = () => {
         onChange={handleInput}
         error={beenSubmitted && errors.repeat}
       />
+      <div className='flex mt-4'>
+        <Checkbox
+          checked={form.checkIfLeaked}
+          onChange={handleInput}
+          name='checkIfLeaked'
+          id='checkIfLeaked'
+          label={t('auth.common.checkLeakedPassword')}
+        />
+        <Tooltip
+          className='ml-2'
+          text={(
+            <Trans
+              t={t}
+              i18nKey='auth.common.checkLeakedPasswordDesc'
+              components={{
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                db: <a href={HAVE_I_BEEN_PWNED_URL} className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' />,
+              }}
+              values={{
+                database: 'haveibeenpwned.com',
+              }}
+            />
+          )}
+        />
+      </div>
       <Button className='w-full flex justify-center' type='submit' loading={isLoading} primary giant>
         {t('auth.signup.create')}
       </Button>

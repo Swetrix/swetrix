@@ -1,4 +1,10 @@
 {
+  "apiNotifications": {
+    "somethingWentWrong": "Something went wrong, please try again",
+    "emailRegistered": "A user with this email already exists",
+    "leakedPassword": "The provided password is leaked, please use another one",
+    "rateLimitHit": "Too many requests, please try again later"
+  },
   "common": {
     "features": "Features",
     "docs": "Docs",
@@ -54,16 +60,16 @@
     },
     "features": [
       {
-        "name": "Simple yet powerful",
-        "description": "View all your analytics in a straightforward way. Say no more to confusing reports, metrics and notifications."
-      },
-      {
         "name": "Open source",
-        "description": "Our tracking script is open sourced and available for everybody to explore. We only track data that we declare."
+        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
       },
       {
         "name": "Full event tracking",
         "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
+      },
+      {
+        "name": "Browser Addons",
+        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
       },
       {
         "name": "No cookie banners needed",
@@ -121,14 +127,19 @@
       "xCharsError": "The password has to consist of at least {{amount}} characters.",
       "noMatchError": "Passwords have to match.",
       "badEmailError": "Please provide a valid email.",
+      "passwordTooLong": "The provided password is too long, maximum length is {{amount}} characters",
       "tosError": "You have to accept our TOS and privacy policy in order to use our services.",
       "email": "Email",
-      "signin": "Sign in"
+      "signin": "Sign in",
+      "checkLeakedPassword": "Check if password is leaked",
+      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text."
     }
   },
   "features": {
     "feature1Name": "Transparency",
     "feature1Content": "At Swetrix, we believe that everyone has a right to privacy and transparency, especially when it comes to analytics.\nWe do not collect more information than we <docs>claim</docs>, all data is stored on servers physically located in the European Union and our analytics script is publicly available and accessible to all on our <gh>Github</gh>.",
+    "feature2Name": "Browser Addons",
+    "feature2Content": "Need to quickly view statistics for your website?\nWe have developed <chrome>Chrome</chrome> and <firefox>Firefox</firefox> extensions for this purpose.\nUsing these, you can instantly view the most important insights, receive traffic spikes notifications and much more!",
     "ready": "Ready to get to know your users?",
     "start": "Start using Swetrix today.",
     "list": [

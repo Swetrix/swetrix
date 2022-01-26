@@ -9,7 +9,7 @@
   <meta name="description" content="Powerful web analytics platform that respects user privacy" />
   <meta name="twitter:title" content="Swetrix | Track your website statistics without invading users privacy" />
   <meta name="twitter:description"
-    content="Swetrix is a fully cookie-less privacy-first web analytics service which provides a huge variety of services" />
+    content="Swetrix is a cookie-less privacy-first web analytics service which provides a huge variety of services" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta property="og:title" content="Swetrix Analytics" />
   <meta property="og:description" content="Powerful web analytics platform that respects user privacy" />
@@ -18,12 +18,22 @@
   <meta property="og:url" content="https://swetrix.com">
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  <link href="index.css" rel="stylesheet" />
   <script src="%PUBLIC_URL%/env.js"></script>
   <title>Swetrix Analytics</title>
 </head>
 
 <body class="transition-colors duration-300">
   <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div class="loader" id="loader">
+    <div class="loader-head">
+      <div class="first"></div>
+      <div class="second"></div>
+    </div>
+    <div class="logo-frame">
+      <img class="logo-frame-img" src="/assets/logo_blue.svg" alt="" />
+    </div>
+  </div>
   <div id="root"></div>
   <script src="https://cdn.paddle.com/paddle/paddle.js"></script>
 </body>

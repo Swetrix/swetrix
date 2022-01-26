@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import _size from 'lodash/size'
 
 import { createNewPassword } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -8,7 +9,7 @@ import Title from 'components/Title'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import { isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
+import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
 
 const CreateNewPassword = ({
   createNewPasswordFailed, newPassword,
@@ -77,6 +78,10 @@ const CreateNewPassword = ({
       allErrors.repeat = t('auth.common.noMatchError')
     }
 
+    if (_size(form.password) > 50) {
+      allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
+    }
+
     const valid = Object.keys(allErrors).length === 0
 
     setErrors(allErrors)
@@ -107,7 +112,7 @@ const CreateNewPassword = ({
             id='repeat'
             type='password'
             label={t('auth.common.repeat')}
-            value={form.password}
+            value={form.repeat}
             placeholder={t('auth.common.password')}
             className='mt-4'
             onChange={handleInput}

@@ -2,16 +2,19 @@ import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
+import _size from 'lodash/size'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
+import Tooltip from 'ui/Tooltip'
 import Button from 'ui/Button'
 import {
-  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
+  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS,
 } from 'utils/validator'
+import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 
 const Signup = ({ signup }) => {
   const { t } = useTranslation('common')
@@ -20,7 +23,8 @@ const Signup = ({ signup }) => {
     password: '',
     repeat: '',
     tos: false,
-    keep_signedin: false
+    keep_signedin: false,
+    checkIfLeaked: true,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -34,7 +38,7 @@ const Signup = ({ signup }) => {
   const onSubmit = data => {
     if (!isLoading) {
       setIsLoading(true)
-      signup(data, () => {
+      signup(data, t, () => {
         setIsLoading(false)
       })
     }
@@ -73,6 +77,10 @@ const Signup = ({ signup }) => {
 
     if (form.password !== form.repeat || form.repeat === '') {
       allErrors.repeat = t('auth.common.noMatchError')
+    }
+
+    if (_size(form.password) > 50) {
+      allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
     }
 
     if (!form.tos) {
@@ -146,6 +154,31 @@ const Signup = ({ signup }) => {
             }
             hint={beenSubmitted ? errors.tos : ''}
           />
+          <div className='flex mt-4'>
+            <Checkbox
+              checked={form.checkIfLeaked}
+              onChange={handleInput}
+              name='checkIfLeaked'
+              id='checkIfLeaked'
+              label={t('auth.common.checkLeakedPassword')}
+            />
+            <Tooltip
+              className='ml-2'
+              text={(
+                <Trans
+                  t={t}
+                  i18nKey='auth.common.checkLeakedPasswordDesc'
+                  components={{
+                    // eslint-disable-next-line jsx-a11y/anchor-has-content
+                    db: <a href={HAVE_I_BEEN_PWNED_URL} className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' />,
+                  }}
+                  values={{
+                    database: 'haveibeenpwned.com',
+                  }}
+                />
+              )}
+            />
+          </div>
           <Checkbox
             checked={form.keep_signedin}
             onChange={handleInput}
