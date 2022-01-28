@@ -2,6 +2,7 @@ import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import backend from 'i18next-http-backend'
 import _isString from 'lodash/isString'
+import _includes from 'lodash/includes'
 import { whitelist, defaultLanguage } from 'redux/constants'
 import { setItem } from 'utils/localstorage'
 
@@ -12,7 +13,11 @@ lngDetector.addDetector({
     const language = navigator.language || navigator.userLanguage
 
     if (_isString(language)) {
-      return language.substring(0, 2)
+      const subLanguage = language.substring(0, 2)
+
+      if (_includes(whitelist, subLanguage)) {
+        return subLanguage
+      } 
     }
 
     return defaultLanguage
