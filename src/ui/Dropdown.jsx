@@ -59,7 +59,9 @@ const Dropdown = ({
 )
 
 Dropdown.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.oneOfType([
+    PropTypes.string, PropTypes.node,
+  ]).isRequired,
   onSelect: PropTypes.func.isRequired,
   items: PropTypes.arrayOf(PropTypes.oneOfType([
     PropTypes.string, PropTypes.object,

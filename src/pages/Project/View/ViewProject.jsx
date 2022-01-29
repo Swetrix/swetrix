@@ -260,7 +260,7 @@ const ViewProject = ({
     }
 
     return () => clearInterval(interval)
-  }, [project.id, setLiveStatsForProject])
+  }, [project.id, setLiveStatsForProject]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
