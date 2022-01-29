@@ -61,7 +61,7 @@ export class AuthController {
   async loginUser(@Body() userLoginDTO: UserLoginDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userLoginDTO }, 'POST /auth/login')
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    await checkRateLimit(ip, 'login', 10, 3600)
+    await checkRateLimit(ip, 'login', 10, 1800)
     // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
 
     if (isSelfhosted) {
@@ -80,6 +80,11 @@ export class AuthController {
   async register(@Body() userDTO: SignupUserDTO, /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userDTO }, 'POST /auth/register')
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+
+    if (userDTO.checkIfLeaked) {
+      await this.authService.checkIfPasswordLeaked(userDTO.password)
+    }
+
     await checkRateLimit(ip, 'register', 6)
 
     // await this.authService.checkCaptcha(recaptcha)
@@ -91,10 +96,6 @@ export class AuthController {
 
     if (doesEmailExist) {
       throw new BadRequestException('emailRegistered')
-    }
-
-    if (userDTO.checkIfLeaked) {
-      await this.authService.checkIfPasswordLeaked(userDTO.password)
     }
 
     userDTO.password = await this.authService.hashPassword(userDTO.password)
