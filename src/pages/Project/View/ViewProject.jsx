@@ -244,18 +244,23 @@ const ViewProject = ({
   }, [project, period, timeBucket]) // eslint-disable-line
 
   useEffect(() => {
+    const updateLiveVisitors = async () => {
+      const { id } = project
+      const result = await getLiveVisitors([id])
+
+      setLiveStatsForProject(id, result[id])
+    }
+
     let interval
     if (project.uiHidden) {
+      updateLiveVisitors()
       interval = setInterval(async () => {
-        const { id } = project
-        const result = await getLiveVisitors([id])
-
-        setLiveStatsForProject(id, result[id])
+        await updateLiveVisitors()
       }, LIVE_VISITORS_UPDATE_INTERVAL)
     }
 
     return () => clearInterval(interval)
-  }, [project, setLiveStatsForProject])
+  }, [project.id, setLiveStatsForProject])
 
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
