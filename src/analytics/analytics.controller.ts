@@ -11,10 +11,11 @@ import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import {
   Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException, InternalServerErrorException,
-  NotImplementedException, UnprocessableEntityException, PreconditionFailedException, Ip,
+  NotImplementedException, UnprocessableEntityException, PreconditionFailedException, Ip, ForbiddenException,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
+import * as isbot from 'isbot'
 
 import { AnalyticsService, getSessionKey } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
@@ -186,6 +187,12 @@ export class AnalyticsController {
   @Post('/custom')
   async logCustom(@Body() eventsDTO: EventsDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
+
+    // todo: create a decorator for bot traffic detection
+    if (isbot(userAgent)) {
+      throw new ForbiddenException('Bot traffic is ignored')
+    }
+
     await this.analyticsService.validate(eventsDTO, origin)
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
@@ -228,6 +235,12 @@ export class AnalyticsController {
   @Post('/')
   async log(@Body() logDTO: PageviewsDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
+
+    // todo: create a decorator for bot traffic detection
+    if (isbot(userAgent)) {
+      throw new ForbiddenException('Bot traffic is ignored')
+    }
+
     await this.analyticsService.validate(logDTO, origin)
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''

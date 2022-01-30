@@ -80,7 +80,7 @@ export class MailerService {
       const htmlToSend = template(params)
 
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
+        host: messageStream === 'broadcast' ? process.env.SMTP_BROADCAST_HOST : process.env.SMTP_HOST,
         port: Number(process.env.SMTP_PORT),
         auth: {
           user: process.env.SMTP_USER,
