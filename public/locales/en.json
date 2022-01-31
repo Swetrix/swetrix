@@ -25,7 +25,9 @@
     "gotIt": "Got it",
     "settings": "Settings",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "yes": "Yes",
+    "no": "No"
   },
   "main": {
     "slogan": "A <span>powerful</span> analytics platform that respects <span>user privacy<span>",
@@ -324,7 +326,9 @@
       "evXPlanIncl": "Everything {{plan}} plan includes.",
       "smallBusiSupport": "By buying this in you are supporting a small business.",
       "carbonRemoval": "Your subscription contributes to carbon removal."
-    }
+    },
+    "downgradeTitle": "Are you sure you want to downgrade?",
+    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
     "desc": "Have something to ask?\nFeel free to drop us an email at <mail>{{email}}</mail>"
