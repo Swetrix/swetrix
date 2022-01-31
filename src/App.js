@@ -70,26 +70,24 @@ const App = () => {
   const { message, type } = useSelector(state => state.alerts)
   const accessToken = getAccessToken()
 
-  const paddleCallback = (data) => {
-    dispatch(UIActions.setPaddleLastEvent(data))
-  }
-
   useEffect(() => {
+    const eventCallback = (data) => {
+      dispatch(UIActions.setPaddleLastEvent(data))
+    }
     const interval = setInterval(paddleSetup, 200)
+
     function paddleSetup() {
-      if (!isSelfhosted) {
-        if (window.Paddle) {
-          window.Paddle.Setup({
-            vendor: 139393,
-            eventCallback: paddleCallback,
-          })
-          clearInterval(interval)
-        }
-      } else {
+      if (isSelfhosted) {
+        clearInterval(interval)
+      } else if (window.Paddle) {
+        window.Paddle.Setup({
+          vendor: 139393,
+          eventCallback,
+        })
         clearInterval(interval)
       }
     }
-  }, [])
+  }, [dispatch])
 
   useEffect(() => {
     const loaderEl = document.getElementById('loader')

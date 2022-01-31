@@ -227,7 +227,7 @@ const ProjectSettings = ({
               />
             </>
           ) : (
-            <p className='text-gray-500 italic mt-2 text-sm'>
+            <p className='text-gray-500 dark:text-gray-300 italic mt-2 text-sm'>
               {t('project.settings.createHint')}
             </p>
           )}
