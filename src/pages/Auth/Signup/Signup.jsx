@@ -172,7 +172,7 @@ const Signup = ({ signup }) => {
                   i18nKey='auth.common.checkLeakedPasswordDesc'
                   components={{
                     // eslint-disable-next-line jsx-a11y/anchor-has-content
-                    db: <a href={HAVE_I_BEEN_PWNED_URL} className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' />,
+                    db: <a href={HAVE_I_BEEN_PWNED_URL} className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noreferrer noopener' />,
                   }}
                   values={{
                     database: 'haveibeenpwned.com',
