@@ -13,17 +13,16 @@ import * as _isEmpty from 'lodash/isEmpty'
 import { UserService } from './user.service'
 import { ProjectService } from '../project/project.service'
 import {
-  User, UserType, MAX_EMAIL_REQUESTS, ACCOUNT_PLANS, PlanCode,
+  User, UserType, MAX_EMAIL_REQUESTS,
 } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
 import {
-  GDPR_EXPORT_TIMEFRAME, clickhouse, STRIPE_SECRET,
+  GDPR_EXPORT_TIMEFRAME, clickhouse,
 } from '../common/constants'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
-import { UpgradeUserProfileDTO } from './dto/upgrade-user.dto'
 import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
@@ -32,8 +31,6 @@ import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { AppLoggerService } from 'src/logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
-
-const stripe = require('stripe')(STRIPE_SECRET)
 
 dayjs.extend(utc)
 
@@ -237,86 +234,6 @@ export class UserController {
       return this.userService.findOneWhere({ id })
     } catch (e) {
       throw new BadRequestException(e.message)
-    }
-  }
-
-  @Post('/upgrade')
-  @UseGuards(RolesGuard)
-  @UseGuards(SelfhostedGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async upgradePlan(@Body() body: UpgradeUserProfileDTO, @CurrentUserId() user_id: string): Promise<object> {
-    this.logger.log({ body, user_id }, 'POST /user/upgrade')
-    const user = await this.userService.findOne(user_id, {
-      select: ['email', 'id', 'stripeSubID'],
-    })
-
-    const { planCode } = body
-    const priceId = ACCOUNT_PLANS[planCode]?.priceId
-
-    if (user.stripeSubID) {
-      if (planCode === PlanCode.free) {
-        await stripe.subscriptions.update(user.stripeSubID, {
-          cancel_at_period_end: true,
-        })
-
-        return {
-          message: 'The subscription has been canceled. No more charges will be made to your card.',
-        }
-      }
-
-      if (_isEmpty(priceId)) {
-        throw new BadRequestException('Incorrect planCode provided')
-      }
-
-      await stripe.subscriptions.update(user.stripeSubID, {
-        cancel_at_period_end: false,
-        proration_behavior: 'always_invoice',
-        items: [{
-          price: priceId,
-          quantity: 1,
-        }]
-      })
-
-      return {
-        message: 'The subscription has been upgraded.',
-      }
-    }
-
-    // If user has no Stripe Subscription ID and wants to downgrade to free tier
-    if (planCode === PlanCode.free) {
-      await this.userService.update(user.id, {
-        planCode: PlanCode.free,
-      })
-
-      return {
-        message: 'Your account have been downgraded to the free tier.',
-      }
-    }
-
-    if (_isEmpty(priceId)) {
-      throw new BadRequestException('Incorrect planCode provided')
-    }
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      customer_email: user.email,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: 'https://swetrix.com/billing?sub_success=true',
-      cancel_url: 'https://swetrix.com/billing?sub_success=false',
-      subscription_data: {
-        metadata: { uid: user.id, planCode },
-      },
-      metadata: { uid: user.id, planCode },
-    })
-
-    return {
-      url: session.url,
     }
   }
 

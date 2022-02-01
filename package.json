@@ -56,11 +56,9 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
-    "stripe": "^8.195.0",
     "typeorm": "^0.2.41",
     "ua-parser-js": "^1.0.2",
-    "uuid": "^8.3.2",
-    "verify-paddle-webhook": "^1.1.0"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.0",

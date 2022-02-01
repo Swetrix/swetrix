@@ -2,37 +2,41 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BeforeUpdate } from 
 import { ActionToken } from 'src/action-tokens/action-token.entity'
 import { Project } from 'src/project/entity/project.entity'
 
-export const ACCOUNT_PLANS = {
-  free: {
-    displayName: 'Free plan',
-    monthlyUsageLimit: 5000,
-    maxProjects: 10,
-  },
-  freelancer: {
-    displayName: 'Freelancer plan',
-    monthlyUsageLimit: 100000,
-    maxProjects: 20,
-    priceId: 'price_1JORmHCQYBdiXzBatNEKQmP9',
-  },
-  startup: {
-    displayName: 'Startup plan',
-    monthlyUsageLimit: 500000,
-    maxProjects: 20,
-    priceId: 'price_1JORmfCQYBdiXzBawbn1yoeu',
-  },
-  enterprise: {
-    displayName: 'Enterprise plan',
-    monthlyUsageLimit: 1000000,
-    maxProjects: 30,
-    priceId: 'price_1JORn3CQYBdiXzBaOdcNvHHP',
-  },
-}
-
 export enum PlanCode {
   free = 'free',
   freelancer = 'freelancer',
   startup = 'startup',
   enterprise = 'enterprise',
+}
+
+export const ACCOUNT_PLANS = {
+  free: {
+    id: PlanCode.free,
+    displayName: 'Free plan',
+    monthlyUsageLimit: 5000,
+    maxProjects: 10,
+  },
+  freelancer: {
+    id: PlanCode.freelancer,
+    displayName: 'Freelancer plan',
+    monthlyUsageLimit: 100000,
+    maxProjects: 20,
+    pid: 752316,
+  },
+  startup: {
+    id: PlanCode.startup,
+    displayName: 'Startup plan',
+    monthlyUsageLimit: 500000,
+    maxProjects: 20,
+    pid: 752317,
+  },
+  enterprise: {
+    id: PlanCode.enterprise,
+    displayName: 'Enterprise plan',
+    monthlyUsageLimit: 1000000,
+    maxProjects: 30,
+    pid: 752318,
+  },
 }
 
 export enum UserType {
@@ -95,8 +99,14 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   exportedAt: Date
 
-  @Column('varchar', { length: 28, nullable: true })
-  stripeSubID: string
+  @Column('int', { nullable: true })
+  subID: number
+
+  @Column('varchar', { length: 200, nullable: true })
+  subUpdateURL: string
+
+  @Column('varchar', { length: 200, nullable: true })
+  subCancelURL: string
 
   @BeforeUpdate()
   updateTimestamp() {
