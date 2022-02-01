@@ -39,9 +39,9 @@ export class WebhookController {
         let uid
 
         try {
-          uid = JSON.parse(passthrough).uid
+          uid = JSON.parse(passthrough)?.uid
         } catch {
-          this.logger.error(`[${body.alert_name}] Cannot parse the uid: ${body}`)
+          this.logger.error(`[${body.alert_name}] Cannot parse the uid: ${JSON.stringify(body)}`)
         }
 
         const plan = _find(ACCOUNT_PLANS, (tier) => tier.pid === subscription_plan_id)
