@@ -106,7 +106,9 @@ Modal.propTypes = {
   type: PropTypes.oneOf(['error', 'success', 'info', 'warning']),
   title: PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired,
-  message: PropTypes.string,
+  message: PropTypes.oneOfType([
+    PropTypes.string, PropTypes.node,
+  ]),
   className: PropTypes.string,
   isOpened: PropTypes.bool,
   onSubmit: PropTypes.func,

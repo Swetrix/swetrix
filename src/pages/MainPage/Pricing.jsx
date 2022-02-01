@@ -10,7 +10,7 @@ import cx from 'clsx'
 
 import Modal from 'ui/Modal'
 import Spin from '../../ui/icons/Spin'
-import { CONTACT_EMAIL } from 'redux/constants'
+import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import { authActions } from 'redux/actions/auth'
@@ -68,11 +68,6 @@ const getTiers = (t) => [
   },
 ]
 
-const paddleLanguageMapping = {
-  zh: 'zh-Hans',
-  uk: 'ru',
-}
-
 const Pricing = ({ t, language }) => {
   const dispatch = useDispatch()
   const { authenticated, user } = useSelector(state => state.auth)
@@ -102,7 +97,7 @@ const Pricing = ({ t, language }) => {
           }
 
           dispatch(alertsActions.accountUpdated('The subscription has been upgraded.'))
-        }, 1000)
+        }, 3000)
         setPlanCodeLoading(null)
         setDowngradeTo(null)
       } else if (data.event === 'Checkout.Close') {
@@ -128,12 +123,15 @@ const Pricing = ({ t, language }) => {
         window.Paddle.Checkout.open({
           override: user.subCancelURL,
           method: 'inline',
-          // frameTarget: 'checkout-container',
-          // frameInitialHeight: 416,
-          // frameStyle: 'width:100%; min-width:312px; background-color: transparent; border: none;',
+          frameTarget: 'checkout-container',
+          frameInitialHeight: 416,
+          frameStyle: 'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
           locale: paddleLanguageMapping[language] || language,
           displayModeTheme: theme,
         })
+        setTimeout(() => {
+          document.querySelector('#checkout-container').scrollIntoView()
+        }, 500)
         return
       }
 
@@ -268,6 +266,7 @@ const Pricing = ({ t, language }) => {
             })}
           </div>
         </div>
+        <div className='checkout-container' id='checkout-container' />
       </div>
       <Modal
         onClose={() => {

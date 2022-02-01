@@ -86,3 +86,8 @@ export const languageFlag = {
   hi: 'IN',
   zh: 'CN',
 }
+
+export const paddleLanguageMapping = {
+  zh: 'zh-Hans',
+  uk: 'ru',
+}
