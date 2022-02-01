@@ -39,7 +39,7 @@ export class UserService {
     return this.usersRepository.update({ email }, update)
   }
 
-  async updateBySubID(subID: number, update: Record<string, unknown>): Promise<any> {
+  async updateBySubID(subID: string, update: Record<string, unknown>): Promise<any> {
     return this.usersRepository.update({ subID }, update)
   }
 

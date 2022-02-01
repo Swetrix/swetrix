@@ -21,21 +21,21 @@ export const ACCOUNT_PLANS = {
     displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
     maxProjects: 20,
-    pid: 752316,
+    pid: '752316',
   },
   startup: {
     id: PlanCode.startup,
     displayName: 'Startup plan',
     monthlyUsageLimit: 500000,
     maxProjects: 20,
-    pid: 752317,
+    pid: '752317',
   },
   enterprise: {
     id: PlanCode.enterprise,
     displayName: 'Enterprise plan',
     monthlyUsageLimit: 1000000,
     maxProjects: 30,
-    pid: 752318,
+    pid: '752318',
   },
 }
 
@@ -99,8 +99,8 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   exportedAt: Date
 
-  @Column('int', { nullable: true })
-  subID: number
+  @Column('varchar', { length: 15, nullable: true })
+  subID: string
 
   @Column('varchar', { length: 200, nullable: true })
   subUpdateURL: string
