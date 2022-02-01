@@ -140,7 +140,9 @@ const Pricing = ({ t, language }) => {
       window.Paddle.Checkout.open({
         product: tier.pid,
         email: user.email,
-        passthrough: `{"uid": "${user.id}"}`,
+        passthrough: JSON.stringify({
+          uid: user.id,
+        }),
         locale: paddleLanguageMapping[language] || language,
         title: tier.name,
         displayModeTheme: theme,
