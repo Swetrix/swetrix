@@ -1,7 +1,7 @@
-body.dark .bb-legend-item text {
+html.dark .bb-legend-item text {
   fill: #f9fafb;
 }
 
-body.dark .bb-axis {
+html.dark .bb-axis {
   fill: #f9fafb;
 }

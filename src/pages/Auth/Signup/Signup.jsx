@@ -38,8 +38,10 @@ const Signup = ({ signup }) => {
   const onSubmit = data => {
     if (!isLoading) {
       setIsLoading(true)
-      signup(data, t, () => {
-        setIsLoading(false)
+      signup(data, t, (result) => {
+        if (!result) {
+          setIsLoading(false)
+        }
       })
     }
   }

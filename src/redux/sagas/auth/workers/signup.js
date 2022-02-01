@@ -11,8 +11,6 @@ export default function* signupWorder({ payload: { data: rawData, callback, t } 
     const { repeat, ...data } = rawData
     const response = yield call(signup, data)
 
-    console.log(response)
-
     yield put(authActions.signupSuccess(response.user))
     yield call(setAccessToken, response.access_token)
     yield put(UIActions.loadProjects())

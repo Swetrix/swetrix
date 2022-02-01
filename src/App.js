@@ -48,7 +48,17 @@ const Fallback = ({ isMinimalFooter }) => {
   const [showLoader, setShowLoader] = useState(false)
 
   useEffect(() => {
-    setTimeout(() => setShowLoader(true), 1000)
+    let isMounted = true
+
+    setTimeout(() => {
+      if (isMounted) {
+        setShowLoader(true)
+      }
+    }, 1000)
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   return (

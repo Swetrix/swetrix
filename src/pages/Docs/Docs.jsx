@@ -158,7 +158,7 @@ const Docs = () => {
             <Code text={track} language='javascript' />
 
             <CSection id='docs-tv' name='trackViews' />
-            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('docs.tv.call')}
               <div className='mb-5'>
                 <ul className='ml-10'>
@@ -179,18 +179,18 @@ const Docs = () => {
                   b: <b />,
                 }}
               />
-            </p>
+            </div>
             <Code text={trackPVAPI} language='javascript' />
 
             <hr className='mt-10 mb-4' />
-            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <i>Last updated: December 11, 2021. (v1.3.0)</i><br />
               <div>
                 - Added ability to specify the&nbsp;
                 <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-init'>custom API URL</a>
                 &nbsp;parameter.
               </div>
-            </p>
+            </div>
           </div>
         </div>
       </div>

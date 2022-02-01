@@ -33,8 +33,10 @@ const Signin = ({ login }) => {
   const onSubmit = data => {
     if (!isLoading) {
       setIsLoading(true)
-      login(data, () => {
-        setIsLoading(false)
+      login(data, (result) => {
+        if (!result) {
+          setIsLoading(false)
+        }
       })
     }
   }

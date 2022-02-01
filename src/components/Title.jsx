@@ -1,5 +1,5 @@
 import React from 'react'
-import { Helmet } from 'react-helmet'
+import { Helmet } from 'react-helmet-async'
 import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
 
@@ -17,10 +17,12 @@ const Title = ({ title, children }) => {
     )
   }
 
+  const displayTitle = `${title} ${TITLE_SUFFIX}`
+
   return (
     <>
       <Helmet>
-        <title>{title} {TITLE_SUFFIX}</title>
+        <title>{displayTitle}</title>
       </Helmet>
       {children}
     </>
