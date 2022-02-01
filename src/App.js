@@ -15,11 +15,13 @@ import Loader from 'ui/Loader'
 
 import ScrollToTop from 'hoc/ScrollToTop'
 import Selfhosted from 'hoc/Selfhosted'
+import { isSelfhosted } from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
 import { authMe } from './api'
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
+import UIActions from 'redux/actions/ui'
 
 const MainPage = lazy(() => import('pages/MainPage'))
 const SignUp = lazy(() => import('pages/Auth/Signup'))
@@ -77,6 +79,25 @@ const App = () => {
   const { error } = useSelector(state => state.errors)
   const { message, type } = useSelector(state => state.alerts)
   const accessToken = getAccessToken()
+
+  useEffect(() => {
+    const eventCallback = (data) => {
+      dispatch(UIActions.setPaddleLastEvent(data))
+    }
+    const interval = setInterval(paddleSetup, 200)
+
+    function paddleSetup() {
+      if (isSelfhosted) {
+        clearInterval(interval)
+      } else if (window.Paddle) {
+        window.Paddle.Setup({
+          vendor: 139393,
+          eventCallback,
+        })
+        clearInterval(interval)
+      }
+    }
+  }, [dispatch])
 
   useEffect(() => {
     const loaderEl = document.getElementById('loader')

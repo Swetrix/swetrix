@@ -92,19 +92,6 @@ export const changeUserDetails = (data) =>
       throw new Error(errorsArray)
     })
 
-export const upgradePlan = (planCode) =>
-  api.post('/user/upgrade', { planCode }).catch((error) => {
-    if (error?.response) {
-      const errorsArray = error.response.data.message
-      if (Array.isArray(errorsArray)) {
-        throw errorsArray
-      }
-      throw new Error(errorsArray)
-    } else {
-      throw new Error(error)
-    }
-  })
-
 export const forgotPassword = (email) =>
   api
     .post('/auth/reset-password', email)

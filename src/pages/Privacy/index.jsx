@@ -2,6 +2,7 @@ import React from 'react'
 import { HashLink } from 'react-router-hash-link'
 
 import Title from 'components/Title'
+import { CONTACT_EMAIL, SECURITY_EMAIL } from 'redux/constants'
 import routes from 'routes'
 
 const Features = () => {
@@ -67,8 +68,8 @@ const Features = () => {
             Please note that in most cases, if you do not provide the requested information, we will not be able to provide the requested service to you. In some cases, we may also have a legal obligation to collect personal information from you, or may need the personal information to protect your vital interests or those of another person.<br />
             Where we rely on your consent to process your personal data, you have the right to withdraw or decline consent at any time. Where we rely on our legitimate interests to process your personal data, you have the right to object.<br />
             If you have any questions about or need further information concerning the legal basis on which we collect and use your personal information, please contact us at&nbsp;
-            <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
-              contact@swetrix.com
+            <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+              {CONTACT_EMAIL}
             </a>
             .
           </p>
@@ -95,7 +96,7 @@ const Features = () => {
             We do not rent or sell personal information.<br />
             We may disclose personal information to third parties who help us run the Services and our business (“Service Providers”). These Service Providers may only process personal information pursuant to our instructions and in compliance both with this Privacy Policy and other applicable security measures and regulations.<br />
             The following third parties may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.<br />
-             - <b>Stripe:</b> Payment processing;<br />
+             - <b>Paddle:</b> Payment processing;<br />
              - <b>Cloudflare</b>:	Security, hosting, cloud infrastructure;<br />
              - <b>Sentry:</b>	Error tracking;<br />
              - <b>Postmark:</b>	Transactional and marketing emails;<br />
@@ -117,8 +118,8 @@ const Features = () => {
             - <b>The right to object to processing:</b> You have the right to object to our Company's processing of your personal data, under certain conditions.<br />
             - <b>The right to data portability:</b> You have the right to request that our Company transfers the data that we have collected to another organization, or directly to you, under certain conditions.<br />
             If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us via email at&nbsp;
-            <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
-              contact@swetrix.com
+            <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+              {CONTACT_EMAIL}
             </a>
             . Please note that we may ask you to verify your identity before responding to such requests.<br />
             We have no direct relationship with the End Users. Our Customers are solely responsible for ensuring compliance with all applicable laws and regulations with respect to their website users.
@@ -127,8 +128,8 @@ const Features = () => {
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>10. Communication preferences</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             Swetrix will send you commercial communications based on the communication preferences in your account settings. Swetrix also will send you service-related communications. You may manage your receipt of commercial communications by clicking on the “unsubscribe” link located on the bottom of such emails, through your account settings if you have a Swetrix account, or you may send a request to&nbsp;
-            <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
-              contact@swetrix.com
+            <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+              {CONTACT_EMAIL}
             </a>
             .
           </p>
@@ -136,8 +137,8 @@ const Features = () => {
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>11. Data security</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             We take all reasonable steps to protect information we receive from you from loss, misuse or unauthorized access, disclosure, alteration and/or destruction. We have put in place appropriate physical, technical and administrative measures to safeguard and secure your information, and we make use of privacy-enhancing technologies such as encryption. If you have any questions about the security of your personal information, you can contact us at&nbsp;
-            <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
-              security@swetrix.com
+            <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+              {SECURITY_EMAIL}
             </a>
             .
           </p>
@@ -155,15 +156,15 @@ const Features = () => {
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>14. Contact</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             If you have any questions about this Privacy Policy, you can contact us by email at&nbsp;
-            <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
-              contact@swetrix.com
+            <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+              {CONTACT_EMAIL}
             </a>
             .
           </p>
 
           <hr className='mt-10 mb-4' />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            <i>Last updated: August 16, 2021.</i>
+            <i>Last updated: January 24, 2022.</i>
           </p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import _map from 'lodash/map'
 import routes from 'routes'
 // import { nFormatter } from 'utils/generic'
 import { withAuthentication, auth } from '../../hoc/protected'
+import { CONTACT_EMAIL } from 'redux/constants'
 import Title from 'components/Title'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
@@ -53,7 +54,7 @@ const FAQs = ({ t }) => (
               t={t}
               i18nKey='main.custSupport'
               components={{
-                mail: <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
+                mail: <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
               }}
             />
           </p>
@@ -94,7 +95,7 @@ const Features = ({ t }) => (
 )
 
 const Main = () => {
-  const { t } = useTranslation('common')
+  const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
 
   return (
@@ -134,7 +135,7 @@ const Main = () => {
                         <SignUp />
                       </div>
                     </div>
-                    <div className='px-4 py-6 bg-gray-50 dark:bg-gray-700 border-t-2 border-gray-200 sm:px-10'>
+                    <div className='px-4 py-6 bg-gray-50 dark:bg-gray-700 border-t-2 border-gray-200 dark:border-gray-500 sm:px-10'>
                       <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
                         <Trans
                           t={t}
@@ -238,7 +239,7 @@ const Main = () => {
             </div>
           </div>
         </div>
-        <Pricing t={t} />
+        <Pricing t={t} language={language} />
         <FAQs t={t} />
 
         <div className='bg-white dark:bg-gray-750'>

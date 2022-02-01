@@ -88,6 +88,13 @@ const setGeneralStats = (stats) => ({
   }
 })
 
+const setPaddleLastEvent = (event) => ({
+  type: types.SET_PADDLE_LAST_EVENT,
+  payload: {
+    event,
+  }
+})
+
 const UIActions = {
   loadProjects,
   setProjects,
@@ -102,6 +109,7 @@ const UIActions = {
   setLiveStats,
   setTheme,
   setGeneralStats,
+  setPaddleLastEvent,
 }
 
 export default UIActions

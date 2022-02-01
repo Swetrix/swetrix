@@ -12,7 +12,7 @@ import { Integrations } from '@sentry/tracing'
 import 'billboard.js/dist/billboard.min.css'
 import 'prismjs/themes/prism-tomorrow.css'
 
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted, CONTACT_EMAIL } from 'redux/constants'
 import AlertTemplate from 'ui/Alert'
 import App from './App'
 import i18next from './i18next'
@@ -49,7 +49,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 ReactDOM.render(
   <React.StrictMode>
-    <Sentry.ErrorBoundary fallback={<p>The app crashed, sorry about that.. :(<br />Please, tell us about it at contact@swetrix.com<br /><br />To continue using the website, please reload the page.</p>}>
+    <Sentry.ErrorBoundary fallback={<p>The app crashed, sorry about that.. :(<br />Please, tell us about it at {CONTACT_EMAIL}<br /><br />To continue using the website, please reload the page.</p>}>
       <AlertProvider template={AlertTemplate} {...options}>
         <Provider store={store}>
           <HelmetProvider>

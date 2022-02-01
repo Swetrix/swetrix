@@ -167,7 +167,7 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
               <NoProjects t={t} />
             ) : (
               <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
-                <ul className='divide-y divide-gray-200'>
+                <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                   {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({ name, id, created, active, overall, live, public: isPublic }) => (
                     <ProjectCart
                       key={id}

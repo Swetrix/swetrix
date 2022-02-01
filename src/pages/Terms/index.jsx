@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Title from 'components/Title'
+import { CONTACT_EMAIL } from 'redux/constants'
 
 const Features = () => {
   return (
@@ -160,8 +161,8 @@ const Features = () => {
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Contact us</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             If you have any questions you can contact us by sending us an email at&nbsp;
-            <a href='mailto:contact@swetrix.com' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
-              contact@swetrix.com
+            <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+              {CONTACT_EMAIL}
             </a>
             .
           </p>

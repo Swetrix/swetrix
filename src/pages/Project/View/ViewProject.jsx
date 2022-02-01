@@ -135,7 +135,7 @@ const typeNameMapping = (t) => ({
 
 const NoEvents = ({ t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
-    <div className='max-w-7xl w-full mx-auto'>
+    <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
       <h2 className='text-4xl text-center leading-tight my-3'>
         {t('project.noEvTitle')}
       </h2>
@@ -431,7 +431,7 @@ const ViewProject = ({
                           {showIcons && !_isEmpty(url.hostname) && (
                             <img className='w-5 h-5 mr-1.5 float-left' src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`} alt='' />
                           )}
-                          <a className='flex label overflow-visible hover:underline text-blue-600' href={name} target='_blank' rel='noopener noreferrer'>
+                          <a className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500' href={name} target='_blank' rel='noopener noreferrer'>
                             {name}
                           </a>
                         </div>

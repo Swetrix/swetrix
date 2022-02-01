@@ -52,6 +52,9 @@ export const FIREFOX_ADDON_URL = 'https://addons.mozilla.org/en-US/firefox/addon
 export const CHROME_EXTENSION_URL = 'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
 export const HAVE_I_BEEN_PWNED_URL = 'https://haveibeenpwned.com/passwords'
 
+export const CONTACT_EMAIL = 'contact@swetrix.com'
+export const SECURITY_EMAIL = 'security@swetrix.com'
+
 export const isSelfhosted = Boolean(process.env.REACT_APP_SELFHOSTED)
 
 export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
