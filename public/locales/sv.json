@@ -134,7 +134,7 @@
       "email": "E-post",
       "signin": "Logga in",
       "checkLeakedPassword": "Kontrollera om lösenordet är läckt",
-      "checkLeakedPasswordDesc": "När aktiverad kontrollerar vi ditt lösenord med <db>{{{database}}</db>databasen. Vi skickar inte ditt lösenord till tjänsten. Först hashar vi ditt lösenord ( med SHA1) och skickar endast de första fem tecknen i hashen till tjänsten. Tjänsten returnerar alla läckta lösenord som börjar med dessa 5 tecken. I vår del kontrollerar vi om något av dessa tecken stämmer överens med ditt lösenord. Vi visar dig en varning om det har läckt ut tidigare. Vi lagrar aldrig ditt lösenord i klartext."
+      "checkLeakedPasswordDesc": "När aktiverad kontrollerar vi ditt lösenord med <db>{{database}}</db>databasen. Vi skickar inte ditt lösenord till tjänsten. Först hashar vi ditt lösenord ( med SHA1) och skickar endast de första fem tecknen i hashen till tjänsten. Tjänsten returnerar alla läckta lösenord som börjar med dessa 5 tecken. I vår del kontrollerar vi om något av dessa tecken stämmer överens med ditt lösenord. Vi visar dig en varning om det har läckt ut tidigare. Vi lagrar aldrig ditt lösenord i klartext."
     }
   },
   "features": {

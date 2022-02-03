@@ -11,6 +11,7 @@ import countriesHi from 'i18n-iso-countries/langs/hi.json'
 import countriesUk from 'i18n-iso-countries/langs/uk.json'
 import countriesZh from 'i18n-iso-countries/langs/zh.json'
 import countriesRu from 'i18n-iso-countries/langs/ru.json'
+import countriesSv from 'i18n-iso-countries/langs/sv.json'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
@@ -47,6 +48,7 @@ countries.registerLocale(countriesRu)
 countries.registerLocale(countriesHi)
 countries.registerLocale(countriesUk)
 countries.registerLocale(countriesZh)
+countries.registerLocale(countriesSv)
 
 const getJSON = (chart, showTotal, t) => ({
   x: _map(chart.x, el => dayjs(el).toDate()),

@@ -26,8 +26,8 @@
     "settings": "Настройки",
     "openMenu": "Открыть меню",
     "closeMenu": "Закрыть меню",
-    "yes": "Yes",
-    "no": "No"
+    "yes": "Да",
+    "no": "Нет"
   },
   "main": {
     "slogan": "<span>Удобный</span> сервис веб-аналитики, который ценит <span>приватность пользователей</span>",
@@ -302,7 +302,7 @@
     "title": "Цены и тарифы",
     "desc": "Если вам нужно обрабатывать больше трафика, вам, вероятно, придется повысить тарифный план.\nНиже приведен список доступных тарифных планов. Никаких скрытых платежей и прочего, все четко и прозрачно!",
     "contact": "Необходимо отслеживать более 1 миллиона событий в месяц?\nСвяжитесь с нами по адресу <mail>{{email}}</mail> чтобы обсудить детали.",
-    "update": "Update payment details"
+    "update": "Обновить платёжные реквизиты"
   },
   "pricing": {
     "title": "Цены и тарифы",
@@ -328,8 +328,8 @@
       "smallBusiSupport": "Покупая это, вы поддерживаете малый бизнес.",
       "carbonRemoval": "Ваша подписка способствует удалению углерода из атмосферы."
     },
-    "downgradeTitle": "Are you sure you want to downgrade?",
-    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
+    "downgradeTitle": "Вы уверены, что хотите понизить тарифный план?",
+    "downgradeDesc": "После понижения тарифа, ваш тариф будет включать меньше проектов и доступных событий для отслеживания в месяц. В случае, если ваш сайт содержит больше трафика, чем тарифный план, на который вы хотите переключиться, это приведет к тому, что не все события будут сохраняться в нашей базе данных.\nВы сможете вернуться к своему текущему тарифу в любое время.\nЕсли у вас есть какие-либо вопросы, вы всегда можете написать нам на {{email}}."
   },
   "contact": {
     "desc": "Хотите что-то спросить?\nНапишите нам письмо на <mail>{{email}}</mail>"
