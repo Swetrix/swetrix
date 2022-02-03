@@ -25,7 +25,9 @@
     "gotIt": "Зрозумів",
     "settings": "Налаштування",
     "openMenu": "Відкрити меню",
-    "closeMenu": "Закрити меню"
+    "closeMenu": "Закрити меню",
+    "yes": "Yes",
+    "no": "No"
   },
   "main": {
     "slogan": "<span>Потужна</span> платформа веб-аналітики, яка цінує <span>приватність користувачів</span>",
@@ -299,7 +301,8 @@
   "billing": {
     "title": "Ціни та тарифи",
     "desc": "Якщо вам потрібно обробляти більше трафіку, вам, ймовірно, доведеться підвищити тарифний план.\nНижче наведений перелік доступних тарифних планів. Ніяких прихованих платежів та іншого, все чітко і прозоро!",
-    "contact": "Необхідно відстежувати понад 1 мільйон подій в місяць?\nЗв'яжіться з нами за адресою <mail>{{email}}</mail>, щоб обговорити деталі."
+    "contact": "Необхідно відстежувати понад 1 мільйон подій в місяць?\nЗв'яжіться з нами за адресою <mail>{{email}}</mail>, щоб обговорити деталі.",
+    "update": "Update payment details"
   },
   "pricing": {
     "title": "Ціни та тарифи",
@@ -324,7 +327,9 @@
       "evXPlanIncl": "Все, що входить в тариф \"{{plan}}\".",
       "smallBusiSupport": "Купуючи це, ви підтримуєте малий бізнес.",
       "carbonRemoval": "Ваша підписка сприяє видаленню вуглецю з атмосфери."
-    }
+    },
+    "downgradeTitle": "Are you sure you want to downgrade?",
+    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
     "desc": "Хочете щось запитати?\nНапишіть нам лист на <mail>{{email}}</mail>"

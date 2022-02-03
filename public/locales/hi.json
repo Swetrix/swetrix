@@ -25,7 +25,9 @@
     "gotIt": "समझ गया",
     "settings": "सेटिंग",
     "openMenu": "मेन्यू खोलें",
-    "closeMenu": "मेन्यू बंद करें"
+    "closeMenu": "मेन्यू बंद करें",
+    "yes": "Yes",
+    "no": "No"
   },
   "main": {
     "slogan": "एक <span>शक्तिशाली</span> एनालिटिक्स प्लेटफॉर्म जो <span>उपयोगकर्ता की गोपनीयता<span>का सम्मान करता है",
@@ -299,7 +301,8 @@
   "billing": {
     "title": "बिलिंग और प्लान",
     "desc": "शुरुआत करना और हमारी सेवाओं का उपयोग करना फ्री है।\nयदि आपको और अधिक ट्रैफ़िक संभालने की आवश्यकता है, तो आपको शायद अपने प्लान को अपग्रेड करने की आवश्यकता होगी।\nनीचे उपलब्ध प्लान्स की एक सूची है। कोई छिपी हुई फीस या अन्य बीएस नहीं है, सब कुछ स्पष्ट और पारदर्शी है!",
-    "contact": "क्या प्रति माह 1 मिलियन से अधिक इवेंट को ट्रैक करने की आवश्यकता है?\nअपनी आवश्यकताओं पर चर्चा करने के लिए हमसे <mail>{{email}}</mail> पर संपर्क करें।"
+    "contact": "क्या प्रति माह 1 मिलियन से अधिक इवेंट को ट्रैक करने की आवश्यकता है?\nअपनी आवश्यकताओं पर चर्चा करने के लिए हमसे <mail>{{email}}</mail> पर संपर्क करें।",
+    "update": "Update payment details"
   },
   "pricing": {
     "title": "मूल्य निर्धारण प्लान",
@@ -324,7 +327,9 @@
       "evXPlanIncl": "वह सब कुछ जो  {{plan}} प्लान में शामिल है।",
       "smallBusiSupport": "इसे खरीदकर आप एक छोटे व्यवसाय का समर्थन कर रहे हैं।",
       "carbonRemoval": "आपकी सदस्यता कार्बन हटाने में योगदान करेगी।"
-    }
+    },
+    "downgradeTitle": "Are you sure you want to downgrade?",
+    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
     "desc": "कुछ पूछना चाहते हैं?\nहमें बेझिझक <mail>{{email}}</mail> पर एक ईमेल भेजें"

@@ -25,7 +25,9 @@
     "gotIt": "Verstanden",
     "settings": "Einstellungen",
     "openMenu": "Menü öffnen",
-    "closeMenu": "Menü schließen"
+    "closeMenu": "Menü schließen",
+    "yes": "Yes",
+    "no": "No"
   },
   "main": {
     "slogan": "Eine <span>leistungsstarke</span> Analyse-Plattform, welche die <span>Privatsphäre ihrer Anwender<span> berücksichtigt",
@@ -299,7 +301,8 @@
   "billing": {
     "title": "Rechnung & Abonnement",
     "desc": "Der Einstieg und die Nutzung unserer Dienste ist gratis.\nWenn Sie mehr Datenverkehr bewältigen müssen, empfiehlt sich wahrscheinlich ein Upgrade Ihres Abonnements.\nNachstehend finden Sie eine Liste der verfügbaren Abomodelle. Keine versteckten Gebühren oder sonstiger Blödsinn, alles ist klar und transparent!",
-    "contact": "Müssen Sie mehr als 1 Million Tracking-Events pro Monat erfassen?\nKontaktieren Sie uns unter <mail>{{email}}</mail>, um Ihre Wünsche zu besprechen."
+    "contact": "Müssen Sie mehr als 1 Million Tracking-Events pro Monat erfassen?\nKontaktieren Sie uns unter <mail>{{email}}</mail>, um Ihre Wünsche zu besprechen.",
+    "update": "Update payment details"
   },
   "pricing": {
     "title": "Abomodelle",
@@ -324,7 +327,9 @@
       "evXPlanIncl": "Alles was das {{plan}} Abo enthält.",
       "smallBusiSupport": "Mit dem Kauf dieses Artikels unterstützen Sie ein kleines Unternehmen.",
       "carbonRemoval": "Ihr Abonnement trägt zum Klimaschutz bei."
-    }
+    },
+    "downgradeTitle": "Are you sure you want to downgrade?",
+    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
     "desc": "Noch Fragen?\nSie können uns gerne eine E-Mail schreiben an <mail>{{email}}</mail>"

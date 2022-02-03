@@ -25,7 +25,9 @@
     "gotIt": "知道了",
     "settings": "设置",
     "openMenu": "开启菜单",
-    "closeMenu": "关闭菜单"
+    "closeMenu": "关闭菜单",
+    "yes": "Yes",
+    "no": "No"
   },
   "main": {
     "slogan": "一个尊重<span>用户隐私<span>的<span>强大</span>分析平台",
@@ -299,7 +301,8 @@
   "billing": {
     "title": "账单和计划",
     "desc": "我们提供免费服务。\n如果您需要处理更多流量，您可能需要升级您的计划。\n以下是现有计划列表。没有隐藏费用或其他隐蔽条款，清晰透明！",
-    "contact": "需要每月跟踪超过 100 万个活动？\n请通过 <mail>{{email}}</mail> 与我们联系以讨论您的需求。"
+    "contact": "需要每月跟踪超过 100 万个活动？\n请通过 <mail>{{email}}</mail> 与我们联系以讨论您的需求。",
+    "update": "Update payment details"
   },
   "pricing": {
     "title": "定价计划",
@@ -324,7 +327,9 @@
       "evXPlanIncl": "包括所有 {{plan}} 计划。",
       "smallBusiSupport": "通过购买此产品，您是在支持一家小型企业。",
       "carbonRemoval": "您的订阅有助于去除碳。"
-    }
+    },
+    "downgradeTitle": "Are you sure you want to downgrade?",
+    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
     "desc": "有什么想问的吗？\n请给我们发送电子邮件至 <mail>{{email}}</mail>"
