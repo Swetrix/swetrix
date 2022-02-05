@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import {
   Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException, InternalServerErrorException,
-  NotImplementedException, UnprocessableEntityException, PreconditionFailedException, Ip, ForbiddenException,
+  NotImplementedException, UnprocessableEntityException, PreconditionFailedException, Ip, ForbiddenException, Response,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
@@ -70,6 +70,9 @@ const getPIDsArray = (pids, pid) => {
 
   return pids
 }
+
+// needed for serving 1x1 px GIF
+const TRANSPARENT_GIF_BUFFER = Buffer.from('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=', 'base64')
 
 @ApiTags('Analytics')
 @UseGuards(RolesGuard)
@@ -273,5 +276,55 @@ export class AnalyticsController {
       this.logger.error(e)
       throw new InternalServerErrorException('Error occured while saving the log data')
     }
+  }
+
+  // Fallback for logging pageviews for users with JavaScript disabled
+  // Returns 1x1 transparent gif
+  @Get('/noscript')
+  async noscript(@Query() data, @Headers() headers, @Ip() reqIP, @Response() res): Promise<any> {
+    const { 'user-agent': userAgent, origin } = headers
+    const { pid } = data
+
+    // todo: create a decorator for bot traffic detection
+    if (isbot(userAgent)) {
+      res.writeHead(200, { 'Content-Type': 'image/gif' })
+      return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
+    }
+
+    const logDTO: PageviewsDTO = {
+      pid,
+    }
+
+    await this.analyticsService.validate(logDTO, origin)
+
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+
+    // const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid/*, salt */)
+    const unique = await this.analyticsService.isUnique(sessionHash)
+    let dto: Array<string | number>
+
+    if (unique) {
+      const ua = UAParser(userAgent)
+      const dv = ua.device.type || 'desktop'
+      const br = ua.browser.name
+      const os = ua.os.name
+      // using CloudFlare's IP based country code
+      const cc = headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
+      dto = analyticsDTO(logDTO.pid, 'NULL', dv, br, os, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', cc, 1)
+    } else {
+      dto = analyticsDTO(logDTO.pid, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
+    }
+
+    // todo: fix: may be vulnerable to sql injection attack
+    const values = `(${dto.map(getElValue).join(',')})`
+    try {
+      await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
+    } catch (e) {
+      this.logger.error(e)
+    }
+
+    res.writeHead(200, { 'Content-Type': 'image/gif' })
+    return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
   }
 }
