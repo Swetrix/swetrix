@@ -91,8 +91,8 @@ export class AnalyticsController {
     // TODO: data validation
     // TODO: automatic timeBucket detection based on period provided
 
-    let query = `SELECT * FROM analytics WHERE pid='${pid}'`
     let queryCustoms = `SELECT ev FROM customEV WHERE pid='${pid}'`
+    let subQuery = `FROM analytics WHERE pid='${pid}'`
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       throw new NotImplementedException('Filtering by from/to params is currently not available')
@@ -102,25 +102,23 @@ export class AnalyticsController {
 
       if (dayjs.utc(to).isAfter(dayjs.utc(), 'second')) {
         groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        query += `AND created BETWEEN ${from} AND ${groupTo}`
         queryCustoms += `AND created BETWEEN ${from} AND ${groupTo}`
       } else {
-        query += `AND created BETWEEN ${from} AND ${to}`
         queryCustoms += `AND created BETWEEN ${from} AND ${to}`
       }
     } else if (!_isEmpty(period)) {
-      groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD HH:mm:ss')
-      groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      query += `AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
+      groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
+      groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
       queryCustoms += `AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
+      subQuery += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
     } else {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
     }
 
-    const response = await clickhouse.query(query).toPromise()
-    const result = await this.analyticsService.groupByTimeBucket(response, timeBucket, groupFrom, groupTo)
+    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid)
 
     const customs = await clickhouse.query(queryCustoms).toPromise()
+    console.log(customs)
 
     return {
       ...result,

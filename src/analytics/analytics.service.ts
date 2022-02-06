@@ -7,7 +7,9 @@ import * as _isNull from 'lodash/isNull'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _join from 'lodash/join'
+import * as _every from 'lodash/every'
 import * as _keys from 'lodash/keys'
+import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { hash } from 'blake3'
@@ -31,6 +33,10 @@ import { TimeBucketType } from './dto/getData.dto'
 dayjs.extend(utc)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
+
+const cols = [
+  'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref','so', 'me', 'ca',
+]
 
 @Injectable()
 export class AnalyticsService {
@@ -190,38 +196,6 @@ export class AnalyticsService {
     return Boolean(session)
   }
 
-  processData(data: object): object {
-    const res = {
-      cc: {},
-      pg: {},
-      lc: {},
-      br: {},
-      os: {},
-      dv: {},
-      ref: {},
-      so: {},
-      me: {},
-      ca: {},
-      // lt: {},
-    }
-    const whitelist = _keys(res)
-  
-    for (let i = 0; i < _size(data); ++i) {
-      const tfData = data[i].data
-      for (let j = 0; j < _size(tfData); ++j) {
-        for (let z = 0; z < _size(whitelist); ++z) {
-          const currWLItem = whitelist[z]
-          const tfDataRecord = tfData[j][currWLItem]
-          if (!_isNull(tfDataRecord)) {
-            res[currWLItem][tfDataRecord] = 1 + (res[currWLItem][tfDataRecord] || 0)
-          }
-        }
-      }
-    }
-  
-    return res
-  }
-
   async getSummary(pids: string[], period: 'w' | 'M' = 'w', advanced: boolean = false): Promise<Object> {
     const result = {}
     for (let i = 0; i < _size(pids); ++i) {
@@ -238,13 +212,20 @@ export class AnalyticsService {
       const query1_unique = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND unique=1 AND created BETWEEN '${oneWeek}' AND '${now}'`
       const query2_unique = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND unique=1 AND created BETWEEN '${twoWeeks}' AND '${oneWeek}'`
 
-      // todo: save to redis
+      const query1 = `SELECT unique, count() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${oneWeek}' AND '${now}' GROUP BY unique`
+      const query2 = `SELECT unique, count() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${twoWeeks}' AND '${oneWeek}' GROUP BY unique`
+
+      const q1res = await clickhouse.query(query1).toPromise()
+      const q2res = await clickhouse.query(query2).toPromise()
+
+      console.log(q1res, q2res)
+
       try {
         const res1_pageviews = await clickhouse.query(query1_pageviews).toPromise()
         const res2_pageviews = await clickhouse.query(query2_pageviews).toPromise()
         const thisWeekPV = res1_pageviews[0]['count()']
         const lastWeekPV = res2_pageviews[0]['count()']
-        
+
         if (advanced) {
           const res1_unique = await clickhouse.query(query1_unique).toPromise()
           const res2_unique = await clickhouse.query(query2_unique).toPromise()
@@ -274,13 +255,28 @@ export class AnalyticsService {
     return result
   }
 
-  // TODO: REFACTOR THE FUNCTION; check if there's no date/time shifts
-  async groupByTimeBucket(data: Object[], timeBucket: TimeBucketType, from: string, to: string): Promise<object | void> {
-    if (_isEmpty(data)) return Promise.resolve()
-    let groupDateIterator
-    let clone = [...data]
-    const res = []
+  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string): Promise<object | void> {
+    const params = {}
 
+    for (let i of cols) {
+      const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const res = await clickhouse.query(query1).toPromise()
+
+      params[i] = {}
+
+      const size = _size(res)
+      for (let j = 0; j < size; ++j) {
+        const key = res[j][i]
+        const value = res[j]['count()']
+        params[i][key] = value
+      }
+    }
+
+    if (_every(_values(params), _isEmpty)) {
+      return Promise.resolve()
+    }
+
+    let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
     const iterateTo = djsTo > now ? now : djsTo
@@ -305,40 +301,54 @@ export class AnalyticsService {
         return Promise.reject()
     }
 
-    // the database has to use UTC timezone for this to work normally
+    const x = []
+
     while (groupDateIterator < iterateTo) {
       const nextIteration = groupDateIterator.add(1, timeBucket)
-      const temp = []
-      const tempUnique = []
-      
-      clone = _filter(clone, el => {
-        const createdAt = dayjs.utc(el.created)
-        if (groupDateIterator <= createdAt && createdAt < nextIteration) {
-          if (el.unique) {
-            tempUnique.push(el)
-          }
-          temp.push(el)
-          return false
-        } else {
-          return true
-        }
-      })
-
-      res.push({
-        data: temp,
-        total: _size(temp),
-        totalUnique: _size(tempUnique),
-        timeFrame: groupDateIterator.format('YYYY-MM-DD HH:mm:ss'),
-      })
+      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
       groupDateIterator = nextIteration
     }
 
+    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, unique, count() from analytics where pid='${pid}' and created between '${xM[i]}' and '${xM[1 + i]}' group by unique`
+    }
+
+    // @ts-ignore
+    const result = (await clickhouse.query(query).toPromise()).sort((a, b) => a.index - b.index)
+    const visits = []
+    const uniques = []
+
+    for (let i = 0; i < _size(result); i += 2) {
+      const v = result[i]['count()']
+      const u = result[1 + i]['count()']
+      // @ts-ignore
+      const index = result[i].index
+
+      visits[index] = v + u
+      uniques[index] = u
+    }
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (!visits[i]) {
+        visits[i] = 0
+        uniques[i] = 0
+      }
+    }
+
+    // TODO: SEEMS LIKE IT RETURNS INCORRECT DATA FOR HOUR PERIOD
     return Promise.resolve({
-      params: this.processData(res),
+      params,
       chart: {
-        x: _map(res, el => el.timeFrame),
-        visits: _map(res, el => el.total),
-        uniques: _map(res, el => el.totalUnique),
+        x,
+        visits,
+        uniques,
       },
     })
   }
