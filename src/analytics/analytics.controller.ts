@@ -102,14 +102,14 @@ export class AnalyticsController {
 
       if (dayjs.utc(to).isAfter(dayjs.utc(), 'second')) {
         groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        queryCustoms += `AND created BETWEEN ${from} AND ${groupTo}`
+        queryCustoms += ` AND created BETWEEN ${from} AND ${groupTo}`
       } else {
-        queryCustoms += `AND created BETWEEN ${from} AND ${to}`
+        queryCustoms += ` AND created BETWEEN ${from} AND ${to}`
       }
     } else if (!_isEmpty(period)) {
       groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
       groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
-      queryCustoms += `AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
+      queryCustoms += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
       subQuery += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
     } else {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
@@ -118,6 +118,8 @@ export class AnalyticsController {
     const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid)
 
     const customs = await clickhouse.query(queryCustoms).toPromise()
+    // TODO: VERIFY THAT CUSTOM EVENTS WORK PROPERLY
+    console.log(queryCustoms, _countBy(customs, 'ev'))
     console.log(customs)
 
     return {
@@ -137,7 +139,7 @@ export class AnalyticsController {
       await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
     }
 
-    return this.analyticsService.getSummary(pidsArray, 'w', true)
+    return this.analyticsService.getSummary(pidsArray, 'w')
   }
 
   @UseGuards(SelfhostedGuard)

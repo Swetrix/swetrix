@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
 
+// In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
 @Entity()
 export class Project {
   @ApiProperty()

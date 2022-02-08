@@ -7,8 +7,9 @@ import * as _isNull from 'lodash/isNull'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _join from 'lodash/join'
-import * as _every from 'lodash/every'
+import * as _some from 'lodash/some'
 import * as _keys from 'lodash/keys'
+import * as _find from 'lodash/find'
 import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -37,6 +38,14 @@ export const getSessionKey = (ip: string, ua: string, pid: string, salt: string 
 const cols = [
   'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref','so', 'me', 'ca',
 ]
+
+interface chartCHResponse {
+  index: number
+  unique: number
+  'count()': number
+}
+
+const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 @Injectable()
 export class AnalyticsService {
@@ -148,8 +157,16 @@ export class AnalyticsService {
     const { pid } = logDTO
     this.validatePID(pid)
 
-    if (logDTO instanceof EventsDTO && !_isEmpty(logDTO.ev) && _size(logDTO.ev) > 64) {
-      throw new BadRequestException('An incorrect event name (ev) is provided')
+    if (logDTO instanceof EventsDTO) {
+      const { ev } = logDTO
+
+      if (_isEmpty(ev)) {
+        throw new BadRequestException('Empty custom events are not allowed')
+      }
+
+      if (!customEVvalidate.test(ev)) {
+        throw new BadRequestException('An incorrect event name (ev) is provided')
+      }
     }
 
     const project = await this.getRedisProject(pid)
@@ -196,8 +213,9 @@ export class AnalyticsService {
     return Boolean(session)
   }
 
-  async getSummary(pids: string[], period: 'w' | 'M' = 'w', advanced: boolean = false): Promise<Object> {
+  async getSummary(pids: string[], period: 'w' | 'M' = 'w'): Promise<Object> {
     const result = {}
+
     for (let i = 0; i < _size(pids); ++i) {
       const pid = pids[i]
       if (!isValidPID(pid)) throw new BadRequestException(`The provided Project ID (${pid}) is incorrect`)
@@ -207,45 +225,25 @@ export class AnalyticsService {
       const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
       const twoWeeks = oneWRaw.subtract(1, period).format('YYYY-MM-DD HH:mm:ss')
 
-      const query1_pageviews = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${oneWeek}' AND '${now}'`
-      const query2_pageviews = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${twoWeeks}' AND '${oneWeek}'`
-      const query1_unique = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND unique=1 AND created BETWEEN '${oneWeek}' AND '${now}'`
-      const query2_unique = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND unique=1 AND created BETWEEN '${twoWeeks}' AND '${oneWeek}'`
-
       const query1 = `SELECT unique, count() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${oneWeek}' AND '${now}' GROUP BY unique`
       const query2 = `SELECT unique, count() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${twoWeeks}' AND '${oneWeek}' GROUP BY unique`
-
-      const q1res = await clickhouse.query(query1).toPromise()
-      const q2res = await clickhouse.query(query2).toPromise()
-
-      console.log(q1res, q2res)
-
+      
       try {
-        const res1_pageviews = await clickhouse.query(query1_pageviews).toPromise()
-        const res2_pageviews = await clickhouse.query(query2_pageviews).toPromise()
-        const thisWeekPV = res1_pageviews[0]['count()']
-        const lastWeekPV = res2_pageviews[0]['count()']
+        const q1res = await clickhouse.query(query1).toPromise()
+        const q2res = await clickhouse.query(query2).toPromise()
 
-        if (advanced) {
-          const res1_unique = await clickhouse.query(query1_unique).toPromise()
-          const res2_unique = await clickhouse.query(query2_unique).toPromise()
-          const thisWeekUnique = res1_unique[0]['count()']
-          const lastWeekUnique = res2_unique[0]['count()']
+        const thisWeekUnique = _find(q1res, ({ unique }) => unique)?.['count()'] || 0
+        const thisWeekPV = (_find(q1res, ({ unique }) => !unique)?.['count()'] || 0) + thisWeekUnique
+        const lastWeekUnique = _find(q2res, ({ unique }) => unique)?.['count()'] || 0
+        const lastWeekPV = (_find(q2res, ({ unique }) => !unique)?.['count()'] || 0) + lastWeekUnique
 
-          result[pid] = {
-            thisWeek: thisWeekPV,
-            lastWeek: lastWeekPV,
-            thisWeekUnique,
-            lastWeekUnique,
-            percChange: getPercentageChange(thisWeekPV, lastWeekPV),
-            percChangeUnique: getPercentageChange(thisWeekUnique, lastWeekUnique),
-          }
-        } else {
-          result[pid] = {
-            thisWeek: thisWeekPV,
-            lastWeek: lastWeekPV,
-            percChange: getPercentageChange(thisWeekPV, lastWeekPV),
-          }
+        result[pid] = {
+          thisWeek: thisWeekPV,
+          lastWeek: lastWeekPV,
+          thisWeekUnique,
+          lastWeekUnique,
+          percChange: getPercentageChange(thisWeekPV, lastWeekPV),
+          percChangeUnique: getPercentageChange(thisWeekUnique, lastWeekUnique),
         }
       } catch {
         throw new InternalServerErrorException('Can\'t process the provided PID. Please, try again later.')
@@ -272,7 +270,7 @@ export class AnalyticsService {
       }
     }
 
-    if (_every(_values(params), _isEmpty)) {
+    if (!_some(_values(params), (val) => !_isEmpty(val))) {
       return Promise.resolve()
     }
 
@@ -321,18 +319,35 @@ export class AnalyticsService {
     }
 
     // @ts-ignore
-    const result = (await clickhouse.query(query).toPromise()).sort((a, b) => a.index - b.index)
+    const result: Array<chartCHResponse> = (await clickhouse.query(query).toPromise()).sort((a, b) => a.index - b.index)
     const visits = []
     const uniques = []
 
-    for (let i = 0; i < _size(result); i += 2) {
-      const v = result[i]['count()']
-      const u = result[1 + i]['count()']
-      // @ts-ignore
-      const index = result[i].index
+    let idx = 0
+    const resSize = _size(result)
 
-      visits[index] = v + u
-      uniques[index] = u
+    while (idx < resSize) {
+      const index = result[idx].index
+      const v = result[idx]['count()']
+
+      if (index === result[1 + idx]?.index) {
+        const u = result[1 + idx]['count()']
+        visits[index] = v + u
+        uniques[index] = u
+        idx += 2
+        continue
+      }
+
+      const unique = result[idx].unique
+
+      if (unique) {
+        visits[index] = v
+        uniques[index] = v
+      } else {
+        visits[index] = v
+        uniques[index] = 0
+      }
+      idx++
     }
 
     for (let i = 0; i < _size(x); ++i) {
@@ -342,7 +357,6 @@ export class AnalyticsService {
       }
     }
 
-    // TODO: SEEMS LIKE IT RETURNS INCORRECT DATA FOR HOUR PERIOD
     return Promise.resolve({
       params,
       chart: {
