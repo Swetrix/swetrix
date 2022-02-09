@@ -8,6 +8,7 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
+import ct from 'countries-and-timezones'
 import {
   Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException, InternalServerErrorException,
   NotImplementedException, UnprocessableEntityException, PreconditionFailedException, Ip, ForbiddenException,
@@ -26,10 +27,9 @@ import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
-  clickhouse, REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
+  REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
-import ct from '../common/countriesTimezones'
 
 dayjs.extend(utc)
 
