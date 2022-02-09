@@ -89,7 +89,7 @@ export class TaskManagerService {
       }
 
       const ids = _map(users[i].projects, (p) => p.id)
-      const data = await this.analyticsService.getSummary(ids, 'w', true)
+      const data = await this.analyticsService.getSummary(ids, 'w')
 
       const result = {
         type: 'w', // week
@@ -130,7 +130,7 @@ export class TaskManagerService {
       }
 
       const ids = _map(users[i].projects, (p) => p.id)
-      const data = await this.analyticsService.getSummary(ids, 'M', true)
+      const data = await this.analyticsService.getSummary(ids, 'M')
 
       const result = {
         type: 'M', // month

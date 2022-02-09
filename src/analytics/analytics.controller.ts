@@ -4,11 +4,11 @@ import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
 import * as _last from 'lodash/last'
 import * as _map from 'lodash/map'
-import * as _countBy from 'lodash/countBy'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
+import ct from 'countries-and-timezones'
 import {
   Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException, InternalServerErrorException,
   NotImplementedException, UnprocessableEntityException, PreconditionFailedException, Ip, ForbiddenException,
@@ -27,10 +27,9 @@ import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
-  clickhouse, REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
+  REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, // REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
-import ct from '../common/countriesTimezones'
 
 dayjs.extend(utc)
 
@@ -85,14 +84,14 @@ export class AnalyticsController {
   async getData(@Query() data: AnalyticsGET_DTO, @CurrentUserId() uid: string): Promise<any> {
     const { pid, period, timeBucket, from, to } = data
     this.analyticsService.validatePID(pid)
+    this.analyticsService.validatePeriod(period)
+    this.analyticsService.validateTimebucket(timeBucket)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let groupFrom = from, groupTo = to
-    // TODO: data validation
-    // TODO: automatic timeBucket detection based on period provided
 
-    let query = `SELECT * FROM analytics WHERE pid='${pid}'`
-    let queryCustoms = `SELECT ev FROM customEV WHERE pid='${pid}'`
+    let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid='${pid}'`
+    let subQuery = `FROM analytics WHERE pid='${pid}'`
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       throw new NotImplementedException('Filtering by from/to params is currently not available')
@@ -102,29 +101,26 @@ export class AnalyticsController {
 
       if (dayjs.utc(to).isAfter(dayjs.utc(), 'second')) {
         groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        query += `AND created BETWEEN ${from} AND ${groupTo}`
-        queryCustoms += `AND created BETWEEN ${from} AND ${groupTo}`
+        queryCustoms += ` AND created BETWEEN ${from} AND ${groupTo} GROUP BY ev`
       } else {
-        query += `AND created BETWEEN ${from} AND ${to}`
-        queryCustoms += `AND created BETWEEN ${from} AND ${to}`
+        queryCustoms += ` AND created BETWEEN ${from} AND ${to} GROUP BY ev`
       }
     } else if (!_isEmpty(period)) {
-      groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD HH:mm:ss')
-      groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      query += `AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
-      queryCustoms += `AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
+      groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
+      groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+      queryCustoms += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}' GROUP BY ev`
+      subQuery += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
     } else {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
     }
 
-    const response = await clickhouse.query(query).toPromise()
-    const result = await this.analyticsService.groupByTimeBucket(response, timeBucket, groupFrom, groupTo)
+    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid)
 
-    const customs = await clickhouse.query(queryCustoms).toPromise()
-
+    const customs = await this.analyticsService.processCustomEV(queryCustoms)
+    
     return {
       ...result,
-      customs: _countBy(customs, 'ev'),
+      customs,
     }
   }
 
@@ -139,7 +135,7 @@ export class AnalyticsController {
       await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
     }
 
-    return this.analyticsService.getSummary(pidsArray, 'w', true)
+    return this.analyticsService.getSummary(pidsArray, 'w')
   }
 
   @UseGuards(SelfhostedGuard)
@@ -193,7 +189,7 @@ export class AnalyticsController {
       throw new ForbiddenException('Bot traffic is ignored')
     }
 
-    await this.analyticsService.validate(eventsDTO, origin)
+    await this.analyticsService.validate(eventsDTO, origin, 'custom')
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
@@ -203,13 +199,12 @@ export class AnalyticsController {
       const unique = await this.analyticsService.isUnique(sessionHash)
 
       if (!unique) {
-        return
+        throw new ForbiddenException('The unique option provided, while the custom event have already been created for this session')
       }
     }
 
     const dto = customLogDTO(eventsDTO.pid, eventsDTO.ev)
 
-    // todo: fix: may be vulnerable to sql injection attack
     const values = `(${dto.map(getElValue).join(',')})`
     try {
       await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, values)
@@ -257,7 +252,7 @@ export class AnalyticsController {
       const os = ua.os.name
       // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
       const cc = ct.getCountryForTimezone(logDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
-      dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, cc, 1)
+      dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, 'NULL' /* logDTO.lt */, cc, 1)
     } else if (!logDTO.unique) {
       dto = analyticsDTO(logDTO.pid, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
     } else {

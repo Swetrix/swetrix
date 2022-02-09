@@ -6,13 +6,18 @@ import * as _size from 'lodash/size'
 import * as _isNull from 'lodash/isNull'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
+import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
+import * as _some from 'lodash/some'
 import * as _keys from 'lodash/keys'
+import * as _find from 'lodash/find'
+import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import { isLocale } from 'validator'
 import { hash } from 'blake3'
 import {
-  Injectable, BadRequestException, InternalServerErrorException, ForbiddenException,
+  Injectable, BadRequestException, InternalServerErrorException, ForbiddenException, UnprocessableEntityException,
 } from '@nestjs/common'
 
 import { ACCOUNT_PLANS } from '../user/entities/user.entity'
@@ -31,6 +36,27 @@ import { TimeBucketType } from './dto/getData.dto'
 dayjs.extend(utc)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
+
+const cols = [
+  'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref','so', 'me', 'ca',
+]
+
+interface chartCHResponse {
+  index: number
+  unique: number
+  'count()': number
+}
+
+interface customsCHResponse {
+  ev: string
+  'count()': number
+}
+
+const validPeriods = ['1d', '7d', '4w', '3M', '12M', '24M']
+const validTimebuckets = ['hour', 'day', 'week', 'month']
+
+// Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
+const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 @Injectable()
 export class AnalyticsService {
@@ -136,14 +162,42 @@ export class AnalyticsService {
     if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
   }
 
-  async validate(logDTO: PageviewsDTO | EventsDTO, origin: string): Promise<string | null> {
+  async validate(logDTO: PageviewsDTO | EventsDTO, origin: string, type: 'custom' | 'log' = 'log'): Promise<string | null> {
     if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
 
     const { pid } = logDTO
     this.validatePID(pid)
 
-    if (logDTO instanceof EventsDTO && !_isEmpty(logDTO.ev) && _size(logDTO.ev) > 64) {
-      throw new BadRequestException('An incorrect event name (ev) is provided')
+    if (type === 'custom') {
+      // @ts-ignore
+      const { ev } = logDTO
+
+      if (_isEmpty(ev)) {
+        throw new BadRequestException('Empty custom events are not allowed')
+      }
+
+      if (!customEVvalidate.test(ev)) {
+        throw new BadRequestException('An incorrect event name (ev) is provided')
+      }
+    } else { // the type is 'log'
+      // 'tz' does not need validation as it's based on getCountryForTimezone detection
+      // @ts-ignore
+      const { lc } = logDTO
+      // TODO: IMPORTANT!: validate pg param
+
+      // validate locale ('lc' param)
+      if (_isEmpty(lc)) {
+        if (isLocale(lc)) {
+          // uppercase the locale after '-' char, so for example both 'en-gb' and 'en-GB' in result will be 'en-GB'
+          const lcParted = _split(lc, '-')
+          lcParted[1] = _toUpper(lcParted[1])
+          // @ts-ignore
+          logDTO.lc = _join(lcParted, '')
+        } else {
+          // @ts-ignore
+          logDTO.lc = 'NULL'
+        }
+      }
     }
 
     const project = await this.getRedisProject(pid)
@@ -179,6 +233,18 @@ export class AnalyticsService {
     return sessionHash
   }
 
+  validatePeriod(period: string): void {
+    if (!_includes(validPeriods, period)) {
+      throw new UnprocessableEntityException('The provided period is incorrect')
+    }
+  }
+
+  validateTimebucket(tb: string): void {
+    if (!_includes(validTimebuckets, tb)) {
+      throw new UnprocessableEntityException('The provided timebucket is incorrect')
+    }
+  }
+
   async isUnique(hash: string) {
     const session = await redis.get(hash)
     await redis.set(hash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
@@ -190,40 +256,9 @@ export class AnalyticsService {
     return Boolean(session)
   }
 
-  processData(data: object): object {
-    const res = {
-      cc: {},
-      pg: {},
-      lc: {},
-      br: {},
-      os: {},
-      dv: {},
-      ref: {},
-      so: {},
-      me: {},
-      ca: {},
-      // lt: {},
-    }
-    const whitelist = _keys(res)
-  
-    for (let i = 0; i < _size(data); ++i) {
-      const tfData = data[i].data
-      for (let j = 0; j < _size(tfData); ++j) {
-        for (let z = 0; z < _size(whitelist); ++z) {
-          const currWLItem = whitelist[z]
-          const tfDataRecord = tfData[j][currWLItem]
-          if (!_isNull(tfDataRecord)) {
-            res[currWLItem][tfDataRecord] = 1 + (res[currWLItem][tfDataRecord] || 0)
-          }
-        }
-      }
-    }
-  
-    return res
-  }
-
-  async getSummary(pids: string[], period: 'w' | 'M' = 'w', advanced: boolean = false): Promise<Object> {
+  async getSummary(pids: string[], period: 'w' | 'M' = 'w'): Promise<Object> {
     const result = {}
+
     for (let i = 0; i < _size(pids); ++i) {
       const pid = pids[i]
       if (!isValidPID(pid)) throw new BadRequestException(`The provided Project ID (${pid}) is incorrect`)
@@ -233,38 +268,25 @@ export class AnalyticsService {
       const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
       const twoWeeks = oneWRaw.subtract(1, period).format('YYYY-MM-DD HH:mm:ss')
 
-      const query1_pageviews = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${oneWeek}' AND '${now}'`
-      const query2_pageviews = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${twoWeeks}' AND '${oneWeek}'`
-      const query1_unique = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND unique=1 AND created BETWEEN '${oneWeek}' AND '${now}'`
-      const query2_unique = `SELECT COUNT() FROM analytics WHERE pid='${pid}' AND unique=1 AND created BETWEEN '${twoWeeks}' AND '${oneWeek}'`
-
-      // todo: save to redis
+      const query1 = `SELECT unique, count() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${oneWeek}' AND '${now}' GROUP BY unique`
+      const query2 = `SELECT unique, count() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${twoWeeks}' AND '${oneWeek}' GROUP BY unique`
+      
       try {
-        const res1_pageviews = await clickhouse.query(query1_pageviews).toPromise()
-        const res2_pageviews = await clickhouse.query(query2_pageviews).toPromise()
-        const thisWeekPV = res1_pageviews[0]['count()']
-        const lastWeekPV = res2_pageviews[0]['count()']
-        
-        if (advanced) {
-          const res1_unique = await clickhouse.query(query1_unique).toPromise()
-          const res2_unique = await clickhouse.query(query2_unique).toPromise()
-          const thisWeekUnique = res1_unique[0]['count()']
-          const lastWeekUnique = res2_unique[0]['count()']
+        const q1res = await clickhouse.query(query1).toPromise()
+        const q2res = await clickhouse.query(query2).toPromise()
 
-          result[pid] = {
-            thisWeek: thisWeekPV,
-            lastWeek: lastWeekPV,
-            thisWeekUnique,
-            lastWeekUnique,
-            percChange: getPercentageChange(thisWeekPV, lastWeekPV),
-            percChangeUnique: getPercentageChange(thisWeekUnique, lastWeekUnique),
-          }
-        } else {
-          result[pid] = {
-            thisWeek: thisWeekPV,
-            lastWeek: lastWeekPV,
-            percChange: getPercentageChange(thisWeekPV, lastWeekPV),
-          }
+        const thisWeekUnique = _find(q1res, ({ unique }) => unique)?.['count()'] || 0
+        const thisWeekPV = (_find(q1res, ({ unique }) => !unique)?.['count()'] || 0) + thisWeekUnique
+        const lastWeekUnique = _find(q2res, ({ unique }) => unique)?.['count()'] || 0
+        const lastWeekPV = (_find(q2res, ({ unique }) => !unique)?.['count()'] || 0) + lastWeekUnique
+
+        result[pid] = {
+          thisWeek: thisWeekPV,
+          lastWeek: lastWeekPV,
+          thisWeekUnique,
+          lastWeekUnique,
+          percChange: getPercentageChange(thisWeekPV, lastWeekPV),
+          percChangeUnique: getPercentageChange(thisWeekUnique, lastWeekUnique),
         }
       } catch {
         throw new InternalServerErrorException('Can\'t process the provided PID. Please, try again later.')
@@ -274,13 +296,28 @@ export class AnalyticsService {
     return result
   }
 
-  // TODO: REFACTOR THE FUNCTION; check if there's no date/time shifts
-  async groupByTimeBucket(data: Object[], timeBucket: TimeBucketType, from: string, to: string): Promise<object | void> {
-    if (_isEmpty(data)) return Promise.resolve()
-    let groupDateIterator
-    let clone = [...data]
-    const res = []
+  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string): Promise<object | void> {
+    const params = {}
 
+    for (let i of cols) {
+      const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const res = await clickhouse.query(query1).toPromise()
+
+      params[i] = {}
+
+      const size = _size(res)
+      for (let j = 0; j < size; ++j) {
+        const key = res[j][i]
+        const value = res[j]['count()']
+        params[i][key] = value
+      }
+    }
+
+    if (!_some(_values(params), (val) => !_isEmpty(val))) {
+      return Promise.resolve()
+    }
+
+    let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
     const iterateTo = djsTo > now ? now : djsTo
@@ -305,41 +342,86 @@ export class AnalyticsService {
         return Promise.reject()
     }
 
-    // the database has to use UTC timezone for this to work normally
+    const x = []
+
     while (groupDateIterator < iterateTo) {
       const nextIteration = groupDateIterator.add(1, timeBucket)
-      const temp = []
-      const tempUnique = []
-      
-      clone = _filter(clone, el => {
-        const createdAt = dayjs.utc(el.created)
-        if (groupDateIterator <= createdAt && createdAt < nextIteration) {
-          if (el.unique) {
-            tempUnique.push(el)
-          }
-          temp.push(el)
-          return false
-        } else {
-          return true
-        }
-      })
-
-      res.push({
-        data: temp,
-        total: _size(temp),
-        totalUnique: _size(tempUnique),
-        timeFrame: groupDateIterator.format('YYYY-MM-DD HH:mm:ss'),
-      })
+      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
       groupDateIterator = nextIteration
     }
 
+    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, unique, count() from analytics where pid='${pid}' and created between '${xM[i]}' and '${xM[1 + i]}' group by unique`
+    }
+
+    // @ts-ignore
+    const result: Array<chartCHResponse> = (await clickhouse.query(query).toPromise()).sort((a, b) => a.index - b.index)
+    const visits = []
+    const uniques = []
+
+    let idx = 0
+    const resSize = _size(result)
+
+    while (idx < resSize) {
+      const index = result[idx].index
+      const v = result[idx]['count()']
+
+      if (index === result[1 + idx]?.index) {
+        const u = result[1 + idx]['count()']
+        visits[index] = v + u
+        uniques[index] = u
+        idx += 2
+        continue
+      }
+
+      const unique = result[idx].unique
+
+      if (unique) {
+        visits[index] = v
+        uniques[index] = v
+      } else {
+        visits[index] = v
+        uniques[index] = 0
+      }
+      idx++
+    }
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (!visits[i]) {
+        visits[i] = 0
+        uniques[i] = 0
+      }
+    }
+
     return Promise.resolve({
-      params: this.processData(res),
+      params,
       chart: {
-        x: _map(res, el => el.timeFrame),
-        visits: _map(res, el => el.total),
-        uniques: _map(res, el => el.totalUnique),
+        x,
+        visits,
+        uniques,
       },
     })
+  }
+
+  async processCustomEV(query: string): Promise<object> {
+    const result = {}
+
+    // @ts-ignore
+    const rawCustoms: Array<customsCHResponse> = await clickhouse.query(query).toPromise()
+    const size = _size(rawCustoms)
+
+    for (let i = 0; i < size; ++i) {
+      const { ev, 'count()': c } = rawCustoms[i]
+      result[ev] = c
+    }
+
+    return result
   }
 }
