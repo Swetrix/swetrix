@@ -45,6 +45,12 @@ interface chartCHResponse {
   'count()': number
 }
 
+interface customsCHResponse {
+  ev: string
+  'count()': number
+}
+
+// Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 @Injectable()
@@ -151,13 +157,14 @@ export class AnalyticsService {
     if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
   }
 
-  async validate(logDTO: PageviewsDTO | EventsDTO, origin: string): Promise<string | null> {
+  async validate(logDTO: PageviewsDTO | EventsDTO, origin: string, type: 'custom' | 'log' = 'log'): Promise<string | null> {
     if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
 
     const { pid } = logDTO
     this.validatePID(pid)
 
-    if (logDTO instanceof EventsDTO) {
+    if (type === 'custom') {
+      // @ts-ignore
       const { ev } = logDTO
 
       if (_isEmpty(ev)) {
@@ -365,5 +372,20 @@ export class AnalyticsService {
         uniques,
       },
     })
+  }
+
+  async processCustomEV(query: string): Promise<object> {
+    const result = {}
+
+    // @ts-ignore
+    const rawCustoms: Array<customsCHResponse> = await clickhouse.query(query).toPromise()
+    const size = _size(rawCustoms)
+
+    for (let i = 0; i < size; ++i) {
+      const { ev, 'count()': c } = rawCustoms[i]
+      result[ev] = c
+    }
+
+    return result
   }
 }

@@ -4,7 +4,6 @@ import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
 import * as _last from 'lodash/last'
 import * as _map from 'lodash/map'
-import * as _countBy from 'lodash/countBy'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { v4 as uuidv4 } from 'uuid'
@@ -91,7 +90,7 @@ export class AnalyticsController {
     // TODO: data validation
     // TODO: automatic timeBucket detection based on period provided
 
-    let queryCustoms = `SELECT ev FROM customEV WHERE pid='${pid}'`
+    let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid='${pid}'`
     let subQuery = `FROM analytics WHERE pid='${pid}'`
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
@@ -102,14 +101,14 @@ export class AnalyticsController {
 
       if (dayjs.utc(to).isAfter(dayjs.utc(), 'second')) {
         groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        queryCustoms += ` AND created BETWEEN ${from} AND ${groupTo}`
+        queryCustoms += ` AND created BETWEEN ${from} AND ${groupTo} GROUP BY ev`
       } else {
-        queryCustoms += ` AND created BETWEEN ${from} AND ${to}`
+        queryCustoms += ` AND created BETWEEN ${from} AND ${to} GROUP BY ev`
       }
     } else if (!_isEmpty(period)) {
       groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
       groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
-      queryCustoms += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
+      queryCustoms += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}' GROUP BY ev`
       subQuery += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
     } else {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
@@ -117,14 +116,11 @@ export class AnalyticsController {
 
     const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid)
 
-    const customs = await clickhouse.query(queryCustoms).toPromise()
-    // TODO: VERIFY THAT CUSTOM EVENTS WORK PROPERLY
-    console.log(queryCustoms, _countBy(customs, 'ev'))
-    console.log(customs)
-
+    const customs = await this.analyticsService.processCustomEV(queryCustoms)
+    
     return {
       ...result,
-      customs: _countBy(customs, 'ev'),
+      customs,
     }
   }
 
@@ -193,7 +189,7 @@ export class AnalyticsController {
       throw new ForbiddenException('Bot traffic is ignored')
     }
 
-    await this.analyticsService.validate(eventsDTO, origin)
+    await this.analyticsService.validate(eventsDTO, origin, 'custom')
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
@@ -203,7 +199,7 @@ export class AnalyticsController {
       const unique = await this.analyticsService.isUnique(sessionHash)
 
       if (!unique) {
-        return
+        throw new ForbiddenException('The unique option provided, while the custom event have already been created for this session')
       }
     }
 
