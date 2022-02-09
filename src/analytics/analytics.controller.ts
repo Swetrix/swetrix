@@ -84,11 +84,11 @@ export class AnalyticsController {
   async getData(@Query() data: AnalyticsGET_DTO, @CurrentUserId() uid: string): Promise<any> {
     const { pid, period, timeBucket, from, to } = data
     this.analyticsService.validatePID(pid)
+    this.analyticsService.validatePeriod(period)
+    this.analyticsService.validateTimebucket(timeBucket)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let groupFrom = from, groupTo = to
-    // TODO: data validation
-    // TODO: automatic timeBucket detection based on period provided
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid='${pid}'`
     let subQuery = `FROM analytics WHERE pid='${pid}'`
@@ -205,7 +205,6 @@ export class AnalyticsController {
 
     const dto = customLogDTO(eventsDTO.pid, eventsDTO.ev)
 
-    // todo: fix: may be vulnerable to sql injection attack
     const values = `(${dto.map(getElValue).join(',')})`
     try {
       await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, values)
@@ -253,7 +252,7 @@ export class AnalyticsController {
       const os = ua.os.name
       // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
       const cc = ct.getCountryForTimezone(logDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
-      dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, logDTO.lt, cc, 1)
+      dto = analyticsDTO(logDTO.pid, logDTO.pg, dv, br, os, logDTO.lc, logDTO.ref, logDTO.so, logDTO.me, logDTO.ca, 'NULL' /* logDTO.lt */, cc, 1)
     } else if (!logDTO.unique) {
       dto = analyticsDTO(logDTO.pid, logDTO.pg, 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 'NULL', 0)
     } else {

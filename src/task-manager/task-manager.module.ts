@@ -1,4 +1,4 @@
-import { Module, HttpModule, forwardRef } from '@nestjs/common'
+import { Module, forwardRef } from '@nestjs/common'
 import { TaskManagerService } from './task-manager.service'
 import { MailerModule } from '../mailer/mailer.module'
 import { UserModule } from '../user/user.module'
@@ -9,7 +9,6 @@ import { AnalyticsModule } from '../analytics/analytics.module'
   imports: [
     ProjectModule,
     MailerModule,
-    HttpModule,
     UserModule,
     forwardRef(() => AnalyticsModule),
   ],

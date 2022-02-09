@@ -58,7 +58,8 @@
     "rxjs": "^7.5.2",
     "typeorm": "^0.2.41",
     "ua-parser-js": "^1.0.2",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.0",

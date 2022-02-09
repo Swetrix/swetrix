@@ -6,6 +6,7 @@ import * as _size from 'lodash/size'
 import * as _isNull from 'lodash/isNull'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
+import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
 import * as _some from 'lodash/some'
 import * as _keys from 'lodash/keys'
@@ -13,9 +14,10 @@ import * as _find from 'lodash/find'
 import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import { isLocale } from 'validator'
 import { hash } from 'blake3'
 import {
-  Injectable, BadRequestException, InternalServerErrorException, ForbiddenException,
+  Injectable, BadRequestException, InternalServerErrorException, ForbiddenException, UnprocessableEntityException,
 } from '@nestjs/common'
 
 import { ACCOUNT_PLANS } from '../user/entities/user.entity'
@@ -49,6 +51,9 @@ interface customsCHResponse {
   ev: string
   'count()': number
 }
+
+const validPeriods = ['1d', '7d', '4w', '3M', '12M', '24M']
+const validTimebuckets = ['hour', 'day', 'week', 'month']
 
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
@@ -174,6 +179,25 @@ export class AnalyticsService {
       if (!customEVvalidate.test(ev)) {
         throw new BadRequestException('An incorrect event name (ev) is provided')
       }
+    } else { // the type is 'log'
+      // 'tz' does not need validation as it's based on getCountryForTimezone detection
+      // @ts-ignore
+      const { lc } = logDTO
+      // TODO: IMPORTANT!: validate pg param
+
+      // validate locale ('lc' param)
+      if (_isEmpty(lc)) {
+        if (isLocale(lc)) {
+          // uppercase the locale after '-' char, so for example both 'en-gb' and 'en-GB' in result will be 'en-GB'
+          const lcParted = _split(lc, '-')
+          lcParted[1] = _toUpper(lcParted[1])
+          // @ts-ignore
+          logDTO.lc = _join(lcParted, '')
+        } else {
+          // @ts-ignore
+          logDTO.lc = 'NULL'
+        }
+      }
     }
 
     const project = await this.getRedisProject(pid)
@@ -207,6 +231,18 @@ export class AnalyticsService {
     if (!sessionExists) throw new ForbiddenException('The Heartbeat session does not exist')
 
     return sessionHash
+  }
+
+  validatePeriod(period: string): void {
+    if (!_includes(validPeriods, period)) {
+      throw new UnprocessableEntityException('The provided period is incorrect')
+    }
+  }
+
+  validateTimebucket(tb: string): void {
+    if (!_includes(validTimebuckets, tb)) {
+      throw new UnprocessableEntityException('The provided timebucket is incorrect')
+    }
   }
 
   async isUnique(hash: string) {
