@@ -184,11 +184,10 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4' />
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <i>Last updated: December 11, 2021. (v1.3.0)</i><br />
+              <i>Last updated: February 9, 2022.</i><br />
               <div>
-                - Added ability to specify the&nbsp;
-                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-init'>custom API URL</a>
-                &nbsp;parameter.
+                - Updated custom events validation rules.<br/>
+                  Now custom events has to start with an English letter and cannot contain dashes in it anymore.
               </div>
             </div>
           </div>

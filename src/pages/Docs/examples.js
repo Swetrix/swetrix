@@ -27,9 +27,10 @@ export const trackPageView = `swetrix.trackViews()`
 export const track = `swetrix.track({
   // The event identifier you want to track.
   // This has to be a string, which:
-  // - only contains English letters (a-Z A-Z), numbers (0-9), underscores (_),
-  //   dashes (-) and dots (.).
+  // - only contains English letters (a-Z A-Z), numbers (0-9),
+  //   underscores (_) and dots (.).
   // - is fewer than 64 characters.
+  // - starts with an English letter.
   ev: 'YOUR_EVENT_NAME',
 
   // If true, only 1 event with the same ID will be saved per user session.
