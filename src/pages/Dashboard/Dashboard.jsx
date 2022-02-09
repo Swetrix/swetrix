@@ -49,38 +49,40 @@ const ProjectCart = ({
           </div>
           <div className='mt-2 sm:flex sm:justify-between'>
             <div className='sm:flex flex-col'>
-              <div className='flex items-center mt-2 text-sm text-gray-500 dark:text-gray-300'>
-                <EyeIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300' />
-                {t('dashboard.pageviews')}
-                :
-                &nbsp;
-                <dd className='flex items-baseline'>
-                  <p className='h-5 mr-1'>
-                    {overall?.thisWeek}
-                  </p>
-                  <p className={cx('flex text-xs -ml-1 items-baseline', {
-                    'text-green-600': statsDidGrowUp,
-                    'text-red-600': !statsDidGrowUp,
-                  })}>
-                    {statsDidGrowUp ? (
-                      <>
-                        <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
-                        <span className='sr-only'>
-                          {t('dashboard.inc')}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
-                        <span className='sr-only'>
-                          {t('dashboard.dec')}
-                        </span>
-                      </>
-                    )}
-                    {overall?.percChange}%
+              {overall && (
+                <div className='flex items-center mt-2 text-sm text-gray-500 dark:text-gray-300'>
+                  <EyeIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300' />
+                  {t('dashboard.pageviews')}
+                  :
+                  &nbsp;
+                  <dd className='flex items-baseline'>
+                    <p className='h-5 mr-1'>
+                      {overall?.thisWeek}
                     </p>
-                </dd>
-              </div>
+                    <p className={cx('flex text-xs -ml-1 items-baseline', {
+                      'text-green-600': statsDidGrowUp,
+                      'text-red-600': !statsDidGrowUp,
+                    })}>
+                      {statsDidGrowUp ? (
+                        <>
+                          <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                          <span className='sr-only'>
+                            {t('dashboard.inc')}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                          <span className='sr-only'>
+                            {t('dashboard.dec')}
+                          </span>
+                        </>
+                      )}
+                      {overall?.percChange}%
+                    </p>
+                  </dd>
+                </div>
+              )}
               <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300 sm:mt-0'>
                 <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
                 {t('dashboard.liveVisitors')}

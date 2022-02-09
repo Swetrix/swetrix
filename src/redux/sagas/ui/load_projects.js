@@ -14,11 +14,17 @@ export default function* loadProjects() {
   try {
     let { results } = yield call(getProjects)
     const pids = _map(results, result => result.id)
-    const overall = yield call(getOverallStats, pids)
+    let overall
+
+    try {
+      overall = yield call(getOverallStats, pids)
+    } catch (e) {
+      debug('failed to overall stats: %s', e)
+    }
 
     results = _map(results, res => ({
       ...res,
-      overall: overall[res.id],
+      overall: overall?.[res.id],
     }))
     yield put(UIActions.setProjects(results))
 
