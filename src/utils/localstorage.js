@@ -8,7 +8,7 @@ const currentLocalStorage = {}
 
 export const setItem = (key, value) => {
   currentLocalStorage[key] = value
-  localStorage.setItem(key, JSON.stringify(value))
+  localStorage.setItem(key, value)
 }
 
 export const getItem = (key) => {

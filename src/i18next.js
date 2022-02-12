@@ -4,12 +4,23 @@ import backend from 'i18next-http-backend'
 import _isString from 'lodash/isString'
 import _includes from 'lodash/includes'
 import { whitelist, defaultLanguage } from 'redux/constants'
-import { setItem } from 'utils/localstorage'
+import { setItem, getItem } from 'utils/localstorage'
 
 const lngDetector = new LanguageDetector()
 lngDetector.addDetector({
   name: 'customDetector',
   lookup() {
+    if (window.localStorage) {
+      const lsLang = getItem('language')
+
+      if (_includes(whitelist, lsLang)) {
+        return lsLang
+      } else {
+        setItem('language', defaultLanguage)
+        setItem('i18nextLng', defaultLanguage)
+      }
+    }
+
     const language = navigator.language || navigator.userLanguage
 
     if (_isString(language)) {
@@ -22,9 +33,6 @@ lngDetector.addDetector({
 
     return defaultLanguage
   },
-  cacheUserLanguage(lng) {
-    setItem('language', lng)
-  },
 })
 
 i18next
@@ -35,8 +43,7 @@ i18next
       loadPath: '/locales/{{lng}}.json',
     },
     detection: {
-      order: ['localStorage', 'customDetector'],
-      lookupLocalStorage: 'language',
+      order: ['querystring', 'customDetector'],
     },
     interpolation: {
       escapeValue: false,
@@ -52,5 +59,10 @@ i18next
     ns: ['common'],
     defaultNS: 'common',
   })
+
+i18next.on('languageChanged', (lng) => {
+  document.documentElement.setAttribute('lang', lng)
+  setItem('language', lng)
+})
 
 export default i18next

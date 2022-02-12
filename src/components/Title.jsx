@@ -1,9 +1,10 @@
 import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
 import PropTypes from 'prop-types'
 
-import { TITLE_SUFFIX } from 'redux/constants'
+import { TITLE_SUFFIX, whitelist } from 'redux/constants'
 
 const Title = ({ title, children }) => {
   if (_isEmpty(title)) {
@@ -18,11 +19,16 @@ const Title = ({ title, children }) => {
   }
 
   const displayTitle = `${title} ${TITLE_SUFFIX}`
+  const pageURL = `${window.location.origin}${window.location.pathname}`
 
   return (
     <>
       <Helmet>
         <title>{displayTitle}</title>
+        {_map(whitelist, (lang) => (
+          <link key={lang} rel='alternate' hreflang={lang} href={`${pageURL}?lng=${lang}`} />
+        ))}
+        <link rel='alternate' hreflang='x-default' href={pageURL} />
       </Helmet>
       {children}
     </>
