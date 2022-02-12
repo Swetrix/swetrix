@@ -192,7 +192,7 @@ export class AnalyticsService {
           const lcParted = _split(lc, '-')
           lcParted[1] = _toUpper(lcParted[1])
           // @ts-ignore
-          logDTO.lc = _join(lcParted, '')
+          logDTO.lc = _join(lcParted, '-')
         } else {
           // @ts-ignore
           logDTO.lc = 'NULL'
