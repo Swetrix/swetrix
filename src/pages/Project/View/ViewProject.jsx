@@ -385,7 +385,7 @@ const ViewProject = ({
             )
           )}
           <div className={cx('flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4', { hidden: isPanelsDataEmpty })}>
-            <Checkbox label='Show all views' id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
+            <Checkbox label={t('project.showAll')} id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
             <div className='h-full ml-3'>
               <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
                 {t('project.exportImg')}
