@@ -30,6 +30,7 @@
     "no": "No"
   },
   "main": {
+    "ukrSupport": "Support Ukrainian army to fight Russian terrorism on Eastern Ukraine.",
     "slogan": "一个尊重<span>用户隐私<span>的<span>强大</span>分析平台",
     "trackEveryMetric": "在不侵犯用户隐私的情况下跟踪您需要的每个指标。",
     "description": " Swetrix 为您的 Web 应用程序带来了高级且可定制的分析服务。",
@@ -244,6 +245,7 @@
     "noExist": "所选项目不存在",
     "exportImg": "以图片形式导出",
     "noEvTitle": "尚无活动",
+    "showAll": "Show all views",
     "noEvContent": "在指定的时间范围内没有捕获任何活动。\n如果您还没有跟踪任何活动，您可以查看我们的<link>文档</link>以轻松地将跟踪集成到您的应用中。",
     "mapping": {
       "cc": "国家",

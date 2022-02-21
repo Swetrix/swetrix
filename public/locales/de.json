@@ -30,6 +30,7 @@
     "no": "No"
   },
   "main": {
+    "ukrSupport": "Support Ukrainian army to fight Russian terrorism on Eastern Ukraine.",
     "slogan": "Eine <span>leistungsstarke</span> Analyse-Plattform, welche die <span>Privatsphäre ihrer Anwender<span> berücksichtigt",
     "trackEveryMetric": "Analysieren Sie alle benötigten Metriken, ohne die Privatsphäre Ihrer Anwender zu verletzen.",
     "description": "Swetrix bietet einen fortgeschrittenen und konfigurierbaren Analysedienst für Ihre Webanwendungen.",
@@ -244,6 +245,7 @@
     "noExist": "Das ausgewählte Projekt existiert nicht",
     "exportImg": "Als Bild exportieren",
     "noEvTitle": "Noch keine Tracking-Events",
+    "showAll": "Show all views",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <link>Doku</link> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",

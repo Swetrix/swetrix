@@ -3,6 +3,7 @@ import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import { ExternalLinkIcon } from '@heroicons/react/solid'
 import _map from 'lodash/map'
 
 import routes from 'routes'
@@ -100,6 +101,12 @@ const Main = () => {
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
+      <div className='relative flex justify-center items-center bg-gray-900 py-2 px-2'>
+        <a href='https://www.patreon.com/join/savelife_in_ua' target='_blank' rel='noreferrer noopener' className='text-white border-gray-900 border-b-2 hover:border-white text-center'>
+          {t('main.ukrSupport')}
+        </a>
+        <ExternalLinkIcon className='h-4 w-4 text-white ml-1 hidden md:block' />
+      </div>
       <div className='relative bg-gray-800'>
         <SquareDots className='absolute bottom-0 left-0 transform translate-x-0 mb-0 text-gray-700 lg:top-0 xl:transform-none lg:mt-72' />
         <SquareDots className='absolute bottom-0 right-0 transform translate-x-0 mb-48 text-gray-700 lg:top-0 lg:mb-0 xl:transform-none lg:mt-16' />
