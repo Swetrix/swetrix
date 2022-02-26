@@ -190,7 +190,11 @@ export class AnalyticsService {
         if (isLocale(lc)) {
           // uppercase the locale after '-' char, so for example both 'en-gb' and 'en-GB' in result will be 'en-GB'
           const lcParted = _split(lc, '-')
-          lcParted[1] = _toUpper(lcParted[1])
+
+          if (_size(lcParted) > 1) {
+            lcParted[1] = _toUpper(lcParted[1])
+          }
+
           // @ts-ignore
           logDTO.lc = _join(lcParted, '-')
         } else {
