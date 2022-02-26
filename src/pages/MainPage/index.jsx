@@ -102,7 +102,7 @@ const Main = () => {
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
       <div className='relative flex justify-center items-center bg-gray-900 py-2 px-2'>
-        <a href='https://www.patreon.com/savelife_in_ua' target='_blank' rel='noreferrer noopener' className='text-white border-gray-900 border-b-2 hover:border-white text-center'>
+        <a href='https://savelife.in.ua/en/donate/' target='_blank' rel='noreferrer noopener' className='text-white border-gray-900 border-b-2 hover:border-white text-center'>
           {t('main.ukrSupport')}
         </a>
         <ExternalLinkIcon className='h-4 w-4 text-white ml-1 hidden md:block' />
