@@ -29,9 +29,10 @@ const UserSettingsContainer = () => {
     dispatch(
       authActions.deleteAccountAsync(
         (error) => dispatch(
-          errorsActions.deleteAccountFailed(error.description),
+          errorsActions.deleteAccountFailed(error),
         ),
         () => history.push(routes.main),
+        t,
       )
     )
   }

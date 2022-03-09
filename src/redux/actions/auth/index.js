@@ -100,10 +100,12 @@ export const authActions = {
     }
   },
 
-  deleteAccountAsync(errorCallback, successCallback) {
+  deleteAccountAsync(errorCallback, successCallback, t) {
     return {
       type: types.DELETE_ACCOUNT_ASYNC,
-      payload: { errorCallback, successCallback },
+      payload: {
+        errorCallback, successCallback, t,
+      },
     }
   }
 }
