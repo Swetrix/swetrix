@@ -13,7 +13,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import { UserService } from './user.service'
 import { ProjectService } from '../project/project.service'
 import {
-  User, UserType, MAX_EMAIL_REQUESTS,
+  User, UserType, MAX_EMAIL_REQUESTS, PlanCode,
 } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -98,11 +98,15 @@ export class UserController {
     this.logger.log({ id, uid }, 'DELETE /user/:id')
     const user = await this.userService.findOne(id, {
       relations: ['projects'],
-      select: ['id'],
+      select: ['id', 'planCode'],
     })
 
     if (_isEmpty(user)) {
       throw new BadRequestException(`User with id ${id} does not exist`)
+    }
+
+    if (user.planCode !== PlanCode.free) {
+      throw new BadRequestException('cancelSubFirst')
     }
 
     const pids = _join(_map(user.projects, el => `'${el.id}'`), ',')
@@ -114,11 +118,11 @@ export class UserController {
       await clickhouse.query(query1).toPromise()
       await clickhouse.query(query2).toPromise()
       await this.userService.delete(id)
-      
-      return 'Account has been deleted'
+
+      return 'accountDeleted'
     } catch(e) {
       this.logger.error(e)
-      return 'Error while deleting user account'
+      throw new BadRequestException('accountDeleteError')
     }
   }
 
@@ -132,8 +136,12 @@ export class UserController {
 
     const user = await this.userService.findOne(id, {
       relations: ['projects'],
-      select: ['id'],
+      select: ['id', 'planCode'],
     })
+
+    if (user.planCode !== PlanCode.free) {
+      throw new BadRequestException('cancelSubFirst')
+    }
 
     try {
       if (!_isEmpty(user.projects)) {
@@ -145,11 +153,11 @@ export class UserController {
         await clickhouse.query(query2).toPromise()
       }
       await this.userService.delete(id)
-      
-      return 'Account has been deleted'
+
+      return 'accountDeleted'
     } catch(e) {
       this.logger.error(e)
-      return 'Error while deleting your account'
+      throw new BadRequestException('accountDeleteError')
     }
   }
 
