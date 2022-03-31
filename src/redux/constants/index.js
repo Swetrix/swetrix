@@ -77,7 +77,7 @@ export const languages = {
   de: 'Deutsch',
   sv: 'Svenska',
   hi: 'हिन्दी',
-  zh: '中国人',
+  zh: '中文简体',
 }
 export const languageFlag = {
   en: 'GB',

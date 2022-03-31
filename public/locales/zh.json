@@ -1,9 +1,9 @@
 {
   "apiNotifications": {
-    "somethingWentWrong": "Something went wrong, please try again",
-    "emailRegistered": "A user with this email already exists",
-    "leakedPassword": "The provided password is leaked, please use another one",
-    "rateLimitHit": "Too many requests, please try again later"
+    "somethingWentWrong": "出现问题，请再试一次",
+    "emailRegistered": "当前电子邮箱已存在",
+    "leakedPassword": "输入的密码已泄露，请使用其他密码",
+    "rateLimitHit": "请求太多，请稍后再试"
   },
   "common": {
     "features": "功能",
@@ -13,8 +13,8 @@
     "pricing": "定价",
     "faqs": "常见问题",
     "you": "您",
-    "explore": "Explore",
-    "liveDemo": "Live demo",
+    "explore": "使用",
+    "liveDemo": "Demo演示",
     "dashboard": "管理板面",
     "logout": "登出",
     "save": "保存",
@@ -26,15 +26,15 @@
     "settings": "设置",
     "openMenu": "开启菜单",
     "closeMenu": "关闭菜单",
-    "yes": "Yes",
-    "no": "No"
+    "yes": "是",
+    "no": "否"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
     "slogan": "一个尊重<span>用户隐私<span>的<span>强大</span>分析平台",
     "trackEveryMetric": "在不侵犯用户隐私的情况下跟踪您需要的每个指标。",
     "description": " Swetrix 为您的 Web 应用程序带来了高级且可定制的分析服务。",
-    "signup": "注册，免费！",
+    "signup": "免费注册",
     "signupTerms": "注册即表示您同意我们的<tos>条款和条件</tos>以及<pp>隐私政策。</pp>",
     "techDetails": "想了解更多技术细节？",
     "lookAtDocs": "查看文档和功能页面。",
@@ -63,16 +63,16 @@
     },
     "features": [
       {
-        "name": "Open source",
-        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
+        "name": "开源",
+        "description": "Swetrix是完全开源的，我们只收集和记录声明的数据，可以放心的使用。"
       },
       {
-        "name": "Full event tracking",
-        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
+        "name": "全面的事件跟踪",
+        "description": "有了我们，您不仅可以监控您的流量，但也自定义事件，如按钮点击或注册。"
       },
       {
-        "name": "Browser Addons",
-        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
+        "name": "浏览器插件",
+        "description": "无需访问网站, 即可实时查看最重要的信息、接收流量峰值通知等"
       },
       {
         "name": "无需 cookie 横幅",
@@ -89,11 +89,11 @@
     ],
     "custSupport": "找不到您要找的答案？ 联系我们的<mail>客户支持</mail>团队。",
     "whyUs": "为何选择我们",
-    "ourStats": "Our statistics",
-    "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
-    "users": "Registered users",
-    "websites": "Added websites",
-    "pageviews": "Tracked pageviews"
+    "ourStats": "我们的统计数据",
+    "statsDesc": "Swetrix的服务强大，同时处理千万用户的数据访问",
+    "users": "用户注册",
+    "websites": "网站添加",
+    "pageviews": "监控网站浏览量"
   },
   "auth": {
     "recovery": {
@@ -130,19 +130,19 @@
       "xCharsError": "密码必须至少包含 {{amount}} 个字符。",
       "noMatchError": "密码必须匹配。",
       "badEmailError": "请提供有效的电子邮件。",
-      "passwordTooLong": "The provided password is too long, maximum length is {{amount}} characters",
+      "passwordTooLong": "您的密码过长最大长度为 {{amount}}",
       "tosError": "您必须接受我们的《服务条款》 和《隐私政策》才能使用我们的服务。",
       "email": "电子邮件",
       "signin": "登录",
-      "checkLeakedPassword": "Check if password is leaked",
-      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text."
+      "checkLeakedPassword": "检查密码是否泄露",
+      "checkLeakedPasswordDesc": "当启用时，我们使用 <db> {{database}} </db> 数据库检查您的密码。我们不会把你的密码直接上传至服务器。首先，我们对密码进行哈希处理(使用SHA1)，并将该哈希的前5个字符发送给服务器。服务器将返回所有以这5个字符开头的泄露密码。在我们的服务器中，我们会检查其中一个是否与您的密码匹配。如果之前泄露过，我们会给您一个警告。我们从不以纯文本存储您的密码。"
     }
   },
   "features": {
     "feature1Name": "透明度",
     "feature1Content": "在 Swetrix，我们相信每个人都享有隐私权和透明度。尤其是在分析方面。\n我们不会收集超越我们<docs>声明</docs>范围的信息，所有数据都存储在位于欧盟的服务器上，我们的分析脚本是公开可用的，并且可以通过我们的 <gh>Github</gh>访问。",
-    "feature2Name": "Browser Addons",
-    "feature2Content": "Need to quickly view statistics for your website?\nWe have developed <chrome>Chrome</chrome> and <firefox>Firefox</firefox> extensions for this purpose.\nUsing these, you can instantly view the most important insights, receive traffic spikes notifications and much more!",
+    "feature2Name": "浏览器插件",
+    "feature2Content": "需要快速查看您网站的统计数据?\n我们已经开发了<chrome>Chrome</chrome>和<firefox>Firefox</firefox>扩展插件。\n使用这些，你可以立即查看最重要的见解，收到流量峰值通知和更多!",
     "ready": "准备好了解您的用户了吗？",
     "start": "立即开始使用 Swetrix。",
     "list": [
@@ -198,7 +198,7 @@
     "noProjects": "您尚未创建任何项目",
     "createProject": "在此处创建一个新项目以开始使用我们的服务",
     "active": "活跃",
-    "public": "Public",
+    "public": "公开",
     "disabled": "已禁用",
     "pageviews": "页面浏览量",
     "unique": "独特浏览量",
@@ -241,7 +241,7 @@
     "contents": "内容"
   },
   "project": {
-    "ad": "Want these stats for your website?",
+    "ad": "你的网站需要这些数据吗？",
     "noExist": "所选项目不存在",
     "exportImg": "以图片形式导出",
     "noEvTitle": "尚无活动",
@@ -304,7 +304,7 @@
     "title": "账单和计划",
     "desc": "我们提供免费服务。\n如果您需要处理更多流量，您可能需要升级您的计划。\n以下是现有计划列表。没有隐藏费用或其他隐蔽条款，清晰透明！",
     "contact": "需要每月跟踪超过 100 万个活动？\n请通过 <mail>{{email}}</mail> 与我们联系以讨论您的需求。",
-    "update": "Update payment details"
+    "update": "更新付款详细信息"
   },
   "pricing": {
     "title": "定价计划",
@@ -330,8 +330,8 @@
       "smallBusiSupport": "通过购买此产品，您是在支持一家小型企业。",
       "carbonRemoval": "您的订阅有助于去除碳。"
     },
-    "downgradeTitle": "Are you sure you want to downgrade?",
-    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
+    "downgradeTitle": "你确定要下调等级吗？",
+    "downgradeDesc": "降级后，你的套餐将减少可用内容。如果您的网站流量超过了降级的套餐，这将导致无法记录在我们的数据库中。\n你可以随时回到之前的套餐。\n如果您有任何问题，请随时发送电子邮件至 {{email}}。"
   },
   "contact": {
     "desc": "有什么想问的吗？\n请给我们发送电子邮件至 <mail>{{email}}</mail>"
