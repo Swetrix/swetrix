@@ -17,7 +17,7 @@ const Checkbox = ({
           type='checkbox'
           checked={checked}
           onChange={onChange}
-          className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded cursor-pointer'
+          className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-800 dark:bg-gray-700 dark:checked:bg-indigo-600 rounded cursor-pointer'
         />
       </div>
       <div className='ml-3 text-sm'>
