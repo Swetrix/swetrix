@@ -14,6 +14,17 @@ export const umdBuildExample = `<!-- Put this at the end of the <head> tag -->
     swetrix.trackViews()
   })
 </script>
+
+<noscript>
+  <!--
+  Don't forget to change YOUR_PROJECT_ID in the link to your Project ID
+  -->
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
 `
 
 export const npmInstall = `npm install swetrix`

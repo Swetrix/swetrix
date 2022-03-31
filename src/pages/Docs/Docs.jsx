@@ -186,8 +186,9 @@ const Docs = () => {
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <i>Last updated: February 9, 2022.</i><br />
               <div>
-                - Updated custom events validation rules.<br/>
-                  Now custom events has to start with an English letter and cannot contain dashes in it anymore.
+                - Added documentation for the&nbsp;
+                <a className='hover:underline text-gray-700' href='#docs-umd'>no-script</a>
+                &nbsp;tracking.
               </div>
             </div>
           </div>
