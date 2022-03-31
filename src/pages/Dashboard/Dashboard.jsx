@@ -111,10 +111,10 @@ const ProjectCart = ({
 
 const NoProjects = ({ t }) => (
   <div className='mt-5'>
-    <h3 className='text-center'>
+    <h3 className='text-center dark:text-gray-50'>
       {t('dashboard.noProjects')}
     </h3>
-    <p className='text-center'>
+    <p className='text-center dark:text-gray-50'>
       {t('dashboard.createProject')}
     </p>
   </div>
