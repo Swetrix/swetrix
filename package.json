@@ -30,7 +30,7 @@
     "react-flagkit": "^2.0.4",
     "react-helmet-async": "^1.2.3",
     "react-i18next": "^11.16.2",
-    "react-redux": "^7.2.7",
+    "react-redux": "^7.2.8",
     "react-router-dom": "^5.3.0",
     "react-router-hash-link": "^2.4.3",
     "react-scripts": "5.0.0",
@@ -67,7 +67,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.3",
     "@testing-library/react": "^13.0.0",
-    "@testing-library/user-event": "^14.0.3",
+    "@testing-library/user-event": "^14.0.4",
     "autoprefixer": "^10.4.4",
     "cross-env": "^7.0.3",
     "postcss": "^8.4.12",
