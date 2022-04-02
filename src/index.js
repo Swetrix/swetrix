@@ -7,12 +7,11 @@ import { I18nextProvider } from 'react-i18next'
 import { HelmetProvider } from 'react-helmet-async'
 import { transitions, positions, Provider as AlertProvider } from 'react-alert'
 import * as Swetrix from 'swetrix'
-import * as Sentry from '@sentry/react'
-import { Integrations } from '@sentry/tracing'
 import 'billboard.js/dist/billboard.min.css'
 import 'prismjs/themes/prism-tomorrow.css'
 
-import { isSelfhosted, CONTACT_EMAIL } from 'redux/constants'
+import { isSelfhosted } from 'redux/constants'
+import CrashHandler from 'pages/CrashHandler'
 import AlertTemplate from 'ui/Alert'
 import App from './App'
 import i18next from './i18next'
@@ -30,12 +29,6 @@ if (!isSelfhosted) {
   })
 }
 
-Sentry.init({
-  dsn: 'https://ce538bac7e64484d9a30dcb2eadfe69b@o920340.ingest.sentry.io/5865898',
-  integrations: [new Integrations.BrowserTracing()],
-  tracesSampleRate: 1.0,
-})
-
 const options = {
   position: positions.BOTTOM_RIGHT,
   timeout: 8000,
@@ -49,7 +42,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 ReactDOM.render(
   <React.StrictMode>
-    <Sentry.ErrorBoundary fallback={<p>The app crashed, sorry about that.. :(<br />Please, tell us about it at {CONTACT_EMAIL}<br /><br />To continue using the website, please reload the page.</p>}>
+    <CrashHandler>
       <AlertProvider template={AlertTemplate} {...options}>
         <Provider store={store}>
           <HelmetProvider>
@@ -61,7 +54,7 @@ ReactDOM.render(
           </HelmetProvider>
         </Provider>
       </AlertProvider>
-    </Sentry.ErrorBoundary>
+    </CrashHandler>
   </React.StrictMode>,
   document.getElementById('root')
 )

@@ -98,7 +98,6 @@ const Features = () => {
             The following third parties may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.<br />
              - <b>Paddle:</b> Payment processing;<br />
              - <b>Cloudflare</b>:	Security, hosting, cloud infrastructure;<br />
-             - <b>Sentry:</b>	Error tracking;<br />
              - <b>Postmark:</b>	Transactional and marketing emails;<br />
              - <b>Fastmail:</b>	Business emails.<br />
             In addition to sharing with Service Providers as described above, we also may share your information with others in the following circumstances:<br />
@@ -164,7 +163,7 @@ const Features = () => {
 
           <hr className='mt-10 mb-4' />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            <i>Last updated: January 24, 2022.</i>
+            <i>Last updated: April 2, 2022.</i>
           </p>
         </div>
       </div>
