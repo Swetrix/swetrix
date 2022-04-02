@@ -3,7 +3,10 @@
     "somethingWentWrong": "Något gick fel, försök igen",
     "emailRegistered": "En användare med denna e-postadressen finns redan",
     "leakedPassword": "Det angivna lösenordet är läckt, vänligen använd ett annat",
-    "rateLimitHit": "För många förfrågningar, vänligen försök igen senare"
+    "rateLimitHit": "För många förfrågningar, vänligen försök igen senare",
+    "cancelSubFirst": "Please cancel your paid subscription first",
+    "accountDeleted": "Your account has been deleted",
+    "accountDeleteError": "Error while deleting your account"
   },
   "common": {
     "features": "Funktioner",
@@ -205,7 +208,8 @@
     "createdAt": "Skapad på",
     "inc": "Ökad med",
     "dec": "Minskat med",
-    "liveVisitors": "Live-besökare"
+    "liveVisitors": "Live-besökare",
+    "bounceRate": "Bounce rate"
   },
   "docs": {
     "titles": {

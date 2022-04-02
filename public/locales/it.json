@@ -3,7 +3,10 @@
     "somethingWentWrong": "Something went wrong, please try again",
     "emailRegistered": "A user with this email already exists",
     "leakedPassword": "The provided password is leaked, please use another one",
-    "rateLimitHit": "Too many requests, please try again later"
+    "rateLimitHit": "Too many requests, please try again later",
+    "cancelSubFirst": "Please cancel your paid subscription first",
+    "accountDeleted": "Your account has been deleted",
+    "accountDeleteError": "Error while deleting your account"
   },
   "common": {
     "features": "Features",
@@ -205,7 +208,8 @@
     "createdAt": "Created at",
     "inc": "Increased by",
     "dec": "Descreased by",
-    "liveVisitors": "Live visitors"
+    "liveVisitors": "Live visitors",
+    "bounceRate": "Bounce rate"
   },
   "docs": {
     "titles": {

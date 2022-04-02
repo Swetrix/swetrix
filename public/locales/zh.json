@@ -3,7 +3,10 @@
     "somethingWentWrong": "出现问题，请再试一次",
     "emailRegistered": "当前电子邮箱已存在",
     "leakedPassword": "输入的密码已泄露，请使用其他密码",
-    "rateLimitHit": "请求太多，请稍后再试"
+    "rateLimitHit": "请求太多，请稍后再试",
+    "cancelSubFirst": "Please cancel your paid subscription first",
+    "accountDeleted": "Your account has been deleted",
+    "accountDeleteError": "Error while deleting your account"
   },
   "common": {
     "features": "功能",
@@ -205,7 +208,8 @@
     "createdAt": "创建时间",
     "inc": "增加了",
     "dec": "减少了",
-    "liveVisitors": "实时访客"
+    "liveVisitors": "实时访客",
+    "bounceRate": "Bounce rate"
   },
   "docs": {
     "titles": {

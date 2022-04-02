@@ -208,7 +208,8 @@
     "createdAt": "Created at",
     "inc": "Increased by",
     "dec": "Descreased by",
-    "liveVisitors": "Live visitors"
+    "liveVisitors": "Live visitors",
+    "bounceRate": "Bounce rate"
   },
   "docs": {
     "titles": {
