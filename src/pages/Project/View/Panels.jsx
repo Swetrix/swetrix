@@ -19,10 +19,14 @@ import PulsatingCircle from 'ui/icons/PulsatingCircle'
 
 const ENTRIES_PER_PANEL = 5
 
+// noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children,
+  name, children, noSwitch,
 }) => (
-  <div className='relative bg-white dark:bg-gray-750 pt-5 px-4 pb-12 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden'>
+  <div className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
+    'pb-12': !noSwitch,
+    'pb-5': noSwitch,
+  })}>
     <h3 className='text-lg leading-6 font-semibold mb-2 text-gray-900 dark:text-gray-50'>{name}</h3>
     <div className='flex flex-col h-full scroll-auto'>
       {children}
@@ -42,9 +46,14 @@ const Overview = ({
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
   const pageviews = _sum(chartData?.visits) || 0
   const uniques = _sum(chartData?.uniques) || 0
+  let bounceRate = 0
+
+  if (pageviews > 0) {
+    bounceRate = _round(uniques * 100 / pageviews, 1)
+  }
 
   return (
-    <PanelContainer name={t('project.overview')}>
+    <PanelContainer name={t('project.overview')} noSwitch>
       <div className='flex text-lg justify-between'>
         <div className='flex items-center dark:text-gray-50'>
           <PulsatingCircle className='mr-1.5' type='big' />
@@ -79,6 +88,17 @@ const Overview = ({
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {uniques}
+            </p>
+          </div>
+
+          <div className='flex justify-between'>
+            <p className='text-lg dark:text-gray-50'>
+              {t('dashboard.bounceRate')}
+              :
+            </p>
+            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
+              {bounceRate}
+              %
             </p>
           </div>
           <hr className='my-2' />
