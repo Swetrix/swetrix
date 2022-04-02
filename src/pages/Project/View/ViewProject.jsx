@@ -342,14 +342,14 @@ const ViewProject = ({
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
             <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 break-words'>{name}</h2>
             <div className='flex mt-3 md:mt-0'>
-              <div className='md:border-r border-gray-200 md:pr-3 mr-3'>
+              <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
                 <span className='relative z-0 inline-flex shadow-sm rounded-md'>
                   {_map(activePeriod.tbs, (tb, index, { length }) => (
                     <button
                       key={tb}
                       type='button'
                       onClick={() => updateTimebucket(tb)}
-                      className={cx('relative capitalize inline-flex items-center px-3 md:px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
+                      className={cx('relative capitalize inline-flex items-center px-3 md:px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
                         '-ml-px': index > 0,
                         'rounded-l-md': index === 0,
                         'rounded-r-md': 1 + index === length,
@@ -370,7 +370,7 @@ const ViewProject = ({
               />
               {!isProjectPublic && (
                 <div className='h-full ml-3'>
-                  <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
+                  <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700' secondary>
                     {t('common.settings')}
                   </Button>
                 </div>
@@ -387,7 +387,7 @@ const ViewProject = ({
           <div className={cx('flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4', { hidden: isPanelsDataEmpty })}>
             <Checkbox label={t('project.showAll')} id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
             <div className='h-full ml-3'>
-              <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm' secondary>
+              <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700' secondary>
                 {t('project.exportImg')}
               </Button>
             </div>

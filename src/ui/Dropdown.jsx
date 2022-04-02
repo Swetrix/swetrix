@@ -16,7 +16,7 @@ const Dropdown = ({
           <p className='mb-2 text-sm text-gray-900'>{desc}</p>
         )}
         <div>
-          <Menu.Button className={cx(buttonClassName ? buttonClassName : 'inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500', {
+          <Menu.Button className={cx(buttonClassName ? buttonClassName : 'inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500', {
             'justify-between': aside,
             'justify-center': !aside,
           })}>
@@ -35,12 +35,12 @@ const Dropdown = ({
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items static className='z-10 origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none'>
+          <Menu.Items static className='z-10 origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none'>
             <div className='py-1'>
               {_map(items, item => (
                 <Menu.Item key={keyExtractor ? keyExtractor(item) : item}>
                   <span
-                    className={selectItemClassName ? selectItemClassName : 'text-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200'}
+                    className={selectItemClassName ? selectItemClassName : 'text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'}
                     role='menuitem'
                     tabIndex='-1'
                     id='menu-item-0'
