@@ -85,16 +85,17 @@ export class AnalyticsController {
 
   @Get('/')
   async getData(@Query() data: AnalyticsGET_DTO, @CurrentUserId() uid: string): Promise<any> {
-    const { pid, period, timeBucket, from, to } = data
+    const { pid, period, timeBucket, from, to, filters } = data
     this.analyticsService.validatePID(pid)
     this.analyticsService.validatePeriod(period)
     this.analyticsService.validateTimebucket(timeBucket)
+    const filtersQuery = this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let groupFrom = from, groupTo = to
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid='${pid}'`
-    let subQuery = `FROM analytics WHERE pid='${pid}'`
+    let subQuery = `FROM analytics WHERE pid='${pid}' ${filtersQuery}`
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       throw new NotImplementedException('Filtering by from/to params is currently not available')
@@ -124,6 +125,7 @@ export class AnalyticsController {
     return {
       ...result,
       customs,
+      appliedFilters: filters,
     }
   }
 

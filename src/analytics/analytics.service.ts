@@ -37,7 +37,7 @@ dayjs.extend(utc)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
-const cols = [
+export const cols = [
   'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref','so', 'me', 'ca',
 ]
 
@@ -241,6 +241,28 @@ export class AnalyticsService {
     if (!_includes(validPeriods, period)) {
       throw new UnprocessableEntityException('The provided period is incorrect')
     }
+  }
+
+  // returns SQL filters query in a format like 'AND col=value AND ...'
+  getFiltersQuery(filters: Object): string {
+    if (_isEmpty(filters)) {
+      return ''
+    }
+
+    const cols = _keys(filters)
+    let query = ''
+
+    for (let i = 0; i < _size(cols); ++i) {
+      const column = cols[i]
+
+      if (!_includes(cols, column)) {
+        throw new UnprocessableEntityException(`The provided filter (${column}) is not supported`)
+      }
+
+      query += ` AND ${column}=${filters[column]}`
+    }
+
+    return query
   }
 
   validateTimebucket(tb: string): void {
