@@ -370,7 +370,7 @@ const ViewProject = ({
               />
               {!isProjectPublic && (
                 <div className='h-full ml-3'>
-                  <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700' secondary>
+                  <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600' secondary>
                     {t('common.settings')}
                   </Button>
                 </div>
@@ -387,7 +387,7 @@ const ViewProject = ({
           <div className={cx('flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4', { hidden: isPanelsDataEmpty })}>
             <Checkbox label={t('project.showAll')} id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
             <div className='h-full ml-3'>
-              <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700' secondary>
+              <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600' secondary>
                 {t('project.exportImg')}
               </Button>
             </div>
