@@ -68,7 +68,7 @@ export const GDPR_REQUEST = 'gdpr_request'
 export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
 
 // List of languages with translations available
-export const whitelist = ['en', 'ru', 'uk', 'de', 'sv', 'hi', 'zh']
+export const whitelist = ['en', 'uk', 'de', 'sv', 'ru', 'hi', 'zh']
 export const defaultLanguage = 'en'
 export const languages = {
   en: 'English',
