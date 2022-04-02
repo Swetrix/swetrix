@@ -76,8 +76,8 @@ const Header = ({ authenticated, theme }) => {
               )}
               <Dropdown
                 items={whitelist}
-                buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500'
-                selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200'
+                buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700'
+                selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
                 title={(
                   <>
                     <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' />
