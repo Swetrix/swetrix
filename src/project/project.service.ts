@@ -25,7 +25,7 @@ export class ProjectService {
     const [results, total] = await this.projectsRepository.findAndCount({
       take: options.take || 10,
       skip: options.skip || 0,
-      where: where,
+      where,
       order: {
         name: 'ASC',
       }
