@@ -21,13 +21,21 @@ const ENTRIES_PER_PANEL = 5
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch,
+  name, children, noSwitch, icon,
 }) => (
   <div className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
     'pb-12': !noSwitch,
     'pb-5': noSwitch,
   })}>
-    <h3 className='text-lg leading-6 font-semibold mb-2 text-gray-900 dark:text-gray-50'>{name}</h3>
+    <h3 className='flex items-center text-lg leading-6 font-semibold mb-2 text-gray-900 dark:text-gray-50'>
+      {icon && (
+        <>
+          {icon}
+          &nbsp;
+        </>
+      )}
+      {name}
+    </h3>
     <div className='flex flex-col h-full scroll-auto'>
       {children}
     </div>
@@ -37,6 +45,13 @@ const PanelContainer = ({
 PanelContainer.propTypes = {
   name: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
+  noSwitch: PropTypes.bool,
+  icon: PropTypes.node,
+}
+
+PanelContainer.defaultProps = {
+  icon: null,
+  noSwitch: false,
 }
 
 const Overview = ({
@@ -210,7 +225,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, capitalize, linkContent, t, id, hideFilters, onFilter,
+  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -240,7 +255,7 @@ const Panel = ({
   }
 
   return (
-    <PanelContainer name={name}>
+    <PanelContainer name={name} icon={icon}>
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}
@@ -331,6 +346,7 @@ Panel.propTypes = {
   capitalize: PropTypes.bool,
   linkContent: PropTypes.bool,
   hideFilters: PropTypes.bool,
+  icon: PropTypes.node,
 }
 
 Panel.defaultProps = {
@@ -340,6 +356,7 @@ Panel.defaultProps = {
   linkContent: false,
   onFilter: () => { },
   hideFilters: false,
+  icon: null,
 }
 
 const PanelMemo = memo(Panel)

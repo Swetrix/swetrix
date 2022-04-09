@@ -12,6 +12,9 @@ import countriesUk from 'i18n-iso-countries/langs/uk.json'
 import countriesZh from 'i18n-iso-countries/langs/zh.json'
 import countriesRu from 'i18n-iso-countries/langs/ru.json'
 import countriesSv from 'i18n-iso-countries/langs/sv.json'
+import {
+  GlobeIcon, TranslateIcon, DocumentTextIcon, DeviceMobileIcon, ArrowCircleRightIcon, SearchIcon, ServerIcon,
+} from '@heroicons/react/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
@@ -135,6 +138,17 @@ const typeNameMapping = (t) => ({
   ca: 'utm_campaign',
   lt: t('project.mapping.lt'),
 })
+
+const iconClassName = 'w-6 h-6'
+const panelIconMapping = {
+  cc: <GlobeIcon className={iconClassName} />,
+  pg: <DocumentTextIcon className={iconClassName} />,
+  lc: <TranslateIcon className={iconClassName} />,
+  ref: <ArrowCircleRightIcon className={iconClassName} />,
+  dv: <DeviceMobileIcon className={iconClassName} />,
+  br: <SearchIcon className={iconClassName} />,
+  os: <ServerIcon className={iconClassName} />,
+}
 
 const NoEvents = ({ t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
@@ -431,9 +445,12 @@ const ViewProject = ({
                 />
               )}
               {_map(panelsData.types, type => {
+                const panelName = tnMapping[type]
+                const panelIcon = panelIconMapping[type]
+
                 if (type === 'cc') {
                   return (
-                    <Panel t={t} key={type} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
+                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
                       <>
                         <Flag className='rounded-sm' country={name} size={21} alt='' />
                         &nbsp;&nbsp;
@@ -445,13 +462,13 @@ const ViewProject = ({
 
                 if (type === 'dv') {
                   return (
-                    <Panel t={t} key={type} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} capitalize />
+                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} capitalize />
                   )
                 }
 
                 if (type === 'ref') {
                   return (
-                    <Panel t={t} key={type} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
+                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
                       const url = new URL(name)
 
                       return (
@@ -470,7 +487,7 @@ const ViewProject = ({
                 }
 
                 return (
-                  <Panel t={t} key={type} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} />
+                  <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} />
                 )
               })}
               {!_isEmpty(panelsData.customs) && (
