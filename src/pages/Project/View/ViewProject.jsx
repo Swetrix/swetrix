@@ -450,7 +450,7 @@ const ViewProject = ({
 
                 if (type === 'cc') {
                   return (
-                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
+                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} rowMapper={(name) => (
                       <>
                         <Flag className='rounded-sm' country={name} size={21} alt='' />
                         &nbsp;&nbsp;
@@ -462,13 +462,13 @@ const ViewProject = ({
 
                 if (type === 'dv') {
                   return (
-                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} capitalize />
+                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} capitalize />
                   )
                 }
 
                 if (type === 'ref') {
                   return (
-                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
+                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} rowMapper={(name) => {
                       const url = new URL(name)
 
                       return (
@@ -487,7 +487,7 @@ const ViewProject = ({
                 }
 
                 return (
-                  <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} />
+                  <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} />
                 )
               })}
               {!_isEmpty(panelsData.customs) && (
