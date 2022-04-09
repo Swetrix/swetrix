@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { useHistory, useParams, Link } from 'react-router-dom'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
-import bb, { area, zoom } from 'billboard.js' // eslint-disable-line
+import bb, { area } from 'billboard.js'
 import Flag from 'react-flagkit'
 import countries from 'i18n-iso-countries'
 import countriesEn from 'i18n-iso-countries/langs/en.json'
@@ -23,6 +23,7 @@ import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
+import _filter from 'lodash/filter'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
@@ -173,6 +174,7 @@ const ViewProject = ({
   const [showTotal, setShowTotal] = useState(false)
   const [chartData, setChartData] = useState({})
   const [mainChart, setMainChart] = useState(null)
+  const [filters, setFilters] = useState([])
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
@@ -187,16 +189,16 @@ const ViewProject = ({
     history.push(routes.dashboard)
   }
 
-  const loadAnalytics = async () => {
-    if (!isLoading && !_isEmpty(project)) {
+  const loadAnalytics = async (forced = false, newFilters = null) => {
+    if (forced || (!isLoading && !_isEmpty(project))) {
       try {
         let data
         const key = getProjectCacheKey(period, timeBucket)
 
-        if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
+        if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
-          data = await getProjectData(id, timeBucket, period)
+          data = await getProjectData(id, timeBucket, period, newFilters || filters)
           setProjectCache(id, period, timeBucket, data || {})
         }
 
@@ -208,6 +210,7 @@ const ViewProject = ({
         const { chart, params, customs } = data
 
         if (!_isEmpty(params)) {
+          const bbSettings = getSettings(chart, timeBucket, showTotal, t)
           setChartData(chart)
 
           setPanelsData({
@@ -216,7 +219,10 @@ const ViewProject = ({
             customs,
           })
 
-          const bbSettings = getSettings(chart, timeBucket, showTotal, t)
+          if (!_isEmpty(mainChart)) {
+            mainChart.destroy()
+          }
+
           setMainChart(bb.generate(bbSettings))
         }
 
@@ -225,6 +231,26 @@ const ViewProject = ({
         console.error(e)
       }
     }
+  }
+
+  const filterHandler = (column, filter, isExclusive = false) => {
+    let newFilters
+
+    // temporarily apply only 1 filter per data type 
+    if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
+      // selected filter is already included into the filters array -> removing it
+      newFilters = _filter(filters, (f) => f.column !== column)
+      setFilters(newFilters)
+    } else {
+      // selected filter is not present in the filters array -> applying it
+      newFilters = [
+        ...filters,
+        { column, filter, isExclusive },
+      ]
+      setFilters(newFilters)
+    }
+
+    loadAnalytics(true, newFilters)
   }
 
   useEffect(() => {
@@ -407,9 +433,9 @@ const ViewProject = ({
               {_map(panelsData.types, type => {
                 if (type === 'cc') {
                   return (
-                    <Panel t={t} key={type} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
+                    <Panel t={t} key={type} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => (
                       <>
-                        <Flag className='rounded-md' country={name} size={21} alt='' />
+                        <Flag className='rounded-sm' country={name} size={21} alt='' />
                         &nbsp;&nbsp;
                         {countries.getName(name, language)}
                       </>
@@ -419,13 +445,13 @@ const ViewProject = ({
 
                 if (type === 'dv') {
                   return (
-                    <Panel t={t} key={type} name={tnMapping[type]} data={panelsData.data[type]} capitalize />
+                    <Panel t={t} key={type} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} capitalize />
                   )
                 }
 
                 if (type === 'ref') {
                   return (
-                    <Panel t={t} key={type} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
+                    <Panel t={t} key={type} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} rowMapper={(name) => {
                       const url = new URL(name)
 
                       return (
@@ -444,7 +470,7 @@ const ViewProject = ({
                 }
 
                 return (
-                  <Panel t={t} key={type} name={tnMapping[type]} data={panelsData.data[type]} />
+                  <Panel t={t} key={type} id={type} onFilter={filterHandler} name={tnMapping[type]} data={panelsData.data[type]} />
                 )
               })}
               {!_isEmpty(panelsData.customs) && (
