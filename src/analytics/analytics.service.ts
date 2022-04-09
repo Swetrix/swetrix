@@ -244,22 +244,30 @@ export class AnalyticsService {
   }
 
   // returns SQL filters query in a format like 'AND col=value AND ...'
-  getFiltersQuery(filters: Object): string {
-    if (_isEmpty(filters)) {
-      return ''
-    }
-
-    const cols = _keys(filters)
+  getFiltersQuery(filters: string): string {
+    let parsed = []
     let query = ''
 
-    for (let i = 0; i < _size(cols); ++i) {
-      const column = cols[i]
+    try {
+      parsed = JSON.parse(filters)
+    } catch (e) {
+      console.error(`Cannot parse the filters array: ${filters}`)
+      return query
+    }
+
+    if (_isEmpty(parsed)) {
+      return query
+    }
+
+    for (let i = 0; i < _size(parsed); ++i) {
+      const { column, filter, isExclusive } = parsed[i]
 
       if (!_includes(cols, column)) {
         throw new UnprocessableEntityException(`The provided filter (${column}) is not supported`)
       }
 
-      query += ` AND ${column}=${filters[column]}`
+      // todo: fix possible sql injection
+      query += ` ${isExclusive ? 'NOT' : 'AND'} ${column}='${filter}'`
     }
 
     return query
