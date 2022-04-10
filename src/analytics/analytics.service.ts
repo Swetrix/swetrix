@@ -267,7 +267,7 @@ export class AnalyticsService {
       }
 
       // todo: fix possible sql injection
-      query += ` ${isExclusive ? 'NOT' : 'AND'} ${column}='${filter}'`
+      query += ` ${isExclusive ? 'AND NOT' : 'AND'} ${column}='${filter}'`
     }
 
     return query
