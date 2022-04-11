@@ -237,6 +237,7 @@ const ViewProject = ({
   const [showTotal, setShowTotal] = useState(false)
   const [chartData, setChartData] = useState({})
   const [mainChart, setMainChart] = useState(null)
+  const [dataLoading, setDataLoading] = useState(true)
   const [filters, setFilters] = useState([])
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
@@ -254,6 +255,7 @@ const ViewProject = ({
 
   const loadAnalytics = async (forced = false, newFilters = null) => {
     if (forced || (!isLoading && !_isEmpty(project))) {
+      setDataLoading(true)
       try {
         let data
         const key = getProjectCacheKey(period, timeBucket)
@@ -267,6 +269,7 @@ const ViewProject = ({
 
         if (_isEmpty(data)) {
           setAnalyticsLoading(false)
+          setDataLoading(false)
           return
         }
 
@@ -290,6 +293,7 @@ const ViewProject = ({
         }
 
         setAnalyticsLoading(false)
+        setDataLoading(false)
       } catch (e) {
         console.error(e)
       }
@@ -500,6 +504,14 @@ const ViewProject = ({
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty })}>
             <div className='h-80' id='dataChart' />
             <Filters filters={filters} onRemoveFilter={filterHandler} onChangeExclusive={onChangeExclusive} language={language} t={t} tnMapping={tnMapping} />
+            {dataLoading && (
+              <div className='loader bg-transparent static mt-4' id='loader'>
+                <div className='loader-head'>
+                  <div className='first'></div>
+                  <div className='second'></div>
+                </div>
+              </div>
+            )}
             <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
               {!_isEmpty(project.overall) && (
                 <Overview
