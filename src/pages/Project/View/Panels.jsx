@@ -1,4 +1,4 @@
-import React, { memo, useState, useMemo, Fragment } from 'react'
+import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { ArrowSmUpIcon, ArrowSmDownIcon } from '@heroicons/react/solid'
 import { FilterIcon } from '@heroicons/react/outline'
 import cx from 'clsx'
@@ -238,14 +238,18 @@ const Panel = ({
 
   const _onFilter = hideFilters ? () => { } : onFilter
 
+  useEffect(() => {
+    const sizeKeys = _size(keys)
+
+    if (currentIndex > sizeKeys) {
+      setPage(_floor(sizeKeys / ENTRIES_PER_PANEL))
+    }
+  }, [currentIndex, keys])
+
   const onPrevious = () => {
     if (canGoPrev()) {
       setPage(page - 1)
     }
-  }
-
-  const onRowLinkClick = (e) => {
-    e.stopPropagation()
   }
 
   const onNext = () => {
@@ -282,14 +286,14 @@ const Panel = ({
                 >
                   {rowData}
                   {!hideFilters && (
-                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:flex dark:text-gray-300' />
+                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
                   )}
                 </a>
               ) : (
                 <span className={cx('flex items-center label', { capitalize })}>
                   {rowData}
                   {!hideFilters && (
-                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:flex dark:text-gray-300' />
+                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
                   )}
                 </span>
               )}
