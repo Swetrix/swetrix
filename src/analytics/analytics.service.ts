@@ -330,7 +330,7 @@ export class AnalyticsService {
     return result
   }
 
-  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string): Promise<object | void> {
+  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string, filtersQuery: string): Promise<object | void> {
     const params = {}
 
     for (let i of cols) {
@@ -392,7 +392,7 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count() from analytics where pid='${pid}' and created between '${xM[i]}' and '${xM[1 + i]}' group by unique`
+      query += `select ${i} index, unique, count() from analytics where pid='${pid}' and created between '${xM[i]}' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
     // @ts-ignore

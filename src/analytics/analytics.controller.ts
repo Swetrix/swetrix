@@ -118,7 +118,7 @@ export class AnalyticsController {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
     }
 
-    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid)
+    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid, filtersQuery)
 
     const customs = await this.analyticsService.processCustomEV(queryCustoms)
     
