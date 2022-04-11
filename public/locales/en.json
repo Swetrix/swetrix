@@ -30,7 +30,9 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "is": "is",
+    "isNot": "is not"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",

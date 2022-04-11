@@ -1,6 +1,6 @@
-import React, { memo, useState, useMemo, Fragment } from 'react'
-import { ArrowSmUpIcon } from '@heroicons/react/solid'
-import { ArrowSmDownIcon } from '@heroicons/react/solid'
+import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
+import { ArrowSmUpIcon, ArrowSmDownIcon } from '@heroicons/react/solid'
+import { FilterIcon } from '@heroicons/react/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import _keys from 'lodash/keys'
@@ -225,7 +225,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, capitalize, linkContent, t, icon,
+  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -235,6 +235,16 @@ const Panel = ({
 
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor(_size(keys) / ENTRIES_PER_PANEL)
+
+  const _onFilter = hideFilters ? () => { } : onFilter
+
+  useEffect(() => {
+    const sizeKeys = _size(keys)
+
+    if (currentIndex > sizeKeys) {
+      setPage(_floor(sizeKeys / ENTRIES_PER_PANEL))
+    }
+  }, [currentIndex, keys])
 
   const onPrevious = () => {
     if (canGoPrev()) {
@@ -260,14 +270,31 @@ const Panel = ({
 
         return (
           <Fragment key={key}>
-            <div className='flex justify-between mt-1 dark:text-gray-50'>
+            <div
+              className={cx('flex justify-between mt-1 dark:text-gray-50 rounded', {
+                'group hover:bg-gray-100 hover:dark:bg-gray-700 cursor-pointer': !hideFilters,
+              })}
+              onClick={() => _onFilter(id, key)}
+            >
+              {/* TODO: FIX: CLICKING ON AN EXTERNAL LINK CAUSES FILTER TO ACTIVATE */}
               {linkContent ? (
-                <a className={cx('flex label hover:underline text-blue-600 dark:text-blue-500', { capitalize })} href={rowData} target='_blank' rel='noopener noreferrer'>
+                <a
+                  className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', { capitalize })}
+                  href={rowData}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
                   {rowData}
+                  {!hideFilters && (
+                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                  )}
                 </a>
               ) : (
-                <span className={cx('flex label', { capitalize })}>
+                <span className={cx('flex items-center label', { capitalize })}>
                   {rowData}
+                  {!hideFilters && (
+                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                  )}
                 </span>
               )}
               <span className='ml-3 dark:text-gray-50'>
@@ -317,16 +344,22 @@ const Panel = ({
 Panel.propTypes = {
   name: PropTypes.string.isRequired,
   data: PropTypes.objectOf(PropTypes.number).isRequired,
+  id: PropTypes.string,
   rowMapper: PropTypes.func,
+  onFilter: PropTypes.func,
   capitalize: PropTypes.bool,
   linkContent: PropTypes.bool,
+  hideFilters: PropTypes.bool,
   icon: PropTypes.node,
 }
 
 Panel.defaultProps = {
+  id: null,
   rowMapper: null,
   capitalize: false,
   linkContent: false,
+  onFilter: () => { },
+  hideFilters: false,
   icon: null,
 }
 
