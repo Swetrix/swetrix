@@ -37,7 +37,7 @@ dayjs.extend(utc)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
-const cols = [
+export const cols = [
   'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref','so', 'me', 'ca',
 ]
 
@@ -243,6 +243,36 @@ export class AnalyticsService {
     }
   }
 
+  // returns SQL filters query in a format like 'AND col=value AND ...'
+  getFiltersQuery(filters: string): string {
+    let parsed = []
+    let query = ''
+
+    try {
+      parsed = JSON.parse(filters)
+    } catch (e) {
+      console.error(`Cannot parse the filters array: ${filters}`)
+      return query
+    }
+
+    if (_isEmpty(parsed)) {
+      return query
+    }
+
+    for (let i = 0; i < _size(parsed); ++i) {
+      const { column, filter, isExclusive } = parsed[i]
+
+      if (!_includes(cols, column)) {
+        throw new UnprocessableEntityException(`The provided filter (${column}) is not supported`)
+      }
+
+      // todo: fix possible sql injection
+      query += ` ${isExclusive ? 'AND NOT' : 'AND'} ${column}='${filter}'`
+    }
+
+    return query
+  }
+
   validateTimebucket(tb: string): void {
     if (!_includes(validTimebuckets, tb)) {
       throw new UnprocessableEntityException('The provided timebucket is incorrect')
@@ -300,7 +330,7 @@ export class AnalyticsService {
     return result
   }
 
-  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string): Promise<object | void> {
+  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string, filtersQuery: string): Promise<object | void> {
     const params = {}
 
     for (let i of cols) {
@@ -362,7 +392,7 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count() from analytics where pid='${pid}' and created between '${xM[i]}' and '${xM[1 + i]}' group by unique`
+      query += `select ${i} index, unique, count() from analytics where pid='${pid}' and created between '${xM[i]}' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
     // @ts-ignore
