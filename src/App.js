@@ -1,5 +1,5 @@
 import React, { useEffect, lazy, Suspense, useState } from 'react'
-import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
+import { Switch, Route, useLocation } from 'react-router-dom'
 import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
@@ -39,6 +39,7 @@ const ViewProject = lazy(() => import('pages/Project/View'))
 const Billing = lazy(() => import('pages/Billing'))
 const Privacy = lazy(() => import('pages/Privacy'))
 const Terms = lazy(() => import('pages/Terms'))
+const NotFound = lazy(() => import('pages/NotFound'))
 
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
@@ -174,7 +175,7 @@ const App = () => {
                 <Route path={routes.features} component={Features} exact />
                 <Route path={routes.privacy} component={Privacy} exact />
                 <Route path={routes.terms} component={Terms} exact />
-                <Redirect to={routes.main} />
+                <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>
           </Selfhosted>
