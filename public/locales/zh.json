@@ -246,6 +246,12 @@
     },
     "contents": "内容"
   },
+  "notFoundPage": {
+    "title": "Page not found",
+    "description": "Sorry, we couldn’t find the page you’re looking for.\nPlease check the URL in the address bar and try again.",
+    "goHome": "Go back home",
+    "support": "Contact support"
+  },
   "project": {
     "ad": "你的网站需要这些数据吗？",
     "noExist": "所选项目不存在",
