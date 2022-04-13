@@ -246,6 +246,12 @@
     },
     "contents": "Inhalt"
   },
+  "notFoundPage": {
+    "title": "Page not found",
+    "description": "Sorry, we couldn’t find the page you’re looking for.\nPlease check the URL in the address bar and try again.",
+    "goHome": "Go back home",
+    "support": "Contact support"
+  },
   "project": {
     "ad": "Sie möchten diese Statistiken für Ihre eigene Webseite?",
     "noExist": "Das ausgewählte Projekt existiert nicht",
