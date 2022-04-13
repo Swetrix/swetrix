@@ -30,7 +30,9 @@
     "openMenu": "Öppna meny",
     "closeMenu": "Stäng menyn",
     "yes": "Ja",
-    "no": "Nej"
+    "no": "Nej",
+    "is": "is",
+    "isNot": "is not"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -314,6 +316,7 @@
     "title": "Prisplaner",
     "adv": "Börja gratis, inget kreditkort behövs.\nNär ditt företag växer kan du uppgradera din plan när som helst.",
     "currentPlan": "Nuvarande plan",
+    "mostPopular": "Most popular",
     "free": "Gratis",
     "perMonth": "må",
     "yourPlan": "Din plan",

@@ -30,7 +30,9 @@
     "openMenu": "मेन्यू खोलें",
     "closeMenu": "मेन्यू बंद करें",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "is": "is",
+    "isNot": "is not"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -314,6 +316,7 @@
     "title": "मूल्य निर्धारण प्लान",
     "adv": "फ्री से शुरू करें, क्रेडिट कार्ड की आवश्यकता नहीं है।\nव्यवसाय के बढ़ने के बाद, आप किसी भी समय अपने प्लान को अपग्रेड कर सकते हैं।",
     "currentPlan": "वर्तमान प्लान",
+    "mostPopular": "Most popular",
     "free": "फ्री",
     "perMonth": "माह",
     "yourPlan": "आपका प्लान",

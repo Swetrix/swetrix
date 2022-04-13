@@ -30,7 +30,9 @@
     "openMenu": "开启菜单",
     "closeMenu": "关闭菜单",
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "is": "is",
+    "isNot": "is not"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -314,6 +316,7 @@
     "title": "定价计划",
     "adv": "免费开始，无需信用卡。\n当您的业务增长时，您可以随时升级您的计划。",
     "currentPlan": "当前计划",
+    "mostPopular": "Most popular",
     "free": "免费",
     "perMonth": "月",
     "yourPlan": "您的计划",
