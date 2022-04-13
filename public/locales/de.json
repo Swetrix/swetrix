@@ -30,7 +30,9 @@
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "is": "is",
+    "isNot": "is not"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -314,6 +316,7 @@
     "title": "Abomodelle",
     "adv": "Sie können gratis anfangen. Es wird keine Kreditkarte benötigt.\nWenn Ihr Unternehmen wächst, können Sie Ihr Abonnement jederzeit aufstufen.",
     "currentPlan": "Derzeitiges Abo",
+    "mostPopular": "Most popular",
     "free": "Gratis",
     "perMonth": "mo",
     "yourPlan": "Ihr Abonnement",

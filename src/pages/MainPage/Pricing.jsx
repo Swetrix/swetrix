@@ -53,6 +53,7 @@ const getTiers = (t) => [
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
     ],
     pid: 752317,
+    mostPopular: true,
   },
   {
     name: t('pricing.tiers.enterprise'),
@@ -208,6 +209,11 @@ const Pricing = ({ t, language }) => {
                   )}
                   <div className='p-6 border-none'>
                     <h2 className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>{tier.name}</h2>
+                    {tier.mostPopular && !authenticated && (
+                      <p className='absolute top-0 py-1.5 px-4 bg-indigo-600 rounded-full text-xs font-semibold uppercase tracking-wide text-white transform -translate-y-1/2'>
+                        {t('pricing.mostPopular')}
+                      </p>
+                    )}
                     <p className='mt-4'>
                       {tier.planCode === 'free' ? (
                         <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>

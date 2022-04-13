@@ -30,7 +30,9 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "is": "is",
+    "isNot": "is not"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -314,6 +316,7 @@
     "title": "Pricing Plans",
     "adv": "Start out for free, no credit card needed.\nWhen your business grows, you can upgrade your plan at any time.",
     "currentPlan": "Current plan",
+    "mostPopular": "Most popular",
     "free": "Free",
     "perMonth": "mo",
     "yourPlan": "Your plan",
