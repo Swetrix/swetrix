@@ -56,5 +56,5 @@ ReactDOM.render(
       </AlertProvider>
     </CrashHandler>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById('root'),
 )
