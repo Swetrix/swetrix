@@ -75,16 +75,11 @@ const getSettings = (chart, timeBucket, showTotal = true, t) => ({
   axis: {
     x: {
       tick: {
-        fit: false,
-        count: 5,
+        fit: true,
       },
       type: 'timeseries',
     },
   },
-  // zoom: {
-  //   enabled: zoom(),
-  //   type: 'drag',
-  // },
   tooltip: {
     format: {
       title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),

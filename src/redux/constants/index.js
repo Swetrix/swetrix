@@ -34,7 +34,7 @@ export const tbsFormatMapper = {
   'hour': '%d %B %H:%M',
   'day': '%d %B',
   'week': '%d %B',
-  'month': '%d %B',
+  'month': '%d %B %Y',
 }
 
 export const reportFrequencies = ['weekly', 'monthly', 'never']
