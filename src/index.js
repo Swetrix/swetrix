@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { store } from 'redux/store'
 import { Provider } from 'react-redux'
@@ -40,8 +40,13 @@ if (process.env.NODE_ENV !== 'production') {
   localStorage.debug = 'swetrix:*'
 }
 
-ReactDOM.render(
-  <React.StrictMode>
+const container = document.getElementById('root')
+const root = createRoot(container)
+
+// Disabled StrictMode until I fix issues related to navigation issues
+// Possibly it's related to 'Strict Mode has gotten stricter in React 18' -> https://reactjs.org/blog/2022/03/08/react-18-upgrade-guide.html#updates-to-strict-mode
+root.render(
+  // <React.StrictMode>
     <CrashHandler>
       <AlertProvider template={AlertTemplate} {...options}>
         <Provider store={store}>
@@ -55,6 +60,5 @@ ReactDOM.render(
         </Provider>
       </AlertProvider>
     </CrashHandler>
-  </React.StrictMode>,
-  document.getElementById('root'),
+  // </React.StrictMode>
 )
