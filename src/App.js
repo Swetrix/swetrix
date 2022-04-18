@@ -181,7 +181,6 @@ const App = () => {
           </Selfhosted>
         </ScrollToTop>
         <Footer minimal={isMinimalFooter} authenticated={authenticated} />
-        <div id='intergramPlaceholder' className='flex sticky bottom-0 self-end items-end justify-end h-0' />
       </Suspense>
     )
   )
