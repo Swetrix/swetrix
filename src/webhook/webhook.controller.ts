@@ -25,7 +25,6 @@ export class WebhookController {
   @Post('/paddle')
   async paddleWebhook(@Body() body, @Headers() headers, @Ip() reqIP): Promise<any> {
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    console.log(body, headers, ip)
 
     this.webhookService.verifyIP(ip)
     this.webhookService.validateWebhook(body)
