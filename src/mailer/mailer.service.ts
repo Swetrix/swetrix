@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import * as nodemailer from 'nodemailer'
+import * as postmark from 'postmark'
 import handlebars from 'handlebars'
 import { LetterTemplate } from './letter'
 import fs = require('fs')
@@ -65,6 +65,8 @@ handlebars.registerHelper('greater', function (v1, v2, options) {
   return options.inverse(this)
 })
 
+const mailClient = new postmark.ServerClient(process.env.SMTP_PASSWORD)
+
 @Injectable()
 export class MailerService {
   constructor(
@@ -79,39 +81,18 @@ export class MailerService {
       const template = handlebars.compile(letter)
       const htmlToSend = template(params)
 
-      const transporter = nodemailer.createTransport({
-        host: messageStream === 'broadcast' ? process.env.SMTP_BROADCAST_HOST : process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
-        headers: {
-          'X-PM-Message-Stream': messageStream,
-        }
-      })
-
       const message = {
-        from: {
-          name: 'Swetrix Analytics',
-          address: process.env.FROM_EMAIL
-        },
-        to: email,
-        subject,
-        html: htmlToSend,
-        attachments: [],
+        From: process.env.FROM_EMAIL,
+        To: email,
+        Subject: subject,
+        HtmlBody: htmlToSend,
+        MessageStream: messageStream,
       }
 
       if (process.env.SMTP_MOCK) {
         this.logger.log(message, 'sendEmail', true)
       } else {
-        transporter.sendMail(message, (err, info) => {
-          if (err) {
-            console.error('Error in transporter.sendMail', err)
-            console.error('Info in transporter.sendMail', info)
-            return process.exit(1)
-          }
-        })
+        await mailClient.sendEmail(message)
       }
     } catch (error) {
       console.error(error)
