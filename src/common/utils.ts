@@ -104,8 +104,13 @@ const deleteProjectClickhouse = async (id) => {
 }
 
 const createProjectClickhouse = async (project: Project) => {
-  const query = `INSERT INTO project (*) VALUES ('${project.id}','${project.name}','',1,0,'${dayjs.utc().format('YYYY-MM-DD HH:mm:ss')}')`
-  return await clickhouse.query(query).toPromise()
+  const paramsData = {
+    params: {
+      ...project,
+    },
+  }
+  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'',1,0,'${dayjs.utc().format('YYYY-MM-DD HH:mm:ss')}')`
+  return await clickhouse.query(query, paramsData).toPromise()
 }
 
 export {
