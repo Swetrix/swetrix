@@ -28,7 +28,7 @@ import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
-  HEARTBEAT_SID_LIFE_TIME, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, // REDIS_SESSION_SALT_KEY,
+  HEARTBEAT_SID_LIFE_TIME, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 
 dayjs.extend(utc)
@@ -221,8 +221,8 @@ export class AnalyticsController {
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
     if (eventsDTO.unique) {
-      // const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-      const sessionHash = getSessionKeyCustom(ip, userAgent, eventsDTO.pid, eventsDTO.ev/*, salt */)
+      const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+      const sessionHash = getSessionKeyCustom(ip, userAgent, eventsDTO.pid, eventsDTO.ev, salt)
       const unique = await this.analyticsService.isUnique(sessionHash)
 
       if (!unique) {
@@ -266,8 +266,8 @@ export class AnalyticsController {
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
-    // const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid/*, salt */)
+    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
     let dto: Array<string | number>
     const ua = UAParser(userAgent)
@@ -317,8 +317,8 @@ export class AnalyticsController {
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
-    // const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid/*, salt */)
+    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
 
     const ua = UAParser(userAgent)

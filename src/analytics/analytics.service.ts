@@ -24,7 +24,7 @@ import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
-  redisProjectCountCacheTimeout, isSelfhosted, // REDIS_SESSION_SALT_KEY,
+  redisProjectCountCacheTimeout, isSelfhosted, REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import { getProjectsClickhouse } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
@@ -231,8 +231,8 @@ export class AnalyticsService {
     const { pid } = logDTO
     this.validatePID(pid)
 
-    // const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-    const sessionHash = getSessionKey(ip, userAgent, pid/*, salt */)
+    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+    const sessionHash = getSessionKey(ip, userAgent, pid, salt)
     const sessionExists = await this.isSessionOpen(sessionHash)
 
     if (!sessionExists) throw new ForbiddenException('The Heartbeat session does not exist')
