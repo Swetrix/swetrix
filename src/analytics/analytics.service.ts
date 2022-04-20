@@ -340,12 +340,12 @@ export class AnalyticsService {
     return result
   }
 
-  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string, filtersQuery: string): Promise<object | void> {
+  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string, filtersQuery: string, paramsData: object): Promise<object | void> {
     const params = {}
 
     for (let i of cols) {
       const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
-      const res = await clickhouse.query(query1).toPromise()
+      const res = await clickhouse.query(query1, paramsData).toPromise()
 
       params[i] = {}
 
@@ -454,11 +454,11 @@ export class AnalyticsService {
     })
   }
 
-  async processCustomEV(query: string): Promise<object> {
+  async processCustomEV(query: string, params: object): Promise<object> {
     const result = {}
 
     // @ts-ignore
-    const rawCustoms: Array<customsCHResponse> = await clickhouse.query(query).toPromise()
+    const rawCustoms: Array<customsCHResponse> = await clickhouse.query(query, params).toPromise()
     const size = _size(rawCustoms)
 
     for (let i = 0; i < size; ++i) {

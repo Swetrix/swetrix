@@ -94,8 +94,16 @@ export class AnalyticsController {
 
     let groupFrom = from, groupTo = to
 
-    let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid='${pid}'`
+    let queryCustoms = 'SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)}'
     let subQuery = `FROM analytics WHERE pid='${pid}' ${filtersQuery}`
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: null,
+        groupTo: null,
+      },
+    }
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       throw new NotImplementedException('Filtering by from/to params is currently not available')
@@ -110,17 +118,22 @@ export class AnalyticsController {
         queryCustoms += ` AND created BETWEEN ${from} AND ${to} GROUP BY ev`
       }
     } else if (!_isEmpty(period)) {
-      groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
-      groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
-      queryCustoms += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}' GROUP BY ev`
-      subQuery += ` AND created BETWEEN '${groupFrom}' AND '${groupTo}'`
+      paramsData.params.groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
+      paramsData.params.groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+      
+      // temp
+      groupFrom = paramsData.params.groupFrom
+      groupTo = paramsData.params.groupTo
+
+      queryCustoms += ' AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev'
+      subQuery += ' AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
     } else {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
     }
 
-    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid, filtersQuery)
+    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid, filtersQuery, paramsData)
 
-    const customs = await this.analyticsService.processCustomEV(queryCustoms)
+    const customs = await this.analyticsService.processCustomEV(queryCustoms, paramsData)
     
     return {
       ...result,
