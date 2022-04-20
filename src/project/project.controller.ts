@@ -108,13 +108,13 @@ export class ProjectController {
       return project
     } else {
       const user = await this.userService.findOneWithRelations(userId, ['projects'])
-      const maxProjects = ACCOUNT_PLANS[user.planCode].maxProjects
+      const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
 
       if (!user.isActive) {
         throw new ForbiddenException('Please, verify your email address first')
       }
 
-      if (!isSelfhosted && _size(user.projects) >= (maxProjects || 5)) {
+      if (_size(user.projects) >= (maxProjects || 5)) {
         throw new ForbiddenException(`You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`)
       }
 

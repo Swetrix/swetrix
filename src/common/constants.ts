@@ -130,6 +130,7 @@ const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
 
 // is ProjectID a valid key
+// TODO: ALLOW ONLY WHITELISTED PID CHARACTERS
 const isValidPID = (pid: string) => _size(pid) === 12
 
 // redis keys
