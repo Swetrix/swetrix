@@ -209,6 +209,7 @@ export class AnalyticsService {
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
     if (!isSelfhosted) {
+      // TODO: (IMPORTANT) CHECK THE EVENTS COUNT --SUM-- FROM ALL USERS PROJECTS
       const count = await this.getRedisCount(project.admin.id)
       const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
   
@@ -302,12 +303,21 @@ export class AnalyticsService {
       const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
       const twoWeeks = oneWRaw.subtract(1, period).format('YYYY-MM-DD HH:mm:ss')
 
-      const query1 = `SELECT unique, count() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${oneWeek}' AND '${now}' GROUP BY unique`
-      const query2 = `SELECT unique, count() FROM analytics WHERE pid='${pid}' AND created BETWEEN '${twoWeeks}' AND '${oneWeek}' GROUP BY unique`
-      
+      const query1 = `SELECT unique, count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {oneWeek:String} AND {now:String} GROUP BY unique`
+      const query2 = `SELECT unique, count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {twoWeeks:String} AND {oneWeek:String} GROUP BY unique`
+
+      const paramsData = {
+        params: {
+          pid,
+          oneWeek,
+          twoWeeks,
+          now,
+        },
+      }
+
       try {
-        const q1res = await clickhouse.query(query1).toPromise()
-        const q2res = await clickhouse.query(query2).toPromise()
+        const q1res = await clickhouse.query(query1, paramsData).toPromise()
+        const q2res = await clickhouse.query(query2, paramsData).toPromise()
 
         const thisWeekUnique = _find(q1res, ({ unique }) => unique)?.['count()'] || 0
         const thisWeekPV = (_find(q1res, ({ unique }) => !unique)?.['count()'] || 0) + thisWeekUnique
