@@ -70,8 +70,14 @@ const getProjectsClickhouse = async (id = null) => {
     return await clickhouse.query(query).toPromise()
   }
 
-  const query = `SELECT * FROM project WHERE id='${id}';`
-  const project = await clickhouse.query(query).toPromise()
+  const paramsData = {
+    params: {
+      id,
+    },
+  }
+
+  const query = `SELECT * FROM project WHERE id = {id:FixedString(12)};`
+  const project = await clickhouse.query(query, paramsData).toPromise()
 
   if (_isEmpty(project)) {
     throw new NotFoundException(`Project ${id} was not found in the database`)
