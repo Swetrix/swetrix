@@ -89,19 +89,20 @@ export class AnalyticsController {
     this.analyticsService.validatePID(pid)
     this.analyticsService.validatePeriod(period)
     this.analyticsService.validateTimebucket(timeBucket)
-    const filtersQuery = this.analyticsService.getFiltersQuery(filters)
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let groupFrom = from, groupTo = to
 
     let queryCustoms = 'SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)}'
-    let subQuery = `FROM analytics WHERE pid='${pid}' ${filtersQuery}`
+    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
 
     const paramsData = {
       params: {
         pid,
         groupFrom: null,
         groupTo: null,
+        ...filtersParams,
       },
     }
 
@@ -118,12 +119,13 @@ export class AnalyticsController {
         queryCustoms += ` AND created BETWEEN ${from} AND ${to} GROUP BY ev`
       }
     } else if (!_isEmpty(period)) {
-      paramsData.params.groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
-      paramsData.params.groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
-      
-      // temp
-      groupFrom = paramsData.params.groupFrom
-      groupTo = paramsData.params.groupTo
+      groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
+      groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+
+      paramsData.params = {
+        ...paramsData.params,
+        groupFrom, groupTo,
+      }
 
       queryCustoms += ' AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev'
       subQuery += ' AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
@@ -131,7 +133,7 @@ export class AnalyticsController {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
     }
 
-    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, pid, filtersQuery, paramsData)
+    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, filtersQuery, paramsData)
 
     const customs = await this.analyticsService.processCustomEV(queryCustoms, paramsData)
     

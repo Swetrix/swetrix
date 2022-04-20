@@ -58,6 +58,8 @@ const validTimebuckets = ['hour', 'day', 'week', 'month']
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
+interface GetFiltersQuery extends Array<string | object>{0:string; 1:object}
+
 @Injectable()
 export class AnalyticsService {
   constructor(
@@ -245,19 +247,20 @@ export class AnalyticsService {
   }
 
   // returns SQL filters query in a format like 'AND col=value AND ...'
-  getFiltersQuery(filters: string): string {
+  getFiltersQuery(filters: string): GetFiltersQuery {
     let parsed = []
     let query = ''
+    let params = {}
 
     try {
       parsed = JSON.parse(filters)
     } catch (e) {
       console.error(`Cannot parse the filters array: ${filters}`)
-      return query
+      return [query, params]
     }
 
     if (_isEmpty(parsed)) {
-      return query
+      return [query, params]
     }
 
     for (let i = 0; i < _size(parsed); ++i) {
@@ -266,12 +269,17 @@ export class AnalyticsService {
       if (!_includes(cols, column)) {
         throw new UnprocessableEntityException(`The provided filter (${column}) is not supported`)
       }
+      // working only on 1 filter per 1 column
+      const colFilter = `cf_${column}`
 
-      // todo: fix possible sql injection
-      query += ` ${isExclusive ? 'AND NOT' : 'AND'} ${column}='${filter}'`
+      params = {
+        ...params,
+        [colFilter]: filter,
+      }
+      query += ` ${isExclusive ? 'AND NOT' : 'AND'} ${column}={${colFilter}:String}`
     }
 
-    return query
+    return [query, params]
   }
 
   validateTimebucket(tb: string): void {
@@ -340,7 +348,7 @@ export class AnalyticsService {
     return result
   }
 
-  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, pid: string, filtersQuery: string, paramsData: object): Promise<object | void> {
+  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, filtersQuery: string, paramsData: object): Promise<object | void> {
     const params = {}
 
     for (let i of cols) {
@@ -402,11 +410,11 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count() from analytics where pid='${pid}' and created between '${xM[i]}' and '${xM[1 + i]}' ${filtersQuery} group by unique`
+      query += `select ${i} index, unique, count() from analytics where pid = {pid:FixedString(12)} and created between '${xM[i]}' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
     // @ts-ignore
-    const result: Array<chartCHResponse> = (await clickhouse.query(query).toPromise()).sort((a, b) => a.index - b.index)
+    const result: Array<chartCHResponse> = (await clickhouse.query(query, paramsData).toPromise()).sort((a, b) => a.index - b.index)
     const visits = []
     const uniques = []
 
