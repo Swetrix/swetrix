@@ -39,8 +39,15 @@ const analyticsDTO = (pid: string, pg: string, dv: string, br: string, os: strin
   return [uuidv4(), pid, pg, dv, br, os, lc, ref, so, me, ca, lt, cc, unique, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
 }
 
-const customLogDTO = (pid: string, ev: string): Array<string> => {
-  return [uuidv4(), pid, ev, dayjs.utc().format('YYYY-MM-DD HH:mm:ss')]
+const customLogDTO = (pid: string, ev: string): string => {
+  const dto = {
+    id: uuidv4(),
+    pid,
+    ev,
+    created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+  }
+
+  return JSON.stringify(dto)
 }
 
 const getElValue = (el) => {
@@ -225,9 +232,8 @@ export class AnalyticsController {
 
     const dto = customLogDTO(eventsDTO.pid, eventsDTO.ev)
 
-    const values = `(${dto.map(getElValue).join(',')})`
     try {
-      await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, values)
+      await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, dto)
       return
     } catch (e) {
       this.logger.error(e)

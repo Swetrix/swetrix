@@ -49,9 +49,11 @@ export class TaskManagerService {
 
     if (!_isEmpty(customData)) {
       await redis.del(REDIS_LOG_CUSTOM_CACHE_KEY)
-      const query = `INSERT INTO customEV (*) VALUES ${_join(customData, ',')}`
+
       try {
-        await clickhouse.query(query).toPromise()
+        const parsed = _map(customData, JSON.parse)
+        const query = `INSERT INTO customEV (id, pid, ev, created)`
+        await clickhouse.query(query, parsed).toPromise()
       } catch (e) {
         console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
       }
