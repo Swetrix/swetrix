@@ -542,16 +542,29 @@ const ViewProject = ({
                 if (type === 'ref') {
                   return (
                     <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} rowMapper={(name) => {
-                      const url = new URL(name)
+                      let isUrl = true
+                      let url = name
+
+                      try {
+                        url = new URL(name)
+                      } catch {
+                        isUrl = false
+                      }
 
                       return (
                         <div>
-                          {showIcons && !_isEmpty(url.hostname) && (
+                          {showIcons && isUrl && !_isEmpty(url.hostname) && (
                             <img className='w-5 h-5 mr-1.5 float-left' src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`} alt='' />
                           )}
-                          <a className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500' href={name} target='_blank' rel='noopener noreferrer'>
-                            {name}
-                          </a>
+                          {isUrl ? (
+                            <a className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500' href={name} target='_blank' rel='noopener noreferrer'>
+                              {name}
+                            </a>
+                          ) : (
+                            <span className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'>
+                              {name}
+                            </span>
+                          )}
                         </div>
                       )
                     }}
