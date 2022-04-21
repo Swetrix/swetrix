@@ -70,23 +70,26 @@ export const GDPR_REQUEST = 'gdpr_request'
 export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
 
 // List of languages with translations available
-export const whitelist = ['en', 'uk', 'de', 'sv', 'ru', 'hi', 'zh']
+export const whitelist = ['en', 'uk', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
 export const defaultLanguage = 'en'
 export const languages = {
   en: 'English',
-  ru: 'Русский',
   uk: 'Українська',
   de: 'Deutsch',
   sv: 'Svenska',
+  el: 'Ελληνικά',
+  ru: 'Русский',
   hi: 'हिन्दी',
   zh: '中文简体',
 }
+
 export const languageFlag = {
   en: 'GB',
   uk: 'UA',
-  ru: 'RU',
   de: 'DE',
   sv: 'SE',
+  el: 'GR',
+  ru: 'RU',
   hi: 'IN',
   zh: 'CN',
 }
@@ -94,4 +97,5 @@ export const languageFlag = {
 export const paddleLanguageMapping = {
   zh: 'zh-Hans',
   uk: 'ru',
+  el: 'en', 
 }
