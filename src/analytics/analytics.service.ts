@@ -22,9 +22,8 @@ import {
 
 import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
-  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout,
-  UNIQUE_SESSION_LIFE_TIME, clickhouse, getPercentageChange, getRedisUserCountKey,
-  redisProjectCountCacheTimeout, isSelfhosted, REDIS_SESSION_SALT_KEY,
+  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, UNIQUE_SESSION_LIFE_TIME, clickhouse,
+  getPercentageChange, isSelfhosted, REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import { getProjectsClickhouse } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
@@ -100,50 +99,6 @@ export class AnalyticsService {
     }
   }
 
-  // Returns amount of existing events starting from month
-  async getRedisCount(uid: string): Promise<number | null> {
-    const countKey = getRedisUserCountKey(uid)
-    let count = await redis.get(countKey)
-
-    if (_isEmpty(count)) {
-      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      const monthStart = dayjs.utc().startOf('month').format('YYYY-MM-DD HH:mm:ss')
-
-      let pids
-
-      if (isSelfhosted) {
-        const projects = await getProjectsClickhouse()
-        pids = _map(projects, ({ id }) => id)
-      } else {
-        pids = await this.projectService.find({
-          where: {
-            admin: uid,
-          },
-          select: ['id'],
-        })
-      }
-
-      const count_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${now}'`
-      const result = await clickhouse.query(count_query).toPromise()
-
-      const pageviews = result[0]['count()']
-      count = pageviews
-      
-      await redis.set(countKey, `${pageviews}`, 'EX', redisProjectCountCacheTimeout)
-    } else {
-      try {
-        // @ts-ignore
-        count = Number(count)
-      } catch (e) {
-        console.error(e)
-        throw new InternalServerErrorException('Error while processing project')
-      }
-    }
-
-    // @ts-ignore
-    return count
-  }
-
   checkOrigin(project: Project, origin: string): void {
     if (!_isEmpty(project.origins) && !_isEmpty(origin)) {
       if (origin === 'null') {
@@ -210,9 +165,9 @@ export class AnalyticsService {
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
     if (!isSelfhosted) {
-      const count = await this.getRedisCount(project.admin.id)
+      const count = await this.projectService.getRedisCount(project.admin.id)
       const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
-  
+
       if (count >= maxCount) {
         throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
       }

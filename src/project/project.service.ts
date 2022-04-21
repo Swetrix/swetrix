@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException } from '@nestjs/common'
+import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException, InternalServerErrorException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -8,11 +8,19 @@ import * as _size from 'lodash/size'
 import * as _split from 'lodash/split'
 import * as _join from 'lodash/join'
 import * as _find from 'lodash/find'
+import * as _map from 'lodash/map'
+import * as dayjs from 'dayjs'
+import * as utc from 'dayjs/plugin/utc'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
-import { isValidPID } from '../common/constants'
+import {
+  isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
+} from '../common/constants'
+import { getProjectsClickhouse } from '../common/utils'
+
+dayjs.extend(utc)
 
 @Injectable()
 export class ProjectService {
@@ -120,7 +128,6 @@ export class ProjectService {
     updProject.origins = _isString(updProject.origins) ? updProject.origins : _join(updProject.origins, ',')
 
     return updProject
-
   }
 
   formatFromClickhouse(project: object): object {
@@ -138,5 +145,49 @@ export class ProjectService {
     if (_size(projectDTO.name) > 50) throw new UnprocessableEntityException('The project name is too long')
     if (!_isArray(projectDTO.origins)) throw new UnprocessableEntityException('The list of allowed origins has to be an array of strings')
     if (_size(_join(projectDTO.origins, ',')) > 300) throw new UnprocessableEntityException('The list of allowed origins has to be smaller than 300 symbols')
+  }
+
+  // Returns amount of existing events starting from month
+  async getRedisCount(uid: string): Promise<number | null> {
+    const countKey = getRedisUserCountKey(uid)
+    let count = await redis.get(countKey)
+
+    if (_isEmpty(count)) {
+      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+      const monthStart = dayjs.utc().startOf('month').format('YYYY-MM-DD HH:mm:ss')
+
+      let pids
+
+      if (isSelfhosted) {
+        const projects = await getProjectsClickhouse()
+        pids = _map(projects, ({ id }) => id)
+      } else {
+        pids = await this.find({
+          where: {
+            admin: uid,
+          },
+          select: ['id'],
+        })
+      }
+
+      const count_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${now}'`
+      const result = await clickhouse.query(count_query).toPromise()
+
+      const pageviews = result[0]['count()']
+      count = pageviews
+      
+      await redis.set(countKey, `${pageviews}`, 'EX', redisProjectCountCacheTimeout)
+    } else {
+      try {
+        // @ts-ignore
+        count = Number(count)
+      } catch (e) {
+        console.error(e)
+        throw new InternalServerErrorException('Error while processing project')
+      }
+    }
+
+    // @ts-ignore
+    return count
   }
 }

@@ -51,12 +51,19 @@ export class ProjectController {
         results,
         page_total: _size(formatted),
         total: _size(formatted),
+        totalMonthlyEvents: 0, // not needed as it's selfhosed
       }
     } else {
       const where = Object()
       where.admin = userId
 
-      return await this.projectService.paginate({ take, skip }, where)
+      const paginated = await this.projectService.paginate({ take, skip }, where)
+      const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
+
+      return {
+        ...paginated,
+        totalMonthlyEvents,
+      }
     }
   }
 
