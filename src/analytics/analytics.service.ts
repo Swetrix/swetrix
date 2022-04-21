@@ -185,7 +185,6 @@ export class AnalyticsService {
       // 'tz' does not need validation as it's based on getCountryForTimezone detection
       // @ts-ignore
       const { lc } = logDTO
-      // TODO: IMPORTANT!: validate pg param
 
       // validate locale ('lc' param)
       if (!_isEmpty(lc)) {
@@ -211,7 +210,6 @@ export class AnalyticsService {
     if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
 
     if (!isSelfhosted) {
-      // TODO: (IMPORTANT) CHECK THE EVENTS COUNT --SUM-- FROM ALL USERS PROJECTS
       const count = await this.getRedisCount(project.admin.id)
       const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
   
