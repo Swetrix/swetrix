@@ -50,8 +50,9 @@ export class AuthController {
         email: SELFHOSTED_EMAIL,
       }
     } else {
-      user = await this.userService.findOneWhere({ id: user_id })
-      delete user.password
+      user = this.authService.processUser(
+        await this.userService.findOneWhere({ id: user_id })
+      )
     }
 
     return user
@@ -68,7 +69,9 @@ export class AuthController {
       if (userLoginDTO.email !== SELFHOSTED_EMAIL || userLoginDTO.password !== SELFHOSTED_PASSWORD) {
         throw new UnprocessableEntityException('Email or password is incorrect')
       }
-      return this.authService.login(SELFHOSTED_EMAIL)
+      return this.authService.login({
+        email: SELFHOSTED_EMAIL,
+      })
     } else {
       const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
       return this.authService.login(user)

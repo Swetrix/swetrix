@@ -7,6 +7,7 @@ import * as _toUpper from 'lodash/toUpper'
 import * as _includes from 'lodash/includes'
 
 import { UserService } from '../user/user.service'
+import { ACCOUNT_PLANS } from '../user/entities/user.entity'
 import { AppLoggerService } from '../logger/logger.service'
 import { User } from '../user/entities/user.entity'
 import {
@@ -96,23 +97,38 @@ export class AuthService {
     throw new UnprocessableEntityException('Email or password is incorrect')
   }
 
-  login(user: User | string): object {
+  processUser(user: User): object {
+    // @ts-ignore
+    const maxEventsCount = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit || 0
+    const userData = {
+      // @ts-ignore
+      ...user,
+      password: undefined,
+      maxEventsCount,
+    }
+
+    return userData
+  }
+
+  login(user: User | object): object {
     let userData = user
 
     if (isSelfhosted) {
       // @ts-ignore
       userData = {
+        ...user,
         id: SELFHOSTED_UUID,
       }
+    } else {
+      // @ts-ignore
+      userData = this.processUser(user)
     }
 
     // @ts-ignore
-    const token = sign({ user_id: user.id }, process.env.JWT_SECRET, {
+    const token = sign({ user_id: userData.id }, process.env.JWT_SECRET, {
       expiresIn: JWT_LIFE_TIME,
     })
 
-    // @ts-ignore
-    delete user.password
-    return { access_token: token, user }
+    return { access_token: token, user: userData }
   }
 }
