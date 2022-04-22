@@ -65,7 +65,7 @@ const Modal = ({
                     {title}
                   </Dialog.Title>
                   <div className='mt-2'>
-                    <p className='text-sm text-gray-500 whitespace-pre-line dark:text-gray-200'>
+                    <p className='text-sm text-gray-600 whitespace-pre-line dark:text-gray-200'>
                       {message}
                     </p>
                   </div>
