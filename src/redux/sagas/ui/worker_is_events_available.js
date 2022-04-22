@@ -16,7 +16,7 @@ export default function* checkEventsAvailable() {
     return
   }
 
-  const dataRequests = 0
+  let dataRequests = 0
   
   while (true) {
     if (dataRequests > DATA_REQUEST_ATTEMPTS) {
