@@ -12,7 +12,7 @@ const debug = Debug('swetrix:rx:s:load-projects')
 
 export default function* loadProjects() {
   try {
-    let { results } = yield call(getProjects)
+    let { results, totalMonthlyEvents } = yield call(getProjects)
     const pids = _map(results, result => result.id)
     let overall
 
@@ -27,6 +27,7 @@ export default function* loadProjects() {
       overall: overall?.[res.id],
     }))
     yield put(UIActions.setProjects(results))
+    yield put(UIActions.setTotalMonthlyEvents(totalMonthlyEvents))
 
     const liveStats = yield call(getLiveVisitors, pids)
     yield put(UIActions.setLiveStats(liveStats))

@@ -11,6 +11,20 @@ const setProjects = (projects) => ({
   },
 })
 
+const setTotalMonthlyEvents = (totalMonthlyEvents) => ({
+  type: types.SET_TOTAL_MONTHLY_EVENTS,
+  payload: {
+    totalMonthlyEvents,
+  },
+})
+
+const setShowNoEventsLeftBanner = (showNoEventsLeftBanner) => ({
+  type: types.SET_SHOW_NO_EVENTS_LEFT,
+  payload: {
+    showNoEventsLeftBanner,
+  },
+})
+
 const setLiveStats = (data) => ({
   type: types.SET_LIVE_STATS,
   payload: {
@@ -110,6 +124,8 @@ const UIActions = {
   setTheme,
   setGeneralStats,
   setPaddleLastEvent,
+  setTotalMonthlyEvents,
+  setShowNoEventsLeftBanner,
 }
 
 export default UIActions

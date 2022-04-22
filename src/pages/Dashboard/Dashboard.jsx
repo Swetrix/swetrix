@@ -19,6 +19,7 @@ import { ActivePin, InactivePin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
 import { isSelfhosted } from 'redux/constants'
+import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
 const ProjectCart = ({
   name, url, created, active, overall, t, language, live, isPublic,
@@ -152,38 +153,41 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
   if (!isLoading) {
     return (
       <Title title={t('titles.dashboard')}>
-        <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-          <div className='max-w-7xl w-full mx-auto'>
-            <div className='flex justify-between'>
-              <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
-                {t('titles.dashboard')}
-              </h2>
-              <span onClick={onNewProject} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
-                {t('dashboard.newProject')}
-              </span>
-            </div>
-            {_isEmpty(projects) ? (
-              <NoProjects t={t} />
-            ) : (
-              <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
-                <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                  {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({ name, id, created, active, overall, live, public: isPublic }) => (
-                    <ProjectCart
-                      key={id}
-                      t={t}
-                      language={language}
-                      name={name}
-                      created={created}
-                      active={active}
-                      isPublic={isPublic}
-                      overall={overall}
-                      live={_isNumber(live) ? live : 'N/A'}
-                      url={routes.project.replace(':id', id)}
-                    />
-                  ))}
-                </ul>
+        <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
+          <EventsRunningOutBanner />
+          <div className='flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+            <div className='max-w-7xl w-full mx-auto'>
+              <div className='flex justify-between'>
+                <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+                  {t('titles.dashboard')}
+                </h2>
+                <span onClick={onNewProject} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
+                  {t('dashboard.newProject')}
+                </span>
               </div>
-            )}
+              {_isEmpty(projects) ? (
+                <NoProjects t={t} />
+              ) : (
+                <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
+                  <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                    {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({ name, id, created, active, overall, live, public: isPublic }) => (
+                      <ProjectCart
+                        key={id}
+                        t={t}
+                        language={language}
+                        name={name}
+                        created={created}
+                        active={active}
+                        isPublic={isPublic}
+                        overall={overall}
+                        live={_isNumber(live) ? live : 'N/A'}
+                        url={routes.project.replace(':id', id)}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <Modal
