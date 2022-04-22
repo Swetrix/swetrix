@@ -1,4 +1,7 @@
 import { types } from 'redux/actions/ui/types'
+import { LOW_EVENTS_WARNING } from 'redux/constants'
+import { setCookie } from 'utils/cookie'
+import { secondsTillNextMonth } from 'utils/generic'
 
 const initialState = {
   stats: {
@@ -39,7 +42,8 @@ const miscReducer = (state = initialState, { type, payload }) => {
       const { showNoEventsLeftBanner } = payload
 
       if (!showNoEventsLeftBanner) {
-        // set cookie
+        const maxAge = secondsTillNextMonth() + 86400
+        setCookie(LOW_EVENTS_WARNING, 1, maxAge)
       }
 
       return {

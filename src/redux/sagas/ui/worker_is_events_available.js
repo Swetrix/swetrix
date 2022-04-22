@@ -2,14 +2,26 @@ import { put, delay, select } from 'redux-saga/effects'
 import _isNull from 'lodash/isNull'
 
 import UIActions from 'redux/actions/ui'
+import { SHOW_BANNER_AT_PERC, LOW_EVENTS_WARNING } from 'redux/constants'
+import { getCookie } from 'utils/cookie'
 
 const NOT_AUTHED_INTERVAL = 1000 // 1 second
 const NO_DATA_YET = 1000 // 1 second
-const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier are used
+const DATA_REQUEST_ATTEMPTS = 20
 
 export default function* checkEventsAvailable() {
+  const lowEvents = getCookie(LOW_EVENTS_WARNING)
+
+  if (lowEvents) {
+    return
+  }
+
+  const dataRequests = 0
+  
   while (true) {
-    // todo: check banner cookie
+    if (dataRequests > DATA_REQUEST_ATTEMPTS) {
+      return
+    }
 
     const isAuthenticated = yield select(state => state.auth.authenticated)
 
@@ -21,15 +33,14 @@ export default function* checkEventsAvailable() {
     const totalMonthlyEvents = yield select(state => state.ui.projects.totalMonthlyEvents)
 
     if (_isNull(totalMonthlyEvents)) {
+      dataRequests++
       yield delay(NO_DATA_YET)
       continue
     }
 
-    const maxEventsCount = 5000 // yield select(state => state.auth.user.maxEventsCount)
+    const maxEventsCount = yield select(state => state.auth.user.maxEventsCount)
 
     const eventsUsedPercentage = totalMonthlyEvents * 100 / maxEventsCount
-
-    console.log(totalMonthlyEvents, maxEventsCount, eventsUsedPercentage)
 
     if (eventsUsedPercentage >= SHOW_BANNER_AT_PERC) {
       yield put(UIActions.setShowNoEventsLeftBanner(true))
