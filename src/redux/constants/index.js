@@ -41,6 +41,8 @@ export const reportFrequencies = ['weekly', 'monthly', 'never']
 
 export const GDPR_EXPORT_TIMEFRAME = 14 // days
 
+export const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier are used
+
 export const TOKEN = 'access_token'
 
 export const TITLE_SUFFIX = '| Swetrix'
@@ -68,6 +70,7 @@ export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket
 // Cookies
 export const GDPR_REQUEST = 'gdpr_request'
 export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
+export const LOW_EVENTS_WARNING = 'low_events_warning'
 
 // List of languages with translations available
 export const whitelist = ['en', 'uk', 'de', 'sv', 'el', 'ru', 'hi', 'zh']

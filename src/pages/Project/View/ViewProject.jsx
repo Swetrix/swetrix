@@ -32,6 +32,7 @@ import _truncate from 'lodash/truncate'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
+import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL,
 } from 'redux/constants'
@@ -441,6 +442,7 @@ const ViewProject = ({
   if (!isLoading) {
     return (
       <Title title={name}>
+        <EventsRunningOutBanner />
         <div className={cx('bg-gray-50 dark:bg-gray-800 py-6 px-4 sm:px-6 lg:px-8', {
           'min-h-min-footer': authenticated,
           'min-h-min-footer-ad': !authenticated,

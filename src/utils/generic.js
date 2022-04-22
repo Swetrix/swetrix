@@ -11,3 +11,14 @@ export const nFormatter = (num, digits) => {
 
   return item ? (num / item.value).toFixed(digits).replace(rx, '$1') + item.symbol : '0'
 }
+
+export const secondsTillNextMonth = () => {
+  const now = new Date()
+  const date = new Date()
+
+  date.setMonth(date.getMonth() + 1)
+  date.setDate(1)
+  date.setHours(0, 0, 0, 0)
+
+  return 0 | (date - now) / 1000
+}

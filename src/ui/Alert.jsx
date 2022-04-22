@@ -2,10 +2,9 @@
 import React, { memo } from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
-import { CheckCircleIcon } from '@heroicons/react/solid'
-import { InformationCircleIcon } from '@heroicons/react/solid'
-import { XCircleIcon } from '@heroicons/react/solid'
-import { XIcon } from '@heroicons/react/solid'
+import {
+  CheckCircleIcon, InformationCircleIcon, XCircleIcon, XIcon,
+} from '@heroicons/react/solid'
 
 const AlertTemplate = ({ message, options, className, close }) => {
   const { type } = options

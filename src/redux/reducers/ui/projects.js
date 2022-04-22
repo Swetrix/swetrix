@@ -8,6 +8,7 @@ const getInitialState = () => {
     projects: [],
     isLoading: true,
     error: null,
+    totalMonthlyEvents: null,
   }
 }
 
@@ -19,6 +20,14 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
         ...state,
         projects,
         isLoading: false,
+      }
+    }
+
+    case types.SET_TOTAL_MONTHLY_EVENTS: {
+      const { totalMonthlyEvents } = payload
+      return {
+        ...state,
+        totalMonthlyEvents,
       }
     }
 
