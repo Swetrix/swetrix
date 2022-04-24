@@ -158,6 +158,10 @@ export class ProjectService {
 
       let pids
 
+      if (_isEmpty(pids)) {
+        return 0
+      }
+
       if (isSelfhosted) {
         const projects = await getProjectsClickhouse()
         pids = _map(projects, ({ id }) => id)
