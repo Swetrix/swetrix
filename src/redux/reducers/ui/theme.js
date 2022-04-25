@@ -30,7 +30,7 @@ const setTheme = (rawTheme) => {
 
 const getInitialState = () => {
   return {
-    theme: setTheme(getInitialTheme()),
+    theme: getInitialTheme(),
   }
 }
 
