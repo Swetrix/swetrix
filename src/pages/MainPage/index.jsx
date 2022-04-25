@@ -222,7 +222,7 @@ const Main = () => {
 
         <div className='bg-indigo-600 dark:bg-indigo-800'>
           <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-            <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight'>
+            <h2 className='text-3xl font-extrabold tracking-tight'>
               <span className='block text-white'>
                 {t('main.description')}
               </span>
@@ -233,13 +233,13 @@ const Main = () => {
             <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
               <Link
                 to={LIVE_DEMO_URL}
-                className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-100 dark:hover:bg-indigo-200'
+                className='flex items-center justify-center whitespace-nowrap px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-100 dark:hover:bg-indigo-200'
               >
                 {t('common.liveDemo')}
               </Link>
               <Link
                 to={routes.docs}
-                className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-100 dark:hover:bg-indigo-200'
+                className='flex items-center justify-center whitespace-nowrap px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-100 dark:hover:bg-indigo-200'
               >
                 {t('common.docs')}
               </Link>
@@ -262,13 +262,13 @@ const Main = () => {
             <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
               <Link
                 to={routes.features}
-                className='flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 bg-origin-border px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white hover:from-purple-700 hover:to-indigo-700'
+                className='flex items-center justify-center whitespace-nowrap bg-gradient-to-r from-purple-600 to-indigo-600 bg-origin-border px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white hover:from-purple-700 hover:to-indigo-700'
               >
                 {t('common.features')}
               </Link>
               <Link
                 to={routes.signup}
-                className='flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                className='flex items-center justify-center whitespace-nowrap px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
               >
                 {t('common.getStarted')}
               </Link>
