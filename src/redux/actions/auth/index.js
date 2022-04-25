@@ -1,5 +1,6 @@
 import { removeItem } from 'utils/localstorage'
 import { types } from './types'
+import { TOKEN, LS_VIEW_PREFS_SETTING } from 'redux/constants'
 
 export const authActions = {
   // Synchronous
@@ -31,8 +32,8 @@ export const authActions = {
   },
 
   logout() {
-    removeItem('access_token')
-    removeItem('user_info')
+    removeItem(TOKEN)
+    removeItem(LS_VIEW_PREFS_SETTING)
 
     return {
       type: types.LOGOUT

@@ -2,7 +2,22 @@ import { types } from 'redux/actions/ui/types'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 
-import { getProjectCacheKey } from 'redux/constants'
+import { getProjectCacheKey, LS_VIEW_PREFS_SETTING } from 'redux/constants'
+
+export const getInitialViewPrefs = () => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const storedPrefs = window.localStorage.getItem(LS_VIEW_PREFS_SETTING)
+    if (typeof storedPrefs === 'string') {
+      try {
+        return JSON.parse(storedPrefs)
+      } catch (e) {
+        window.localStorage.removeItem(LS_VIEW_PREFS_SETTING)
+      }
+    }
+  }
+
+  return {}
+}
 
 const getInitialState = () => {
   return {
@@ -11,7 +26,7 @@ const getInitialState = () => {
     analytics: {},
 
     // { pid: { period: '7d', timeBucket: 'day' }, ... }
-    projectViewPrefs: {},
+    projectViewPrefs: getInitialViewPrefs(),
   }
 }
 

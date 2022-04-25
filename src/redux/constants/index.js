@@ -48,6 +48,7 @@ export const TOKEN = 'access_token'
 export const TITLE_SUFFIX = '| Swetrix'
 
 export const LS_THEME_SETTING = 'colour-theme'
+export const LS_VIEW_PREFS_SETTING = 'proj-view-preferences'
 
 export const DONATE_URL = 'https://ko-fi.com/andriir'
 export const FIREFOX_ADDON_URL = 'https://addons.mozilla.org/en-US/firefox/addon/swetrix/'
