@@ -90,26 +90,15 @@ export class ProjectController {
   @Roles(UserType.ADMIN)
   async getUserProject(@Param('id') userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /user/:id')
-    if (isSelfhosted) {
-      const results = await getProjectsClickhouse()
-      const formatted = _map(results, this.projectService.formatFromClickhouse)
-      return {
-        results,
-        page_total: _size(formatted),
-        total: _size(formatted),
-        totalMonthlyEvents: 0, // not needed as it's selfhosed
-      }
-    } else {
-      const where = Object()
-      where.admin = userId
+    const where = Object()
+    where.admin = userId
 
-      const paginated = await this.projectService.paginate({ take, skip }, where)
-      const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
+    const paginated = await this.projectService.paginate({ take, skip }, where)
+    const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
 
-      return {
-        ...paginated,
-        totalMonthlyEvents,
-      }
+    return {
+      ...paginated,
+      totalMonthlyEvents,
     }
   }
 
