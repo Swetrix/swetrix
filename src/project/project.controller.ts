@@ -12,6 +12,7 @@ import * as _values from 'lodash/values'
 import { ProjectService } from './project.service'
 import { UserType, ACCOUNT_PLANS } from '../user/entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
+import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { Pagination } from '../common/pagination/pagination'
@@ -71,6 +72,7 @@ export class ProjectController {
   @Get('/all')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
+  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
   @UseGuards(SelfhostedGuard)
@@ -88,6 +90,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
+  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
