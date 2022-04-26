@@ -87,7 +87,7 @@ export class ProjectController {
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
   @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Roles(UserType.ADMIN)
   async getUserProject(@Param('id') userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
     if (isSelfhosted) {
