@@ -13,6 +13,7 @@ import { ProjectService } from './project.service'
 import { UserType, ACCOUNT_PLANS } from '../user/entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { RolesGuard } from '../common/guards/roles.guard'
+import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
@@ -64,6 +65,43 @@ export class ProjectController {
         ...paginated,
         totalMonthlyEvents,
       }
+    }
+  }
+
+  @Get('/all')
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
+  @UseGuards(SelfhostedGuard)
+  @ApiResponse({ status: 200, type: Project })
+  async getAllProjects(@Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Project | object> {
+    this.logger.log({take, skip }, 'GET /all')
+
+    const where = Object()
+    return await this.projectService.paginate({take, skip}, where)
+  }
+
+
+  @Get('/user/:id')
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiResponse({ status: 200, type: [Project] })
+  @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
+  @Roles(UserType.ADMIN)
+  async getUserProject(@Param('id') userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
+    this.logger.log({ userId, take, skip }, 'GET /user/:id')
+    const where = Object()
+    where.admin = userId
+
+    const paginated = await this.projectService.paginate({ take, skip }, where)
+    const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
+
+    return {
+      ...paginated,
+      totalMonthlyEvents,
     }
   }
 
