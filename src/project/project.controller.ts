@@ -13,6 +13,7 @@ import { ProjectService } from './project.service'
 import { UserType, ACCOUNT_PLANS } from '../user/entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { RolesGuard } from '../common/guards/roles.guard'
+import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
@@ -72,6 +73,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
+  @UseGuards(SelfhostedGuard)
   @ApiResponse({ status: 200, type: Project })
   async getAllProjects(@Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Project | object> {
     this.logger.log({take, skip }, 'GET /all')
@@ -87,6 +89,7 @@ export class ProjectController {
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async getUserProject(@Param('id') userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /user/:id')
