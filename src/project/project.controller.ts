@@ -67,6 +67,52 @@ export class ProjectController {
     }
   }
 
+  @Get('/all')
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
+  @ApiResponse({ status: 200, type: Project })
+  async getAllProjects(@Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Project | object> {
+    this.logger.log({take, skip }, 'GET /project/:id')
+
+    const where = Object()
+    return await this.projectService.paginate({take, skip}, where)
+  }
+
+
+  @Get('/uuid/:id')
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiResponse({ status: 200, type: [Project] })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getUserProject(@Param('id') userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
+    this.logger.log({ userId, take, skip }, 'GET /project')
+    if (isSelfhosted) {
+      const results = await getProjectsClickhouse()
+      const formatted = _map(results, this.projectService.formatFromClickhouse)
+      return {
+        results,
+        page_total: _size(formatted),
+        total: _size(formatted),
+        totalMonthlyEvents: 0, // not needed as it's selfhosed
+      }
+    } else {
+      const where = Object()
+      where.admin = userId
+
+      const paginated = await this.projectService.paginate({ take, skip }, where)
+      const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
+
+      return {
+        ...paginated,
+        totalMonthlyEvents,
+      }
+    }
+  }
+
   @Get('/:id')
   @ApiResponse({ status: 200, type: Project })
   async getOne(@Param('id') id: string, @CurrentUserId() uid: string): Promise<Project | object> {

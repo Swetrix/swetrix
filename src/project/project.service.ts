@@ -83,7 +83,7 @@ export class ProjectService {
   find(params: object): Promise<Project[]> {
     return this.projectsRepository.find(params)
   }
-
+  
   findOneWhere(where: Record<string, unknown>, params: object = {}): Promise<Project> {
     return this.projectsRepository.findOne({ where, ...params })
   }

@@ -109,14 +109,15 @@ export class UserController {
       throw new BadRequestException('cancelSubFirst')
     }
 
-    const pids = _join(_map(user.projects, el => `'${el.id}'`), ',')
-    const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`
-    const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`
-
     try {
-      await this.projectService.deleteMultiple(pids)
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
+      if (!_isEmpty(user.projects)) {
+        const pids = _join(_map(user.projects, el => `'${el.id}'`), ',')
+        const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`
+        const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`
+        await this.projectService.deleteMultiple(pids)
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+      }
       await this.userService.delete(id)
 
       return 'accountDeleted'
@@ -194,11 +195,10 @@ export class UserController {
     
     const user = await this.userService.findOneWhere({ id })
     
-    if (!user) {
-      throw new BadRequestException('User does not exist')
-    }
-    
     try {
+      if (!user) {
+        await this.userService.create({...userDTO})
+      }
       await this.userService.update(id, {...user, ...userDTO})
       return this.userService.findOneWhere({ id })
     } catch (e) {
