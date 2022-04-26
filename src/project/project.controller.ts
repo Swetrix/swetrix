@@ -89,7 +89,7 @@ export class ProjectController {
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
   async getUserProject(@Param('id') userId: string, @Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Pagination<Project> | Project[] | object> {
-    this.logger.log({ userId, take, skip }, 'GET /project')
+    this.logger.log({ userId, take, skip }, 'GET /user/:id')
     if (isSelfhosted) {
       const results = await getProjectsClickhouse()
       const formatted = _map(results, this.projectService.formatFromClickhouse)
