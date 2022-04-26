@@ -74,7 +74,7 @@ export class ProjectController {
   @Roles(UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
   async getAllProjects(@Query('take') take: number | undefined, @Query('skip') skip: number | undefined): Promise<Project | object> {
-    this.logger.log({take, skip }, 'GET /project/:id')
+    this.logger.log({take, skip }, 'GET /all')
 
     const where = Object()
     return await this.projectService.paginate({take, skip}, where)
