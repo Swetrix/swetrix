@@ -81,7 +81,7 @@ export class ProjectController {
   }
 
 
-  @Get('/uuid/:id')
+  @Get('/user/:id')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
