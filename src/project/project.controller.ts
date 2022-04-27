@@ -225,83 +225,7 @@ export class ProjectController {
     }
   }
 
-  @Put('/admin/:pid')
-  @HttpCode(200)
-  @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
-  @Roles(UserType.ADMIN)
-  @ApiResponse({ status: 200, type: Project })
-  async updateForAdmin(
-    @Param('pid') id: string,
-    @Body() projectDTO: ProjectDTO,
-  ): Promise<any> {
-    this.logger.log({ projectDTO, id }, 'POST /project/admin/:pid')
-    this.projectService.validateProject(projectDTO)
-    let project
-
-    project = await this.projectService.findOneWithRelations(id)
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException()
-    }
-    project.active = projectDTO.active
-    project.origins = projectDTO.origins
-    project.name = projectDTO.name
-    project.public = projectDTO.public
-
-    await this.projectService.update(id, project)
-
-    const key = getRedisProjectKey(id)
-
-    try {
-      await redis.set(
-        key,
-        JSON.stringify(project),
-        'EX',
-        redisProjectCacheTimeout,
-      )
-    } catch {
-      await redis.del(key)
-    }
-
-    return project
-  }
-
-  @Delete('/admin/:id')
-  @HttpCode(204)
-  @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
-  @Roles(UserType.ADMIN)
-  @ApiResponse({ status: 204, description: 'Empty body' })
-  async deleteForAdmin(@Param('id') id: string): Promise<any> {
-    this.logger.log({ id }, 'DELETE /project/admin/:id')
-
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException(`Project with ID ${id} does not exist`)
-    }
-
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
-
-    try {
-      await this.projectService.delete(id)
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
-      return 'Project deleted successfully'
-    } catch (e) {
-      this.logger.error(e)
-      return 'Error while deleting your project'
-    }
-  }
-
+  
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(RolesGuard)
@@ -401,11 +325,15 @@ export class ProjectController {
       )
     } else {
       project = await this.projectService.findOneWithRelations(id)
+      const user = await this.userService.findOne(uid)
 
       if (_isEmpty(project)) {
         throw new NotFoundException()
       }
-      this.projectService.allowedToManage(project, uid)
+
+      if(user.roles[0] === UserType.CUSTOMER) {
+        this.projectService.allowedToManage(project, uid)
+      }
 
       project.active = projectDTO.active
       project.origins = _map(projectDTO.origins, _trim)
@@ -461,6 +389,7 @@ export class ProjectController {
         return 'Error while deleting your project'
       }
     } else {
+      const user = await this.userService.findOne(uid)
       const project = await this.projectService.findOneWhere(
         { id },
         {
@@ -472,7 +401,10 @@ export class ProjectController {
       if (_isEmpty(project)) {
         throw new NotFoundException(`Project with ID ${id} does not exist`)
       }
-      this.projectService.allowedToManage(project, uid)
+
+      if(user.roles[0] === UserType.CUSTOMER) {
+        this.projectService.allowedToManage(project, uid)
+      }
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
