@@ -14,9 +14,12 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
+import TimezonePicker from 'ui/TimezonePicker'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
+
+const DEFAULT_TIMEZONE = 'Etc/GMT'
 
 const UserSettings = ({
   onDelete, onExport, onSubmit, onEmailConfirm, t,
@@ -28,6 +31,7 @@ const UserSettings = ({
     password: '',
     repeat: '',
   })
+  const [selectedTimezone, setSelectedTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -138,6 +142,14 @@ const UserSettings = ({
               onChange={handleInput}
               error={beenSubmitted ? errors.repeat : null}
             />
+          </div>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+            <div>
+              <TimezonePicker
+                value={selectedTimezone}
+                onChange={setSelectedTimezone}
+              />
+            </div>
           </div>
           <Button className='mt-4' type='submit' primary large>
             {t('profileSettings.update')}

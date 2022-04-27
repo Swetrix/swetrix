@@ -12,7 +12,7 @@ const Select = ({
     <Listbox className={className} value={title} onChange={onSelect}>
       {({ open }) => (
         <>
-          <Listbox.Label className='block text-sm font-medium text-gray-700 dark:text-gray-100'>{label}</Listbox.Label>
+          <Listbox.Label className='block text-sm whitespace-pre-line font-medium text-gray-700 dark:text-gray-100'>{label}</Listbox.Label>
           <div className='mt-1 relative'>
             <Listbox.Button className='relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
               <span className='block truncate capitalize'>{title}</span>
@@ -46,7 +46,7 @@ const Select = ({
                     {({ selected, active }) => (
                       <>
                         <span className={cx(selected ? 'font-semibold' : 'font-normal', 'block truncate capitalize')}>
-                          {item}
+                          {labelExtractor ? labelExtractor(item) : item}
                         </span>
 
                         {selected ? (
