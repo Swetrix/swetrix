@@ -1,0 +1,11 @@
+.moon-logo{
+    opacity: 1;
+    transform: translateY(0%) rotateZ(0deg);
+    transition: all 1s ease-out;
+}
+
+.sun-logo{
+    opacity: 1;
+    transform: rotateZ(100deg);
+    transition: all 1s ease-out;
+}

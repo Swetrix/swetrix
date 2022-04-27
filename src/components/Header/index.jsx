@@ -17,6 +17,8 @@ import {
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
+import './style.css'
+
 const Header = ({ authenticated, theme }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
@@ -27,6 +29,7 @@ const Header = ({ authenticated, theme }) => {
 
   const switchTheme = () => {
     dispatch(UIActions.setTheme(theme === 'dark' ? 'light' : 'dark'))
+    
   }
 
   const onLanguageChange = (id) => {
@@ -70,9 +73,13 @@ const Header = ({ authenticated, theme }) => {
             </div>
             <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
               {theme === 'dark' ? (
-                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
+                 <div className="sun-logo">
+                   <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
+                 </div>
               ) : (
-                <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+                 <div className="moon-logo">
+                   <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+                 </div>
               )}
               <Dropdown
                 items={whitelist}
