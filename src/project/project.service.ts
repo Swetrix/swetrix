@@ -1,3 +1,4 @@
+import { UserType } from './../user/entities/user.entity';
 import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException, InternalServerErrorException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -11,6 +12,7 @@ import * as _find from 'lodash/find'
 import * as _map from 'lodash/map'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import * as _includes from 'lodash/includes'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
@@ -95,8 +97,8 @@ export class ProjectService {
     }
   }
 
-  allowedToManage(project: Project, uid: string): void {
-    if (uid === project.admin.id) {
+  allowedToManage(project: Project, uid: string, roles: Array<string>): void {
+    if (uid === project.admin.id || _includes(roles, UserType.ADMIN)) {
       return
     } else {
       throw new ForbiddenException('You are not allowed to access this project')

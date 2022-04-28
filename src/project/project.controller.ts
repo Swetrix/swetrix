@@ -331,9 +331,8 @@ export class ProjectController {
         throw new NotFoundException()
       }
 
-      if(user.roles[0] === UserType.CUSTOMER) {
-        this.projectService.allowedToManage(project, uid)
-      }
+      this.projectService.allowedToManage(project, uid, user.roles)
+      
 
       project.active = projectDTO.active
       project.origins = _map(projectDTO.origins, _trim)
@@ -401,10 +400,9 @@ export class ProjectController {
       if (_isEmpty(project)) {
         throw new NotFoundException(`Project with ID ${id} does not exist`)
       }
-
-      if(user.roles[0] === UserType.CUSTOMER) {
-        this.projectService.allowedToManage(project, uid)
-      }
+      
+      this.projectService.allowedToManage(project, uid, user.roles)
+      
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
