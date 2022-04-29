@@ -57,6 +57,8 @@ export const HAVE_I_BEEN_PWNED_URL = 'https://haveibeenpwned.com/passwords'
 export const LINKEDIN_URL = 'https://www.linkedin.com/company/swetrix/'
 export const GITHUB_URL = 'https://github.com/Swetrix'
 
+export const SUPPORTED_THEMES = ['light', 'dark']
+
 export const CONTACT_EMAIL = 'contact@swetrix.com'
 export const SECURITY_EMAIL = 'security@swetrix.com'
 

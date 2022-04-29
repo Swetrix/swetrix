@@ -1,31 +1,38 @@
+import _includes from 'lodash/includes'
 import { types } from 'redux/actions/ui/types'
-import { LS_THEME_SETTING } from 'redux/constants'
+import { LS_THEME_SETTING, SUPPORTED_THEMES } from 'redux/constants'
+
+const setThemeToDOM = (theme) => {
+  const root = window.document.documentElement
+  const isDark = theme === 'dark'
+
+  root.classList.remove(isDark ? 'light' : 'dark')
+  root.classList.add(theme)
+}
+
+const setTheme = (theme) => {
+  setThemeToDOM(theme)
+  localStorage.setItem(LS_THEME_SETTING, theme)
+  return theme
+}
 
 const getInitialTheme = () => {
   if (typeof window !== 'undefined' && window.localStorage) {
-    const storedPrefs = window.localStorage.getItem(LS_THEME_SETTING)
-    if (typeof storedPrefs === 'string') {
-      return storedPrefs
+    const lsTheme = window.localStorage.getItem(LS_THEME_SETTING)
+    if (_includes(SUPPORTED_THEMES, lsTheme)) {
+      setThemeToDOM(lsTheme)
+      return lsTheme
     }
 
     const userMedia = window.matchMedia('(prefers-color-scheme: dark)')
     if (userMedia.matches) {
+      setThemeToDOM('dark')
       return 'dark'
     }
   }
 
+  setThemeToDOM('light')
   return 'light' // light theme as the default
-}
-
-const setTheme = (rawTheme) => {
-  const root = window.document.documentElement
-  const isDark = rawTheme === 'dark'
-
-  root.classList.remove(isDark ? 'light' : 'dark')
-  root.classList.add(rawTheme)
-
-  localStorage.setItem(LS_THEME_SETTING, rawTheme)
-  return rawTheme
 }
 
 const getInitialState = () => {
