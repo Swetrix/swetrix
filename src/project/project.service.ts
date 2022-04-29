@@ -1,4 +1,3 @@
-import { UserType } from './../user/entities/user.entity';
 import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException, InternalServerErrorException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -17,6 +16,7 @@ import * as _includes from 'lodash/includes'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
+import { UserType } from './../user/entities/user.entity'
 import {
   isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
 } from '../common/constants'
@@ -97,7 +97,7 @@ export class ProjectService {
     }
   }
 
-  allowedToManage(project: Project, uid: string, roles: Array<string>): void {
+  allowedToManage(project: Project, uid: string, roles: Array<UserType>): void {
     if (uid === project.admin.id || _includes(roles, UserType.ADMIN)) {
       return
     } else {

@@ -21,7 +21,7 @@ import * as _size from 'lodash/size'
 import * as _values from 'lodash/values'
 
 import { ProjectService } from './project.service'
-import { UserType, ACCOUNT_PLANS } from '../user/entities/user.entity'
+import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
@@ -45,6 +45,8 @@ import {
   updateProjectClickhouse,
   deleteProjectClickhouse,
 } from '../common/utils'
+
+const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 
 @ApiTags('Project')
 @Controller('project')
@@ -107,7 +109,7 @@ export class ProjectController {
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
   ): Promise<Project | object> {
-    this.logger.log({ take, skip }, 'GET all')
+    this.logger.log({ take, skip }, 'GET /all')
 
     const where = Object()
     return await this.projectService.paginate({ take, skip }, where)
@@ -147,10 +149,11 @@ export class ProjectController {
     @CurrentUserId() uid: string,
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
-    if (!isValidPID(id))
+    if (!isValidPID(id)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
       )
+    }
 
     let project
 
@@ -160,8 +163,9 @@ export class ProjectController {
       project = await this.projectService.findOne(id)
     }
 
-    if (_isEmpty(project))
+    if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
+    }
 
     this.projectService.allowedToView(project, uid)
 
@@ -181,7 +185,7 @@ export class ProjectController {
     @Param('id') userId: string,
     @Body() projectDTO: ProjectDTO,
   ): Promise<Project> {
-    this.logger.log({ userId, projectDTO }, 'POST /project/admin')
+    this.logger.log({ userId, projectDTO }, 'POST /project/admin/:id')
 
     const user = await this.userService.findOneWithRelations(userId, [
       'projects',
@@ -189,12 +193,12 @@ export class ProjectController {
     const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
 
     if (!user.isActive) {
-      throw new ForbiddenException('Please, verify your email address first')
+      throw new ForbiddenException('User\'s email address has to be verified first')
     }
 
-    if (_size(user.projects) >= (maxProjects || 5)) {
+    if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
       throw new ForbiddenException(
-        `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+        `The user's plan supports maximum of ${maxProjects} projects`,
       )
     }
 
@@ -260,7 +264,7 @@ export class ProjectController {
         throw new ForbiddenException('Please, verify your email address first')
       }
 
-      if (_size(user.projects) >= (maxProjects || 5)) {
+      if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
         throw new ForbiddenException(
           `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
         )
@@ -332,7 +336,6 @@ export class ProjectController {
       }
 
       this.projectService.allowedToManage(project, uid, user.roles)
-      
 
       project.active = projectDTO.active
       project.origins = _map(projectDTO.origins, _trim)
@@ -368,10 +371,11 @@ export class ProjectController {
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ uid, id }, 'DELETE /project/:id')
-    if (!isValidPID(id))
+    if (!isValidPID(id)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
       )
+    }
 
     if (isSelfhosted) {
       await deleteProjectClickhouse(id)
@@ -400,9 +404,8 @@ export class ProjectController {
       if (_isEmpty(project)) {
         throw new NotFoundException(`Project with ID ${id} does not exist`)
       }
-      
+
       this.projectService.allowedToManage(project, uid, user.roles)
-      
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
