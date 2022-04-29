@@ -17,6 +17,7 @@ import {
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
+
 const Header = ({ authenticated, theme }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
@@ -70,9 +71,13 @@ const Header = ({ authenticated, theme }) => {
             </div>
             <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
               {theme === 'dark' ? (
-                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
+                 <div className="transition-all duration-1000 ease-in-out rotate-180">
+                   <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
+                 </div>
               ) : (
-                <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+                 <div className="transition-all duration-1000 ease-in-out">
+                   <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+                 </div>
               )}
               <Dropdown
                 items={whitelist}
@@ -121,9 +126,13 @@ const Header = ({ authenticated, theme }) => {
             </div>
             <div className='md:hidden flex justify-center items-center'>
               {theme === 'dark' ? (
-                <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
+                 <div className="transition-all duration-1000 ease-in-out rotate-180">
+                   <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
+                 </div>
               ) : (
-                <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+                 <div className="transition-all duration-1000 ease-in-out">
+                   <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+                 </div>
               )}
               <Popover.Button className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
                 <span className='sr-only'>
