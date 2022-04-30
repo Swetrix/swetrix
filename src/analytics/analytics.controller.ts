@@ -20,6 +20,7 @@ import * as isbot from 'isbot'
 import { AnalyticsService, getSessionKey } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
+import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -92,7 +93,7 @@ export class AnalyticsController {
 
   @Get('/')
   async getData(@Query() data: AnalyticsGET_DTO, @CurrentUserId() uid: string): Promise<any> {
-    const { pid, period, timeBucket, from, to, filters } = data
+    const { pid, period, timeBucket, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
     this.analyticsService.validatePID(pid)
     this.analyticsService.validatePeriod(period)
     this.analyticsService.validateTimebucket(timeBucket)
@@ -140,7 +141,7 @@ export class AnalyticsController {
       throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
     }
 
-    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, filtersQuery, paramsData)
+    const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, filtersQuery, paramsData, timezone)
 
     const customs = await this.analyticsService.processCustomEV(queryCustoms, paramsData)
     
