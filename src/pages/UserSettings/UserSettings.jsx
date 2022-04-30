@@ -31,7 +31,7 @@ const UserSettings = ({
     password: '',
     repeat: '',
   })
-  const [selectedTimezone, setSelectedTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
+  const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -61,7 +61,10 @@ const UserSettings = ({
     setBeenSubmitted(true)
 
     if (validated) {
-      onSubmit(form)
+      onSubmit({
+        ...form,
+        timezone,
+      })
     }
   }
 
@@ -146,8 +149,8 @@ const UserSettings = ({
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>
               <TimezonePicker
-                value={selectedTimezone}
-                onChange={setSelectedTimezone}
+                value={timezone}
+                onChange={setTimezone}
               />
             </div>
           </div>
