@@ -151,21 +151,17 @@ export class ProjectService {
   // Returns amount of existing events starting from month
   async getRedisCount(uid: string): Promise<number | null> {
     const countKey = getRedisUserCountKey(uid)
-    let count = await redis.get(countKey)
+    let count: string | number = await redis.get(countKey)
 
     if (_isEmpty(count)) {
-      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       const monthStart = dayjs.utc().startOf('month').format('YYYY-MM-DD HH:mm:ss')
+      const monthEnd = dayjs.utc().endOf('month').format('YYYY-MM-DD HH:mm:ss')
 
       let pids
 
-      if (_isEmpty(pids)) {
-        return 0
-      }
-
       if (isSelfhosted) {
-        const projects = await getProjectsClickhouse()
-        pids = _map(projects, ({ id }) => id)
+        // selfhosted has no limits
+        return 0
       } else {
         pids = await this.find({
           where: {
@@ -175,11 +171,17 @@ export class ProjectService {
         })
       }
 
-      const count_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${now}'`
-      const result = await clickhouse.query(count_query).toPromise()
+      if (_isEmpty(pids)) {
+        return 0
+      }
 
-      const pageviews = result[0]['count()']
-      count = pageviews
+      const count_ev_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const count_custom_ev_query = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+
+      const pageviews = (await clickhouse.query(count_ev_query).toPromise())[0]['count()']
+      const customEvents = (await clickhouse.query(count_custom_ev_query).toPromise())[0]['count()']
+
+      count = pageviews + customEvents
       
       await redis.set(countKey, `${pageviews}`, 'EX', redisProjectCountCacheTimeout)
     } else {
@@ -187,6 +189,7 @@ export class ProjectService {
         // @ts-ignore
         count = Number(count)
       } catch (e) {
+        count = 0
         console.error(e)
         throw new InternalServerErrorException('Error while processing project')
       }
