@@ -290,6 +290,8 @@
     "unique": "Unique visitors",
     "total": "Total page views",
     "today": "Today",
+    "yesterday": "Yesterday",
+    "last24h": "Last 24 hours",
     "lastXDays": "Last {{amount}} days",
     "lastXWeeks": "Last {{amount}} weeks",
     "lastXMonths": "Last {{amount}} months",

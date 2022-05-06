@@ -1,5 +1,15 @@
 export const tbPeriodPairs = (t) => [{
   label: t('project.today'),
+  period: 'today',
+  tbs: ['hour'],
+  access: 'free',
+}, {
+  label: t('project.yesterday'),
+  period: 'yesterday',
+  tbs: ['hour'],
+  access: 'free',
+}, {
+  label: t('project.last24h'),
   period: '1d',
   tbs: ['hour'],
   access: 'free',
