@@ -19,6 +19,9 @@ const contents = (t) => [{
   }, {
     name: t('docs.titles.npm'),
     id: 'docs-npm',
+  }, {
+    name: t('docs.titles.int'),
+    id: 'docs-int',
   }]
 }, {
   name: t('docs.titles.how'),
@@ -44,6 +47,8 @@ const contents = (t) => [{
     id: 'docs-tv',
   }]
 }]
+
+const NEXTJS_REPO_URL = 'https://github.com/Swetrix/swetrix-nextjs'
 
 const Contents = ({ t }) => {
   const tContents = contents(t)
@@ -124,6 +129,19 @@ const Docs = () => {
             </p>
             <Code text={esExample} language='javascript' />
 
+            <CSection id='docs-int' name={t('docs.titles.int')} />
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+              {t('docs.integrations')}
+              :
+            </p>
+            <ul className='ml-5 text-lg list-disc marker:text-gray-900 dark:marker:text-gray-50'>
+              <li>
+                <a href={NEXTJS_REPO_URL} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer'>
+                  Next.js
+                </a>
+              </li>
+            </ul>
+
             <CHeader id='docs-ht' name={t('docs.titles.how')} />
             <CSection id='docs-pv' name={t('docs.titles.pv')} />
             <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
@@ -184,11 +202,11 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4' />
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <i>Last updated: February 9, 2022.</i><br />
+              <i>Last updated: May 4, 2022.</i><br />
               <div>
-                - Added documentation for the&nbsp;
-                <a className='hover:underline text-gray-700' href='#docs-umd'>no-script</a>
-                &nbsp;tracking.
+                - Added&nbsp;
+                <a className='hover:underline text-gray-700' href='#docs-int'>integrations</a>
+                &nbsp;section.
               </div>
             </div>
           </div>
