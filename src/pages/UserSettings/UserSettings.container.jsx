@@ -13,6 +13,7 @@ import { withAuthentication, auth } from 'hoc/protected'
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
+import UIActions from 'redux/actions/ui'
 import { getCookie, setCookie } from 'utils/cookie'
 import { confirmEmail, exportUserData } from 'api'
 import routes from 'routes'
@@ -50,6 +51,10 @@ const UserSettingsContainer = () => {
     } catch (e) {
       dispatch(errorsActions.updateProfileFailed(e))
     }
+  }
+
+  const onDeleteProjectCache = () => {
+    dispatch(UIActions.deleteProjectCache())
   }
 
   const onSubmit = (data) => {
@@ -97,6 +102,7 @@ const UserSettingsContainer = () => {
       onExport={onExport}
       onSubmit={onSubmit}
       onEmailConfirm={onEmailConfirm}
+      onDeleteProjectCache={onDeleteProjectCache}
     />
   )
 }
