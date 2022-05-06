@@ -357,6 +357,10 @@
   "contact": {
     "desc": "Have something to ask?\nFeel free to drop us an email at <mail>{{email}}</mail>"
   },
+  "beta": {
+    "title": "Beta",
+    "description": "This functionality is in the Beta phase. Use it with caution as there may be side effects."
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
