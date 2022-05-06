@@ -14,13 +14,14 @@ import * as _find from 'lodash/find'
 import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import * as timezone from 'dayjs/plugin/timezone'
 import { isLocale } from 'validator'
 import { hash } from 'blake3'
 import {
   Injectable, BadRequestException, InternalServerErrorException, ForbiddenException, UnprocessableEntityException,
 } from '@nestjs/common'
 
-import { ACCOUNT_PLANS } from '../user/entities/user.entity'
+import { ACCOUNT_PLANS, DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, UNIQUE_SESSION_LIFE_TIME, clickhouse,
   getPercentageChange, isSelfhosted, REDIS_SESSION_SALT_KEY,
@@ -33,6 +34,7 @@ import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
 
 dayjs.extend(utc)
+dayjs.extend(timezone)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
@@ -58,6 +60,19 @@ const validTimebuckets = ['hour', 'day', 'week', 'month']
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 interface GetFiltersQuery extends Array<string | object>{0:string; 1:object}
+
+const isValidTimezone = (timezone) => {
+  if (_isEmpty(timezone)) {
+    return false
+  }
+
+  try {
+    dayjs.tz('2013-11-18 11:55', timezone)
+    return true
+  } catch {
+    return false
+  }
+}
 
 @Injectable()
 export class AnalyticsService {
@@ -301,7 +316,7 @@ export class AnalyticsService {
     return result
   }
 
-  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, filtersQuery: string, paramsData: object): Promise<object | void> {
+  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, filtersQuery: string, paramsData: object, timezone: string): Promise<object | void> {
     const params = {}
 
     for (let i of cols) {
@@ -347,7 +362,7 @@ export class AnalyticsService {
         return Promise.reject()
     }
 
-    const x = []
+    let x = []
 
     while (groupDateIterator < iterateTo) {
       const nextIteration = groupDateIterator.add(1, timeBucket)
@@ -403,6 +418,10 @@ export class AnalyticsService {
         visits[i] = 0
         uniques[i] = 0
       }
+    }
+
+    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+      x = _map(x, el => dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
     }
 
     return Promise.resolve({

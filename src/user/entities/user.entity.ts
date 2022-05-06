@@ -52,6 +52,8 @@ export enum ReportFrequency {
 
 export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 additional ones
 
+export const DEFAULT_TIMEZONE = 'Etc/GMT'
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -108,13 +110,13 @@ export class User {
   @Column('varchar', { length: 200, nullable: true })
   subCancelURL: string
 
+  @Column('varchar', { length: 50, default: DEFAULT_TIMEZONE })
+  timezone: string
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date
   }
-
-  // @Column('datetime', { nullable: true, default: null })
-  // consent: Date
 
   @OneToMany(() => Project, project => project.admin)
   projects: Project[]

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty } from 'class-validator'
+import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 
 export enum TimeBucketType {
   MINUTE = 'minute',
@@ -32,4 +33,10 @@ export class AnalyticsGET_DTO {
     description: 'A stringified array of properties to filter [{ column, filter, isExclusive }]',
   })
   filters: string
+
+  @ApiProperty({
+    description: 'Timezone to display data in',
+    default: DEFAULT_TIMEZONE,
+  })
+  timezone: string
 }
