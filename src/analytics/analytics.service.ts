@@ -62,6 +62,10 @@ const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 interface GetFiltersQuery extends Array<string | object>{0:string; 1:object}
 
 const isValidTimezone = (timezone) => {
+  if (_isEmpty(timezone)) {
+    return false
+  }
+
   try {
     dayjs.tz('2013-11-18 11:55', timezone)
     return true
@@ -416,7 +420,6 @@ export class AnalyticsService {
       }
     }
 
-    // todo: winter / summer time does not seem to work here..
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
       x = _map(x, el => dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
     }
