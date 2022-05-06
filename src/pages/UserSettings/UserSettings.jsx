@@ -13,6 +13,7 @@ import Title from 'components/Title'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
+import Beta from 'ui/Beta'
 import Select from 'ui/Select'
 import TimezonePicker from 'ui/TimezonePicker'
 import {
@@ -185,8 +186,9 @@ const UserSettings = ({
             {t('common.save')}
           </Button>
           <hr className='mt-5' />
-          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.timezone')}
+            <Beta className='ml-10' />
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>
