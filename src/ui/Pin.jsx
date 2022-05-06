@@ -25,7 +25,7 @@ const InactivePin = ({ label, className }) => (
 )
 
 const WarningPin = ({ label, className }) => (
-  <p className={cx('px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-300 dark:text-yellow-900', className)}>
+  <p className={cx('px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-yellow-200 text-yellow-800 dark:bg-yellow-300 dark:text-yellow-900', className)}>
     {label}
   </p>
 )

@@ -1,0 +1,31 @@
+import React, { memo } from 'react'
+import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
+
+import Tooltip from './Tooltip'
+import { WarningPin } from './Pin'
+
+const Beta = ({
+  className,
+}) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <Tooltip
+      tooltipNode={(
+        <WarningPin className={className} label={t('beta.title')} />
+      )}
+      text={t('beta.description')}
+    />
+  )
+}
+
+Beta.propTypes = {
+  className: PropTypes.string,
+}
+
+Beta.defaultProps = {
+  className: '',
+}
+
+export default memo(Beta)
