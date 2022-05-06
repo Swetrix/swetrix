@@ -195,7 +195,8 @@
     "updated": "Your account settings have been updated",
     "confTimeout": "An email has already been sent, check your mailbox or try again in a few minutes",
     "confSent": "An account confirmation link has been sent to your email",
-    "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service."
+    "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service.",
+    "timezone": "The time zone preference.\nThis will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
   },
   "dashboard": {
     "newProject": "New project",

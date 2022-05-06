@@ -8,18 +8,19 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import { MailIcon } from '@heroicons/react/outline'
 
-import { reportFrequencies } from 'redux/constants'
+import { reportFrequencies, DEFAULT_TIMEZONE } from 'redux/constants'
 import Title from 'components/Title'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
+import TimezonePicker from 'ui/TimezonePicker'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 
 const UserSettings = ({
-  onDelete, onExport, onSubmit, onEmailConfirm, t,
+  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t,
 }) => {
   const { user } = useSelector(state => state.auth)
 
@@ -28,6 +29,8 @@ const UserSettings = ({
     password: '',
     repeat: '',
   })
+  const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
+  const [timezoneChanged, setTimezoneChanged] = useState(false)
   const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -40,6 +43,11 @@ const UserSettings = ({
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
+
+  const _setTimezone = (value) => {
+    setTimezoneChanged(true)
+    setTimezone(value)
+  }
 
   const handleInput = event => {
     const t = event.target
@@ -56,8 +64,16 @@ const UserSettings = ({
     e.stopPropagation()
     setBeenSubmitted(true)
 
+    // if the timezone updates, we need to delete all project cache to refetch it with the new timezone setting afterwards
+    if (timezoneChanged) {
+      onDeleteProjectCache()
+    }
+
     if (validated) {
-      onSubmit(form)
+      onSubmit({
+        ...form,
+        timezone,
+      })
     }
   }
 
@@ -138,6 +154,14 @@ const UserSettings = ({
               onChange={handleInput}
               error={beenSubmitted ? errors.repeat : null}
             />
+          </div>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+            <div>
+              <TimezonePicker
+                value={timezone}
+                onChange={_setTimezone}
+              />
+            </div>
           </div>
           <Button className='mt-4' type='submit' primary large>
             {t('profileSettings.update')}
