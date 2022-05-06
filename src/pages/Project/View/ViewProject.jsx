@@ -34,7 +34,7 @@ import PropTypes from 'prop-types'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL,
+  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -218,7 +218,7 @@ const Filters = ({ filters, onRemoveFilter, onChangeExclusive, language, t, tnMa
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated,
+  setLiveStatsForProject, authenticated, timezone,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const periodPairs = tbPeriodPairs(t)
@@ -261,7 +261,7 @@ const ViewProject = ({
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
-          data = await getProjectData(id, timeBucket, period, newFilters || filters)
+          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
           setProjectCache(id, period, timeBucket, data || {})
         }
 
@@ -638,6 +638,11 @@ ViewProject.propTypes = {
   setPublicProject: PropTypes.func.isRequired,
   setLiveStatsForProject: PropTypes.func.isRequired,
   authenticated: PropTypes.bool.isRequired,
+  timezone: PropTypes.string,
+}
+
+ViewProject.defaultProps = {
+  timezone: DEFAULT_TIMEZONE,
 }
 
 export default memo(ViewProject)

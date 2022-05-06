@@ -9,6 +9,7 @@ const mapStateToProps = (state) => ({
   cache: state.ui.cache.analytics,
   projectViewPrefs: state.ui.cache.projectViewPrefs,
   authenticated: state.auth.authenticated,
+  timezone: state.auth.user.timezone,
 })
 
 const mapDispatchToProps = (dispatch) => ({
