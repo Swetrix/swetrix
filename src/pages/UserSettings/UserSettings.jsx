@@ -168,6 +168,22 @@ const UserSettings = ({
             {t('profileSettings.update')}
           </Button>
           <hr className='mt-5' />
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.timezone')}
+            <Beta className='ml-10' />
+          </h3>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+            <div>
+              <TimezonePicker
+                value={timezone}
+                onChange={_setTimezone}
+              />
+            </div>
+          </div>
+          <Button className='mt-4' onClick={handleTimezoneSave} primary large>
+            {t('common.save')}
+          </Button>
+          <hr className='mt-5' />
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.email')}
           </h3>
@@ -183,22 +199,6 @@ const UserSettings = ({
             </div>
           </div>
           <Button className='mt-4' onClick={handleReportSave} primary large>
-            {t('common.save')}
-          </Button>
-          <hr className='mt-5' />
-          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-            {t('profileSettings.timezone')}
-            <Beta className='ml-10' />
-          </h3>
-          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
-            <div>
-              <TimezonePicker
-                value={timezone}
-                onChange={_setTimezone}
-              />
-            </div>
-          </div>
-          <Button className='mt-4' onClick={handleTimezoneSave} primary large>
             {t('common.save')}
           </Button>
           <hr className='mt-5' />
