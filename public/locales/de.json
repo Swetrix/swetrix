@@ -178,6 +178,7 @@
     "general": "Allgemeine Einstellungen",
     "update": "Konto aktualisieren",
     "email": "E-Mail Berichte",
+    "timezone": "Timezone preference",
     "frequency": "Wie oft sollen wir Ihnen eine E-Mail-Zusammenfassung über Ihre Websites schicken?",
     "noLink": "Sie haben keinen Link zur Bestätigung Ihrer E-Mail-Adresse erhalten? Fordern Sie ihn einfach erneut an.",
     "requestExport": "Datenexport anfordern",
@@ -195,7 +196,8 @@
     "updated": "Ihre Kontoeinstellungen wurden aktualisiert",
     "confTimeout": "Eine E-Mail wurde bereits versendet. Überprüfen Sie Ihr Postfach oder versuchen Sie es in ein paar Minuten erneut.",
     "confSent": "Ein Link zur Kontobestätigung wurde an Ihre E-Mail-Adresse gesendet.",
-    "noConfLeft": "Leider sind Ihre E-Mail-Bestätigungsanfragen aufgebraucht.\nBitte vergewissern Sie sich, dass Sie in der Lage sind, E-Mails zu empfangen, und überprüfen Sie Ihren Spam-Ordner erneut auf Nachrichten.\nSie können versuchen, eine andere E-Mail-Adresse zu verwenden oder unseren Kundendienst zu kontaktieren."
+    "noConfLeft": "Leider sind Ihre E-Mail-Bestätigungsanfragen aufgebraucht.\nBitte vergewissern Sie sich, dass Sie in der Lage sind, E-Mails zu empfangen, und überprüfen Sie Ihren Spam-Ordner erneut auf Nachrichten.\nSie können versuchen, eine andere E-Mail-Adresse zu verwenden oder unseren Kundendienst zu kontaktieren.",
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
   },
   "dashboard": {
     "newProject": "Neues Projekt",
@@ -354,6 +356,10 @@
   },
   "contact": {
     "desc": "Noch Fragen?\nSie können uns gerne eine E-Mail schreiben an <mail>{{email}}</mail>"
+  },
+  "beta": {
+    "title": "Beta",
+    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
   },
   "titles": {
     "recovery": "Kontenwiederherstellung",

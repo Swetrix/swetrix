@@ -178,6 +178,7 @@
     "general": "Allmänna inställningar",
     "update": "Uppdatera profil",
     "email": "E-postrapporter",
+    "timezone": "Timezone preference",
     "frequency": "Hur ofta ska vi skicka dig en e-postsammanfattning om dina webbplatser?",
     "noLink": "Fick du ingen länk för att bekräfta e-postadressen? Begär en ny!",
     "requestExport": "Begär export av data",
@@ -195,7 +196,8 @@
     "updated": "Dina kontoinställningar har uppdaterats",
     "confTimeout": "Ett e-post har redan skickats, kontrollera din brevlåda eller försök igen om några minuter",
     "confSent": "En länk för kontobekräftelse har skickats till din e-post",
-    "noConfLeft": "Tyvärr har du slut på dina förfrågningar om bekräftelse via e-post.\nSe till att du kan ta emot e-post och kontrollera din SPAM-mapp igen för meddelanden.\nDu kan försöka använda en annan e-postadress eller kontakta vår kundtjänst."
+    "noConfLeft": "Tyvärr har du slut på dina förfrågningar om bekräftelse via e-post.\nSe till att du kan ta emot e-post och kontrollera din SPAM-mapp igen för meddelanden.\nDu kan försöka använda en annan e-postadress eller kontakta vår kundtjänst.",
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
   },
   "dashboard": {
     "newProject": "Nytt projekt",
@@ -354,6 +356,10 @@
   },
   "contact": {
     "desc": "Har du något att fråga?\nSkicka gärna ett mejl till oss på <mail>{{email}}</mail>"
+  },
+  "beta": {
+    "title": "Beta",
+    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
   },
   "titles": {
     "recovery": "Konto återställning",

@@ -178,6 +178,7 @@
     "general": "常规设置",
     "update": "更新个人资料",
     "email": "电子邮件报告",
+    "timezone": "Timezone preference",
     "frequency": "我们应该多久向您发送一封有关您网站的电子邮件摘要？",
     "noLink": "没有收到确认电子邮件地址的链接？ 请求一个新的！",
     "requestExport": "请求数据导出",
@@ -195,7 +196,8 @@
     "updated": "您的账户设置已更新",
     "confTimeout": "电子邮件已发送，请检查您的邮箱或过几分钟再试",
     "confSent": "账户确认链接已发送至您的邮箱",
-    "noConfLeft": "很遗憾，您的电子邮件确认请求已用完。\n请确保您能够接收电子邮件并再次检查您的垃圾邮件文件夹中的邮件。\n您可以尝试使用其他电子邮件地址或 联系我们的客户支持服务。"
+    "noConfLeft": "很遗憾，您的电子邮件确认请求已用完。\n请确保您能够接收电子邮件并再次检查您的垃圾邮件文件夹中的邮件。\n您可以尝试使用其他电子邮件地址或 联系我们的客户支持服务。",
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
   },
   "dashboard": {
     "newProject": "新项目",
@@ -354,6 +356,10 @@
   },
   "contact": {
     "desc": "有什么想问的吗？\n请给我们发送电子邮件至 <mail>{{email}}</mail>"
+  },
+  "beta": {
+    "title": "Beta",
+    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
   },
   "titles": {
     "recovery": "账户恢复",

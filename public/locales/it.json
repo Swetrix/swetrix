@@ -178,6 +178,7 @@
     "general": "General settings",
     "update": "Update profile",
     "email": "Email reports",
+    "timezone": "Timezone preference",
     "frequency": "How often should we send you an email summary about your websites?",
     "noLink": "Didn't receive a link to confirm the email address? Request a new one!",
     "requestExport": "Request data export",
@@ -195,7 +196,8 @@
     "updated": "Your account settings have been updated",
     "confTimeout": "An email has already been sent, check your mailbox or try again in a few minutes",
     "confSent": "An account confirmation link has been sent to your email",
-    "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service."
+    "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service.",
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
   },
   "dashboard": {
     "newProject": "New project",
@@ -354,6 +356,10 @@
   },
   "contact": {
     "desc": "Have something to ask?\nFeel free to drop us an email at <mail>{{email}}</mail>"
+  },
+  "beta": {
+    "title": "Beta",
+    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
   },
   "titles": {
     "recovery": "Account recovery",
