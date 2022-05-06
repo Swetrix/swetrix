@@ -64,12 +64,20 @@ const UserSettings = ({
     e.stopPropagation()
     setBeenSubmitted(true)
 
-    // if the timezone updates, we need to delete all project cache to refetch it with the new timezone setting afterwards
-    if (timezoneChanged) {
-      onDeleteProjectCache()
+    if (validated) {
+      onSubmit(form)
     }
+  }
+
+  const handleTimezoneSave = () => {
+    setBeenSubmitted(true)
 
     if (validated) {
+      // if the timezone updates, we need to delete all project cache to refetch it with the new timezone setting afterwards
+      if (timezoneChanged) {
+        onDeleteProjectCache()
+      }
+
       onSubmit({
         ...form,
         timezone,
@@ -155,14 +163,6 @@ const UserSettings = ({
               error={beenSubmitted ? errors.repeat : null}
             />
           </div>
-          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
-            <div>
-              <TimezonePicker
-                value={timezone}
-                onChange={_setTimezone}
-              />
-            </div>
-          </div>
           <Button className='mt-4' type='submit' primary large>
             {t('profileSettings.update')}
           </Button>
@@ -182,6 +182,21 @@ const UserSettings = ({
             </div>
           </div>
           <Button className='mt-4' onClick={handleReportSave} primary large>
+            {t('common.save')}
+          </Button>
+          <hr className='mt-5' />
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.timezone')}
+          </h3>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+            <div>
+              <TimezonePicker
+                value={timezone}
+                onChange={_setTimezone}
+              />
+            </div>
+          </div>
+          <Button className='mt-4' onClick={handleTimezoneSave} primary large>
             {t('common.save')}
           </Button>
           <hr className='mt-5' />

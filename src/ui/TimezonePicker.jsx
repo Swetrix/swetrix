@@ -58,7 +58,7 @@ const TimezoneSelect = ({
   return (
     <Select
       title={labelExtractor(parseTimezone(value))}
-      label={t('profileSettings.timezone')}
+      label={t('profileSettings.timezoneDesc')}
       className='w-full'
       items={options}
       labelExtractor={labelExtractor}
