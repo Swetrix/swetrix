@@ -53,7 +53,7 @@ interface customsCHResponse {
   'count()': number
 }
 
-const validPeriods = ['1d', '7d', '4w', '3M', '12M', '24M']
+const validPeriods = ['today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const validTimebuckets = ['hour', 'day', 'week', 'month']
 
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
@@ -61,7 +61,7 @@ const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 interface GetFiltersQuery extends Array<string | object>{0:string; 1:object}
 
-const isValidTimezone = (timezone) => {
+export const isValidTimezone = (timezone) => {
   if (_isEmpty(timezone)) {
     return false
   }

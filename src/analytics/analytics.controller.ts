@@ -6,6 +6,7 @@ import * as _last from 'lodash/last'
 import * as _map from 'lodash/map'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import * as timezone from 'dayjs/plugin/timezone'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import ct from 'countries-and-timezones'
@@ -17,7 +18,7 @@ import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
-import { AnalyticsService, getSessionKey } from './analytics.service'
+import { AnalyticsService, getSessionKey, isValidTimezone } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
@@ -33,6 +34,7 @@ import {
 } from '../common/constants'
 
 dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const getSessionKeyCustom = (ip: string, ua: string, pid: string, ev: string, salt: string = '') => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`
 
@@ -127,8 +129,26 @@ export class AnalyticsController {
         queryCustoms += ` AND created BETWEEN ${from} AND ${to} GROUP BY ev`
       }
     } else if (!_isEmpty(period)) {
-      groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
-      groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+      if (period === 'today') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs().tz(timezone).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
+          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else if (period === 'yesterday') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs().tz(timezone).startOf('d').subtract(1, 'day').utc().format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs().tz(timezone).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs.utc().startOf('d').subtract(1, 'day').format('YYYY-MM-DD')
+          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else {
+        groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
+        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+      }
 
       paramsData.params = {
         ...paramsData.params,
@@ -138,7 +158,7 @@ export class AnalyticsController {
       queryCustoms += ' AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev'
       subQuery += ' AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
     } else {
-      throw new BadRequestException('The timeframe (either from/to pair or period) to be provided')
+      throw new BadRequestException('The timeframe (either from/to pair or period) has to be provided')
     }
 
     const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, filtersQuery, paramsData, timezone)
