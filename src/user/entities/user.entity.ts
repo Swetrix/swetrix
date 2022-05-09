@@ -98,6 +98,10 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updated: Date
 
+  // the date when the 'you are running out of events' warning email was last sent on
+  @Column({ type: 'timestamp', nullable: true })
+  evWarningSentOn: Date
+
   @Column({ type: 'timestamp', nullable: true })
   exportedAt: Date
 
