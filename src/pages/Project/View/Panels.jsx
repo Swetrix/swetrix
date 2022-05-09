@@ -234,8 +234,7 @@ const Panel = ({
   const total = useMemo(() => _reduce(keys, (prev, curr) => prev + data[curr], 0), [keys]) // eslint-disable-line
 
   const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor(_size(keys) / ENTRIES_PER_PANEL)
-
+  const canGoNext = () => page < _floor((_size(keys) - 1  ) / ENTRIES_PER_PANEL)
   const _onFilter = hideFilters ? () => { } : onFilter
 
   useEffect(() => {

@@ -22,6 +22,7 @@ import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import UIActions from 'redux/actions/ui'
+import About from 'pages/About'
 
 const MainPage = lazy(() => import('pages/MainPage'))
 const SignUp = lazy(() => import('pages/Auth/Signup'))
@@ -175,6 +176,7 @@ const App = () => {
                 <Route path={routes.features} component={Features} exact />
                 <Route path={routes.privacy} component={Privacy} exact />
                 <Route path={routes.terms} component={Terms} exact />
+                <Route path={routes.about} component={About} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>
