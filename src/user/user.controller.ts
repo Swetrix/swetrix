@@ -265,6 +265,10 @@ export class UserController {
         created: dayjs(user.created).format('YYYY/MM/DD HH:mm:ss'),
         updated: dayjs(user.updated).format('YYYY/MM/DD HH:mm:ss'),
         exportedAt: _isNull(user.exportedAt) ? '-' : dayjs(user.exportedAt).format('YYYY/MM/DD HH:mm:ss'),
+        evWarningSentOn: _isNull(user.evWarningSentOn) ? '-' : dayjs(user.evWarningSentOn).format('YYYY/MM/DD HH:mm:ss'),
+        subID: user.subID || '-',
+        subUpdateURL: user.subUpdateURL || '-',
+        subCancelURL: user.subCancelURL || '-',
       },
       projects: _map(projects, project => ({
         ...project,

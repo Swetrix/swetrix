@@ -158,11 +158,14 @@ const HEARTBEAT_SID_LIFE_TIME = 35
 // how often can user request a fresh GDPR export of their data; in days.
 const GDPR_EXPORT_TIMEFRAME = 14
 
+// send email warning when 85% of events in tier are used
+const SEND_WARNING_AT_PERC = 85
+
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME, getRedisUserCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
   REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME, isSelfhosted, UUIDV5_NAMESPACE, SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD, SELFHOSTED_UUID, CLICKHOUSE_INIT_QUERIES, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY,
-  REDIS_PAGEVIEWS_COUNT_KEY,
+  REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC,
 }

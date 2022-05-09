@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
+import { IsNull, LessThan } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -14,10 +15,10 @@ import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
-import { ReportFrequency } from '../user/entities/user.entity'
+import { ReportFrequency, ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, isSelfhosted, REDIS_SESSION_SALT_KEY,
-  REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY,
+  REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 
@@ -30,7 +31,7 @@ export class TaskManagerService {
     private readonly userService: UserService,
     private readonly analyticsService: AnalyticsService,
     private readonly projectService: ProjectService,
-  ) {}
+  ) { }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async saveLogData(): Promise<void> {
@@ -56,6 +57,46 @@ export class TaskManagerService {
         await clickhouse.query(query, parsed).toPromise()
       } catch (e) {
         console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
+      }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_9AM)
+  async checkLeftEvents(): Promise<void> {
+    const thisMonth = dayjs.utc().format('YYYY-MM-01')
+    const users = await this.userService.find({
+      where: [{
+        evWarningSentOn: IsNull(),
+        isActive: true,
+      }, {
+        evWarningSentOn: LessThan(thisMonth),
+        isActive: true,
+      }],
+      relations: ['projects'],
+      select: ['id', 'email', 'planCode'],
+    })
+    const emailParams = {
+      amount: SEND_WARNING_AT_PERC,
+      url: 'https://swetrix.com/billing',
+    }
+
+    for (let i = 0; i < _size(users); ++i) {
+      const { id, email, planCode, projects } = users[i]
+
+      if (_isEmpty(projects) || _isNull(projects)) {
+        continue
+      }
+
+      const maxEventsCount = ACCOUNT_PLANS[planCode].monthlyUsageLimit || 0
+      const totalMonthlyEvents = await this.projectService.getRedisCount(id)
+
+      const usedEV = totalMonthlyEvents * 100 / maxEventsCount
+
+      if (usedEV >= SEND_WARNING_AT_PERC) {
+        await this.mailerService.sendEmail(email, LetterTemplate.TierWarning, emailParams, 'broadcast')
+        await this.userService.update(id, {
+          evWarningSentOn: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+        })
       }
     }
   }
