@@ -7,4 +7,5 @@ export enum LetterTemplate {
   PasswordChangeRequest = 'password-change_request',
   GDPRDataExport = 'gdpr_data_export',
   ProjectReport = 'project-report',
+  TierWarning = 'tier-warning',
 }
