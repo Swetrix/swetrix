@@ -10,27 +10,27 @@ export enum PlanCode {
 }
 
 export const ACCOUNT_PLANS = {
-  free: {
+  [PlanCode.free]: {
     id: PlanCode.free,
     displayName: 'Free plan',
     monthlyUsageLimit: 5000,
     maxProjects: 10,
   },
-  freelancer: {
+  [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
     displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
     maxProjects: 20,
     pid: '752316',
   },
-  startup: {
+  [PlanCode.startup]: {
     id: PlanCode.startup,
     displayName: 'Startup plan',
     monthlyUsageLimit: 500000,
     maxProjects: 20,
     pid: '752317',
   },
-  enterprise: {
+  [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
     displayName: 'Enterprise plan',
     monthlyUsageLimit: 1000000,
