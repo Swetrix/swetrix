@@ -443,26 +443,38 @@ const ViewProject = ({
     return (
       <Title title={name}>
         <EventsRunningOutBanner />
-        <div className={cx('bg-gray-50 dark:bg-gray-800 py-6 px-4 sm:px-6 lg:px-8', {
-          'min-h-min-footer': authenticated,
-          'min-h-min-footer-ad': !authenticated,
-        })} ref={dashboardRef}>
-          <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
-            <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 break-words'>{name}</h2>
-            <div className='flex mt-3 md:mt-0'>
-              <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
-                <span className='relative z-0 inline-flex shadow-sm rounded-md'>
+        <div
+          className={cx(
+            "bg-gray-50 dark:bg-gray-800 py-6 px-4 sm:px-6 lg:px-8",
+            {
+              "min-h-min-footer": authenticated,
+              "min-h-min-footer-ad": !authenticated,
+            }
+          )}
+          ref={dashboardRef}
+        >
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between h-10">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-50 break-words">
+              {name}
+            </h2>
+            <div className="flex mt-3 md:mt-0">
+              <div className="md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3">
+                <span className="relative z-0 inline-flex shadow-sm rounded-md">
                   {_map(activePeriod.tbs, (tb, index, { length }) => (
                     <button
                       key={tb}
-                      type='button'
+                      type="button"
                       onClick={() => updateTimebucket(tb)}
-                      className={cx('relative capitalize inline-flex items-center px-3 md:px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500', {
-                        '-ml-px': index > 0,
-                        'rounded-l-md': index === 0,
-                        'rounded-r-md': 1 + index === length,
-                        'z-10 border-indigo-500 text-indigo-600': timeBucket === tb,
-                      })}
+                      className={cx(
+                        "relative capitalize inline-flex items-center px-3 md:px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500",
+                        {
+                          "-ml-px": index > 0,
+                          "rounded-l-md": index === 0,
+                          "rounded-r-md": 1 + index === length,
+                          "z-10 border-indigo-500 text-indigo-600":
+                            timeBucket === tb,
+                        }
+                      )}
                     >
                       {t(`project.${tb}`)}
                     </button>
@@ -472,46 +484,66 @@ const ViewProject = ({
               <Dropdown
                 items={periodPairs}
                 title={activePeriod.label}
-                labelExtractor={pair => pair.label}
-                keyExtractor={pair => pair.label}
-                onSelect={pair => updatePeriod(pair.period)}
+                labelExtractor={(pair) => pair.label}
+                keyExtractor={(pair) => pair.label}
+                onSelect={(pair) => updatePeriod(pair.period)}
               />
               {!isProjectPublic && (
-                <div className='h-full ml-3'>
-                  <Button onClick={openSettingsHandler} className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600' secondary>
-                    {t('common.settings')}
+                <div className="h-full ml-3">
+                  <Button
+                    onClick={openSettingsHandler}
+                    className="py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    secondary
+                  >
+                    {t("common.settings")}
                   </Button>
                 </div>
               )}
             </div>
           </div>
-          {isPanelsDataEmpty && (
-            analyticsLoading ? (
-              <Loader />
-            ) : (
-              <NoEvents t={t} />
-            )
-          )}
-          <div className={cx('flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4', { hidden: isPanelsDataEmpty })}>
-            <Checkbox label={t('project.showAll')} id='views' checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} />
-            <div className='h-full ml-3'>
-              <Button onClick={exportAsImageHandler} className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600' secondary>
-                {t('project.exportImg')}
+          {isPanelsDataEmpty &&
+            (analyticsLoading ? <Loader /> : <NoEvents t={t} />)}
+          <div
+            className={cx(
+              "flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4",
+              { hidden: isPanelsDataEmpty }
+            )}
+          >
+            <Checkbox
+              label={t("project.showAll")}
+              id="views"
+              checked={showTotal}
+              onChange={(e) => setShowTotal(e.target.checked)}
+            />
+            <div className="h-full ml-3">
+              <Button
+                onClick={exportAsImageHandler}
+                className="py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+                secondary
+              >
+                {t("project.exportImg")}
               </Button>
             </div>
           </div>
-          <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty })}>
-            <div className='h-80' id='dataChart' />
-            <Filters filters={filters} onRemoveFilter={filterHandler} onChangeExclusive={onChangeExclusive} language={language} t={t} tnMapping={tnMapping} />
+          <div className={cx("pt-4 md:pt-0", { hidden: isPanelsDataEmpty })}>
+            <div className="h-80" id="dataChart" />
+            <Filters
+              filters={filters}
+              onRemoveFilter={filterHandler}
+              onChangeExclusive={onChangeExclusive}
+              language={language}
+              t={t}
+              tnMapping={tnMapping}
+            />
             {dataLoading && (
-              <div className='loader bg-transparent static mt-4' id='loader'>
-                <div className='loader-head'>
-                  <div className='first'></div>
-                  <div className='second'></div>
+              <div className="loader bg-transparent static mt-4" id="loader">
+                <div className="loader-head">
+                  <div className="first"></div>
+                  <div className="second"></div>
                 </div>
               </div>
             )}
-            <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {!_isEmpty(project.overall) && (
                 <Overview
                   t={t}
@@ -521,101 +553,151 @@ const ViewProject = ({
                   live={project.live}
                 />
               )}
-              {_map(panelsData.types, type => {
-                const panelName = tnMapping[type]
-                const panelIcon = panelIconMapping[type]
+              {_map(panelsData.types, (type) => {
+                const panelName = tnMapping[type];
+                const panelIcon = panelIconMapping[type];
 
-                if (type === 'cc') {
+                if (type === "cc") {
                   return (
-                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} rowMapper={(name) => (
-                      <>
-                        <Flag className='rounded-sm' country={name} size={21} alt='' />
-                        &nbsp;&nbsp;
-                        {countries.getName(name, language)}
-                      </>
-                    )} />
-                  )
-                }
-
-                if (type === 'dv') {
-                  return (
-                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} capitalize />
-                  )
-                }
-
-                if (type === 'ref') {
-                  return (
-                    <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} rowMapper={(name) => {
-                      let isUrl = true
-                      let url = name
-
-                      try {
-                        url = new URL(name)
-                      } catch {
-                        isUrl = false
-                      }
-
-                      return (
-                        <div>
-                          {showIcons && isUrl && !_isEmpty(url.hostname) && (
-                            <img className='w-5 h-5 mr-1.5 float-left' src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`} alt='' />
-                          )}
-                          {isUrl ? (
-                            <a className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500' href={name} target='_blank' rel='noopener noreferrer'>
-                              {name}
-                            </a>
-                          ) : (
-                            <span className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'>
-                              {name}
-                            </span>
-                          )}
-                        </div>
-                      )
-                    }}
+                    <Panel
+                      t={t}
+                      key={type}
+                      icon={panelIcon}
+                      id={type}
+                      onFilter={filterHandler}
+                      name={panelName}
+                      data={panelsData.data[type]}
+                      rowMapper={(name) => (
+                        <>
+                          <Flag
+                            className="rounded-sm"
+                            country={name}
+                            size={21}
+                            alt=""
+                          />
+                          &nbsp;&nbsp;
+                          {countries.getName(name, language)}
+                        </>
+                      )}
                     />
-                  )
+                  );
+                }
+
+                if (type === "dv") {
+                  return (
+                    <Panel
+                      t={t}
+                      key={type}
+                      icon={panelIcon}
+                      id={type}
+                      onFilter={filterHandler}
+                      name={panelName}
+                      data={panelsData.data[type]}
+                      capitalize
+                    />
+                  );
+                }
+
+                if (type === "ref") {
+                  return (
+                    <Panel
+                      t={t}
+                      key={type}
+                      icon={panelIcon}
+                      id={type}
+                      onFilter={filterHandler}
+                      name={panelName}
+                      data={panelsData.data[type]}
+                      rowMapper={(name) => {
+                        let isUrl = true;
+                        let url = name;
+
+                        try {
+                          url = new URL(name);
+                        } catch {
+                          isUrl = false;
+                        }
+
+                        return (
+                          <div>
+                            {showIcons && isUrl && !_isEmpty(url.hostname) && (
+                              <img
+                                className="w-5 h-5 mr-1.5 float-left"
+                                src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`}
+                                alt=""
+                              />
+                            )}
+                            {isUrl ? (
+                              <a
+                                className="flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500"
+                                href={name}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {name}
+                              </a>
+                            ) : (
+                              <span className="flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500">
+                                {name}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      }}
+                    />
+                  );
                 }
 
                 return (
-                  <Panel t={t} key={type} icon={panelIcon} id={type} onFilter={filterHandler} name={panelName} data={panelsData.data[type]} />
-                )
+                  <Panel
+                    t={t}
+                    key={type}
+                    icon={panelIcon}
+                    id={type}
+                    onFilter={filterHandler}
+                    name={panelName}
+                    data={panelsData.data[type]}
+                  />
+                );
               })}
               {!_isEmpty(panelsData.customs) && (
-                <CustomEvents t={t} customs={panelsData.customs} chartData={chartData} />
+                <CustomEvents
+                  t={t}
+                  customs={panelsData.customs}
+                  chartData={chartData}
+                />
               )}
             </div>
           </div>
         </div>
         {!authenticated && (
-          <div className='bg-indigo-600'>
-            <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-              <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
-                <span className='block text-white'>
-                  {t('project.ad')}
-                </span>
-                <span className='block text-gray-300'>
-                  {t('main.exploreService')}
+          <div className="bg-indigo-600">
+            <div className="w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
+                <span className="block text-white">{t("project.ad")}</span>
+                <span className="block text-gray-300">
+                  {t("main.exploreService")}
                 </span>
               </h2>
-              <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
+              <div className="mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5">
                 <Link
                   to={routes.signup}
-                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                  className="flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100"
                 >
-                  {t('common.getStarted')}
+                  {t("common.getStarted")}
                 </Link>
                 <Link
                   to={routes.main}
-                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                  className="flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100"
                 >
-                  {t('common.explore')}
+                  {t("common.explore")}
                 </Link>
               </div>
             </div>
           </div>
         )}
       </Title>
-    )
+    );
   }
 
   return (
