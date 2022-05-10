@@ -29,8 +29,8 @@ const PanelContainer = ({
     'pb-12': !noSwitch,
     'pb-5': noSwitch,
   })}>
-    <div className='flex items-center justify-between'>
-      <h3 className='flex items-center text-lg leading-6 font-semibold mb-2 text-gray-900 dark:text-gray-50'>
+    <div className='flex items-center justify-between mb-2'>
+      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
         {icon && (
           <>
             {icon}
