@@ -371,8 +371,7 @@
     "dashboard": "管理面板",
     "docs": "文档",
     "billing": "账单",
-    "contact": "联系方式",
-    "about": "关于我们"
+    "contact": "联系方式"
   },
   "footer": {
     "slogan": "最好的应用需要最好的服务。",
@@ -396,7 +395,6 @@
     "privacy": "隐私",
     "terms": "条款",
     "status": "状态",
-    "donate": "捐",
-    "about": "关于我们"
+    "donate": "捐"
   }
 }

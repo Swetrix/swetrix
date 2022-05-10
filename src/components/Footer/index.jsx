@@ -23,7 +23,6 @@ const navigation = {
     { key: 'contact', href: routes.contact, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'donate', href: DONATE_URL },
-    { key: 'about', href: routes.about, internal: true },
   ],
   legal: [
     { key: 'privacy', href: routes.privacy },

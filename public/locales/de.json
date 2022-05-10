@@ -371,8 +371,7 @@
     "dashboard": "Dashboard",
     "docs": "Dokumentation",
     "billing": "Rechnung",
-    "contact": "Kontakt",
-    "about": "About us"
+    "contact": "Kontakt"
   },
   "footer": {
     "slogan": "Die besten Apps brauchen den besten Service.",
@@ -396,7 +395,6 @@
     "privacy": "Datenschutz",
     "terms": "AGB",
     "status": "Status",
-    "donate": "Unterstützen",
-    "about": "About us"
+    "donate": "Unterstützen"
   }
 }

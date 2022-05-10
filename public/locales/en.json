@@ -373,8 +373,7 @@
     "dashboard": "Dashboard",
     "docs": "Documentation",
     "billing": "Billing",
-    "contact": "Contact",
-    "about": "About us"
+    "contact": "Contact"
   },
   "footer": {
     "slogan": "The best apps need the best services.",
@@ -398,7 +397,6 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "status": "Status",
-    "donate": "Donate",
-    "about": "About us"
+    "donate": "Donate"
   }
 }
