@@ -466,13 +466,13 @@ const ViewProject = ({
                       type='button'
                       onClick={() => updateTimebucket(tb)}
                       className={cx(
-                        'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500',
+                        'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
                         {
                           '-ml-px': index > 0,
                           'rounded-l-md': index === 0,
                           'rounded-r-md': 1 + index === length,
-                          'z-10 border-indigo-500 text-indigo-600':
-                            timeBucket === tb,
+                          'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
+                          'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
                         }
                       )}
                     >
