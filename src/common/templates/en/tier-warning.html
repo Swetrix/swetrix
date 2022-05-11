@@ -2,7 +2,7 @@
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <title>Swetrix Account Data Export</title>
+      <title>You are running out of the available events for this month</title>
       <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet" />
    </head>
    <body style="margin: 0; padding: 0; background-color: #f0f4f7;">
@@ -42,22 +42,7 @@
                                        align="center"
                                        style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; font-size: 44px; color: #1a1a1a;"
                                     >
-                                      What we know about you
-                                    </span>
-                                 </font>
-                                 <div style="height: 10px; line-height: 10px; font-size: 9px;">&nbsp;</div>
-                                 <font style="font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;">
-                                    <span
-                                       style="
-                                          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-                                          color: #5e5e5e;
-                                          font-size: 30px;
-                                          line-height: 45px;
-                                          font-weight: 300;
-                                          letter-spacing: -1px;
-                                       "
-                                    >
-                                      GDPR Account Data Export
+                                       You are running out of available events to track
                                     </span>
                                  </font>
                                  <div style="height: 38px; line-height: 38px; font-size: 36px;">&nbsp;</div>
@@ -73,43 +58,83 @@
                                                    line-height: 23px;
                                                 "
                                              >
-                                                <i>Note: All times are Greenwich Mean Time.</i><br />
-                                                Below is the list of your Swetrix account information and settings (including your created projects) that you can request at any time.<br />
-                                                Our <a href="https://swetrix.com/privacy" target="_blank">Privacy Policy</a> has more information about what data we collect and how we use it.
-
-                                                <div style="height: 5px; line-height: 5px; font-size: 3px;">&nbsp;</div>
-                                                <h3 style="margin-bottom: 5px;">Account Information:</h3>
-                                                <b>Email address:</b>&nbsp;{{user.email}}<br />
-                                                <b>Email confirmed:</b>&nbsp;{{#if user.isActive}} Yes {{else}} No {{/if}}<br />
-                                                <b>Verification emails sent:</b>&nbsp;{{user.emailRequests}}<br />
-                                                <b>Summary report frequency:</b>&nbsp;{{user.reportFrequency}}<br />
-                                                <b>Account created at:</b>&nbsp;{{user.created}}<br />
-                                                <b>Account updated at:</b>&nbsp;{{user.updated}}<br />
-                                                <b>Last report generation time:</b>&nbsp;{{user.exportedAt}}<br />
-                                                <b>Last tier warning email sent on:</b>&nbsp;{{user.evWarningSentOn}}<br />
-                                                <b>Timezone:</b>&nbsp;{{user.timezone}}<br />
-                                                <b>Paddle: Subscription ID:</b>&nbsp;{{user.subID}}<br />
-                                                <b>Paddle: Update subscription URL:</b>&nbsp;{{user.subUpdateURL}}<br />
-                                                <b>Paddle: Cancel subscription URL:</b>&nbsp;{{user.subCancelURL}}
-
-                                                <div style="height: 10px; line-height: 10px; font-size: 8px;">&nbsp;</div>
-                                                <h3 style="margin-bottom: 5px;">Projects Information:</h3>
-                                                {{#each projects}}
-                                                  <b>Project Identifier:</b>&nbsp;{{id}}<br />
-                                                  <b>Name:</b>&nbsp;{{name}}<br />
-                                                  <b>Active:</b>&nbsp;{{#if active}} Yes {{else}} No {{/if}}<br />
-                                                  <b>Public:</b>&nbsp;{{#if public}} Yes {{else}} No {{/if}}<br />
-                                                  <b>Allowed origins:</b>&nbsp;{{#if origins}}{{origins}}{{else}}*{{/if}}<br />
-                                                  <b>Created at:</b>&nbsp;{{created}}<br /><br />
-                                                {{else}}
-                                                  There are no projects associated with this account.
-                                                {{/each}}
+                                                You have used more than {{amount}}% of the available events per your tier for this month.
+                                                <br />
+                                                That means that in case you use 100% of the available events until the end of the month, all the subsequent traffic will not be saved.
+                                                <br />
+                                                To avoid this we recommend that you upgrade your tier on the Billing page.
                                              </span>
                                           </font>
                                           <div style="height: 30px; line-height: 30px; font-size: 28px;">&nbsp;</div>
                                        </td>
                                     </tr>
                                  </table>
+                              </td>
+                           </tr>
+                        </table>
+
+                        <table cellpadding="0" cellspacing="0" border="0" width="88%" style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                           <tr>
+                              <td align="center" valign="top">
+                                 <table cellpadding="0" cellspacing="0" border="0" style="background: #4f46e5; border-radius: 4px;">
+                                    <tr>
+                                       <td align="center" valign="top">
+                                          <a
+                                             href="{{url}}"
+                                             target="_blank"
+                                             style="
+                                                display: block;
+                                                border: 1px solid #4f46e5;
+                                                border-radius: 4px;
+                                                padding: 19px 26px;
+                                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                color: #ffffff;
+                                                font-size: 20px;
+                                                line-height: 30px;
+                                                text-decoration: none;
+                                                white-space: nowrap;
+                                                font-weight: 600;
+                                             "
+                                          >
+                                             <font face="'Source Sans Pro', sans-serif" color="#ffffff" style="font-size: 26px; line-height: 30px; text-decoration: none; white-space: nowrap; font-weight: 600;">
+                                                <span
+                                                   style="
+                                                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                      color: #ffffff;
+                                                      font-size: 26px;
+                                                      line-height: 30px;
+                                                      text-decoration: none;
+                                                      white-space: nowrap;
+                                                      font-weight: 600;
+                                                   "
+                                                >
+                                                  Upgrade tier
+                                                </span>
+                                             </font>
+                                          </a>
+                                       </td>
+                                    </tr>
+                                 </table>
+                                 <div style="height: 30px; line-height: 30px; font-size: 28px;">&nbsp;</div>
+                                 <table cellpadding="0" cellspacing="0" border="0" width="88%" style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                                    <tr>
+                                       <td align="left" valign="top">
+                                          <font face="'Source Sans Pro', sans-serif" color="#6d6d6d" style="font-size: 17px; line-height: 23px;">
+                                            <span
+                                              style="
+                                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                color: #6d6d6d;
+                                                font-size: 17px;
+                                                line-height: 23px;
+                                              "
+                                            >
+                                                You can reply back to this email in case you have any questions!
+                                            </span>
+                                          </font>
+                                       </td>
+                                    </tr>
+                                 </table>
+                                 <div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
                               </td>
                            </tr>
                         </table>

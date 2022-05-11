@@ -5,6 +5,7 @@ import { LetterTemplate } from './letter'
 import fs = require('fs')
 import path = require('path')
 import { AppLoggerService } from 'src/logger/logger.service'
+import { SEND_WARNING_AT_PERC } from 'src/common/constants'
 
 const TEMPLATES_PATH = path.join(__dirname, '..', 'common', 'templates')
 const metaInfoJson = {
@@ -48,6 +49,11 @@ const metaInfoJson = {
       en: (p: Params) => `${p.type === 'w' ? 'Weekly' : 'Monthly'} Report: ${p.date}`,
     },
   },
+  [LetterTemplate.TierWarning]: {
+    subject: {
+      en: () => `You have used more than ${SEND_WARNING_AT_PERC}% of the available events per your tier for this month.`,
+    },
+  }
 }
 
 interface Params {
