@@ -25,14 +25,26 @@ const ENTRIES_PER_PANEL = 5
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment,
+  name,
+  children,
+  noSwitch,
+  icon,
+  type,
+  openModal,
+  activeFragment,
+  setActiveFragment,
 }) => (
-  <div className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
-    'pb-12': !noSwitch,
-    'pb-5': noSwitch,
-  })}>
-    <div className='flex items-center justify-between mb-2'>
-      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+  <div
+    className={cx(
+      "relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden",
+      {
+        "pb-12": !noSwitch,
+        "pb-5": noSwitch,
+      }
+    )}
+  >
+    <div className="flex items-center justify-between mb-2">
+      <h3 className="flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50">
         {icon && (
           <>
             {icon}
@@ -41,57 +53,56 @@ const PanelContainer = ({
         )}
         {name}
       </h3>
-      {type === 'cc' && (
-        <div className='flex'>
+      {type === "cc" && (
+        <div className="flex">
           <ViewListIcon
-            className={cx(iconClassName, 'cursor-pointer', {
-              'text-blue-500': activeFragment === 0,
-              'text-gray-900 dark:text-gray-50': activeFragment === 1,
+            className={cx(iconClassName, "cursor-pointer", {
+              "text-blue-500": activeFragment === 0,
+              "text-gray-900 dark:text-gray-50": activeFragment === 1,
             })}
             onClick={() => setActiveFragment(0)}
           />
           <MapIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer', {
-              'text-blue-500': activeFragment === 1,
-              'text-gray-900 dark:text-gray-50': activeFragment === 0,
+            className={cx(iconClassName, "ml-2 cursor-pointer", {
+              "text-blue-500": activeFragment === 1,
+              "text-gray-900 dark:text-gray-50": activeFragment === 0,
             })}
             onClick={() => setActiveFragment(1)}
           />
           <ArrowsExpandIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
-              'hidden': activeFragment === 0,
-            })}
+            className={cx(
+              iconClassName,
+              "ml-2 cursor-pointer text-gray-900 dark:text-gray-50",
+              {
+                hidden: activeFragment === 0,
+              }
+            )}
             onClick={openModal}
           />
         </div>
       )}
-        { type !== "cc" &&
-        type &&
-        type !== "me" &&
-        type !== "ca" && (
-          <div className='flex'>
+      {type !== "cc" && type && type !== "me" && type !== "ca" && (
+        <div className="flex">
           <ViewListIcon
-            className={cx(iconClassName, 'cursor-pointer', {
-              'text-blue-500': activeFragment === 0,
-              'text-gray-900 dark:text-gray-50': activeFragment === 1,
+            className={cx(iconClassName, "cursor-pointer", {
+              "text-blue-500": activeFragment === 0,
+              "text-gray-900 dark:text-gray-50": activeFragment === 1,
             })}
             onClick={() => setActiveFragment(0)}
           />
           <ChartPieIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer', {
-              'text-blue-500': activeFragment === 1,
-              'text-gray-900 dark:text-gray-50': activeFragment === 0,
+            className={cx(iconClassName, "ml-2 cursor-pointer", {
+              "text-blue-500": activeFragment === 1,
+              "text-gray-900 dark:text-gray-50": activeFragment === 0,
             })}
             onClick={() => setActiveFragment(1)}
           />
         </div>
-        )}
+      )}
     </div>
-    <div className='flex flex-col h-full scroll-auto'>
-      {children}
-    </div>
+    <div className="flex flex-col h-full scroll-auto">{children}</div>
   </div>
-)
+);
 
 PanelContainer.propTypes = {
   name: PropTypes.string.isRequired,
@@ -280,7 +291,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
+  name, data, rowMapper, capitalize, t, icon, id, hideFilters, onFilter,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -330,7 +341,7 @@ const Panel = ({
     }
   }
 
-  
+
 
   if (id === 'cc' && activeFragment === 1 && !_isEmpty(data)) {
     return (
@@ -405,27 +416,12 @@ const Panel = ({
               })}
               onClick={() => _onFilter(id, key)}
             >
-              {/* TODO: FIX: CLICKING ON AN EXTERNAL LINK CAUSES FILTER TO ACTIVATE */}
-              {linkContent ? (
-                <a
-                  className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', { capitalize })}
-                  href={rowData}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                >
-                  {rowData}
-                  {!hideFilters && (
-                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
-                  )}
-                </a>
-              ) : (
-                <span className={cx('flex items-center label', { capitalize })}>
-                  {rowData}
-                  {!hideFilters && (
-                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
-                  )}
-                </span>
-              )}
+              <span className={cx('flex items-center label', { capitalize })}>
+                {rowData}
+                {!hideFilters && (
+                  <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                )}
+              </span>
               <span className='ml-3 dark:text-gray-50'>
                 {data[key]}
                 &nbsp;
@@ -477,7 +473,6 @@ Panel.propTypes = {
   rowMapper: PropTypes.func,
   onFilter: PropTypes.func,
   capitalize: PropTypes.bool,
-  linkContent: PropTypes.bool,
   hideFilters: PropTypes.bool,
   icon: PropTypes.node,
 }
@@ -486,7 +481,6 @@ Panel.defaultProps = {
   id: null,
   rowMapper: null,
   capitalize: false,
-  linkContent: false,
   onFilter: () => { },
   hideFilters: false,
   icon: null,
