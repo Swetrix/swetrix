@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { ArrowSmUpIcon, ArrowSmDownIcon } from '@heroicons/react/solid'
-import { FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon } from '@heroicons/react/outline'
+import { FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon, ChartPieIcon } from '@heroicons/react/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import _keys from 'lodash/keys'
@@ -18,6 +18,8 @@ import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
 import { iconClassName } from './ViewProject'
+import {pie} from "billboard.js"
+import Chart from 'ui/Chart'
 
 const ENTRIES_PER_PANEL = 5
 
@@ -63,6 +65,27 @@ const PanelContainer = ({
           />
         </div>
       )}
+        { type !== "cc" &&
+        type &&
+        type !== "me" &&
+        type !== "ca" && (
+          <div className='flex'>
+          <ViewListIcon
+            className={cx(iconClassName, 'cursor-pointer', {
+              'text-blue-500': activeFragment === 0,
+              'text-gray-900 dark:text-gray-50': activeFragment === 1,
+            })}
+            onClick={() => setActiveFragment(0)}
+          />
+          <ChartPieIcon
+            className={cx(iconClassName, 'ml-2 cursor-pointer', {
+              'text-blue-500': activeFragment === 1,
+              'text-gray-900 dark:text-gray-50': activeFragment === 0,
+            })}
+            onClick={() => setActiveFragment(1)}
+          />
+        </div>
+        )}
     </div>
     <div className='flex flex-col h-full scroll-auto'>
       {children}
@@ -265,6 +288,7 @@ const Panel = ({
   const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + 5), [keys, currentIndex])
   const total = useMemo(() => _reduce(keys, (prev, curr) => prev + data[curr], 0), [keys]) // eslint-disable-line
   const [activeFragment, setActiveFragment] = useState(0)
+  const [chartOptions, setChartOptions] = useState({})
   const [modal, setModal] = useState(false)
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor(_size(keys) / ENTRIES_PER_PANEL)
@@ -279,6 +303,21 @@ const Panel = ({
     }
   }, [currentIndex, keys])
 
+  useEffect(() => {
+    if (!_isEmpty(data)) {
+      setChartOptions({
+        data: {
+          columns: _map(data, (e, index) => [index, e]),
+          type: pie(),
+          onclick: (item) => { _onFilter(id, item.id)}
+        },
+        legend: {
+          show: false,
+        },
+      })
+    }
+  }, [data])
+
   const onPrevious = () => {
     if (canGoPrev()) {
       setPage(page - 1)
@@ -290,6 +329,8 @@ const Panel = ({
       setPage(page + 1)
     }
   }
+
+  
 
   if (id === 'cc' && activeFragment === 1 && !_isEmpty(data)) {
     return (
@@ -321,6 +362,29 @@ const Panel = ({
         />
       </PanelContainer>
     )
+  }
+
+  if (activeFragment === 1 && !_isEmpty(data)) {
+    return (
+      <PanelContainer
+        name={name}
+        icon={icon}
+        type={id}
+        setActiveFragment={setActiveFragment}
+        activeFragment={activeFragment}
+      >
+        {_isEmpty(data) ? (
+          <p className="mt-1 text-base text-gray-700 dark:text-gray-300">
+            {t("project.noParamData")}
+          </p>
+        ) : (
+          <Chart
+            options={chartOptions}
+            current={`Panels-${id}`}
+          />
+        )}
+      </PanelContainer>
+    );
   }
 
   return (
