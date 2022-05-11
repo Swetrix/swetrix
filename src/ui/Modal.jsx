@@ -38,7 +38,7 @@ const Modal = ({
             leaveFrom='opacity-100 translate-y-0 sm:scale-100'
             leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
           >
-            <div className={cx('inline-block align-bottom bg-white dark:bg-gray-700 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:px-5 sm:py-4', {
+            <div className={cx('inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:px-5 sm:py-4', {
               'sm:max-w-lg sm:w-full': size === 'regular',
               'sm:max-w-5xl sm:w-full': size === 'large',
             })}>
@@ -69,10 +69,8 @@ const Modal = ({
                       {title}
                     </Dialog.Title>
                   )}
-                  <div className='mt-2'>
-                    <p className='text-sm text-gray-600 whitespace-pre-line dark:text-gray-200'>
-                      {message}
-                    </p>
+                  <div className='mt-2 text-sm text-gray-600 whitespace-pre-line dark:text-gray-200'>
+                    {message}
                   </div>
                 </div>
               </div>
