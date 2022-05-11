@@ -7,7 +7,7 @@ import { ExclamationIcon } from '@heroicons/react/outline'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 
 const Modal = ({
-  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType,
+  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size,
 }) => {
   return (
     <Transition.Root show={isOpened} as={Fragment}>
@@ -38,7 +38,10 @@ const Modal = ({
             leaveFrom='opacity-100 translate-y-0 sm:scale-100'
             leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
           >
-            <div className='inline-block align-bottom bg-white dark:bg-gray-700 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:px-5 sm:py-4'>
+            <div className={cx('inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:px-5 sm:py-4', {
+              'sm:max-w-lg sm:w-full': size === 'regular',
+              'sm:max-w-5xl sm:w-full': size === 'large',
+            })}>
               <div className='sm:flex sm:items-start'>
                 {type === 'success' && (
                   <div className='mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10'>
@@ -61,13 +64,13 @@ const Modal = ({
                   </div>
                 )}
                 <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left'>
-                  <Dialog.Title as='h3' className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
-                    {title}
-                  </Dialog.Title>
-                  <div className='mt-2'>
-                    <p className='text-sm text-gray-600 whitespace-pre-line dark:text-gray-200'>
-                      {message}
-                    </p>
+                  {title && (
+                    <Dialog.Title as='h3' className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
+                      {title}
+                    </Dialog.Title>
+                  )}
+                  <div className='mt-2 text-sm text-gray-600 whitespace-pre-line dark:text-gray-200'>
+                    {message}
                   </div>
                 </div>
               </div>
@@ -87,7 +90,7 @@ const Modal = ({
                 {closeText && (
                   <button
                     type='button'
-                    className='mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
+                    className='mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
                     onClick={onClose}
                   >
                     {closeText}
@@ -104,7 +107,7 @@ const Modal = ({
 
 Modal.propTypes = {
   type: PropTypes.oneOf(['error', 'success', 'info', 'warning']),
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   onClose: PropTypes.func.isRequired,
   message: PropTypes.oneOfType([
     PropTypes.string, PropTypes.node,
@@ -115,6 +118,7 @@ Modal.propTypes = {
   closeText: PropTypes.string,
   submitText: PropTypes.string,
   submitType: PropTypes.oneOf(['regular', 'danger']),
+  size: PropTypes.oneOf(['regular', 'large'])
 }
 
 Modal.defaultProps = {
@@ -125,7 +129,9 @@ Modal.defaultProps = {
   closeText: null,
   submitText: null,
   submitType: 'regular',
+  size: 'regular',
   type: null,
+  title: null,
 }
 
 export default memo(Modal)
