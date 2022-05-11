@@ -12,13 +12,15 @@ import { hash } from 'blake3'
 import ct from 'countries-and-timezones'
 import {
   Controller, Body, Query, UseGuards, Get, Post, Headers, BadRequestException, InternalServerErrorException,
-  NotImplementedException, UnprocessableEntityException, PreconditionFailedException, Ip, ForbiddenException, Response,
+  UnprocessableEntityException, PreconditionFailedException, Ip, ForbiddenException, Response,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
-import { AnalyticsService, getSessionKey, isValidTimezone } from './analytics.service'
+import {
+  AnalyticsService, getSessionKey, isValidTimezone, isValidDate, checkIfTBAllowed,
+} from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
@@ -97,15 +99,19 @@ export class AnalyticsController {
   async getData(@Query() data: AnalyticsGET_DTO, @CurrentUserId() uid: string): Promise<any> {
     const { pid, period, timeBucket, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
     this.analyticsService.validatePID(pid)
-    this.analyticsService.validatePeriod(period)
+    
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let groupFrom = from, groupTo = to
 
-    let queryCustoms = 'SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)}'
-    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+    const queryCustoms = 'SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev'
+    const subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     const paramsData = {
       params: {
@@ -117,16 +123,25 @@ export class AnalyticsController {
     }
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
-      throw new NotImplementedException('Filtering by from/to params is currently not available')
+      if (!isValidDate(from)) {
+        throw new PreconditionFailedException('The timeframe \'from\' parameter is invalid')
+      }
+
+      if (!isValidDate(to)) {
+        throw new PreconditionFailedException('The timeframe \'to\' parameter is invalid')
+      }
+
       if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
         throw new PreconditionFailedException('The timeframe \'from\' parameter cannot be greater than \'to\'')
       }
 
-      if (dayjs.utc(to).isAfter(dayjs.utc(), 'second')) {
-        groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        queryCustoms += ` AND created BETWEEN ${from} AND ${groupTo} GROUP BY ev`
+      checkIfTBAllowed(timeBucket, from, to)
+
+      groupFrom = from
+      if (from === to) {
+        groupTo = dayjs(to).format('YYYY-MM-DD 23:59:59')
       } else {
-        queryCustoms += ` AND created BETWEEN ${from} AND ${to} GROUP BY ev`
+        groupTo = to
       }
     } else if (!_isEmpty(period)) {
       if (period === 'today') {
@@ -148,17 +163,16 @@ export class AnalyticsController {
       } else {
         groupFrom = dayjs.utc().subtract(parseInt(period), _last(period)).format('YYYY-MM-DD')
         groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
-      }
 
-      paramsData.params = {
-        ...paramsData.params,
-        groupFrom, groupTo,
+        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
       }
-
-      queryCustoms += ' AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev'
-      subQuery += ' AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
     } else {
       throw new BadRequestException('The timeframe (either from/to pair or period) has to be provided')
+    }
+
+    paramsData.params = {
+      ...paramsData.params,
+      groupFrom, groupTo,
     }
 
     const result = await this.analyticsService.groupByTimeBucket(timeBucket, groupFrom, groupTo, subQuery, filtersQuery, paramsData, timezone)

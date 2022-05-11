@@ -19,6 +19,7 @@ import { isLocale } from 'validator'
 import { hash } from 'blake3'
 import {
   Injectable, BadRequestException, InternalServerErrorException, ForbiddenException, UnprocessableEntityException,
+  PreconditionFailedException,
 } from '@nestjs/common'
 
 import { ACCOUNT_PLANS, DEFAULT_TIMEZONE } from '../user/entities/user.entity'
@@ -39,7 +40,7 @@ dayjs.extend(timezone)
 export const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
 export const cols = [
-  'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref','so', 'me', 'ca',
+  'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca',
 ]
 
 interface chartCHResponse {
@@ -54,14 +55,23 @@ interface customsCHResponse {
 }
 
 const validPeriods = ['today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
-const validTimebuckets = ['hour', 'day', 'week', 'month']
+const validTimebuckets = [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH]
+
+// mapping of allowed timebuckets per difference between days
+// (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
+const timeBucketToDays = [
+  { lt: 7, tb: [TimeBucketType.HOUR, TimeBucketType.DAY] }, // 7 days
+  { lt: 28, tb: [TimeBucketType.DAY, TimeBucketType.WEEK] }, // 4 weeks
+  { lt: 366, tb: [TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 12 months
+  { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
+]
 
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
-interface GetFiltersQuery extends Array<string | object>{0:string; 1:object}
+interface GetFiltersQuery extends Array<string | object> { 0: string; 1: object }
 
-export const isValidTimezone = (timezone) => {
+export const isValidTimezone = (timezone: string): boolean => {
   if (_isEmpty(timezone)) {
     return false
   }
@@ -71,6 +81,30 @@ export const isValidTimezone = (timezone) => {
     return true
   } catch {
     return false
+  }
+}
+
+export const isValidDate = (date: string, format: string = 'YYYY-MM-DD'): boolean => {
+  if (_isEmpty(date)) {
+    return false
+  }
+
+  return dayjs(date, format).format(format) === date
+}
+
+export const checkIfTBAllowed = (timeBucket: TimeBucketType, from: string, to: string): void => {
+  const diff = dayjs(to).diff(dayjs(from), 'days')
+
+  const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
+
+  if (_isEmpty(tbMap)) {
+    throw new PreconditionFailedException('The difference between \'from\' and \'to\' is greater than allowed')
+  }
+
+  const { tb } = tbMap
+
+  if (!_includes(tb, timeBucket)) {
+    throw new PreconditionFailedException('The specified \'timeBucket\' parameter cannot be applied to the date range')
   }
 }
 
@@ -220,6 +254,10 @@ export class AnalyticsService {
     let query = ''
     let params = {}
 
+    if (_isEmpty(filters)) {
+      return [query, params]
+    }
+
     try {
       parsed = JSON.parse(filters)
     } catch (e) {
@@ -250,7 +288,7 @@ export class AnalyticsService {
     return [query, params]
   }
 
-  validateTimebucket(tb: string): void {
+  validateTimebucket(tb: TimeBucketType): void {
     if (!_includes(validTimebuckets, tb)) {
       throw new UnprocessableEntityException('The provided timebucket is incorrect')
     }
@@ -343,10 +381,6 @@ export class AnalyticsService {
     const iterateTo = djsTo > now ? now : djsTo
 
     switch (timeBucket) {
-      case TimeBucketType.MINUTE:
-        groupDateIterator = dayjs.utc(from).startOf('minute')
-        break
-
       case TimeBucketType.HOUR:
         groupDateIterator = dayjs.utc(from).startOf('hour')
         break
@@ -354,7 +388,6 @@ export class AnalyticsService {
       case TimeBucketType.DAY:
       case TimeBucketType.WEEK:
       case TimeBucketType.MONTH:
-      case TimeBucketType.YEAR:
         groupDateIterator = dayjs.utc(from).startOf('day')
         break
 
