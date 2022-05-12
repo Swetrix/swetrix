@@ -58,22 +58,49 @@ countries.registerLocale(countriesUk)
 countries.registerLocale(countriesZh)
 countries.registerLocale(countriesSv)
 
-const getJSON = (chart, showTotal, t) => ({
-  x: _map(chart.x, el => dayjs(el).toDate()),
-  [t('project.unique')]: chart.uniques,
-  ...(showTotal && { [t('project.total')]: chart.visits }),
-})
+const getJSON = (chart, showTotal, t) => {
+  
+  if (showTotal) {
+    return [
+      ['x', ..._map(chart.x, el => dayjs(el).toDate())],
+      [t('project.unique'), ...chart.uniques],
+      [t('project.total'), ...chart.visits ],
+    ]
+  }
+
+  return [
+    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
+    [t('project.unique'), ...chart.uniques],
+  ]
+}
 
 const getSettings = (chart, timeBucket, showTotal = true, t) => ({
   data: {
     x: 'x',
-    json: getJSON(chart, showTotal, t),
+    columns: getJSON(chart, showTotal, t),
     type: area(),
-    xFormat: '%y-%m-%d %H:%M:%S',
     colors: {
       [t('project.unique')]: '#2563EB',
       [t('project.total')]: '#D97706',
-    }
+    },
+    regions: {
+        [t('project.unique')]: [
+          {
+            start: dayjs(chart.x[chart.x.length-2]).toDate(),
+            style: {
+              dasharray: "6 2"
+            }
+          }
+        ],
+        [t('project.total')]: [
+          {
+            start: dayjs(chart.x[chart.x.length-2]).toDate(),
+            style: {
+              dasharray: "6 2"
+            }
+          }
+        ]
+    },
   },
   axis: {
     x: {
@@ -338,7 +365,7 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
         mainChart.load({
-          json: getJSON(chartData, true, t),
+          columns: getJSON(chartData, true, t),
         })
       } else {
         mainChart.unload({
