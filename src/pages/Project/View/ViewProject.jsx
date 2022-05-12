@@ -27,6 +27,7 @@ import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
+import _size from 'lodash/size'
 import _filter from 'lodash/filter'
 import _truncate from 'lodash/truncate'
 import PropTypes from 'prop-types'
@@ -58,8 +59,7 @@ countries.registerLocale(countriesUk)
 countries.registerLocale(countriesZh)
 countries.registerLocale(countriesSv)
 
-const getJSON = (chart, showTotal, t) => {
-  
+const getColumns = (chart, showTotal, t) => {
   if (showTotal) {
     return [
       ['x', ..._map(chart.x, el => dayjs(el).toDate())],
@@ -77,7 +77,7 @@ const getJSON = (chart, showTotal, t) => {
 const getSettings = (chart, timeBucket, showTotal = true, t) => ({
   data: {
     x: 'x',
-    columns: getJSON(chart, showTotal, t),
+    columns: getColumns(chart, showTotal, t),
     type: area(),
     colors: {
       [t('project.unique')]: '#2563EB',
@@ -86,19 +86,19 @@ const getSettings = (chart, timeBucket, showTotal = true, t) => ({
     regions: {
         [t('project.unique')]: [
           {
-            start: dayjs(chart.x[chart.x.length-2]).toDate(),
+            start: dayjs(chart.x[_size(chart.x) - 2]).toDate(),
             style: {
-              dasharray: "6 2"
-            }
-          }
+              dasharray: '6 2',
+            },
+          },
         ],
         [t('project.total')]: [
           {
-            start: dayjs(chart.x[chart.x.length-2]).toDate(),
+            start: dayjs(chart.x[_size(chart.x) - 2]).toDate(),
             style: {
-              dasharray: "6 2"
-            }
-          }
+              dasharray: '6 2',
+            },
+          },
         ]
     },
   },
@@ -365,7 +365,7 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
         mainChart.load({
-          columns: getJSON(chartData, true, t),
+          columns: getColumns(chartData, true, t),
         })
       } else {
         mainChart.unload({
