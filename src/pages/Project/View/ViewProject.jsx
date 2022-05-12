@@ -74,82 +74,93 @@ const getColumns = (chart, showTotal, t) => {
   ]
 }
 
-const getSettings = (chart, timeBucket, showTotal = true, t) => ({
-  data: {
-    x: 'x',
-    columns: getColumns(chart, showTotal, t),
-    type: area(),
-    colors: {
-      [t('project.unique')]: '#2563EB',
-      [t('project.total')]: '#D97706',
-    },
-    regions: {
-        [t('project.unique')]: [
-          {
-            start: dayjs(chart.x[_size(chart.x) - 2]).toDate(),
-            style: {
-              dasharray: '6 2',
-            },
-          },
-        ],
-        [t('project.total')]: [
-          {
-            start: dayjs(chart.x[_size(chart.x) - 2]).toDate(),
-            style: {
-              dasharray: '6 2',
-            },
-          },
-        ]
-    },
-  },
-  axis: {
-    x: {
-      tick: {
-        fit: true,
+const getSettings = (chart, timeBucket, showTotal = true, t) => {
+  const xAxisSize = _size(chart.x)
+  let regionStart
+
+  if (xAxisSize > 1) {
+    regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+  } else {
+    regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+  }
+
+  return {
+    data: {
+      x: 'x',
+      columns: getColumns(chart, showTotal, t),
+      type: area(),
+      colors: {
+        [t('project.unique')]: '#2563EB',
+        [t('project.total')]: '#D97706',
       },
-      type: 'timeseries',
-    },
-  },
-  tooltip: {
-    format: {
-      title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
-    },
-    contents: {
-      template: `
-        <ul class='bg-gray-100 rounded-md shadow-md px-3 py-1'>
-          <li class='font-semibold'>{=TITLE}</li>
-          <hr />
-          {{
-            <li class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                <span>{=NAME}</span>
-              </div>
-              <span class='pl-4'>{=VALUE}</span>
-            </li>
-          }}
-        </ul>`,
-    },
-  },
-  point: {
-    focus: {
-      only: true,
-    },
-    pattern: [
-      'circle',
-    ],
-    r: 3,
-  },
-  legend: {
-    usePoint: true,
-    item: {
-      tile: {
-        width: 10,
+      regions: {
+          [t('project.unique')]: [
+            {
+              start: regionStart,
+              style: {
+                dasharray: '6 2',
+              },
+            },
+          ],
+          [t('project.total')]: [
+            {
+              start: regionStart,
+              style: {
+                dasharray: '6 2',
+              },
+            },
+          ]
       },
     },
-  },
-  bindto: '#dataChart',
-})
+    axis: {
+      x: {
+        tick: {
+          fit: true,
+        },
+        type: 'timeseries',
+      },
+    },
+    tooltip: {
+      format: {
+        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+      },
+      contents: {
+        template: `
+          <ul class='bg-gray-100 rounded-md shadow-md px-3 py-1'>
+            <li class='font-semibold'>{=TITLE}</li>
+            <hr />
+            {{
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <span>{=NAME}</span>
+                </div>
+                <span class='pl-4'>{=VALUE}</span>
+              </li>
+            }}
+          </ul>`,
+      },
+    },
+    point: {
+      focus: {
+        only: true,
+      },
+      pattern: [
+        'circle',
+      ],
+      r: 3,
+    },
+    legend: {
+      usePoint: true,
+      item: {
+        tile: {
+          width: 10,
+        },
+      },
+    },
+    bindto: '#dataChart',
+  }
+}
 
 const typeNameMapping = (t) => ({
   cc: t('project.mapping.cc'),
