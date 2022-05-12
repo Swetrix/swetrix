@@ -328,7 +328,7 @@ const ViewProject = ({
   const filterHandler = (column, filter, isExclusive = false) => {
     let newFilters
 
-    // temporarily apply only 1 filter per data type
+    // temporarily apply only 1 filter per data type 
     if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
       // selected filter is already included into the filters array -> removing it
       newFilters = _filter(filters, (f) => f.column !== column)
@@ -660,7 +660,6 @@ const ViewProject = ({
                                 className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'
                                 href={name}
                                 target='_blank'
-                                onClick={ (e) => e.stopPropagation() }
                                 rel='noopener noreferrer'
                               >
                                 {name}
