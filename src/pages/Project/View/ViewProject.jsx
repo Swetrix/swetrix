@@ -27,6 +27,7 @@ import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
+import _size from 'lodash/size'
 import _filter from 'lodash/filter'
 import _truncate from 'lodash/truncate'
 import PropTypes from 'prop-types'
@@ -58,71 +59,108 @@ countries.registerLocale(countriesUk)
 countries.registerLocale(countriesZh)
 countries.registerLocale(countriesSv)
 
-const getJSON = (chart, showTotal, t) => ({
-  x: _map(chart.x, el => dayjs(el).toDate()),
-  [t('project.unique')]: chart.uniques,
-  ...(showTotal && { [t('project.total')]: chart.visits }),
-})
+const getColumns = (chart, showTotal, t) => {
+  if (showTotal) {
+    return [
+      ['x', ..._map(chart.x, el => dayjs(el).toDate())],
+      [t('project.unique'), ...chart.uniques],
+      [t('project.total'), ...chart.visits ],
+    ]
+  }
 
-const getSettings = (chart, timeBucket, showTotal = true, t) => ({
-  data: {
-    x: 'x',
-    json: getJSON(chart, showTotal, t),
-    type: area(),
-    xFormat: '%y-%m-%d %H:%M:%S',
-    colors: {
-      [t('project.unique')]: '#2563EB',
-      [t('project.total')]: '#D97706',
-    }
-  },
-  axis: {
-    x: {
-      tick: {
-        fit: true,
+  return [
+    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
+    [t('project.unique'), ...chart.uniques],
+  ]
+}
+
+const getSettings = (chart, timeBucket, showTotal = true, t) => {
+  const xAxisSize = _size(chart.x)
+  let regionStart
+
+  if (xAxisSize > 1) {
+    regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+  } else {
+    regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+  }
+
+  return {
+    data: {
+      x: 'x',
+      columns: getColumns(chart, showTotal, t),
+      type: area(),
+      colors: {
+        [t('project.unique')]: '#2563EB',
+        [t('project.total')]: '#D97706',
       },
-      type: 'timeseries',
-    },
-  },
-  tooltip: {
-    format: {
-      title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
-    },
-    contents: {
-      template: `
-        <ul class='bg-gray-100 rounded-md shadow-md px-3 py-1'>
-          <li class='font-semibold'>{=TITLE}</li>
-          <hr />
-          {{
-            <li class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                <span>{=NAME}</span>
-              </div>
-              <span class='pl-4'>{=VALUE}</span>
-            </li>
-          }}
-        </ul>`,
-    },
-  },
-  point: {
-    focus: {
-      only: true,
-    },
-    pattern: [
-      'circle',
-    ],
-    r: 3,
-  },
-  legend: {
-    usePoint: true,
-    item: {
-      tile: {
-        width: 10,
+      regions: {
+          [t('project.unique')]: [
+            {
+              start: regionStart,
+              style: {
+                dasharray: '6 2',
+              },
+            },
+          ],
+          [t('project.total')]: [
+            {
+              start: regionStart,
+              style: {
+                dasharray: '6 2',
+              },
+            },
+          ]
       },
     },
-  },
-  bindto: '#dataChart',
-})
+    axis: {
+      x: {
+        tick: {
+          fit: true,
+        },
+        type: 'timeseries',
+      },
+    },
+    tooltip: {
+      format: {
+        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+      },
+      contents: {
+        template: `
+          <ul class='bg-gray-100 rounded-md shadow-md px-3 py-1'>
+            <li class='font-semibold'>{=TITLE}</li>
+            <hr />
+            {{
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <span>{=NAME}</span>
+                </div>
+                <span class='pl-4'>{=VALUE}</span>
+              </li>
+            }}
+          </ul>`,
+      },
+    },
+    point: {
+      focus: {
+        only: true,
+      },
+      pattern: [
+        'circle',
+      ],
+      r: 3,
+    },
+    legend: {
+      usePoint: true,
+      item: {
+        tile: {
+          width: 10,
+        },
+      },
+    },
+    bindto: '#dataChart',
+  }
+}
 
 const typeNameMapping = (t) => ({
   cc: t('project.mapping.cc'),
@@ -338,7 +376,7 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
         mainChart.load({
-          json: getJSON(chartData, true, t),
+          columns: getColumns(chartData, true, t),
         })
       } else {
         mainChart.unload({
