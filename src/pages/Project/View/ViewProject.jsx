@@ -266,6 +266,7 @@ const ViewProject = ({
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [panelsData, setPanelsData] = useState({})
+  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
   const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
@@ -314,7 +315,7 @@ const ViewProject = ({
         if (!_isEmpty(params)) {
           const bbSettings = getSettings(chart, timeBucket, showTotal, t)
           setChartData(chart)
-
+          
           setPanelsData({
             types: _keys(params),
             data: params,
@@ -324,8 +325,11 @@ const ViewProject = ({
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
           }
-
+          
           setMainChart(bb.generate(bbSettings))
+          setIsPanelsDataEmpty(false)
+        } else {
+          setIsPanelsDataEmpty(true)
         }
 
         setAnalyticsLoading(false)
@@ -442,7 +446,7 @@ const ViewProject = ({
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod)
     let tb = timeBucket
-    if (_isEmpty(newPeriodFull)) return
+    // if (_isEmpty(newPeriodFull)) return
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
       tb = _last(newPeriodFull.tbs)
@@ -474,8 +478,6 @@ const ViewProject = ({
       setShowIcons(true)
     }
   }
-
-  const isPanelsDataEmpty = _isEmpty(panelsData)
 
   if (!isLoading) {
     return (
