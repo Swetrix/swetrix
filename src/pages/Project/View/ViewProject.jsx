@@ -325,7 +325,7 @@ const ViewProject = ({
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
           }
-          
+
           setMainChart(bb.generate(bbSettings))
           setIsPanelsDataEmpty(false)
         } else {
@@ -446,7 +446,7 @@ const ViewProject = ({
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod)
     let tb = timeBucket
-    // if (_isEmpty(newPeriodFull)) return
+    if (_isEmpty(newPeriodFull)) return
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
       tb = _last(newPeriodFull.tbs)
