@@ -307,15 +307,18 @@ const ViewProject = ({
         if (_isEmpty(data)) {
           setAnalyticsLoading(false)
           setDataLoading(false)
+          setIsPanelsDataEmpty(true)
           return
         }
 
         const { chart, params, customs } = data
 
-        if (!_isEmpty(params)) {
+        if (_isEmpty(params)) {
+          setIsPanelsDataEmpty(true)
+        } else {
           const bbSettings = getSettings(chart, timeBucket, showTotal, t)
           setChartData(chart)
-          
+
           setPanelsData({
             types: _keys(params),
             data: params,
@@ -328,8 +331,6 @@ const ViewProject = ({
 
           setMainChart(bb.generate(bbSettings))
           setIsPanelsDataEmpty(false)
-        } else {
-          setIsPanelsDataEmpty(true)
         }
 
         setAnalyticsLoading(false)
@@ -541,13 +542,16 @@ const ViewProject = ({
               )}
             </div>
           </div>
-          {isPanelsDataEmpty &&
-            (analyticsLoading ? <Loader /> : <NoEvents t={t} />)
-          }
+          {analyticsLoading && (
+            <Loader />
+          )}
+          {isPanelsDataEmpty && (
+            <NoEvents t={t} />
+          )}
           <div
             className={cx(
               'flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4',
-              { hidden: isPanelsDataEmpty }
+              { hidden: isPanelsDataEmpty || analyticsLoading }
             )}
           >
             <Checkbox
@@ -566,7 +570,7 @@ const ViewProject = ({
               </Button>
             </div>
           </div>
-          <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty })}>
+          <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
             <div className='h-80' id='dataChart' />
             <Filters
               filters={filters}
