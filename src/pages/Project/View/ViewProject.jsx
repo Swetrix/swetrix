@@ -266,6 +266,7 @@ const ViewProject = ({
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [panelsData, setPanelsData] = useState({})
+  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
   const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
@@ -306,12 +307,15 @@ const ViewProject = ({
         if (_isEmpty(data)) {
           setAnalyticsLoading(false)
           setDataLoading(false)
+          setIsPanelsDataEmpty(true)
           return
         }
 
         const { chart, params, customs } = data
 
-        if (!_isEmpty(params)) {
+        if (_isEmpty(params)) {
+          setIsPanelsDataEmpty(true)
+        } else {
           const bbSettings = getSettings(chart, timeBucket, showTotal, t)
           setChartData(chart)
 
@@ -326,6 +330,7 @@ const ViewProject = ({
           }
 
           setMainChart(bb.generate(bbSettings))
+          setIsPanelsDataEmpty(false)
         }
 
         setAnalyticsLoading(false)
@@ -475,8 +480,6 @@ const ViewProject = ({
     }
   }
 
-  const isPanelsDataEmpty = _isEmpty(panelsData)
-
   if (!isLoading) {
     return (
       <Title title={name}>
@@ -539,13 +542,16 @@ const ViewProject = ({
               )}
             </div>
           </div>
-          {isPanelsDataEmpty &&
-            (analyticsLoading ? <Loader /> : <NoEvents t={t} />)
-          }
+          {analyticsLoading && (
+            <Loader />
+          )}
+          {isPanelsDataEmpty && (
+            <NoEvents t={t} />
+          )}
           <div
             className={cx(
               'flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4',
-              { hidden: isPanelsDataEmpty }
+              { hidden: isPanelsDataEmpty || analyticsLoading }
             )}
           >
             <Checkbox
@@ -564,7 +570,7 @@ const ViewProject = ({
               </Button>
             </div>
           </div>
-          <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty })}>
+          <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
             <div className='h-80' id='dataChart' />
             <Filters
               filters={filters}
