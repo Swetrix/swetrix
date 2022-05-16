@@ -504,7 +504,11 @@ const ViewProject = ({
 
   const updateTimebucket = (newTimebucket) => {
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket) 
+    if (period !== 'Custom') {
+      setProjectViewPrefs(id, period, newTimebucket) 
+    } else {
+      setProjectViewPrefs(id, period, newTimebucket, rangeDate) 
+    }
   }
 
   const openSettingsHandler = () => {
