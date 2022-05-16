@@ -1,4 +1,4 @@
-export const tbPeriodPairs = (t) => [{
+export const tbPeriodPairs = (t, tbs, dates) => [{
   label: t('project.today'),
   period: 'today',
   tbs: ['hour'],
@@ -37,6 +37,12 @@ export const tbPeriodPairs = (t) => [{
   label: t('project.lastXMonths', { amount: 24 }),
   period: '24M',
   tbs: ['month'],
+  access: 'paid',
+}, {
+  label: dates ? `${dates[0].toLocaleDateString()}-${dates[1].toLocaleDateString()}` : "Custom date",
+  isCustomDate: true,
+  period: 'Custom',
+  tbs: tbs ? tbs : ['Custom'],
   access: 'paid',
 }]
 

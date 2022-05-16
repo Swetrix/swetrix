@@ -30,7 +30,7 @@ import _find from 'lodash/find'
 import _size from 'lodash/size'
 import _filter from 'lodash/filter'
 import _truncate from 'lodash/truncate'
-import PropTypes from 'prop-types'
+import PropTypes, { element } from 'prop-types'
 
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
@@ -49,6 +49,7 @@ import {
   getProjectData, getProject, getOverallStats, getLiveVisitors,
 } from 'api'
 import './styles.css'
+import FlatPicker from 'ui/Flatpicker'
 
 countries.registerLocale(countriesEn)
 countries.registerLocale(countriesDe)
@@ -259,7 +260,7 @@ const ViewProject = ({
   setLiveStatsForProject, authenticated, timezone,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
-  const periodPairs = tbPeriodPairs(t)
+  const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
@@ -280,14 +281,30 @@ const ViewProject = ({
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
   const isLoading = authenticated ? _isLoading : false
-
   const tnMapping = typeNameMapping(t)
+  const refCalendar = useRef(null)
+  const [rangeDate, setRangeDate] = useState()
+  const timeBucketToDays = [
+    { lt: 7, tb: ['hour','day'] }, // 7 days
+    { lt: 28, tb: ['day','week'] }, // 4 weeks
+    { lt: 366, tb: ['week','month']}, // 12 months
+    { lt: 732, tb: ['month'] }, // 24 months
+  ]
 
   const { name } = project
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
     history.push(routes.dashboard)
+  }
+
+  const getFormateDate = (date) => {
+    const yyyy = date.getFullYear()
+    let mm = date.getMonth() + 1
+    let dd = date.getDate()
+    if (dd < 10) dd = '0' + dd
+    if (mm < 10) mm = '0' + mm
+    return yyyy + '-' + mm + '-' + dd
   }
 
   const loadAnalytics = async (forced = false, newFilters = null) => {
@@ -300,7 +317,13 @@ const ViewProject = ({
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
-          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
+          if (rangeDate) {
+            const from = getFormateDate(rangeDate[0])
+            const to = getFormateDate(rangeDate[1])
+            data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
+          } else {
+            data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
+          }
           setProjectCache(id, period, timeBucket, data || {})
         }
 
@@ -391,8 +414,27 @@ const ViewProject = ({
   }, [isLoading, showTotal, chartData, mainChart, t])
 
   useEffect(() => {
-    loadAnalytics()
-  }, [project, period, timeBucket]) // eslint-disable-line
+    if (period !== "Custom") {
+      loadAnalytics()
+    } else if (timeBucket !== 'Custom') {
+      loadAnalytics(true)
+    }
+  }, [project, period, timeBucket, periodPairs]) // eslint-disable-line
+
+  useEffect(() => {
+    if(rangeDate) {
+      const days = Math.ceil(Math.abs(rangeDate[1].getTime() - rangeDate[0].getTime()) / (1000 * 3600 * 24))
+      for (let index in timeBucketToDays) {
+        if (timeBucketToDays[index].lt > days) {
+          setTimebucket(timeBucketToDays[index].tb[0])
+          setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
+          setPeriod("Custom")
+          setProjectViewPrefs(id, 'Custom', timeBucketToDays[index].tb[0])
+          break
+        }
+      }
+    }
+  }, [rangeDate]) // eslint-disable-line
 
   useEffect(() => {
     const updateLiveVisitors = async () => {
@@ -444,7 +486,7 @@ const ViewProject = ({
   }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
 
   const updatePeriod = (newPeriod) => {
-    const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod)
+    const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb = timeBucket
     if (_isEmpty(newPeriodFull)) return
 
@@ -453,13 +495,15 @@ const ViewProject = ({
       setTimebucket(tb)
     }
 
-    setPeriod(newPeriod)
-    setProjectViewPrefs(id, newPeriod, tb)
+    setProjectViewPrefs(id, newPeriod.period, tb)
+    setPeriod(newPeriod.period)
   }
 
   const updateTimebucket = (newTimebucket) => {
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket)
+    if(!period === 'Custom') {
+      setProjectViewPrefs(id, period, newTimebucket)
+    }  
   }
 
   const openSettingsHandler = () => {
@@ -526,8 +570,19 @@ const ViewProject = ({
                 title={activePeriod.label}
                 labelExtractor={(pair) => pair.label}
                 keyExtractor={(pair) => pair.label}
-                onSelect={(pair) => updatePeriod(pair.period)}
+                onSelect={(pair) => {
+                  if (pair.isCustomDate) {;
+                    setTimeout(() => {
+                      refCalendar.current.openCalendar()
+                    }, 100)
+                  } else {
+                    setPeriodPairs(tbPeriodPairs(t))
+                    setRangeDate(null)
+                    updatePeriod(pair)
+                  }
+                }}
               />
+              <FlatPicker ref={refCalendar} onChange={(date) => setRangeDate(date)} value={rangeDate} />
               {!isProjectPublic && (
                 <div className='h-full ml-3'>
                   <Button

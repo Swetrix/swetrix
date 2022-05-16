@@ -1,0 +1,17 @@
+.flatpickr-calendar.static {
+  position: absolute !important;
+}
+
+.inline {
+  display: block !important;
+}
+
+.flatpickr-calendar.inline {
+  z-index: 9999;
+  position: absolute;
+}
+
+.flatpickr-calendar.static.open {
+  left: -310px;
+  top: 30px;
+}
