@@ -75,14 +75,39 @@ const getColumns = (chart, showTotal, t) => {
   ]
 }
 
-const getSettings = (chart, timeBucket, showTotal = true, t) => {
-  const xAxisSize = _size(chart.x)
-  let regionStart
+const noRegionPeriods = ['custom', 'yesterday']
 
-  if (xAxisSize > 1) {
-    regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
-  } else {
-    regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
+  const xAxisSize = _size(chart.x)
+  let regions
+
+  if (applyRegions) {
+    let regionStart
+  
+    if (xAxisSize > 1) {
+      regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+    } else {
+      regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+    }
+
+    regions = {
+      [t('project.unique')]: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      [t('project.total')]: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ]
+    }
   }
 
   return {
@@ -94,24 +119,7 @@ const getSettings = (chart, timeBucket, showTotal = true, t) => {
         [t('project.unique')]: '#2563EB',
         [t('project.total')]: '#D97706',
       },
-      regions: {
-        [t('project.unique')]: [
-          {
-            start: regionStart,
-            style: {
-              dasharray: '6 2',
-            },
-          },
-        ],
-        [t('project.total')]: [
-          {
-            start: regionStart,
-            style: {
-              dasharray: '6 2',
-            },
-          },
-        ]
-      },
+      regions,
     },
     axis: {
       x: {
@@ -334,7 +342,8 @@ const ViewProject = ({
         if (_isEmpty(params)) {
           setIsPanelsDataEmpty(true)
         } else {
-          const bbSettings = getSettings(chart, timeBucket, showTotal, t)
+          const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+          const bbSettings = getSettings(chart, timeBucket, showTotal, applyRegions, t)
           setChartData(chart)
 
           setPanelsData({
