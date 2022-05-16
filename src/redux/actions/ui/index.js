@@ -81,10 +81,10 @@ const deleteProjectCache = (pid, period, timeBucket) => ({
   },
 })
 
-const setProjectViewPrefs = (pid, period, timeBucket) => ({
+const setProjectViewPrefs = (pid, period, timeBucket, rangeDate) => ({
   type: types.SET_PROJECT_VIEW_PREFS,
   payload: {
-    pid, period, timeBucket,
+    pid, period, timeBucket, rangeDate
   },
 })
 

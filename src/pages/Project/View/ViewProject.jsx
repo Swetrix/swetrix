@@ -30,7 +30,7 @@ import _find from 'lodash/find'
 import _size from 'lodash/size'
 import _filter from 'lodash/filter'
 import _truncate from 'lodash/truncate'
-import PropTypes, { element } from 'prop-types'
+import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
@@ -283,7 +283,8 @@ const ViewProject = ({
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
-  const [rangeDate, setRangeDate] = useState()
+  const localstorageRangeDate = projectViewPrefs[id].rangeDate
+  const [rangeDate, setRangeDate] = useState(localstorageRangeDate ? [new Date(localstorageRangeDate[0]), new Date(localstorageRangeDate[1])] : null)
   const timeBucketToDays = [
     { lt: 7, tb: ['hour','day'] }, // 7 days
     { lt: 28, tb: ['day','week'] }, // 4 weeks
@@ -425,11 +426,11 @@ const ViewProject = ({
     if(rangeDate) {
       const days = Math.ceil(Math.abs(rangeDate[1].getTime() - rangeDate[0].getTime()) / (1000 * 3600 * 24))
       for (let index in timeBucketToDays) {
-        if (timeBucketToDays[index].lt > days) {
+        if (timeBucketToDays[index].lt >= days) {
           setTimebucket(timeBucketToDays[index].tb[0])
           setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
           setPeriod("Custom")
-          setProjectViewPrefs(id, 'Custom', timeBucketToDays[index].tb[0])
+          setProjectViewPrefs(id, 'Custom', timeBucketToDays[index].tb[0], rangeDate)
           break
         }
       }
@@ -501,9 +502,7 @@ const ViewProject = ({
 
   const updateTimebucket = (newTimebucket) => {
     setTimebucket(newTimebucket)
-    if(!period === 'Custom') {
-      setProjectViewPrefs(id, period, newTimebucket)
-    }  
+    setProjectViewPrefs(id, period, newTimebucket) 
   }
 
   const openSettingsHandler = () => {
