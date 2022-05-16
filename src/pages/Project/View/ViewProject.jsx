@@ -35,12 +35,13 @@ import PropTypes from 'prop-types'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
+  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, timeBucketToDays,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
+import FlatPicker from 'ui/Flatpicker'
 import {
   Panel, Overview, CustomEvents,
 } from './Panels'
@@ -64,7 +65,7 @@ const getColumns = (chart, showTotal, t) => {
     return [
       ['x', ..._map(chart.x, el => dayjs(el).toDate())],
       [t('project.unique'), ...chart.uniques],
-      [t('project.total'), ...chart.visits ],
+      [t('project.total'), ...chart.visits],
     ]
   }
 
@@ -94,22 +95,22 @@ const getSettings = (chart, timeBucket, showTotal = true, t) => {
         [t('project.total')]: '#D97706',
       },
       regions: {
-          [t('project.unique')]: [
-            {
-              start: regionStart,
-              style: {
-                dasharray: '6 2',
-              },
+        [t('project.unique')]: [
+          {
+            start: regionStart,
+            style: {
+              dasharray: '6 2',
             },
-          ],
-          [t('project.total')]: [
-            {
-              start: regionStart,
-              style: {
-                dasharray: '6 2',
-              },
+          },
+        ],
+        [t('project.total')]: [
+          {
+            start: regionStart,
+            style: {
+              dasharray: '6 2',
             },
-          ]
+          },
+        ]
       },
     },
     axis: {
@@ -187,6 +188,15 @@ const panelIconMapping = {
   os: <ServerIcon className={iconClassName} />,
 }
 
+const getFormatDate = (date) => {
+  const yyyy = date.getFullYear()
+  let mm = date.getMonth() + 1
+  let dd = date.getDate()
+  if (dd < 10) dd = '0' + dd
+  if (mm < 10) mm = '0' + mm
+  return yyyy + '-' + mm + '-' + dd
+}
+
 const NoEvents = ({ t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
@@ -259,7 +269,7 @@ const ViewProject = ({
   setLiveStatsForProject, authenticated, timezone,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
-  const periodPairs = tbPeriodPairs(t)
+  const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
@@ -280,8 +290,10 @@ const ViewProject = ({
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
   const isLoading = authenticated ? _isLoading : false
-
   const tnMapping = typeNameMapping(t)
+  const refCalendar = useRef(null)
+  const localstorageRangeDate = projectViewPrefs[id]?.rangeDate
+  const [rangeDate, setRangeDate] = useState(localstorageRangeDate ? [new Date(localstorageRangeDate[0]), new Date(localstorageRangeDate[1])] : null)
 
   const { name } = project
 
@@ -300,7 +312,13 @@ const ViewProject = ({
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
-          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
+          if (rangeDate) {
+            const from = getFormatDate(rangeDate[0])
+            const to = getFormatDate(rangeDate[1])
+            data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
+          } else {
+            data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
+          }
           setProjectCache(id, period, timeBucket, data || {})
         }
 
@@ -392,8 +410,29 @@ const ViewProject = ({
   }, [isLoading, showTotal, chartData, mainChart, t])
 
   useEffect(() => {
-    loadAnalytics()
-  }, [project, period, timeBucket]) // eslint-disable-line
+    if (period !== 'custom') {
+      loadAnalytics()
+    } else if (timeBucket !== 'custom') {
+      loadAnalytics(true)
+    }
+  }, [project, period, timeBucket, periodPairs]) // eslint-disable-line
+
+  useEffect(() => {
+    if (rangeDate) {
+      const days = Math.ceil(Math.abs(rangeDate[1].getTime() - rangeDate[0].getTime()) / (1000 * 3600 * 24))
+
+      // setting allowed time buckets for the specified date range (period)
+      for (let index in timeBucketToDays) {
+        if (timeBucketToDays[index].lt >= days) {
+          setTimebucket(timeBucketToDays[index].tb[0])
+          setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
+          setPeriod('custom')
+          setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], rangeDate)
+          break
+        }
+      }
+    }
+  }, [rangeDate, t]) // eslint-disable-line
 
   useEffect(() => {
     const updateLiveVisitors = async () => {
@@ -445,7 +484,7 @@ const ViewProject = ({
   }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
 
   const updatePeriod = (newPeriod) => {
-    const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod)
+    const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb = timeBucket
     if (_isEmpty(newPeriodFull)) return
 
@@ -454,13 +493,15 @@ const ViewProject = ({
       setTimebucket(tb)
     }
 
-    setPeriod(newPeriod)
-    setProjectViewPrefs(id, newPeriod, tb)
+    if (newPeriod.period !== 'custom') {
+      setProjectViewPrefs(id, newPeriod.period, tb)
+      setPeriod(newPeriod.period)
+    }
   }
 
   const updateTimebucket = (newTimebucket) => {
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket)
+    setProjectViewPrefs(id, period, newTimebucket, rangeDate)
   }
 
   const openSettingsHandler = () => {
@@ -525,21 +566,21 @@ const ViewProject = ({
               <Dropdown
                 items={periodPairs}
                 title={activePeriod.label}
-                labelExtractor={(pair) => pair.label}
+                labelExtractor={(pair) => pair.dropdownLabel || pair.label}
                 keyExtractor={(pair) => pair.label}
-                onSelect={(pair) => updatePeriod(pair.period)}
+                onSelect={(pair) => {
+                  if (pair.isCustomDate) {
+                    setTimeout(() => {
+                      refCalendar.current.openCalendar()
+                    }, 100)
+                  } else {
+                    setPeriodPairs(tbPeriodPairs(t))
+                    setRangeDate(null)
+                    updatePeriod(pair)
+                  }
+                }}
               />
-              {!isProjectPublic && (
-                <div className='h-full ml-3'>
-                  <Button
-                    onClick={openSettingsHandler}
-                    className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                    secondary
-                  >
-                    {t('common.settings')}
-                  </Button>
-                </div>
-              )}
+              <FlatPicker ref={refCalendar} onChange={(date) => setRangeDate(date)} value={rangeDate} />
             </div>
           </div>
           {analyticsLoading && (
@@ -548,19 +589,15 @@ const ViewProject = ({
           {isPanelsDataEmpty && (
             <NoEvents t={t} />
           )}
-          <div
-            className={cx(
-              'flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4',
-              { hidden: isPanelsDataEmpty || analyticsLoading }
-            )}
-          >
+          <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
             <Checkbox
+              className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
               label={t('project.showAll')}
               id='views'
               checked={showTotal}
               onChange={(e) => setShowTotal(e.target.checked)}
             />
-            <div className='h-full ml-3'>
+            <div className={cx('h-full ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <Button
                 onClick={exportAsImageHandler}
                 className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
@@ -569,6 +606,17 @@ const ViewProject = ({
                 {t('project.exportImg')}
               </Button>
             </div>
+            {!isProjectPublic && (
+              <div className='h-full ml-3'>
+                <Button
+                  onClick={openSettingsHandler}
+                  className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                  secondary
+                >
+                  {t('common.settings')}
+                </Button>
+              </div>
+            )}
           </div>
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
             <div className='h-80' id='dataChart' />

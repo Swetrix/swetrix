@@ -35,7 +35,7 @@ const Dropdown = ({
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items static className='z-10 origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none'>
+          <Menu.Items static className='z-10 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none'>
             <div className='py-1'>
               {_map(items, item => (
                 <Menu.Item key={keyExtractor ? keyExtractor(item) : item}>

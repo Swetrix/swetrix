@@ -19,8 +19,8 @@ const mapDispatchToProps = (dispatch) => ({
   setProjectCache: (pid, period, timeBucket, data) => {
     dispatch(UIActions.setProjectCache(pid, period, timeBucket, data))
   },
-  setProjectViewPrefs: (pid, period, timeBucket) => {
-    dispatch(UIActions.setProjectViewPrefs(pid, period, timeBucket))
+  setProjectViewPrefs: (pid, period, timeBucket, rangeDate) => {
+    dispatch(UIActions.setProjectViewPrefs(pid, period, timeBucket, rangeDate))
   },
   setPublicProject: (project) => {
     dispatch(UIActions.setPublicProject(project))
