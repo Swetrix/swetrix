@@ -2,6 +2,7 @@ import React from "react"
 import Flatpickr from "react-flatpickr"
 import './Flatpicker.css'
 import { getItem } from "utils/localstorage"
+
 if (getItem('colour-theme') === 'light') {
   import("flatpickr/dist/themes/light.css")
 } else {

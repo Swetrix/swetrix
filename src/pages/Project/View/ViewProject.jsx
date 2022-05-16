@@ -415,7 +415,7 @@ const ViewProject = ({
   }, [isLoading, showTotal, chartData, mainChart, t])
 
   useEffect(() => {
-    if (period !== "Custom") {
+    if (period !== 'Custom') {
       loadAnalytics()
     } else if (timeBucket !== 'Custom') {
       loadAnalytics(true)
@@ -429,7 +429,7 @@ const ViewProject = ({
         if (timeBucketToDays[index].lt >= days) {
           setTimebucket(timeBucketToDays[index].tb[0])
           setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
-          setPeriod("Custom")
+          setPeriod('Custom')
           setProjectViewPrefs(id, 'Custom', timeBucketToDays[index].tb[0], rangeDate)
           break
         }
@@ -504,11 +504,7 @@ const ViewProject = ({
 
   const updateTimebucket = (newTimebucket) => {
     setTimebucket(newTimebucket)
-    if (period !== 'Custom') {
-      setProjectViewPrefs(id, period, newTimebucket) 
-    } else {
-      setProjectViewPrefs(id, period, newTimebucket, rangeDate) 
-    }
+    setProjectViewPrefs(id, period, newTimebucket, rangeDate) 
   }
 
   const openSettingsHandler = () => {

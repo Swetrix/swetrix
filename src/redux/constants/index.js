@@ -42,7 +42,7 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   label: dates ? `${dates[0].toLocaleDateString()}-${dates[1].toLocaleDateString()}` : "Custom date",
   isCustomDate: true,
   period: 'Custom',
-  tbs: tbs ? tbs : ['Custom'],
+  tbs: tbs || ['Custom'],
   access: 'paid',
 }]
 
