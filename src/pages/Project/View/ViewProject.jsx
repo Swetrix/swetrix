@@ -283,7 +283,7 @@ const ViewProject = ({
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
-  const localstorageRangeDate = projectViewPrefs[id].rangeDate
+  const localstorageRangeDate = projectViewPrefs[id]?.rangeDate
   const [rangeDate, setRangeDate] = useState(localstorageRangeDate ? [new Date(localstorageRangeDate[0]), new Date(localstorageRangeDate[1])] : null)
   const timeBucketToDays = [
     { lt: 7, tb: ['hour','day'] }, // 7 days
@@ -496,8 +496,10 @@ const ViewProject = ({
       setTimebucket(tb)
     }
 
-    setProjectViewPrefs(id, newPeriod.period, tb)
-    setPeriod(newPeriod.period)
+    if (newPeriod.period !== 'Custom') {
+      setProjectViewPrefs(id, newPeriod.period, tb)
+      setPeriod(newPeriod.period)
+    }
   }
 
   const updateTimebucket = (newTimebucket) => {
