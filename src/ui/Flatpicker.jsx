@@ -1,12 +1,14 @@
-import React from "react"
-import Flatpickr from "react-flatpickr"
+import React from 'react'
+import Flatpickr from 'react-flatpickr'
+import _size from 'lodash/size'
+
+import { getItem } from 'utils/localstorage'
 import './Flatpicker.css'
-import { getItem } from "utils/localstorage"
 
 if (getItem('colour-theme') === 'light') {
-  import("flatpickr/dist/themes/light.css")
+  import('flatpickr/dist/themes/light.css')
 } else {
-  import("flatpickr/dist/themes/dark.css")
+  import('flatpickr/dist/themes/dark.css')
 }
 
 class FlatPicker extends React.Component {
@@ -17,7 +19,7 @@ class FlatPicker extends React.Component {
   }
 
   setCustomDate(dates) {
-    if (dates.length === 2) {
+    if (_size(dates) === 2) {
       this.props.onChange(dates)
       this.close()
     }
@@ -42,25 +44,25 @@ class FlatPicker extends React.Component {
 
   render() {
     return (
-      <div className="h-0">
-          <Flatpickr
-            id="calendar"
-            value={this.props.value}
-            options={{
-              mode: 'range',
-              maxDate: 'today',
-              minDate: this.removeMonths(new Date(), 24),
-              showMonths: 1,
-              static: true,
-              animate: true,
-              altInput: true,
-              position: "auto right",
-              altInputClass: 'hidden'
-            }}
-            ref={this.calendar}
-            className="invisible"
-            onChange={this.setCustomDate}
-          />
+      <div className='h-0 flatpicker-custom'>
+        <Flatpickr
+          id='calendar'
+          value={this.props.value}
+          options={{
+            mode: 'range',
+            maxDate: 'today',
+            minDate: this.removeMonths(new Date(), 24),
+            showMonths: 1,
+            static: true,
+            animate: true,
+            altInput: true,
+            position: 'auto right',
+            altInputClass: 'hidden'
+          }}
+          ref={this.calendar}
+          className='invisible'
+          onChange={this.setCustomDate}
+        />
       </div>
     )
   }

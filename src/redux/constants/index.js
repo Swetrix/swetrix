@@ -39,12 +39,19 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   tbs: ['month'],
   access: 'paid',
 }, {
-  label: dates ? `${dates[0].toLocaleDateString()}-${dates[1].toLocaleDateString()}` : "Custom date",
+  label: dates ? `${dates[0].toLocaleDateString()}-${dates[1].toLocaleDateString()}` : t('project.custom'),
   isCustomDate: true,
-  period: 'Custom',
-  tbs: tbs || ['Custom'],
+  period: 'custom',
+  tbs: tbs || ['custom'],
   access: 'paid',
 }]
+
+export const timeBucketToDays = [
+  { lt: 7, tb: ['hour','day'] }, // 7 days
+  { lt: 28, tb: ['day','week'] }, // 4 weeks
+  { lt: 366, tb: ['week','month']}, // 12 months
+  { lt: 732, tb: ['month'] }, // 24 months
+]
 
 export const tbsFormatMapper = {
   'hour': '%d %B %H:%M',

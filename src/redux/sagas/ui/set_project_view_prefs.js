@@ -6,7 +6,7 @@ export default function setProjectViewPrefs({ payload: { pid, period, timeBucket
     const viewPrefs = {
       ...getInitialViewPrefs(),
       [pid]: rangeDate ? {
-        period, timeBucket, rangeDate
+        period, timeBucket, rangeDate,
       } : {
         period, timeBucket, 
       },

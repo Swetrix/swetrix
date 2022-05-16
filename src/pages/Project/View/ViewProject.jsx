@@ -35,12 +35,13 @@ import PropTypes from 'prop-types'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
+  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, timeBucketToDays,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
+import FlatPicker from 'ui/Flatpicker'
 import {
   Panel, Overview, CustomEvents,
 } from './Panels'
@@ -49,7 +50,6 @@ import {
   getProjectData, getProject, getOverallStats, getLiveVisitors,
 } from 'api'
 import './styles.css'
-import FlatPicker from 'ui/Flatpicker'
 
 countries.registerLocale(countriesEn)
 countries.registerLocale(countriesDe)
@@ -65,7 +65,7 @@ const getColumns = (chart, showTotal, t) => {
     return [
       ['x', ..._map(chart.x, el => dayjs(el).toDate())],
       [t('project.unique'), ...chart.uniques],
-      [t('project.total'), ...chart.visits ],
+      [t('project.total'), ...chart.visits],
     ]
   }
 
@@ -285,12 +285,6 @@ const ViewProject = ({
   const refCalendar = useRef(null)
   const localstorageRangeDate = projectViewPrefs[id]?.rangeDate
   const [rangeDate, setRangeDate] = useState(localstorageRangeDate ? [new Date(localstorageRangeDate[0]), new Date(localstorageRangeDate[1])] : null)
-  const timeBucketToDays = [
-    { lt: 7, tb: ['hour','day'] }, // 7 days
-    { lt: 28, tb: ['day','week'] }, // 4 weeks
-    { lt: 366, tb: ['week','month']}, // 12 months
-    { lt: 732, tb: ['month'] }, // 24 months
-  ]
 
   const { name } = project
 
@@ -415,27 +409,29 @@ const ViewProject = ({
   }, [isLoading, showTotal, chartData, mainChart, t])
 
   useEffect(() => {
-    if (period !== 'Custom') {
+    if (period !== 'custom') {
       loadAnalytics()
-    } else if (timeBucket !== 'Custom') {
+    } else if (timeBucket !== 'custom') {
       loadAnalytics(true)
     }
   }, [project, period, timeBucket, periodPairs]) // eslint-disable-line
 
   useEffect(() => {
-    if(rangeDate) {
+    if (rangeDate) {
       const days = Math.ceil(Math.abs(rangeDate[1].getTime() - rangeDate[0].getTime()) / (1000 * 3600 * 24))
+      console.log(timeBucketToDays)
+
       for (let index in timeBucketToDays) {
         if (timeBucketToDays[index].lt >= days) {
           setTimebucket(timeBucketToDays[index].tb[0])
           setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
-          setPeriod('Custom')
-          setProjectViewPrefs(id, 'Custom', timeBucketToDays[index].tb[0], rangeDate)
+          setPeriod('custom')
+          setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], rangeDate)
           break
         }
       }
     }
-  }, [rangeDate]) // eslint-disable-line
+  }, [rangeDate, t]) // eslint-disable-line
 
   useEffect(() => {
     const updateLiveVisitors = async () => {
@@ -496,7 +492,7 @@ const ViewProject = ({
       setTimebucket(tb)
     }
 
-    if (newPeriod.period !== 'Custom') {
+    if (newPeriod.period !== 'custom') {
       setProjectViewPrefs(id, newPeriod.period, tb)
       setPeriod(newPeriod.period)
     }
@@ -572,7 +568,7 @@ const ViewProject = ({
                 labelExtractor={(pair) => pair.label}
                 keyExtractor={(pair) => pair.label}
                 onSelect={(pair) => {
-                  if (pair.isCustomDate) {;
+                  if (pair.isCustomDate) {
                     setTimeout(() => {
                       refCalendar.current.openCalendar()
                     }, 100)

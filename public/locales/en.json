@@ -295,6 +295,7 @@
     "lastXDays": "Last {{amount}} days",
     "lastXWeeks": "Last {{amount}} weeks",
     "lastXMonths": "Last {{amount}} months",
+    "custom": "Custom date",
     "hour": "Hour",
     "day": "Day",
     "week": "Week",
