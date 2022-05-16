@@ -2,10 +2,6 @@
   position: absolute !important;
 }
 
-.flatpicker-custom .inline {
-  display: block !important;
-}
-
 .flatpicker-custom .flatpickr-calendar.inline {
   z-index: 9999;
   position: absolute;
