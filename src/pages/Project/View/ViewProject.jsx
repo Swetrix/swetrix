@@ -565,7 +565,7 @@ const ViewProject = ({
               <Dropdown
                 items={periodPairs}
                 title={activePeriod.label}
-                labelExtractor={(pair) => pair.label}
+                labelExtractor={(pair) => pair.dropdownLabel || pair.label}
                 keyExtractor={(pair) => pair.label}
                 onSelect={(pair) => {
                   if (pair.isCustomDate) {

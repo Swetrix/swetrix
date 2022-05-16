@@ -39,7 +39,8 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   tbs: ['month'],
   access: 'paid',
 }, {
-  label: dates ? `${dates[0].toLocaleDateString()}-${dates[1].toLocaleDateString()}` : t('project.custom'),
+  label: dates ? `${dates[0].toLocaleDateString()} - ${dates[1].toLocaleDateString()}` : t('project.custom'),
+  dropdownLabel: t('project.custom'),
   isCustomDate: true,
   period: 'custom',
   tbs: tbs || ['custom'],
