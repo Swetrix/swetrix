@@ -1,3 +1,18 @@
+const getCustomLabel = (dates, t) => {
+  if (dates) {
+    const from = dates[0].toLocaleDateString()
+    const to = dates[1].toLocaleDateString()
+
+    if (from === to) {
+      return from
+    }
+
+    return `${from} - ${to}`
+  }
+
+  return t('project.custom')
+}
+
 export const tbPeriodPairs = (t, tbs, dates) => [{
   label: t('project.today'),
   period: 'today',
@@ -39,7 +54,7 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   tbs: ['month'],
   access: 'paid',
 }, {
-  label: dates ? `${dates[0].toLocaleDateString()} - ${dates[1].toLocaleDateString()}` : t('project.custom'),
+  label: getCustomLabel(dates, t),
   dropdownLabel: t('project.custom'),
   isCustomDate: true,
   period: 'custom',
