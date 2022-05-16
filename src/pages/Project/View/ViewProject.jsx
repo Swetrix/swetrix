@@ -188,6 +188,15 @@ const panelIconMapping = {
   os: <ServerIcon className={iconClassName} />,
 }
 
+const getFormatDate = (date) => {
+  const yyyy = date.getFullYear()
+  let mm = date.getMonth() + 1
+  let dd = date.getDate()
+  if (dd < 10) dd = '0' + dd
+  if (mm < 10) mm = '0' + mm
+  return yyyy + '-' + mm + '-' + dd
+}
+
 const NoEvents = ({ t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
@@ -293,15 +302,6 @@ const ViewProject = ({
     history.push(routes.dashboard)
   }
 
-  const getFormateDate = (date) => {
-    const yyyy = date.getFullYear()
-    let mm = date.getMonth() + 1
-    let dd = date.getDate()
-    if (dd < 10) dd = '0' + dd
-    if (mm < 10) mm = '0' + mm
-    return yyyy + '-' + mm + '-' + dd
-  }
-
   const loadAnalytics = async (forced = false, newFilters = null) => {
     if (forced || (!isLoading && !_isEmpty(project))) {
       setDataLoading(true)
@@ -313,8 +313,8 @@ const ViewProject = ({
           data = cache[id][key]
         } else {
           if (rangeDate) {
-            const from = getFormateDate(rangeDate[0])
-            const to = getFormateDate(rangeDate[1])
+            const from = getFormatDate(rangeDate[0])
+            const to = getFormatDate(rangeDate[1])
             data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           } else {
             data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
@@ -419,8 +419,8 @@ const ViewProject = ({
   useEffect(() => {
     if (rangeDate) {
       const days = Math.ceil(Math.abs(rangeDate[1].getTime() - rangeDate[0].getTime()) / (1000 * 3600 * 24))
-      console.log(timeBucketToDays)
 
+      // setting allowed time buckets for the specified date range (period)
       for (let index in timeBucketToDays) {
         if (timeBucketToDays[index].lt >= days) {
           setTimebucket(timeBucketToDays[index].tb[0])

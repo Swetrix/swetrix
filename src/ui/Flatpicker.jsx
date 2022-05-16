@@ -58,7 +58,6 @@ class FlatPicker extends React.Component {
             altInput: true,
             position: 'auto right',
             altInputClass: 'hidden',
-            disableMobile: false,
           }}
           ref={this.calendar}
           className='invisible'
