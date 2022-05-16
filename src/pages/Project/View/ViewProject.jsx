@@ -95,22 +95,22 @@ const getSettings = (chart, timeBucket, showTotal = true, t) => {
         [t('project.total')]: '#D97706',
       },
       regions: {
-          [t('project.unique')]: [
-            {
-              start: regionStart,
-              style: {
-                dasharray: '6 2',
-              },
+        [t('project.unique')]: [
+          {
+            start: regionStart,
+            style: {
+              dasharray: '6 2',
             },
-          ],
-          [t('project.total')]: [
-            {
-              start: regionStart,
-              style: {
-                dasharray: '6 2',
-              },
+          },
+        ],
+        [t('project.total')]: [
+          {
+            start: regionStart,
+            style: {
+              dasharray: '6 2',
             },
-          ]
+          },
+        ]
       },
     },
     axis: {
@@ -333,7 +333,7 @@ const ViewProject = ({
         if (!_isEmpty(params)) {
           const bbSettings = getSettings(chart, timeBucket, showTotal, t)
           setChartData(chart)
-          
+
           setPanelsData({
             types: _keys(params),
             data: params,
@@ -500,7 +500,7 @@ const ViewProject = ({
 
   const updateTimebucket = (newTimebucket) => {
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket, rangeDate) 
+    setProjectViewPrefs(id, period, newTimebucket, rangeDate)
   }
 
   const openSettingsHandler = () => {
@@ -580,35 +580,20 @@ const ViewProject = ({
                 }}
               />
               <FlatPicker ref={refCalendar} onChange={(date) => setRangeDate(date)} value={rangeDate} />
-              {!isProjectPublic && (
-                <div className='h-full ml-3'>
-                  <Button
-                    onClick={openSettingsHandler}
-                    className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                    secondary
-                  >
-                    {t('common.settings')}
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
           {isPanelsDataEmpty &&
             (analyticsLoading ? <Loader /> : <NoEvents t={t} />)
           }
-          <div
-            className={cx(
-              'flex flex-row items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4',
-              { hidden: isPanelsDataEmpty }
-            )}
-          >
+          <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
             <Checkbox
+              className={cx({ hidden: isPanelsDataEmpty })}
               label={t('project.showAll')}
               id='views'
               checked={showTotal}
               onChange={(e) => setShowTotal(e.target.checked)}
             />
-            <div className='h-full ml-3'>
+            <div className={cx('h-full ml-3', { hidden: isPanelsDataEmpty })}>
               <Button
                 onClick={exportAsImageHandler}
                 className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
@@ -617,6 +602,17 @@ const ViewProject = ({
                 {t('project.exportImg')}
               </Button>
             </div>
+            {!isProjectPublic && (
+              <div className='h-full ml-3'>
+                <Button
+                  onClick={openSettingsHandler}
+                  className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                  secondary
+                >
+                  {t('common.settings')}
+                </Button>
+              </div>
+            )}
           </div>
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty })}>
             <div className='h-80' id='dataChart' />
