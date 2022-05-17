@@ -28,7 +28,7 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
   const { t, i18n: { language } } = useTranslation('common')
 
   return (
-    <svg id='map' viewBox='0 0 1050 650'>
+    <svg id='map' viewBox='0 0 1050 650' className='w-full h-full'>
       <g>
         {_map(countriesList, (item, index) => {
           const perc = (data[index] / total * 100) || 0
