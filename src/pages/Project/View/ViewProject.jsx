@@ -735,7 +735,7 @@ const ViewProject = ({
                                 href={name}
                                 target='_blank'
                                 rel='noopener noreferrer'
-                                onClick={ (e) => e.stopPropagation() }
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 {name}
                               </a>
