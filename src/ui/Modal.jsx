@@ -40,7 +40,7 @@ const Modal = ({
           >
             <div className={cx('inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:px-5 sm:py-4', {
               'sm:max-w-lg sm:w-full': size === 'regular',
-              'sm:max-w-5xl sm:w-full': size === 'large',
+              'max-w-5xl w-full': size === 'large',
             })}>
               <div className='sm:flex sm:items-start'>
                 {type === 'success' && (
@@ -63,7 +63,7 @@ const Modal = ({
                     <ExclamationIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
                   </div>
                 )}
-                <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left'>
+                <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full'>
                   {title && (
                     <Dialog.Title as='h3' className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
                       {title}
