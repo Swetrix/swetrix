@@ -424,7 +424,7 @@ const ViewProject = ({
     } else if (timeBucket !== 'custom') {
       loadAnalytics(true)
     }
-  }, [project, period, timeBucket, periodPairs]) // eslint-disable-line
+  }, [project, period, timeBucket, periodPairs, t]) // eslint-disable-line
 
   useEffect(() => {
     if (rangeDate) {
