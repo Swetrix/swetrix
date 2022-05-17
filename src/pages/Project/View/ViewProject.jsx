@@ -60,28 +60,6 @@ countries.registerLocale(countriesZh)
 countries.registerLocale(countriesSv)
 
 const getColumns = (chart, showTotal, t) => {
-  
-  if (chart.x.length === 1 && chart.uniques.length === 1 && chart.visits.length === 1) {
-    // eslint-disable-next-line no-extend-native
-    Date.prototype.addHours= function(h){
-      this.setHours(this.getHours()+h);
-      return this;
-    }
-
-    if (showTotal) {
-      return [
-        ['x', ..._map(chart.x, el => dayjs(el).toDate()), dayjs(new Date(chart.x[0]).addHours(1)).toDate()],
-        [t('project.unique'), ...chart.uniques, ...chart.uniques],
-        [t('project.total'), ...chart.visits, ...chart.visits ],
-      ]
-    }
-
-    return [
-      ['x', ..._map(chart.x, el => dayjs(el).toDate()), dayjs(new Date(chart.x[0]).addHours(1)).toDate()],
-      [t('project.unique'), ...chart.uniques, ...chart.uniques]
-    ]
-  }
-
   if (showTotal) {
     return [
       ['x', ..._map(chart.x, el => dayjs(el).toDate())],
@@ -165,7 +143,7 @@ const getSettings = (chart, timeBucket, showTotal = true, t) => {
     },
     point: {
       focus: {
-        only: true,
+        only: xAxisSize > 1,
       },
       pattern: [
         'circle',
