@@ -152,7 +152,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
     },
     point: {
       focus: {
-        only: true,
+        only: xAxisSize > 1,
       },
       pattern: [
         'circle',
