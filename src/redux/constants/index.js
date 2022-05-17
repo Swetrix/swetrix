@@ -97,6 +97,8 @@ export const CHROME_EXTENSION_URL = 'https://chrome.google.com/webstore/detail/s
 export const HAVE_I_BEEN_PWNED_URL = 'https://haveibeenpwned.com/passwords'
 export const LINKEDIN_URL = 'https://www.linkedin.com/company/swetrix/'
 export const GITHUB_URL = 'https://github.com/Swetrix'
+export const TWITTER_URL = 'https://twitter.com/swetrix'
+export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 
 export const SUPPORTED_THEMES = ['light', 'dark']
 
