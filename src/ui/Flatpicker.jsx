@@ -71,7 +71,7 @@ FlatPicker.propTypes = {
 
 FlatPicker.defaultProps = {
   onChange: () => { },
-  value: PropTypes.array,
+  value: [],
 }
 
 export default memo(FlatPicker)
