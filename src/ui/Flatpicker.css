@@ -2,11 +2,6 @@
   position: absolute !important;
 }
 
-.flatpicker-custom .flatpickr-calendar.inline {
-  z-index: 9999;
-  position: absolute;
-}
-
 .flatpicker-custom .flatpickr-calendar.static.open {
   left: -310px;
   top: 30px;
