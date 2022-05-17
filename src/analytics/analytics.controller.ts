@@ -137,12 +137,8 @@ export class AnalyticsController {
 
       checkIfTBAllowed(timeBucket, from, to)
 
-      groupFrom = from
-      if (from === to) {
-        groupTo = dayjs(to).format('YYYY-MM-DD 23:59:59')
-      } else {
-        groupTo = to
-      }
+      groupFrom = dayjs(from).tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+      groupTo = dayjs(to).tz(timezone).utc().add(1, 'day').format('YYYY-MM-DD HH:mm:ss')
     } else if (!_isEmpty(period)) {
       if (period === 'today') {
         if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
