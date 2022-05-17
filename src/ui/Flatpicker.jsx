@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { memo } from 'react'
 import Flatpickr from 'react-flatpickr'
 import _size from 'lodash/size'
+import PropTypes from 'prop-types'
 
 import { getItem } from 'utils/localstorage'
 import './Flatpicker.css'
@@ -21,12 +22,7 @@ class FlatPicker extends React.Component {
   setCustomDate(dates) {
     if (_size(dates) === 2) {
       this.props.onChange(dates)
-      this.close()
     }
-  }
-
-  close() {
-    this.setState({ open: false })
   }
 
   openCalendar = () => {
@@ -68,4 +64,14 @@ class FlatPicker extends React.Component {
   }
 }
 
-export default FlatPicker
+FlatPicker.propTypes = {
+  onChange: PropTypes.func,
+  value: PropTypes.array,
+}
+
+FlatPicker.defaultProps = {
+  onChange: () => { },
+  value: [],
+}
+
+export default memo(FlatPicker)
