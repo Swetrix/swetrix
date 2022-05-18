@@ -39,7 +39,7 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
 
   return (
     <div className='relative'>
-      <svg id='map' viewBox='0 0 1050 650' className='w-full h-full' onMouseMove={(e) => { onMouseMove(e) }}>
+      <svg id='map' viewBox='0 0 1050 650' className='w-full h-full' onMouseMove={onMouseMove}>
         <g>
           {_map(countriesList, (item, index) => {
             const perc = ((data[index] / total) * 100) || 0
@@ -74,7 +74,7 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
         </g>
       </svg>
       <div>
-        {hoverShow && (
+        {hoverShow && cursorPosition && (
           <div
             className='border-2 absolute z-30 text-xs dark:bg-gray-800 dark:shadow-gray-850 dark:border-gray-850 dark:text-gray-200 p-1 rounded-md'
             style={{
