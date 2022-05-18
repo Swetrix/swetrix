@@ -16,8 +16,8 @@ const mapDispatchToProps = (dispatch) => ({
   showError: (message) => {
     dispatch(errorsActions.genericError(message))
   },
-  setProjectCache: (pid, period, timeBucket, data) => {
-    dispatch(UIActions.setProjectCache(pid, period, timeBucket, data))
+  setProjectCache: (pid, period, timeBucket, data, key) => {
+    dispatch(UIActions.setProjectCache(pid, period, timeBucket, data, key))
   },
   setProjectViewPrefs: (pid, period, timeBucket, rangeDate) => {
     dispatch(UIActions.setProjectViewPrefs(pid, period, timeBucket, rangeDate))

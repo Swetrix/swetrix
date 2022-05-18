@@ -315,19 +315,27 @@ const ViewProject = ({
       setDataLoading(true)
       try {
         let data
-        const key = getProjectCacheKey(period, timeBucket)
+        let key = getProjectCacheKey(period, timeBucket)
+
+        let from
+        let to
+
+        if (rangeDate) {
+          from = getFormatDate(rangeDate[0])
+          to = getFormatDate(rangeDate[1])
+          key = `${from}-${to}-${timeBucket}`
+        }
 
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
           if (rangeDate) {
-            const from = getFormatDate(rangeDate[0])
-            const to = getFormatDate(rangeDate[1])
             data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           } else {
             data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
           }
-          setProjectCache(id, period, timeBucket, data || {})
+
+          setProjectCache(id, period, timeBucket, data || {}, key)
         }
 
         if (_isEmpty(data)) {
@@ -419,11 +427,7 @@ const ViewProject = ({
   }, [isLoading, showTotal, chartData, mainChart, t])
 
   useEffect(() => {
-    if (period !== 'custom') {
-      loadAnalytics()
-    } else if (timeBucket !== 'custom') {
-      loadAnalytics(true)
-    }
+    loadAnalytics()
   }, [project, period, timeBucket, periodPairs, t]) // eslint-disable-line
 
   useEffect(() => {

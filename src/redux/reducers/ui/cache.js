@@ -33,14 +33,12 @@ const getInitialState = () => {
 const cacheReducer = (state = getInitialState(), { type, payload }) => {
   switch (type) {
     case types.SET_PROJECT_CACHE: {
-      const { pid, period, timeBucket, data } = payload
+      const { pid, period, timeBucket, data, key } = payload
 
       // temporarily do not store custom date ranges in cache
-      if (period === 'custom') {
-        return state
-      }
-
-      const key = getProjectCacheKey(period, timeBucket)
+      // if (period === 'custom') {
+      //   return state
+      // }
 
       return {
         ...state,
