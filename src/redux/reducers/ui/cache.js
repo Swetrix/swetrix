@@ -34,9 +34,7 @@ const getInitialState = () => {
 const cacheReducer = (state = getInitialState(), { type, payload }) => {
   switch (type) {
     case types.SET_PROJECT_CACHE: {
-      const {
-        pid, period, timeBucket, data, key,
-      } = payload
+      const { pid, data, key } = payload
 
       return {
         ...state,

@@ -38,7 +38,8 @@ import PropTypes from 'prop-types'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, timeBucketToDays,
+  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
+  timeBucketToDays, getProjectCacheCustomKey,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -373,15 +374,16 @@ const ViewProject = ({
       setDataLoading(true)
       try {
         let data
-        let key = getProjectCacheKey(period, timeBucket)
-
+        let key
         let from
         let to
 
         if (rangeDate) {
           from = getFormatDate(rangeDate[0])
           to = getFormatDate(rangeDate[1])
-          key = `${from}-${to}-${timeBucket}`
+          key = getProjectCacheCustomKey(from, to, timeBucket)
+        } else {
+          key = getProjectCacheKey(period, timeBucket)
         }
 
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
@@ -393,7 +395,7 @@ const ViewProject = ({
             data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
           }
 
-          setProjectCache(id, period, timeBucket, data || {}, key)
+          setProjectCache(id, data || {}, key)
         }
 
         if (_isEmpty(data)) {
