@@ -1,33 +1,33 @@
 import { removeItem } from 'utils/localstorage'
-import { types } from './types'
 import { TOKEN, LS_VIEW_PREFS_SETTING } from 'redux/constants'
+import { types } from './types'
 
 export const authActions = {
   // Synchronous
   loginSuccess(user) {
     return {
       type: types.LOGIN_SUCCESSFUL,
-      payload: { user }
+      payload: { user },
     }
   },
 
   emailVerifySuccess() {
     return {
-      type: types.EMAIL_VERIFY_SUCCESSFUL
+      type: types.EMAIL_VERIFY_SUCCESSFUL,
     }
   },
 
   signupSuccess(user) {
     return {
       type: types.SIGNUP_UP_SUCCESSFUL,
-      payload: { user }
+      payload: { user },
     }
   },
 
   updateProfileSuccess(user) {
     return {
       type: types.UPDATE_USER_PROFILE_SUCCESS,
-      payload: { user }
+      payload: { user },
     }
   },
 
@@ -36,20 +36,20 @@ export const authActions = {
     removeItem(LS_VIEW_PREFS_SETTING)
 
     return {
-      type: types.LOGOUT
+      type: types.LOGOUT,
     }
   },
 
   clearErrors() {
     return {
-      type: types.CLEAR_ERRORS
+      type: types.CLEAR_ERRORS,
     }
   },
 
   savePath(path) {
     return {
       type: types.SAVE_PATH,
-      payload: { path }
+      payload: { path },
     }
   },
 
@@ -58,13 +58,13 @@ export const authActions = {
     removeItem('user_info')
 
     return {
-      type: types.DELETE_ACCOUNT_SUCCESS
+      type: types.DELETE_ACCOUNT_SUCCESS,
     }
   },
 
   finishLoading() {
     return {
-      type: types.FINISH_LOADING
+      type: types.FINISH_LOADING,
     }
   },
 
@@ -90,14 +90,14 @@ export const authActions = {
   emailVerifyAsync(data, successfulCallback, errorCallback) {
     return {
       type: types.EMAIL_VERIFY_ASYNC,
-      payload: { data, successfulCallback, errorCallback }
+      payload: { data, successfulCallback, errorCallback },
     }
   },
 
   updateUserProfileAsync(data, successfulCallback = () => { }) {
     return {
       type: types.UPDATE_USER_PROFILE_ASYNC,
-      payload: { data, successfulCallback }
+      payload: { data, successfulCallback },
     }
   },
 
@@ -108,5 +108,5 @@ export const authActions = {
         errorCallback, successCallback, t,
       },
     }
-  }
+  },
 }

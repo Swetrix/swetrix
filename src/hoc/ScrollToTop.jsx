@@ -24,7 +24,7 @@ const ScrollToTop = ({ children }) => {
     return unlisten
   }, [history])
 
-  return <>{children}</>
+  return children
 }
 
 export default ScrollToTop

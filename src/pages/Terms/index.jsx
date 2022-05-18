@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React from 'react'
 
 import Title from 'components/Title'
@@ -10,15 +11,19 @@ const Features = () => {
         <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
           <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight'>Swetrix Terms and Conditions</h1>
           <p className='mt-4 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            These Swetrix Terms and Conditions ("Terms", "Terms and Conditions") govern your relationship with swetrix.com ("Service") operated by Andrii Romasiun ("Swetrix", "Swetrix Analytics", "Company", "us", "we", or "our").<br />
+            These Swetrix Terms and Conditions ("Terms", "Terms and Conditions") govern your relationship with swetrix.com ("Service") operated by Andrii Romasiun ("Swetrix", "Swetrix Analytics", "Company", "us", "we", or "our").
+            <br />
             Please read these Terms and Conditions carefully before using the Service.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Acknowledgment</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            These are the Terms and Conditions governing the use of this Service and the agreement that operates between you and us. These Terms and Conditions set out the rights and obligations of all users regarding the use of the Service.<br />
-            Your access to and use of the Service is conditioned on your acceptance of and compliance with these Terms and Conditions. These Terms and Conditions apply to all visitors, users and others who access or use the Service.<br />
-            By accessing or using the Service you agree to be bound by these Terms and Conditions. If you disagree with any part of these Terms and Conditions then you may not access the Service.<br />
+            These are the Terms and Conditions governing the use of this Service and the agreement that operates between you and us. These Terms and Conditions set out the rights and obligations of all users regarding the use of the Service.
+            <br />
+            Your access to and use of the Service is conditioned on your acceptance of and compliance with these Terms and Conditions. These Terms and Conditions apply to all visitors, users and others who access or use the Service.
+            <br />
+            By accessing or using the Service you agree to be bound by these Terms and Conditions. If you disagree with any part of these Terms and Conditions then you may not access the Service.
+            <br />
             Your access to and use of the Service is also conditioned on your acceptance of and compliance with our Privacy Policy. Our Privacy Policy describes our policies and procedures on the collection, use and disclosure of your personal information when you access our websites or use our Service and tells you about your privacy rights and how the law protects you. Please read Our Privacy Policy carefully before using our Service.
           </p>
 
@@ -44,8 +49,10 @@ const Features = () => {
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Third-party websites</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            The Service may contain links to third-party websites or services that are not owned or controlled by us.<br />
-            We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third party websites or services. You further acknowledge and agree that the Company shall not be responsible or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with the use of or reliance on any such content, goods or services available on or through any such websites or services.<br />
+            The Service may contain links to third-party websites or services that are not owned or controlled by us.
+            <br />
+            We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third party websites or services. You further acknowledge and agree that the Company shall not be responsible or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with the use of or reliance on any such content, goods or services available on or through any such websites or services.
+            <br />
             We strongly advise you to read the terms and conditions and privacy policies of any third-party websites or services that you visit.
           </p>
 
@@ -71,30 +78,39 @@ const Features = () => {
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Accounts</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            When you create an account with us, you must provide us information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service.<br />
-            You are responsible for safeguarding the password that you use to access the Service and for any activities or actions under your password, whether your password is with our Service or a third-party service.<br />
-            You agree not to disclose your password to any third party. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.<br />
+            When you create an account with us, you must provide us information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service.
+            <br />
+            You are responsible for safeguarding the password that you use to access the Service and for any activities or actions under your password, whether your password is with our Service or a third-party service.
+            <br />
+            You agree not to disclose your password to any third party. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.
+            <br />
             You may not use as a username the name of another person or entity or that is not lawfully available for use, a name or trademark that is subject to any rights of another person or entity other than you without appropriate authorization, or a name that is otherwise offensive, vulgar or obscene.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Subscriptions</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            Some parts of the Service are billed on a subscription basis ("Subscription(s)"). You will be billed in advance on a recurring and periodic basis ("Billing Cycle"). Billing cycles are set either on a monthly or annual basis, depending on the type of subscription plan you select when purchasing a Subscription.<br />
-            At the end of each Billing Cycle, your Subscription will automatically renew under the exact same conditions unless you cancel it or we cancel it. You may cancel your Subscription renewal either through your online account management page or by contacting our customer support team.<br />
-            A valid payment method, including credit card, is required to process the payment for your Subscription. You shall provide us with accurate and complete billing information including full name, address, state, zip code, telephone number, and a valid payment method information. By submitting such payment information, you automatically authorize us to charge all Subscription fees incurred through your account to any such payment instruments.<br />
+            Some parts of the Service are billed on a subscription basis ("Subscription(s)"). You will be billed in advance on a recurring and periodic basis ("Billing Cycle"). Billing cycles are set either on a monthly or annual basis, depending on the type of subscription plan you select when purchasing a Subscription.
+            <br />
+            At the end of each Billing Cycle, your Subscription will automatically renew under the exact same conditions unless you cancel it or we cancel it. You may cancel your Subscription renewal either through your online account management page or by contacting our customer support team.
+            <br />
+            A valid payment method, including credit card, is required to process the payment for your Subscription. You shall provide us with accurate and complete billing information including full name, address, state, zip code, telephone number, and a valid payment method information. By submitting such payment information, you automatically authorize us to charge all Subscription fees incurred through your account to any such payment instruments.
+            <br />
             Should automatic billing fail to occur for any reason, we may issue an electronic invoice indicating that you must proceed manually, within a certain deadline date, with the full payment corresponding to the billing period as indicated on the invoice.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Fee changes</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            We may, at our sole discretion and at any time, modify the Subscription fees for the Subscriptions. Any Subscription fee change will become effective at the end of the then-current Billing Cycle.<br />
-            We will provide you with a reasonable prior notice of any change in Subscription fees to give you an opportunity to terminate your Subscription before such change becomes effective.<br />
+            We may, at our sole discretion and at any time, modify the Subscription fees for the Subscriptions. Any Subscription fee change will become effective at the end of the then-current Billing Cycle.
+            <br />
+            We will provide you with a reasonable prior notice of any change in Subscription fees to give you an opportunity to terminate your Subscription before such change becomes effective.
+            <br />
             Your continued use of the Service after the Subscription fee change comes into effect constitutes your agreement to pay the modified Subscription fee amount.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Refunds</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            To avoid being charged for your Subscription, you must cancel the Subscription before your renewal date. Otherwise, you’ll be charged and will retain access to the Service through the end of the Billing Cycle.<br />
+            To avoid being charged for your Subscription, you must cancel the Subscription before your renewal date. Otherwise, you’ll be charged and will retain access to the Service through the end of the Billing Cycle.
+            <br />
             Except when required by law, paid Subscription fees are non-refundable. However, you may contact our support team and at our sole discretion we may issue a refund on a case-by-case basis.
           </p>
 
@@ -117,7 +133,8 @@ const Features = () => {
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Governing Law</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            These Terms shall be governed and construed in accordance with the laws of Ukraine, without regard to its conflict of law provisions.<br />
+            These Terms shall be governed and construed in accordance with the laws of Ukraine, without regard to its conflict of law provisions.
+            <br />
             Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights. If any provision of these Terms is held to be invalid or unenforceable by a court, the remaining provisions of these Terms will remain in effect. These Terms constitute the entire agreement between us regarding our Service, and supersede and replace any prior agreements we might have between us regarding the Service.
           </p>
 
@@ -146,7 +163,6 @@ const Features = () => {
             Except as provided herein, the failure to exercise a right or to require performance of an obligation under this Agreement shall not affect a party’s ability to exercise such right or require such performance at any time thereafter, nor shall the waiver of a breach constitute the waiver of any subsequent breach.
           </p>
 
-
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Translation interpretation</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             These Terms and Conditions may have been translated if we have made them available to you on our Service. You agree that the original English text shall prevail in the case of a dispute.
@@ -154,7 +170,8 @@ const Features = () => {
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Changes to these Terms and Conditions</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            We reserve the right, at our sole discretion, to modify or replace these Terms and Conditions at any time. If a revision is material we will make reasonable efforts to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.<br />
+            We reserve the right, at our sole discretion, to modify or replace these Terms and Conditions at any time. If a revision is material we will make reasonable efforts to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
+            <br />
             By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms. If you do not agree to the new terms, in whole or in part, please stop using the website and the Service.
           </p>
 

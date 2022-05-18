@@ -4,4 +4,6 @@ import errors from './errors'
 import alerts from './alerts'
 import ui from './ui'
 
-export default combineReducers({ auth, errors, alerts, ui })
+export default combineReducers({
+  auth, errors, alerts, ui,
+})

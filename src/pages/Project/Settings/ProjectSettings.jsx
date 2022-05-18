@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useMemo, memo } from 'react'
+/* eslint-disable react/forbid-prop-types */
+import React, {
+  useState, useEffect, useMemo, memo,
+} from 'react'
 import { useLocation, useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
@@ -114,30 +117,6 @@ const ProjectSettings = ({
     }
   }
 
-  useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
-
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
-    }))
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
-  }
-
   const validate = () => {
     const allErrors = {}
 
@@ -157,6 +136,30 @@ const ProjectSettings = ({
 
     setErrors(allErrors)
     setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const handleInput = event => {
+    const { target } = event
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
   }
 
   const onCancel = () => {

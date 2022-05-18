@@ -41,6 +41,27 @@ const UserSettings = ({
   const [error, setError] = useState(null)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
 
+  const validate = () => {
+    const allErrors = {}
+
+    if (!isValidEmail(form.email)) {
+      allErrors.email = t('auth.common.badEmailError')
+    }
+
+    if (_size(form.password) > 0 && !isValidPassword(form.password)) {
+      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
+    }
+
+    if (form.password !== form.repeat) {
+      allErrors.repeat = t('auth.common.noMatchError')
+    }
+
+    const valid = _isEmpty(Object.keys(allErrors))
+
+    setErrors(allErrors)
+    setValidated(valid)
+  }
+
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
@@ -51,12 +72,12 @@ const UserSettings = ({
   }
 
   const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
+    const { target } = event
+    const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
+    setForm(prevForm => ({
+      ...prevForm,
+      [target.name]: value,
     }))
   }
 
@@ -95,27 +116,6 @@ const UserSettings = ({
         reportFrequency,
       })
     }
-  }
-
-  const validate = () => {
-    const allErrors = {}
-
-    if (!isValidEmail(form.email)) {
-      allErrors.email = t('auth.common.badEmailError')
-    }
-
-    if (_size(form.password) > 0 && !isValidPassword(form.password)) {
-      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
-    }
-
-    if (form.password !== form.repeat) {
-      allErrors.repeat = t('auth.common.noMatchError')
-    }
-
-    const valid = _isEmpty(Object.keys(allErrors))
-
-    setErrors(allErrors)
-    setValidated(valid)
   }
 
   return (
@@ -194,7 +194,7 @@ const UserSettings = ({
                 label={t('profileSettings.frequency')}
                 className='w-full'
                 items={translatedFrequencies}
-                onSelect={(f) => setReportFrequency(reportFrequencies[_findIndex(translatedFrequencies, t => t === f)])}
+                onSelect={(f) => setReportFrequency(reportFrequencies[_findIndex(translatedFrequencies, freq => freq === f)])}
               />
             </div>
           </div>

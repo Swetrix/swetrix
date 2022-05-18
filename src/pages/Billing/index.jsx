@@ -3,10 +3,10 @@ import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 
-import Pricing from '../MainPage/Pricing'
 import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
+import Pricing from '../MainPage/Pricing'
 
 const Features = () => {
   const { user } = useSelector(state => state.auth)

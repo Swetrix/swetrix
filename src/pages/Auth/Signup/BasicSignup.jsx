@@ -38,30 +38,6 @@ const BasicSignup = () => {
     }
   }
 
-  useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const handleInput = (event) => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
-
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
-    }))
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
-  }
-
   const validate = () => {
     const allErrors = {}
 
@@ -85,6 +61,30 @@ const BasicSignup = () => {
 
     setErrors(allErrors)
     setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const handleInput = (event) => {
+    const { target } = event
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
   }
 
   return (

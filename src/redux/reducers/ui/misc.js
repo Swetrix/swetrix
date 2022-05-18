@@ -15,6 +15,7 @@ const initialState = {
   showNoEventsLeftBanner: false,
 }
 
+// eslint-disable-next-line default-param-last
 const miscReducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case types.SET_GENERAL_STATS: {

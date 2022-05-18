@@ -26,47 +26,6 @@ const CreateNewPassword = ({
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const onSubmit = async (data) => {
-    if (!isLoading) {
-      setIsLoading(true)
-      try {
-        const { password } = data
-        await createNewPassword(id, password)
-  
-        newPassword(t('auth.recovery.updated'))
-        history.push(routes.signin)
-      } catch (e) {
-        createNewPasswordFailed(e.toString())
-      } finally {
-        setIsLoading(false)
-      }
-    }
-  }
-
-  const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
-
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
-    }))
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
-  }
-
   const validate = () => {
     const allErrors = {}
 
@@ -86,6 +45,46 @@ const CreateNewPassword = ({
 
     setErrors(allErrors)
     setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const onSubmit = async (data) => {
+    if (!isLoading) {
+      setIsLoading(true)
+      try {
+        const { password } = data
+        await createNewPassword(id, password)
+
+        newPassword(t('auth.recovery.updated'))
+        history.push(routes.signin)
+      } catch (e) {
+        createNewPasswordFailed(e.toString())
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const handleInput = ({ target }) => {
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
   }
 
   return (

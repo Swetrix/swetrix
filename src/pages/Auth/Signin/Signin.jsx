@@ -19,47 +19,12 @@ const Signin = ({ login }) => {
   const [form, setForm] = useState({
     email: '',
     password: '',
-    keep_signedin: false
+    keep_signedin: false,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const onSubmit = data => {
-    if (!isLoading) {
-      setIsLoading(true)
-      login(data, (result) => {
-        if (!result) {
-          setIsLoading(false)
-        }
-      })
-    }
-  }
-
-  const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
-
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
-    }))
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
-  }
 
   const validate = () => {
     const allErrors = {}
@@ -76,6 +41,40 @@ const Signin = ({ login }) => {
 
     setErrors(allErrors)
     setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const onSubmit = data => {
+    if (!isLoading) {
+      setIsLoading(true)
+      login(data, (result) => {
+        if (!result) {
+          setIsLoading(false)
+        }
+      })
+    }
+  }
+
+  const handleInput = ({ target }) => {
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
   }
 
   return (
@@ -118,17 +117,17 @@ const Signin = ({ login }) => {
           />
           <div className='flex justify-between mt-3'>
             <div className='pt-1'>
-            {!isSelfhosted && (
-              <>
-                <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
-                  {t('auth.signin.forgot')}
-                </Link>
-                <span className='text-gray-900 dark:text-gray-50'>&nbsp;|&nbsp;</span>
-                <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
-                  {t('auth.common.signupInstead')}
-                </Link>
-              </>
-            )}
+              {!isSelfhosted && (
+                <>
+                  <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
+                    {t('auth.signin.forgot')}
+                  </Link>
+                  <span className='text-gray-900 dark:text-gray-50'>&nbsp;|&nbsp;</span>
+                  <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
+                    {t('auth.common.signupInstead')}
+                  </Link>
+                </>
+              )}
             </div>
             <Button type='submit' loading={isLoading} primary large>
               {t('auth.signin.button')}

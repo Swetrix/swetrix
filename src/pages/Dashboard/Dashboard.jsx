@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-prop-types */
 import React, { memo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import cx from 'clsx'
@@ -57,10 +58,12 @@ const ProjectCart = ({
                     <p className='h-5 mr-1'>
                       {overall?.thisWeek}
                     </p>
-                    <p className={cx('flex text-xs -ml-1 items-baseline', {
-                      'text-green-600': statsDidGrowUp,
-                      'text-red-600': !statsDidGrowUp,
-                    })}>
+                    <p
+                      className={cx('flex text-xs -ml-1 items-baseline', {
+                        'text-green-600': statsDidGrowUp,
+                        'text-red-600': !statsDidGrowUp,
+                      })}
+                    >
                       {statsDidGrowUp ? (
                         <>
                           <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
@@ -76,7 +79,8 @@ const ProjectCart = ({
                           </span>
                         </>
                       )}
-                      {overall?.percChange}%
+                      {overall?.percChange}
+                      %
                     </p>
                   </dd>
                 </div>
@@ -118,7 +122,9 @@ const NoProjects = ({ t }) => (
   </div>
 )
 
-const Dashboard = ({ projects, isLoading, error, user }) => {
+const Dashboard = ({
+  projects, isLoading, error, user,
+}) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
@@ -170,7 +176,9 @@ const Dashboard = ({ projects, isLoading, error, user }) => {
               ) : (
                 <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
                   <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                    {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({ name, id, created, active, overall, live, public: isPublic }) => (
+                    {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
+                      name, id, created, active, overall, live, public: isPublic,
+                    }) => (
                       <ProjectCart
                         key={id}
                         t={t}

@@ -2,8 +2,7 @@ import React, { useState, useEffect, memo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CheckCircleIcon } from '@heroicons/react/solid'
-import { XCircleIcon } from '@heroicons/react/solid'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/solid'
 
 import Title from 'components/Title'
 import { authActions } from 'redux/actions/auth'
@@ -20,13 +19,16 @@ const VerifyEmail = () => {
     setLoading(true)
     const path = window.location.pathname.split('/')[1]
 
-    dispatch(authActions.emailVerifyAsync(
-      { path, id },
-      () => setLoading(false),
-      (error) => {
-        setError(error.message)
-        setLoading(false)
-      }))
+    dispatch(
+      authActions.emailVerifyAsync(
+        { path, id },
+        () => setLoading(false),
+        (verifyError) => {
+          setError(verifyError.message)
+          setLoading(false)
+        },
+      ),
+    )
   }, [dispatch, id])
 
   if (loading) {

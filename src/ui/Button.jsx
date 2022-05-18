@@ -1,3 +1,4 @@
+/* eslint-disable react/button-has-type */
 import React, { memo } from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -60,6 +61,7 @@ Button.defaultProps = {
   loading: false,
   type: 'button',
   className: '',
+  children: null,
 }
 
 export default memo(Button)

@@ -33,7 +33,7 @@ const Checkbox = ({
 Checkbox.propTypes = {
   label: PropTypes.oneOfType([
     PropTypes.string, PropTypes.node,
-  ]).isRequired,
+  ]),
   checked: PropTypes.bool.isRequired,
   hint: PropTypes.string,
   onChange: PropTypes.func,

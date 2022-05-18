@@ -1,3 +1,4 @@
+/* eslint-disable implicit-arrow-linebreak */
 import axios from 'axios'
 import { store } from 'redux/store'
 import Debug from 'debug'
@@ -18,13 +19,14 @@ api.interceptors.request.use(
   (config) => {
     const token = getAccessToken()
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
+      // eslint-disable-next-line no-param-reassign
+      config.headers.Authorization = `Bearer ${token}`
     }
     return config
   },
   (error) => {
     return Promise.reject(error)
-  }
+  },
 )
 
 api.interceptors.response.use(
@@ -35,7 +37,7 @@ api.interceptors.response.use(
       store.dispatch(authActions.logout())
     }
     return Promise.reject(error)
-  }
+  },
 )
 
 export const authMe = () =>
@@ -172,7 +174,7 @@ export const getProject = (pid) =>
 
 export const createProject = (data) =>
   api
-    .post(`/project`, data)
+    .post('/project', data)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -214,7 +216,7 @@ export const getProjectData = (
 ) =>
   api
     .get(
-      `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`
+      `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
     )
     .then((response) => response.data)
     .catch((error) => {

@@ -31,7 +31,7 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
     <svg id='map' viewBox='0 0 1050 650' className='w-full h-full'>
       <g>
         {_map(countriesList, (item, index) => {
-          const perc = (data[index] / total * 100) || 0
+          const perc = ((data[index] / total) * 100) || 0
           const title = `${countries.getName(index, language)}\n${t('project.unique')}: ${data[index] || 0}`
 
           return (
@@ -62,7 +62,7 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
 
 InteractiveMap.propTypes = {
   onClickCountry: PropTypes.func,
-  data: PropTypes.object,
+  data: PropTypes.objectOf(PropTypes.number),
   total: PropTypes.number,
 }
 
