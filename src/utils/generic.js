@@ -1,4 +1,8 @@
+import _find from 'lodash/find'
+import _replace from 'lodash/replace'
+
 const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
+
 export const nFormatter = (num, digits) => {
   const lookup = [
     { value: 1, symbol: '' },
@@ -7,9 +11,9 @@ export const nFormatter = (num, digits) => {
     { value: 1e9, symbol: 'B' },
   ]
 
-  const item = lookup.slice().reverse().find((item) => num >= item.value)
+  const item = _find(lookup.slice().reverse(), ({ value }) => num >= value)
 
-  return item ? (num / item.value).toFixed(digits).replace(rx, '$1') + item.symbol : '0'
+  return item ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol : '0'
 }
 
 export const secondsTillNextMonth = () => {

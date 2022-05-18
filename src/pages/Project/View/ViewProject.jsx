@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
+/* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
+import React, {
+  useState, useEffect, useMemo, memo, useRef,
+} from 'react'
 import { useHistory, useParams, Link } from 'react-router-dom'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
@@ -42,13 +45,13 @@ import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import FlatPicker from 'ui/Flatpicker'
-import {
-  Panel, Overview, CustomEvents,
-} from './Panels'
 import routes from 'routes'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors,
 } from 'api'
+import {
+  Panel, Overview, CustomEvents,
+} from './Panels'
 import './styles.css'
 
 countries.registerLocale(countriesEn)
@@ -59,6 +62,57 @@ countries.registerLocale(countriesHi)
 countries.registerLocale(countriesUk)
 countries.registerLocale(countriesZh)
 countries.registerLocale(countriesSv)
+
+const CCRow = memo(({ rowName, language }) => (
+  <>
+    <Flag
+      className='rounded-sm'
+      country={rowName}
+      size={21}
+      alt=''
+    />
+    &nbsp;&nbsp;
+    {countries.getName(rowName, language)}
+  </>
+))
+
+const RefRow = memo(({ rowName, showIcons }) => {
+  let isUrl = true
+  let url = rowName
+
+  try {
+    url = new URL(rowName)
+  } catch {
+    isUrl = false
+  }
+
+  return (
+    <div>
+      {showIcons && isUrl && !_isEmpty(url.hostname) && (
+        <img
+          className='w-5 h-5 mr-1.5 float-left'
+          src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`}
+          alt=''
+        />
+      )}
+      {isUrl ? (
+        <a
+          className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'
+          href={rowName}
+          target='_blank'
+          rel='noopener noreferrer'
+          onClick={(e) => e.stopPropagation()}
+        >
+          {rowName}
+        </a>
+      ) : (
+        <span className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'>
+          {rowName}
+        </span>
+      )}
+    </div>
+  )
+})
 
 const getColumns = (chart, showTotal, t) => {
   if (showTotal) {
@@ -83,7 +137,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
 
   if (applyRegions) {
     let regionStart
-  
+
     if (xAxisSize > 1) {
       regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
     } else {
@@ -106,7 +160,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
             dasharray: '6 2',
           },
         },
-      ]
+      ],
     }
   }
 
@@ -200,9 +254,9 @@ const getFormatDate = (date) => {
   const yyyy = date.getFullYear()
   let mm = date.getMonth() + 1
   let dd = date.getDate()
-  if (dd < 10) dd = '0' + dd
-  if (mm < 10) mm = '0' + mm
-  return yyyy + '-' + mm + '-' + dd
+  if (dd < 10) dd = `0${dd}`
+  if (mm < 10) mm = `0${mm}`
+  return `${yyyy}-${mm}-${dd}`
 }
 
 const NoEvents = ({ t }) => (
@@ -224,7 +278,9 @@ const NoEvents = ({ t }) => (
   </div>
 )
 
-const Filter = ({ column, filter, isExclusive, onRemoveFilter, onChangeExclusive, tnMapping, language, t }) => {
+const Filter = ({
+  column, filter, isExclusive, onRemoveFilter, onChangeExclusive, tnMapping, language, t,
+}) => {
   const displayColumn = tnMapping[column]
   let displayFilter = filter
 
@@ -259,7 +315,9 @@ const Filter = ({ column, filter, isExclusive, onRemoveFilter, onChangeExclusive
   )
 }
 
-const Filters = ({ filters, onRemoveFilter, onChangeExclusive, language, t, tnMapping }) => (
+const Filters = ({
+  filters, onRemoveFilter, onChangeExclusive, language, t, tnMapping,
+}) => (
   <div className='flex justify-center md:justify-start flex-wrap -mt-2'>
     {_map(filters, (props) => {
       const { column, filter } = props
@@ -371,7 +429,7 @@ const ViewProject = ({
   const filterHandler = (column, filter, isExclusive = false) => {
     let newFilters
 
-    // temporarily apply only 1 filter per data type 
+    // temporarily apply only 1 filter per data type
     if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
       // selected filter is already included into the filters array -> removing it
       newFilters = _filter(filters, (f) => f.column !== column)
@@ -431,7 +489,8 @@ const ViewProject = ({
       const days = Math.ceil(Math.abs(rangeDate[1].getTime() - rangeDate[0].getTime()) / (1000 * 3600 * 24))
 
       // setting allowed time buckets for the specified date range (period)
-      for (let index in timeBucketToDays) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const index in timeBucketToDays) {
         if (timeBucketToDays[index].lt >= days) {
           setTimebucket(timeBucketToDays[index].tb[0])
           setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
@@ -445,10 +504,10 @@ const ViewProject = ({
 
   useEffect(() => {
     const updateLiveVisitors = async () => {
-      const { id } = project
-      const result = await getLiveVisitors([id])
+      const { id: pid } = project
+      const result = await getLiveVisitors([pid])
 
-      setLiveStatsForProject(id, result[id])
+      setLiveStatsForProject(pid, result[pid])
     }
 
     let interval
@@ -540,7 +599,7 @@ const ViewProject = ({
             {
               'min-h-min-footer': authenticated,
               'min-h-min-footer-ad': !authenticated,
-            }
+            },
           )}
           ref={dashboardRef}
         >
@@ -564,7 +623,7 @@ const ViewProject = ({
                           'rounded-r-md': 1 + index === length,
                           'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
                           'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
-                        }
+                        },
                       )}
                     >
                       {t(`project.${tb}`)}
@@ -592,12 +651,6 @@ const ViewProject = ({
               <FlatPicker ref={refCalendar} onChange={(date) => setRangeDate(date)} value={rangeDate} />
             </div>
           </div>
-          {analyticsLoading && (
-            <Loader />
-          )}
-          {isPanelsDataEmpty && (
-            <NoEvents t={t} />
-          )}
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
             <Checkbox
               className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
@@ -627,6 +680,12 @@ const ViewProject = ({
               </div>
             )}
           </div>
+          {analyticsLoading && (
+            <Loader />
+          )}
+          {isPanelsDataEmpty && (
+            <NoEvents t={t} />
+          )}
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
             <div className='h-80' id='dataChart' />
             <Filters
@@ -640,8 +699,8 @@ const ViewProject = ({
             {dataLoading && (
               <div className='loader bg-transparent static mt-4' id='loader'>
                 <div className='loader-head'>
-                  <div className='first'></div>
-                  <div className='second'></div>
+                  <div className='first' />
+                  <div className='second' />
                 </div>
               </div>
             )}
@@ -669,17 +728,8 @@ const ViewProject = ({
                       onFilter={filterHandler}
                       name={panelName}
                       data={panelsData.data[type]}
-                      rowMapper={(name) => (
-                        <>
-                          <Flag
-                            className='rounded-sm'
-                            country={name}
-                            size={21}
-                            alt=''
-                          />
-                          &nbsp;&nbsp;
-                          {countries.getName(name, language)}
-                        </>
+                      rowMapper={(rowName) => (
+                        <CCRow rowName={rowName} language={language} />
                       )}
                     />
                   )
@@ -710,43 +760,9 @@ const ViewProject = ({
                       onFilter={filterHandler}
                       name={panelName}
                       data={panelsData.data[type]}
-                      rowMapper={(name) => {
-                        let isUrl = true
-                        let url = name
-
-                        try {
-                          url = new URL(name)
-                        } catch {
-                          isUrl = false
-                        }
-
-                        return (
-                          <div>
-                            {showIcons && isUrl && !_isEmpty(url.hostname) && (
-                              <img
-                                className='w-5 h-5 mr-1.5 float-left'
-                                src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`}
-                                alt=''
-                              />
-                            )}
-                            {isUrl ? (
-                              <a
-                                className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'
-                                href={name}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {name}
-                              </a>
-                            ) : (
-                              <span className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'>
-                                {name}
-                              </span>
-                            )}
-                          </div>
-                        )
-                      }}
+                      rowMapper={(rowName) => (
+                        <RefRow rowName={rowName} showIcons={showIcons} />
+                      )}
                     />
                   )
                 }

@@ -41,6 +41,7 @@ const getInitialState = () => {
   }
 }
 
+// eslint-disable-next-line default-param-last
 const themeReducer = (state = getInitialState(), { type, payload }) => {
   switch (type) {
     case types.SET_THEME: {

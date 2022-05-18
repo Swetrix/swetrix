@@ -8,7 +8,6 @@ const propTypes = {
 }
 
 const defaultProps = {
-  label: PropTypes.string.isRequired,
   className: '',
 }
 

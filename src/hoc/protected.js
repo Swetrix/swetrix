@@ -17,7 +17,7 @@ export const withAuthentication = (WrappedComponent, authParam) => {
   const WithAuthentication = (params) => {
     const selector = useSelector(authParam.selector)
     const history = useHistory()
-    
+
     if (!selector) {
       history.push(authParam.redirectPath)
     }

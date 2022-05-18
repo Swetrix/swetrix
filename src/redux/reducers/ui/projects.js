@@ -12,6 +12,7 @@ const getInitialState = () => {
   }
 }
 
+// eslint-disable-next-line default-param-last
 const projectsReducer = (state = getInitialState(), { type, payload }) => {
   switch (type) {
     case types.SET_PROJECTS: {
@@ -39,7 +40,7 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
         projects: _map(state.projects, res => ({
           ...res,
           live: data[res.id],
-        }))
+        })),
       }
     }
 
@@ -54,10 +55,10 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
               ...res,
               live: count,
             }
-          } else {
-            return res
           }
-        })
+
+          return res
+        }),
       }
     }
 
@@ -68,12 +69,12 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
         projects: _findIndex(state.projects, (el) => el.id === project.id) >= 0
           ? state.projects
           : [
-              ...state.projects,
-              {
-                ...project,
-                uiHidden: true,
-              },
-            ],
+            ...state.projects,
+            {
+              ...project,
+              uiHidden: true,
+            },
+          ],
       }
     }
 
@@ -89,7 +90,7 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       const { pid } = payload
       return {
         ...state,
-        projects: _filter(state.projects, (project) => project.id !== pid)
+        projects: _filter(state.projects, (project) => project.id !== pid),
       }
     }
 

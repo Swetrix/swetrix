@@ -2,6 +2,8 @@ import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -19,12 +21,29 @@ const Signin = ({ login }) => {
   const [form, setForm] = useState({
     email: '',
     password: '',
-    keep_signedin: false
+    keep_signedin: false,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  const validate = () => {
+    const allErrors = {}
+
+    if (!isValidEmail(form.email)) {
+      allErrors.email = t('auth.common.badEmailError')
+    }
+
+    if (!isValidPassword(form.password)) {
+      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
+    }
+
+    const valid = _isEmpty(_keys(allErrors))
+
+    setErrors(allErrors)
+    setValidated(valid)
+  }
 
   useEffect(() => {
     validate()
@@ -41,13 +60,12 @@ const Signin = ({ login }) => {
     }
   }
 
-  const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
+  const handleInput = ({ target }) => {
+    const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
     }))
   }
 
@@ -59,23 +77,6 @@ const Signin = ({ login }) => {
     if (validated) {
       onSubmit(form)
     }
-  }
-
-  const validate = () => {
-    const allErrors = {}
-
-    if (!isValidEmail(form.email)) {
-      allErrors.email = t('auth.common.badEmailError')
-    }
-
-    if (!isValidPassword(form.password)) {
-      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
-    }
-
-    const valid = Object.keys(allErrors).length === 0
-
-    setErrors(allErrors)
-    setValidated(valid)
   }
 
   return (
@@ -118,17 +119,17 @@ const Signin = ({ login }) => {
           />
           <div className='flex justify-between mt-3'>
             <div className='pt-1'>
-            {!isSelfhosted && (
-              <>
-                <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
-                  {t('auth.signin.forgot')}
-                </Link>
-                <span className='text-gray-900 dark:text-gray-50'>&nbsp;|&nbsp;</span>
-                <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
-                  {t('auth.common.signupInstead')}
-                </Link>
-              </>
-            )}
+              {!isSelfhosted && (
+                <>
+                  <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
+                    {t('auth.signin.forgot')}
+                  </Link>
+                  <span className='text-gray-900 dark:text-gray-50'>&nbsp;|&nbsp;</span>
+                  <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
+                    {t('auth.common.signupInstead')}
+                  </Link>
+                </>
+              )}
             </div>
             <Button type='submit' loading={isLoading} primary large>
               {t('auth.signin.button')}

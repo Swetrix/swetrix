@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useMemo, memo } from 'react'
+/* eslint-disable react/forbid-prop-types */
+import React, {
+  useState, useEffect, useMemo, memo,
+} from 'react'
 import { useLocation, useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
@@ -8,6 +11,7 @@ import _find from 'lodash/find'
 import _join from 'lodash/join'
 import _isString from 'lodash/isString'
 import _split from 'lodash/split'
+import _keys from 'lodash/keys'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
@@ -114,30 +118,6 @@ const ProjectSettings = ({
     }
   }
 
-  useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
-
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
-    }))
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
-  }
-
   const validate = () => {
     const allErrors = {}
 
@@ -153,10 +133,34 @@ const ProjectSettings = ({
       allErrors.origins = t('project.settings.oxCharsError', { amount: MAX_ORIGINS_LENGTH })
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const handleInput = event => {
+    const { target } = event
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
   }
 
   const onCancel = () => {

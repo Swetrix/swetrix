@@ -1,4 +1,6 @@
-import React, { useEffect, lazy, Suspense, useState } from 'react'
+import React, {
+  useEffect, lazy, Suspense, useState,
+} from 'react'
 import { Switch, Route, useLocation } from 'react-router-dom'
 import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
@@ -17,11 +19,11 @@ import ScrollToTop from 'hoc/ScrollToTop'
 import Selfhosted from 'hoc/Selfhosted'
 import { isSelfhosted } from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
-import { authMe } from './api'
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import UIActions from 'redux/actions/ui'
+import { authMe } from './api'
 
 const MainPage = lazy(() => import('pages/MainPage'))
 const SignUp = lazy(() => import('pages/Auth/Signup'))
@@ -85,6 +87,7 @@ const App = () => {
     const eventCallback = (data) => {
       dispatch(UIActions.setPaddleLastEvent(data))
     }
+    // eslint-disable-next-line no-use-before-define
     const interval = setInterval(paddleSetup, 200)
 
     function paddleSetup() {
@@ -131,7 +134,7 @@ const App = () => {
       alert.error(error.toString(), {
         onClose: () => {
           dispatch(errorsActions.clearErrors())
-        }
+        },
       })
     }
   }, [error]) // eslint-disable-line
@@ -142,7 +145,7 @@ const App = () => {
         type,
         onClose: () => {
           dispatch(alertsActions.clearAlerts())
-        }
+        },
       })
     }
   }, [message, type]) // eslint-disable-line
@@ -151,6 +154,7 @@ const App = () => {
 
   return (
     (!accessToken || !loading) && (
+      // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
         <Header authenticated={authenticated} theme={theme} />
         <ScrollToTop>

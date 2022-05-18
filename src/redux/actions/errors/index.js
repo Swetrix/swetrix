@@ -8,7 +8,7 @@ export const errorsActions = {
       payload: { error },
     }
   },
-  
+
   signupFailed(error) {
     return {
       type: types.SIGN_UP_FAILED,

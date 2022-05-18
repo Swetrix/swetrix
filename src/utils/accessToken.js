@@ -1,5 +1,5 @@
-import { getItem, setItem, removeItem } from './localstorage'
 import { TOKEN } from 'redux/constants'
+import { getItem, setItem, removeItem } from './localstorage'
 
 export const getAccessToken = () => {
   const accessToken = getItem(TOKEN)

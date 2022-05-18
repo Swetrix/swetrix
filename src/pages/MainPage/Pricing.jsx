@@ -1,3 +1,4 @@
+/* eslint-disable no-confusing-arrow */
 import React, { memo, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -9,7 +10,7 @@ import { Trans } from 'react-i18next'
 import cx from 'clsx'
 
 import Modal from 'ui/Modal'
-import Spin from '../../ui/icons/Spin'
+import Spin from 'ui/icons/Spin'
 import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
@@ -194,10 +195,13 @@ const Pricing = ({ t, language }) => {
               const downgrade = planCodeID < userPlancodeID
 
               return (
-                <div key={tier.name} className={cx('relative border rounded-lg shadow-sm divide-y divide-gray-200 dark:divide-gray-500', {
-                  'border-indigo-400': user.planCode === tier.planCode,
-                  'border-gray-200 dark:border-gray-500': user.planCode !== tier.planCode,
-                })}>
+                <div
+                  key={tier.name}
+                  className={cx('relative border rounded-lg shadow-sm divide-y divide-gray-200 dark:divide-gray-500', {
+                    'border-indigo-400': user.planCode === tier.planCode,
+                    'border-gray-200 dark:border-gray-500': user.planCode !== tier.planCode,
+                  })}
+                >
                   {user.planCode === tier.planCode && (
                     <div className='absolute inset-x-0 top-0 transform translate-y-px'>
                       <div className='flex justify-center transform -translate-y-1/2'>
@@ -222,7 +226,8 @@ const Pricing = ({ t, language }) => {
                       ) : (
                         <>
                           <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
-                            ${tier.priceMonthly}
+                            $
+                            {tier.priceMonthly}
                           </span>
                           &nbsp;
                           <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
