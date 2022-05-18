@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import React, { memo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -34,7 +35,7 @@ const UserSettingsContainer = () => {
         ),
         () => history.push(routes.main),
         t,
-      )
+      ),
     )
   }
 
@@ -59,7 +60,8 @@ const UserSettingsContainer = () => {
 
   const onSubmit = (data) => {
     delete data.repeat
-    for (let key in data) {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key in data) {
       if (data[key] === '') {
         delete data[key]
       }
@@ -69,10 +71,10 @@ const UserSettingsContainer = () => {
       authActions.updateUserProfileAsync(
         data,
         () => dispatch(
-          alertsActions.accountUpdated(t('profileSettings.updated'))
-        )
-      )
-    );
+          alertsActions.accountUpdated(t('profileSettings.updated')),
+        ),
+      ),
+    )
   }
 
   const onEmailConfirm = async (errorCallback) => {

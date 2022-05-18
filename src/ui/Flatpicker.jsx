@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unused-class-component-methods, class-methods-use-this */
 import React, { memo } from 'react'
 import Flatpickr from 'react-flatpickr'
 import _size from 'lodash/size'
@@ -20,17 +21,21 @@ class FlatPicker extends React.Component {
   }
 
   setCustomDate(dates) {
+    const { onChange } = this.props
+
     if (_size(dates) === 2) {
-      this.props.onChange(dates)
+      onChange(dates)
     }
   }
 
   openCalendar = () => {
-    this.calendar && this.calendar.current.flatpickr.open()
+    if (this.calendar) {
+      this.calendar.current.flatpickr.open()
+    }
   }
 
   removeMonths(date, months) {
-    let d = date.getDate()
+    const d = date.getDate()
     date.setMonth(date.getMonth() - months)
     if (date.getDate() !== d) {
       date.setDate(0)
@@ -39,11 +44,13 @@ class FlatPicker extends React.Component {
   }
 
   render() {
+    const { value } = this.props
+
     return (
       <div className='h-0 flatpicker-custom'>
         <Flatpickr
           id='calendar'
-          value={this.props.value}
+          value={value}
           options={{
             mode: 'range',
             maxDate: 'today',
@@ -66,7 +73,7 @@ class FlatPicker extends React.Component {
 
 FlatPicker.propTypes = {
   onChange: PropTypes.func,
-  value: PropTypes.array,
+  value: PropTypes.arrayOf(PropTypes.instanceOf(Date)),
 }
 
 FlatPicker.defaultProps = {

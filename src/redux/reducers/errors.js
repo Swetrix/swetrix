@@ -1,9 +1,10 @@
 import { types } from 'redux/actions/errors/types'
 
 const initialState = {
-  error: null
+  error: null,
 }
 
+// eslint-disable-next-line default-param-last
 const errorsReducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case types.GENERIC_ERROR:

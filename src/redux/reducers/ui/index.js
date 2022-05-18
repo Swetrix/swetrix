@@ -4,4 +4,6 @@ import cache from './cache'
 import theme from './theme'
 import misc from './misc'
 
-export default combineReducers({ projects, cache, theme, misc })
+export default combineReducers({
+  projects, cache, theme, misc,
+})

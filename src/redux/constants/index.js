@@ -63,17 +63,17 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
 }]
 
 export const timeBucketToDays = [
-  { lt: 7, tb: ['hour','day'] }, // 7 days
-  { lt: 28, tb: ['day','week'] }, // 4 weeks
-  { lt: 366, tb: ['week','month']}, // 12 months
+  { lt: 7, tb: ['hour', 'day'] }, // 7 days
+  { lt: 28, tb: ['day', 'week'] }, // 4 weeks
+  { lt: 366, tb: ['week', 'month'] }, // 12 months
   { lt: 732, tb: ['month'] }, // 24 months
 ]
 
 export const tbsFormatMapper = {
-  'hour': '%d %B %H:%M',
-  'day': '%d %B',
-  'week': '%d %B',
-  'month': '%d %B %Y',
+  hour: '%d %B %H:%M',
+  day: '%d %B',
+  week: '%d %B',
+  month: '%d %B %Y',
 }
 
 export const reportFrequencies = ['weekly', 'monthly', 'never']
@@ -146,5 +146,5 @@ export const languageFlag = {
 export const paddleLanguageMapping = {
   zh: 'zh-Hans',
   uk: 'ru',
-  el: 'en', 
+  el: 'en',
 }

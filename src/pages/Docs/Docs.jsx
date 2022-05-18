@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/anchor-has-content */
+/* eslint-disable jsx-a11y/anchor-has-content, react/jsx-one-expression-per-line */
 import React, { memo, Fragment, useEffect } from 'react'
 import _map from 'lodash/map'
 import Prism from 'prismjs'
@@ -22,7 +22,7 @@ const contents = (t) => [{
   }, {
     name: t('docs.titles.int'),
     id: 'docs-int',
-  }]
+  }],
 }, {
   name: t('docs.titles.how'),
   id: 'docs-ht',
@@ -32,7 +32,7 @@ const contents = (t) => [{
   }, {
     name: t('docs.titles.ce'),
     id: 'docs-ce',
-  }]
+  }],
 }, {
   name: t('docs.titles.api'),
   id: 'docs-api',
@@ -45,7 +45,7 @@ const contents = (t) => [{
   }, {
     name: 'trackViews',
     id: 'docs-tv',
-  }]
+  }],
 }]
 
 const NEXTJS_REPO_URL = 'https://github.com/Swetrix/swetrix-nextjs'

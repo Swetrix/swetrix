@@ -1,6 +1,10 @@
-import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
+import React, {
+  memo, useState, useEffect, useMemo, Fragment,
+} from 'react'
 import { ArrowSmUpIcon, ArrowSmDownIcon } from '@heroicons/react/solid'
-import { FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon } from '@heroicons/react/outline'
+import {
+  FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon,
+} from '@heroicons/react/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import _keys from 'lodash/keys'
@@ -13,10 +17,10 @@ import _floor from 'lodash/floor'
 import _size from 'lodash/size'
 import _slice from 'lodash/slice'
 import _sum from 'lodash/sum'
-import InteractiveMap from './InteractiveMap'
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
+import InteractiveMap from './InteractiveMap'
 import { iconClassName } from './ViewProject'
 
 const ENTRIES_PER_PANEL = 5
@@ -25,10 +29,12 @@ const ENTRIES_PER_PANEL = 5
 const PanelContainer = ({
   name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment,
 }) => (
-  <div className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
-    'pb-12': !noSwitch,
-    'pb-5': noSwitch,
-  })}>
+  <div
+    className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
+      'pb-12': !noSwitch,
+      'pb-5': noSwitch,
+    })}
+  >
     <div className='flex items-center justify-between mb-2'>
       <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
         {icon && (
@@ -57,7 +63,7 @@ const PanelContainer = ({
           />
           <ArrowsExpandIcon
             className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
-              'hidden': activeFragment === 0,
+              hidden: activeFragment === 0,
             })}
             onClick={openModal}
           />
@@ -96,7 +102,7 @@ const Overview = ({
   let bounceRate = 0
 
   if (pageviews > 0) {
-    bounceRate = _round(uniques * 100 / pageviews, 1)
+    bounceRate = _round((uniques * 100) / pageviews, 1)
   }
 
   return (
@@ -115,7 +121,10 @@ const Overview = ({
         <>
           <p className='text-lg font-semibold dark:text-gray-50'>
             {t('project.statsFor')}
-            <span className='lowercase'> {activePeriod.label}</span>
+            <span className='lowercase'>
+              &nbsp;
+              {activePeriod.label}
+            </span>
           </p>
 
           <div className='flex justify-between'>
@@ -163,10 +172,12 @@ const Overview = ({
           <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
             {overall.thisWeek}
           </p>
-          <p className={cx('flex text-sm -ml-1 items-baseline', {
-            'text-green-600': pageviewsDidGrowUp,
-            'text-red-600': !pageviewsDidGrowUp,
-          })}>
+          <p
+            className={cx('flex text-sm -ml-1 items-baseline', {
+              'text-green-600': pageviewsDidGrowUp,
+              'text-red-600': !pageviewsDidGrowUp,
+            })}
+          >
             {pageviewsDidGrowUp ? (
               <>
                 <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
@@ -182,7 +193,8 @@ const Overview = ({
                 </span>
               </>
             )}
-            {overall.percChange}%
+            {overall.percChange}
+            %
           </p>
         </dd>
       </div>
@@ -195,10 +207,12 @@ const Overview = ({
           <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
             {overall.thisWeekUnique}
           </p>
-          <p className={cx('flex text-sm -ml-1 items-baseline', {
-            'text-green-600': uniqueDidGrowUp,
-            'text-red-600': !uniqueDidGrowUp,
-          })}>
+          <p
+            className={cx('flex text-sm -ml-1 items-baseline', {
+              'text-green-600': uniqueDidGrowUp,
+              'text-red-600': !uniqueDidGrowUp,
+            })}
+          >
             {uniqueDidGrowUp ? (
               <>
                 <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
@@ -214,7 +228,8 @@ const Overview = ({
                 </span>
               </>
             )}
-            {overall.percChangeUnique}%
+            {overall.percChangeUnique}
+            %
           </p>
         </dd>
       </div>
@@ -234,16 +249,27 @@ const CustomEvents = ({
         <thead>
           <tr>
             <th className='w-4/6 text-left text-gray-900 dark:text-gray-50'>{t('project.event')}</th>
-            <th className='w-1/6 text-right text-gray-900 dark:text-gray-50'>{t('project.quantity')}&nbsp;&nbsp;</th>
+            <th className='w-1/6 text-right text-gray-900 dark:text-gray-50'>
+              {t('project.quantity')}
+              &nbsp;&nbsp;
+            </th>
             <th className='w-1/6 text-right text-gray-900 dark:text-gray-50'>{t('project.conversion')}</th>
           </tr>
         </thead>
         <tbody>
           {_map(keys, (ev) => (
             <tr key={ev}>
-              <td className='text-left'>{ev}</td>
-              <td className='text-right'>{customs[ev]}&nbsp;&nbsp;</td>
-              <td className='text-right'>{_round((customs[ev] / uniques) * 100, 2)}%</td>
+              <td className='text-left'>
+                {ev}
+              </td>
+              <td className='text-right'>
+                {customs[ev]}
+                &nbsp;&nbsp;
+              </td>
+              <td className='text-right'>
+                {_round((customs[ev] / uniques) * 100, 2)}
+                %
+              </td>
             </tr>
           ))}
         </tbody>
@@ -330,7 +356,7 @@ const Panel = ({
           {t('project.noParamData')}
         </p>
       ) : _map(keysToDisplay, key => {
-        const perc = _round(data[key] / total * 100, 2)
+        const perc = _round((data[key] / total) * 100, 2)
         const rowData = _isFunction(rowMapper) ? rowMapper(key) : key
 
         return (
@@ -365,7 +391,12 @@ const Panel = ({
               <span className='ml-3 dark:text-gray-50'>
                 {data[key]}
                 &nbsp;
-                <span className='text-gray-500 dark:text-gray-200 font-light'>({perc}%)</span>
+                <span className='text-gray-500 dark:text-gray-200 font-light'>
+                  (
+                  {perc}
+                  %
+                  )
+                </span>
               </span>
             </div>
             <Progress now={perc} />
@@ -382,6 +413,7 @@ const Panel = ({
               })}
               role='button'
               onClick={onPrevious}
+              tabIndex={0}
             >
               &lt;
               &nbsp;
@@ -394,6 +426,7 @@ const Panel = ({
               })}
               role='button'
               onClick={onNext}
+              tabIndex={0}
             >
               {t('project.next')}
               &nbsp;

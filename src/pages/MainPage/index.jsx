@@ -8,9 +8,9 @@ import _map from 'lodash/map'
 
 import routes from 'routes'
 // import { nFormatter } from 'utils/generic'
-import { withAuthentication, auth } from '../../hoc/protected'
 import { CONTACT_EMAIL } from 'redux/constants'
 import Title from 'components/Title'
+import { withAuthentication, auth } from '../../hoc/protected'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
 

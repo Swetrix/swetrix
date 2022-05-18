@@ -30,15 +30,13 @@ const getInitialState = () => {
   }
 }
 
+// eslint-disable-next-line default-param-last
 const cacheReducer = (state = getInitialState(), { type, payload }) => {
   switch (type) {
     case types.SET_PROJECT_CACHE: {
-      const { pid, period, timeBucket, data, key } = payload
-
-      // temporarily do not store custom date ranges in cache
-      // if (period === 'custom') {
-      //   return state
-      // }
+      const {
+        pid, period, timeBucket, data, key,
+      } = payload
 
       return {
         ...state,
@@ -62,11 +60,11 @@ const cacheReducer = (state = getInitialState(), { type, payload }) => {
             ...state,
             analytics: {},
           }
-        } else {
-          return {
-            ...state,
-            analytics: _filter(state.analytics, (project) => project !== pid),
-          }
+        }
+
+        return {
+          ...state,
+          analytics: _filter(state.analytics, (project) => project !== pid),
         }
       }
 
@@ -80,7 +78,9 @@ const cacheReducer = (state = getInitialState(), { type, payload }) => {
     }
 
     case types.SET_PROJECT_VIEW_PREFS: {
-      const { pid, period, timeBucket, rangeDate } = payload
+      const {
+        pid, period, timeBucket, rangeDate,
+      } = payload
 
       return {
         ...state,

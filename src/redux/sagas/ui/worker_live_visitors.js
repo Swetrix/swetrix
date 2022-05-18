@@ -1,4 +1,6 @@
-import { put, call, delay, select } from 'redux-saga/effects'
+import {
+  put, call, delay, select,
+} from 'redux-saga/effects'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'

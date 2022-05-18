@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -31,41 +33,6 @@ const Signup = ({ signup }) => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const onSubmit = data => {
-    if (!isLoading) {
-      setIsLoading(true)
-      signup(data, t, (result) => {
-        if (!result) {
-          setIsLoading(false)
-        }
-      })
-    }
-  }
-
-  const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
-
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
-    }))
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
-  }
-
   const validate = () => {
     const allErrors = {}
 
@@ -89,10 +56,45 @@ const Signup = ({ signup }) => {
       allErrors.tos = t('auth.common.tosError')
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const onSubmit = data => {
+    if (!isLoading) {
+      setIsLoading(true)
+      signup(data, t, (result) => {
+        if (!result) {
+          setIsLoading(false)
+        }
+      })
+    }
+  }
+
+  const handleInput = event => {
+    const { target } = event
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
   }
 
   return (
@@ -142,7 +144,7 @@ const Signup = ({ signup }) => {
             name='tos'
             id='tos'
             className='mt-4'
-            label={
+            label={(
               <span>
                 <Trans
                   t={t}
@@ -153,7 +155,7 @@ const Signup = ({ signup }) => {
                   }}
                 />
               </span>
-            }
+            )}
             hint={beenSubmitted ? errors.tos : ''}
           />
           <div className='flex mt-4'>

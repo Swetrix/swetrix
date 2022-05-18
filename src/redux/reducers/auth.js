@@ -7,6 +7,7 @@ const initialState = {
   user: {},
 }
 
+// eslint-disable-next-line default-param-last
 const authReducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case types.SIGNUP_UP_SUCCESSFUL:

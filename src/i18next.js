@@ -15,10 +15,10 @@ lngDetector.addDetector({
 
       if (_includes(whitelist, lsLang)) {
         return lsLang
-      } else {
-        setItem('language', defaultLanguage)
-        setItem('i18nextLng', defaultLanguage)
       }
+
+      setItem('language', defaultLanguage)
+      setItem('i18nextLng', defaultLanguage)
     }
 
     const language = navigator.language || navigator.userLanguage
@@ -28,7 +28,7 @@ lngDetector.addDetector({
 
       if (_includes(whitelist, subLanguage)) {
         return subLanguage
-      } 
+      }
     }
 
     return defaultLanguage

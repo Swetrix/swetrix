@@ -32,9 +32,9 @@ const Title = ({ title, children }) => {
         {/* <meta property='og:title' content={displayTitle} />
         <meta name='twitter:title' content={displayTitle} /> */}
         {_map(whitelist, (lang) => (
-          <link key={lang} rel='alternate' hreflang={lang} href={`${pageURL}?lng=${lang}`} />
+          <link key={lang} rel='alternate' hrefLang={lang} href={`${pageURL}?lng=${lang}`} />
         ))}
-        <link rel='alternate' hreflang='x-default' href={pageURL} />
+        <link rel='alternate' hrefLang='x-default' href={pageURL} />
       </Helmet>
       {children}
     </>

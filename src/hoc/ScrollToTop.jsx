@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 
 /**
@@ -24,7 +24,7 @@ const ScrollToTop = ({ children }) => {
     return unlisten
   }, [history])
 
-  return <>{children}</>
+  return children
 }
 
 export default ScrollToTop

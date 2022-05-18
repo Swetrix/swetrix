@@ -7,21 +7,21 @@ export const alertsActions = {
       payload: { message, type },
     }
   },
-  
+
   accountUpdated(message, type = 'success') {
     return {
       type: types.ACCOUNT_UPDATED,
       payload: { message, type },
     }
   },
-  
+
   newPassword(message, type = 'success') {
     return {
       type: types.NEW_PASSWORD,
       payload: { message, type },
     }
   },
-  
+
   newProject(message, type = 'success') {
     return {
       type: types.CREATE_NEW_PROJECT_SUCCESS,

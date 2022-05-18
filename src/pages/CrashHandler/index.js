@@ -30,7 +30,9 @@ class CrashHandler extends React.Component {
           <b>
             The app crashed, sorry about that.. :(
             <br />
-            Please, tell us about it at {CONTACT_EMAIL}
+            Please, tell us about it at
+            &nbsp;
+            {CONTACT_EMAIL}
             <br />
             To continue using the website, please reload the page.
           </b>

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React from 'react'
 import { HashLink } from 'react-router-hash-link'
 
@@ -12,61 +13,130 @@ const Features = () => {
         <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
           <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight'>Privacy Policy</h1>
           <p className='mt-4 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            This Swetrix Privacy Policy (“Policy”, "Privacy Policy") outlines the personal information that we gather, how we use that personal information, and the options you have to access, correct, or delete such personal information.<br />
+            This Swetrix Privacy Policy (“Policy”, "Privacy Policy") outlines the personal information that we gather, how we use that personal information, and the options you have to access, correct, or delete such personal information.
+            <br />
             By visiting swetrix.com and using the Services provided here, you agree to the terms outlined in this Privacy Policy. Unless otherwise defined in this document, the terms used in this Privacy Policy have the same meanings as in our Terms and Conditions.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>1. Policy application</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            This Privacy Policy applies to the following data subjects:<br />
+            This Privacy Policy applies to the following data subjects:
+            <br />
 
-            - <b>Customers:</b> Those who register for an account on Swetrix and to whom Swetrix provides its Services. For purposes of this Policy, “Services” refers to all of the solutions offered, marketed, or sold by us.<br />
-            - <b>Website Visitors:</b> Those who visit our Websites, which may optionally provide an email address or other information to receive communications from us, or give us feedback. For the purposes of this Policy, “Websites” refer to swetrix.com as well as any other websites we operate on our own behalf and that link to this Policy. For clarity, “Websites” does not include any sites owned or operated by our Customers.<br />
-            - <b>End Users:</b> Those who access or use our Customers websites, networks, APIs, and applications.<br />
+            -
+            &nbsp;
+            <b>Customers:</b>
+            &nbsp;
+            Those who register for an account on Swetrix and to whom Swetrix provides its Services. For purposes of this Policy, “Services” refers to all of the solutions offered, marketed, or sold by us.
+            <br />
+            -
+            &nbsp;
+            <b>Website Visitors:</b>
+            &nbsp;
+            Those who visit our Websites, which may optionally provide an email address or other information to receive communications from us, or give us feedback. For the purposes of this Policy, “Websites” refer to swetrix.com as well as any other websites we operate on our own behalf and that link to this Policy. For clarity, “Websites” does not include any sites owned or operated by our Customers.
+            <br />
+            -
+            &nbsp;
+            <b>End Users:</b>
+            &nbsp;
+            Those who access or use our Customers websites, networks, APIs, and applications.
+            <br />
 
-            This Privacy Policy does not apply to our Customers websites, networks, APIs, and applications, which may have their own terms and privacy policies. Our Customers are solely responsible for establishing policies for and ensuring compliance with all applicable laws and regulations.<br />
+            This Privacy Policy does not apply to our Customers websites, networks, APIs, and applications, which may have their own terms and privacy policies. Our Customers are solely responsible for establishing policies for and ensuring compliance with all applicable laws and regulations.
+            <br />
 
             Swetrix’s Websites and Services are not intended for, nor designed to attract, individuals under the age of eighteen. Swetrix does not knowingly collect personal information from any person under the age of eighteen. You represent that you are at least 18 or that you are the parent or guardian of such a minor and consent to such minor dependent’s use of the Websites and Services.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>2. Information we collect</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            We may collect the following types of data in order to provide and improve our Services:<br />
-            - <b>Personal Data:</b> While using our Services, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you. Personally identifiable information may include, but is not limited to your name, email address and billing addresses necessary to process payment and delivery of Services.<br />
-            - <b>Payment Information:</b> We do not require our Customers to have payment information on file with us unless they have a paid subscription to our Services.<br />
-            When you sign up for one of our paid Subscriptions, you must provide payment and billing information. The information you will need to submit depends on which payment method you choose. For clarity, we do not store full credit card numbers or personal account numbers.<br />
-            - <b>Usage Data:</b> When you visit our Websites, we gather certain information and store it in log files to be able to provide you with our Services. This information may include but is not limited to Internet Protocol (IP) addresses, device or system information, URLs of referrer pages, browser information and language preferences.<br />
-            For clarity, the purpose of these log files is to enable us to operate and provide you with our Services, and to monitor for overall trends on our Websites and for security. These log files are not shared with third parties.<br />
-            - <b>Cookie Data:</b> We use essential cookies on our Websites to provide our Services. Without these cookies, the services that you have asked for cannot be provided, and we only use these cookies to provide you those services.<br />
-            These cookies are essential for the functioning of our Websites. For example, we may store actions you do on our Websites to reduce requests sent to our servers.<br />
-            You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.<br />
-            At this time, our Websites do not respond to Do Not Track beacons sent by browser plugins.<br />
-            - <b>Log Data:</b> We process End Users information on behalf of our Customers. This information is processed when End Users access or use our Customers domains, websites, APIs, applications, devices, endpoints, and networks that use our Services.<br />
-            The information processed may include but is not limited to IP addresses, device or system information, and other information about the traffic on our Customers websites, devices, applications, and/or networks (collectively, “Log Data”). You can find more information on the data collected and how we process it <HashLink className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' to={`${routes.docs}#docs-tv`}>here</HashLink>.
+            We may collect the following types of data in order to provide and improve our Services:
+            <br />
+            -
+            &nbsp;
+            <b>Personal Data:</b>
+            &nbsp;
+            While using our Services, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you. Personally identifiable information may include, but is not limited to your name, email address and billing addresses necessary to process payment and delivery of Services.
+            <br />
+            -
+            &nbsp;
+            <b>Payment Information:</b>
+            &nbsp;
+            We do not require our Customers to have payment information on file with us unless they have a paid subscription to our Services.
+            <br />
+            When you sign up for one of our paid Subscriptions, you must provide payment and billing information. The information you will need to submit depends on which payment method you choose. For clarity, we do not store full credit card numbers or personal account numbers.
+            <br />
+            -
+            &nbsp;
+            <b>Usage Data:</b>
+            &nbsp;
+            When you visit our Websites, we gather certain information and store it in log files to be able to provide you with our Services. This information may include but is not limited to Internet Protocol (IP) addresses, device or system information, URLs of referrer pages, browser information and language preferences.
+            <br />
+            For clarity, the purpose of these log files is to enable us to operate and provide you with our Services, and to monitor for overall trends on our Websites and for security. These log files are not shared with third parties.
+            <br />
+            -
+            &nbsp;
+            <b>Cookie Data:</b>
+            &nbsp;
+            We use essential cookies on our Websites to provide our Services. Without these cookies, the services that you have asked for cannot be provided, and we only use these cookies to provide you those services.
+            <br />
+            These cookies are essential for the functioning of our Websites. For example, we may store actions you do on our Websites to reduce requests sent to our servers.
+            <br />
+            You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
+            <br />
+            At this time, our Websites do not respond to Do Not Track beacons sent by browser plugins.
+            <br />
+            -
+            &nbsp;
+            <b>Log Data:</b>
+            &nbsp;
+            We process End Users information on behalf of our Customers. This information is processed when End Users access or use our Customers domains, websites, APIs, applications, devices, endpoints, and networks that use our Services.
+            <br />
+            The information processed may include but is not limited to IP addresses, device or system information, and other information about the traffic on our Customers websites, devices, applications, and/or networks (collectively, “Log Data”). You can find more information on the data collected and how we process it
+            &nbsp;
+            <HashLink className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' to={`${routes.docs}#docs-tv`}>here</HashLink>
+            &nbsp;
+            .
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>3. How we use information we collect</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            We only processes personal information in a way that is relevant for the purpose for which it was collected or authorized:<br />
-             - To enable you to access and use the Websites and Services.<br />
-             - To operate and improve the Websites and Services.<br />
-             - To send transactional messages, provide customer support, updates, security alerts, and account related messages.<br />
-             - To process and complete transactions, and send you related information, including purchase confirmations and invoices.<br />
-             - To monitor and analyze overall trends, usage, and activities in connection with the Websites and Services.<br />
-             - To create, publish or send marketing emails, news or advertising material. For clarity, we do not send marketing emails without your explicit consent.<br />
-             - To comply with legal obligations to investigate and prevent fraudulent transactions, unauthorized access, and other illegal activities.<br />
-             - To personalize the Websites and Services.<br />
-             - To process your data for other purposes for which we obtain your consent.<br />
-            We use and process the Log Data from End Users to fulfill our obligations under our Customer agreements and as may be required by law. We act as a data processor and service provider pursuant to data processing instructions by our Customers.<br />
+            We only processes personal information in a way that is relevant for the purpose for which it was collected or authorized:
+            <br />
+            - To enable you to access and use the Websites and Services.
+            <br />
+            - To operate and improve the Websites and Services.
+            <br />
+            - To send transactional messages, provide customer support, updates, security alerts, and account related messages.
+            <br />
+            - To process and complete transactions, and send you related information, including purchase confirmations and invoices.
+            <br />
+            - To monitor and analyze overall trends, usage, and activities in connection with the Websites and Services.
+            <br />
+            - To create, publish or send marketing emails, news or advertising material. For clarity, we do not send marketing emails without your explicit consent.
+            <br />
+            - To comply with legal obligations to investigate and prevent fraudulent transactions, unauthorized access, and other illegal activities.
+            <br />
+            - To personalize the Websites and Services.
+            <br />
+            - To process your data for other purposes for which we obtain your consent.
+            <br />
+            We use and process the Log Data from End Users to fulfill our obligations under our Customer agreements and as may be required by law. We act as a data processor and service provider pursuant to data processing instructions by our Customers.
+            <br />
             We may use the Usage and Log Data to assemble non-personally identifiable web traffic reports and statistics. These reports and statistics may be shared with third parties.
           </p>
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>4. UK and EU residents</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            Please note that the “personal information” referenced in this Privacy Policy means “personal data” as that term is defined under the European Union (“EU”) General Data Protection Regulations (“GDPR”) and its United Kingdom (“UK”) GDPR counterpart. Swetrix is the data controller for the Personal Data of Customers and Website Visitors, but not for the Personal Data of End Users. We process the Personal Data of End Users on behalf of our Customers.<br />
-            If you are an individual from the European Economic Area (the “EEA”), the UK or Switzerland, please note that our legal basis for collecting and using your personal information will depend on the personal information collected and the specific context in which we collect it.<br />
-            However, we will normally collect personal data from you only (i) where the processing is in our legitimate interests and not overridden by your rights; (ii) where we need the personal data to perform a contract with you or (iii) where we have your consent to do so. In some cases, we may also have a legal obligation to collect personal data from you.<br />
-            Please note that in most cases, if you do not provide the requested information, we will not be able to provide the requested service to you. In some cases, we may also have a legal obligation to collect personal information from you, or may need the personal information to protect your vital interests or those of another person.<br />
-            Where we rely on your consent to process your personal data, you have the right to withdraw or decline consent at any time. Where we rely on our legitimate interests to process your personal data, you have the right to object.<br />
+            Please note that the “personal information” referenced in this Privacy Policy means “personal data” as that term is defined under the European Union (“EU”) General Data Protection Regulations (“GDPR”) and its United Kingdom (“UK”) GDPR counterpart. Swetrix is the data controller for the Personal Data of Customers and Website Visitors, but not for the Personal Data of End Users. We process the Personal Data of End Users on behalf of our Customers.
+            <br />
+            If you are an individual from the European Economic Area (the “EEA”), the UK or Switzerland, please note that our legal basis for collecting and using your personal information will depend on the personal information collected and the specific context in which we collect it.
+            <br />
+            However, we will normally collect personal data from you only (i) where the processing is in our legitimate interests and not overridden by your rights; (ii) where we need the personal data to perform a contract with you or (iii) where we have your consent to do so. In some cases, we may also have a legal obligation to collect personal data from you.
+            <br />
+            Please note that in most cases, if you do not provide the requested information, we will not be able to provide the requested service to you. In some cases, we may also have a legal obligation to collect personal information from you, or may need the personal information to protect your vital interests or those of another person.
+            <br />
+            Where we rely on your consent to process your personal data, you have the right to withdraw or decline consent at any time. Where we rely on our legitimate interests to process your personal data, you have the right to object.
+            <br />
             If you have any questions about or need further information concerning the legal basis on which we collect and use your personal information, please contact us at&nbsp;
             <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
               {CONTACT_EMAIL}
@@ -81,46 +151,107 @@ const Features = () => {
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>6. Retention of data</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            We may retain your information for as long as your account is active or as needed to provide you services, comply with our legal obligations, resolve disputes and enforce our agreements. In certain circumstances we may be required by law to retain your personal information, or may need to retain your personal information in order to continue providing a service.<br />
+            We may retain your information for as long as your account is active or as needed to provide you services, comply with our legal obligations, resolve disputes and enforce our agreements. In certain circumstances we may be required by law to retain your personal information, or may need to retain your personal information in order to continue providing a service.
+            <br />
             Even if you delete your account, keep in mind that the deletion by our third party providers may not be immediate and that the deleted information may persist in backup copies for a reasonable period of time.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>7. Transfer of data</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            Your information, including Personal Data, may be transferred to — and maintained on — computers located outside of your state, province, country or other governmental jurisdiction where the data protection laws may differ from those in your jurisdiction. If you are located outside Germany and choose to provide information to us, please note that we transfer the data, including Personal Data, to Germany and process it there.<br />
+            Your information, including Personal Data, may be transferred to — and maintained on — computers located outside of your state, province, country or other governmental jurisdiction where the data protection laws may differ from those in your jurisdiction. If you are located outside Germany and choose to provide information to us, please note that we transfer the data, including Personal Data, to Germany and process it there.
+            <br />
             Your consent to this Privacy Policy followed by your submission of such information represents your agreement to that transfer. We will take all steps reasonably necessary to ensure that your data is treated securely and in accordance with this Privacy Policy and no transfer of your Personal Data will take place to an organization or a country unless there are adequate controls in place including the security of your data and other personal information.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>8. Information sharing</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            We do not rent or sell personal information.<br />
-            We may disclose personal information to third parties who help us run the Services and our business (“Service Providers”). These Service Providers may only process personal information pursuant to our instructions and in compliance both with this Privacy Policy and other applicable security measures and regulations.<br />
-            The following third parties may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.<br />
-             - <b>Paddle:</b> Payment processing;<br />
-             - <b>Cloudflare</b>:	Security, hosting, cloud infrastructure;<br />
-             - <b>Postmark:</b>	Transactional and marketing emails;<br />
-             - <b>Fastmail:</b>	Business emails.<br />
-            In addition to sharing with Service Providers as described above, we also may share your information with others in the following circumstances:<br />
-             - In the event of a merger, sale, change in control, or reorganization of all or part of our business.<br />
-             - When we are required to disclose personal information to respond to subpoenas, court orders, or legal process, or to establish or exercise our legal rights or defend against legal claims.<br />
-             - Where we have a good-faith belief sharing is necessary to investigate, prevent or take action regarding illegal activities, suspected fraud, situations involving potential threats to the physical safety of any person, or violations of our Terms and Conditions, or as otherwise required to comply with our legal obligations.<br />
-             - Other purposes for which we obtain your consent.
+            We do not rent or sell personal information.
+            <br />
+            We may disclose personal information to third parties who help us run the Services and our business (“Service Providers”). These Service Providers may only process personal information pursuant to our instructions and in compliance both with this Privacy Policy and other applicable security measures and regulations.
+            <br />
+            The following third parties may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.
+            <br />
+            -
+            &nbsp;
+            <b>Paddle:</b>
+            &nbsp;
+            Payment processing;
+            <br />
+            -
+            &nbsp;
+            <b>Cloudflare:</b>
+            &nbsp;
+            Security, hosting, cloud infrastructure;
+            <br />
+            -
+            &nbsp;
+            <b>Postmark:</b>
+            &nbsp;
+            Transactional and marketing emails;
+            <br />
+            -
+            &nbsp;
+            <b>Fastmail:</b>
+            &nbsp;
+            Business emails.
+            <br />
+            In addition to sharing with Service Providers as described above, we also may share your information with others in the following circumstances:
+            <br />
+            - In the event of a merger, sale, change in control, or reorganization of all or part of our business.
+            <br />
+            - When we are required to disclose personal information to respond to subpoenas, court orders, or legal process, or to establish or exercise our legal rights or defend against legal claims.
+            <br />
+            - Where we have a good-faith belief sharing is necessary to investigate, prevent or take action regarding illegal activities, suspected fraud, situations involving potential threats to the physical safety of any person, or violations of our Terms and Conditions, or as otherwise required to comply with our legal obligations.
+            <br />
+            - Other purposes for which we obtain your consent.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>9. Data subject rights</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            We would like to make sure you are fully aware of all of your data protection rights. In certain circumstances, you have the following data protection rights:<br />
-            - <b>The right to access:</b> You have the right to request our Company for copies of your personal data.<br />
-            - <b>The right to rectification:</b> You have the right to request that our Company corrects any information you believe is inaccurate. You also have the right to request our Company to complete the information you believe is incomplete.<br />
-            - <b>The right to erasure:</b> You have the right to request that our Company erases your personal data, under certain conditions.<br />
-            - <b>The right to restrict processing:</b> You have the right to request that our Company restricts the processing of your personal data, under certain conditions.<br />
-            - <b>The right to object to processing:</b> You have the right to object to our Company's processing of your personal data, under certain conditions.<br />
-            - <b>The right to data portability:</b> You have the right to request that our Company transfers the data that we have collected to another organization, or directly to you, under certain conditions.<br />
+            We would like to make sure you are fully aware of all of your data protection rights. In certain circumstances, you have the following data protection rights:
+            <br />
+            -
+            &nbsp;
+            <b>The right to access:</b>
+            &nbsp;
+            You have the right to request our Company for copies of your personal data.
+            <br />
+            -
+            &nbsp;
+            <b>The right to rectification:</b>
+            &nbsp;
+            You have the right to request that our Company corrects any information you believe is inaccurate. You also have the right to request our Company to complete the information you believe is incomplete.
+            <br />
+            -
+            &nbsp;
+            <b>The right to erasure:</b>
+            &nbsp;
+            You have the right to request that our Company erases your personal data, under certain conditions.
+            <br />
+            -
+            &nbsp;
+            <b>The right to restrict processing:</b>
+            &nbsp;
+            You have the right to request that our Company restricts the processing of your personal data, under certain conditions.
+            <br />
+            -
+            &nbsp;
+            <b>The right to object to processing:</b>
+            &nbsp;
+            You have the right to object to our Company's processing of your personal data, under certain conditions.
+            <br />
+            -
+            &nbsp;
+            <b>The right to data portability:</b>
+            &nbsp;
+            You have the right to request that our Company transfers the data that we have collected to another organization, or directly to you, under certain conditions.
+            <br />
             If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us via email at&nbsp;
             <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
               {CONTACT_EMAIL}
             </a>
-            . Please note that we may ask you to verify your identity before responding to such requests.<br />
+            . Please note that we may ask you to verify your identity before responding to such requests.
+            <br />
             We have no direct relationship with the End Users. Our Customers are solely responsible for ensuring compliance with all applicable laws and regulations with respect to their website users.
           </p>
 

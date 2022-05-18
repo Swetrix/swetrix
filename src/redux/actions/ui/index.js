@@ -92,21 +92,21 @@ const setTheme = (theme) => ({
   type: types.SET_THEME,
   payload: {
     theme,
-  }
+  },
 })
 
 const setGeneralStats = (stats) => ({
   type: types.SET_GENERAL_STATS,
   payload: {
     stats,
-  }
+  },
 })
 
 const setPaddleLastEvent = (event) => ({
   type: types.SET_PADDLE_LAST_EVENT,
   payload: {
     event,
-  }
+  },
 })
 
 const UIActions = {
