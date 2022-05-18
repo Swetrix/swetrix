@@ -42,28 +42,32 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
       <svg id='map' viewBox='0 0 1050 650' className='w-full h-full' onMouseMove={onMouseMove}>
         <g>
           {_map(countriesList, (item, index) => {
-            const perc = ((data[index] / total) * 100) || 0
+            const visitors = data[index] || 0
+            const perc = ((visitors / total) * 100) || 0
 
             return (
               <path
                 key={index}
                 id={index}
-                className={cx('cursor-pointer', {
+                className={cx({
                   'hover:opacity-90': perc > 0,
                   'fill-[#cfd1d4] dark:fill-[#374151]': perc === 0,
                   'fill-[#92b2e7] dark:fill-[#43448c]': perc > 0 && perc < 3,
                   'fill-[#6f9be3] dark:fill-[#4642bf]': perc >= 3 && perc < 10,
                   'fill-[#5689db] dark:fill-[#4a42db]': perc >= 10 && perc < 20,
                   'fill-[#3b82f6] dark:fill-[#4035dc]': perc >= 20,
+                  'cursor-pointer': Boolean(visitors),
                 })}
                 d={item.d}
                 onClick={() => perc !== 0 && onClickCountry(index)}
                 onMouseEnter={() => {
-                  setHoverShow(true)
-                  setDataHover({
-                    countries: countries.getName(index, language),
-                    data: data[index] || 0,
-                  })
+                  if (visitors) {
+                    setHoverShow(true)
+                    setDataHover({
+                      countries: countries.getName(index, language),
+                      data: visitors,
+                    })
+                  }
                 }}
                 onMouseLeave={() => {
                   setHoverShow(false)
