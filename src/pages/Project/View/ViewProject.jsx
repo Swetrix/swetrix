@@ -592,12 +592,6 @@ const ViewProject = ({
               <FlatPicker ref={refCalendar} onChange={(date) => setRangeDate(date)} value={rangeDate} />
             </div>
           </div>
-          {analyticsLoading && (
-            <Loader />
-          )}
-          {isPanelsDataEmpty && (
-            <NoEvents t={t} />
-          )}
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
             <Checkbox
               className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
@@ -627,6 +621,12 @@ const ViewProject = ({
               </div>
             )}
           </div>
+          {analyticsLoading && (
+            <Loader />
+          )}
+          {isPanelsDataEmpty && (
+            <NoEvents t={t} />
+          )}
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
             <div className='h-80' id='dataChart' />
             <Filters
