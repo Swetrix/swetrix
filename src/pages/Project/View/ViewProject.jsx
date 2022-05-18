@@ -38,7 +38,8 @@ import PropTypes from 'prop-types'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, timeBucketToDays,
+  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
+  timeBucketToDays, getProjectCacheCustomKey,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -373,19 +374,28 @@ const ViewProject = ({
       setDataLoading(true)
       try {
         let data
-        const key = getProjectCacheKey(period, timeBucket)
+        let key
+        let from
+        let to
+
+        if (rangeDate) {
+          from = getFormatDate(rangeDate[0])
+          to = getFormatDate(rangeDate[1])
+          key = getProjectCacheCustomKey(from, to, timeBucket)
+        } else {
+          key = getProjectCacheKey(period, timeBucket)
+        }
 
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
           if (rangeDate) {
-            const from = getFormatDate(rangeDate[0])
-            const to = getFormatDate(rangeDate[1])
             data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           } else {
             data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
           }
-          setProjectCache(id, period, timeBucket, data || {})
+
+          setProjectCache(id, data || {}, key)
         }
 
         if (_isEmpty(data)) {
@@ -477,11 +487,7 @@ const ViewProject = ({
   }, [isLoading, showTotal, chartData, mainChart, t])
 
   useEffect(() => {
-    if (period !== 'custom') {
-      loadAnalytics()
-    } else if (timeBucket !== 'custom') {
-      loadAnalytics(true)
-    }
+    loadAnalytics()
   }, [project, period, timeBucket, periodPairs, t]) // eslint-disable-line
 
   useEffect(() => {

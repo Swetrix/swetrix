@@ -67,10 +67,10 @@ const setProjectsLoading = (isLoading) => ({
   },
 })
 
-const setProjectCache = (pid, period, timeBucket, data) => ({
+const setProjectCache = (pid, data, key) => ({
   type: types.SET_PROJECT_CACHE,
   payload: {
-    pid, period, timeBucket, data,
+    pid, data, key,
   },
 })
 

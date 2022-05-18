@@ -112,6 +112,7 @@ export const GENERAL_STATS_UPDATE_INTERVAL = 60000
 
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
+export const getProjectCacheCustomKey = (from, to, timeBucket) => `${from}-${to}-${timeBucket}`
 
 // Cookies
 export const GDPR_REQUEST = 'gdpr_request'
