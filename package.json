@@ -88,7 +88,7 @@
       "react/jsx-filename-extension": ["warn", { "extensions": [".js", ".jsx"] }],
       "react/jsx-props-no-spreading": "off",
       "react/prefer-stateless-function": "off",
-      "react/prop-types": "warn",
+      "react/prop-types": "off",
       "react/state-in-constructor": "off",
       "react/static-property-placement": "off",
       "react-hooks/rules-of-hooks": "error",
