@@ -6,6 +6,7 @@ import _size from 'lodash/size'
 import _isEmpty from 'lodash/isEmpty'
 import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
+import _keys from 'lodash/keys'
 import { MailIcon } from '@heroicons/react/outline'
 
 import { reportFrequencies, DEFAULT_TIMEZONE } from 'redux/constants'
@@ -56,7 +57,7 @@ const UserSettings = ({
       allErrors.repeat = t('auth.common.noMatchError')
     }
 
-    const valid = _isEmpty(Object.keys(allErrors))
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)

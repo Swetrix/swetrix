@@ -5,11 +5,14 @@ import { allTimezones } from 'react-timezone-select'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import _find from 'lodash/find'
+import _reduce from 'lodash/reduce'
+import _includes from 'lodash/includes'
 
 import Select from './Select'
 
-const options = Object.entries(allTimezones)
-  .reduce((selectOptions, zone) => {
+const options = _reduce(
+  Object.entries(allTimezones),
+  (selectOptions, zone) => {
     const now = spacetime.now(zone[0])
     const tz = now.timezone()
     const tzStrings = soft(zone[0])
@@ -20,7 +23,7 @@ const options = Object.entries(allTimezones)
     const min = tz.current.offset * 60
     // eslint-disable-next-line prefer-template
     const hr = `${(min / 60) ^ 0}:` + (min % 60 === 0 ? '00' : Math.abs(min % 60))
-    const label = `(GMT${hr.includes('-') ? hr : `+${hr}`}) ${zone[1]}`
+    const label = `(GMT${_includes(hr, '-') ? hr : `+${hr}`}) ${zone[1]}`
 
     selectOptions.push({
       value: tz.name,
@@ -31,7 +34,9 @@ const options = Object.entries(allTimezones)
     })
 
     return selectOptions
-  }, [])
+  },
+  [],
+)
   .sort((a, b) => a.offset - b.offset)
 
 const TimezoneSelect = ({

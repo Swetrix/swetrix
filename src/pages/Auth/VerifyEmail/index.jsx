@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/solid'
+import _split from 'lodash/split'
 
 import Title from 'components/Title'
 import { authActions } from 'redux/actions/auth'
@@ -17,7 +18,7 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     setLoading(true)
-    const path = window.location.pathname.split('/')[1]
+    const path = _split(window.location.pathname, '/')[1]
 
     dispatch(
       authActions.emailVerifyAsync(

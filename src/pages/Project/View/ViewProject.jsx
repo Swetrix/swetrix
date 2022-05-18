@@ -1,4 +1,4 @@
-/* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components */
+/* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
 import React, {
   useState, useEffect, useMemo, memo, useRef,
 } from 'react'

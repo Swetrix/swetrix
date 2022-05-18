@@ -4,6 +4,7 @@ import { store } from 'redux/store'
 import Debug from 'debug'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
+import _isArray from 'lodash/isArray'
 import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
@@ -68,7 +69,7 @@ export const signup = (data) =>
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
-      if (Array.isArray(errorsArray)) {
+      if (_isArray(errorsArray)) {
         throw errorsArray
       }
       throw new Error(errorsArray)
@@ -88,7 +89,7 @@ export const changeUserDetails = (data) =>
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
-      if (Array.isArray(errorsArray)) {
+      if (_isArray(errorsArray)) {
         throw errorsArray
       }
       throw new Error(errorsArray)
@@ -133,7 +134,7 @@ export const createNewPassword = (id, password) =>
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
-      if (Array.isArray(errorsArray)) {
+      if (_isArray(errorsArray)) {
         throw errorsArray
       }
       throw new Error(errorsArray)

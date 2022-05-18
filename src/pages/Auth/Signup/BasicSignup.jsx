@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux'
 import { authActions } from 'redux/actions/auth'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -57,7 +59,7 @@ const BasicSignup = () => {
       allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)

@@ -11,6 +11,7 @@ import _find from 'lodash/find'
 import _join from 'lodash/join'
 import _isString from 'lodash/isString'
 import _split from 'lodash/split'
+import _keys from 'lodash/keys'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
@@ -132,7 +133,7 @@ const ProjectSettings = ({
       allErrors.origins = t('project.settings.oxCharsError', { amount: MAX_ORIGINS_LENGTH })
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)

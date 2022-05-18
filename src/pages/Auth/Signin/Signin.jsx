@@ -2,6 +2,8 @@ import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -37,7 +39,7 @@ const Signin = ({ login }) => {
       allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)

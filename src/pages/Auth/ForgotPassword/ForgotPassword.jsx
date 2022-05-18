@@ -1,6 +1,8 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import { forgotPassword } from 'api'
 import Title from 'components/Title'
@@ -30,7 +32,7 @@ const ForgotPassword = ({
       allErrors.email = t('auth.common.badEmailError')
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)

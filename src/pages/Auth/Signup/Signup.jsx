@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -54,7 +56,7 @@ const Signup = ({ signup }) => {
       allErrors.tos = t('auth.common.tosError')
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)

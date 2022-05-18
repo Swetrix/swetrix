@@ -6,6 +6,7 @@ import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
+import _replace from 'lodash/replace'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 import { useTranslation } from 'react-i18next'
@@ -189,7 +190,7 @@ const Dashboard = ({
                         isPublic={isPublic}
                         overall={overall}
                         live={_isNumber(live) ? live : 'N/A'}
-                        url={routes.project.replace(':id', id)}
+                        url={_replace(routes.project, ':id', id)}
                       />
                     ))}
                   </ul>
