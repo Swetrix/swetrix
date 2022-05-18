@@ -17,7 +17,7 @@ export default function* checkEventsAvailable() {
   }
 
   let dataRequests = 0
-  
+
   while (true) {
     if (dataRequests > DATA_REQUEST_ATTEMPTS) {
       return
@@ -40,7 +40,7 @@ export default function* checkEventsAvailable() {
 
     const maxEventsCount = yield select(state => state.auth.user.maxEventsCount)
 
-    const eventsUsedPercentage = totalMonthlyEvents * 100 / maxEventsCount
+    const eventsUsedPercentage = (totalMonthlyEvents * 100) / maxEventsCount
 
     if (eventsUsedPercentage >= SHOW_BANNER_AT_PERC) {
       yield put(UIActions.setShowNoEventsLeftBanner(true))

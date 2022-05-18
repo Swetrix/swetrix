@@ -1,4 +1,5 @@
 import React, { memo } from 'react'
+import PropTypes from 'prop-types'
 
 const Progress = ({ now }) => (
   <div className='relative'>
@@ -7,5 +8,9 @@ const Progress = ({ now }) => (
     </div>
   </div>
 )
+
+Progress.propTypes = {
+  now: PropTypes.number.isRequired,
+}
 
 export default memo(Progress)

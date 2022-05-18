@@ -27,13 +27,13 @@ export const umdBuildExample = `<!-- Put this at the end of the <head> tag -->
 </noscript>
 `
 
-export const npmInstall = `npm install swetrix`
-export const npmImport = `import * as Swetrix from 'swetrix'`
+export const npmInstall = 'npm install swetrix'
+export const npmImport = 'import * as Swetrix from \'swetrix\''
 export const esExample = `Swetrix.init('YOUR_PROJECT_ID')
 Swetrix.trackViews()
 `
 
-export const trackPageView = `swetrix.trackViews()`
+export const trackPageView = 'swetrix.trackViews()'
 
 export const track = `swetrix.track({
   // The event identifier you want to track.

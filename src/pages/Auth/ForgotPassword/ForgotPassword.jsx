@@ -1,6 +1,8 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import { forgotPassword } from 'api'
 import Title from 'components/Title'
@@ -23,6 +25,19 @@ const ForgotPassword = ({
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
+  const validate = () => {
+    const allErrors = {}
+
+    if (!isValidEmail(form.email)) {
+      allErrors.email = t('auth.common.badEmailError')
+    }
+
+    const valid = _isEmpty(_keys(allErrors))
+
+    setErrors(allErrors)
+    setValidated(valid)
+  }
+
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
@@ -33,7 +48,7 @@ const ForgotPassword = ({
 
       try {
         await forgotPassword(data)
-  
+
         newPassword(t('auth.forgot.sent'))
         history.push(routes.main)
       } catch (e) {
@@ -44,13 +59,12 @@ const ForgotPassword = ({
     }
   }
 
-  const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
+  const handleInput = ({ target }) => {
+    const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
     }))
   }
 
@@ -62,19 +76,6 @@ const ForgotPassword = ({
     if (validated) {
       onSubmit(form)
     }
-  }
-
-  const validate = () => {
-    const allErrors = {}
-
-    if (!isValidEmail(form.email)) {
-      allErrors.email = t('auth.common.badEmailError')
-    }
-
-    const valid = Object.keys(allErrors).length === 0
-
-    setErrors(allErrors)
-    setValidated(valid)
   }
 
   return (

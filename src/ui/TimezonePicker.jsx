@@ -5,32 +5,38 @@ import { allTimezones } from 'react-timezone-select'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import _find from 'lodash/find'
+import _reduce from 'lodash/reduce'
+import _includes from 'lodash/includes'
 
 import Select from './Select'
 
-const options = Object.entries(allTimezones)
-  .reduce((selectOptions, zone) => {
+const options = _reduce(
+  Object.entries(allTimezones),
+  (selectOptions, zone) => {
     const now = spacetime.now(zone[0])
     const tz = now.timezone()
     const tzStrings = soft(zone[0])
 
-    let abbr = now.isDST() ? tzStrings[0].daylight?.abbr : tzStrings[0].standard?.abbr
-    let altName = now.isDST() ? tzStrings[0].daylight?.name : tzStrings[0].standard?.name
+    const abbr = now.isDST() ? tzStrings[0].daylight?.abbr : tzStrings[0].standard?.abbr
+    const altName = now.isDST() ? tzStrings[0].daylight?.name : tzStrings[0].standard?.name
 
     const min = tz.current.offset * 60
+    // eslint-disable-next-line prefer-template
     const hr = `${(min / 60) ^ 0}:` + (min % 60 === 0 ? '00' : Math.abs(min % 60))
-    const label = `(GMT${hr.includes('-') ? hr : `+${hr}`}) ${zone[1]}`
+    const label = `(GMT${_includes(hr, '-') ? hr : `+${hr}`}) ${zone[1]}`
 
     selectOptions.push({
       value: tz.name,
-      label: label,
+      label,
       offset: tz.current.offset,
       abbrev: abbr,
-      altName: altName,
+      altName,
     })
 
     return selectOptions
-  }, [])
+  },
+  [],
+)
   .sort((a, b) => a.offset - b.offset)
 
 const TimezoneSelect = ({
@@ -41,18 +47,25 @@ const TimezoneSelect = ({
   const keyExtractor = (option) => option?.value
 
   const handleChange = (label) => {
-    const tz = _find(options, tz => labelExtractor(tz) === label)
+    const tz = _find(options, timezone => labelExtractor(timezone) === label)
     const key = keyExtractor(tz)
     onChange(key)
   }
 
   const parseTimezone = (zone) => {
-    if (typeof zone === 'object' && zone.value && zone.label) return zone
+    if (typeof zone === 'object' && zone.value && zone.label) {
+      return zone
+    }
+
     if (typeof zone === 'string') {
       return _find(options, tz => tz.value === zone)
-    } else if (zone.value && !zone.label) {
+    }
+
+    if (zone.value && !zone.label) {
       return _find(options, tz => tz.value === zone.value)
     }
+
+    return null
   }
 
   return (

@@ -3,15 +3,16 @@ import _map from 'lodash/map'
 import _isString from 'lodash/isString'
 import Debug from 'debug'
 
+import UIActions from 'redux/actions/ui'
 import {
   getProjects, getOverallStats, getLiveVisitors,
 } from '../../../api'
-import UIActions from 'redux/actions/ui'
 
 const debug = Debug('swetrix:rx:s:load-projects')
 
 export default function* loadProjects() {
   try {
+    // eslint-disable-next-line prefer-const
     let { results, totalMonthlyEvents } = yield call(getProjects)
     const pids = _map(results, result => result.id)
     let overall

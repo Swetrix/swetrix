@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import _includes from 'lodash/includes'
 
@@ -14,12 +14,13 @@ const DEFAULT_PAGE = routes.signin
 const Selfhosted = ({ children }) => {
   const history = useHistory()
 
+  // eslint-disable-next-line consistent-return
   useEffect(() => {
     if (isSelfhosted) {
       if (_includes(selfHostedBlacklist, window.location.pathname)) {
         history.push(DEFAULT_PAGE)
       }
-  
+
       const unlisten = history.listen(({ pathname }) => {
         if (_includes(selfHostedBlacklist, pathname)) {
           history.push(DEFAULT_PAGE)
@@ -29,7 +30,7 @@ const Selfhosted = ({ children }) => {
     }
   }, [history])
 
-  return <>{children}</>
+  return children
 }
 
 export default Selfhosted

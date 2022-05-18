@@ -1,8 +1,10 @@
+/* eslint-disable implicit-arrow-linebreak */
 import axios from 'axios'
 import { store } from 'redux/store'
 import Debug from 'debug'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
+import _isArray from 'lodash/isArray'
 import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
@@ -18,13 +20,14 @@ api.interceptors.request.use(
   (config) => {
     const token = getAccessToken()
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
+      // eslint-disable-next-line no-param-reassign
+      config.headers.Authorization = `Bearer ${token}`
     }
     return config
   },
   (error) => {
     return Promise.reject(error)
-  }
+  },
 )
 
 api.interceptors.response.use(
@@ -35,7 +38,7 @@ api.interceptors.response.use(
       store.dispatch(authActions.logout())
     }
     return Promise.reject(error)
-  }
+  },
 )
 
 export const authMe = () =>
@@ -66,7 +69,7 @@ export const signup = (data) =>
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
-      if (Array.isArray(errorsArray)) {
+      if (_isArray(errorsArray)) {
         throw errorsArray
       }
       throw new Error(errorsArray)
@@ -86,7 +89,7 @@ export const changeUserDetails = (data) =>
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
-      if (Array.isArray(errorsArray)) {
+      if (_isArray(errorsArray)) {
         throw errorsArray
       }
       throw new Error(errorsArray)
@@ -131,7 +134,7 @@ export const createNewPassword = (id, password) =>
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
-      if (Array.isArray(errorsArray)) {
+      if (_isArray(errorsArray)) {
         throw errorsArray
       }
       throw new Error(errorsArray)
@@ -172,7 +175,7 @@ export const getProject = (pid) =>
 
 export const createProject = (data) =>
   api
-    .post(`/project`, data)
+    .post('/project', data)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -214,7 +217,7 @@ export const getProjectData = (
 ) =>
   api
     .get(
-      `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`
+      `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
     )
     .then((response) => response.data)
     .catch((error) => {

@@ -12,9 +12,11 @@ const Input = ({
 
   return (
     <div className={className}>
-      <div className={cx({
-        'flex justify-between': label && hint,
-      })}>
+      <div
+        className={cx({
+          'flex justify-between': label && hint,
+        })}
+      >
         <label htmlFor={identifier} className='block text-sm font-medium text-gray-700 dark:text-gray-200'>{label}</label>
       </div>
       <div className='mt-1 relative'>

@@ -2,6 +2,8 @@ import React, { useState, useEffect, memo } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import _size from 'lodash/size'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import { createNewPassword } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -26,47 +28,6 @@ const CreateNewPassword = ({
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const onSubmit = async (data) => {
-    if (!isLoading) {
-      setIsLoading(true)
-      try {
-        const { password } = data
-        await createNewPassword(id, password)
-  
-        newPassword(t('auth.recovery.updated'))
-        history.push(routes.signin)
-      } catch (e) {
-        createNewPasswordFailed(e.toString())
-      } finally {
-        setIsLoading(false)
-      }
-    }
-  }
-
-  const handleInput = event => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
-
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
-    }))
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
-  }
-
   const validate = () => {
     const allErrors = {}
 
@@ -82,10 +43,50 @@ const CreateNewPassword = ({
       allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const onSubmit = async (data) => {
+    if (!isLoading) {
+      setIsLoading(true)
+      try {
+        const { password } = data
+        await createNewPassword(id, password)
+
+        newPassword(t('auth.recovery.updated'))
+        history.push(routes.signin)
+      } catch (e) {
+        createNewPasswordFailed(e.toString())
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const handleInput = ({ target }) => {
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
   }
 
   return (

@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux'
 import { authActions } from 'redux/actions/auth'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
+import _keys from 'lodash/keys'
+import _isEmpty from 'lodash/isEmpty'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -38,30 +40,6 @@ const BasicSignup = () => {
     }
   }
 
-  useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const handleInput = (event) => {
-    const t = event.target
-    const value = t.type === 'checkbox' ? t.checked : t.value
-
-    setForm(form => ({
-      ...form,
-      [t.name]: value,
-    }))
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
-  }
-
   const validate = () => {
     const allErrors = {}
 
@@ -81,10 +59,34 @@ const BasicSignup = () => {
       allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
     }
 
-    const valid = Object.keys(allErrors).length === 0
+    const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const handleInput = (event) => {
+    const { target } = event
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
   }
 
   return (

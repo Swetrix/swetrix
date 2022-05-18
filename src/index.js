@@ -33,7 +33,7 @@ const options = {
   position: positions.BOTTOM_RIGHT,
   timeout: 8000,
   offset: '30px',
-  transition: transitions.SCALE
+  transition: transitions.SCALE,
 }
 
 if (process.env.NODE_ENV !== 'production') {
@@ -47,18 +47,18 @@ const root = createRoot(container)
 // Possibly it's related to 'Strict Mode has gotten stricter in React 18' -> https://reactjs.org/blog/2022/03/08/react-18-upgrade-guide.html#updates-to-strict-mode
 root.render(
   // <React.StrictMode>
-    <CrashHandler>
-      <AlertProvider template={AlertTemplate} {...options}>
-        <Provider store={store}>
-          <HelmetProvider>
-            <BrowserRouter>
-              <I18nextProvider i18n={i18next}>
-                <App />
-              </I18nextProvider>
-            </BrowserRouter>
-          </HelmetProvider>
-        </Provider>
-      </AlertProvider>
-    </CrashHandler>
+  <CrashHandler>
+    <AlertProvider template={AlertTemplate} {...options}>
+      <Provider store={store}>
+        <HelmetProvider>
+          <BrowserRouter>
+            <I18nextProvider i18n={i18next}>
+              <App />
+            </I18nextProvider>
+          </BrowserRouter>
+        </HelmetProvider>
+      </Provider>
+    </AlertProvider>
+  </CrashHandler>,
   // </React.StrictMode>
 )
