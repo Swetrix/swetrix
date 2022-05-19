@@ -389,7 +389,6 @@ const ViewProject = ({
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
-          console.log('asdads')
           if (rangeDate) {
             data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           } else {
