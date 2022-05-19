@@ -20,6 +20,7 @@
     "i18next": "^21.8.2",
     "i18next-browser-languagedetector": "^6.1.4",
     "i18next-http-backend": "^1.4.0",
+    "jszip": "^3.9.1",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.4",
     "prismjs": "^1.28.0",
@@ -58,7 +59,10 @@
       "eslint:recommended",
       "plugin:react/recommended"
     ],
-    "plugins": ["lodash", "react-hooks"],
+    "plugins": [
+      "lodash",
+      "react-hooks"
+    ],
     "rules": {
       "arrow-body-style": "off",
       "arrow-parens": "off",
@@ -71,7 +75,10 @@
       "jsx-a11y/label-has-for": "off",
       "jsx-a11y/no-noninteractive-element-interactions": "off",
       "jsx-a11y/no-static-element-interactions": "off",
-      "jsx-quotes": ["error", "prefer-single"],
+      "jsx-quotes": [
+        "error",
+        "prefer-single"
+      ],
       "linebreak-style": "off",
       "lines-between-class-members": "off",
       "lodash/prefer-lodash-method": "warn",
@@ -85,7 +92,15 @@
       "no-underscore-dangle": "off",
       "no-unused-vars": "warn",
       "react/display-name": "warn",
-      "react/jsx-filename-extension": ["warn", { "extensions": [".js", ".jsx"] }],
+      "react/jsx-filename-extension": [
+        "warn",
+        {
+          "extensions": [
+            ".js",
+            ".jsx"
+          ]
+        }
+      ],
       "react/jsx-props-no-spreading": "off",
       "react/prefer-stateless-function": "off",
       "react/prop-types": "off",
@@ -95,7 +110,10 @@
       "react/react-in-jsx-scope": "off",
       "react-hooks/exhaustive-deps": "warn",
       "react/function-component-definition": "off",
-      "semi": ["error", "never"]
+      "semi": [
+        "error",
+        "never"
+      ]
     },
     "settings": {
       "import/resolver": {

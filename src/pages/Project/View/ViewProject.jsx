@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
 import React, {
-  useState, useEffect, useMemo, memo, useRef,
+  useState, useEffect, useMemo, memo, useRef, Fragment,
 } from 'react'
 import { useHistory, useParams, Link } from 'react-router-dom'
 import domToImage from 'dom-to-image'
@@ -17,7 +17,7 @@ import countriesZh from 'i18n-iso-countries/langs/zh.json'
 import countriesRu from 'i18n-iso-countries/langs/ru.json'
 import countriesSv from 'i18n-iso-countries/langs/sv.json'
 import {
-  GlobeIcon, TranslateIcon, DocumentTextIcon, DeviceMobileIcon, ArrowCircleRightIcon, SearchIcon, ServerIcon,
+  GlobeIcon, TranslateIcon, DocumentTextIcon, DeviceMobileIcon, ArrowCircleRightIcon, SearchIcon, ServerIcon, DownloadIcon,
 } from '@heroicons/react/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
@@ -54,6 +54,7 @@ import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import './styles.css'
+import { onCSVExportClick } from './ViewProject.helpers'
 
 countries.registerLocale(countriesEn)
 countries.registerLocale(countriesDe)
@@ -595,6 +596,11 @@ const ViewProject = ({
     }
   }
 
+  const exportTypes = [
+    { label: t('project.asImage'), onClick: exportAsImageHandler },
+    { label: t('project.asCSV'), onClick: () => onCSVExportClick(panelsData, id, tnMapping, language) },
+  ]
+
   if (!isLoading) {
     return (
       <Title title={name}>
@@ -666,13 +672,18 @@ const ViewProject = ({
               onChange={(e) => setShowTotal(e.target.checked)}
             />
             <div className={cx('h-full ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-              <Button
-                onClick={exportAsImageHandler}
-                className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                secondary
-              >
-                {t('project.exportImg')}
-              </Button>
+              <Dropdown
+                items={exportTypes}
+                title={[
+                  <DownloadIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                  <Fragment key='export-data'>
+                    {t('project.exportData')}
+                  </Fragment>,
+                ]}
+                labelExtractor={item => item.label}
+                keyExtractor={item => item.label}
+                onSelect={item => item.onClick(panelsData, t)}
+              />
             </div>
             {!isProjectPublic && (
               <div className='h-full ml-3'>
