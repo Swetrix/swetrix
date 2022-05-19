@@ -367,7 +367,6 @@ const Panel = ({
               })}
               onClick={() => _onFilter(id, key)}
             >
-              {/* TODO: FIX: CLICKING ON AN EXTERNAL LINK CAUSES FILTER TO ACTIVATE */}
               {linkContent ? (
                 <a
                   className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', { capitalize })}
@@ -394,8 +393,7 @@ const Panel = ({
                 <span className='text-gray-500 dark:text-gray-200 font-light'>
                   (
                   {perc}
-                  %
-                  )
+                  %)
                 </span>
               </span>
             </div>
