@@ -30,13 +30,13 @@
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
     "learnMore": "Learn more",
-    "yes": "Yes",
-    "no": "No",
-    "is": "is",
-    "isNot": "is not"
+    "yes": "Ja",
+    "no": "Nein",
+    "is": "ist",
+    "isNot": "ist nicht"
   },
   "main": {
-    "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
+    "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
     "slogan": "Eine <span>leistungsstarke</span> Analyse-Plattform, welche die <span>Privatsphäre ihrer Anwender<span> berücksichtigt",
     "trackEveryMetric": "Analysieren Sie alle benötigten Metriken, ohne die Privatsphäre Ihrer Anwender zu verletzen.",
     "description": "Swetrix bietet einen fortgeschrittenen und konfigurierbaren Analysedienst für Ihre Webanwendungen.",
@@ -263,9 +263,9 @@
   "project": {
     "ad": "Sie möchten diese Statistiken für Ihre eigene Webseite?",
     "noExist": "Das ausgewählte Projekt existiert nicht",
-    "exportData": "Export data",
-    "asImage": "As image",
-    "asCSV": "As CSV",
+    "exportData": "Daten exportieren",
+    "asImage": "Als Bild",
+    "asCSV": "Als CSV",
     "noEvTitle": "Noch keine Tracking-Events",
     "showAll": "Show all views",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <link>Doku</link> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
@@ -364,7 +364,7 @@
   },
   "beta": {
     "title": "Beta",
-    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
+    "description": "Diese Funktion befindet sich in der Beta-Phase. Verwenden Sie sie mit Vorsicht, da es Nebeneffekte geben kann."
   },
   "titles": {
     "recovery": "Kontenwiederherstellung",

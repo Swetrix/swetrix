@@ -263,9 +263,9 @@
   "project": {
     "ad": "你的网站需要这些数据吗？",
     "noExist": "所选项目不存在",
-    "exportData": "Export data",
-    "asImage": "As image",
-    "asCSV": "As CSV",
+    "exportData": "导出数据",
+    "asImage": "作为图像",
+    "asCSV": "作为CSV",
     "noEvTitle": "尚无活动",
     "showAll": "Show all views",
     "noEvContent": "在指定的时间范围内没有捕获任何活动。\n如果您还没有跟踪任何活动，您可以查看我们的<link>文档</link>以轻松地将跟踪集成到您的应用中。",
@@ -292,12 +292,12 @@
     "unique": "独特访客",
     "total": "总页面浏览量",
     "today": "今天",
-    "yesterday": "Yesterday",
-    "last24h": "Last 24 hours",
+    "yesterday": "昨天",
+    "last24h": "过去24小时",
     "lastXDays": "最后 {{amount}} 天",
     "lastXWeeks": "最近 {{amount}} 周",
     "lastXMonths": "最近 {{amount}} 个月",
-    "custom": "Custom date",
+    "custom": "其他日期",
     "hour": "小时",
     "day": "天",
     "week": "周",
@@ -335,7 +335,7 @@
     "title": "定价计划",
     "adv": "免费开始，无需信用卡。\n当您的业务增长时，您可以随时升级您的计划。",
     "currentPlan": "当前计划",
-    "mostPopular": "Most popular",
+    "mostPopular": "最受欢迎",
     "free": "免费",
     "perMonth": "月",
     "yourPlan": "您的计划",
@@ -363,7 +363,7 @@
     "desc": "有什么想问的吗？\n请给我们发送电子邮件至 <mail>{{email}}</mail>"
   },
   "beta": {
-    "title": "Beta",
+    "title": "测试版",
     "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
   },
   "titles": {

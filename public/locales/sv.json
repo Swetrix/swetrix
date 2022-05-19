@@ -4,9 +4,9 @@
     "emailRegistered": "En användare med denna e-postadressen finns redan",
     "leakedPassword": "Det angivna lösenordet är läckt, vänligen använd ett annat",
     "rateLimitHit": "För många förfrågningar, vänligen försök igen senare",
-    "cancelSubFirst": "Please cancel your paid subscription first",
-    "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account"
+    "cancelSubFirst": "Vänligen avbryt din betalda prenumeration först",
+    "accountDeleted": "Ditt konto har raderats",
+    "accountDeleteError": "Fel när du raderar ditt konto"
   },
   "common": {
     "features": "Funktioner",
@@ -29,14 +29,14 @@
     "settings": "Inställningar",
     "openMenu": "Öppna meny",
     "closeMenu": "Stäng menyn",
-    "learnMore": "Learn more",
+    "learnMore": "Läs mer",
     "yes": "Ja",
     "no": "Nej",
-    "is": "is",
-    "isNot": "is not"
+    "is": "är",
+    "isNot": "är inte"
   },
   "main": {
-    "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
+    "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
     "slogan": "En <span>kraftfull</span> analysplattform som respekterar <span>användarens integritet<span>",
     "trackEveryMetric": "Spåra alla statistik du behöver utan att invadera användarnas integritet.",
     "description": "Swetrix erbjuder en avancerad och anpassningsbar analystjänst för dina webbapplikationer.",
@@ -178,7 +178,7 @@
     "general": "Allmänna inställningar",
     "update": "Uppdatera profil",
     "email": "E-postrapporter",
-    "timezone": "Timezone preference",
+    "timezone": "Tidszon preferens",
     "frequency": "Hur ofta ska vi skicka dig en e-postsammanfattning om dina webbplatser?",
     "noLink": "Fick du ingen länk för att bekräfta e-postadressen? Begär en ny!",
     "requestExport": "Begär export av data",
@@ -197,15 +197,15 @@
     "confTimeout": "Ett e-post har redan skickats, kontrollera din brevlåda eller försök igen om några minuter",
     "confSent": "En länk för kontobekräftelse har skickats till din e-post",
     "noConfLeft": "Tyvärr har du slut på dina förfrågningar om bekräftelse via e-post.\nSe till att du kan ta emot e-post och kontrollera din SPAM-mapp igen för meddelanden.\nDu kan försöka använda en annan e-postadress eller kontakta vår kundtjänst.",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
+    "timezoneDesc": "Detta kommer att vara den tidszon där data visas. Den används endast för visualisering.\nInga data kommer att ändras baserat på denna inställning."
   },
   "dashboard": {
     "newProject": "Nytt projekt",
     "verifyEmailTitle": "Vänligen verifiera e-postadressen först",
     "verifyEmailDesc": "För att börja använda vår tjänst och skapa dina projekt måste du först bekräfta din e-postadress.\n\nEn länk för att bekräfta ditt konto har skickats till den e-postadress som du angav vid din registrering. Om länken inte levererades kan du begära den igen i dina kontoinställningar.",
-    "lowEventsTitle": "You are running out of events!",
+    "lowEventsTitle": "Du håller på att få slut på händelser!",
     "lowEventsDesc": "You have used more than 85% of the available events per your tier for this month.\nThat means that in case you use 100% of the available events until the end of the month, all the subsequent traffic will not be saved.\nTo avoid this we recommend that you update your tier on the Billing page.",
-    "eventsXPercUsed": "You have used more than {{amount}}% of the available events per your tier for this month.",
+    "eventsXPercUsed": "Du har använt mer än {{amount}}% av de tillgängliga evenemangen per din nivå för denna månad.",
     "noProjects": "Du har ännu inte skapat några projekt",
     "createProject": "Skapa ett nytt projekt här för att börja använda vår tjänst",
     "active": "Aktiv",
@@ -217,14 +217,14 @@
     "inc": "Ökad med",
     "dec": "Minskat med",
     "liveVisitors": "Live-besökare",
-    "bounceRate": "Bounce rate"
+    "bounceRate": "Studsfrekvens"
   },
   "docs": {
     "titles": {
       "start": "Komma igång",
       "umd": "UMD",
       "npm": "NPM Paket",
-      "int": "Integrations",
+      "int": "Integrationer",
       "how": " Hur-till",
       "pv": "Spåra sidvisningar",
       "ce": "Spåra anpassade händelser",
@@ -233,7 +233,7 @@
     "install": "Du kan också installera spårningsskriptet med NPM eller Yarn",
     "import": "Därefter ska du importera modulen till projektets root, till exempel",
     "track": "Efter det kan du spåra vad du vill.\nLäs den detaljerade dokumentationen om spårningsparametrar nedan.",
-    "integrations": "We support the following integrations (click on the title for details)",
+    "integrations": "Vi stöder följande integrationer (klicka på titeln för detaljer)",
     "pv": "Swetrix.js spårningsskriptet ger ett sätt att samla in en sidvy händelse när sidan har laddats.\nDetta kan åstadkommas genom att anropa <link>trackViews()</link> funktion:",
     "ce": "Förutom att spåra sidvisningar har vi möjlighet att spåra anpassade händelser.\nOm du till exempel vill spåra en händelse som \" Registrering \" eller \"Nyhetsbrev prenumeration \", Denna funktion skulle vara mycket användbar.\nUnder skärmen är principen för den här funktionen likadan som för trackViews.",
     "init": "Denna funktion används för att initiera analytics.\nI princip låter du skriptet veta vilket projekt du vill använda det med, och du anger dina anpassade parametrar om det behövs.",
@@ -255,19 +255,19 @@
     "contents": "Innehåll"
   },
   "notFoundPage": {
-    "title": "Page not found",
-    "description": "Sorry, we couldn’t find the page you’re looking for.\nPlease check the URL in the address bar and try again.",
-    "goHome": "Go back home",
-    "support": "Contact support"
+    "title": "Sidan hittades inte",
+    "description": "Tyvärr, vi kunde inte hitta sidan du letar efter.\nKontrollera webbadressen i adressfältet och försök igen.",
+    "goHome": "Gå till huvudsidan",
+    "support": "Kontakta support"
   },
   "project": {
     "ad": "Vill du ha denna statistik för din webbplats?",
     "noExist": "Det valda projektet finns inte",
-    "exportData": "Export data",
-    "asImage": "As image",
-    "asCSV": "As CSV",
+    "exportData": "Exportera",
+    "asImage": "Som bild",
+    "asCSV": "Som CSV",
     "noEvTitle": "Inga händelser ännu",
-    "showAll": "Show all views",
+    "showAll": "Visa alla händelser",
     "noEvContent": "Inga händelser har registrerats under den angivna tidsramen.\nOm du inte har spårat några händelser ännu kan du kolla in våra <link>Docs</link> för att enkelt integrera spårning i din app.",
     "mapping": {
       "cc": "Land",
@@ -292,12 +292,12 @@
     "unique": "Unika besökare",
     "total": "Totala sidvisningar",
     "today": "Idag",
-    "yesterday": "Yesterday",
-    "last24h": "Last 24 hours",
+    "yesterday": "Igår",
+    "last24h": "Senaste 24 timmarna",
     "lastXDays": "Senaste {{amount}} dagarna",
     "lastXWeeks": "Senaste {{amount}} veckorna",
     "lastXMonths": "Senaste {{amount}} månaderna",
-    "custom": "Custom date",
+    "custom": "Annat datum",
     "hour": "Timme",
     "day": "Dag",
     "week": "Vecka",
@@ -335,7 +335,7 @@
     "title": "Prisplaner",
     "adv": "Börja gratis, inget kreditkort behövs.\nNär ditt företag växer kan du uppgradera din plan när som helst.",
     "currentPlan": "Nuvarande plan",
-    "mostPopular": "Most popular",
+    "mostPopular": "Mest populär",
     "free": "Gratis",
     "perMonth": "må",
     "yourPlan": "Din plan",
@@ -364,7 +364,7 @@
   },
   "beta": {
     "title": "Beta",
-    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
+    "description": "Denna funktion är i Beta-fasen. Använd den med försiktighet eftersom det kan finnas biverkningar."
   },
   "titles": {
     "recovery": "Konto återställning",
