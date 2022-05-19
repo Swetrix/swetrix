@@ -351,7 +351,7 @@ const ViewProject = ({
   const [showTotal, setShowTotal] = useState(false)
   const [chartData, setChartData] = useState({})
   const [mainChart, setMainChart] = useState(null)
-  const [dataLoading, setDataLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(false)
   const [filters, setFilters] = useState([])
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
@@ -370,7 +370,7 @@ const ViewProject = ({
   }
 
   const loadAnalytics = async (forced = false, newFilters = null) => {
-    if (forced || (!isLoading && !_isEmpty(project))) {
+    if (forced || (!isLoading && !_isEmpty(project) && !dataLoading)) {
       setDataLoading(true)
       try {
         let data
@@ -389,6 +389,7 @@ const ViewProject = ({
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
+          console.log('asdads')
           if (rangeDate) {
             data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           } else {
