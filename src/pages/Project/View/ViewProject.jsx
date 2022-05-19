@@ -54,7 +54,7 @@ import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import './styles.css'
-import onCSVExportClick from './ViewProject.helper'
+import { onCSVExportClick } from './ViewProject.helpers'
 
 countries.registerLocale(countriesEn)
 countries.registerLocale(countriesDe)
@@ -597,8 +597,8 @@ const ViewProject = ({
   }
 
   const exportTypes = [
-    { label: 'As image', onClick: exportAsImageHandler },
-    { label: 'As CSV', onClick: () => onCSVExportClick(panelsData, t) },
+    { label: t('project.asImage'), onClick: exportAsImageHandler },
+    { label: t('project.asCSV'), onClick: () => onCSVExportClick(panelsData, id, tnMapping, language) },
   ]
 
   if (!isLoading) {
@@ -676,7 +676,9 @@ const ViewProject = ({
                 items={exportTypes}
                 title={[
                   <DownloadIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                  <Fragment key='export-data'>Export data</Fragment>,
+                  <Fragment key='export-data'>
+                    {t('project.exportData')}
+                  </Fragment>,
                 ]}
                 labelExtractor={item => item.label}
                 keyExtractor={item => item.label}

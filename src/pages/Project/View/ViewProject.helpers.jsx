@@ -5,6 +5,7 @@ import _split from 'lodash/split'
 import _replace from 'lodash/replace'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
+import _size from 'lodash/size'
 import _round from 'lodash/round'
 import JSZip from 'jszip'
 
@@ -27,17 +28,16 @@ countries.registerLocale(countriesUk)
 countries.registerLocale(countriesZh)
 countries.registerLocale(countriesSv)
 
-const getExportFilename = (suffix) => {
+const getExportFilename = (prefix) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
   const date = _split(_replace(_split(new Date().toISOString(), '.')[0], /:/g, '-'), 'T')[0]
-  return `${suffix}-${date}.zip`
+  return `${prefix}-${date}.zip`
 }
 
-function ConvertToCSV(objArray) {
-  const array = typeof objArray !== 'object' ? JSON.parse(objArray) : objArray
+const convertToCSV = (array) => {
   let str = 'name,value,perc\r\n'
 
-  for (let i = 0; i < array.length; i++) {
+  for (let i = 0; i < _size(array); ++i) {
     let line = ''
 
     _forEach(array[i], (index) => {
@@ -51,49 +51,37 @@ function ConvertToCSV(objArray) {
   return str
 }
 
-const onCSVExportClick = (data, t) => {
-  const typeNameMapping = {
-    cc: t('project.mapping.cc'),
-    pg: t('project.mapping.pg'),
-    lc: t('project.mapping.lc'),
-    ref: t('project.mapping.ref'),
-    dv: t('project.mapping.dv'),
-    br: t('project.mapping.br'),
-    os: t('project.mapping.os'),
-    so: 'utm_source',
-    me: 'utm_medium',
-    ca: 'utm_campaign',
-    lt: t('project.mapping.lt'),
-  }
-
+export const onCSVExportClick = (data, pid, tnMapping, language) => {
+  const { data: rowData, types } = data
   const zip = new JSZip()
 
-  _forEach(data.types, (items) => {
-    if (!_isEmpty(data.data[items])) {
-      let total = 0
-
-      _forEach(_keys(data.data[items]), (e) => {
-        total += data.data[items][e]
-      })
-
-      const csvData = _map(_keys(data.data[items]), (e) => {
-        const perc = _round(((data.data[items][e] / total) * 100) || 0, 2)
-
-        if (items === 'cc') {
-          const name = countries.getName(e, 'en')
-          return [name, data.data[items][e], `${perc}%`]
-        }
-
-        return [e, data.data[items][e], `${perc}%`]
-      })
-
-      zip.file(`${typeNameMapping[items]}.csv`, ConvertToCSV(csvData))
+  _forEach(types, (item) => {
+    if (_isEmpty(rowData[item])) {
+      return
     }
+
+    const rowKeys = _keys(rowData[item])
+    let total = 0
+
+    _forEach(rowKeys, (e) => {
+      total += rowData[item][e]
+    })
+
+    const csvData = _map(rowKeys, (e) => {
+      const perc = _round(((rowData[item][e] / total) * 100) || 0, 2)
+
+      if (item === 'cc') {
+        const name = countries.getName(e, language)
+        return [name, rowData[item][e], `${perc}%`]
+      }
+
+      return [e, rowData[item][e], `${perc}%`]
+    })
+
+    zip.file(`${tnMapping[item]}.csv`, convertToCSV(csvData))
   })
 
   zip.generateAsync({ type: 'blob' }).then((content) => {
-    saveAs(content, `${getExportFilename('panels-date')}.zip`)
+    saveAs(content, getExportFilename(`swetrix-${pid}`))
   })
 }
-
-export default onCSVExportClick
