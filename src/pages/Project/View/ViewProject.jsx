@@ -191,9 +191,9 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
       },
       contents: {
         template: `
-          <ul class='bg-gray-100 rounded-md shadow-md px-3 py-1'>
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
             <li class='font-semibold'>{=TITLE}</li>
-            <hr />
+            <hr class='border-gray-200 dark:border-gray-600' />
             {{
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
