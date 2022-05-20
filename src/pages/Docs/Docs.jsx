@@ -205,7 +205,7 @@ const Docs = () => {
               <i>Last updated: May 4, 2022.</i><br />
               <div>
                 - Added&nbsp;
-                <a className='hover:underline text-gray-700' href='#docs-int'>integrations</a>
+                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-int'>integrations</a>
                 &nbsp;section.
               </div>
             </div>
