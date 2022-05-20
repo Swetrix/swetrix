@@ -4,9 +4,9 @@
   "private": true,
   "dependencies": {
     "@blaumaus/react-alert": "^7.0.5",
-    "@headlessui/react": "^1.6.1",
+    "@headlessui/react": "^1.6.2",
     "@heroicons/react": "^1.0.6",
-    "@tailwindcss/forms": "^0.5.1",
+    "@tailwindcss/forms": "^0.5.2",
     "axios": "^0.27.2",
     "billboard.js": "^3.4.1",
     "clsx": "^1.1.1",
@@ -17,7 +17,7 @@
     "file-saver": "^2.0.5",
     "flatpickr": "^4.6.13",
     "i18n-iso-countries": "^7.4.0",
-    "i18next": "^21.8.2",
+    "i18next": "^21.8.3",
     "i18next-browser-languagedetector": "^6.1.4",
     "i18next-http-backend": "^1.4.0",
     "jszip": "^3.9.1",
@@ -150,9 +150,9 @@
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-lodash": "^7.4.0",
-    "eslint-plugin-react": "^7.29.4",
+    "eslint-plugin-react": "^7.30.0",
     "eslint-plugin-react-hooks": "^4.5.0",
-    "postcss": "^8.4.13",
+    "postcss": "^8.4.14",
     "source-map-explorer": "^2.5.2",
     "tailwindcss": "^3.0.24"
   }
