@@ -252,6 +252,7 @@
         "pg": "den sida användaren för närvarande visar (t.ex. /hello)."
       }
     },
+    "tvReturn": "Funktionen trackViews returnerar ett objekt med några metoder som gör att du kan ändra sidspårningens beteende.",
     "contents": "Innehåll"
   },
   "notFoundPage": {

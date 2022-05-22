@@ -252,6 +252,7 @@
         "pg": "the page user currently views (e.g. /hello)."
       }
     },
+    "tvReturn": "The trackViews function returns an object with some methods allowing you to alter the behaviour of page tracking.",
     "contents": "Contents"
   },
   "notFoundPage": {

@@ -252,6 +252,7 @@
         "pg": "用户当前查看的页面（例如 /您好）."
       }
     },
+    "tvReturn": "The trackViews function returns an object with some methods allowing you to alter the behaviour of page tracking.",
     "contents": "内容"
   },
   "notFoundPage": {

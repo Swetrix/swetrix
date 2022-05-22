@@ -252,6 +252,7 @@
         "pg": "τη σελίδα που βλέπει ο χρήστης αυτή τη στιγμή (π.χ. /hello)."
       }
     },
+    "tvReturn": "The trackViews function returns an object with some methods allowing you to alter the behaviour of page tracking.",
     "contents": "Περιεχόμενα"
   },
   "notFoundPage": {
