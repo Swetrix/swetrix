@@ -1,9 +1,16 @@
-import { Lib, LibOptions, TrackEventOptions, PageViewsOptions } from './Lib'
+import {
+  Lib, LibOptions, TrackEventOptions, PageViewsOptions, PageActions, defaultPageActions,
+} from './Lib'
 
 export let LIB_INSTANCE: Lib | null = null
 
-// Initialise the tracking library instance (other methods won't work if the library
-// is not initialised)
+/**
+ * Initialise the tracking library instance (other methods won't work if the library is not initialised).
+ *
+ * @param {string} pid The Project ID to link the instance of Swetrix.js to.
+ * @param {LibOptions} options Options related to the tracking.
+ * @returns {Lib} Instance of the Swetrix.js.
+ */
 export function init (pid: string, options?: LibOptions): Lib {
   if (!LIB_INSTANCE) {
     LIB_INSTANCE = new Lib(pid, options)
@@ -12,15 +19,29 @@ export function init (pid: string, options?: LibOptions): Lib {
   return LIB_INSTANCE
 }
 
-// Tracks custom events
+/**
+ * With this function you are able to track any custom events you want.
+ * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
+ * The total number of track calls and their conversion rate will be saved.
+ *
+ * @param {TrackEventOptions} event The options related to the custom event.
+ */
 export function track (event: TrackEventOptions): void {
   if (!LIB_INSTANCE) return
 
   LIB_INSTANCE.track(event)
 }
 
-export function trackViews (options?: PageViewsOptions): void {
-  if (!LIB_INSTANCE) return 
+/**
+ * With this function you are able to track any custom events you want.
+ * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
+ * The total number of track calls and their conversion rate will be saved.
+ *
+ * @param {PageViewsOptions} options The options related to the custom event.
+ * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
+ */
+export function trackViews (options?: PageViewsOptions): PageActions {
+  if (!LIB_INSTANCE) return defaultPageActions
 
-  LIB_INSTANCE.trackPageViews(options)
+  return LIB_INSTANCE.trackPageViews(options)
 }

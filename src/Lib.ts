@@ -4,51 +4,69 @@ import {
 } from './utils'
 
 export interface LibOptions {
-  // When set to `true`, all tracking logs will be
-  // printed to console and localhost events will be sent to server.
+  /**
+   * When set to `true`, all tracking logs will be printed to console and localhost events will be sent to server.
+   */
   debug?: boolean
 
-  // When set to `true`, the tracking library won't send any data to server.
-  // Useful for development purposes when this value is set based on `.env` var.
+  /**
+   * When set to `true`, the tracking library won't send any data to server.
+   * Useful for development purposes when this value is set based on `.env` var.
+   */
   disabled?: boolean
 
-  // By setting this flag to `true`, we will not collect ANY kind of data about the user
-  // with the DNT setting.
+  /**
+   * By setting this flag to `true`, we will not collect ANY kind of data about the user with the DNT setting.
+   */
   respectDNT?: boolean
 
-  // Set a custom URL of the API server (for selfhosted variants of Swetrix)
+  /** Set a custom URL of the API server (for selfhosted variants of Swetrix). */
   apiURL?: string
 }
 
 export interface TrackEventOptions {
-  // The event name
+  /** The custom event name. */
   ev: string
 
-  // If true, only 1 event with the same ID will be saved per user session
+  /** If set to `true`, only 1 event with the same ID will be saved per user session. */
   unique?: boolean
+}
+
+/**
+ * The object returned by `trackPageViews()`, used to stop tracking pages.
+ */
+export interface PageActions {
+  /** Stops the tracking of pages. */
+  stop: () => void
 }
 
 export interface PageData {
-  // Current URL path
+  /** Current URL path. */
   path: string
 
-  // Object with actions related to tracking page views which are abailable to end user
-  actions: object
+  /** The object returned by `trackPageViews()`, used to stop tracking pages. */
+  actions: PageActions
 }
 
 export interface PageViewsOptions {
-  // If true, only unique events will be saved
-  // This param is useful when tracking single-page landing websites
+  /**
+   * If set to `true`, only unique events will be saved.
+   * This param is useful when tracking single-page landing websites.
+   */
   unique?: boolean
 
-  // A list of Regular Expressions or string pathes to ignore
-  ignore?: Array<any>
+  /** A list of Regular Expressions or string pathes to ignore. */
+  ignore?: Array<string | RegExp>
 
-  // Do not send Heartbeat requests to the server
+  /** Do not send Heartbeat requests to the server. */
   noHeartbeat?: boolean
 
-  // Send Heartbeat requests when the website tab is not active in the browser
+  /** Send Heartbeat requests when the website tab is not active in the browser. */
   heartbeatOnBackground?: boolean
+}
+
+export const defaultPageActions = {
+  stop() {},
 }
 
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
@@ -74,9 +92,9 @@ export class Lib {
     this.sendRequest('custom', data)
   }
 
-  trackPageViews(options?: PageViewsOptions): void | object {
+  trackPageViews(options?: PageViewsOptions): PageActions {
     if (!this.canTrack()) {
-      return
+      return defaultPageActions
     }
 
     if (this.pageData) {
@@ -128,6 +146,7 @@ export class Lib {
     if (Array.isArray(ignore)) {
       for (let i = 0; i < ignore.length; ++i) {
         if (ignore[i] === path) return true
+        // @ts-ignore
         if (ignore[i] instanceof RegExp && ignore[i].test(path)) return true
       }
     }
