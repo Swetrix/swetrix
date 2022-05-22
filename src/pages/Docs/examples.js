@@ -98,3 +98,9 @@ export const trackPVAPI = `swetrix.trackViews({
   // Setting this to true is usually useful for services like Spotify or Youtube
   heartbeatOnBackground: false,
 })`
+
+export const trackPVReturnAPI = `{
+  // This function stops the tracking of pages.
+  stop() {},
+}
+`
