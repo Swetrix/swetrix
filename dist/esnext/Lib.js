@@ -1,4 +1,7 @@
 import { isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer, getUTMCampaign, getUTMMedium, getUTMSource, getPath, } from './utils';
+export const defaultPageActions = {
+    stop() { },
+};
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log';
 export class Lib {
     constructor(projectID, options) {
@@ -21,7 +24,7 @@ export class Lib {
     }
     trackPageViews(options) {
         if (!this.canTrack()) {
-            return;
+            return defaultPageActions;
         }
         if (this.pageData) {
             return this.pageData.actions;
@@ -63,6 +66,7 @@ export class Lib {
             for (let i = 0; i < ignore.length; ++i) {
                 if (ignore[i] === path)
                     return true;
+                // @ts-ignore
                 if (ignore[i] instanceof RegExp && ignore[i].test(path))
                     return true;
             }

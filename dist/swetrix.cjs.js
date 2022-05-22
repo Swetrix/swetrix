@@ -66,6 +66,9 @@ var getPath = function () {
     return location.pathname || '';
 };
 
+var defaultPageActions = {
+    stop: function () { },
+};
 var DEFAULT_API_HOST = 'https://api.swetrix.com/log';
 var Lib = /** @class */ (function () {
     function Lib(projectID, options) {
@@ -85,7 +88,7 @@ var Lib = /** @class */ (function () {
     };
     Lib.prototype.trackPageViews = function (options) {
         if (!this.canTrack()) {
-            return;
+            return defaultPageActions;
         }
         if (this.pageData) {
             return this.pageData.actions;
@@ -129,6 +132,7 @@ var Lib = /** @class */ (function () {
             for (var i = 0; i < ignore.length; ++i) {
                 if (ignore[i] === path)
                     return true;
+                // @ts-ignore
                 if (ignore[i] instanceof RegExp && ignore[i].test(path))
                     return true;
             }
@@ -206,24 +210,43 @@ var Lib = /** @class */ (function () {
 }());
 
 exports.LIB_INSTANCE = null;
-// Initialise the tracking library instance (other methods won't work if the library
-// is not initialised)
+/**
+ * Initialise the tracking library instance (other methods won't work if the library is not initialised).
+ *
+ * @param {string} pid The Project ID to link the instance of Swetrix.js to.
+ * @param {LibOptions} options Options related to the tracking.
+ * @returns {Lib} Instance of the Swetrix.js.
+ */
 function init(pid, options) {
     if (!exports.LIB_INSTANCE) {
         exports.LIB_INSTANCE = new Lib(pid, options);
     }
     return exports.LIB_INSTANCE;
 }
-// Tracks custom events
+/**
+ * With this function you are able to track any custom events you want.
+ * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
+ * The total number of track calls and their conversion rate will be saved.
+ *
+ * @param {TrackEventOptions} event The options related to the custom event.
+ */
 function track(event) {
     if (!exports.LIB_INSTANCE)
         return;
     exports.LIB_INSTANCE.track(event);
 }
+/**
+ * With this function you are able to track any custom events you want.
+ * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
+ * The total number of track calls and their conversion rate will be saved.
+ *
+ * @param {PageViewsOptions} options The options related to the custom event.
+ * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
+ */
 function trackViews(options) {
     if (!exports.LIB_INSTANCE)
-        return;
-    exports.LIB_INSTANCE.trackPageViews(options);
+        return defaultPageActions;
+    return exports.LIB_INSTANCE.trackPageViews(options);
 }
 
 exports.init = init;
