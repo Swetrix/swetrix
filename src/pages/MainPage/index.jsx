@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import React, { memo } from 'react'
+import React, { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
@@ -98,6 +98,7 @@ const Features = ({ t }) => (
 const Main = () => {
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
+  const [liveDemoHover, setLiveDemoHover] = useState(false)
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
@@ -166,11 +167,20 @@ const Main = () => {
             <div className='flex-1' />
             <div className='flex-1 w-full bg-white dark:bg-gray-800' />
           </div>
-          <div className='w-11/12 mx-auto'>
+          <div className='w-11/12 mx-auto relative' onMouseEnter={() => setLiveDemoHover(true)} onMouseLeave={() => setLiveDemoHover(false)}>
             {theme === 'dark' ? (
-              <img className='relative rounded-md md:rounded-lg shadow-lg w-full' src='/assets/screenshot_dark.png' alt='' />
+              <img className='relative rounded-md md:rounded-lg shadow-lg w-full transition-all' style={{ filter: !liveDemoHover || 'brightness(0.7)' }} src='/assets/screenshot_dark.png' alt='' />
             ) : (
-              <img className='relative rounded-md md:rounded-lg shadow-lg w-full' src='/assets/screenshot_light.png' alt='' />
+              <img className='relative rounded-md md:rounded-lg shadow-lg w-full transition-all' style={{ filter: !liveDemoHover || 'brightness(0.7)' }} src='/assets/screenshot_light.png' alt='' />
+            )}
+            {liveDemoHover && (
+              <a
+                href={LIVE_DEMO_URL}
+                className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center whitespace-nowrap px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700'
+                target='_blank'
+              >
+                {t('common.liveDemo')}
+              </a>
             )}
           </div>
         </div>
