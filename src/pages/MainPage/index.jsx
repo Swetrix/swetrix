@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import React, { memo, useState } from 'react'
+import cx from 'clsx'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
@@ -169,9 +170,21 @@ const Main = () => {
           </div>
           <div className='w-11/12 mx-auto relative' onMouseEnter={() => setLiveDemoHover(true)} onMouseLeave={() => setLiveDemoHover(false)}>
             {theme === 'dark' ? (
-              <img className='relative rounded-md md:rounded-lg shadow-lg w-full transition-all' style={{ filter: !liveDemoHover || 'brightness(0.7)' }} src='/assets/screenshot_dark.png' alt='' />
+              <img
+                className={cx('relative rounded-md md:rounded-lg shadow-lg w-full transition-all', {
+                  'brightness-75': liveDemoHover,
+                })}
+                src='/assets/screenshot_dark.png'
+                alt=''
+              />
             ) : (
-              <img className='relative rounded-md md:rounded-lg shadow-lg w-full transition-all' style={{ filter: !liveDemoHover || 'brightness(0.7)' }} src='/assets/screenshot_light.png' alt='' />
+              <img
+                className={cx('relative rounded-md md:rounded-lg shadow-lg w-full transition-all', {
+                  'brightness-75': liveDemoHover,
+                })}
+                src='/assets/screenshot_light.png'
+                alt=''
+              />
             )}
             {liveDemoHover && (
               <a
