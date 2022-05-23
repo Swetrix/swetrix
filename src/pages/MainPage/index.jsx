@@ -98,6 +98,7 @@ const Features = ({ t }) => (
 const Main = () => {
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
+  const [liveDemoHover, setLiveDemoHover] = useState(false)
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
@@ -166,18 +167,20 @@ const Main = () => {
             <div className='flex-1' />
             <div className='flex-1 w-full bg-white dark:bg-gray-800' />
           </div>
-          <div className='w-11/12 mx-auto relative group hover:brightness-75 transition-all'>
+          <div className='w-11/12 mx-auto relative' onMouseEnter={() => setLiveDemoHover(true)} onMouseLeave={() => setLiveDemoHover(false)}>
             {theme === 'dark' ? (
-              <img className='relative rounded-md md:rounded-lg shadow-lg w-full' src='/assets/screenshot_dark.png' alt='' />
+              <img className='relative rounded-md md:rounded-lg shadow-lg w-full transition-all' style={{ filter: !liveDemoHover || 'brightness(0.7)' }} src='/assets/screenshot_dark.png' alt='' />
             ) : (
-              <img className='relative rounded-md md:rounded-lg shadow-lg w-full' src='/assets/screenshot_light.png' alt='' />
+              <img className='relative rounded-md md:rounded-lg shadow-lg w-full transition-all' style={{ filter: !liveDemoHover || 'brightness(0.7)' }} src='/assets/screenshot_light.png' alt='' />
             )}
-            <Link
-              to={LIVE_DEMO_URL}
-              className='hidden group-hover:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center whitespace-nowrap px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-100 dark:hover:bg-indigo-200'
-            >
-              {t('common.liveDemo')}
-            </Link>
+            {liveDemoHover && (
+              <Link
+                to={LIVE_DEMO_URL}
+                className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center whitespace-nowrap px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-100 dark:hover:bg-indigo-200'
+              >
+                {t('common.liveDemo')}
+              </Link>
+            )}
           </div>
         </div>
 
