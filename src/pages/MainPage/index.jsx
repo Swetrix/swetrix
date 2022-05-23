@@ -178,6 +178,7 @@ const Main = () => {
                 href={LIVE_DEMO_URL}
                 className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center whitespace-nowrap px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700'
                 target='_blank'
+                rel='noreferrer noopener'
               >
                 {t('common.liveDemo')}
               </a>
