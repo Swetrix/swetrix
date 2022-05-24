@@ -25,6 +25,8 @@ import Modal from 'ui/Modal'
 import { nanoid } from 'utils/random'
 import routes from 'routes'
 
+import People from './People'
+
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 
@@ -176,6 +178,9 @@ const ProjectSettings = ({
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
             {title}
           </h2>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.general')}
+          </h3>
           <Input
             name='name'
             id='name'
@@ -235,6 +240,13 @@ const ProjectSettings = ({
               {t('project.settings.createHint')}
             </p>
           )}
+
+          <hr className='mt-5' />
+
+          <People />
+
+          <hr className='mt-5' />
+
           <div className='flex justify-between mt-4'>
             <div>
               <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>

@@ -202,6 +202,64 @@ const UserSettings = ({
           <Button className='mt-4' onClick={handleReportSave} primary large>
             {t('common.save')}
           </Button>
+
+          <hr className='mt-5' />
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            Projects
+          </h3>
+          <div>
+            <div className='mt-8 flex flex-col'>
+              <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                  <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                    <table className='min-w-full divide-y divide-gray-600'>
+                      <thead>
+                        <tr className='dark:bg-gray-700'>
+                          <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
+                            Name projects
+                          </th>
+                          <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                            Role
+                          </th>
+                          <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6 dark:text-white'>
+                            <span className='sr-only'>delete</span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className='divide-y divide-gray-600'>
+                        <tr key='1' className='dark:bg-gray-700'>
+                          <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+                            le chiffe cheat
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white'>Admin</td>
+                          <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
+                            <button type='button' className='text-indigo-600 hover:text-indigo-900'>
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                        <tr key='2' className='dark:bg-gray-700'>
+                          <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+                            some project
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white'>Viewr</td>
+                          <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
+                            <button type='button' className='text-indigo-600 hover:text-indigo-900'>
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Button className='mt-4' onClick={handleReportSave} primary large>
+            {t('common.save')}
+          </Button>
           <hr className='mt-5' />
           {!user.isActive && (
             <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
