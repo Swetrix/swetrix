@@ -6,3 +6,55 @@
   left: -310px;
   top: 30px;
 }
+
+.flatpicker-custom .flatpickr-day.selected, 
+.flatpicker-custom .flatpickr-day.startRange, 
+.flatpicker-custom .flatpickr-day.endRange, 
+.flatpicker-custom .flatpickr-day.selected.inRange, 
+.flatpicker-custom .flatpickr-day.startRange.inRange, 
+.flatpicker-custom .flatpickr-day.endRange.inRange, 
+.flatpicker-custom .flatpickr-day.selected:focus, 
+.flatpicker-custom .flatpickr-day.startRange:focus, 
+.flatpicker-custom .flatpickr-day.endRange:focus, 
+.flatpicker-custom .flatpickr-day.selected:hover, 
+.flatpicker-custom .flatpickr-day.startRange:hover, 
+.flatpicker-custom .flatpickr-day.endRange:hover, 
+.flatpicker-custom .flatpickr-day.selected.prevMonthDay, 
+.flatpicker-custom .flatpickr-day.startRange.prevMonthDay, 
+.flatpicker-custom .flatpickr-day.endRange.prevMonthDay, 
+.flatpicker-custom .flatpickr-day.selected.nextMonthDay, 
+.flatpicker-custom .flatpickr-day.startRange.nextMonthDay, 
+.flatpicker-custom .flatpickr-day.endRange.nextMonthDay {
+  background: #1d4ed8;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  color: #fff;
+  border-color: #1d4ed8;
+}
+
+/* if you need other color on dark theme */
+
+.dark .flatpicker-custom .flatpickr-day.selected, 
+.dark .flatpicker-custom .flatpickr-day.startRange, 
+.dark .flatpicker-custom .flatpickr-day.endRange, 
+.dark .flatpicker-custom .flatpickr-day.selected.inRange, 
+.dark .flatpicker-custom .flatpickr-day.startRange.inRange, 
+.dark .flatpicker-custom .flatpickr-day.endRange.inRange, 
+.dark .flatpicker-custom .flatpickr-day.selected:focus, 
+.dark .flatpicker-custom .flatpickr-day.startRange:focus, 
+.dark .flatpicker-custom .flatpickr-day.endRange:focus, 
+.dark .flatpicker-custom .flatpickr-day.selected:hover, 
+.dark .flatpicker-custom .flatpickr-day.startRange:hover, 
+.dark .flatpicker-custom .flatpickr-day.endRange:hover, 
+.dark .flatpicker-custom .flatpickr-day.selected.prevMonthDay, 
+.dark .flatpicker-custom .flatpickr-day.startRange.prevMonthDay, 
+.dark .flatpicker-custom .flatpickr-day.endRange.prevMonthDay, 
+.dark .flatpicker-custom .flatpickr-day.selected.nextMonthDay, 
+.dark .flatpicker-custom .flatpickr-day.startRange.nextMonthDay, 
+.dark .flatpicker-custom .flatpickr-day.endRange.nextMonthDay {
+  background: #4f46e5;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  color: #fff;
+  border-color: #4f46e5;
+}
