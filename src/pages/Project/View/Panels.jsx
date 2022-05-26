@@ -293,7 +293,7 @@ const Panel = ({
   const [activeFragment, setActiveFragment] = useState(0)
   const [modal, setModal] = useState(false)
   const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor(_size(keys) / ENTRIES_PER_PANEL)
+  const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_PANEL)
 
   const _onFilter = hideFilters ? () => { } : onFilter
 
