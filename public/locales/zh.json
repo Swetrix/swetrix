@@ -286,6 +286,7 @@
     "event": "活动",
     "quantity": "数量",
     "conversion": "转换",
+    "ratio": "比率",
     "customEv": "自定义获得",
     "noParamData": "此参数尚无数据",
     "prev": "上一个",

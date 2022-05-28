@@ -286,6 +286,7 @@
     "event": "इवेंट",
     "quantity": "मात्रा",
     "conversion": "रूपांतरण",
+    "ratio": "Ratio",
     "customEv": "कस्टम ईवेंट",
     "noParamData": "इस पैरामीटर के लिए अभी तक कोई डेटा नहीं",
     "prev": "पिछला",

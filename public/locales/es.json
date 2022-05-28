@@ -286,6 +286,7 @@
     "event": "Event",
     "quantity": "Quantity",
     "conversion": "Conversion",
+    "ratio": "Ratio",
     "customEv": "Custom events",
     "noParamData": "No data for this parameter yet",
     "prev": "Previous",

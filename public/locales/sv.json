@@ -286,6 +286,7 @@
     "event": "Händelse",
     "quantity": "Kvantitet",
     "conversion": "Konversion",
+    "ratio": "Förhållande",
     "customEv": "Anpassade händelser",
     "noParamData": "Ingen data för denna parameter ännu",
     "prev": "Föregående",

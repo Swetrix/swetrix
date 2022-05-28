@@ -286,6 +286,7 @@
     "event": "Ereignis",
     "quantity": "Anzahl",
     "conversion": "Konversionsrate",
+    "ratio": "Ratio",
     "customEv": "benutzerdefinierte Tracking-Events",
     "noParamData": "Noch keine Daten für diesen Parameter vorhanden.",
     "prev": "Zurück",
