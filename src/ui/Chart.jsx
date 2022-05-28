@@ -11,7 +11,7 @@ const Chart = ({ current, children, options }) => {
       try {
         chartInstance.destroy()
       } catch (error) {
-        console.error('Internal billboard.js error', error)
+        console.error('[ERROR] Internal billboard.js error', error)
       } finally {
         chartInstance = null
       }
@@ -29,8 +29,7 @@ const Chart = ({ current, children, options }) => {
 
   useEffect(() => {
     renderChart()
-
-    return () => { destroy() }
+    return destroy
   })
 
   return (
