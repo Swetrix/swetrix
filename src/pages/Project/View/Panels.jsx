@@ -259,14 +259,14 @@ const CustomEvents = ({
         <tbody>
           {_map(keys, (ev) => (
             <tr key={ev}>
-              <td className='text-left'>
+              <td className='text-left text-gray-900 dark:text-gray-50'>
                 {ev}
               </td>
-              <td className='text-right'>
+              <td className='text-right text-gray-900 dark:text-gray-50'>
                 {customs[ev]}
                 &nbsp;&nbsp;
               </td>
-              <td className='text-right'>
+              <td className='text-right text-gray-900 dark:text-gray-50'>
                 {_round((customs[ev] / uniques) * 100, 2)}
                 %
               </td>
