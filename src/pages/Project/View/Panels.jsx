@@ -3,11 +3,13 @@ import React, {
 } from 'react'
 import { ArrowSmUpIcon, ArrowSmDownIcon } from '@heroicons/react/solid'
 import {
-  FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon,
+  FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon, ChartPieIcon,
 } from '@heroicons/react/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
+import { pie } from 'billboard.js'
 import _keys from 'lodash/keys'
+import _values from 'lodash/values'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _isFunction from 'lodash/isFunction'
@@ -17,9 +19,11 @@ import _floor from 'lodash/floor'
 import _size from 'lodash/size'
 import _slice from 'lodash/slice'
 import _sum from 'lodash/sum'
+
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
+import Chart from 'ui/Chart'
 import InteractiveMap from './InteractiveMap'
 import { iconClassName } from './ViewProject'
 
@@ -66,6 +70,24 @@ const PanelContainer = ({
               hidden: activeFragment === 0,
             })}
             onClick={openModal}
+          />
+        </div>
+      )}
+      {type === 'ce' && (
+        <div className='flex'>
+          <ViewListIcon
+            className={cx(iconClassName, 'cursor-pointer', {
+              'text-blue-500': activeFragment === 0,
+              'text-gray-900 dark:text-gray-50': activeFragment === 1,
+            })}
+            onClick={() => setActiveFragment(0)}
+          />
+          <ChartPieIcon
+            className={cx(iconClassName, 'ml-2 cursor-pointer', {
+              'text-blue-500': activeFragment === 1,
+              'text-gray-900 dark:text-gray-50': activeFragment === 0,
+            })}
+            onClick={() => setActiveFragment(1)}
           />
         </div>
       )}
@@ -237,14 +259,92 @@ const Overview = ({
   )
 }
 
+const getPieOptions = (customs, uniques, t) => {
+  const tQuantity = t('project.quantity')
+  const tConversion = t('project.conversion')
+  const tRatio = t('project.ratio')
+  const quantity = _values(customs)
+  const conversion = _map(quantity, (el) => _round((el / uniques) * 100, 2))
+
+  return {
+    tooltip: {
+      contents: {
+        text: {
+          QUANTITY: _values(customs),
+          CONVERSION: conversion,
+        },
+        template: `
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+            {{
+              <li class='flex'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                <span>{=NAME}</span>
+              </li>
+              <hr class='border-gray-200 dark:border-gray-600' />
+              <li class='flex justify-between'>
+                <span>${tQuantity}</span>
+                <span class='pl-4'>{=QUANTITY}</span>
+              </li>
+              <li class='flex justify-between'>
+                <span>${tConversion}</span>
+                <span class='pl-4'>{=CONVERSION}%</span>
+              </li>
+              <li class='flex justify-between'>
+                <span>${tRatio}</span>
+                <span class='pl-4'>{=VALUE}</span>
+              </li>
+            }}
+          </ul>`,
+      },
+    },
+  }
+}
+
 const CustomEvents = ({
   customs, chartData, t,
 }) => {
   const keys = _keys(customs)
   const uniques = _sum(chartData.uniques)
+  const [chartOptions, setChartOptions] = useState({})
+  const [activeFragment, setActiveFragment] = useState(0)
+
+  useEffect(() => {
+    if (!_isEmpty(chartData)) {
+      const options = getPieOptions(customs, uniques, t)
+      setChartOptions({
+        data: {
+          columns: _map(keys, (ev) => [ev, customs[ev]]),
+          type: pie(),
+        },
+        ...options,
+      })
+    }
+  }, [chartData, customs, t]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (activeFragment === 1 && !_isEmpty(chartData)) {
+    return (
+      <PanelContainer
+        name={t('project.customEv')}
+        type='ce'
+        setActiveFragment={setActiveFragment}
+        activeFragment={activeFragment}
+      >
+        {_isEmpty(chartData) ? (
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
+            {t('project.noParamData')}
+          </p>
+        ) : (
+          <Chart
+            options={chartOptions}
+            current='panels-ce'
+          />
+        )}
+      </PanelContainer>
+    )
+  }
 
   return (
-    <PanelContainer name={t('project.customEv')}>
+    <PanelContainer name={t('project.customEv')} type='ce' setActiveFragment={setActiveFragment} activeFragment={activeFragment}>
       <table className='table-fixed'>
         <thead>
           <tr>
