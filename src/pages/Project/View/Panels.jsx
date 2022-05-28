@@ -8,6 +8,7 @@ import {
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import _keys from 'lodash/keys'
+import _values from 'lodash/values'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _isFunction from 'lodash/isFunction'
@@ -71,23 +72,23 @@ const PanelContainer = ({
           />
         </div>
       )}
-      { type === 'ce' && (
-      <div className='flex'>
-        <ViewListIcon
-          className={cx(iconClassName, 'cursor-pointer', {
-            'text-blue-500': activeFragment === 0,
-            'text-gray-900 dark:text-gray-50': activeFragment === 1,
-          })}
-          onClick={() => setActiveFragment(0)}
-        />
-        <ChartPieIcon
-          className={cx(iconClassName, 'ml-2 cursor-pointer', {
-            'text-blue-500': activeFragment === 1,
-            'text-gray-900 dark:text-gray-50': activeFragment === 0,
-          })}
-          onClick={() => setActiveFragment(1)}
-        />
-      </div>
+      {type === 'ce' && (
+        <div className='flex'>
+          <ViewListIcon
+            className={cx(iconClassName, 'cursor-pointer', {
+              'text-blue-500': activeFragment === 0,
+              'text-gray-900 dark:text-gray-50': activeFragment === 1,
+            })}
+            onClick={() => setActiveFragment(0)}
+          />
+          <ChartPieIcon
+            className={cx(iconClassName, 'ml-2 cursor-pointer', {
+              'text-blue-500': activeFragment === 1,
+              'text-gray-900 dark:text-gray-50': activeFragment === 0,
+            })}
+            onClick={() => setActiveFragment(1)}
+          />
+        </div>
       )}
     </div>
     <div className='flex flex-col h-full scroll-auto'>
@@ -257,6 +258,47 @@ const Overview = ({
   )
 }
 
+const getPieOptions = (customs, uniques, t) => {
+  const tQuantity = t('project.quantity')
+  const tConversion = t('project.conversion')
+  const tRatio = t('project.ratio')
+  const quantity = _values(customs)
+  const conversion = _map(quantity, (el) => _round((el / uniques) * 100, 2))
+
+  return {
+    tooltip: {
+      contents: {
+        text: {
+          QUANTITY: _values(customs),
+          CONVERSION: conversion,
+        },
+        template: `
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+            {{
+              <li class='flex'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                <span>{=NAME}</span>
+              </li>
+              <hr class='border-gray-200 dark:border-gray-600' />
+              <li class='flex justify-between'>
+                <span>${tQuantity}</span>
+                <span class='pl-4'>{=QUANTITY}</span>
+              </li>
+              <li class='flex justify-between'>
+                <span>${tConversion}</span>
+                <span class='pl-4'>{=CONVERSION}%</span>
+              </li>
+              <li class='flex justify-between'>
+                <span>${tRatio}</span>
+                <span class='pl-4'>{=VALUE}</span>
+              </li>
+            }}
+          </ul>`,
+      },
+    },
+  }
+}
+
 const CustomEvents = ({
   customs, chartData, t,
 }) => {
@@ -267,17 +309,16 @@ const CustomEvents = ({
 
   useEffect(() => {
     if (!_isEmpty(chartData)) {
+      const options = getPieOptions(customs, uniques, t)
       setChartOptions({
         data: {
           columns: _map(keys, (ev) => [ev, customs[ev]]),
           type: pie(),
         },
-        legend: {
-          show: false,
-        },
+        ...options,
       })
     }
-  }, [chartData, customs])
+  }, [chartData, customs, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (activeFragment === 1 && !_isEmpty(chartData)) {
     return (
@@ -294,7 +335,7 @@ const CustomEvents = ({
         ) : (
           <Chart
             options={chartOptions}
-            current='Panels-ce'
+            current='panels-ce'
           />
         )}
       </PanelContainer>
