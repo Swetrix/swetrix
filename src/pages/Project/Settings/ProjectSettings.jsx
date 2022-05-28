@@ -23,6 +23,7 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import { nanoid } from 'utils/random'
+import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
 
 const MAX_NAME_LENGTH = 50
@@ -84,6 +85,7 @@ const ProjectSettings = ({
           newProject(t('project.settings.updated'))
         } else {
           await createProject(formalisedData)
+          trackCustom('PROJECT_CREATED')
           newProject(t('project.settings.created'))
         }
 

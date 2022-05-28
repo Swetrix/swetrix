@@ -17,6 +17,7 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS,
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
+import { trackCustom } from 'utils/analytics'
 
 const Signup = ({ signup }) => {
   const { t } = useTranslation('common')
@@ -70,7 +71,9 @@ const Signup = ({ signup }) => {
     if (!isLoading) {
       setIsLoading(true)
       signup(data, t, (result) => {
-        if (!result) {
+        if (result) {
+          trackCustom('SIGNUP')
+        } else {
           setIsLoading(false)
         }
       })

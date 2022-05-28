@@ -16,6 +16,7 @@ import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import UIActions from 'redux/actions/ui'
 import { getCookie, setCookie } from 'utils/cookie'
+import { trackCustom } from 'utils/analytics'
 import { confirmEmail, exportUserData } from 'api'
 import routes from 'routes'
 import UserSettings from './UserSettings'
@@ -33,7 +34,10 @@ const UserSettingsContainer = () => {
         (error) => dispatch(
           errorsActions.deleteAccountFailed(error),
         ),
-        () => history.push(routes.main),
+        () => {
+          trackCustom('ACCOUNT_DELETED')
+          history.push(routes.main)
+        },
         t,
       ),
     )
@@ -47,6 +51,7 @@ const UserSettingsContainer = () => {
       }
       await exportUserData()
 
+      trackCustom('GDPR_EXPORT')
       dispatch(alertsActions.accountUpdated(t('profileSettings.reportSent')))
       setCookie(GDPR_REQUEST, true, 1209600) // setting cookie for 14 days
     } catch (e) {

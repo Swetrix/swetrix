@@ -14,6 +14,7 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS,
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
+import { trackCustom } from 'utils/analytics'
 
 const BasicSignup = () => {
   const { t } = useTranslation('common')
@@ -34,8 +35,12 @@ const BasicSignup = () => {
   const onSubmit = (data) => {
     if (!isLoading) {
       setIsLoading(true)
-      dispatch(authActions.signupAsync(data, t, () => {
-        setIsLoading(false)
+      dispatch(authActions.signupAsync(data, t, (result) => {
+        if (result) {
+          trackCustom('SIGNUP_BASIC')
+        } else {
+          setIsLoading(false)
+        }
       }))
     }
   }
