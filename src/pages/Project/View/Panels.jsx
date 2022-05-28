@@ -3,7 +3,7 @@ import React, {
 } from 'react'
 import { ArrowSmUpIcon, ArrowSmDownIcon } from '@heroicons/react/solid'
 import {
-  FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon,
+  FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon, ChartPieIcon,
 } from '@heroicons/react/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -20,6 +20,8 @@ import _sum from 'lodash/sum'
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
+import { pie } from 'billboard.js'
+import Chart from 'ui/Chart'
 import InteractiveMap from './InteractiveMap'
 import { iconClassName } from './ViewProject'
 
@@ -68,6 +70,24 @@ const PanelContainer = ({
             onClick={openModal}
           />
         </div>
+      )}
+      { type === 'ce' && (
+      <div className='flex'>
+        <ViewListIcon
+          className={cx(iconClassName, 'cursor-pointer', {
+            'text-blue-500': activeFragment === 0,
+            'text-gray-900 dark:text-gray-50': activeFragment === 1,
+          })}
+          onClick={() => setActiveFragment(0)}
+        />
+        <ChartPieIcon
+          className={cx(iconClassName, 'ml-2 cursor-pointer', {
+            'text-blue-500': activeFragment === 1,
+            'text-gray-900 dark:text-gray-50': activeFragment === 0,
+          })}
+          onClick={() => setActiveFragment(1)}
+        />
+      </div>
       )}
     </div>
     <div className='flex flex-col h-full scroll-auto'>
@@ -242,9 +262,47 @@ const CustomEvents = ({
 }) => {
   const keys = _keys(customs)
   const uniques = _sum(chartData.uniques)
+  const [chartOptions, setChartOptions] = useState({})
+  const [activeFragment, setActiveFragment] = useState(0)
+
+  useEffect(() => {
+    if (!_isEmpty(chartData)) {
+      setChartOptions({
+        data: {
+          columns: _map(keys, (ev) => [ev, customs[ev]]),
+          type: pie(),
+        },
+        legend: {
+          show: false,
+        },
+      })
+    }
+  }, [chartData, customs])
+
+  if (activeFragment === 1 && !_isEmpty(chartData)) {
+    return (
+      <PanelContainer
+        name={t('project.customEv')}
+        type='ce'
+        setActiveFragment={setActiveFragment}
+        activeFragment={activeFragment}
+      >
+        {_isEmpty(chartData) ? (
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
+            {t('project.noParamData')}
+          </p>
+        ) : (
+          <Chart
+            options={chartOptions}
+            current='Panels-ce'
+          />
+        )}
+      </PanelContainer>
+    )
+  }
 
   return (
-    <PanelContainer name={t('project.customEv')}>
+    <PanelContainer name={t('project.customEv')} type='ce' setActiveFragment={setActiveFragment} activeFragment={activeFragment}>
       <table className='table-fixed'>
         <thead>
           <tr>
