@@ -55,7 +55,7 @@ export class AuthController {
       )
     }
 
-    return user
+    return this.userService.omitSensitiveData(user)
   }
 
   @Post('/login')

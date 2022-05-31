@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size  from 'lodash/size'
+import * as _omit  from 'lodash/omit'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { User } from './entities/user.entity'
@@ -49,6 +50,10 @@ export class UserService {
 
   async count(): Promise<number> {
     return await this.usersRepository.count()
+  }
+
+  omitSensitiveData(user: User): User {
+    return _omit(user, ['password'])
   }
 
   findOneWhere(where: Record<string, unknown>, relations: string[] = []): Promise<User> {

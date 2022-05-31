@@ -203,7 +203,8 @@ export class UserController {
         await this.userService.create({ ...userDTO })
       }
       await this.userService.update(id, { ...user, ...userDTO })
-      return this.userService.findOneWhere({ id })
+      // omit sensitive data before returning using this.userService.omitSensitiveData function
+      return this.userService.omitSensitiveData(await this.userService.findOne(id))
     } catch (e) {
       if (e.code === 'ER_DUP_ENTRY'){
         if (e.sqlMessage.includes(userDTO.email)) {
@@ -242,9 +243,10 @@ export class UserController {
       }
       // delete internal properties from userDTO before updating it
       const userToUpdate = _omit(userDTO, ['id', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode'])
-      console.log(userToUpdate)
       await this.userService.update(id, userToUpdate)
-      return this.userService.findOneWhere({ id })
+
+      const updatedUser = await this.userService.findOneWhere({ id })
+      return this.userService.omitSensitiveData(updatedUser)
     } catch (e) {
       throw new BadRequestException(e.message)
     }
