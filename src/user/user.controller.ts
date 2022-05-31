@@ -9,6 +9,8 @@ import * as _map from 'lodash/map'
 import * as _join from 'lodash/join'
 import * as _isNull from 'lodash/isNull'
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _isString from 'lodash/isString'
+import * as _omit from 'lodash/omit'
 
 import { UserService } from './user.service'
 import { ProjectService } from '../project/project.service'
@@ -23,6 +25,7 @@ import {
 import { RolesGuard } from 'src/common/guards/roles.guard'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
+import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
 import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
@@ -185,8 +188,8 @@ export class UserController {
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
-  async update(@Body() userDTO: UpdateUserProfileDTO, @Param('id') id: string): Promise<User> {
-    this.logger.log({ userDTO, id }, 'DELETE /user/:id')
+  async update(@Body() userDTO: AdminUpdateUserProfileDTO, @Param('id') id: string): Promise<User> {
+    this.logger.log({ userDTO, id }, 'PUT /user/:id')
     
     if (userDTO.password) {
       this.userService.validatePassword(userDTO.password)
@@ -197,9 +200,9 @@ export class UserController {
     
     try {
       if (!user) {
-        await this.userService.create({...userDTO})
+        await this.userService.create({ ...userDTO })
       }
-      await this.userService.update(id, {...user, ...userDTO})
+      await this.userService.update(id, { ...user, ...userDTO })
       return this.userService.findOneWhere({ id })
     } catch (e) {
       if (e.code === 'ER_DUP_ENTRY'){
@@ -219,7 +222,7 @@ export class UserController {
     this.logger.log({ userDTO, id }, 'PUT /user')
     const user = await this.userService.findOneWhere({ id })
 
-    if (userDTO.password?.length > 0) {
+    if (!_isEmpty(userDTO.password) && _isString(userDTO.password)) {
       this.userService.validatePassword(userDTO.password)
       userDTO.password = await this.authService.hashPassword(userDTO.password)
       await this.mailerService.sendEmail(userDTO.email, LetterTemplate.PasswordChanged)
@@ -237,8 +240,10 @@ export class UserController {
         const url = `${request.headers.origin}/change-email/${token.id}`
         await this.mailerService.sendEmail(user.email, LetterTemplate.MailAddressChangeConfirmation, { url })
       }
-      await this.userService.update(id, { ...userDTO })
-
+      // delete internal properties from userDTO before updating it
+      const userToUpdate = _omit(userDTO, ['id', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode'])
+      console.log(userToUpdate)
+      await this.userService.update(id, userToUpdate)
       return this.userService.findOneWhere({ id })
     } catch (e) {
       throw new BadRequestException(e.message)
