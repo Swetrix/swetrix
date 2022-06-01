@@ -62,8 +62,8 @@ export class AuthController {
   @Post('/login')
   async loginUser(@Body() userLoginDTO: UserLoginDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     this.logger.log({ userLoginDTO }, 'POST /auth/login')
-    // const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    // await checkRateLimit(ip, 'login', 10, 1800)
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    await checkRateLimit(ip, 'login', 10, 1800)
     // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
 
     if (isSelfhosted) {
