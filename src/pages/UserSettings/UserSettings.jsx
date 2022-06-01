@@ -171,7 +171,9 @@ const UserSettings = ({
           <hr className='mt-5' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.timezone')}
-            <Beta className='ml-10' />
+            <div className='ml-6'>
+              <Beta />
+            </div>
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>
