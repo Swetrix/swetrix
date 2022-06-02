@@ -25,7 +25,7 @@ import Modal from 'ui/Modal'
 import { nanoid } from 'utils/random'
 import routes from 'routes'
 
-import People from './People'
+import People from './People/People'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -243,7 +243,7 @@ const ProjectSettings = ({
 
           <hr className='mt-5' />
 
-          <People />
+          <People projectName={form.name} />
 
           <hr className='mt-5' />
 

@@ -63,7 +63,7 @@ const Modal = ({
                     <ExclamationIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
                   </div>
                 )}
-                <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full'>
+                <div className='mt-3 text-center sm:mt-0 sm:text-left w-full'>
                   {title && (
                     <Dialog.Title as='h3' className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
                       {title}
