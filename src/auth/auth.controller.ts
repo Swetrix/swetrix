@@ -24,7 +24,7 @@ import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   isSelfhosted, SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD, SELFHOSTED_UUID,
 } from 'src/common/constants'
-import * as _omit from 'lodash/omit'
+import * as _pick from 'lodash/pick'
 
 // TODO: Add logout endpoint to invalidate the token
 @ApiTags('Auth')
@@ -105,7 +105,7 @@ export class AuthController {
     userDTO.password = await this.authService.hashPassword(userDTO.password)
 
     try {
-      const userToUpdate = _omit(userDTO, ['id', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode'])
+      const userToUpdate = _pick(userDTO, ['email', 'password'])
       const user = await this.userService.create(userToUpdate)
       const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.EMAIL_VERIFICATION)
       const url = `${request.headers.origin}/verify/${actionToken.id}`
