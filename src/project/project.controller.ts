@@ -27,6 +27,7 @@ import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
+import { ProjectShare } from './entity/project-share.entity'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
@@ -510,6 +511,32 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    // const share = new Share()
+    try {
+      const share = new ProjectShare()
+      share.role = shareDTO.role
+      // todo
+
+
+      // const project = new Project()
+      // Object.assign(project, projectDTO)
+      // project.origins = _map(projectDTO.origins, _trim)
+
+      // const newProject = await this.projectService.create(project)
+      // user.projects.push(project)
+
+      // await this.userService.create(user)
+
+      // return newProject
+    } catch (e) {
+      // if (e.code === 'ER_DUP_ENTRY') {
+      //   if (e.sqlMessage.includes(projectDTO.id)) {
+      //     throw new BadRequestException(
+      //       'Project with selected ID already exists',
+      //     )
+      //   }
+      // }
+
+      // throw new BadRequestException(e)
+    }
   }
 }

@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { User } from '../../user/entities/user.entity'
 import { Project } from './project.entity'
 
-export enum PlanCode {
+export enum Role {
   viewer = 'viewer',
   admin = 'admin',
 }
@@ -29,9 +29,9 @@ export class ProjectShare {
 
   @Column({
     type: 'enum',
-    enum: PlanCode,
+    enum: Role,
   })
-  role: PlanCode
+  role: Role
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
