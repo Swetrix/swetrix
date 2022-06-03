@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, ManyToOne } from 'typeorm'
+import { Entity, Column, ManyToOne, BeforeUpdate, PrimaryGeneratedColumn } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
@@ -6,6 +6,9 @@ import { Project } from './project.entity'
 
 @Entity()
 export class ProjectShare {
+  @PrimaryGeneratedColumn('uuid')
+  id: string
+
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.sharedProjects)
   user: User
@@ -24,4 +27,9 @@ export class ProjectShare {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updated: Date
+
+  @BeforeUpdate()
+  updateTimestamp() {
+    this.updated = new Date
+  }
 }

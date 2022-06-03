@@ -12,6 +12,7 @@ import { ProjectModule } from './project/project.module'
 import { MailerModule } from './mailer/mailer.module'
 import { ActionTokensModule } from './action-tokens/action-tokens.module'
 import { ActionToken } from './action-tokens/action-token.entity'
+import { ProjectShare } from './project/entity/project-share.entity'
 import { TaskManagerModule } from './task-manager/task-manager.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
@@ -26,8 +27,8 @@ import { PingModule } from './ping/ping.module'
       username: process.env.MYSQL_USER,
       password: process.env.MYSQL_ROOT_PASSWORD,
       database: process.env.MYSQL_DATABASE,
-      synchronize: true,
-      entities: [User, ActionToken, Project],
+      synchronize: false,
+      entities: [User, ActionToken, Project, ProjectShare],
     }),
     ScheduleModule.forRoot(),
     TaskManagerModule,
