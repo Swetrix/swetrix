@@ -475,6 +475,37 @@ export class ProjectController {
   ): Promise<any> {
     this.logger.log({ uid, pid, shareDTO }, 'POST /project/:pid/share')
 
-    // TODO
+    /* 
+      TODO:
+      1. Validate the PID +
+      2. Validate ShareDTO 
+      3. Check if the user is the owner of the project +
+      4. Check if the user you want to share project with already has the project
+      5. Add the user to the project with confirmed = false
+      6. Send an email to the user with a link to confirm the share (the email is valid for 48 hours)
+      7. Return the project
+    */
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const user = await this.userService.findOne(uid)
+    const project = await this.projectService.findOneWhere(
+      { id: pid },
+      {
+        relations: ['admin', 'share'],
+        select: ['id', 'admin', 'share'],
+      },
+    )
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${pid} does not exist`)
+    }
+
+    this.projectService.allowedToManage(project, uid, user.roles)
+
+    // const share = new Share()
   }
 }
