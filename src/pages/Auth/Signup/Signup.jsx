@@ -159,6 +159,7 @@ const Signup = ({ signup }) => {
                 />
               </span>
             )}
+            hintClassName='!text-red-600 dark:!text-red-500'
             hint={beenSubmitted ? errors.tos : ''}
           />
           <div className='flex mt-4'>
