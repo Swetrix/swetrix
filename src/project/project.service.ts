@@ -5,22 +5,21 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _isString from 'lodash/isString'
 import * as _isArray from 'lodash/isArray'
 import * as _size from 'lodash/size'
-import * as _split from 'lodash/split'
 import * as _join from 'lodash/join'
 import * as _find from 'lodash/find'
 import * as _map from 'lodash/map'
+import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
-import * as _includes from 'lodash/includes'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
+import { ProjectShare } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
 import { UserType } from './../user/entities/user.entity'
 import {
   isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
 } from '../common/constants'
-import { getProjectsClickhouse } from '../common/utils'
 
 dayjs.extend(utc)
 
@@ -28,7 +27,9 @@ dayjs.extend(utc)
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
-    private projectsRepository: Repository<Project>
+    private projectsRepository: Repository<Project>,
+    @InjectRepository(ProjectShare)
+    private projectShareRepository: Repository<ProjectShare>,
   ) {}
 
   async paginate(options: PaginationOptionsInterface, where: Record<string, unknown> | undefined): Promise<Pagination<Project>> {
@@ -68,6 +69,22 @@ export class ProjectService {
       .delete()
       .where(`id IN (${pids})`)
       .execute()
+  }
+
+  async createShare(share: ProjectShare): Promise<ProjectShare> {
+    return this.projectShareRepository.save(share)
+  }
+
+  async deleteShare(id: string): Promise<any> {
+    return this.projectShareRepository.delete(id)
+  }
+
+  async updateShare(id: string, share: ProjectShare): Promise<any> {
+    return this.projectShareRepository.update(id, share)
+  }
+
+  async findShare(params: object): Promise<ProjectShare[]> {
+    return this.projectShareRepository.find(params)
   }
 
   findOneWithRelations(id: string): Promise<Project | null> {

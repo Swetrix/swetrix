@@ -30,6 +30,7 @@ import { Project } from './entity/project.entity'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
+import { ShareDTO } from './dto/share.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
@@ -420,5 +421,60 @@ export class ProjectController {
         return 'Error while deleting your project'
       }
     }
+  }
+
+  // The routes related to sharing projects feature
+  @Delete('/:pid/:userId')
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async deleteShare(
+    @Param('pid') pid: string,
+    @Param('userId') userId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, pid, userId }, 'DELETE /project/:pid/:userId')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const user = await this.userService.findOne(uid)
+    const project = await this.projectService.findOneWhere(
+      { id: pid },
+      {
+        relations: ['admin', 'share'],
+        select: ['id', 'admin', 'share'],
+      },
+    )
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${pid} does not exist`)
+    }
+
+    this.projectService.allowedToManage(project, uid, user.roles)
+    
+    console.log(project)
+    // TODO
+  }
+
+  @Post('/:pid/share')
+  @HttpCode(200)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 200, type: Project })
+  async share(
+    @Param('pid') pid: string,
+    @Body() shareDTO: ShareDTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, pid, shareDTO }, 'POST /project/:pid/share')
+
+    // TODO
   }
 }

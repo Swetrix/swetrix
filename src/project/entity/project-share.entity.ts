@@ -4,6 +4,11 @@ import { ApiProperty } from '@nestjs/swagger'
 import { User } from '../../user/entities/user.entity'
 import { Project } from './project.entity'
 
+export enum PlanCode {
+  viewer = 'viewer',
+  admin = 'admin',
+}
+
 @Entity()
 export class ProjectShare {
   @PrimaryGeneratedColumn('uuid')
@@ -21,6 +26,12 @@ export class ProjectShare {
     default: false,
   })
   confirmed: boolean
+
+  @Column({
+    type: 'enum',
+    enum: PlanCode,
+  })
+  role: PlanCode
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
