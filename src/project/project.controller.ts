@@ -459,7 +459,11 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid, user.roles)
     
     console.log(project)
-    // TODO
+    /* 
+      TODO:
+      1. Remove the user from the project's share table
+      2. Return the project
+    */
   }
 
   @Post('/:pid/share')
