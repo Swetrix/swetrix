@@ -39,7 +39,8 @@ export class ProjectService {
       where,
       order: {
         name: 'ASC',
-      }
+      },
+      relations: ['share'],
     })
 
     return new Pagination<Project>({
