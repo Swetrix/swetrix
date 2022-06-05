@@ -4,6 +4,8 @@ import { ApiProperty } from '@nestjs/swagger'
 import { User } from '../../user/entities/user.entity'
 import { Project } from './project.entity'
 
+export const roles = ['admin', 'viewer']
+
 export enum Role {
   viewer = 'viewer',
   admin = 'admin',

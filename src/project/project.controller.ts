@@ -19,6 +19,7 @@ import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _values from 'lodash/values'
+import * as _includes from 'lodash/includes'
 
 import { ProjectService } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
@@ -27,7 +28,7 @@ import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
-import { ProjectShare } from './entity/project-share.entity'
+import { ProjectShare, roles } from './entity/project-share.entity'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
@@ -49,6 +50,13 @@ import {
 } from '../common/utils'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
+
+const isValidShareDTO = (share: ShareDTO): boolean => {
+  return (
+    !_isEmpty(_trim(share.email)) &&
+    _includes(roles, share.role)
+  )
+}
 
 @ApiTags('Project')
 @Controller('project')
@@ -480,19 +488,15 @@ export class ProjectController {
   ): Promise<any> {
     this.logger.log({ uid, pid, shareDTO }, 'POST /project/:pid/share')
 
-    /* 
-      TODO:
-      1. Validate the PID +
-      2. Validate ShareDTO 
-      3. Check if the user is the owner of the project +
-      4. Check if the user you want to share project with already has the project
-      5. Add the user to the project with confirmed = false
-      6. Send an email to the user with a link to confirm the share (the email is valid for 48 hours)
-      7. Return the project
-    */
     if (!isValidPID(pid)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    if (!isValidShareDTO(shareDTO)) {
+      throw new BadRequestException(
+        'The provided ShareDTO is incorrect',
       )
     }
 
@@ -511,32 +515,31 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
+    const invitee = await this.userService.findOneWhere({
+      email: shareDTO.email,
+    })
+
+    if (!invitee) {
+      throw new NotFoundException(`User with email ${shareDTO.email} is not registered on Swetrix`)
+    }
+
+    // TODO: Check if the invitee already has the project
+    // TODO: Send an email to the invitee with a link to confirm the share (the email is valid for 48 hours)
+
     try {
       const share = new ProjectShare()
       share.role = shareDTO.role
-      // todo
+      share.user = invitee
+      share.project = project
 
+      await this.projectService.createShare(share)
 
-      // const project = new Project()
-      // Object.assign(project, projectDTO)
-      // project.origins = _map(projectDTO.origins, _trim)
+      const updatedProject = await this.projectService.findOne(pid, { relations: ['share'] })
 
-      // const newProject = await this.projectService.create(project)
-      // user.projects.push(project)
-
-      // await this.userService.create(user)
-
-      // return newProject
+      return updatedProject
     } catch (e) {
-      // if (e.code === 'ER_DUP_ENTRY') {
-      //   if (e.sqlMessage.includes(projectDTO.id)) {
-      //     throw new BadRequestException(
-      //       'Project with selected ID already exists',
-      //     )
-      //   }
-      // }
-
-      // throw new BadRequestException(e)
+      console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)
+      throw new BadRequestException(e)
     }
   }
 }
