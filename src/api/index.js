@@ -259,3 +259,13 @@ export const getGeneralStats = () =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const shareProject = (pid, data) => api
+  .post(`project/${pid}/share`, data)
+  .then((response) => response.data)
+  .catch((error) => {
+    debug('%s', error)
+    throw _isEmpty(error.response.data?.message)
+      ? error.response.data
+      : error.response.data.message
+  })

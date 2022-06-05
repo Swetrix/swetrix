@@ -12,6 +12,8 @@ import cx from 'clsx'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 
+import { shareProject } from 'api'
+
 const roles = [
   {
     name: 'Admin',
@@ -100,7 +102,7 @@ const UsersList = ({ data, onRemove }) => {
   )
 }
 
-const People = ({ projectName }) => {
+const People = ({ projectName, pid }) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
   const [form, setForm] = useState({
@@ -110,7 +112,6 @@ const People = ({ projectName }) => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [errors, setErrors] = useState({})
   const [validated, setValidated] = useState(false)
-
   const [users, setUsers] = useState([
     {
       gmail: 'billy.harington@gmail.com',
@@ -191,6 +192,7 @@ const People = ({ projectName }) => {
     setForm({ email: '', role: '' })
     setErrors({})
     setValidated(false)
+    shareProject(pid, { email: form.email, role: form.role })
   }
 
   const handleSubmit = e => {
@@ -211,7 +213,6 @@ const People = ({ projectName }) => {
   }
 
   const onRemove = gmail => {
-    console.log(gmail)
     setUsers(oldUsers => _filter(oldUsers, user => user.gmail !== gmail))
   }
   return (

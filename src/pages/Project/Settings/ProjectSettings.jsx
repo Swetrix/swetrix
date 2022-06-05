@@ -234,18 +234,18 @@ const ProjectSettings = ({
                 label={t('project.settings.public')}
                 hint={t('project.settings.publicHint')}
               />
+
+              <hr className='mt-5' />
+
+              <People projectName={form.name} pid={id} />
+
+              <hr className='mt-5' />
             </>
           ) : (
             <p className='text-gray-500 dark:text-gray-300 italic mt-2 text-sm'>
               {t('project.settings.createHint')}
             </p>
           )}
-
-          <hr className='mt-5' />
-
-          <People projectName={form.name} />
-
-          <hr className='mt-5' />
 
           <div className='flex justify-between mt-4'>
             <div>
