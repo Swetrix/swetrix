@@ -261,7 +261,7 @@ export const getGeneralStats = () =>
     })
 
 export const shareProject = (pid, data) => api
-  .post(`project/${pid}/share`, data)
+  .post(`/project/${pid}/share`, data)
   .then((response) => response.data)
   .catch((error) => {
     debug('%s', error)

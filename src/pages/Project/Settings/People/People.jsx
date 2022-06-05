@@ -102,7 +102,7 @@ const UsersList = ({ data, onRemove }) => {
   )
 }
 
-const People = ({ projectName, pid }) => {
+const People = ({ project }) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
   const [form, setForm] = useState({
@@ -112,6 +112,7 @@ const People = ({ projectName, pid }) => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [errors, setErrors] = useState({})
   const [validated, setValidated] = useState(false)
+  const { id, name, share } = project
   const [users, setUsers] = useState([
     {
       gmail: 'billy.harington@gmail.com',
@@ -192,7 +193,7 @@ const People = ({ projectName, pid }) => {
     setForm({ email: '', role: '' })
     setErrors({})
     setValidated(false)
-    shareProject(pid, { email: form.email, role: form.role })
+    shareProject(id, { email: form.email, role: form.role })
   }
 
   const handleSubmit = e => {
@@ -251,7 +252,7 @@ const People = ({ projectName, pid }) => {
             <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
               Invite member to
               {' '}
-              {projectName}
+              {name}
             </h2>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
               Enter the email address and role of the person you want to invite.

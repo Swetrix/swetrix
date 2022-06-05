@@ -237,7 +237,7 @@ const ProjectSettings = ({
 
               <hr className='mt-5' />
 
-              <People projectName={form.name} pid={id} />
+              <People project={project} />
 
               <hr className='mt-5' />
             </>
