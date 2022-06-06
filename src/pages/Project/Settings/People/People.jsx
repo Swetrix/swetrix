@@ -12,7 +12,7 @@ import cx from 'clsx'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 
-import { shareProject } from 'api'
+import { deleteShareProject, shareProject } from 'api'
 
 const roles = [
   {
@@ -27,6 +27,16 @@ const roles = [
   },
 ]
 
+const NoEvents = () => (
+  <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+    <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
+      <h2 className='text-2xl mb-8 text-center leading-snug'>
+        No people have been added to this project yet.
+      </h2>
+    </div>
+  </div>
+)
+
 const UsersList = ({ data, onRemove }) => {
   const [open, setOpen] = useState(false)
 
@@ -34,17 +44,17 @@ const UsersList = ({ data, onRemove }) => {
     <li className='py-4'>
       <div className='flex justify-between'>
         <p className='text-gray-700 dark:text-gray-200'>
-          {data.gmail}
+          {data.id}
         </p>
         <div className='relative'>
           {
-        data.pandding ? (
+        !data.confirmed ? (
           <>
             <ActivePin
               label='Pannding'
               className='inline-flex items-center shadow-sm px-2.5 py-0.5 mr-3'
             />
-            <span onClick={() => onRemove(data.gmail)}>
+            <span onClick={() => onRemove(data.id)}>
               <InactivePin
                 label='Remove'
                 className='cursor-pointer inline-flex items-center shadow-sm px-2.5 py-0.5 hover:text-red-400 hover:dark:text-red-400'
@@ -76,7 +86,7 @@ const UsersList = ({ data, onRemove }) => {
                       {description}
                     </p>
                   </div>
-                  { role === 'admin' && (
+                  { data.role === role && (
                   <span className='text-indigo-600 group-hover:text-gray-200'>
                     <CheckIcon className='w-7 h-7 pt-px ml-1' />
                   </span>
@@ -102,7 +112,7 @@ const UsersList = ({ data, onRemove }) => {
   )
 }
 
-const People = ({ project }) => {
+const People = ({ project, updateProjectFailed }) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
   const [form, setForm] = useState({
@@ -113,38 +123,8 @@ const People = ({ project }) => {
   const [errors, setErrors] = useState({})
   const [validated, setValidated] = useState(false)
   const { id, name, share } = project
-  const [users, setUsers] = useState([
-    {
-      gmail: 'billy.harington@gmail.com',
-      pandding: true,
-      role: 'admin',
-    },
-    {
-      gmail: '123456789@gmail.com',
-      pandding: false,
-      role: 'viewer',
-    },
-    {
-      gmail: 'asdasasd@gmail.com',
-      pandding: false,
-      role: 'viewer',
-    },
-    {
-      gmail: 'maks.mrug@gmail.com',
-      pandding: false,
-      role: 'admin',
-    },
-    {
-      gmail: 'mrug.ru@gmail.com',
-      pandding: true,
-      role: 'admin',
-    },
-    {
-      gmail: 'maks.ru@gmail.com',
-      pandding: true,
-      role: 'admin',
-    },
-  ])
+
+  const [users, setUsers] = useState(share)
 
   const validate = () => {
     const allErrors = {}
@@ -180,20 +160,16 @@ const People = ({ project }) => {
 
   const onSubmit = () => {
     setShowModal(false)
-    setUsers((oldUsers) => {
-      return [
-        {
-          gmail: form.email,
-          pandding: true,
-          role: form.role,
-        },
-        ...oldUsers,
-      ]
-    })
     setForm({ email: '', role: '' })
     setErrors({})
     setValidated(false)
     shareProject(id, { email: form.email, role: form.role })
+      .then((data) => {
+        setUsers(data.share)
+      })
+      .catch((e) => {
+        updateProjectFailed(e)
+      })
   }
 
   const handleSubmit = e => {
@@ -213,9 +189,17 @@ const People = ({ project }) => {
     setErrors({})
   }
 
-  const onRemove = gmail => {
-    setUsers(oldUsers => _filter(oldUsers, user => user.gmail !== gmail))
+  const onRemove = userId => {
+    deleteShareProject(id, userId)
+      .then((data) => {
+        console.log(data)
+        setUsers(oldUsers => _filter(oldUsers, user => user.id !== userId))
+      })
+      .catch((e) => {
+        updateProjectFailed(e)
+      })
   }
+
   return (
     <div className='mt-6 mb-6'>
       <div className='flex justify-between items-center mb-3'>
@@ -238,9 +222,15 @@ const People = ({ project }) => {
         </Button>
       </div>
       <div>
-        <ul className='divide-y divide-gray-200 dark:divide-gray-700'>
-          {_map(users, user => (<UsersList data={user} key={user.gmail} onRemove={onRemove} />))}
-        </ul>
+        {
+          !users ? (
+            <NoEvents />
+          ) : (
+            <ul className='divide-y divide-gray-200 dark:divide-gray-700'>
+              {_map(users, user => (<UsersList data={user} key={user.id} onRemove={onRemove} />))}
+            </ul>
+          )
+        }
       </div>
       <Modal
         onClose={closeModal}
@@ -324,9 +314,6 @@ const People = ({ project }) => {
         )}
         isOpened={showModal}
       />
-      <Button type='submit' className='mt-3' primary regular>
-        save
-      </Button>
     </div>
   )
 }
