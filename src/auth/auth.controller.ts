@@ -52,7 +52,7 @@ export class AuthController {
       }
     } else {
       user = this.authService.processUser(
-        await this.userService.findOneWhere({ id: user_id })
+        await this.userService.findOneWhere({ id: user_id }, ['sharedProjects'])
       )
     }
 

@@ -485,7 +485,7 @@ export class ProjectController {
     @Param('pid') pid: string,
     @Body() shareDTO: ShareDTO,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
+  ): Promise<Project> {
     this.logger.log({ uid, pid, shareDTO }, 'POST /project/:pid/share')
 
     if (!isValidPID(pid)) {
@@ -517,7 +517,7 @@ export class ProjectController {
 
     const invitee = await this.userService.findOneWhere({
       email: shareDTO.email,
-    })
+    }, ['sharedProjects'])
 
     if (!invitee) {
       throw new NotFoundException(`User with email ${shareDTO.email} is not registered on Swetrix`)
@@ -534,9 +534,17 @@ export class ProjectController {
 
       await this.projectService.createShare(share)
 
-      const updatedProject = await this.projectService.findOne(pid, { relations: ['share'] })
+      // Saving share into project
+      project.share.push(share)
+      await this.projectService.create(project)
 
-      return updatedProject
+      // Saving share into invitees shared projects
+      invitee.sharedProjects.push(share)
+      await this.userService.create(invitee)
+
+      return await this.projectService.findOne(pid, {
+        relations: ['share'],
+      })
     } catch (e) {
       console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)
       throw new BadRequestException(e)

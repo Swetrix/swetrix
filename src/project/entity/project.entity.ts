@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, ManyToOne } from 'typeorm'
+import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
@@ -39,8 +39,8 @@ export class Project {
   admin: User
 
   @ApiProperty({ type: () => ProjectShare })
-  @ManyToOne(() => ProjectShare, share => share.project)
-  share: ProjectShare
+  @OneToMany(() => ProjectShare, share => share.project)
+  share: ProjectShare[]
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
