@@ -530,6 +530,10 @@ export class ProjectController {
       throw new NotFoundException(`User with email ${shareDTO.email} is not registered on Swetrix`)
     }
 
+    if (invitee.id === user.id) {
+      throw new BadRequestException('You cannot share with yourself')
+    }
+
     // TODO: Check if the invitee already has the project
     // TODO: Send an email to the invitee with a link to confirm the share (the email is valid for 48 hours)
 
