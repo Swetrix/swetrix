@@ -11,7 +11,7 @@ import { AppLoggerModule } from '../logger/logger.module'
     forwardRef(() => UserModule),
     MailerModule,
     ActionTokensModule,
-    AppLoggerModule
+    AppLoggerModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

@@ -12,6 +12,7 @@ import {
   HttpCode,
   NotFoundException,
   ForbiddenException,
+  Headers,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -23,6 +24,10 @@ import * as _includes from 'lodash/includes'
 
 import { ProjectService } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
+import { ActionTokenType } from '../action-tokens/action-token.entity'
+import { ActionTokensService } from '../action-tokens/action-tokens.service'
+import { MailerService } from '../mailer/mailer.service'
+import { LetterTemplate } from '../mailer/letter'
 import { Roles } from '../common/decorators/roles.decorator'
 import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
@@ -41,6 +46,7 @@ import {
   redisProjectCacheTimeout,
   clickhouse,
   isSelfhosted,
+  PROJECT_INVITE_EXPIRE,
 } from '../common/constants'
 import {
   getProjectsClickhouse,
@@ -65,6 +71,8 @@ export class ProjectController {
     private readonly projectService: ProjectService,
     private readonly userService: UserService,
     private readonly logger: AppLoggerService,
+    private readonly actionTokensService: ActionTokensService,
+    private readonly mailerService: MailerService,
   ) {}
 
   @Get('/')
@@ -492,6 +500,7 @@ export class ProjectController {
     @Param('pid') pid: string,
     @Body() shareDTO: ShareDTO,
     @CurrentUserId() uid: string,
+    @Headers() headers,
   ): Promise<Project> {
     this.logger.log({ uid, pid, shareDTO }, 'POST /project/:pid/share')
 
@@ -535,7 +544,6 @@ export class ProjectController {
     }
 
     // TODO: Check if the invitee already has the project
-    // TODO: Send an email to the invitee with a link to confirm the share (the email is valid for 48 hours)
 
     try {
       const share = new ProjectShare()
@@ -552,6 +560,13 @@ export class ProjectController {
       // Saving share into invitees shared projects
       invitee.sharedProjects.push(share)
       await this.userService.create(invitee)
+
+      // TODO: Implement link expiration
+      const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PROJECT_SHARE)
+      const url = `${headers.origin}/verify/${actionToken.id}`
+      await this.mailerService.sendEmail(invitee.email, LetterTemplate.ProjectInvitation, {
+        url, email: user.email, name: project.name, role: share.role, expiration: PROJECT_INVITE_EXPIRE,
+      })
 
       return await this.projectService.findOne(pid, {
         relations: ['share'],
