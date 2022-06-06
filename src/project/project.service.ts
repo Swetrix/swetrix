@@ -34,7 +34,7 @@ export class ProjectService {
 
   async paginate(options: PaginationOptionsInterface, where: Record<string, unknown> | undefined): Promise<Pagination<Project>> {
     const [results, total] = await this.projectsRepository.findAndCount({
-      take: options.take || 10,
+      take: options.take || 100,
       skip: options.skip || 0,
       where,
       order: {

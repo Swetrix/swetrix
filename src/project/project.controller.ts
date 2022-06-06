@@ -97,12 +97,19 @@ export class ProjectController {
         { take, skip },
         where,
       )
+      const shared = await this.projectService.findShare({
+        where: {
+          user: userId,
+        },
+        relations: ['project'],
+      })
       const totalMonthlyEvents = await this.projectService.getRedisCount(
         userId,
       )
 
       return {
         ...paginated,
+        shared,
         totalMonthlyEvents,
       }
     }
