@@ -8,4 +8,5 @@ export enum LetterTemplate {
   GDPRDataExport = 'gdpr_data_export',
   ProjectReport = 'project-report',
   TierWarning = 'tier-warning',
+  ProjectInvitation = 'customer_project-invitation',
 }
