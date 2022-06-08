@@ -21,6 +21,57 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 
+const ProjectList = ({ item, t }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  return (
+    <tr className='dark:bg-gray-700'>
+      <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+        {item.id}
+      </td>
+      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+        {item.role}
+      </td>
+      <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
+        {item.confirmed === false ? (
+          <>
+            <Button className='mr-2' onClick={() => {}} primary small>
+              Reject
+            </Button>
+            <Button onClick={() => {}} primary small>
+              Accept
+            </Button>
+          </>
+        ) : (
+          <>
+            <button
+              type='button'
+              className='text-indigo-600 hover:text-indigo-900'
+              onClick={() => setShowDeleteModal(true)}
+            >
+              Delete
+            </button>
+            <Modal
+              onClose={() => {
+                setShowDeleteModal(false)
+              }}
+              onSubmit={() => {
+                setShowDeleteModal(false)
+              }}
+              submitText={t('common.yes')}
+              type='confirmed'
+              closeText={t('common.no')}
+              title={`Delete ${item.id}?`}
+              message='Are you sure you want to delete this project?'
+              isOpened={showDeleteModal}
+            />
+          </>
+        )}
+      </td>
+    </tr>
+  )
+}
+
 const UserSettings = ({
   onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t,
 }) => {
@@ -208,11 +259,11 @@ const UserSettings = ({
             Projects
           </h3>
           <div>
-            <div className='mt-8 flex flex-col'>
+            <div className='mt-3 flex flex-col'>
               <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                 <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                   <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
-                    <table className='min-w-full divide-y divide-gray-600'>
+                    <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                       <thead>
                         <tr className='dark:bg-gray-700'>
                           <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
@@ -226,29 +277,12 @@ const UserSettings = ({
                           </th>
                         </tr>
                       </thead>
-                      <tbody className='divide-y divide-gray-600'>
-                        <tr key='1' className='dark:bg-gray-700'>
-                          <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
-                            le chiffe cheat
-                          </td>
-                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white'>Admin</td>
-                          <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
-                            <button type='button' className='text-indigo-600 hover:text-indigo-900'>
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                        <tr key='2' className='dark:bg-gray-700'>
-                          <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
-                            some project
-                          </td>
-                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-white'>Viewr</td>
-                          <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
-                            <button type='button' className='text-indigo-600 hover:text-indigo-900'>
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
+                      <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                        {
+                          _map(user.sharedProjects, (item) => (
+                            <ProjectList key={item.id} item={item} t={t} />
+                          ))
+                        }
                       </tbody>
                     </table>
                   </div>

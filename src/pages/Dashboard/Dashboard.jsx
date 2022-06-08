@@ -24,19 +24,27 @@ import { isSelfhosted } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
 const ProjectCart = ({
-  name, url, created, active, overall, t, language, live, isPublic,
+  name, created, active, overall, t, language, live, isPublic, confirmed,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
+  const [showInviteModal, setShowInviteModal] = useState(false)
 
   return (
     <li>
-      <Link to={url} className='block hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-800 dark:border-gray-700'>
+      <div onClick={() => { return confirmed === false ? setShowInviteModal(true) : () => {} }} className='block cursor-pointer hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-800 dark:border-gray-700'>
         <div className='px-4 py-4 sm:px-6'>
           <div className='flex items-center justify-between'>
             <p className='text-lg font-medium text-indigo-600 dark:text-gray-50 truncate'>
               {name}
             </p>
             <div className='ml-2 flex-shrink-0 flex'>
+              {
+                confirmed ? (
+                  <ActivePin className='mr-2' label='Shared' />
+                ) : (
+                  <InactivePin className='mr-2' label='Panding' />
+                )
+              }
               {active ? (
                 <ActivePin label={t('dashboard.active')} />
               ) : (
@@ -107,7 +115,21 @@ const ProjectCart = ({
             </div>
           </div>
         </div>
-      </Link>
+      </div>
+      {
+        !confirmed && (
+          <Modal
+            onClose={() => { setShowInviteModal(false) }}
+            onSubmit={() => { setShowInviteModal(false) }}
+            submitText='Accept & Continue'
+            type='confirmed'
+            closeText='Reject'
+            title={`Invitanion for ${name}`}
+            message='You have been invited to join this project. Do you want to accept?'
+            isOpened={showInviteModal}
+          />
+        )
+      }
     </li>
   )
 }
@@ -178,20 +200,38 @@ const Dashboard = ({
                 <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
                   <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                     {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                      name, id, created, active, overall, live, public: isPublic,
+                      name, id, created, active, overall, live, public: isPublic, confirmed,
                     }) => (
-                      <ProjectCart
-                        key={id}
-                        t={t}
-                        language={language}
-                        name={name}
-                        created={created}
-                        active={active}
-                        isPublic={isPublic}
-                        overall={overall}
-                        live={_isNumber(live) ? live : 'N/A'}
-                        url={_replace(routes.project, ':id', id)}
-                      />
+                      <div key={confirmed ? `${id}-confirmed` : id}>
+                        {
+                        confirmed === false ? (
+                          <ProjectCart
+                            t={t}
+                            language={language}
+                            name={name}
+                            created={created}
+                            active={active}
+                            isPublic={isPublic}
+                            overall={overall}
+                            confirmed={confirmed}
+                            live={_isNumber(live) ? live : 'N/A'}
+                          />
+                        ) : (
+                          <Link to={_replace(routes.project, ':id', id)}>
+                            <ProjectCart
+                              t={t}
+                              language={language}
+                              name={name}
+                              created={created}
+                              active={active}
+                              isPublic={isPublic}
+                              overall={overall}
+                              live={_isNumber(live) ? live : 'N/A'}
+                            />
+                          </Link>
+                        )
+                      }
+                      </div>
                     ))}
                   </ul>
                 </div>
