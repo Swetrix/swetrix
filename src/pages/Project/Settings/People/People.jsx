@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import Button from 'ui/Button'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/solid'
-import { ActivePin, InactivePin } from 'ui/Pin'
+import { TrashIcon } from '@heroicons/react/outline'
+import { ActivePin } from 'ui/Pin'
 import Modal from 'ui/Modal'
 import { useTranslation } from 'react-i18next'
 import Input from 'ui/Input'
@@ -10,9 +11,9 @@ import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import _filter from 'lodash/filter'
-
 import { deleteShareProject, shareProject } from 'api'
+
+import PropTypes from 'prop-types'
 
 const roles = [
   {
@@ -39,6 +40,7 @@ const NoEvents = () => (
 
 const UsersList = ({ data, onRemove }) => {
   const [open, setOpen] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   return (
     <li className='py-4'>
@@ -46,7 +48,7 @@ const UsersList = ({ data, onRemove }) => {
         <p className='text-gray-700 dark:text-gray-200'>
           {data.id}
         </p>
-        <div className='relative'>
+        <div className={cx('relative', { 'flex items-center': !data.confirmed })}>
           {
         !data.confirmed ? (
           <>
@@ -54,12 +56,14 @@ const UsersList = ({ data, onRemove }) => {
               label='Pannding'
               className='inline-flex items-center shadow-sm px-2.5 py-0.5 mr-3'
             />
-            <span onClick={() => onRemove(data.id)}>
-              <InactivePin
-                label='Remove'
-                className='cursor-pointer inline-flex items-center shadow-sm px-2.5 py-0.5 hover:text-red-400 hover:dark:text-red-400'
-              />
-            </span>
+            <Button
+              type='button'
+              className='bg-white text-indigo-600 border border-transparent rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+              small
+              onClick={() => { setShowDeleteModal(true) }}
+            >
+              <TrashIcon className='h-4 w-4' />
+            </Button>
           </>
         ) : (
           <>
@@ -93,7 +97,7 @@ const UsersList = ({ data, onRemove }) => {
                   )}
                 </li>
               ))}
-              <li onClick={() => { setOpen(false); onRemove(data.gmail) }} className='p-4 hover:bg-gray-900 group cursor-pointer flex justify-between items-center'>
+              <li onClick={() => { setOpen(false); setShowDeleteModal(true) }} className='p-4 hover:bg-gray-900 group cursor-pointer flex justify-between items-center'>
                 <div>
                   <p className='font-bold text-red-600 group-hover:text-red-600'>
                     Remove member
@@ -102,17 +106,41 @@ const UsersList = ({ data, onRemove }) => {
               </li>
             </ul>
             )}
-
           </>
         )
       }
         </div>
       </div>
+      <Modal
+        onClose={() => {
+          setShowDeleteModal(false)
+        }}
+        onSubmit={() => {
+          setShowDeleteModal(false)
+          onRemove(data.id)
+        }}
+        submitText='Yes'
+        type='confirmed'
+        closeText='No'
+        title={`Delete user: ${data.id}?`}
+        message='Are you sure you want to delete this user?'
+        isOpened={showDeleteModal}
+      />
     </li>
   )
 }
 
-const People = ({ project, updateProjectFailed }) => {
+UsersList.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
+  data: PropTypes.object.isRequired,
+  onRemove: PropTypes.func,
+}
+
+UsersList.defaultProps = {
+  onRemove: () => {},
+}
+
+const People = ({ project, updateProjectFailed, loadProjects }) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
   const [form, setForm] = useState({
@@ -123,8 +151,6 @@ const People = ({ project, updateProjectFailed }) => {
   const [errors, setErrors] = useState({})
   const [validated, setValidated] = useState(false)
   const { id, name, share } = project
-
-  const [users, setUsers] = useState(share)
 
   const validate = () => {
     const allErrors = {}
@@ -164,8 +190,8 @@ const People = ({ project, updateProjectFailed }) => {
     setErrors({})
     setValidated(false)
     shareProject(id, { email: form.email, role: form.role })
-      .then((data) => {
-        setUsers(data.share)
+      .then(() => {
+        loadProjects()
       })
       .catch((e) => {
         updateProjectFailed(e)
@@ -193,7 +219,7 @@ const People = ({ project, updateProjectFailed }) => {
     deleteShareProject(id, userId)
       .then((data) => {
         console.log(data)
-        setUsers(oldUsers => _filter(oldUsers, user => user.id !== userId))
+        loadProjects()
       })
       .catch((e) => {
         updateProjectFailed(e)
@@ -223,11 +249,11 @@ const People = ({ project, updateProjectFailed }) => {
       </div>
       <div>
         {
-          !users ? (
+          _isEmpty(share) ? (
             <NoEvents />
           ) : (
             <ul className='divide-y divide-gray-200 dark:divide-gray-700'>
-              {_map(users, user => (<UsersList data={user} key={user.id} onRemove={onRemove} />))}
+              {_map(share, user => (<UsersList data={user} key={user.id} onRemove={onRemove} />))}
             </ul>
           )
         }
@@ -316,6 +342,18 @@ const People = ({ project, updateProjectFailed }) => {
       />
     </div>
   )
+}
+
+People.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
+  project: PropTypes.object.isRequired,
+  updateProjectFailed: PropTypes.func,
+  loadProjects: PropTypes.func,
+}
+
+People.defaultProps = {
+  updateProjectFailed: () => {},
+  loadProjects: () => {},
 }
 
 export default People
