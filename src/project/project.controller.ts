@@ -448,7 +448,7 @@ export class ProjectController {
   }
 
   // The routes related to sharing projects feature
-  @Delete('/:pid/:userId')
+  @Delete('/:pid/:shareId')
   @HttpCode(204)
   @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
@@ -456,10 +456,10 @@ export class ProjectController {
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
     @Param('pid') pid: string,
-    @Param('userId') userId: string,
+    @Param('shareId') shareId: string,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    this.logger.log({ uid, pid, userId }, 'DELETE /project/:pid/:userId')
+    this.logger.log({ uid, pid, shareId }, 'DELETE /project/:pid/:shareId')
 
     if (!isValidPID(pid)) {
       throw new BadRequestException(
@@ -467,12 +467,15 @@ export class ProjectController {
       )
     }
 
-    const user = await this.userService.findOne(uid)
+    // TODO: Discuss.
+    // I'm not sure if we should select 'share' from project too.
+    // If we select share - this means that the share project admins would be able to delete other people from project share too
+    // (as the allowedToManage method would pass for them).
     const project = await this.projectService.findOneWhere(
       { id: pid },
       {
-        relations: ['admin', 'share'],
-        select: ['id', 'admin', 'share'],
+        relations: ['admin'],
+        select: ['id', 'admin'],
       },
     )
 
@@ -480,14 +483,12 @@ export class ProjectController {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
     }
 
+    const user = await this.userService.findOne(uid)
+
     this.projectService.allowedToManage(project, uid, user.roles)
-    
-    console.log(project)
-    /* 
-      TODO:
-      1. Remove the user from the project's share table
-      2. Return the project
-    */
+
+    // Probably the redux cache should be updated as well after this.
+    await this.projectService.deleteShare(shareId)
   }
 
   @Post('/:pid/share')
