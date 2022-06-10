@@ -8,6 +8,7 @@ import * as _size from 'lodash/size'
 import * as _join from 'lodash/join'
 import * as _find from 'lodash/find'
 import * as _map from 'lodash/map'
+import * as _findIndex from 'lodash/findIndex'
 import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -16,7 +17,8 @@ import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectShare } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
-import { UserType } from './../user/entities/user.entity'
+import { UserType } from '../user/entities/user.entity'
+import { Role } from '../project/entity/project-share.entity'
 import {
   isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
 } from '../common/constants'
@@ -108,7 +110,7 @@ export class ProjectService {
   }
 
   allowedToView(project: Project, uid: string | null): void {
-    if (project.public || uid === project.admin.id) {
+    if (project.public || uid === project.admin.id || _findIndex(project.share, ({ user }) => user?.id === uid) !== -1) {
       return
     } else {
       throw new ForbiddenException('You are not allowed to access this project')
@@ -116,7 +118,7 @@ export class ProjectService {
   }
 
   allowedToManage(project: Project, uid: string, roles: Array<UserType>): void {
-    if (uid === project.admin.id || _includes(roles, UserType.ADMIN)) {
+    if (uid === project.admin.id || _includes(roles, UserType.ADMIN) || _findIndex(project.share, (share) => share.user?.id === uid && share.role === Role.admin) !== -1) {
       return
     } else {
       throw new ForbiddenException('You are not allowed to access this project')
