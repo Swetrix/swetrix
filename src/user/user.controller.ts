@@ -165,6 +165,29 @@ export class UserController {
     }
   }
 
+  @Delete('/share/:shareId')
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteShare(
+    @Param('shareId') shareId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, shareId }, 'DELETE /share/:shareId')
+
+    const share = await this.projectService.findShare({
+      where: {
+        id: shareId,
+      },
+      relations: ['project'],
+    })
+
+    // Todo:
+    // 1. Validate if uid can access this share
+    // 2. Delete share
+  }
+
   @Post('/confirm_email')
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
