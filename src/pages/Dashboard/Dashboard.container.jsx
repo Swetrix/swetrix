@@ -1,4 +1,5 @@
 import { connect } from 'react-redux'
+import { errorsActions } from 'redux/actions/errors'
 import Dashboard from './Dashboard'
 
 const mapStateToProps = (state) => ({
@@ -8,4 +9,10 @@ const mapStateToProps = (state) => ({
   error: state.ui.projects.error,
 })
 
-export default connect(mapStateToProps)(Dashboard)
+const mapDispatchToProps = (dispatch) => ({
+  deleteProjectFailed: (message) => {
+    dispatch(errorsActions.deleteProjectFailed(message))
+  },
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard)

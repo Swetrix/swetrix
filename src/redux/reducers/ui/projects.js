@@ -78,6 +78,24 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
+    case types.SET_PROJECTS_SHARE: {
+      const { share, id } = payload
+
+      return {
+        ...state,
+        projects: _map(state.projects, (item) => {
+          if (item.id === id) {
+            return {
+              ...item,
+              share,
+            }
+          }
+
+          return item
+        }),
+      }
+    }
+
     case types.SET_PROJECTS_ERROR: {
       const { error } = payload
       return {

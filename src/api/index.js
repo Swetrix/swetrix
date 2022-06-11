@@ -271,9 +271,20 @@ export const shareProject = (pid, data) =>
         : error.response.data.message
     })
 
-export const deleteShareProject = (pid, userId) =>
+export const deleteShareProjectUsers = (pid, userId) =>
   api
     .delete(`/project/${pid}/${userId}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const deleteShareProject = (pid) =>
+  api
+    .delete(`user/share/${pid}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

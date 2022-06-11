@@ -8,8 +8,8 @@ const mapDispatchToProps = (dispatch) => ({
   updateProjectFailed: (message) => {
     dispatch(errorsActions.updateProjectFailed(message))
   },
-  loadProjects: () => {
-    dispatch(UIActions.loadProjects())
+  setProjectShare: (projectId, share) => {
+    dispatch(UIActions.setProjectsShare(projectId, share))
   },
 })
 

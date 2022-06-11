@@ -97,12 +97,17 @@ const UserSettingsContainer = () => {
     }
   }
 
+  const deleteProjectFailed = (message) => {
+    dispatch(errorsActions.deleteProjectFailed(message))
+  }
+
   return (
     <UserSettings
       t={t}
       onDelete={onDelete}
       onExport={onExport}
       onSubmit={onSubmit}
+      deleteProjectFailed={deleteProjectFailed}
       onEmailConfirm={onEmailConfirm}
       onDeleteProjectCache={onDeleteProjectCache}
     />

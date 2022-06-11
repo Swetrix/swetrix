@@ -23,11 +23,23 @@ import routes from 'routes'
 import { isSelfhosted } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
+import { deleteShareProject } from 'api'
+
 const ProjectCart = ({
-  name, created, active, overall, t, language, live, isPublic, confirmed,
+  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
+
+  const deleteProject = async (pid) => {
+    await deleteShareProject(pid)
+      .then((results) => {
+        console.log(results)
+      })
+      .catch((err) => {
+        deleteProjectFailed(err)
+      })
+  }
 
   return (
     <li>
@@ -119,7 +131,7 @@ const ProjectCart = ({
       {
         !confirmed && (
           <Modal
-            onClose={() => { setShowInviteModal(false) }}
+            onClose={() => { setShowInviteModal(false); deleteProject(id) }}
             onSubmit={() => { setShowInviteModal(false) }}
             submitText='Accept & Continue'
             type='confirmed'
@@ -146,7 +158,7 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user,
+  projects, isLoading, error, user, deleteProjectFailed,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
@@ -207,6 +219,7 @@ const Dashboard = ({
                         confirmed === false ? (
                           <ProjectCart
                             t={t}
+                            id={id}
                             language={language}
                             name={name}
                             created={created}
@@ -215,6 +228,7 @@ const Dashboard = ({
                             overall={overall}
                             confirmed={confirmed}
                             live={_isNumber(live) ? live : 'N/A'}
+                            deleteProjectFailed={deleteProjectFailed}
                           />
                         ) : (
                           <Link to={_replace(routes.project, ':id', id)}>
