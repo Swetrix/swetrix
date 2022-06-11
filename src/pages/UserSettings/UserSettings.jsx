@@ -8,6 +8,7 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import { MailIcon } from '@heroicons/react/outline'
+import PropTypes from 'prop-types'
 
 import { reportFrequencies, DEFAULT_TIMEZONE } from 'redux/constants'
 import Title from 'components/Title'
@@ -23,13 +24,16 @@ import {
 
 import { deleteShareProject } from 'api'
 
-const ProjectList = ({ item, t, deleteProjectFailed }) => {
+const ProjectList = ({
+  item, t, deleteProjectFailed, removeShareProject, removeProject,
+}) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const deleteProject = async (pid) => {
     await deleteShareProject(pid)
       .then((results) => {
-        console.log(results)
+        removeShareProject(pid)
+        removeProject(item.project.id)
       })
       .catch((err) => {
         deleteProjectFailed(err)
@@ -83,8 +87,21 @@ const ProjectList = ({ item, t, deleteProjectFailed }) => {
   )
 }
 
+ProjectList.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
+  item: PropTypes.object.isRequired,
+  t: PropTypes.func.isRequired,
+  deleteProjectFailed: PropTypes.func,
+  removeProject: PropTypes.func.isRequired,
+  removeShareProject: PropTypes.func.isRequired,
+}
+
+ProjectList.defaultProps = {
+  deleteProjectFailed: (e) => console.log(e),
+}
+
 const UserSettings = ({
-  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed,
+  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed, removeProject, removeShareProject,
 }) => {
   const { user } = useSelector(state => state.auth)
 
@@ -291,7 +308,7 @@ const UserSettings = ({
                       <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                         {
                           _map(user.sharedProjects, (item) => (
-                            <ProjectList key={item.id} item={item} t={t} deleteProjectFailed={deleteProjectFailed} />
+                            <ProjectList key={item.id} item={item} t={t} deleteProjectFailed={deleteProjectFailed} removeProject={removeProject} removeShareProject={removeShareProject} />
                           ))
                         }
                       </tbody>
@@ -359,6 +376,21 @@ const UserSettings = ({
       </div>
     </Title>
   )
+}
+
+UserSettings.propTypes = {
+  onEmailConfirm: PropTypes.func.isRequired,
+  onExport: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  deleteProjectFailed: PropTypes.func,
+  t: PropTypes.func.isRequired,
+  onDeleteProjectCache: PropTypes.func.isRequired,
+  removeProject: PropTypes.func.isRequired,
+  removeShareProject: PropTypes.func.isRequired,
+}
+
+UserSettings.defaultProps = {
+  deleteProjectFailed: (e) => console.log(e),
 }
 
 export default memo(UserSettings)

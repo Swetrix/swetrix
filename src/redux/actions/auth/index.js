@@ -109,4 +109,11 @@ export const authActions = {
       },
     }
   },
+
+  deleteShareProject(id) {
+    return {
+      type: types.DELETE_SHARE_PROJECT,
+      payload: { id },
+    }
+  },
 }
