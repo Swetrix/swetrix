@@ -70,6 +70,7 @@ export class ProjectService {
   async deleteMultiple(pids: string[]): Promise<any> {
     return this.projectsRepository.createQueryBuilder()
       .delete()
+      // TODO: !!! Enforce Prepared Statements and Parameterization
       .where(`id IN (${pids})`)
       .execute()
   }

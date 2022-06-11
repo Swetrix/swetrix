@@ -180,12 +180,20 @@ export class UserController {
       where: {
         id: shareId,
       },
-      relations: ['project'],
+      relations: ['user'],
     })
 
-    // Todo:
-    // 1. Validate if uid can access this share
-    // 2. Delete share
+    if (_isEmpty(share)) {
+      throw new BadRequestException('The provided share id is not valid')
+    }
+
+    if (share[0]?.user?.id !== uid) {
+      throw new BadRequestException('You are not allowed to delete this share')
+    }
+
+    await this.projectService.deleteShare(shareId)
+
+    return 'shareDeleted'
   }
 
   @Post('/confirm_email')
