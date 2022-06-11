@@ -8,6 +8,7 @@ import * as _size from 'lodash/size'
 import * as _join from 'lodash/join'
 import * as _find from 'lodash/find'
 import * as _map from 'lodash/map'
+import * as _pick from 'lodash/pick'
 import * as _findIndex from 'lodash/findIndex'
 import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
@@ -24,6 +25,22 @@ import {
 } from '../common/constants'
 
 dayjs.extend(utc)
+
+const processProjectUser = (projects: Project[]): Project[] => {
+  for (let i = 0; i < _size(projects); ++i) {
+    const { share } = projects[i]
+
+    for (let j = 0; j < _size(share); ++j) {
+      const { user } = share[j]
+
+      if (user) {
+        share[j].user = _pick(user, ['email'])
+      }
+    }
+  }
+
+  return projects
+}
 
 @Injectable()
 export class ProjectService {
@@ -42,11 +59,11 @@ export class ProjectService {
       order: {
         name: 'ASC',
       },
-      relations: ['share'],
+      relations: ['share', 'share.user'],
     })
 
     return new Pagination<Project>({
-      results,
+      results: processProjectUser(results),
       total,
     })
   }
