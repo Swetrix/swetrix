@@ -563,8 +563,9 @@ export class ProjectController {
       await this.userService.create(invitee)
 
       // TODO: Implement link expiration
-      const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PROJECT_SHARE)
-      const url = `${headers.origin}/verify/${actionToken.id}`
+      const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PROJECT_SHARE, share.id)
+      // const url = `${headers.origin}/share/${actionToken.id}`
+      const url = `http://localhost:5005/project/share/${actionToken.id}`
       await this.mailerService.sendEmail(invitee.email, LetterTemplate.ProjectInvitation, {
         url, email: user.email, name: project.name, role: share.role, expiration: PROJECT_INVITE_EXPIRE,
       })
@@ -575,6 +576,33 @@ export class ProjectController {
     } catch (e) {
       console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)
       throw new BadRequestException(e)
+    }
+  }
+
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  // @UseGuards(RolesGuard)
+  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  @Get('/share/:id')
+  async acceptShare(@Param('id') id: string): Promise<any> {
+    this.logger.log({ id }, 'GET /project/share/:id')
+    let actionToken
+
+    try {
+      actionToken = await this.actionTokensService.find(id)
+    } catch {
+      throw new BadRequestException('Incorrect token provided')
+    }
+
+    console.log(actionToken, actionToken.action, ActionTokenType.PROJECT_SHARE)
+
+    // TODO
+
+    if (actionToken.action === ActionTokenType.PROJECT_SHARE) {
+      // await this.userService.update(actionToken.user.id, { ...actionToken.user, isActive: true})
+      // await this.actionTokensService.delete(actionToken.id)
+      // return
     }
   }
 }
