@@ -22,7 +22,7 @@ import * as _size from 'lodash/size'
 import * as _values from 'lodash/values'
 import * as _includes from 'lodash/includes'
 
-import { ProjectService } from './project.service'
+import { ProjectService, processProjectUser } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -570,9 +570,11 @@ export class ProjectController {
         url, email: user.email, name: project.name, role: share.role, expiration: PROJECT_INVITE_EXPIRE,
       })
 
-      return await this.projectService.findOne(pid, {
-        relations: ['share'],
+      const updatedProject = await this.projectService.findOne(pid, {
+        relations: ['share', 'share.user'],
       })
+
+      return processProjectUser(updatedProject)
     } catch (e) {
       console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)
       throw new BadRequestException(e)

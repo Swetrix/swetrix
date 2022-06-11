@@ -26,17 +26,23 @@ import {
 
 dayjs.extend(utc)
 
-const processProjectUser = (projects: Project[]): Project[] => {
-  for (let i = 0; i < _size(projects); ++i) {
-    const { share } = projects[i]
+export const processProjectUser = (project: Project): Project => {
+  const { share } = project
 
-    for (let j = 0; j < _size(share); ++j) {
-      const { user } = share[j]
+  for (let j = 0; j < _size(share); ++j) {
+    const { user } = share[j]
 
-      if (user) {
-        share[j].user = _pick(user, ['email'])
-      }
+    if (user) {
+      share[j].user = _pick(user, ['email'])
     }
+  }
+
+  return project
+}
+
+export const processProjectsUser = (projects: Project[]): Project[] => {
+  for (let i = 0; i < _size(projects); ++i) {
+    projects[i] = processProjectUser(projects[i])
   }
 
   return projects
@@ -63,7 +69,7 @@ export class ProjectService {
     })
 
     return new Pagination<Project>({
-      results: processProjectUser(results),
+      results: processProjectsUser(results),
       total,
     })
   }
