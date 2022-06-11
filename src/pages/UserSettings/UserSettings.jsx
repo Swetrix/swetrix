@@ -21,8 +21,20 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 
-const ProjectList = ({ item, t }) => {
+import { deleteShareProject } from 'api'
+
+const ProjectList = ({ item, t, deleteProjectFailed }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  const deleteProject = async (pid) => {
+    await deleteShareProject(pid)
+      .then((results) => {
+        console.log(results)
+      })
+      .catch((err) => {
+        deleteProjectFailed(err)
+      })
+  }
 
   return (
     <tr className='dark:bg-gray-700'>
@@ -35,7 +47,7 @@ const ProjectList = ({ item, t }) => {
       <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
         {item.confirmed === false ? (
           <>
-            <Button className='mr-2' onClick={() => {}} primary small>
+            <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
               Reject
             </Button>
             <Button onClick={() => {}} primary small>
@@ -43,37 +55,36 @@ const ProjectList = ({ item, t }) => {
             </Button>
           </>
         ) : (
-          <>
-            <button
-              type='button'
-              className='text-indigo-600 hover:text-indigo-900'
-              onClick={() => setShowDeleteModal(true)}
-            >
-              Delete
-            </button>
-            <Modal
-              onClose={() => {
-                setShowDeleteModal(false)
-              }}
-              onSubmit={() => {
-                setShowDeleteModal(false)
-              }}
-              submitText={t('common.yes')}
-              type='confirmed'
-              closeText={t('common.no')}
-              title={`Delete ${item.id}?`}
-              message='Are you sure you want to delete this project?'
-              isOpened={showDeleteModal}
-            />
-          </>
+          <button
+            type='button'
+            className='text-indigo-600 hover:text-indigo-900'
+            onClick={() => setShowDeleteModal(true)}
+          >
+            Delete
+          </button>
         )}
+        <Modal
+          onClose={() => {
+            setShowDeleteModal(false)
+          }}
+          onSubmit={() => {
+            setShowDeleteModal(false)
+            deleteProject(item.id)
+          }}
+          submitText={t('common.yes')}
+          type='confirmed'
+          closeText={t('common.no')}
+          title={`Delete ${item.id}?`}
+          message='Are you sure you want to delete this project?'
+          isOpened={showDeleteModal}
+        />
       </td>
     </tr>
   )
 }
 
 const UserSettings = ({
-  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t,
+  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed,
 }) => {
   const { user } = useSelector(state => state.auth)
 
@@ -280,7 +291,7 @@ const UserSettings = ({
                       <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                         {
                           _map(user.sharedProjects, (item) => (
-                            <ProjectList key={item.id} item={item} t={t} />
+                            <ProjectList key={item.id} item={item} t={t} deleteProjectFailed={deleteProjectFailed} />
                           ))
                         }
                       </tbody>
@@ -290,10 +301,6 @@ const UserSettings = ({
               </div>
             </div>
           </div>
-
-          <Button className='mt-4' onClick={handleReportSave} primary large>
-            {t('common.save')}
-          </Button>
           <hr className='mt-5' />
           {!user.isActive && (
             <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>

@@ -20,7 +20,8 @@ export default function* loadProjects() {
         ...item.project,
       }
     }), ...results]
-    const pids = _map(results, result => result.id)
+
+    const pids = _map(projectWithShared, result => result.id)
     let overall
 
     try {

@@ -11,8 +11,8 @@ import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { deleteShareProject, shareProject } from 'api'
-
+import { deleteShareProjectUsers, shareProject } from 'api'
+import _filter from 'lodash/filter'
 import PropTypes from 'prop-types'
 
 const roles = [
@@ -140,7 +140,9 @@ UsersList.defaultProps = {
   onRemove: () => {},
 }
 
-const People = ({ project, updateProjectFailed, loadProjects }) => {
+const People = ({
+  project, updateProjectFailed, setProjectShare,
+}) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
   const [form, setForm] = useState({
@@ -190,8 +192,8 @@ const People = ({ project, updateProjectFailed, loadProjects }) => {
     setErrors({})
     setValidated(false)
     shareProject(id, { email: form.email, role: form.role })
-      .then(() => {
-        loadProjects()
+      .then((results) => {
+        setProjectShare(results.share, id)
       })
       .catch((e) => {
         updateProjectFailed(e)
@@ -216,10 +218,10 @@ const People = ({ project, updateProjectFailed, loadProjects }) => {
   }
 
   const onRemove = userId => {
-    deleteShareProject(id, userId)
-      .then((data) => {
-        console.log(data)
-        loadProjects()
+    deleteShareProjectUsers(id, userId)
+      .then(() => {
+        const newShared = _map(_filter(share, s => s.id !== userId), s => s)
+        setProjectShare(newShared, id)
       })
       .catch((e) => {
         updateProjectFailed(e)
@@ -348,12 +350,12 @@ People.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   project: PropTypes.object.isRequired,
   updateProjectFailed: PropTypes.func,
-  loadProjects: PropTypes.func,
+  setProjectShare: PropTypes.func,
 }
 
 People.defaultProps = {
   updateProjectFailed: () => {},
-  loadProjects: () => {},
+  setProjectShare: () => {},
 }
 
 export default People
