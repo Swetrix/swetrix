@@ -2,7 +2,7 @@ import {
   Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards, MethodNotAllowedException,
 } from '@nestjs/common'
 import { Request } from 'express'
-import { ApiTags, ApiQuery } from '@nestjs/swagger'
+import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
@@ -170,30 +170,59 @@ export class UserController {
   @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
     @Param('shareId') shareId: string,
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ uid, shareId }, 'DELETE /user/share/:shareId')
 
-    const share = await this.projectService.findShare({
-      where: {
-        id: shareId,
-      },
+    const share = await this.projectService.findOneShare(shareId, {
       relations: ['user'],
     })
 
     if (_isEmpty(share)) {
-      throw new BadRequestException('The provided share id is not valid')
+      throw new BadRequestException('The provided share ID is not valid')
     }
 
-    if (share[0]?.user?.id !== uid) {
+    if (share.user?.id !== uid) {
       throw new BadRequestException('You are not allowed to delete this share')
     }
 
     await this.projectService.deleteShare(shareId)
 
     return 'shareDeleted'
+  }
+
+  @Get('/share/:shareId')
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async acceptShare(
+    @Param('shareId') shareId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, shareId }, 'GET /user/share/:shareId')
+
+    const share = await this.projectService.findOneShare(shareId, {
+      relations: ['user'],
+    })
+
+    if (_isEmpty(share)) {
+      throw new BadRequestException('The provided share ID is not valid')
+    }
+
+    if (share[0]?.user?.id !== uid) {
+      throw new BadRequestException('You are not allowed to delete this share')
+    }
+
+    share.confirmed = true
+
+    await this.projectService.updateShare(shareId, share)
+
+    return 'shareAccepted'
   }
 
   @Post('/confirm_email')

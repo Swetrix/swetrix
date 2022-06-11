@@ -108,6 +108,10 @@ export class ProjectService {
     return this.projectShareRepository.find(params)
   }
 
+  async findOneShare(id: string, params: Object = {}): Promise<ProjectShare | null> {
+    return this.projectShareRepository.findOne(id, params)
+  }
+
   findOneWithRelations(id: string): Promise<Project | null> {
     return this.projectsRepository.findOne(id, { relations: ['admin'] })
   }
