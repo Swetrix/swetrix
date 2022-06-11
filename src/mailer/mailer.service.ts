@@ -101,7 +101,10 @@ export class MailerService {
       }
 
       if (process.env.SMTP_MOCK) {
-        this.logger.log(message, 'sendEmail', true)
+        this.logger.log({
+          ...message,
+          params,
+        }, 'sendEmail', true)
       } else {
         await mailClient.sendEmail(message)
       }
