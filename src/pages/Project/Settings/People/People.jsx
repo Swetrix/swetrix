@@ -46,7 +46,7 @@ const UsersList = ({ data, onRemove }) => {
     <li className='py-4'>
       <div className='flex justify-between'>
         <p className='text-gray-700 dark:text-gray-200'>
-          {data.id}
+          {data.user.email}
         </p>
         <div className={cx('relative', { 'flex items-center': !data.confirmed })}>
           {

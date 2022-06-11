@@ -9,6 +9,7 @@ import _isNumber from 'lodash/isNumber'
 import _replace from 'lodash/replace'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
+import _find from 'lodash/find'
 import { useTranslation } from 'react-i18next'
 import { EyeIcon, CalendarIcon } from '@heroicons/react/outline'
 import { ArrowSmUpIcon, ArrowSmDownIcon, XCircleIcon } from '@heroicons/react/solid'
@@ -23,16 +24,31 @@ import routes from 'routes'
 import { isSelfhosted } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
-import { deleteShareProject } from 'api'
+import { deleteShareProject, acceptShareProject } from 'api'
 
 const ProjectCart = ({
-  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
+  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed, sharedProjects, removeProject, removeShareProject,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
 
-  const deleteProject = async (pid) => {
+  const deleteProject = async () => {
+    const pid = _find(sharedProjects, item => item.project.id === id).id
+
     await deleteShareProject(pid)
+      .then((results) => {
+        removeProject(id)
+        removeShareProject(pid)
+      })
+      .catch((err) => {
+        deleteProjectFailed(err)
+      })
+  }
+
+  const onAccept = async () => {
+    const pid = _find(sharedProjects, item => item.project.id === id).id
+    console.log(sharedProjects)
+    await acceptShareProject(pid)
       .then((results) => {
         console.log(results)
       })
@@ -131,8 +147,8 @@ const ProjectCart = ({
       {
         !confirmed && (
           <Modal
-            onClose={() => { setShowInviteModal(false); deleteProject(id) }}
-            onSubmit={() => { setShowInviteModal(false) }}
+            onClose={() => { setShowInviteModal(false); deleteProject() }}
+            onSubmit={() => { setShowInviteModal(false); onAccept() }}
             submitText='Accept & Continue'
             type='confirmed'
             closeText='Reject'
@@ -158,7 +174,7 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed,
+  projects, isLoading, error, user, deleteProjectFailed, removeProject, removeShareProject,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
@@ -225,8 +241,11 @@ const Dashboard = ({
                             created={created}
                             active={active}
                             isPublic={isPublic}
+                            removeProject={removeProject}
                             overall={overall}
                             confirmed={confirmed}
+                            sharedProjects={user.sharedProjects}
+                            removeShareProject={removeShareProject}
                             live={_isNumber(live) ? live : 'N/A'}
                             deleteProjectFailed={deleteProjectFailed}
                           />
@@ -280,10 +299,16 @@ Dashboard.propTypes = {
   user: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
   error: PropTypes.string,
+  deleteProjectFailed: PropTypes.func,
+  removeProject: PropTypes.func,
+  removeShareProject: PropTypes.func,
 }
 
 Dashboard.defaultProps = {
   error: '',
+  removeProject: () => {},
+  deleteProjectFailed: (e) => console.log(e),
+  removeShareProject: () => {},
 }
 
 export default memo(withAuthentication(Dashboard, auth.authenticated))

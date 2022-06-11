@@ -101,11 +101,21 @@ const UserSettingsContainer = () => {
     dispatch(errorsActions.deleteProjectFailed(message))
   }
 
+  const removeProject = (projectId) => {
+    dispatch(UIActions.removeProject(projectId))
+  }
+
+  const removeShareProject = (id) => {
+    dispatch(authActions.deleteShareProject(id))
+  }
+
   return (
     <UserSettings
       t={t}
       onDelete={onDelete}
       onExport={onExport}
+      removeProject={removeProject}
+      removeShareProject={removeShareProject}
       onSubmit={onSubmit}
       deleteProjectFailed={deleteProjectFailed}
       onEmailConfirm={onEmailConfirm}

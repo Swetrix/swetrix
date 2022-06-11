@@ -1,4 +1,5 @@
 import { types } from 'redux/actions/auth/types'
+import _filter from 'lodash/filter'
 
 const initialState = {
   redirectPath: null,
@@ -29,6 +30,11 @@ const authReducer = (state = initialState, { type, payload }) => {
 
     case types.FINISH_LOADING:
       return { ...state, loading: false }
+
+    case types.DELETE_SHARE_PROJECT:
+      // eslint-disable-next-line no-case-declarations
+      const { id } = payload
+      return { ...state, user: { ...state.user, sharedProjects: _filter(state.user.sharedProjects, (item) => item.id !== id) } }
 
     default:
       return state
