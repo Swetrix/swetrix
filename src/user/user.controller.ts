@@ -174,7 +174,7 @@ export class UserController {
     @Param('shareId') shareId: string,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    this.logger.log({ uid, shareId }, 'DELETE /share/:shareId')
+    this.logger.log({ uid, shareId }, 'DELETE /user/share/:shareId')
 
     const share = await this.projectService.findShare({
       where: {
@@ -201,7 +201,7 @@ export class UserController {
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(@CurrentUserId() id: string, @Req() request: Request): Promise<boolean> {
-    this.logger.log({ id }, 'POST /confirm_email')
+    this.logger.log({ id }, 'POST /user/confirm_email')
 
     const user = await this.userService.findOneWhere({ id })
 
@@ -273,7 +273,8 @@ export class UserController {
         await this.mailerService.sendEmail(user.email, LetterTemplate.MailAddressChangeConfirmation, { url })
       }
       // delete internal properties from userDTO before updating it
-      const userToUpdate = _omit(userDTO, ['id', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode'])
+      // todo: use _pick instead of _omit
+      const userToUpdate = _omit(userDTO, ['id', 'sharedProjects', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode'])
       await this.userService.update(id, userToUpdate)
 
       const updatedUser = await this.userService.findOneWhere({ id })
