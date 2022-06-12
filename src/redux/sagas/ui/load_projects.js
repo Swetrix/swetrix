@@ -16,6 +16,7 @@ export default function* loadProjects() {
     let { results, totalMonthlyEvents, shared } = yield call(getProjects)
     const projectWithShared = [..._map(shared, (item) => {
       return {
+        shared: true,
         confirmed: item.confirmed,
         ...item.project,
       }

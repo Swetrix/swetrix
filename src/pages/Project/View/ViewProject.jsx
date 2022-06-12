@@ -365,7 +365,7 @@ const ViewProject = ({
 
   const { name } = project
 
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id).role || {}, [user, id])
+  const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))

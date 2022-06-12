@@ -303,3 +303,14 @@ export const acceptShareProject = (id) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const changeShareRole = (id, data) =>
+  api
+    .put(`project/share/${id}`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
