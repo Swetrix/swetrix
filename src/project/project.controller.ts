@@ -55,6 +55,31 @@ import {
   deleteProjectClickhouse,
 } from '../common/utils'
 
+const updateProjectRedis = async (id: string, project: Project) => {
+  const key = getRedisProjectKey(id)
+
+  try {
+    await redis.set(
+      key,
+      JSON.stringify(project),
+      'EX',
+      redisProjectCacheTimeout,
+    )
+  } catch {
+    await redis.del(key)
+  }
+}
+
+export const deleteProjectRedis = async (id: string) => {
+  const key = getRedisProjectKey(id)
+
+  try {
+    await redis.del(key)
+  } catch (e) {
+    console.error(`Error deleting project ${id} from redis: ${e}`)
+  }
+}
+
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 
 const isValidShareDTO = (share: ShareDTO): boolean => {
@@ -73,7 +98,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-  ) {}
+  ) { }
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -254,7 +279,6 @@ export class ProjectController {
     }
   }
 
-  
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(RolesGuard)
@@ -370,18 +394,8 @@ export class ProjectController {
       await this.projectService.update(id, project)
     }
 
-    const key = getRedisProjectKey(id)
-
-    try {
-      await redis.set(
-        key,
-        JSON.stringify(project),
-        'EX',
-        redisProjectCacheTimeout,
-      )
-    } catch {
-      await redis.del(key)
-    }
+    // await updateProjectRedis(id, project)
+    await deleteProjectRedis(id)
 
     return project
   }
@@ -437,6 +451,7 @@ export class ProjectController {
 
       try {
         await this.projectService.delete(id)
+        await deleteProjectRedis(id)
         await clickhouse.query(query1).toPromise()
         await clickhouse.query(query2).toPromise()
         return 'Project deleted successfully'
@@ -487,7 +502,7 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    // Probably the redux cache should be updated as well after this.
+    await deleteProjectRedis(pid)
     await this.projectService.deleteShare(shareId)
   }
 
@@ -574,6 +589,8 @@ export class ProjectController {
         relations: ['share', 'share.user'],
       })
 
+      // todo: maybe the update project should be used here instead of delete?
+      await deleteProjectRedis(pid)
       return processProjectUser(updatedProject)
     } catch (e) {
       console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)

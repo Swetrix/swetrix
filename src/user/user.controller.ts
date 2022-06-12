@@ -14,6 +14,7 @@ import * as _omit from 'lodash/omit'
 
 import { UserService } from './user.service'
 import { ProjectService } from '../project/project.service'
+import { deleteProjectRedis } from '../project/project.controller'
 import {
   User, UserType, MAX_EMAIL_REQUESTS, PlanCode,
 } from './entities/user.entity'
@@ -178,7 +179,7 @@ export class UserController {
     this.logger.log({ uid, shareId }, 'DELETE /user/share/:shareId')
 
     const share = await this.projectService.findOneShare(shareId, {
-      relations: ['user'],
+      relations: ['user', 'project'],
     })
 
     if (_isEmpty(share)) {
@@ -190,6 +191,7 @@ export class UserController {
     }
 
     await this.projectService.deleteShare(shareId)
+    await deleteProjectRedis(share.project.id)
 
     return 'shareDeleted'
   }
@@ -207,7 +209,7 @@ export class UserController {
     this.logger.log({ uid, shareId }, 'GET /user/share/:shareId')
 
     const share = await this.projectService.findOneShare(shareId, {
-      relations: ['user'],
+      relations: ['user', 'project'],
     })
 
     if (_isEmpty(share)) {
@@ -221,6 +223,7 @@ export class UserController {
     share.confirmed = true
 
     await this.projectService.updateShare(shareId, share)
+    await deleteProjectRedis(share.project.id)
 
     return 'shareAccepted'
   }
