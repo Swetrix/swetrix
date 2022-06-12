@@ -623,7 +623,7 @@ export class ProjectController {
     @Body() shareDTO: ShareUpdateDTO,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    this.logger.log({ uid, shareDTO, shareId }, 'PUT /project/:pid/share')
+    this.logger.log({ uid, shareDTO, shareId }, 'PUT /project/share/:shareId')
     if (!isValidUpdateShareDTO(shareDTO)) {
       throw new BadRequestException(
         'The provided ShareUpdateDTO is incorrect',
