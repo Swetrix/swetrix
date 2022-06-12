@@ -559,7 +559,16 @@ export class ProjectController {
       throw new BadRequestException('You cannot share with yourself')
     }
 
-    // TODO: Check if the invitee already has the project
+    const isSharingWithUser = !_isEmpty(await this.projectService.findShare({
+      where: {
+        project: project.id,
+        user: invitee.id,
+      },
+    }))
+
+    if (isSharingWithUser) {
+      throw new BadRequestException(`You're already sharing the project with ${invitee.email}`)
+    }
 
     try {
       const share = new ProjectShare()
