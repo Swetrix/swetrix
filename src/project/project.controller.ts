@@ -38,6 +38,7 @@ import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { ShareDTO } from './dto/share.dto'
+import { ShareUpdateDTO } from './dto/share-update.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
@@ -87,6 +88,10 @@ const isValidShareDTO = (share: ShareDTO): boolean => {
     !_isEmpty(_trim(share.email)) &&
     _includes(roles, share.role)
   )
+}
+
+const isValidUpdateShareDTO = (share: ShareUpdateDTO): boolean => {
+  return _includes(roles, share.role)
 }
 
 @ApiTags('Project')
@@ -605,6 +610,40 @@ export class ProjectController {
       console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)
       throw new BadRequestException(e)
     }
+  }
+
+  @Put('/share/:shareId')
+  @HttpCode(200)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 200, type: Project })
+  async updateShare(
+    @Param('shareId') shareId: string,
+    @Body() shareDTO: ShareUpdateDTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, shareDTO, shareId }, 'PUT /project/:pid/share')
+    if (!isValidUpdateShareDTO(shareDTO)) {
+      throw new BadRequestException(
+        'The provided ShareUpdateDTO is incorrect',
+      )
+    }
+
+    // const user = await this.userService.findOne(uid)
+    // const project = await this.projectService.findOneWhere(
+    //   { id: pid },
+    //   {
+    //     relations: ['admin', 'share'],
+    //     select: ['id', 'admin', 'share'],
+    //   },
+    // )
+
+    // if (_isEmpty(project)) {
+    //   throw new NotFoundException(`Project with ID ${pid} does not exist`)
+    // }
+
+    // this.projectService.allowedToManage(project, uid, user.roles)
   }
 
   @HttpCode(204)
