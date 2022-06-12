@@ -214,7 +214,7 @@ export class UserController {
       throw new BadRequestException('The provided share ID is not valid')
     }
 
-    if (share[0]?.user?.id !== uid) {
+    if (share.user?.id !== uid) {
       throw new BadRequestException('You are not allowed to delete this share')
     }
 
