@@ -614,14 +614,22 @@ export class ProjectController {
       throw new BadRequestException('Incorrect token provided')
     }
 
-    console.log(actionToken, actionToken.action, ActionTokenType.PROJECT_SHARE)
-
-    // TODO
-
     if (actionToken.action === ActionTokenType.PROJECT_SHARE) {
-      // await this.userService.update(actionToken.user.id, { ...actionToken.user, isActive: true})
-      // await this.actionTokensService.delete(actionToken.id)
-      // return
+      const { newValue: shareId, id, user } = actionToken
+
+      const share = await this.projectService.findOneShare(shareId)
+      share.confirmed = true
+
+      if (_isEmpty(share)) {
+        throw new BadRequestException('The provided share ID is not valid')
+      }
+
+      // if (share.user?.id !== user.id) {
+      //   throw new BadRequestException('You are not allowed to manage this share')
+      // }
+
+      await this.projectService.updateShare(shareId, share)
+      await this.actionTokensService.delete(id)
     }
   }
 }
