@@ -11,7 +11,7 @@ import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { deleteShareProjectUsers, shareProject } from 'api'
+import { deleteShareProjectUsers, shareProject, changeShareRole } from 'api'
 import _filter from 'lodash/filter'
 import PropTypes from 'prop-types'
 
@@ -42,6 +42,17 @@ const UsersList = ({ data, onRemove }) => {
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
+  const changeRole = async (role) => {
+    await changeShareRole(data.id, { role })
+      .then((results) => {
+        console.log(results)
+        setOpen(false)
+      })
+      .catch((e) => {
+        console.log(e)
+        setOpen(false)
+      })
+  }
   return (
     <li className='py-4'>
       <div className='flex justify-between'>
@@ -72,7 +83,7 @@ const UsersList = ({ data, onRemove }) => {
               type='button'
               className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-500 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
             >
-              Viewer
+              { data.role }
               <ChevronDownIcon
                 style={{ transform: open ? 'rotate(180deg)' : '' }}
                 className='w-4 h-4 pt-px ml-0.5'
@@ -81,7 +92,7 @@ const UsersList = ({ data, onRemove }) => {
             {open && (
             <ul className='origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg overflow-hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
               {_map(roles, ({ name, role, description }) => (
-                <li onClick={() => setOpen(false)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={role}>
+                <li onClick={() => changeRole(role)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={role}>
                   <div>
                     <p className='font-bold text-gray-700 dark:text-gray-200 group-hover:text-gray-200'>
                       {name}

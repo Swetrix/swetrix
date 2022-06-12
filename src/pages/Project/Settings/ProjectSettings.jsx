@@ -174,7 +174,7 @@ const ProjectSettings = ({
 
   return (
     <Title title={title}>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8 mb-10'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
             {title}
@@ -238,9 +238,15 @@ const ProjectSettings = ({
 
               <hr className='mt-5' />
 
-              <People project={project} />
+              {
+                !project.shared && (
+                  <>
+                    <People project={project} />
+                    <hr className='mt-5' />
+                  </>
+                )
+              }
 
-              <hr className='mt-5' />
             </>
           ) : (
             <p className='text-gray-500 dark:text-gray-300 italic mt-2 text-sm'>
@@ -257,7 +263,7 @@ const ProjectSettings = ({
                 {t('common.save')}
               </Button>
             </div>
-            {isSettings && (
+            {(isSettings && !project.shared) && (
               <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger large>
                 {t('project.settings.delete')}
               </Button>

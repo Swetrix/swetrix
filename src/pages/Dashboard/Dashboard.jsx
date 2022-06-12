@@ -27,7 +27,7 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import { deleteShareProject, acceptShareProject } from 'api'
 
 const ProjectCart = ({
-  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed, sharedProjects, removeProject, removeShareProject, setProjectsShareData, setUserShareData,
+  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed, sharedProjects, removeProject, removeShareProject, setProjectsShareData, setUserShareData, shared,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -68,10 +68,12 @@ const ProjectCart = ({
             </p>
             <div className='ml-2 flex-shrink-0 flex'>
               {
-                confirmed ? (
-                  <ActivePin className='mr-2' label='Shared' />
-                ) : (
-                  <InactivePin className='mr-2' label='Panding' />
+                shared && (
+                  confirmed === false ? (
+                    <InactivePin className='mr-2' label='Panding' />
+                  ) : (
+                    <ActivePin className='mr-2' label='Shared' />
+                  )
                 )
               }
               {active ? (
@@ -229,7 +231,7 @@ const Dashboard = ({
                 <div className='bg-white shadow overflow-hidden sm:rounded-md mt-10'>
                   <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                     {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                      name, id, created, active, overall, live, public: isPublic, confirmed,
+                      name, id, created, active, overall, live, public: isPublic, confirmed, shared,
                     }) => (
                       <div key={confirmed ? `${id}-confirmed` : id}>
                         {
@@ -240,6 +242,7 @@ const Dashboard = ({
                             language={language}
                             name={name}
                             created={created}
+                            shared={shared}
                             active={active}
                             isPublic={isPublic}
                             removeProject={removeProject}
@@ -259,8 +262,10 @@ const Dashboard = ({
                               language={language}
                               name={name}
                               created={created}
+                              shared={shared}
                               active={active}
                               isPublic={isPublic}
+                              confirmed={confirmed}
                               overall={overall}
                               live={_isNumber(live) ? live : 'N/A'}
                             />
