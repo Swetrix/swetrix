@@ -22,10 +22,10 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 
-import { deleteShareProject } from 'api'
+import { deleteShareProject, acceptShareProject } from 'api'
 
 const ProjectList = ({
-  item, t, deleteProjectFailed, removeShareProject, removeProject,
+  item, t, deleteProjectFailed, removeShareProject, removeProject, setProjectsShareData, setUserShareData,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -40,10 +40,21 @@ const ProjectList = ({
       })
   }
 
+  const onAccept = async () => {
+    await acceptShareProject(item.id)
+      .then((results) => {
+        setProjectsShareData({ confirmed: true }, item.project.id)
+        setUserShareData({ confirmed: true }, item.id)
+      })
+      .catch((err) => {
+        deleteProjectFailed(err)
+      })
+  }
+
   return (
     <tr className='dark:bg-gray-700'>
       <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
-        {item.id}
+        {item.project.name}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
         {item.role}
@@ -54,7 +65,7 @@ const ProjectList = ({
             <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
               Reject
             </Button>
-            <Button onClick={() => {}} primary small>
+            <Button onClick={() => onAccept()} primary small>
               Accept
             </Button>
           </>
@@ -101,7 +112,7 @@ ProjectList.defaultProps = {
 }
 
 const UserSettings = ({
-  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed, removeProject, removeShareProject,
+  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed, removeProject, removeShareProject, setUserShareData, setProjectsShareData,
 }) => {
   const { user } = useSelector(state => state.auth)
 
@@ -308,7 +319,16 @@ const UserSettings = ({
                       <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                         {
                           _map(user.sharedProjects, (item) => (
-                            <ProjectList key={item.id} item={item} t={t} deleteProjectFailed={deleteProjectFailed} removeProject={removeProject} removeShareProject={removeShareProject} />
+                            <ProjectList
+                              key={item.id}
+                              item={item}
+                              t={t}
+                              deleteProjectFailed={deleteProjectFailed}
+                              removeProject={removeProject}
+                              removeShareProject={removeShareProject}
+                              setUserShareData={setUserShareData}
+                              setProjectsShareData={setProjectsShareData}
+                            />
                           ))
                         }
                       </tbody>
@@ -387,6 +407,8 @@ UserSettings.propTypes = {
   onDeleteProjectCache: PropTypes.func.isRequired,
   removeProject: PropTypes.func.isRequired,
   removeShareProject: PropTypes.func.isRequired,
+  setUserShareData: PropTypes.func.isRequired,
+  setProjectsShareData: PropTypes.func.isRequired,
 }
 
 UserSettings.defaultProps = {

@@ -21,6 +21,12 @@ const mapDispatchToProps = (dispatch) => ({
   removeShareProject: (id) => {
     dispatch(authActions.deleteShareProject(id))
   },
+  setProjectsShareData: (data, id) => {
+    dispatch(UIActions.setProjectsShareData(data, id))
+  },
+  setUserShareData: (data, id) => {
+    dispatch(authActions.setUserShareData(data, id))
+  },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard)

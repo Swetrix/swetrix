@@ -116,4 +116,12 @@ export const authActions = {
       payload: { id },
     }
   },
+
+  setUserShareData(data, id) {
+    return {
+      type: types.SET_USER_SHARE_DATA,
+      payload: { data, id },
+    }
+  },
+
 }

@@ -109,6 +109,13 @@ const UserSettingsContainer = () => {
     dispatch(authActions.deleteShareProject(id))
   }
 
+  const setProjectsShareData = (data, id) => {
+    dispatch(UIActions.setProjectsShareData(data, id))
+  }
+  const setUserShareData = (data, id) => {
+    dispatch(authActions.setUserShareData(data, id))
+  }
+
   return (
     <UserSettings
       t={t}
@@ -116,6 +123,8 @@ const UserSettingsContainer = () => {
       onExport={onExport}
       removeProject={removeProject}
       removeShareProject={removeShareProject}
+      setProjectsShareData={setProjectsShareData}
+      setUserShareData={setUserShareData}
       onSubmit={onSubmit}
       deleteProjectFailed={deleteProjectFailed}
       onEmailConfirm={onEmailConfirm}

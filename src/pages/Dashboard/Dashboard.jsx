@@ -27,7 +27,7 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import { deleteShareProject, acceptShareProject } from 'api'
 
 const ProjectCart = ({
-  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed, sharedProjects, removeProject, removeShareProject,
+  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed, sharedProjects, removeProject, removeShareProject, setProjectsShareData, setUserShareData,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -47,10 +47,11 @@ const ProjectCart = ({
 
   const onAccept = async () => {
     const pid = _find(sharedProjects, item => item.project.id === id).id
-    console.log(sharedProjects)
+
     await acceptShareProject(pid)
       .then((results) => {
-        console.log(results)
+        setProjectsShareData({ confirmed: true }, id)
+        setUserShareData({ confirmed: true }, pid)
       })
       .catch((err) => {
         deleteProjectFailed(err)
@@ -174,7 +175,7 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, removeProject, removeShareProject,
+  projects, isLoading, error, user, deleteProjectFailed, removeProject, removeShareProject, setProjectsShareData, setUserShareData,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
@@ -246,6 +247,8 @@ const Dashboard = ({
                             confirmed={confirmed}
                             sharedProjects={user.sharedProjects}
                             removeShareProject={removeShareProject}
+                            setProjectsShareData={setProjectsShareData}
+                            setUserShareData={setUserShareData}
                             live={_isNumber(live) ? live : 'N/A'}
                             deleteProjectFailed={deleteProjectFailed}
                           />
@@ -302,6 +305,8 @@ Dashboard.propTypes = {
   deleteProjectFailed: PropTypes.func,
   removeProject: PropTypes.func,
   removeShareProject: PropTypes.func,
+  setProjectsShareData: PropTypes.func,
+  setUserShareData: PropTypes.func,
 }
 
 Dashboard.defaultProps = {
@@ -309,6 +314,8 @@ Dashboard.defaultProps = {
   removeProject: () => {},
   deleteProjectFailed: (e) => console.log(e),
   removeShareProject: () => {},
+  setProjectsShareData: () => {},
+  setUserShareData: () => {},
 }
 
 export default memo(withAuthentication(Dashboard, auth.authenticated))

@@ -117,6 +117,14 @@ const setProjectsShare = (share, id) => ({
   },
 })
 
+const setProjectsShareData = (data, id) => ({
+  type: types.SET_PROJECTS_SHARE_DATA,
+  payload: {
+    data,
+    id,
+  },
+})
+
 const UIActions = {
   loadProjects,
   setProjects,
@@ -135,6 +143,7 @@ const UIActions = {
   setTotalMonthlyEvents,
   setShowNoEventsLeftBanner,
   setProjectsShare,
+  setProjectsShareData,
 }
 
 export default UIActions
