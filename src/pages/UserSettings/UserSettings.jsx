@@ -111,6 +111,16 @@ ProjectList.defaultProps = {
   deleteProjectFailed: (e) => console.log(e),
 }
 
+const NoSharedProjectss = () => (
+  <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+    <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
+      <h2 className='text-2xl mb-4 text-center leading-snug'>
+        You have no shared projects.
+      </h2>
+    </div>
+  </div>
+)
+
 const UserSettings = ({
   onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed, removeProject, removeShareProject, setUserShareData, setProjectsShareData,
 }) => {
@@ -298,26 +308,27 @@ const UserSettings = ({
             Projects
           </h3>
           <div>
-            <div className='mt-3 flex flex-col'>
-              <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
-                <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                  <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
-                    <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                      <thead>
-                        <tr className='dark:bg-gray-700'>
-                          <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
-                            Name projects
-                          </th>
-                          <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
-                            Role
-                          </th>
-                          <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6 dark:text-white'>
-                            <span className='sr-only'>delete</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                        {
+            { !_isEmpty(user.sharedProjects) ? (
+              <div className='mt-3 flex flex-col'>
+                <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                  <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                    <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                      <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                        <thead>
+                          <tr className='dark:bg-gray-700'>
+                            <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
+                              Name projects
+                            </th>
+                            <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                              Role
+                            </th>
+                            <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6 dark:text-white'>
+                              <span className='sr-only'>delete</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                          {
                           _map(user.sharedProjects, (item) => (
                             <ProjectList
                               key={item.id}
@@ -331,12 +342,15 @@ const UserSettings = ({
                             />
                           ))
                         }
-                      </tbody>
-                    </table>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <NoSharedProjectss />
+            ) }
           </div>
           <hr className='mt-5' />
           {!user.isActive && (
