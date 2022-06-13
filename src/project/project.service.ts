@@ -106,7 +106,7 @@ export class ProjectService {
     return this.projectShareRepository.delete(id)
   }
 
-  async updateShare(id: string, share: ProjectShare): Promise<any> {
+  async updateShare(id: string, share: ProjectShare | Object): Promise<any> {
     return this.projectShareRepository.update(id, share)
   }
 
@@ -145,7 +145,7 @@ export class ProjectService {
     }
   }
 
-  allowedToManage(project: Project, uid: string, roles: Array<UserType>): void {
+  allowedToManage(project: Project, uid: string, roles: Array<UserType> = []): void {
     if (uid === project.admin.id || _includes(roles, UserType.ADMIN) || _findIndex(project.share, (share) => share.user?.id === uid && share.role === Role.admin) !== -1) {
       return
     } else {

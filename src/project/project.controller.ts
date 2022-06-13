@@ -622,28 +622,33 @@ export class ProjectController {
     @Param('shareId') shareId: string,
     @Body() shareDTO: ShareUpdateDTO,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
+  ): Promise<ProjectShare> {
     this.logger.log({ uid, shareDTO, shareId }, 'PUT /project/share/:shareId')
+
     if (!isValidUpdateShareDTO(shareDTO)) {
       throw new BadRequestException(
         'The provided ShareUpdateDTO is incorrect',
       )
     }
 
-    // const user = await this.userService.findOne(uid)
-    // const project = await this.projectService.findOneWhere(
-    //   { id: pid },
-    //   {
-    //     relations: ['admin', 'share'],
-    //     select: ['id', 'admin', 'share'],
-    //   },
-    // )
+    const user = await this.userService.findOne(uid)
+    const share = await this.projectService.findOneShare(shareId, {
+      relations: ['project', 'project.admin'],
+    })
 
-    // if (_isEmpty(project)) {
-    //   throw new NotFoundException(`Project with ID ${pid} does not exist`)
-    // }
+    if (_isEmpty(share)) {
+      throw new NotFoundException(`Share with ID ${shareId} does not exist`)
+    }
 
-    // this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(share.project, uid, user.roles)
+
+    const { role } = shareDTO
+    await this.projectService.updateShare(shareId, {
+      role,
+    })
+
+    await deleteProjectRedis(share.project.id)
+    return await this.projectService.findOneShare(shareId)
   }
 
   @HttpCode(204)
