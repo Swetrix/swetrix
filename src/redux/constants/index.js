@@ -149,3 +149,28 @@ export const paddleLanguageMapping = {
   uk: 'ru',
   el: 'en',
 }
+
+export const roles = [
+  {
+    name: 'Admin',
+    role: 'admin',
+    description: 'Can manage the project',
+  },
+  {
+    name: 'Viewer',
+    role: 'viewer',
+    description: 'Can view the project',
+  },
+]
+
+export const roleViewer = {
+  name: 'Viewer',
+  role: 'viewer',
+  description: 'Can view the project',
+}
+
+export const roleAdmin = {
+  name: 'Admin',
+  role: 'admin',
+  description: 'Can manage the project',
+}

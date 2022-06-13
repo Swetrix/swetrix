@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Button from 'ui/Button'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/solid'
 import { TrashIcon } from '@heroicons/react/outline'
@@ -14,19 +14,8 @@ import _map from 'lodash/map'
 import { deleteShareProjectUsers, shareProject, changeShareRole } from 'api'
 import _filter from 'lodash/filter'
 import PropTypes from 'prop-types'
-
-const roles = [
-  {
-    name: 'Admin',
-    role: 'admin',
-    description: 'Can manage the project',
-  },
-  {
-    name: 'Viewer',
-    role: 'viewer',
-    description: 'Can view the project',
-  },
-]
+import { roles, roleViewer, roleAdmin } from 'redux/constants'
+import useOnClickOutside from 'hooks/useOnClickOutside'
 
 const NoEvents = () => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
@@ -41,6 +30,8 @@ const NoEvents = () => (
 const UsersList = ({ data, onRemove }) => {
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const openRef = useRef()
+  useOnClickOutside(openRef, () => setOpen(false))
 
   const changeRole = async (role) => {
     await changeShareRole(data.id, { role })
@@ -53,6 +44,7 @@ const UsersList = ({ data, onRemove }) => {
         setOpen(false)
       })
   }
+
   return (
     <li className='py-4'>
       <div className='flex justify-between'>
@@ -79,7 +71,7 @@ const UsersList = ({ data, onRemove }) => {
         ) : (
           <>
             <button
-              onClick={() => setOpen(!open)}
+              onClick={() => { setOpen(!open) }}
               type='button'
               className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-500 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
             >
@@ -90,7 +82,7 @@ const UsersList = ({ data, onRemove }) => {
               />
             </button>
             {open && (
-            <ul className='origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg overflow-hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
+            <ul ref={openRef} className='origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg overflow-hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
               {_map(roles, ({ name, role, description }) => (
                 <li onClick={() => changeRole(role)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={role}>
                   <div>
@@ -307,7 +299,7 @@ const People = ({
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>Role</label>
               <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-gray-800', { 'border-red-300 border': errors.role })}>
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label className={cx('dark:border-gray-500 rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': form.role === 'admin', 'border-gray-200': form.role !== 'admin' })}>
+                <label className={cx('dark:border-gray-500 rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': form.role === roleAdmin.role, 'border-gray-200': form.role !== roleAdmin.role })}>
                   <input
                     name='role'
                     className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300'
@@ -317,16 +309,16 @@ const People = ({
                     onChange={handleInput}
                   />
                   <div className='ml-3 flex flex-col'>
-                    <span className={cx('block text-sm font-medium', { 'text-indigo-900 dark:text-white': form.role === 'admin', 'text-gray-700 dark:text-gray-200': form.role !== 'admin' })}>
+                    <span className={cx('block text-sm font-medium', { 'text-indigo-900 dark:text-white': form.role === roleAdmin.role, 'text-gray-700 dark:text-gray-200': form.role !== roleAdmin.role })}>
                       Admin
                     </span>
-                    <span className={cx('block text-sm', { 'text-indigo-700 dark:text-gray-100': form.role === 'admin', 'text-gray-700 dark:text-gray-200': form.role !== 'admin' })}>
+                    <span className={cx('block text-sm', { 'text-indigo-700 dark:text-gray-100': form.role === roleAdmin.role, 'text-gray-700 dark:text-gray-200': form.role !== roleAdmin.role })}>
                       Can view stats, change site settings and invite other members
                     </span>
                   </div>
                 </label>
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label className={cx('dark:border-gray-500 rounded-bl-md rounded-br-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': form.role === 'viewer', 'border-gray-200': form.role !== 'viewer' })}>
+                <label className={cx('dark:border-gray-500 rounded-bl-md rounded-br-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': form.role === roleViewer.role, 'border-gray-200': form.role !== roleViewer.role })}>
                   <input
                     name='role'
                     className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300'
@@ -336,10 +328,10 @@ const People = ({
                     onChange={handleInput}
                   />
                   <div className='ml-3 flex flex-col'>
-                    <span className={cx('block text-sm font-medium', { 'text-indigo-900 dark:text-white': form.role === 'viewer', 'text-gray-700 dark:text-gray-200': form.role !== 'viewer' })}>
+                    <span className={cx('block text-sm font-medium', { 'text-indigo-900 dark:text-white': form.role === roleViewer.role, 'text-gray-700 dark:text-gray-200': form.role !== roleViewer.role })}>
                       Viewer
                     </span>
-                    <span className={cx('block text-sm', { 'text-indigo-700 dark:text-gray-100': form.role === 'viewer', 'text-gray-700 dark:text-gray-200': form.role !== 'viewer' })}>
+                    <span className={cx('block text-sm', { 'text-indigo-700 dark:text-gray-100': form.role === roleViewer.role, 'text-gray-700 dark:text-gray-200': form.role !== roleViewer.role })}>
                       Can view stats but cannot access settings or invite members
                     </span>
                   </div>

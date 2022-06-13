@@ -39,7 +39,7 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
-  timeBucketToDays, getProjectCacheCustomKey,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -687,7 +687,7 @@ const ViewProject = ({
                 onSelect={item => item.onClick(panelsData, t)}
               />
             </div>
-            {(!isProjectPublic && !(sharedRoles === 'viewer')) && (
+            {(!isProjectPublic && !(sharedRoles === roleViewer.role)) && (
               <div className='h-full ml-3'>
                 <Button
                   onClick={openSettingsHandler}
