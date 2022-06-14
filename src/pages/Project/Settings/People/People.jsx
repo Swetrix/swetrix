@@ -4,6 +4,7 @@ import { TrashIcon } from '@heroicons/react/outline'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
+import dayjs from 'dayjs'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import _filter from 'lodash/filter'
@@ -32,7 +33,7 @@ const NoEvents = ({ t }) => (
 )
 
 const UsersList = ({
-  data, onRemove, t, share, setProjectShareData, pid, updateProjectFailed,
+  data, onRemove, t, share, setProjectShareData, pid, updateProjectFailed, language,
 }) => {
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -58,7 +59,9 @@ const UsersList = ({
         {data.user.email}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
-        {t('profileSettings.sharedTable.joinedOn')}
+        {language === 'en'
+          ? dayjs(data.created).locale(language).format('MMMM D, YYYY')
+          : dayjs(data.created).locale(language).format('D MMMM, YYYY')}
       </td>
       <td className={cx('relative whitespace-nowrap py-4 text-right text-sm font-medium pr-2', { '': !data.confirmed })}>
         {
@@ -149,6 +152,7 @@ UsersList.propTypes = {
   pid: PropTypes.string.isRequired,
   onRemove: PropTypes.func,
   updateProjectFailed: PropTypes.func,
+  language: PropTypes.string.isRequired,
 }
 
 UsersList.defaultProps = {
@@ -160,7 +164,7 @@ const People = ({
   project, updateProjectFailed, setProjectShareData,
 }) => {
   const [showModal, setShowModal] = useState(false)
-  const { t } = useTranslation('common')
+  const { t, i18n: { language } } = useTranslation('common')
   const [form, setForm] = useState({
     email: '',
     role: '',
@@ -274,7 +278,8 @@ const People = ({
             <NoEvents t={t} />
           ) : (
             <div className='mt-3 flex flex-col'>
-              <div className='-my-2 -mx-4 overflow-y-clip overflow-auto sm:-mx-6 lg:-mx-8'>
+              <div className='-my-2 -mx-4 overflow-x-auto md:overflow-x-visible sm:-mx-6 lg:-mx-8'>
+                {/* md:overflow-scroll */}
                 <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
                   <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
                     <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
@@ -298,6 +303,7 @@ const People = ({
                             key={user.id}
                             onRemove={onRemove}
                             t={t}
+                            language={language}
                             share={project.share}
                             setProjectShareData={setProjectShareData}
                             updateProjectFailed={updateProjectFailed}
