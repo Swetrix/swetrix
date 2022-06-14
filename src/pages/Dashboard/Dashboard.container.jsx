@@ -15,12 +15,6 @@ const mapDispatchToProps = (dispatch) => ({
   deleteProjectFailed: (message) => {
     dispatch(errorsActions.deleteProjectFailed(message))
   },
-  removeProject: (projectId) => {
-    dispatch(UIActions.removeProject(projectId))
-  },
-  removeShareProject: (id) => {
-    dispatch(authActions.deleteShareProject(id))
-  },
   setProjectsShareData: (data, id) => {
     dispatch(UIActions.setProjectsShareData(data, id))
   },

@@ -23,7 +23,7 @@ import UserSettings from './UserSettings'
 dayjs.extend(utc)
 
 const UserSettingsContainer = () => {
-  const { t } = useTranslation('common')
+  const { t, i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
   const history = useHistory()
 
@@ -119,6 +119,7 @@ const UserSettingsContainer = () => {
   return (
     <UserSettings
       t={t}
+      language={language}
       onDelete={onDelete}
       onExport={onExport}
       removeProject={removeProject}

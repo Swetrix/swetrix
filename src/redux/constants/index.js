@@ -150,18 +150,7 @@ export const paddleLanguageMapping = {
   el: 'en',
 }
 
-export const roles = [
-  {
-    name: 'Admin',
-    role: 'admin',
-    description: 'Can manage the project',
-  },
-  {
-    name: 'Viewer',
-    role: 'viewer',
-    description: 'Can view the project',
-  },
-]
+export const roles = ['admin', 'viewer']
 
 export const roleViewer = {
   name: 'Viewer',
@@ -174,3 +163,5 @@ export const roleAdmin = {
   role: 'admin',
   description: 'Can manage the project',
 }
+
+export const INVITATION_EXPIRES_IN = 48 // hours

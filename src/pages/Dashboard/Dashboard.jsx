@@ -18,32 +18,19 @@ import Modal from 'ui/Modal'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
-import { ActivePin, InactivePin } from 'ui/Pin'
+import { ActivePin, InactivePin, WarningPin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
 import { isSelfhosted } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
-import { deleteShareProject, acceptShareProject } from 'api'
+import { acceptShareProject } from 'api'
 
 const ProjectCart = ({
-  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed, sharedProjects, removeProject, removeShareProject, setProjectsShareData, setUserShareData, shared,
+  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed, sharedProjects, setProjectsShareData, setUserShareData, shared,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
-
-  const deleteProject = async () => {
-    const pid = _find(sharedProjects, item => item.project.id === id).id
-
-    await deleteShareProject(pid)
-      .then((results) => {
-        removeProject(id)
-        removeShareProject(pid)
-      })
-      .catch((err) => {
-        deleteProjectFailed(err)
-      })
-  }
 
   const onAccept = async () => {
     const pid = _find(sharedProjects, item => item.project.id === id).id
@@ -60,7 +47,7 @@ const ProjectCart = ({
 
   return (
     <li>
-      <div onClick={() => { return confirmed === false ? setShowInviteModal(true) : () => {} }} className='block cursor-pointer hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-800 dark:border-gray-700'>
+      <div onClick={() => !confirmed && setShowInviteModal(true)} className='block cursor-pointer hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-800 dark:border-gray-700'>
         <div className='px-4 py-4 sm:px-6'>
           <div className='flex items-center justify-between'>
             <p className='text-lg font-medium text-indigo-600 dark:text-gray-50 truncate'>
@@ -69,10 +56,10 @@ const ProjectCart = ({
             <div className='ml-2 flex-shrink-0 flex'>
               {
                 shared && (
-                  confirmed === false ? (
-                    <InactivePin className='mr-2' label='Panding' />
+                  confirmed ? (
+                    <ActivePin className='mr-2' label={t('dashboard.shared')} />
                   ) : (
-                    <ActivePin className='mr-2' label='Shared' />
+                    <WarningPin className='mr-2' label={t('common.pending')} />
                   )
                 )
               }
@@ -150,13 +137,13 @@ const ProjectCart = ({
       {
         !confirmed && (
           <Modal
-            onClose={() => { setShowInviteModal(false); deleteProject() }}
+            onClose={() => { setShowInviteModal(false) }}
             onSubmit={() => { setShowInviteModal(false); onAccept() }}
-            submitText='Accept & Continue'
+            submitText={t('common.accept')}
             type='confirmed'
-            closeText='Reject'
-            title={`Invitanion for ${name}`}
-            message='You have been invited to join this project. Do you want to accept?'
+            closeText={t('common.cancel')}
+            title={t('dashboard.invitationFor', { project: name })}
+            message={t('dashboard.invitationDesc', { project: name })}
             isOpened={showInviteModal}
           />
         )
@@ -177,7 +164,7 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, removeProject, removeShareProject, setProjectsShareData, setUserShareData,
+  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
@@ -245,11 +232,9 @@ const Dashboard = ({
                             shared={shared}
                             active={active}
                             isPublic={isPublic}
-                            removeProject={removeProject}
                             overall={overall}
                             confirmed={confirmed}
                             sharedProjects={user.sharedProjects}
-                            removeShareProject={removeShareProject}
                             setProjectsShareData={setProjectsShareData}
                             setUserShareData={setUserShareData}
                             live={_isNumber(live) ? live : 'N/A'}
@@ -307,20 +292,13 @@ Dashboard.propTypes = {
   user: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
   error: PropTypes.string,
-  deleteProjectFailed: PropTypes.func,
-  removeProject: PropTypes.func,
-  removeShareProject: PropTypes.func,
-  setProjectsShareData: PropTypes.func,
-  setUserShareData: PropTypes.func,
+  deleteProjectFailed: PropTypes.func.isRequired,
+  setProjectsShareData: PropTypes.func.isRequired,
+  setUserShareData: PropTypes.func.isRequired,
 }
 
 Dashboard.defaultProps = {
   error: '',
-  removeProject: () => {},
-  deleteProjectFailed: (e) => console.log(e),
-  removeShareProject: () => {},
-  setProjectsShareData: () => {},
-  setUserShareData: () => {},
 }
 
 export default memo(withAuthentication(Dashboard, auth.authenticated))

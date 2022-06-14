@@ -9,6 +9,7 @@ import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import { MailIcon } from '@heroicons/react/outline'
 import PropTypes from 'prop-types'
+import dayjs from 'dayjs'
 
 import { reportFrequencies, DEFAULT_TIMEZONE } from 'redux/constants'
 import Title from 'components/Title'
@@ -25,7 +26,7 @@ import {
 import { deleteShareProject, acceptShareProject } from 'api'
 
 const ProjectList = ({
-  item, t, deleteProjectFailed, removeShareProject, removeProject, setProjectsShareData, setUserShareData,
+  item, t, deleteProjectFailed, removeShareProject, removeProject, setProjectsShareData, setUserShareData, language,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -57,26 +58,27 @@ const ProjectList = ({
         {item.project.name}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
-        {item.role}
+        {t(`project.settings.roles.${item.role}.name`)}
+      </td>
+      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+        {language === 'en'
+          ? dayjs(item.created).locale(language).format('MMMM D, YYYY')
+          : dayjs(item.created).locale(language).format('D MMMM, YYYY')}
       </td>
       <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
         {item.confirmed === false ? (
           <>
             <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
-              Reject
+              {t('common.reject')}
             </Button>
             <Button onClick={() => onAccept()} primary small>
-              Accept
+              {t('common.accept')}
             </Button>
           </>
         ) : (
-          <button
-            type='button'
-            className='text-indigo-600 hover:text-indigo-900'
-            onClick={() => setShowDeleteModal(true)}
-          >
-            Delete
-          </button>
+          <Button onClick={() => setShowDeleteModal(true)} danger small>
+            {t('common.quit')}
+          </Button>
         )}
         <Modal
           onClose={() => {
@@ -89,8 +91,8 @@ const ProjectList = ({
           submitText={t('common.yes')}
           type='confirmed'
           closeText={t('common.no')}
-          title={`Delete ${item.id}?`}
-          message='Are you sure you want to delete this project?'
+          title={t('profileSettings.quitProjectTitle', { project: item.project.name })}
+          message={t('profileSettings.quitProject')}
           isOpened={showDeleteModal}
         />
       </td>
@@ -111,18 +113,19 @@ ProjectList.defaultProps = {
   deleteProjectFailed: (e) => console.log(e),
 }
 
-const NoSharedProjectss = () => (
+const NoSharedProjects = ({ t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
       <h2 className='text-2xl mb-4 text-center leading-snug'>
-        You have no shared projects.
+        {t('profileSettings.noSharedProjects')}
       </h2>
     </div>
   </div>
 )
 
 const UserSettings = ({
-  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed, removeProject, removeShareProject, setUserShareData, setProjectsShareData,
+  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed,
+  removeProject, removeShareProject, setUserShareData, setProjectsShareData, language,
 }) => {
   const { user } = useSelector(state => state.auth)
 
@@ -304,11 +307,12 @@ const UserSettings = ({
           </Button>
 
           <hr className='mt-5' />
-          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-            Projects
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.shared')}
+            <Beta className='ml-10' />
           </h3>
           <div>
-            { !_isEmpty(user.sharedProjects) ? (
+            {!_isEmpty(user.sharedProjects) ? (
               <div className='mt-3 flex flex-col'>
                 <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                   <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
@@ -317,31 +321,33 @@ const UserSettings = ({
                         <thead>
                           <tr className='dark:bg-gray-700'>
                             <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
-                              Name projects
+                              {t('profileSettings.sharedTable.project')}
                             </th>
                             <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
-                              Role
+                              {t('profileSettings.sharedTable.role')}
                             </th>
-                            <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6 dark:text-white'>
-                              <span className='sr-only'>delete</span>
+                            <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                              {t('profileSettings.sharedTable.joinedOn')}
                             </th>
+                            <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
                           </tr>
                         </thead>
                         <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                           {
-                          _map(user.sharedProjects, (item) => (
-                            <ProjectList
-                              key={item.id}
-                              item={item}
-                              t={t}
-                              deleteProjectFailed={deleteProjectFailed}
-                              removeProject={removeProject}
-                              removeShareProject={removeShareProject}
-                              setUserShareData={setUserShareData}
-                              setProjectsShareData={setProjectsShareData}
-                            />
-                          ))
-                        }
+                            _map(user.sharedProjects, (item) => (
+                              <ProjectList
+                                key={item.id}
+                                item={item}
+                                language={language}
+                                t={t}
+                                deleteProjectFailed={deleteProjectFailed}
+                                removeProject={removeProject}
+                                removeShareProject={removeShareProject}
+                                setUserShareData={setUserShareData}
+                                setProjectsShareData={setProjectsShareData}
+                              />
+                            ))
+                          }
                         </tbody>
                       </table>
                     </div>
@@ -349,8 +355,8 @@ const UserSettings = ({
                 </div>
               </div>
             ) : (
-              <NoSharedProjectss />
-            ) }
+              <NoSharedProjects t={t} />
+            )}
           </div>
           <hr className='mt-5' />
           {!user.isActive && (
@@ -423,6 +429,7 @@ UserSettings.propTypes = {
   removeShareProject: PropTypes.func.isRequired,
   setUserShareData: PropTypes.func.isRequired,
   setProjectsShareData: PropTypes.func.isRequired,
+  language: PropTypes.string.isRequired,
 }
 
 UserSettings.defaultProps = {
