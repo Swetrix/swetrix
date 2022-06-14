@@ -2,7 +2,6 @@ import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import { v5 as uuidv5 } from 'uuid'
 import * as _toNumber from 'lodash/toNumber'
-import * as _size from 'lodash/size'
 import * as _round from 'lodash/round'
 
 require('dotenv').config()
@@ -128,9 +127,8 @@ function getPercentageChange(oldVal: number, newVal: number, round: number = 2) 
 const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
 
-// is ProjectID a valid key
-// TODO: ALLOW ONLY WHITELISTED PID CHARACTERS
-const isValidPID = (pid: string) => _size(pid) === 12
+const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
+const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
