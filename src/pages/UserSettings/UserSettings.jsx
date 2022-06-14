@@ -32,7 +32,7 @@ const ProjectList = ({
 
   const deleteProject = async (pid) => {
     await deleteShareProject(pid)
-      .then((results) => {
+      .then(() => {
         removeShareProject(pid)
         removeProject(item.project.id)
       })
@@ -43,7 +43,7 @@ const ProjectList = ({
 
   const onAccept = async () => {
     await acceptShareProject(item.id)
-      .then((results) => {
+      .then(() => {
         setProjectsShareData({ confirmed: true }, item.project.id)
         setUserShareData({ confirmed: true }, item.id)
       })

@@ -36,7 +36,7 @@ const ProjectCart = ({
     const pid = _find(sharedProjects, item => item.project.id === id).id
 
     await acceptShareProject(pid)
-      .then((results) => {
+      .then(() => {
         setProjectsShareData({ confirmed: true }, id)
         setUserShareData({ confirmed: true }, pid)
       })

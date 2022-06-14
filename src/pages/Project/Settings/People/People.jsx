@@ -31,7 +31,9 @@ const NoEvents = ({ t }) => (
   </div>
 )
 
-const UsersList = ({ data, onRemove, t }) => {
+const UsersList = ({
+  data, onRemove, t, share, setProjectShareData, pid, updateProjectFailed,
+}) => {
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const openRef = useRef()
@@ -40,11 +42,12 @@ const UsersList = ({ data, onRemove, t }) => {
   const changeRole = async (role) => {
     await changeShareRole(data.id, { role })
       .then((results) => {
-        console.log(results)
+        const newShared = _map(share, (user) => { if (user.id === results.id) { return { ...results, user: user.user } } return user })
+        setProjectShareData({ share: newShared }, pid)
         setOpen(false)
       })
       .catch((e) => {
-        console.log(e)
+        updateProjectFailed(e)
         setOpen(false)
       })
   }
@@ -73,7 +76,7 @@ const UsersList = ({ data, onRemove, t }) => {
                 </Button>
               </>
             ) : (
-              <>
+              <div ref={openRef}>
                 <button
                   onClick={() => { setOpen(!open) }}
                   type='button'
@@ -86,7 +89,7 @@ const UsersList = ({ data, onRemove, t }) => {
                   />
                 </button>
                 {open && (
-                  <ul ref={openRef} className='origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg overflow-hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
+                  <ul className='origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg overflow-hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
                     {_map(roles, (role) => (
                       <li onClick={() => changeRole(role)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={role}>
                         <div>
@@ -113,7 +116,7 @@ const UsersList = ({ data, onRemove, t }) => {
                     </li>
                   </ul>
                 )}
-              </>
+              </div>
             )
           }
         </div>
@@ -139,16 +142,21 @@ const UsersList = ({ data, onRemove, t }) => {
 
 UsersList.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
+  share: PropTypes.arrayOf(PropTypes.object).isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
   data: PropTypes.object.isRequired,
+  pid: PropTypes.string.isRequired,
   onRemove: PropTypes.func,
+  updateProjectFailed: PropTypes.func,
 }
 
 UsersList.defaultProps = {
   onRemove: () => { },
+  updateProjectFailed: (e) => console.log(e),
 }
 
 const People = ({
-  project, updateProjectFailed, setProjectShare,
+  project, updateProjectFailed, setProjectShareData,
 }) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
@@ -201,7 +209,7 @@ const People = ({
     setTimeout(() => setForm({ email: '', role: '' }), 300)
     shareProject(id, { email: form.email, role: form.role })
       .then((results) => {
-        setProjectShare(results.share, id)
+        setProjectShareData({ share: results.share }, id)
       })
       .catch((e) => {
         updateProjectFailed(e)
@@ -230,7 +238,7 @@ const People = ({
     deleteShareProjectUsers(id, userId)
       .then(() => {
         const newShared = _map(_filter(share, s => s.id !== userId), s => s)
-        setProjectShare(newShared, id)
+        setProjectShareData({ share: newShared }, id)
       })
       .catch((e) => {
         updateProjectFailed(e)
@@ -265,7 +273,18 @@ const People = ({
             <NoEvents t={t} />
           ) : (
             <ul className='divide-y divide-gray-200 dark:divide-gray-700'>
-              {_map(share, user => (<UsersList data={user} key={user.id} onRemove={onRemove} t={t} />))}
+              {_map(share, user => (
+                <UsersList
+                  data={user}
+                  key={user.id}
+                  onRemove={onRemove}
+                  t={t}
+                  share={project.share}
+                  setProjectShareData={setProjectShareData}
+                  updateProjectFailed={updateProjectFailed}
+                  pid={id}
+                />
+              ))}
             </ul>
           )
         }
@@ -358,12 +377,12 @@ People.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   project: PropTypes.object.isRequired,
   updateProjectFailed: PropTypes.func,
-  setProjectShare: PropTypes.func,
+  setProjectShareData: PropTypes.func,
 }
 
 People.defaultProps = {
   updateProjectFailed: () => { },
-  setProjectShare: () => { },
+  setProjectShareData: () => { },
 }
 
 export default People
