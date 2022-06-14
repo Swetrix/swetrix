@@ -101,16 +101,11 @@ const ProjectList = ({
 }
 
 ProjectList.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
-  item: PropTypes.object.isRequired,
+  item: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   t: PropTypes.func.isRequired,
-  deleteProjectFailed: PropTypes.func,
+  deleteProjectFailed: PropTypes.func.isRequired,
   removeProject: PropTypes.func.isRequired,
   removeShareProject: PropTypes.func.isRequired,
-}
-
-ProjectList.defaultProps = {
-  deleteProjectFailed: (e) => console.log(e),
 }
 
 const NoSharedProjects = ({ t }) => (
@@ -422,7 +417,7 @@ UserSettings.propTypes = {
   onEmailConfirm: PropTypes.func.isRequired,
   onExport: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  deleteProjectFailed: PropTypes.func,
+  deleteProjectFailed: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired,
   onDeleteProjectCache: PropTypes.func.isRequired,
   removeProject: PropTypes.func.isRequired,
@@ -430,10 +425,6 @@ UserSettings.propTypes = {
   setUserShareData: PropTypes.func.isRequired,
   setProjectsShareData: PropTypes.func.isRequired,
   language: PropTypes.string.isRequired,
-}
-
-UserSettings.defaultProps = {
-  deleteProjectFailed: (e) => console.log(e),
 }
 
 export default memo(UserSettings)

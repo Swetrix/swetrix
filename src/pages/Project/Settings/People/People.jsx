@@ -145,19 +145,12 @@ const UsersList = ({
 }
 
 UsersList.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
-  share: PropTypes.arrayOf(PropTypes.object).isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
-  data: PropTypes.object.isRequired,
+  share: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
+  data: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   pid: PropTypes.string.isRequired,
-  onRemove: PropTypes.func,
-  updateProjectFailed: PropTypes.func,
+  onRemove: PropTypes.func.isRequired,
+  updateProjectFailed: PropTypes.func.isRequired,
   language: PropTypes.string.isRequired,
-}
-
-UsersList.defaultProps = {
-  onRemove: () => { },
-  updateProjectFailed: (e) => console.log(e),
 }
 
 const People = ({
@@ -279,7 +272,6 @@ const People = ({
           ) : (
             <div className='mt-3 flex flex-col'>
               <div className='-my-2 -mx-4 overflow-x-auto md:overflow-x-visible sm:-mx-6 lg:-mx-8'>
-                {/* md:overflow-scroll */}
                 <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
                   <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
                     <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
