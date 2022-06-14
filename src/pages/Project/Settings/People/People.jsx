@@ -53,13 +53,15 @@ const UsersList = ({
   }
 
   return (
-    <li className='py-4'>
-      <div className='flex justify-between'>
-        <p className='text-gray-700 dark:text-gray-200'>
-          {data.user.email}
-        </p>
-        <div className={cx('relative', { 'flex items-center': !data.confirmed })}>
-          {
+    <tr className='dark:bg-gray-700'>
+      <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+        {data.user.email}
+      </td>
+      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+        {t('profileSettings.sharedTable.joinedOn')}
+      </td>
+      <td className={cx('relative whitespace-nowrap py-4 text-right text-sm font-medium pr-2', { '': !data.confirmed })}>
+        {
             !data.confirmed ? (
               <>
                 <WarningPin
@@ -89,7 +91,7 @@ const UsersList = ({
                   />
                 </button>
                 {open && (
-                  <ul className='origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg overflow-hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
+                  <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
                     {_map(roles, (role) => (
                       <li onClick={() => changeRole(role)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={role}>
                         <div>
@@ -119,8 +121,7 @@ const UsersList = ({
               </div>
             )
           }
-        </div>
-      </div>
+      </td>
       <Modal
         onClose={() => {
           setShowDeleteModal(false)
@@ -136,7 +137,7 @@ const UsersList = ({
         message={t('project.settings.removeConfirm')}
         isOpened={showDeleteModal}
       />
-    </li>
+    </tr>
   )
 }
 
@@ -272,20 +273,43 @@ const People = ({
           _isEmpty(share) ? (
             <NoEvents t={t} />
           ) : (
-            <ul className='divide-y divide-gray-200 dark:divide-gray-700'>
-              {_map(share, user => (
-                <UsersList
-                  data={user}
-                  key={user.id}
-                  onRemove={onRemove}
-                  t={t}
-                  share={project.share}
-                  setProjectShareData={setProjectShareData}
-                  updateProjectFailed={updateProjectFailed}
-                  pid={id}
-                />
-              ))}
-            </ul>
+            <div className='mt-3 flex flex-col'>
+              <div className='-my-2 -mx-4 overflow-y-clip overflow-auto sm:-mx-6 lg:-mx-8'>
+                <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
+                  <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                    <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                      <thead>
+                        <tr className='dark:bg-gray-700'>
+                          <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
+                            {t('profileSettings.sharedTable.project')}
+                          </th>
+                          <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                            {t('profileSettings.sharedTable.joinedOn')}
+                          </th>
+                          <th scope='col' className='px-3 pr-8 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white'>
+                            {t('profileSettings.sharedTable.role')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                        {_map(share, user => (
+                          <UsersList
+                            data={user}
+                            key={user.id}
+                            onRemove={onRemove}
+                            t={t}
+                            share={project.share}
+                            setProjectShareData={setProjectShareData}
+                            updateProjectFailed={updateProjectFailed}
+                            pid={id}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
           )
         }
       </div>
