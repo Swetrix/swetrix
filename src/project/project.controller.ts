@@ -21,6 +21,7 @@ import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _values from 'lodash/values'
 import * as _includes from 'lodash/includes'
+import * as _omit from 'lodash/omit'
 
 import { ProjectService, processProjectUser } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
@@ -382,7 +383,9 @@ export class ProjectController {
         this.projectService.formatToClickhouse(project),
       )
     } else {
-      project = await this.projectService.findOneWithRelations(id)
+      project = await this.projectService.findOne(id, {
+        relations: ['admin', 'share', 'share.user'],
+      })
       const user = await this.userService.findOne(uid)
 
       if (_isEmpty(project)) {
@@ -396,7 +399,7 @@ export class ProjectController {
       project.name = projectDTO.name
       project.public = projectDTO.public
 
-      await this.projectService.update(id, project)
+      await this.projectService.update(id, _omit(project, ['share', 'admin']))
     }
 
     // await updateProjectRedis(id, project)
