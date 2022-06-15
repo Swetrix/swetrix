@@ -98,6 +98,13 @@ export class ProjectService {
       .execute()
   }
 
+  async deleteMultipleShare(where): Promise<any> {
+    return this.projectShareRepository.createQueryBuilder()
+      .delete()
+      .where(where)
+      .execute()
+  }
+
   async createShare(share: ProjectShare): Promise<ProjectShare> {
     return this.projectShareRepository.save(share)
   }

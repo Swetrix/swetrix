@@ -12,6 +12,13 @@ export class ActionTokensService {
     private actionTokensRepository: Repository<ActionToken>,
   ) {}
 
+  async deleteMultiple(where: string): Promise<any> {
+    return this.actionTokensRepository.createQueryBuilder()
+      .delete()
+      .where(where)
+      .execute()
+  }
+
   async createForUser(user: User, action: ActionTokenType, newValue: string = null): Promise<ActionToken> {
     return this.actionTokensRepository.save({ user, action, newValue })
   }
