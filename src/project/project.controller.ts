@@ -642,6 +642,10 @@ export class ProjectController {
       throw new NotFoundException(`Share with ID ${shareId} does not exist`)
     }
 
+    if (share.project?.admin?.id !== uid) {
+      throw new NotFoundException(`You are not allowed to edit this share`)
+    }
+
     this.projectService.allowedToManage(share.project, uid, user.roles)
 
     const { role } = shareDTO
