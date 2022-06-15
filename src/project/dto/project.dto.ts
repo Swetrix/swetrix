@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty } from 'class-validator'
-// import { ProjectShare } from '../entity/project-share.entity'
 
 export class ProjectDTO {
   @ApiProperty({
@@ -25,12 +24,6 @@ export class ProjectDTO {
     description: 'An array allowed origins',
   })
   origins: string[]
-
-  // @ApiProperty({
-  //   required: false,
-  //   description: 'Whom with can you share your project with',
-  // })
-  // share: ProjectShare[]
 
   @ApiProperty({
     required: false,
