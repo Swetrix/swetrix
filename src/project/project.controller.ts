@@ -596,8 +596,7 @@ export class ProjectController {
 
       // TODO: Implement link expiration
       const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PROJECT_SHARE, share.id)
-      // const url = `${headers.origin}/share/${actionToken.id}`
-      const url = `http://localhost:5005/project/share/${actionToken.id}`
+      const url = `${headers.origin}/share/${actionToken.id}`
       await this.mailerService.sendEmail(invitee.email, LetterTemplate.ProjectInvitation, {
         url, email: user.email, name: project.name, role: share.role, expiration: PROJECT_INVITE_EXPIRE,
       })
