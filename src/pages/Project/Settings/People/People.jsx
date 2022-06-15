@@ -73,82 +73,82 @@ const UsersList = ({
           : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
       <td className='relative whitespace-nowrap py-4 text-right text-sm font-medium pr-2'>
-        {
-          confirmed ? (
-            <div ref={openRef}>
-              <button
-                onClick={() => setOpen(!open)}
-                type='button'
-                className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-500 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
-              >
-                {t(`project.settings.roles.${role}.name`)}
-                <ChevronDownIcon
-                  style={{ transform: open ? 'rotate(180deg)' : '' }}
-                  className='w-4 h-4 pt-px ml-0.5'
-                />
-              </button>
-              {open && (
-                <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
-                  {_map(roles, (itRole) => (
-                    <li onClick={() => changeRole(itRole)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={itRole}>
-                      <div>
-                        <p className='font-bold text-gray-700 dark:text-gray-200 group-hover:text-gray-200'>
-                          {t(`project.settings.roles.${itRole}.name`)}
-                        </p>
-                        <p className='mt-1 text-sm text-gray-500 group-hover:text-gray-200'>
-                          {t(`project.settings.roles.${itRole}.shortDesc`)}
-                        </p>
-                      </div>
-                      {role === itRole && (
-                        <span className='text-indigo-600 group-hover:text-gray-200'>
-                          <CheckIcon className='w-7 h-7 pt-px ml-1' />
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                  <li onClick={() => { setOpen(false); setShowDeleteModal(true) }} className='p-4 hover:bg-gray-300 dark:hover:bg-gray-700 group cursor-pointer flex justify-between items-center'>
+        {confirmed ? (
+          <div ref={openRef}>
+            <button
+              onClick={() => setOpen(!open)}
+              type='button'
+              className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-500 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+            >
+              {t(`project.settings.roles.${role}.name`)}
+              <ChevronDownIcon
+                style={{ transform: open ? 'rotate(180deg)' : '' }}
+                className='w-4 h-4 pt-px ml-0.5'
+              />
+            </button>
+            {open && (
+              <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
+                {_map(roles, (itRole) => (
+                  <li onClick={() => changeRole(itRole)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={itRole}>
                     <div>
-                      <p className='font-bold text-red-600 dark:text-red-500'>
-                        {t('project.settings.removeMember')}
+                      <p className='font-bold text-gray-700 dark:text-gray-200 group-hover:text-gray-200'>
+                        {t(`project.settings.roles.${itRole}.name`)}
+                      </p>
+                      <p className='mt-1 text-sm text-gray-500 group-hover:text-gray-200'>
+                        {t(`project.settings.roles.${itRole}.shortDesc`)}
                       </p>
                     </div>
+                    {role === itRole && (
+                    <span className='text-indigo-600 group-hover:text-gray-200'>
+                      <CheckIcon className='w-7 h-7 pt-px ml-1' />
+                    </span>
+                    )}
                   </li>
-                </ul>
-              )}
-            </div>
-          ) : (
-            <div className='flex items-center justify-end'>
-              <WarningPin
-                label={t('common.pending')}
-                className='inline-flex items-center shadow-sm px-2.5 py-0.5 mr-3'
-              />
-              <Button
-                type='button'
-                className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:bg-gray-600 dark:hover:bg-gray-700'
-                small
-                onClick={() => setShowDeleteModal(true)}
-              >
-                <TrashIcon className='h-4 w-4' />
-              </Button>
-            </div>
-          )
-        }
+                ))}
+                <li onClick={() => { setOpen(false); setShowDeleteModal(true) }} className='p-4 hover:bg-gray-300 dark:hover:bg-gray-700 group cursor-pointer flex justify-between items-center'>
+                  <div>
+                    <p className='font-bold text-red-600 dark:text-red-500'>
+                      {t('project.settings.removeMember')}
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            )}
+          </div>
+        ) : (
+          <div className='flex items-center justify-end'>
+            <WarningPin
+              label={t('common.pending')}
+              className='inline-flex items-center shadow-sm px-2.5 py-0.5 mr-3'
+            />
+            <Button
+              type='button'
+              className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:bg-gray-600 dark:hover:bg-gray-700'
+              small
+              onClick={() => setShowDeleteModal(true)}
+            >
+              <TrashIcon className='h-4 w-4' />
+            </Button>
+          </div>
+        )}
       </td>
-      <Modal
-        onClose={() => {
-          setShowDeleteModal(false)
-        }}
-        onSubmit={() => {
-          setShowDeleteModal(false)
-          onRemove(id)
-        }}
-        submitText={t('common.yes')}
-        type='confirmed'
-        closeText={t('common.no')}
-        title={t('project.settings.removeUser', { user: user.email })}
-        message={t('project.settings.removeConfirm')}
-        isOpened={showDeleteModal}
-      />
+      <td>
+        <Modal
+          onClose={() => {
+            setShowDeleteModal(false)
+          }}
+          onSubmit={() => {
+            setShowDeleteModal(false)
+            onRemove(id)
+          }}
+          submitText={t('common.yes')}
+          type='confirmed'
+          closeText={t('common.no')}
+          title={t('project.settings.removeUser', { user: user.email })}
+          message={t('project.settings.removeConfirm')}
+          isOpened={showDeleteModal}
+        />
+      </td>
     </tr>
   )
 }
