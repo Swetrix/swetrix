@@ -117,6 +117,11 @@ const setProjectsShareData = (data, id) => ({
   },
 })
 
+const shareVerifyAsync = (data, successfulCallback, errorCallback) => ({
+  type: types.SHARE_VERIFY_ASYNC,
+  payload: { data, successfulCallback, errorCallback },
+})
+
 const UIActions = {
   loadProjects,
   setProjects,
@@ -135,6 +140,7 @@ const UIActions = {
   setTotalMonthlyEvents,
   setShowNoEventsLeftBanner,
   setProjectsShareData,
+  shareVerifyAsync,
 }
 
 export default UIActions

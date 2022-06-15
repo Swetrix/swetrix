@@ -40,6 +40,7 @@ const ProjectSettings = lazy(() => import('pages/Project/Settings'))
 const ViewProject = lazy(() => import('pages/Project/View'))
 const Billing = lazy(() => import('pages/Billing'))
 const Privacy = lazy(() => import('pages/Privacy'))
+const ConfirmShare = lazy(() => import('pages/Project/ConfirmShare'))
 const Terms = lazy(() => import('pages/Terms'))
 const NotFound = lazy(() => import('pages/NotFound'))
 
@@ -101,7 +102,7 @@ const App = () => {
         clearInterval(interval)
       }
     }
-  }, [dispatch])
+  }, []) // eslint-disable-line
 
   useEffect(() => {
     const loaderEl = document.getElementById('loader')
@@ -127,7 +128,7 @@ const App = () => {
         }
       }
     })()
-  }, [dispatch, accessToken, authenticated])
+  }, [accessToken, authenticated]) // eslint-disable-line
 
   useEffect(() => {
     if (error) {
@@ -179,6 +180,7 @@ const App = () => {
                 <Route path={routes.features} component={Features} exact />
                 <Route path={routes.privacy} component={Privacy} exact />
                 <Route path={routes.terms} component={Terms} exact />
+                <Route path={routes.confirm_share} component={ConfirmShare} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>
