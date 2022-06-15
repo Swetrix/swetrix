@@ -6,7 +6,17 @@
     "rateLimitHit": "Too many requests, please try again later",
     "cancelSubFirst": "Please cancel your paid subscription first",
     "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account"
+    "accountDeleteError": "Error while deleting your account",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occured while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occured while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occured while removing the user from your project",
+    "quitProjectError": "Error occured while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occured while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted"
   },
   "common": {
     "features": "Features",

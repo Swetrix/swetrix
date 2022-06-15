@@ -33,97 +33,106 @@ const NoEvents = ({ t }) => (
 )
 
 const UsersList = ({
-  data, onRemove, t, share, setProjectShareData, pid, updateProjectFailed, language,
+  data, onRemove, t, share, setProjectShareData, pid, updateProjectFailed, language, roleUpdatedNotification,
 }) => {
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const openRef = useRef()
   useOnClickOutside(openRef, () => setOpen(false))
+  const {
+    id, created, confirmed, role, user,
+  } = data
 
-  const changeRole = async (role) => {
-    await changeShareRole(data.id, { role })
-      .then((results) => {
-        const newShared = _map(share, (user) => { if (user.id === results.id) { return { ...results, user: user.user } } return user })
-        setProjectShareData({ share: newShared }, pid)
-        setOpen(false)
+  const changeRole = async (newRole) => {
+    try {
+      const results = await changeShareRole(id, { role: newRole })
+      const newShared = _map(share, (itShare) => {
+        if (itShare.id === results.id) {
+          return { ...results, user: itShare.user }
+        }
+        return itShare
       })
-      .catch((e) => {
-        updateProjectFailed(e)
-        setOpen(false)
-      })
+      setProjectShareData({ share: newShared }, pid)
+      roleUpdatedNotification(t('apiNotifications.roleUpdated'))
+    } catch (e) {
+      console.error(`[ERROR] Error while updating user's role: ${e}`)
+      updateProjectFailed(t('apiNotifications.roleUpdateError'))
+    }
+
+    setOpen(false)
   }
 
   return (
     <tr className='dark:bg-gray-700'>
       <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
-        {data.user.email}
+        {user.email}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
         {language === 'en'
-          ? dayjs(data.created).locale(language).format('MMMM D, YYYY')
-          : dayjs(data.created).locale(language).format('D MMMM, YYYY')}
+          ? dayjs(created).locale(language).format('MMMM D, YYYY')
+          : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className={cx('relative whitespace-nowrap py-4 text-right text-sm font-medium pr-2', { '': !data.confirmed })}>
+      <td className='relative whitespace-nowrap py-4 text-right text-sm font-medium pr-2'>
         {
-            !data.confirmed ? (
-              <>
-                <WarningPin
-                  label={t('common.pending')}
-                  className='inline-flex items-center shadow-sm px-2.5 py-0.5 mr-3'
+          confirmed ? (
+            <div ref={openRef}>
+              <button
+                onClick={() => setOpen(!open)}
+                type='button'
+                className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-500 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+              >
+                {t(`project.settings.roles.${role}.name`)}
+                <ChevronDownIcon
+                  style={{ transform: open ? 'rotate(180deg)' : '' }}
+                  className='w-4 h-4 pt-px ml-0.5'
                 />
-                <Button
-                  type='button'
-                  className='bg-white text-indigo-600 border border-transparent rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                  small
-                  onClick={() => { setShowDeleteModal(true) }}
-                >
-                  <TrashIcon className='h-4 w-4' />
-                </Button>
-              </>
-            ) : (
-              <div ref={openRef}>
-                <button
-                  onClick={() => { setOpen(!open) }}
-                  type='button'
-                  className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-500 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
-                >
-                  {t(`project.settings.roles.${data.role}.name`)}
-                  <ChevronDownIcon
-                    style={{ transform: open ? 'rotate(180deg)' : '' }}
-                    className='w-4 h-4 pt-px ml-0.5'
-                  />
-                </button>
-                {open && (
-                  <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
-                    {_map(roles, (role) => (
-                      <li onClick={() => changeRole(role)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={role}>
-                        <div>
-                          <p className='font-bold text-gray-700 dark:text-gray-200 group-hover:text-gray-200'>
-                            {t(`project.settings.roles.${role}.name`)}
-                          </p>
-                          <p className='mt-1 text-sm text-gray-500 group-hover:text-gray-200'>
-                            {t(`project.settings.roles.${role}.shortDesc`)}
-                          </p>
-                        </div>
-                        {data.role === role && (
-                          <span className='text-indigo-600 group-hover:text-gray-200'>
-                            <CheckIcon className='w-7 h-7 pt-px ml-1' />
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                    <li onClick={() => { setOpen(false); setShowDeleteModal(true) }} className='p-4 hover:bg-gray-300 dark:hover:bg-gray-700 group cursor-pointer flex justify-between items-center'>
+              </button>
+              {open && (
+                <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
+                  {_map(roles, (itRole) => (
+                    <li onClick={() => changeRole(itRole)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={itRole}>
                       <div>
-                        <p className='font-bold text-red-600 dark:text-red-500'>
-                          {t('project.settings.removeMember')}
+                        <p className='font-bold text-gray-700 dark:text-gray-200 group-hover:text-gray-200'>
+                          {t(`project.settings.roles.${itRole}.name`)}
+                        </p>
+                        <p className='mt-1 text-sm text-gray-500 group-hover:text-gray-200'>
+                          {t(`project.settings.roles.${itRole}.shortDesc`)}
                         </p>
                       </div>
+                      {role === itRole && (
+                        <span className='text-indigo-600 group-hover:text-gray-200'>
+                          <CheckIcon className='w-7 h-7 pt-px ml-1' />
+                        </span>
+                      )}
                     </li>
-                  </ul>
-                )}
-              </div>
-            )
-          }
+                  ))}
+                  <li onClick={() => { setOpen(false); setShowDeleteModal(true) }} className='p-4 hover:bg-gray-300 dark:hover:bg-gray-700 group cursor-pointer flex justify-between items-center'>
+                    <div>
+                      <p className='font-bold text-red-600 dark:text-red-500'>
+                        {t('project.settings.removeMember')}
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              )}
+            </div>
+          ) : (
+            <div className='flex items-center justify-end'>
+              <WarningPin
+                label={t('common.pending')}
+                className='inline-flex items-center shadow-sm px-2.5 py-0.5 mr-3'
+              />
+              <Button
+                type='button'
+                className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:bg-gray-600 dark:hover:bg-gray-700'
+                small
+                onClick={() => setShowDeleteModal(true)}
+              >
+                <TrashIcon className='h-4 w-4' />
+              </Button>
+            </div>
+          )
+        }
       </td>
       <Modal
         onClose={() => {
@@ -131,12 +140,12 @@ const UsersList = ({
         }}
         onSubmit={() => {
           setShowDeleteModal(false)
-          onRemove(data.id)
+          onRemove(id)
         }}
         submitText={t('common.yes')}
         type='confirmed'
         closeText={t('common.no')}
-        title={t('project.settings.removeUser', { user: data.user?.email })}
+        title={t('project.settings.removeUser', { user: user.email })}
         message={t('project.settings.removeConfirm')}
         isOpened={showDeleteModal}
       />
@@ -146,15 +155,19 @@ const UsersList = ({
 
 UsersList.propTypes = {
   share: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
-  data: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  data: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   pid: PropTypes.string.isRequired,
   onRemove: PropTypes.func.isRequired,
   updateProjectFailed: PropTypes.func.isRequired,
   language: PropTypes.string.isRequired,
 }
 
+UsersList.defaultProps = {
+  data: {},
+}
+
 const People = ({
-  project, updateProjectFailed, setProjectShareData,
+  project, updateProjectFailed, setProjectShareData, roleUpdatedNotification, inviteUserNotification, removeUserNotification,
 }) => {
   const [showModal, setShowModal] = useState(false)
   const { t, i18n: { language } } = useTranslation('common')
@@ -199,19 +212,22 @@ const People = ({
     }))
   }
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     setShowModal(false)
     setErrors({})
     setValidated(false)
+
+    try {
+      const results = await shareProject(id, { email: form.email, role: form.role })
+      setProjectShareData({ share: results.share }, id)
+      inviteUserNotification(t('apiNotifications.userInvited'))
+    } catch (e) {
+      console.error(`[ERROR] Error while inviting a user: ${e}`)
+      inviteUserNotification(t('apiNotifications.userInviteError'), 'error')
+    }
+
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
     setTimeout(() => setForm({ email: '', role: '' }), 300)
-    shareProject(id, { email: form.email, role: form.role })
-      .then((results) => {
-        setProjectShareData({ share: results.share }, id)
-      })
-      .catch((e) => {
-        updateProjectFailed(e)
-      })
   }
 
   const handleSubmit = e => {
@@ -232,15 +248,16 @@ const People = ({
     setErrors({})
   }
 
-  const onRemove = userId => {
-    deleteShareProjectUsers(id, userId)
-      .then(() => {
-        const newShared = _map(_filter(share, s => s.id !== userId), s => s)
-        setProjectShareData({ share: newShared }, id)
-      })
-      .catch((e) => {
-        updateProjectFailed(e)
-      })
+  const onRemove = async (userId) => {
+    try {
+      await deleteShareProjectUsers(id, userId)
+      const newShared = _map(_filter(share, s => s.id !== userId), s => s)
+      setProjectShareData({ share: newShared }, id)
+      removeUserNotification(t('apiNotifications.userRemoved'))
+    } catch (e) {
+      console.error(`[ERROR] Error while deleting a user: ${e}`)
+      updateProjectFailed(t('apiNotifications.userRemoveError'))
+    }
   }
 
   return (
@@ -278,14 +295,12 @@ const People = ({
                       <thead>
                         <tr className='dark:bg-gray-700'>
                           <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
-                            {t('profileSettings.sharedTable.project')}
+                            {t('auth.common.email')}
                           </th>
                           <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
                             {t('profileSettings.sharedTable.joinedOn')}
                           </th>
-                          <th scope='col' className='px-3 pr-8 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white'>
-                            {t('profileSettings.sharedTable.role')}
-                          </th>
+                          <th scope='col' className='px-3 pr-8 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white' />
                         </tr>
                       </thead>
                       <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
@@ -299,6 +314,7 @@ const People = ({
                             share={project.share}
                             setProjectShareData={setProjectShareData}
                             updateProjectFailed={updateProjectFailed}
+                            roleUpdatedNotification={roleUpdatedNotification}
                             pid={id}
                           />
                         ))}
@@ -398,13 +414,11 @@ const People = ({
 People.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   project: PropTypes.object.isRequired,
-  updateProjectFailed: PropTypes.func,
-  setProjectShareData: PropTypes.func,
-}
-
-People.defaultProps = {
-  updateProjectFailed: () => { },
-  setProjectShareData: () => { },
+  updateProjectFailed: PropTypes.func.isRequired,
+  setProjectShareData: PropTypes.func.isRequired,
+  roleUpdatedNotification: PropTypes.func.isRequired,
+  inviteUserNotification: PropTypes.func.isRequired,
+  removeUserNotification: PropTypes.func.isRequired,
 }
 
 export default People

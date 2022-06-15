@@ -2,6 +2,7 @@ import { connect } from 'react-redux'
 import { errorsActions } from 'redux/actions/errors'
 import UIActions from 'redux/actions/ui'
 import { authActions } from 'redux/actions/auth'
+import { alertsActions } from 'redux/actions/alerts'
 import Dashboard from './Dashboard'
 
 const mapStateToProps = (state) => ({
@@ -20,6 +21,12 @@ const mapDispatchToProps = (dispatch) => ({
   },
   setUserShareData: (data, id) => {
     dispatch(authActions.setUserShareData(data, id))
+  },
+  userSharedUpdate: (message) => {
+    dispatch(alertsActions.userSharedUpdate(message))
+  },
+  sharedProjectError: (message) => {
+    dispatch(errorsActions.sharedProjectFailed(message))
   },
 })
 

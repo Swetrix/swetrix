@@ -8,6 +8,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
 import _replace from 'lodash/replace'
 import _map from 'lodash/map'
+import _isUndefined from 'lodash/isUndefined'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import { useTranslation } from 'react-i18next'
@@ -27,7 +28,8 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import { acceptShareProject } from 'api'
 
 const ProjectCart = ({
-  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed, sharedProjects, setProjectsShareData, setUserShareData, shared,
+  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
+  sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -35,14 +37,15 @@ const ProjectCart = ({
   const onAccept = async () => {
     const pid = _find(sharedProjects, item => item.project.id === id).id
 
-    await acceptShareProject(pid)
-      .then(() => {
-        setProjectsShareData({ confirmed: true }, id)
-        setUserShareData({ confirmed: true }, pid)
-      })
-      .catch((err) => {
-        deleteProjectFailed(err)
-      })
+    try {
+      await acceptShareProject(pid)
+      setProjectsShareData({ confirmed: true }, id)
+      setUserShareData({ confirmed: true }, pid)
+      userSharedUpdate(t('apiNotifications.acceptInvitation'))
+    } catch (e) {
+      sharedProjectError(t('apiNotifications.acceptInvitationError'))
+      deleteProjectFailed(e)
+    }
   }
 
   return (
@@ -164,7 +167,7 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData,
+  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
@@ -222,41 +225,43 @@ const Dashboard = ({
                     }) => (
                       <div key={confirmed ? `${id}-confirmed` : id}>
                         {
-                        confirmed === false ? (
-                          <ProjectCart
-                            t={t}
-                            id={id}
-                            language={language}
-                            name={name}
-                            created={created}
-                            shared={shared}
-                            active={active}
-                            isPublic={isPublic}
-                            overall={overall}
-                            confirmed={confirmed}
-                            sharedProjects={user.sharedProjects}
-                            setProjectsShareData={setProjectsShareData}
-                            setUserShareData={setUserShareData}
-                            live={_isNumber(live) ? live : 'N/A'}
-                            deleteProjectFailed={deleteProjectFailed}
-                          />
-                        ) : (
-                          <Link to={_replace(routes.project, ':id', id)}>
+                          (_isUndefined(confirmed) || confirmed) ? (
+                            <Link to={_replace(routes.project, ':id', id)}>
+                              <ProjectCart
+                                t={t}
+                                language={language}
+                                name={name}
+                                created={created}
+                                shared={shared}
+                                active={active}
+                                isPublic={isPublic}
+                                confirmed={confirmed}
+                                overall={overall}
+                                live={_isNumber(live) ? live : 'N/A'}
+                              />
+                            </Link>
+                          ) : (
                             <ProjectCart
                               t={t}
+                              id={id}
                               language={language}
                               name={name}
                               created={created}
                               shared={shared}
                               active={active}
                               isPublic={isPublic}
-                              confirmed={confirmed}
                               overall={overall}
+                              confirmed={confirmed}
+                              sharedProjects={user.sharedProjects}
+                              setProjectsShareData={setProjectsShareData}
+                              setUserShareData={setUserShareData}
                               live={_isNumber(live) ? live : 'N/A'}
+                              userSharedUpdate={userSharedUpdate}
+                              sharedProjectError={sharedProjectError}
+                              deleteProjectFailed={deleteProjectFailed}
                             />
-                          </Link>
-                        )
-                      }
+                          )
+                        }
                       </div>
                     ))}
                   </ul>
@@ -295,6 +300,8 @@ Dashboard.propTypes = {
   deleteProjectFailed: PropTypes.func.isRequired,
   setProjectsShareData: PropTypes.func.isRequired,
   setUserShareData: PropTypes.func.isRequired,
+  sharedProjectError: PropTypes.func.isRequired,
+  userSharedUpdate: PropTypes.func.isRequired,
 }
 
 Dashboard.defaultProps = {

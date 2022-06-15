@@ -26,47 +26,57 @@ import {
 import { deleteShareProject, acceptShareProject } from 'api'
 
 const ProjectList = ({
-  item, t, deleteProjectFailed, removeShareProject, removeProject, setProjectsShareData, setUserShareData, language,
+  item, t, removeShareProject, removeProject, setProjectsShareData, setUserShareData,
+  language, userSharedUpdate, sharedProjectError,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const {
+    created, confirmed, id, role, project,
+  } = item
 
   const deleteProject = async (pid) => {
-    await deleteShareProject(pid)
-      .then(() => {
-        removeShareProject(pid)
-        removeProject(item.project.id)
-      })
-      .catch((err) => {
-        deleteProjectFailed(err)
-      })
+    try {
+      await deleteShareProject(pid)
+      removeShareProject(pid)
+      removeProject(project.id)
+      userSharedUpdate(t('apiNotifications.quitProject'))
+    } catch (e) {
+      console.error(`[ERROR] Error while quitting project: ${e}`)
+      sharedProjectError(t('apiNotifications.quitProjectError'))
+    }
   }
 
   const onAccept = async () => {
-    await acceptShareProject(item.id)
-      .then(() => {
-        setProjectsShareData({ confirmed: true }, item.project.id)
-        setUserShareData({ confirmed: true }, item.id)
-      })
-      .catch((err) => {
-        deleteProjectFailed(err)
-      })
+    try {
+      await acceptShareProject(id)
+      setProjectsShareData({ confirmed: true }, project.id)
+      setUserShareData({ confirmed: true }, id)
+      userSharedUpdate(t('apiNotifications.acceptInvitation'))
+    } catch (e) {
+      console.error(`[ERROR] Error while accepting project invitation: ${e}`)
+      sharedProjectError(t('apiNotifications.acceptInvitationError'))
+    }
   }
 
   return (
     <tr className='dark:bg-gray-700'>
       <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
-        {item.project.name}
+        {project.name}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
-        {t(`project.settings.roles.${item.role}.name`)}
+        {t(`project.settings.roles.${role}.name`)}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
         {language === 'en'
-          ? dayjs(item.created).locale(language).format('MMMM D, YYYY')
-          : dayjs(item.created).locale(language).format('D MMMM, YYYY')}
+          ? dayjs(created).locale(language).format('MMMM D, YYYY')
+          : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
       <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
-        {item.confirmed === false ? (
+        {confirmed ? (
+          <Button onClick={() => setShowDeleteModal(true)} danger small>
+            {t('common.quit')}
+          </Button>
+        ) : (
           <>
             <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
               {t('common.reject')}
@@ -75,10 +85,6 @@ const ProjectList = ({
               {t('common.accept')}
             </Button>
           </>
-        ) : (
-          <Button onClick={() => setShowDeleteModal(true)} danger small>
-            {t('common.quit')}
-          </Button>
         )}
         <Modal
           onClose={() => {
@@ -86,12 +92,12 @@ const ProjectList = ({
           }}
           onSubmit={() => {
             setShowDeleteModal(false)
-            deleteProject(item.id)
+            deleteProject(id)
           }}
           submitText={t('common.yes')}
           type='confirmed'
           closeText={t('common.no')}
-          title={t('profileSettings.quitProjectTitle', { project: item.project.name })}
+          title={t('profileSettings.quitProjectTitle', { project: project.name })}
           message={t('profileSettings.quitProject')}
           isOpened={showDeleteModal}
         />
@@ -103,9 +109,10 @@ const ProjectList = ({
 ProjectList.propTypes = {
   item: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   t: PropTypes.func.isRequired,
-  deleteProjectFailed: PropTypes.func.isRequired,
+  sharedProjectError: PropTypes.func.isRequired,
   removeProject: PropTypes.func.isRequired,
   removeShareProject: PropTypes.func.isRequired,
+  userSharedUpdate: PropTypes.func.isRequired,
 }
 
 const NoSharedProjects = ({ t }) => (
@@ -119,8 +126,9 @@ const NoSharedProjects = ({ t }) => (
 )
 
 const UserSettings = ({
-  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t, deleteProjectFailed,
+  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t,
   removeProject, removeShareProject, setUserShareData, setProjectsShareData, language,
+  userSharedUpdate, sharedProjectError,
 }) => {
   const { user } = useSelector(state => state.auth)
 
@@ -335,11 +343,12 @@ const UserSettings = ({
                                 item={item}
                                 language={language}
                                 t={t}
-                                deleteProjectFailed={deleteProjectFailed}
                                 removeProject={removeProject}
                                 removeShareProject={removeShareProject}
                                 setUserShareData={setUserShareData}
                                 setProjectsShareData={setProjectsShareData}
+                                userSharedUpdate={userSharedUpdate}
+                                sharedProjectError={sharedProjectError}
                               />
                             ))
                           }
@@ -417,7 +426,6 @@ UserSettings.propTypes = {
   onEmailConfirm: PropTypes.func.isRequired,
   onExport: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  deleteProjectFailed: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired,
   onDeleteProjectCache: PropTypes.func.isRequired,
   removeProject: PropTypes.func.isRequired,
@@ -425,6 +433,8 @@ UserSettings.propTypes = {
   setUserShareData: PropTypes.func.isRequired,
   setProjectsShareData: PropTypes.func.isRequired,
   language: PropTypes.string.isRequired,
+  userSharedUpdate: PropTypes.func.isRequired,
+  sharedProjectError: PropTypes.string.isRequired,
 }
 
 export default memo(UserSettings)

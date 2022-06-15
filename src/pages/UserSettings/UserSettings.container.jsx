@@ -97,8 +97,12 @@ const UserSettingsContainer = () => {
     }
   }
 
-  const deleteProjectFailed = (message) => {
-    dispatch(errorsActions.deleteProjectFailed(message))
+  const userSharedUpdate = (message) => {
+    dispatch(alertsActions.userSharedUpdate(message))
+  }
+
+  const sharedProjectError = (message) => {
+    dispatch(errorsActions.sharedProjectFailed(message))
   }
 
   const removeProject = (projectId) => {
@@ -112,6 +116,7 @@ const UserSettingsContainer = () => {
   const setProjectsShareData = (data, id) => {
     dispatch(UIActions.setProjectsShareData(data, id))
   }
+
   const setUserShareData = (data, id) => {
     dispatch(authActions.setUserShareData(data, id))
   }
@@ -127,7 +132,8 @@ const UserSettingsContainer = () => {
       setProjectsShareData={setProjectsShareData}
       setUserShareData={setUserShareData}
       onSubmit={onSubmit}
-      deleteProjectFailed={deleteProjectFailed}
+      userSharedUpdate={userSharedUpdate}
+      sharedProjectError={sharedProjectError}
       onEmailConfirm={onEmailConfirm}
       onDeleteProjectCache={onDeleteProjectCache}
     />

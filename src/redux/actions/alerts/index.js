@@ -36,6 +36,34 @@ export const alertsActions = {
     }
   },
 
+  roleUpdated(message, type = 'success') {
+    return {
+      type: types.ROLE_UPDATED,
+      payload: { message, type },
+    }
+  },
+
+  inviteUser(message, type = 'success') {
+    return {
+      type: types.INVITE_USER,
+      payload: { message, type },
+    }
+  },
+
+  removeUser(message, type = 'success') {
+    return {
+      type: types.REMOVE_USER,
+      payload: { message, type },
+    }
+  },
+
+  userSharedUpdate(message, type = 'success') {
+    return {
+      type: types.USER_SHARED_UPDATE,
+      payload: { message, type },
+    }
+  },
+
   clearAlerts() {
     return {
       type: types.CLEAR_ALERTS,
