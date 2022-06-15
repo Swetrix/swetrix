@@ -434,7 +434,7 @@ UserSettings.propTypes = {
   setProjectsShareData: PropTypes.func.isRequired,
   language: PropTypes.string.isRequired,
   userSharedUpdate: PropTypes.func.isRequired,
-  sharedProjectError: PropTypes.string.isRequired,
+  sharedProjectError: PropTypes.func.isRequired,
 }
 
 export default memo(UserSettings)
