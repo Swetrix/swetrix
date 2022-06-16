@@ -4,6 +4,7 @@ import React, {
 } from 'react'
 import { useLocation, useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
@@ -26,6 +27,8 @@ import { nanoid } from 'utils/random'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
 
+import People from './People'
+
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 
@@ -39,6 +42,7 @@ const ProjectSettings = ({
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
   const history = useHistory()
+
   const [form, setForm] = useState({
     name: '',
     id: id || nanoid(),
@@ -173,11 +177,18 @@ const ProjectSettings = ({
 
   return (
     <Title title={title}>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div
+        className={cx('min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8', {
+          'pb-40': isSettings,
+        })}
+      >
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
             {title}
           </h2>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.general')}
+          </h3>
           <Input
             name='name'
             id='name'
@@ -231,13 +242,35 @@ const ProjectSettings = ({
                 label={t('project.settings.public')}
                 hint={t('project.settings.publicHint')}
               />
+              <div className='flex justify-between mt-8'>
+                <div>
+                  <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
+                    {t('common.cancel')}
+                  </Button>
+                  <Button type='submit' loading={projectSaving} primary regular>
+                    {t('common.save')}
+                  </Button>
+                </div>
+                {!project.shared && (
+                  <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger large>
+                    {t('project.settings.delete')}
+                  </Button>
+                )}
+              </div>
+              <hr className='mt-5' />
+              {
+                !project.shared && (
+                  <People project={project} />
+                )
+              }
             </>
           ) : (
             <p className='text-gray-500 dark:text-gray-300 italic mt-2 text-sm'>
               {t('project.settings.createHint')}
             </p>
           )}
-          <div className='flex justify-between mt-4'>
+
+          {!isSettings && (
             <div>
               <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
                 {t('common.cancel')}
@@ -246,14 +279,8 @@ const ProjectSettings = ({
                 {t('common.save')}
               </Button>
             </div>
-            {isSettings && (
-              <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger large>
-                {t('project.settings.delete')}
-              </Button>
-            )}
-          </div>
+          )}
         </form>
-
         <Modal
           onClose={() => setShowDelete(false)}
           onSubmit={onDelete}

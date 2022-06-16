@@ -2,7 +2,9 @@ import React, { Fragment, memo } from 'react'
 import PropTypes from 'prop-types'
 import cx from 'clsx'
 import { Dialog, Transition } from '@headlessui/react'
-import { CheckIcon, ExclamationIcon, InformationCircleIcon } from '@heroicons/react/outline'
+import {
+  CheckIcon, ExclamationIcon, InformationCircleIcon, UserGroupIcon,
+} from '@heroicons/react/outline'
 
 const Modal = ({
   className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size,
@@ -44,26 +46,31 @@ const Modal = ({
             >
               <div className='sm:flex sm:items-start'>
                 {type === 'success' && (
-                  <div className='mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10'>
+                  <div className='sm:mr-3 mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:h-10 sm:w-10'>
                     <CheckIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
                   </div>
                 )}
                 {type === 'error' && (
-                  <div className='mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10'>
+                  <div className='sm:mr-3 mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:h-10 sm:w-10'>
                     <ExclamationIcon className='h-6 w-6 text-red-600' aria-hidden='true' />
                   </div>
                 )}
                 {type === 'info' && (
-                  <div className='mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10'>
+                  <div className='sm:mr-3 mx-auto flex-shrink-0 flex items-center text-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:h-10 sm:w-10'>
                     <InformationCircleIcon className='h-6 w-6 text-blue-600' aria-hidden='true' />
                   </div>
                 )}
                 {type === 'warning' && (
-                  <div className='mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10'>
+                  <div className='sm:mr-3 mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:h-10 sm:w-10'>
                     <ExclamationIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
                   </div>
                 )}
-                <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full'>
+                {type === 'confirmed' && (
+                  <div className='sm:mr-3 mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:h-10 sm:w-10'>
+                    <UserGroupIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
+                  </div>
+                )}
+                <div className='mt-3 text-center sm:mt-0 sm:text-left w-full'>
                   {title && (
                     <Dialog.Title as='h3' className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
                       {title}
@@ -106,7 +113,7 @@ const Modal = ({
 }
 
 Modal.propTypes = {
-  type: PropTypes.oneOf(['error', 'success', 'info', 'warning']),
+  type: PropTypes.oneOf(['error', 'success', 'info', 'warning', 'confirmed']),
   title: PropTypes.string,
   onClose: PropTypes.func.isRequired,
   message: PropTypes.oneOfType([

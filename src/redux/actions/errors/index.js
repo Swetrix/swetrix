@@ -65,6 +65,13 @@ export const errorsActions = {
     }
   },
 
+  sharedProjectFailed(error) {
+    return {
+      type: types.SHARED_PROJECT_FAILED,
+      payload: { error },
+    }
+  },
+
   genericError(error) {
     return {
       type: types.GENERIC_ERROR,

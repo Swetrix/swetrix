@@ -24,7 +24,7 @@ import UserSettings from './UserSettings'
 dayjs.extend(utc)
 
 const UserSettingsContainer = () => {
-  const { t } = useTranslation('common')
+  const { t, i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
   const history = useHistory()
 
@@ -102,12 +102,43 @@ const UserSettingsContainer = () => {
     }
   }
 
+  const userSharedUpdate = (message) => {
+    dispatch(alertsActions.userSharedUpdate(message))
+  }
+
+  const sharedProjectError = (message) => {
+    dispatch(errorsActions.sharedProjectFailed(message))
+  }
+
+  const removeProject = (projectId) => {
+    dispatch(UIActions.removeProject(projectId))
+  }
+
+  const removeShareProject = (id) => {
+    dispatch(authActions.deleteShareProject(id))
+  }
+
+  const setProjectsShareData = (data, id) => {
+    dispatch(UIActions.setProjectsShareData(data, id))
+  }
+
+  const setUserShareData = (data, id) => {
+    dispatch(authActions.setUserShareData(data, id))
+  }
+
   return (
     <UserSettings
       t={t}
+      language={language}
       onDelete={onDelete}
       onExport={onExport}
+      removeProject={removeProject}
+      removeShareProject={removeShareProject}
+      setProjectsShareData={setProjectsShareData}
+      setUserShareData={setUserShareData}
       onSubmit={onSubmit}
+      userSharedUpdate={userSharedUpdate}
+      sharedProjectError={sharedProjectError}
       onEmailConfirm={onEmailConfirm}
       onDeleteProjectCache={onDeleteProjectCache}
     />

@@ -109,4 +109,19 @@ export const authActions = {
       },
     }
   },
+
+  deleteShareProject(id) {
+    return {
+      type: types.DELETE_SHARE_PROJECT,
+      payload: { id },
+    }
+  },
+
+  setUserShareData(data, id) {
+    return {
+      type: types.SET_USER_SHARE_DATA,
+      payload: { data, id },
+    }
+  },
+
 }

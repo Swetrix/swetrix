@@ -1,4 +1,6 @@
 import { types } from 'redux/actions/auth/types'
+import _filter from 'lodash/filter'
+import _map from 'lodash/map'
 
 const initialState = {
   redirectPath: null,
@@ -29,6 +31,30 @@ const authReducer = (state = initialState, { type, payload }) => {
 
     case types.FINISH_LOADING:
       return { ...state, loading: false }
+
+    case types.DELETE_SHARE_PROJECT: {
+      // eslint-disable-next-line no-case-declarations
+      const { id } = payload
+      return { ...state, user: { ...state.user, sharedProjects: _filter(state.user.sharedProjects, (item) => item.id !== id) } }
+    }
+
+    case types.SET_USER_SHARE_DATA: {
+      // eslint-disable-next-line no-case-declarations
+      const { data, id } = payload
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          sharedProjects: _map(state.user.sharedProjects, (item) => {
+            if (item.id === id) {
+              return { ...item, ...data }
+            }
+
+            return item
+          }),
+        },
+      }
+    }
 
     default:
       return state

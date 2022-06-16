@@ -13,8 +13,16 @@ const debug = Debug('swetrix:rx:s:load-projects')
 export default function* loadProjects() {
   try {
     // eslint-disable-next-line prefer-const
-    let { results, totalMonthlyEvents } = yield call(getProjects)
-    const pids = _map(results, result => result.id)
+    let { results, totalMonthlyEvents, shared } = yield call(getProjects)
+    const projectWithShared = [..._map(shared, (item) => {
+      return {
+        shared: true,
+        confirmed: item.confirmed,
+        ...item.project,
+      }
+    }), ...results]
+
+    const pids = _map(projectWithShared, result => result.id)
     let overall
 
     try {
@@ -23,10 +31,11 @@ export default function* loadProjects() {
       debug('failed to overall stats: %s', e)
     }
 
-    results = _map(results, res => ({
+    results = _map(projectWithShared, res => ({
       ...res,
       overall: overall?.[res.id],
     }))
+
     yield put(UIActions.setProjects(results))
     yield put(UIActions.setTotalMonthlyEvents(totalMonthlyEvents))
 

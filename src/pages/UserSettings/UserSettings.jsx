@@ -8,6 +8,8 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import { MailIcon } from '@heroicons/react/outline'
+import PropTypes from 'prop-types'
+import dayjs from 'dayjs'
 
 import { reportFrequencies, DEFAULT_TIMEZONE } from 'redux/constants'
 import Title from 'components/Title'
@@ -21,8 +23,112 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 
+import { deleteShareProject, acceptShareProject } from 'api'
+
+const ProjectList = ({
+  item, t, removeShareProject, removeProject, setProjectsShareData, setUserShareData,
+  language, userSharedUpdate, sharedProjectError,
+}) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const {
+    created, confirmed, id, role, project,
+  } = item
+
+  const deleteProject = async (pid) => {
+    try {
+      await deleteShareProject(pid)
+      removeShareProject(pid)
+      removeProject(project.id)
+      userSharedUpdate(t('apiNotifications.quitProject'))
+    } catch (e) {
+      console.error(`[ERROR] Error while quitting project: ${e}`)
+      sharedProjectError(t('apiNotifications.quitProjectError'))
+    }
+  }
+
+  const onAccept = async () => {
+    try {
+      await acceptShareProject(id)
+      setProjectsShareData({ confirmed: true }, project.id)
+      setUserShareData({ confirmed: true }, id)
+      userSharedUpdate(t('apiNotifications.acceptInvitation'))
+    } catch (e) {
+      console.error(`[ERROR] Error while accepting project invitation: ${e}`)
+      sharedProjectError(t('apiNotifications.acceptInvitationError'))
+    }
+  }
+
+  return (
+    <tr className='dark:bg-gray-700'>
+      <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+        {project.name}
+      </td>
+      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+        {t(`project.settings.roles.${role}.name`)}
+      </td>
+      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+        {language === 'en'
+          ? dayjs(created).locale(language).format('MMMM D, YYYY')
+          : dayjs(created).locale(language).format('D MMMM, YYYY')}
+      </td>
+      <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
+        {confirmed ? (
+          <Button onClick={() => setShowDeleteModal(true)} danger small>
+            {t('common.quit')}
+          </Button>
+        ) : (
+          <>
+            <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
+              {t('common.reject')}
+            </Button>
+            <Button onClick={() => onAccept()} primary small>
+              {t('common.accept')}
+            </Button>
+          </>
+        )}
+        <Modal
+          onClose={() => {
+            setShowDeleteModal(false)
+          }}
+          onSubmit={() => {
+            setShowDeleteModal(false)
+            deleteProject(id)
+          }}
+          submitText={t('common.yes')}
+          type='confirmed'
+          closeText={t('common.no')}
+          title={t('profileSettings.quitProjectTitle', { project: project.name })}
+          message={t('profileSettings.quitProject')}
+          isOpened={showDeleteModal}
+        />
+      </td>
+    </tr>
+  )
+}
+
+ProjectList.propTypes = {
+  item: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  t: PropTypes.func.isRequired,
+  sharedProjectError: PropTypes.func.isRequired,
+  removeProject: PropTypes.func.isRequired,
+  removeShareProject: PropTypes.func.isRequired,
+  userSharedUpdate: PropTypes.func.isRequired,
+}
+
+const NoSharedProjects = ({ t }) => (
+  <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+    <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
+      <h2 className='text-2xl mb-4 text-center leading-snug'>
+        {t('profileSettings.noSharedProjects')}
+      </h2>
+    </div>
+  </div>
+)
+
 const UserSettings = ({
   onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t,
+  removeProject, removeShareProject, setUserShareData, setProjectsShareData, language,
+  userSharedUpdate, sharedProjectError,
 }) => {
   const { user } = useSelector(state => state.auth)
 
@@ -204,6 +310,60 @@ const UserSettings = ({
           <Button className='mt-4' onClick={handleReportSave} primary large>
             {t('common.save')}
           </Button>
+
+          <hr className='mt-5' />
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.shared')}
+            <Beta className='ml-10' />
+          </h3>
+          <div>
+            {!_isEmpty(user.sharedProjects) ? (
+              <div className='mt-3 flex flex-col'>
+                <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                  <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                    <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                      <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                        <thead>
+                          <tr className='dark:bg-gray-700'>
+                            <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
+                              {t('profileSettings.sharedTable.project')}
+                            </th>
+                            <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                              {t('profileSettings.sharedTable.role')}
+                            </th>
+                            <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                              {t('profileSettings.sharedTable.joinedOn')}
+                            </th>
+                            <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
+                          </tr>
+                        </thead>
+                        <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                          {
+                            _map(user.sharedProjects, (item) => (
+                              <ProjectList
+                                key={item.id}
+                                item={item}
+                                language={language}
+                                t={t}
+                                removeProject={removeProject}
+                                removeShareProject={removeShareProject}
+                                setUserShareData={setUserShareData}
+                                setProjectsShareData={setProjectsShareData}
+                                userSharedUpdate={userSharedUpdate}
+                                sharedProjectError={sharedProjectError}
+                              />
+                            ))
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <NoSharedProjects t={t} />
+            )}
+          </div>
           <hr className='mt-5' />
           {!user.isActive && (
             <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
@@ -262,6 +422,21 @@ const UserSettings = ({
       </div>
     </Title>
   )
+}
+
+UserSettings.propTypes = {
+  onEmailConfirm: PropTypes.func.isRequired,
+  onExport: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
+  onDeleteProjectCache: PropTypes.func.isRequired,
+  removeProject: PropTypes.func.isRequired,
+  removeShareProject: PropTypes.func.isRequired,
+  setUserShareData: PropTypes.func.isRequired,
+  setProjectsShareData: PropTypes.func.isRequired,
+  language: PropTypes.string.isRequired,
+  userSharedUpdate: PropTypes.func.isRequired,
+  sharedProjectError: PropTypes.func.isRequired,
 }
 
 export default memo(UserSettings)

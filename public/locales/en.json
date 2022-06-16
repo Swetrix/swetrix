@@ -6,7 +6,17 @@
     "rateLimitHit": "Too many requests, please try again later",
     "cancelSubFirst": "Please cancel your paid subscription first",
     "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account"
+    "accountDeleteError": "Error while deleting your account",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occured while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occured while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occured while removing the user from your project",
+    "quitProjectError": "Error occured while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occured while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted"
   },
   "common": {
     "features": "Features",
@@ -33,7 +43,13 @@
     "yes": "Yes",
     "no": "No",
     "is": "is",
-    "isNot": "is not"
+    "isNot": "is not",
+    "invite": "Invite",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -197,7 +213,16 @@
     "confTimeout": "An email has already been sent, check your mailbox or try again in a few minutes",
     "confSent": "An account confirmation link has been sent to your email",
     "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service.",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet."
   },
   "dashboard": {
     "newProject": "New project",
@@ -210,6 +235,7 @@
     "createProject": "Create a new project here to start using our service",
     "active": "Active",
     "public": "Public",
+    "shared": "Shared",
     "disabled": "Disabled",
     "pageviews": "Pageviews",
     "unique": "Unique views",
@@ -217,7 +243,9 @@
     "inc": "Increased by",
     "dec": "Descreased by",
     "liveVisitors": "Live visitors",
-    "bounceRate": "Bounce rate"
+    "bounceRate": "Bounce rate",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
   "docs": {
     "titles": {
@@ -324,7 +352,31 @@
       "createHint": "*you will be able to set up your project more thoroughly after you have created it",
       "delete": "Delete project",
       "qDelete": "Delete the project?",
-      "deleteHint": "By pressing 'Delete project' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers."
+      "deleteHint": "By pressing 'Delete project' you understand, that this action is irreversible.\nThe project and all the data related to it will be deleted from our servers.",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role."
     }
   },
   "billing": {
@@ -373,6 +425,7 @@
     "signin": "Sign in",
     "signup": "Sign up",
     "verification": "Email verification",
+    "invitation": "Shared project invitation",
     "profileSettings": "Profile settings",
     "features": "Features",
     "dashboard": "Dashboard",

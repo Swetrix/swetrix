@@ -6,10 +6,10 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/solid'
 import _split from 'lodash/split'
 
 import Title from 'components/Title'
-import { authActions } from 'redux/actions/auth'
+import UIActions from 'redux/actions/ui'
 import Loader from 'ui/Loader'
 
-const VerifyEmail = () => {
+const ConfirmShare = () => {
   const { t } = useTranslation('common')
   const dispatch = useDispatch()
   const { id } = useParams()
@@ -21,11 +21,11 @@ const VerifyEmail = () => {
     const path = _split(window.location.pathname, '/')[1]
 
     dispatch(
-      authActions.emailVerifyAsync(
+      UIActions.shareVerifyAsync(
         { path, id },
         () => setLoading(false),
         (verifyError) => {
-          setError(verifyError.message)
+          setError(verifyError)
           setLoading(false)
         },
       ),
@@ -34,7 +34,7 @@ const VerifyEmail = () => {
 
   if (loading) {
     return (
-      <Title title={t('titles.verification')}>
+      <Title title={t('titles.invitation')}>
         <div className='min-h-page'>
           <Loader />
         </div>
@@ -44,7 +44,7 @@ const VerifyEmail = () => {
 
   if (error) {
     return (
-      <Title title={t('titles.verification')}>
+      <Title title={t('titles.invitation')}>
         <div className='min-h-page bg-gray-50 dark:bg-gray-800'>
           <div className='flex justify-center pt-10'>
             <div className='rounded-md p-4 w-11/12 bg-red-50 lg:w-4/6'>
@@ -64,7 +64,7 @@ const VerifyEmail = () => {
   }
 
   return (
-    <Title title={t('titles.verification')}>
+    <Title title={t('titles.invitation')}>
       <div className='min-h-page bg-gray-50 dark:bg-gray-800'>
         <div className='flex justify-center pt-10'>
           <div className='rounded-md p-4 w-11/12 bg-green-50 lg:w-4/6'>
@@ -74,7 +74,7 @@ const VerifyEmail = () => {
               </div>
               <div className='ml-3'>
                 <h3 className='text-sm font-medium text-green-800 dark:text-green-500'>
-                  {t('auth.verification.success')}
+                  {t('apiNotifications.acceptInvitation')}
                 </h3>
               </div>
             </div>
@@ -85,4 +85,4 @@ const VerifyEmail = () => {
   )
 }
 
-export default memo(VerifyEmail)
+export default memo(ConfirmShare)

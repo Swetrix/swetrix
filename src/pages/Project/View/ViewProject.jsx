@@ -30,7 +30,7 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
-  timeBucketToDays, getProjectCacheCustomKey,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -317,7 +317,7 @@ const Filters = ({
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone,
+  setLiveStatsForProject, authenticated, timezone, user,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -347,6 +347,8 @@ const ViewProject = ({
   const [rangeDate, setRangeDate] = useState(localstorageRangeDate ? [new Date(localstorageRangeDate[0]), new Date(localstorageRangeDate[1])] : null)
 
   const { name } = project
+
+  const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
@@ -668,7 +670,7 @@ const ViewProject = ({
                 onSelect={item => item.onClick(panelsData, t)}
               />
             </div>
-            {!isProjectPublic && (
+            {(!isProjectPublic && !(sharedRoles === roleViewer.role)) && (
               <div className='h-full ml-3'>
                 <Button
                   onClick={openSettingsHandler}
