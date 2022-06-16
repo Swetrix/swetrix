@@ -300,7 +300,7 @@ const People = ({
                           <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
                             {t('profileSettings.sharedTable.joinedOn')}
                           </th>
-                          <th scope='col' className='px-3 pr-8 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white' />
+                          <th scope='col' />
                         </tr>
                       </thead>
                       <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
