@@ -2,7 +2,7 @@ import {
   Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards, MethodNotAllowedException,
 } from '@nestjs/common'
 import { Request } from 'express'
-import { ApiTags, ApiQuery } from '@nestjs/swagger'
+import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
@@ -14,6 +14,7 @@ import * as _omit from 'lodash/omit'
 
 import { UserService } from './user.service'
 import { ProjectService } from '../project/project.service'
+import { deleteProjectRedis } from '../project/project.controller'
 import {
   User, UserType, MAX_EMAIL_REQUESTS, PlanCode,
 } from './entities/user.entity'
@@ -156,6 +157,7 @@ export class UserController {
         await clickhouse.query(query1).toPromise()
         await clickhouse.query(query2).toPromise()
       }
+      await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.delete(id)
 
       return 'accountDeleted'
@@ -165,12 +167,74 @@ export class UserController {
     }
   }
 
+  @Delete('/share/:shareId')
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async deleteShare(
+    @Param('shareId') shareId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, shareId }, 'DELETE /user/share/:shareId')
+
+    const share = await this.projectService.findOneShare(shareId, {
+      relations: ['user', 'project'],
+    })
+
+    if (_isEmpty(share)) {
+      throw new BadRequestException('The provided share ID is not valid')
+    }
+
+    if (share.user?.id !== uid) {
+      throw new BadRequestException('You are not allowed to delete this share')
+    }
+
+    await this.projectService.deleteShare(shareId)
+    await deleteProjectRedis(share.project.id)
+
+    return 'shareDeleted'
+  }
+
+  @Get('/share/:shareId')
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async acceptShare(
+    @Param('shareId') shareId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, shareId }, 'GET /user/share/:shareId')
+
+    const share = await this.projectService.findOneShare(shareId, {
+      relations: ['user', 'project'],
+    })
+
+    if (_isEmpty(share)) {
+      throw new BadRequestException('The provided share ID is not valid')
+    }
+
+    if (share.user?.id !== uid) {
+      throw new BadRequestException('You are not allowed to delete this share')
+    }
+
+    share.confirmed = true
+
+    await this.projectService.updateShare(shareId, share)
+    await deleteProjectRedis(share.project.id)
+
+    return 'shareAccepted'
+  }
+
   @Post('/confirm_email')
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(@CurrentUserId() id: string, @Req() request: Request): Promise<boolean> {
-    this.logger.log({ id }, 'POST /confirm_email')
+    this.logger.log({ id }, 'POST /user/confirm_email')
 
     const user = await this.userService.findOneWhere({ id })
 
@@ -242,7 +306,8 @@ export class UserController {
         await this.mailerService.sendEmail(user.email, LetterTemplate.MailAddressChangeConfirmation, { url })
       }
       // delete internal properties from userDTO before updating it
-      const userToUpdate = _omit(userDTO, ['id', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode'])
+      // todo: use _pick instead of _omit
+      const userToUpdate = _omit(userDTO, ['id', 'sharedProjects', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode'])
       await this.userService.update(id, userToUpdate)
 
       const updatedUser = await this.userService.findOneWhere({ id })

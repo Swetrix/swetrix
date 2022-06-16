@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BeforeUpdate } from 'typeorm'
 import { ActionToken } from 'src/action-tokens/action-token.entity'
 import { Project } from 'src/project/entity/project.entity'
+import { ProjectShare } from 'src/project/entity/project-share.entity'
 
 export enum PlanCode {
   free = 'free',
@@ -124,6 +125,9 @@ export class User {
 
   @OneToMany(() => Project, project => project.admin)
   projects: Project[]
+
+  @OneToMany(() => ProjectShare, sharedProjects => sharedProjects.user)
+  sharedProjects: ProjectShare[]
 
   @OneToMany(() => ActionToken, actionToken => actionToken.user)
   actionTokens: ActionToken[]

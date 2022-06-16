@@ -88,7 +88,7 @@ export class AuthService {
   }
 
   async validateUser(email: string, pass: string): Promise<User> {
-    const user = await this.userService.findOneWhere({ email })
+    const user = await this.userService.findOneWhere({ email }, ['sharedProjects'])
 
     if (user && await this.checkPassword(pass, user.password)) {
       return user

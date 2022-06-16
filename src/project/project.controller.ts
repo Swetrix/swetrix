@@ -12,6 +12,7 @@ import {
   HttpCode,
   NotFoundException,
   ForbiddenException,
+  Headers,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -19,17 +20,26 @@ import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _values from 'lodash/values'
+import * as _includes from 'lodash/includes'
+import * as _omit from 'lodash/omit'
 
-import { ProjectService } from './project.service'
+import { ProjectService, processProjectUser } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
+import { ActionTokenType } from '../action-tokens/action-token.entity'
+import { ActionTokensService } from '../action-tokens/action-tokens.service'
+import { MailerService } from '../mailer/mailer.service'
+import { LetterTemplate } from '../mailer/letter'
 import { Roles } from '../common/decorators/roles.decorator'
 import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
+import { ProjectShare, roles } from './entity/project-share.entity'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
+import { ShareDTO } from './dto/share.dto'
+import { ShareUpdateDTO } from './dto/share-update.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
@@ -38,6 +48,7 @@ import {
   redisProjectCacheTimeout,
   clickhouse,
   isSelfhosted,
+  PROJECT_INVITE_EXPIRE,
 } from '../common/constants'
 import {
   getProjectsClickhouse,
@@ -46,7 +57,43 @@ import {
   deleteProjectClickhouse,
 } from '../common/utils'
 
+const updateProjectRedis = async (id: string, project: Project) => {
+  const key = getRedisProjectKey(id)
+
+  try {
+    await redis.set(
+      key,
+      JSON.stringify(project),
+      'EX',
+      redisProjectCacheTimeout,
+    )
+  } catch {
+    await redis.del(key)
+  }
+}
+
+export const deleteProjectRedis = async (id: string) => {
+  const key = getRedisProjectKey(id)
+
+  try {
+    await redis.del(key)
+  } catch (e) {
+    console.error(`Error deleting project ${id} from redis: ${e}`)
+  }
+}
+
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
+
+const isValidShareDTO = (share: ShareDTO): boolean => {
+  return (
+    !_isEmpty(_trim(share.email)) &&
+    _includes(roles, share.role)
+  )
+}
+
+const isValidUpdateShareDTO = (share: ShareUpdateDTO): boolean => {
+  return _includes(roles, share.role)
+}
 
 @ApiTags('Project')
 @Controller('project')
@@ -55,7 +102,9 @@ export class ProjectController {
     private readonly projectService: ProjectService,
     private readonly userService: UserService,
     private readonly logger: AppLoggerService,
-  ) {}
+    private readonly actionTokensService: ActionTokensService,
+    private readonly mailerService: MailerService,
+  ) { }
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -87,12 +136,19 @@ export class ProjectController {
         { take, skip },
         where,
       )
+      const shared = await this.projectService.findShare({
+        where: {
+          user: userId,
+        },
+        relations: ['project'],
+      })
       const totalMonthlyEvents = await this.projectService.getRedisCount(
         userId,
       )
 
       return {
         ...paginated,
+        shared,
         totalMonthlyEvents,
       }
     }
@@ -229,7 +285,6 @@ export class ProjectController {
     }
   }
 
-  
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(RolesGuard)
@@ -328,7 +383,9 @@ export class ProjectController {
         this.projectService.formatToClickhouse(project),
       )
     } else {
-      project = await this.projectService.findOneWithRelations(id)
+      project = await this.projectService.findOne(id, {
+        relations: ['admin', 'share', 'share.user'],
+      })
       const user = await this.userService.findOne(uid)
 
       if (_isEmpty(project)) {
@@ -342,21 +399,11 @@ export class ProjectController {
       project.name = projectDTO.name
       project.public = projectDTO.public
 
-      await this.projectService.update(id, project)
+      await this.projectService.update(id, _omit(project, ['share', 'admin']))
     }
 
-    const key = getRedisProjectKey(id)
-
-    try {
-      await redis.set(
-        key,
-        JSON.stringify(project),
-        'EX',
-        redisProjectCacheTimeout,
-      )
-    } catch {
-      await redis.del(key)
-    }
+    // await updateProjectRedis(id, project)
+    await deleteProjectRedis(id)
 
     return project
   }
@@ -412,6 +459,7 @@ export class ProjectController {
 
       try {
         await this.projectService.delete(id)
+        await deleteProjectRedis(id)
         await clickhouse.query(query1).toPromise()
         await clickhouse.query(query2).toPromise()
         return 'Project deleted successfully'
@@ -419,6 +467,228 @@ export class ProjectController {
         this.logger.error(e)
         return 'Error while deleting your project'
       }
+    }
+  }
+
+  // The routes related to sharing projects feature
+  @Delete('/:pid/:shareId')
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async deleteShare(
+    @Param('pid') pid: string,
+    @Param('shareId') shareId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, pid, shareId }, 'DELETE /project/:pid/:shareId')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    // TODO: Discuss.
+    // I'm not sure if we should select 'share' from project too.
+    // If we select share - this means that the share project admins would be able to delete other people from project share too
+    // (as the allowedToManage method would pass for them).
+    const project = await this.projectService.findOneWhere(
+      { id: pid },
+      {
+        relations: ['admin'],
+        select: ['id', 'admin'],
+      },
+    )
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${pid} does not exist`)
+    }
+
+    const user = await this.userService.findOne(uid)
+
+    this.projectService.allowedToManage(project, uid, user.roles)
+
+    await deleteProjectRedis(pid)
+    await this.projectService.deleteShare(shareId)
+  }
+
+  @Post('/:pid/share')
+  @HttpCode(200)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 200, type: Project })
+  async share(
+    @Param('pid') pid: string,
+    @Body() shareDTO: ShareDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers,
+  ): Promise<Project> {
+    this.logger.log({ uid, pid, shareDTO }, 'POST /project/:pid/share')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    if (!isValidShareDTO(shareDTO)) {
+      throw new BadRequestException(
+        'The provided ShareDTO is incorrect',
+      )
+    }
+
+    const user = await this.userService.findOne(uid)
+    const project = await this.projectService.findOneWhere(
+      { id: pid },
+      {
+        relations: ['admin', 'share'],
+        select: ['id', 'admin', 'share'],
+      },
+    )
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${pid} does not exist`)
+    }
+
+    this.projectService.allowedToManage(project, uid, user.roles)
+
+    const invitee = await this.userService.findOneWhere({
+      email: shareDTO.email,
+    }, ['sharedProjects'])
+
+    if (!invitee) {
+      throw new NotFoundException(`User with email ${shareDTO.email} is not registered on Swetrix`)
+    }
+
+    if (invitee.id === user.id) {
+      throw new BadRequestException('You cannot share with yourself')
+    }
+
+    const isSharingWithUser = !_isEmpty(await this.projectService.findShare({
+      where: {
+        project: project.id,
+        user: invitee.id,
+      },
+    }))
+
+    if (isSharingWithUser) {
+      throw new BadRequestException(`You're already sharing the project with ${invitee.email}`)
+    }
+
+    try {
+      const share = new ProjectShare()
+      share.role = shareDTO.role
+      share.user = invitee
+      share.project = project
+
+      await this.projectService.createShare(share)
+
+      // Saving share into project
+      project.share.push(share)
+      await this.projectService.create(project)
+
+      // Saving share into invitees shared projects
+      invitee.sharedProjects.push(share)
+      await this.userService.create(invitee)
+
+      // TODO: Implement link expiration
+      const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PROJECT_SHARE, share.id)
+      const url = `${headers.origin}/share/${actionToken.id}`
+      await this.mailerService.sendEmail(invitee.email, LetterTemplate.ProjectInvitation, {
+        url, email: user.email, name: project.name, role: share.role, expiration: PROJECT_INVITE_EXPIRE,
+      })
+
+      const updatedProject = await this.projectService.findOne(pid, {
+        relations: ['share', 'share.user'],
+      })
+
+      // todo: maybe the update project should be used here instead of delete?
+      await deleteProjectRedis(pid)
+      return processProjectUser(updatedProject)
+    } catch (e) {
+      console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)
+      throw new BadRequestException(e)
+    }
+  }
+
+  @Put('/share/:shareId')
+  @HttpCode(200)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 200, type: Project })
+  async updateShare(
+    @Param('shareId') shareId: string,
+    @Body() shareDTO: ShareUpdateDTO,
+    @CurrentUserId() uid: string,
+  ): Promise<ProjectShare> {
+    this.logger.log({ uid, shareDTO, shareId }, 'PUT /project/share/:shareId')
+
+    if (!isValidUpdateShareDTO(shareDTO)) {
+      throw new BadRequestException(
+        'The provided ShareUpdateDTO is incorrect',
+      )
+    }
+
+    const user = await this.userService.findOne(uid)
+    const share = await this.projectService.findOneShare(shareId, {
+      relations: ['project', 'project.admin'],
+    })
+
+    if (_isEmpty(share)) {
+      throw new NotFoundException(`Share with ID ${shareId} does not exist`)
+    }
+
+    if (share.project?.admin?.id !== uid) {
+      throw new NotFoundException(`You are not allowed to edit this share`)
+    }
+
+    this.projectService.allowedToManage(share.project, uid, user.roles)
+
+    const { role } = shareDTO
+    await this.projectService.updateShare(shareId, {
+      role,
+    })
+
+    await deleteProjectRedis(share.project.id)
+    return await this.projectService.findOneShare(shareId)
+  }
+
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  // @UseGuards(RolesGuard)
+  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  @Get('/share/:id')
+  async acceptShare(@Param('id') id: string): Promise<any> {
+    this.logger.log({ id }, 'GET /project/share/:id')
+    let actionToken
+
+    try {
+      actionToken = await this.actionTokensService.find(id)
+    } catch {
+      throw new BadRequestException('Incorrect token provided')
+    }
+
+    if (actionToken.action === ActionTokenType.PROJECT_SHARE) {
+      const { newValue: shareId, id, user } = actionToken
+
+      const share = await this.projectService.findOneShare(shareId)
+      share.confirmed = true
+
+      if (_isEmpty(share)) {
+        throw new BadRequestException('The provided share ID is not valid')
+      }
+
+      // if (share.user?.id !== user.id) {
+      //   throw new BadRequestException('You are not allowed to manage this share')
+      // }
+
+      await this.projectService.updateShare(shareId, share)
+      await this.actionTokensService.delete(id)
     }
   }
 }

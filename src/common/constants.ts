@@ -2,7 +2,6 @@ import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import { v5 as uuidv5 } from 'uuid'
 import * as _toNumber from 'lodash/toNumber'
-import * as _size from 'lodash/size'
 import * as _round from 'lodash/round'
 
 require('dotenv').config()
@@ -128,9 +127,8 @@ function getPercentageChange(oldVal: number, newVal: number, round: number = 2) 
 const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
 
-// is ProjectID a valid key
-// TODO: ALLOW ONLY WHITELISTED PID CHARACTERS
-const isValidPID = (pid: string) => _size(pid) === 12
+const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
+const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
@@ -161,11 +159,13 @@ const GDPR_EXPORT_TIMEFRAME = 14
 // send email warning when 85% of events in tier are used
 const SEND_WARNING_AT_PERC = 85
 
+const PROJECT_INVITE_EXPIRE = 48
+
 export {
   clickhouse, JWT_LIFE_TIME, HISTORY_LIFE_TIME_DAYS, redis, isValidPID, getRedisProjectKey,
   redisProjectCacheTimeout, getPercentageChange, UNIQUE_SESSION_LIFE_TIME, REDIS_LOG_DATA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME, getRedisUserCountKey, redisProjectCountCacheTimeout, REDIS_LOG_CUSTOM_CACHE_KEY,
   REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME, isSelfhosted, UUIDV5_NAMESPACE, SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD, SELFHOSTED_UUID, CLICKHOUSE_INIT_QUERIES, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY,
-  REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC,
+  REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC, PROJECT_INVITE_EXPIRE,
 }

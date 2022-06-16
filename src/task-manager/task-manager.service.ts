@@ -13,12 +13,14 @@ import * as _map from 'lodash/map'
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
+import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
+import { ActionTokenType } from 'src/action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { ReportFrequency, ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
   clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, isSelfhosted, REDIS_SESSION_SALT_KEY,
-  REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC,
+  REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC, PROJECT_INVITE_EXPIRE,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 
@@ -31,6 +33,7 @@ export class TaskManagerService {
     private readonly userService: UserService,
     private readonly analyticsService: AnalyticsService,
     private readonly projectService: ProjectService,
+    private readonly actionTokensService: ActionTokensService,
   ) { }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -99,6 +102,13 @@ export class TaskManagerService {
         })
       }
     }
+  }
+
+  @Cron(CronExpression.EVERY_2_HOURS)
+  async deleteOldShareInvitations(): Promise<void> {
+    const minDate = dayjs.utc().subtract(PROJECT_INVITE_EXPIRE, 'h').format('YYYY-MM-DD HH:mm:ss')
+    await this.actionTokensService.deleteMultiple(`action="${ActionTokenType.PROJECT_SHARE}" AND created<"${minDate}"`)
+    await this.projectService.deleteMultipleShare(`confirmed=0 AND created<"${minDate}"`)
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

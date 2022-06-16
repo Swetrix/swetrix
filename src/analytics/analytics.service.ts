@@ -122,12 +122,27 @@ export class AnalyticsService {
       if (isSelfhosted) {
         project = await getProjectsClickhouse(pid)
       } else {
+        // todo: optimise the relations - select
+        // select only required columns
+        // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
         project = await this.projectService.findOne(pid, {
           relations: ['admin'],
-          select: ['origins', 'active', 'admin', 'public']
+          select: ['origins', 'active', 'admin', 'public'],
         })
       }
       if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+
+      if (!isSelfhosted) {
+        const share = await this.projectService.findShare({
+          where: {
+            project: pid,
+          },
+          relations: ['user'],
+        })
+        // @ts-ignore
+        project = { ...project, share }
+      }
+
       await redis.set(pidKey, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
     } else {
       try {

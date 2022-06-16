@@ -53,6 +53,11 @@ const metaInfoJson = {
     subject: {
       en: () => `You have used more than ${SEND_WARNING_AT_PERC}% of the available events per your tier for this month.`,
     },
+  },
+  [LetterTemplate.ProjectInvitation]: {
+    subject: {
+      en: () => 'You have been invited to join the project.',
+    },
   }
 }
 
@@ -96,7 +101,10 @@ export class MailerService {
       }
 
       if (process.env.SMTP_MOCK) {
-        this.logger.log(message, 'sendEmail', true)
+        this.logger.log({
+          ...message,
+          params,
+        }, 'sendEmail', true)
       } else {
         await mailClient.sendEmail(message)
       }

@@ -12,6 +12,7 @@ import { MailerService } from '../mailer/mailer.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { User, UserType } from '../user/entities/user.entity'
+import { ProjectService } from 'src/project/project.service'
 import { PasswordChangeDTO } from './dto/password-change.dto'
 import { RequestPasswordChangeDTO } from './dto/request-pass-change.dto'
 import { RolesGuard } from '../common/guards/roles.guard'
@@ -35,6 +36,7 @@ export class AuthController {
     private userService: UserService,
     private mailerService: MailerService,
     private actionTokensService: ActionTokensService,
+    private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService
   ) {}
 
@@ -51,9 +53,17 @@ export class AuthController {
         email: SELFHOSTED_EMAIL,
       }
     } else {
+      const sharedProjects = await this.projectService.findShare({
+        where: {
+          user: user_id,
+        },
+        relations: ['project'],
+      })
       user = this.authService.processUser(
         await this.userService.findOneWhere({ id: user_id })
       )
+
+      user.sharedProjects = sharedProjects
     }
 
     return this.userService.omitSensitiveData(user)
@@ -75,6 +85,15 @@ export class AuthController {
       })
     } else {
       const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
+      const sharedProjects = await this.projectService.findShare({
+        where: {
+          user: user.id,
+        },
+        relations: ['project'],
+      })
+
+      user.sharedProjects = sharedProjects
+
       return this.authService.login(user)
     }
   }
@@ -110,6 +129,7 @@ export class AuthController {
       const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.EMAIL_VERIFICATION)
       const url = `${request.headers.origin}/verify/${actionToken.id}`
       await this.mailerService.sendEmail(userDTO.email, LetterTemplate.SignUp, { url })
+      user.sharedProjects = []
 
       return this.authService.login(user)
     } catch(e) {
