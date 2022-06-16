@@ -301,6 +301,7 @@ const People = ({
                             {t('profileSettings.sharedTable.joinedOn')}
                           </th>
                           <th scope='col' />
+                          <th scope='col' />
                         </tr>
                       </thead>
                       <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
