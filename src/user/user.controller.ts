@@ -157,6 +157,7 @@ export class UserController {
         await clickhouse.query(query1).toPromise()
         await clickhouse.query(query2).toPromise()
       }
+      await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.delete(id)
 
       return 'accountDeleted'
