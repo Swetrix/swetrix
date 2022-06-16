@@ -145,7 +145,7 @@ export class ProjectService {
   }
 
   allowedToView(project: Project, uid: string | null): void {
-    if (project.public || uid === project.admin.id || _findIndex(project.share, ({ user }) => user?.id === uid) !== -1) {
+    if (project.public || uid === project.admin?.id || _findIndex(project.share, ({ user }) => user?.id === uid) !== -1) {
       return
     } else {
       throw new ForbiddenException('You are not allowed to view this project')
@@ -153,7 +153,7 @@ export class ProjectService {
   }
 
   allowedToManage(project: Project, uid: string, roles: Array<UserType> = []): void {
-    if (uid === project.admin.id || _includes(roles, UserType.ADMIN) || _findIndex(project.share, (share) => share.user?.id === uid && share.role === Role.admin) !== -1) {
+    if (uid === project.admin?.id || _includes(roles, UserType.ADMIN) || _findIndex(project.share, (share) => share.user?.id === uid && share.role === Role.admin) !== -1) {
       return
     } else {
       throw new ForbiddenException('You are not allowed to manage this project')
