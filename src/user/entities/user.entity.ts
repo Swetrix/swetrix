@@ -22,21 +22,24 @@ export const ACCOUNT_PLANS = {
     displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
     maxProjects: 20,
-    pid: '752316',
+    pid: '752316', // Plan ID
+    ypid: '776469', // Plan ID - Yearly billing
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
     displayName: 'Startup plan',
-    monthlyUsageLimit: 500000,
+    monthlyUsageLimit: 1000000,
     maxProjects: 20,
     pid: '752317',
+    ypid: '776470',
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
     displayName: 'Enterprise plan',
-    monthlyUsageLimit: 1000000,
+    monthlyUsageLimit: 5000000,
     maxProjects: 30,
     pid: '752318',
+    ypid: '776471',
   },
 }
 
@@ -48,7 +51,12 @@ export enum UserType {
 export enum ReportFrequency {
   Never = 'never',
   Weekly = 'weekly',
-  Monthly = 'monthly'
+  Monthly = 'monthly',
+}
+
+export enum BillingFrequency {
+  Monthly = 'monthly',
+  Yearly = 'yearly',
 }
 
 export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 additional ones
@@ -131,4 +139,14 @@ export class User {
 
   @OneToMany(() => ActionToken, actionToken => actionToken.user)
   actionTokens: ActionToken[]
+
+  @Column({
+    type: 'enum',
+    enum: BillingFrequency,
+    nullable: true,
+  })
+  billingFrequency: BillingFrequency
+
+  @Column({ type: 'date', nullable: true })
+  nextBillDate: Date
 }
