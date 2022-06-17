@@ -458,12 +458,8 @@ const Panel = ({
         columns: _map(data, (e, index) => [index, e]),
         type: pie(),
       },
-      legend: {
-        show: false,
-      },
       tooltip: {
         contents: {
-
           text: {
             QUANTITY: _values(data),
           },
