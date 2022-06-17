@@ -277,7 +277,7 @@ const UserSettings = ({
           <hr className='mt-5' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.timezone')}
-            <div className='ml-6'>
+            <div className='ml-5'>
               <Beta />
             </div>
           </h3>
@@ -314,7 +314,9 @@ const UserSettings = ({
           <hr className='mt-5' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.shared')}
-            <Beta className='ml-10' />
+            <div className='ml-5'>
+              <Beta />
+            </div>
           </h3>
           <div>
             {!_isEmpty(user.sharedProjects) ? (

@@ -266,7 +266,9 @@ const People = ({
         <div>
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('project.settings.people')}
-            <Beta className='ml-10' />
+            <div className='ml-5'>
+              <Beta />
+            </div>
           </h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>
             {t('project.settings.inviteCoworkers')}
