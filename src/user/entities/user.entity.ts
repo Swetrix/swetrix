@@ -143,6 +143,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: BillingFrequency,
+    nullable: true,
   })
   billingFrequency: BillingFrequency
 
