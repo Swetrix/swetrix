@@ -2,27 +2,34 @@
 import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 
 import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import Pricing from '../MainPage/Pricing'
 
+dayjs.extend(utc)
+
 const Features = () => {
   const { user } = useSelector(state => state.auth)
   const { theme } = useSelector(state => state.ui.theme)
   const { t, i18n: { language } } = useTranslation('common')
+  const {
+    nextBillDate, planCode, subUpdateURL,
+  } = user
 
-  const isFree = user.planCode === 'free'
+  const isFree = planCode === 'free'
 
   const onUpdatePaymentDetails = () => {
     if (!window.Paddle) {
-      window.location.replace(user.subUpdateURL)
+      window.location.replace(subUpdateURL)
       return
     }
 
     window.Paddle.Checkout.open({
-      override: user.subUpdateURL,
+      override: subUpdateURL,
       method: 'inline',
       frameTarget: 'checkout-container',
       frameInitialHeight: 416,
@@ -52,6 +59,20 @@ const Features = () => {
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('billing.desc')}
           </p>
+          <hr className='mt-3 mb-2' />
+          {nextBillDate && (
+            <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+              <span className='font-bold'>
+                {t('billing.nextBillDate')}
+              </span>
+              &nbsp;
+              <span>
+                {language === 'en'
+                  ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
+                  : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY')}
+              </span>
+            </div>
+          )}
           <Pricing t={t} language={language} />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
             <Trans
