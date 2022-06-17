@@ -1,5 +1,6 @@
 import { removeItem } from 'utils/localstorage'
-import { TOKEN, LS_VIEW_PREFS_SETTING } from 'redux/constants'
+import { removeAccessToken } from 'utils/accessToken'
+import { LS_VIEW_PREFS_SETTING } from 'redux/constants'
 import { types } from './types'
 
 export const authActions = {
@@ -32,7 +33,7 @@ export const authActions = {
   },
 
   logout() {
-    removeItem(TOKEN)
+    removeAccessToken()
     removeItem(LS_VIEW_PREFS_SETTING)
 
     return {
@@ -54,7 +55,7 @@ export const authActions = {
   },
 
   deleteAccountSuccess() {
-    removeItem('access_token')
+    removeAccessToken()
     removeItem('user_info')
 
     return {
