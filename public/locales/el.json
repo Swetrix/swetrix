@@ -6,7 +6,18 @@
     "rateLimitHit": "Πάρα πολλά αιτήματα, παρακαλούμε προσπαθήστε ξανά αργότερα",
     "cancelSubFirst": "Παρακαλούμε ακυρώστε πρώτα την πληρωμένη συνδρομή σας",
     "accountDeleted": "Ο λογαριασμός σας έχει διαγραφεί",
-    "accountDeleteError": "Σφάλμα κατά τη διαγραφή του λογαριασμού σας"
+    "accountDeleteError": "Σφάλμα κατά τη διαγραφή του λογαριασμού σας",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occurred while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occurred while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occurred while removing the user from your project",
+    "quitProjectError": "Error occurred while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occurred while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated"
   },
   "common": {
     "features": "Χαρακτηριστικά",
@@ -33,7 +44,13 @@
     "yes": "Ναι",
     "no": "Όχι",
     "is": "είναι",
-    "isNot": "δεν είναι"
+    "isNot": "δεν είναι",
+    "invite": "Invite",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit"
   },
   "main": {
     "ukrSupport": "Υποστηρίξτε τον ουκρανικό στρατό για να πολεμήσει τη ρωσική εισβολή.",
@@ -197,7 +214,16 @@
     "confTimeout": "Ένα email έχει ήδη σταλεί, ελέγξτε το γραμματοκιβώτιό σας ή προσπαθήστε ξανά σε λίγα λεπτά",
     "confSent": "Ένας σύνδεσμος επιβεβαίωσης λογαριασμού έχει σταλεί στο email σας",
     "noConfLeft": "Δυστυχώς, έχετε εξαντλήσει τα αιτήματα επιβεβαίωσης μέσω email.\nΠαρακαλούμε βεβαιωθείτε ότι μπορείτε να λαμβάνετε μηνύματα ηλεκτρονικού ταχυδρομείου και ελέγξτε ξανά το φάκελο SPAM για μηνύματα.\nΜπορείτε να προσπαθήσετε να χρησιμοποιήσετε μια διαφορετική διεύθυνση ηλεκτρονικού ταχυδρομείου ή να επικοινωνήσετε με την υπηρεσία υποστήριξης πελατών μας.",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet."
   },
   "dashboard": {
     "newProject": "Νέο έργο",
@@ -210,6 +236,7 @@
     "createProject": "Δημιουργήστε ένα νέο έργο εδώ για να αρχίσετε να χρησιμοποιείτε την υπηρεσία μας",
     "active": "Ενεργή",
     "public": "Δημόσιο",
+    "shared": "Shared",
     "disabled": "Απενεργοποιημένο",
     "pageviews": "Προβολές Σελίδων",
     "unique": "Μοναδικές προβολές",
@@ -217,7 +244,9 @@
     "inc": "Αυξήθηκε κατά",
     "dec": "Μειώθηκε κατά",
     "liveVisitors": "Ζωντανοί επισκέπτες",
-    "bounceRate": "Ρυθμός αναπήδησης"
+    "bounceRate": "Ρυθμός αναπήδησης",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
   "docs": {
     "titles": {
@@ -324,14 +353,39 @@
       "createHint": "*θα μπορέσετε να ρυθμίσετε το έργο σας διεξοδικότερα αφού το δημιουργήσετε",
       "delete": "Διαγραφή έργου",
       "qDelete": "Διαγραφή έργου;",
-      "deleteHint": "Πατώντας το πλήκτρο 'Διαγραφή έργου' κατανοείτε ότι η ενέργεια αυτή είναι μη αναστρέψιμη.\nΤο έργο και όλα τα δεδομένα που σχετίζονται με αυτό θα διαγραφούν από τους διακομιστές μας."
+      "deleteHint": "Πατώντας το πλήκτρο 'Διαγραφή έργου' κατανοείτε ότι η ενέργεια αυτή είναι μη αναστρέψιμη.\nΤο έργο και όλα τα δεδομένα που σχετίζονται με αυτό θα διαγραφούν από τους διακομιστές μας.",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role."
     }
   },
   "billing": {
     "title": "Χρέωση & Σχέδια",
     "desc": "Είναι δωρεάν να ξεκινήσετε και να χρησιμοποιήσετε τις υπηρεσίες μας.\nΑν χρειαστεί να διαχειριστείτε περισσότερη κίνηση, πιθανότατα θα πρέπει να αναβαθμίσετε το πρόγραμμά σας.\nΠαρακάτω παρατίθεται μια λίστα με τα διαθέσιμα πακέτα. Δεν υπάρχουν κρυφές χρεώσεις ή άλλα BS, όλα είναι ξεκάθαρα και διαφανή!",
     "contact": "Χρειάζεται να παρακολουθείτε περισσότερα από 1 εκατομμύριο συμβάντα ανά μήνα;\nΕπικοινωνήστε μαζί μας στο <mail>{{email}}</mail> για να συζητήσουμε τις ανάγκες σας.",
-    "update": "Ενημέρωση στοιχείων πληρωμής"
+    "update": "Ενημέρωση στοιχείων πληρωμής",
+    "nextBillDate": "Next bill date:"
   },
   "pricing": {
     "title": "Προγράμματα Τιμολόγησης",
@@ -340,10 +394,15 @@
     "mostPopular": "Τα πιο δημοφιλή",
     "free": "Δωρεἀν",
     "perMonth": "μήν",
+    "perYear": "yr",
     "yourPlan": "Το πλάνο σας",
     "downgrade": "Υποβάθμιση",
     "upgrade": "Αναβάθμιση",
     "whatIncl": "Τι περιλαμβάνεται",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
     "tiers": {
       "hobby": "Χόμπυ",
       "freelancer": "Ελεύθερος Επαγγελματίας",
@@ -351,12 +410,18 @@
       "enterprise": "Επιχειρηση",
       "upToXEVMo": "Μέχρι {{amount}} εκδηλώσεις ανά μήνα.",
       "xEvMo": "{{amount}} εκδηλώσεις ανά μήνα.",
+      "upToXVMo": "Up to {{amount}} visits per month.",
+      "xVMo": "{{amount}} visits per month.",
       "upToXProjects": "Δημιουργήστε έως και {{amount}} έργα.",
+      "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} μήνες διατήρησης δεδομένων.",
-      "highStandardSec": "Ασφάλεια υψηλών προδιαγραφών.",
       "evXPlanIncl": "Το σχέδιο {{plan}} περιλαμβάνει.",
       "smallBusiSupport": "Αγοράζοντας αυτό το προϊόν υποστηρίζετε μια μικρή επιχείρηση.",
-      "carbonRemoval": "Η συνδρομή σας συμβάλλει στην απομάκρυνση του άνθρακα."
+      "dataExports": "Unlimited data exports.",
+      "dataOwnership": "100% data ownership.",
+      "noBanners": "No cookie banners required.",
+      "dashboards": "Shared & Public Dashboards.",
+      "reports": "Email reports."
     },
     "downgradeTitle": "Είστε σίγουροι ότι θέλετε να υποβαθμίσετε;",
     "downgradeDesc": "Μετά την υποβάθμιση, το πρόγραμμά σας θα περιλαμβάνει λιγότερα έργα και διαθέσιμες εκδηλώσεις ανά μήνα. Σε περίπτωση που ο ιστότοπός σας έχει μεγαλύτερη επισκεψιμότητα από αυτή που περιλαμβάνει το πακέτο στο οποίο θέλετε να υποβαθμίσετε, αυτό θα έχει ως αποτέλεσμα να μην αποθηκεύονται όλα τα συμβάντα στη βάση δεδομένων μας.\nΘα μπορείτε να επιστρέψετε στο τρέχον πακέτο σας ανά πάσα στιγμή.\nΕάν έχετε οποιεσδήποτε ερωτήσεις, μπορείτε πάντα να μας στείλετε email στο {{email}}."
@@ -373,6 +438,7 @@
     "signin": "Σύνδεση",
     "signup": "Εγγραφή",
     "verification": "Επαλήθευση email",
+    "invitation": "Shared project invitation",
     "profileSettings": "Ρυθμίσεις προφίλ",
     "features": "Χαρακτηριστικά",
     "dashboard": "Πίνακας ελέγχου",

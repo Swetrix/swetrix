@@ -6,7 +6,18 @@
     "rateLimitHit": "Too many requests, please try again later",
     "cancelSubFirst": "Please cancel your paid subscription first",
     "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account"
+    "accountDeleteError": "Error while deleting your account",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occurred while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occurred while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occurred while removing the user from your project",
+    "quitProjectError": "Error occurred while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occurred while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated"
   },
   "common": {
     "features": "Funktionen",
@@ -33,7 +44,13 @@
     "yes": "Ja",
     "no": "Nein",
     "is": "ist",
-    "isNot": "ist nicht"
+    "isNot": "ist nicht",
+    "invite": "Invite",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit"
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
@@ -197,7 +214,16 @@
     "confTimeout": "Eine E-Mail wurde bereits versendet. Überprüfen Sie Ihr Postfach oder versuchen Sie es in ein paar Minuten erneut.",
     "confSent": "Ein Link zur Kontobestätigung wurde an Ihre E-Mail-Adresse gesendet.",
     "noConfLeft": "Leider sind Ihre E-Mail-Bestätigungsanfragen aufgebraucht.\nBitte vergewissern Sie sich, dass Sie in der Lage sind, E-Mails zu empfangen, und überprüfen Sie Ihren Spam-Ordner erneut auf Nachrichten.\nSie können versuchen, eine andere E-Mail-Adresse zu verwenden oder unseren Kundendienst zu kontaktieren.",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet."
   },
   "dashboard": {
     "newProject": "Neues Projekt",
@@ -210,6 +236,7 @@
     "createProject": "Erstellen Sie hier ein neues Projekt, um unseren Dienst zu nutzen",
     "active": "Aktiv",
     "public": "Öffentliche",
+    "shared": "Shared",
     "disabled": "Deaktiviert",
     "pageviews": "Seitenaufrufe",
     "unique": "Einzigartige Ansichten",
@@ -217,7 +244,9 @@
     "inc": "Gestiegen um",
     "dec": "Gesunken um",
     "liveVisitors": "Live-Besucher",
-    "bounceRate": "Bounce rate"
+    "bounceRate": "Bounce rate",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
   "docs": {
     "titles": {
@@ -324,14 +353,39 @@
       "createHint": "*Sie können Ihr Projekt im Anschluss an die Erstellung noch weiter einrichten.",
       "delete": "Projekt löschen",
       "qDelete": "Das Projekt löschen?",
-      "deleteHint": "Wenn Sie auf \"Projekt löschen\" klicken, verstehen Sie, dass diese Aktion nicht rückgängig zu machen ist.\nDas Projekt und alle damit verbundenen Daten werden von unseren Servern gelöscht."
+      "deleteHint": "Wenn Sie auf \"Projekt löschen\" klicken, verstehen Sie, dass diese Aktion nicht rückgängig zu machen ist.\nDas Projekt und alle damit verbundenen Daten werden von unseren Servern gelöscht.",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role."
     }
   },
   "billing": {
     "title": "Rechnung & Abonnement",
     "desc": "Der Einstieg und die Nutzung unserer Dienste ist gratis.\nWenn Sie mehr Datenverkehr bewältigen müssen, empfiehlt sich wahrscheinlich ein Upgrade Ihres Abonnements.\nNachstehend finden Sie eine Liste der verfügbaren Abomodelle. Keine versteckten Gebühren oder sonstiger Blödsinn, alles ist klar und transparent!",
     "contact": "Müssen Sie mehr als 1 Million Tracking-Events pro Monat erfassen?\nKontaktieren Sie uns unter <mail>{{email}}</mail>, um Ihre Wünsche zu besprechen.",
-    "update": "Update payment details"
+    "update": "Update payment details",
+    "nextBillDate": "Next bill date:"
   },
   "pricing": {
     "title": "Abomodelle",
@@ -340,10 +394,15 @@
     "mostPopular": "Most popular",
     "free": "Gratis",
     "perMonth": "mo",
+    "perYear": "yr",
     "yourPlan": "Ihr Abonnement",
     "downgrade": "Herabstufen",
     "upgrade": "Aufstufen",
     "whatIncl": "Was ist enthalten?",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
     "tiers": {
       "hobby": "Hobby",
       "freelancer": "Freelancer",
@@ -351,12 +410,18 @@
       "enterprise": "Enterprise",
       "upToXEVMo": "Bis zu {{amount}} Tracking-Events pro Monat.",
       "xEvMo": "{{amount}} Tracking-Events pro Monat.",
+      "upToXVMo": "Up to {{amount}} visits per month.",
+      "xVMo": "{{amount}} visits per month.",
       "upToXProjects": "Erstellen Sie bis zu {{amount}} Projekte.",
+      "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} Monate Datenspeicherung.",
-      "highStandardSec": "Hoher Sicherheitsstandard.",
       "evXPlanIncl": "Alles was das {{plan}} Abo enthält.",
       "smallBusiSupport": "Mit dem Kauf dieses Artikels unterstützen Sie ein kleines Unternehmen.",
-      "carbonRemoval": "Ihr Abonnement trägt zum Klimaschutz bei."
+      "dataExports": "Unlimited data exports.",
+      "dataOwnership": "100% data ownership.",
+      "noBanners": "No cookie banners required.",
+      "dashboards": "Shared & Public Dashboards.",
+      "reports": "Email reports."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
@@ -373,6 +438,7 @@
     "signin": "Anmelden",
     "signup": "Registrieren",
     "verification": "E-Mail Verifizierung",
+    "invitation": "Shared project invitation",
     "profileSettings": "Profil-Einstellungen",
     "features": "Funktionen",
     "dashboard": "Dashboard",

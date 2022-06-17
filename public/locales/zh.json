@@ -6,7 +6,18 @@
     "rateLimitHit": "请求太多，请稍后再试",
     "cancelSubFirst": "Please cancel your paid subscription first",
     "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account"
+    "accountDeleteError": "Error while deleting your account",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occurred while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occurred while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occurred while removing the user from your project",
+    "quitProjectError": "Error occurred while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occurred while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated"
   },
   "common": {
     "features": "功能",
@@ -33,7 +44,13 @@
     "yes": "是",
     "no": "否",
     "is": "is",
-    "isNot": "is not"
+    "isNot": "is not",
+    "invite": "Invite",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -197,7 +214,16 @@
     "confTimeout": "电子邮件已发送，请检查您的邮箱或过几分钟再试",
     "confSent": "账户确认链接已发送至您的邮箱",
     "noConfLeft": "很遗憾，您的电子邮件确认请求已用完。\n请确保您能够接收电子邮件并再次检查您的垃圾邮件文件夹中的邮件。\n您可以尝试使用其他电子邮件地址或 联系我们的客户支持服务。",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet."
   },
   "dashboard": {
     "newProject": "新项目",
@@ -210,6 +236,7 @@
     "createProject": "在此处创建一个新项目以开始使用我们的服务",
     "active": "活跃",
     "public": "公开",
+    "shared": "Shared",
     "disabled": "已禁用",
     "pageviews": "页面浏览量",
     "unique": "独特浏览量",
@@ -217,7 +244,9 @@
     "inc": "增加了",
     "dec": "减少了",
     "liveVisitors": "实时访客",
-    "bounceRate": "Bounce rate"
+    "bounceRate": "Bounce rate",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
   "docs": {
     "titles": {
@@ -324,14 +353,39 @@
       "createHint": "*您在创建项目后将能够更彻底地进行设置",
       "delete": "删除项目",
       "qDelete": "删除项目？",
-      "deleteHint": "通过按“删除项目”，您了解此操作是不可逆的。\n该项目及其所有相关数据将从我们的服务器中删除。"
+      "deleteHint": "通过按“删除项目”，您了解此操作是不可逆的。\n该项目及其所有相关数据将从我们的服务器中删除。",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role."
     }
   },
   "billing": {
     "title": "账单和计划",
     "desc": "我们提供免费服务。\n如果您需要处理更多流量，您可能需要升级您的计划。\n以下是现有计划列表。没有隐藏费用或其他隐蔽条款，清晰透明！",
     "contact": "需要每月跟踪超过 100 万个活动？\n请通过 <mail>{{email}}</mail> 与我们联系以讨论您的需求。",
-    "update": "更新付款详细信息"
+    "update": "更新付款详细信息",
+    "nextBillDate": "Next bill date:"
   },
   "pricing": {
     "title": "定价计划",
@@ -340,10 +394,15 @@
     "mostPopular": "最受欢迎",
     "free": "免费",
     "perMonth": "月",
+    "perYear": "yr",
     "yourPlan": "您的计划",
     "downgrade": "降级",
     "upgrade": "升级",
     "whatIncl": "包括什么",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
     "tiers": {
       "hobby": "爱好",
       "freelancer": "自由职业者",
@@ -351,12 +410,18 @@
       "enterprise": "企业",
       "upToXEVMo": " 每月最多 {{amount}} 个活动。",
       "xEvMo": "每月{{amount}} 个活动",
+      "upToXVMo": "Up to {{amount}} visits per month.",
+      "xVMo": "{{amount}} visits per month.",
       "upToXProjects": "最多创建 {{amount}} 个项目。",
+      "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} 个月的数据保留期。",
-      "highStandardSec": "高标准安全。",
       "evXPlanIncl": "包括所有 {{plan}} 计划。",
       "smallBusiSupport": "通过购买此产品，您是在支持一家小型企业。",
-      "carbonRemoval": "您的订阅有助于去除碳。"
+      "dataExports": "Unlimited data exports.",
+      "dataOwnership": "100% data ownership.",
+      "noBanners": "No cookie banners required.",
+      "dashboards": "Shared & Public Dashboards.",
+      "reports": "Email reports."
     },
     "downgradeTitle": "你确定要下调等级吗？",
     "downgradeDesc": "降级后，你的套餐将减少可用内容。如果您的网站流量超过了降级的套餐，这将导致无法记录在我们的数据库中。\n你可以随时回到之前的套餐。\n如果您有任何问题，请随时发送电子邮件至 {{email}}。"
@@ -373,6 +438,7 @@
     "signin": "登录",
     "signup": "注册",
     "verification": "电子邮箱验证",
+    "invitation": "Shared project invitation",
     "profileSettings": "个人资料设置",
     "features": "功能",
     "dashboard": "管理面板",

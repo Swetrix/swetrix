@@ -6,7 +6,18 @@
     "rateLimitHit": "För många förfrågningar, vänligen försök igen senare",
     "cancelSubFirst": "Vänligen avbryt din betalda prenumeration först",
     "accountDeleted": "Ditt konto har raderats",
-    "accountDeleteError": "Fel när du raderar ditt konto"
+    "accountDeleteError": "Fel när du raderar ditt konto",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occurred while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occurred while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occurred while removing the user from your project",
+    "quitProjectError": "Error occurred while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occurred while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated"
   },
   "common": {
     "features": "Funktioner",
@@ -33,7 +44,13 @@
     "yes": "Ja",
     "no": "Nej",
     "is": "är",
-    "isNot": "är inte"
+    "isNot": "är inte",
+    "invite": "Invite",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit"
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
@@ -197,7 +214,16 @@
     "confTimeout": "Ett e-post har redan skickats, kontrollera din brevlåda eller försök igen om några minuter",
     "confSent": "En länk för kontobekräftelse har skickats till din e-post",
     "noConfLeft": "Tyvärr har du slut på dina förfrågningar om bekräftelse via e-post.\nSe till att du kan ta emot e-post och kontrollera din SPAM-mapp igen för meddelanden.\nDu kan försöka använda en annan e-postadress eller kontakta vår kundtjänst.",
-    "timezoneDesc": "Detta kommer att vara den tidszon där data visas. Den används endast för visualisering.\nInga data kommer att ändras baserat på denna inställning."
+    "timezoneDesc": "Detta kommer att vara den tidszon där data visas. Den används endast för visualisering.\nInga data kommer att ändras baserat på denna inställning.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet."
   },
   "dashboard": {
     "newProject": "Nytt projekt",
@@ -210,6 +236,7 @@
     "createProject": "Skapa ett nytt projekt här för att börja använda vår tjänst",
     "active": "Aktiv",
     "public": "Publik",
+    "shared": "Shared",
     "disabled": "Inaktiverat",
     "pageviews": "Sidvisningar",
     "unique": "Unika vyer",
@@ -217,7 +244,9 @@
     "inc": "Ökad med",
     "dec": "Minskat med",
     "liveVisitors": "Live-besökare",
-    "bounceRate": "Studsfrekvens"
+    "bounceRate": "Studsfrekvens",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
   "docs": {
     "titles": {
@@ -324,14 +353,39 @@
       "createHint": "*Du kommer att kunna ställa in ditt projekt mer grundligt efter att du har skapat det",
       "delete": "Ta bort projekt",
       "qDelete": "Ta bort projektet?",
-      "deleteHint": "Genom att trycka på \"Ta bort projekt\" förstår du att denna åtgärd är oåterkallelig.\nProjektet och alla data relaterade till det kommer att raderas från våra servrar."
+      "deleteHint": "Genom att trycka på \"Ta bort projekt\" förstår du att denna åtgärd är oåterkallelig.\nProjektet och alla data relaterade till det kommer att raderas från våra servrar.",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role."
     }
   },
   "billing": {
     "title": "Fakturering och planer",
     "desc": "Det är gratis att komma igång och använda våra tjänster.\nOm du behöver hantera mer trafik behöver du förmodligen uppgradera din plan.\nNedan finns en förteckning över tillgängliga planer. Inga dolda avgifter eller annat BS, allt är tydligt och transparent!",
     "contact": "Behöver du spåra mer än 1 miljon händelser per månad?\nKontakta oss på <mail>{{email}}</mail> för att diskutera dina behov.",
-    "update": "Uppdatera betalningsuppgifter"
+    "update": "Uppdatera betalningsuppgifter",
+    "nextBillDate": "Next bill date:"
   },
   "pricing": {
     "title": "Prisplaner",
@@ -340,10 +394,15 @@
     "mostPopular": "Mest populär",
     "free": "Gratis",
     "perMonth": "må",
+    "perYear": "yr",
     "yourPlan": "Din plan",
     "downgrade": "Nedgradera",
     "upgrade": "Uppgradera",
     "whatIncl": "Vad ingår",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
     "tiers": {
       "hobby": "Hobby",
       "freelancer": "Frilansare",
@@ -351,12 +410,18 @@
       "enterprise": "Företag",
       "upToXEVMo": "Upp till {{amount}} händelser per månad.",
       "xEvMo": "{{amount}} händelser per månad.",
+      "upToXVMo": "Up to {{amount}} visits per month.",
+      "xVMo": "{{amount}} visits per month.",
       "upToXProjects": "Skapa upp till {{amount}} projekt.",
+      "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} månaders lagring av data.",
-      "highStandardSec": "Hög standard säkerhet.",
       "evXPlanIncl": "Allt {{plan}} plan inkluderar.",
       "smallBusiSupport": "Genom att köpa denna produkt stöder du ett litet företag.",
-      "carbonRemoval": "Ditt abonnemang bidrar till koldioxidavlägsnande."
+      "dataExports": "Unlimited data exports.",
+      "dataOwnership": "100% data ownership.",
+      "noBanners": "No cookie banners required.",
+      "dashboards": "Shared & Public Dashboards.",
+      "reports": "Email reports."
     },
     "downgradeTitle": "Är du säker på att du vill nedgradera?",
     "downgradeDesc": "Efter nedgraderingen kommer din plan att innehålla färre projekt och tillgängliga evenemang per månad. Om din webbplats har mer trafik än vad som ingår i den plan du vill nedgradera till kommer detta att leda till att alla händelser inte lagras i vår databas.\nDu kommer att kunna återgå till din nuvarande plan när som helst.\nOm du har några frågor kan du alltid skicka ett e-post till oss på {{email}}."
@@ -373,6 +438,7 @@
     "signin": "Logga in",
     "signup": "Registrera dig",
     "verification": "E-postverifiering",
+    "invitation": "Shared project invitation",
     "profileSettings": "Profilinställningar",
     "features": "Funktioner",
     "dashboard": "Instrumentbräda",

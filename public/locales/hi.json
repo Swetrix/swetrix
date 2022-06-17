@@ -6,7 +6,18 @@
     "rateLimitHit": "Too many requests, please try again later",
     "cancelSubFirst": "Please cancel your paid subscription first",
     "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account"
+    "accountDeleteError": "Error while deleting your account",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occurred while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occurred while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occurred while removing the user from your project",
+    "quitProjectError": "Error occurred while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occurred while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated"
   },
   "common": {
     "features": "विशेषताएं",
@@ -33,7 +44,13 @@
     "yes": "Yes",
     "no": "No",
     "is": "is",
-    "isNot": "is not"
+    "isNot": "is not",
+    "invite": "Invite",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -197,7 +214,16 @@
     "confTimeout": "एक ईमेल पहले ही भेजा जा चुका है, अपना मेलबॉक्स चेक करें या कुछ समय बाद पुन: प्रयास करें",
     "confSent": "आपके ईमेल पर अकाउंट पुष्टिकरण का लिंक भेज दिया गया है",
     "noConfLeft": "दुर्भाग्यवश, आपके ईमेल पुष्टिकरण अनुरोध समाप्त हो गए हैं।\nकृपया सुनिश्चित करें कि आप ईमेल प्राप्त करने में सक्षम हैं और संदेशों के लिए अपना स्पैम फ़ोल्डर फिर से चेक करें।\nआप अन्य ईमेल पते का उपयोग कर सकते हैं या हमारी ग्राहक सहायता सेवा से संपर्क कर सकते हैं।",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet."
   },
   "dashboard": {
     "newProject": "नया प्रोजेक्ट",
@@ -210,6 +236,7 @@
     "createProject": "हमारी सेवा का उपयोग शुरू करने के लिए यहां एक नया प्रोजेक्ट बनाएं",
     "active": "सक्रिय",
     "public": "Public",
+    "shared": "Shared",
     "disabled": "अक्षम",
     "pageviews": "पेज व्यूज",
     "unique": "विशिष्ट व्यूज",
@@ -217,7 +244,9 @@
     "inc": "की वृद्धि हुई",
     "dec": "से कम हुआ",
     "liveVisitors": "लाइव विज़िटर",
-    "bounceRate": "Bounce rate"
+    "bounceRate": "Bounce rate",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
   "docs": {
     "titles": {
@@ -324,14 +353,39 @@
       "createHint": "*अपने प्रोजेक्ट को बनाने के बाद आप उसे और अच्छी तरह से सेट अप कर सकते हैं",
       "delete": "प्रोजेक्ट हटाएं",
       "qDelete": "प्रोजेक्ट को हटाएं?",
-      "deleteHint": "'प्रोजेक्ट हटाएं' पर क्लिक करने से आप समझते हैं कि यह क्रिया अपरिवर्तनीय है।\nप्रोजेक्ट और इससे संबंधित सभी डेटा हमारे सर्वर से हटा दिए जाएंगे।"
+      "deleteHint": "'प्रोजेक्ट हटाएं' पर क्लिक करने से आप समझते हैं कि यह क्रिया अपरिवर्तनीय है।\nप्रोजेक्ट और इससे संबंधित सभी डेटा हमारे सर्वर से हटा दिए जाएंगे।",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role."
     }
   },
   "billing": {
     "title": "बिलिंग और प्लान",
     "desc": "शुरुआत करना और हमारी सेवाओं का उपयोग करना फ्री है।\nयदि आपको और अधिक ट्रैफ़िक संभालने की आवश्यकता है, तो आपको शायद अपने प्लान को अपग्रेड करने की आवश्यकता होगी।\nनीचे उपलब्ध प्लान्स की एक सूची है। कोई छिपी हुई फीस या अन्य बीएस नहीं है, सब कुछ स्पष्ट और पारदर्शी है!",
     "contact": "क्या प्रति माह 1 मिलियन से अधिक इवेंट को ट्रैक करने की आवश्यकता है?\nअपनी आवश्यकताओं पर चर्चा करने के लिए हमसे <mail>{{email}}</mail> पर संपर्क करें।",
-    "update": "Update payment details"
+    "update": "Update payment details",
+    "nextBillDate": "Next bill date:"
   },
   "pricing": {
     "title": "मूल्य निर्धारण प्लान",
@@ -340,10 +394,15 @@
     "mostPopular": "Most popular",
     "free": "फ्री",
     "perMonth": "माह",
+    "perYear": "yr",
     "yourPlan": "आपका प्लान",
     "downgrade": "डाउनग्रेड",
     "upgrade": "अपग्रेड",
     "whatIncl": "क्या शामिल है",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
     "tiers": {
       "hobby": "शौक",
       "freelancer": "फ्रीलांसर",
@@ -351,12 +410,18 @@
       "enterprise": "एंटरप्राइस",
       "upToXEVMo": "हर महीने {{amount}} इवेंट तक।",
       "xEvMo": "{{amount}} इवेंट प्रति माह।",
+      "upToXVMo": "Up to {{amount}} visits per month.",
+      "xVMo": "{{amount}} visits per month.",
       "upToXProjects": "{{amount}} प्रोजेक्ट तक बनाएं।",
+      "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} महीने का डेटा प्रतिधारण।",
-      "highStandardSec": "उच्च मानक सुरक्षा।",
       "evXPlanIncl": "वह सब कुछ जो  {{plan}} प्लान में शामिल है।",
       "smallBusiSupport": "इसे खरीदकर आप एक छोटे व्यवसाय का समर्थन कर रहे हैं।",
-      "carbonRemoval": "आपकी सदस्यता कार्बन हटाने में योगदान करेगी।"
+      "dataExports": "Unlimited data exports.",
+      "dataOwnership": "100% data ownership.",
+      "noBanners": "No cookie banners required.",
+      "dashboards": "Shared & Public Dashboards.",
+      "reports": "Email reports."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
@@ -373,6 +438,7 @@
     "signin": "साइन इन करें",
     "signup": "साइन अप करें",
     "verification": "ईमेल सत्यापन",
+    "invitation": "Shared project invitation",
     "profileSettings": "प्रोफाइल सेटिंग्स",
     "features": "विशेषताएं",
     "dashboard": "डैशबोर्ड",
