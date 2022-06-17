@@ -6,7 +6,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _keys from 'lodash/keys'
 import * as _find from 'lodash/find'
 
-import { PlanCode, ACCOUNT_PLANS } from '../user/entities/user.entity'
+import { PlanCode, ACCOUNT_PLANS, BillingFrequency } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { WebhookService } from './webhook.service'
@@ -33,7 +33,7 @@ export class WebhookController {
       case 'subscription_created':
       case 'subscription_updated': {
         const {
-          passthrough, email, subscription_id, subscription_plan_id, cancel_url, update_url,
+          passthrough, email, subscription_id, subscription_plan_id, cancel_url, update_url, next_bill_date,
         } = body
         let uid
 
@@ -43,7 +43,13 @@ export class WebhookController {
           this.logger.error(`[${body.alert_name}] Cannot parse the uid: ${JSON.stringify(body)}`)
         }
 
-        const plan = _find(ACCOUNT_PLANS, (tier) => tier.pid === subscription_plan_id)
+        let monthlyBilling = true
+        let plan = _find(ACCOUNT_PLANS, ({ pid }) => pid === subscription_plan_id)
+
+        if (!plan) {
+          monthlyBilling = false
+          plan = _find(ACCOUNT_PLANS, ({ ypid }) => ypid === subscription_plan_id)
+        }
 
         if (!plan) {
           throw new NotFoundException(`The selected account plan (${subscription_plan_id}) is not available`)
@@ -54,6 +60,8 @@ export class WebhookController {
           subID: subscription_id,
           subUpdateURL: update_url,
           subCancelURL: cancel_url,
+          nextBillDate: next_bill_date,
+          billingFrequency: monthlyBilling ? BillingFrequency.Monthly : BillingFrequency.Yearly,
         }
 
         if (uid) {
@@ -72,6 +80,7 @@ export class WebhookController {
 
         await this.userService.updateBySubID(subscription_id, {
           planCode: PlanCode.free,
+          billingFrequency: BillingFrequency.Monthly,
         })
 
         break
