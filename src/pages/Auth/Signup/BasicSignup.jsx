@@ -24,7 +24,7 @@ const BasicSignup = () => {
     password: '',
     repeat: '',
     tos: true,
-    keep_signedin: true,
+    dontRemember: false,
     checkIfLeaked: true,
   })
   const [validated, setValidated] = useState(false)

@@ -9,10 +9,11 @@ import { login } from 'api'
 
 export default function* singinWorker({ payload: { credentials, callback } }) {
   try {
+    const { dontRemember } = credentials
     const response = yield call(login, credentials)
 
     yield put(authActions.loginSuccess(response.user))
-    yield call(setAccessToken, response.access_token)
+    yield call(setAccessToken, response.access_token, dontRemember)
     yield put(UIActions.loadProjects())
     callback(true)
   } catch (error) {

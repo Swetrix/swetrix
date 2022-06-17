@@ -26,7 +26,7 @@ const Signup = ({ signup }) => {
     password: '',
     repeat: '',
     tos: false,
-    keep_signedin: false,
+    dontRemember: false,
     checkIfLeaked: true,
   })
   const [validated, setValidated] = useState(false)
@@ -188,10 +188,10 @@ const Signup = ({ signup }) => {
             />
           </div>
           <Checkbox
-            checked={form.keep_signedin}
+            checked={form.dontRemember}
             onChange={handleInput}
-            name='keep_signedin'
-            id='keep_signedin'
+            name='dontRemember'
+            id='dontRemember'
             className='mt-4'
             label={t('auth.common.noRemember')}
           />

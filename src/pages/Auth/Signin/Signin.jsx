@@ -21,7 +21,7 @@ const Signin = ({ login }) => {
   const [form, setForm] = useState({
     email: '',
     password: '',
-    keep_signedin: false,
+    dontRemember: false,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
@@ -110,10 +110,10 @@ const Signin = ({ login }) => {
             error={beenSubmitted && errors.password}
           />
           <Checkbox
-            checked={form.keep_signedin}
+            checked={form.dontRemember}
             onChange={handleInput}
-            name='keep_signedin'
-            id='keep_signedin'
+            name='dontRemember'
+            id='dontRemember'
             className='mt-4'
             label={t('auth.common.noRemember')}
           />
