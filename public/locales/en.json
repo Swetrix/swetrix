@@ -16,7 +16,8 @@
     "quitProjectError": "Error occured while quitting the project",
     "quitProject": "You have quit the project",
     "acceptInvitationError": "Error occured while accepting the project invitation",
-    "acceptInvitation": "The project invitation has been accepted"
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated"
   },
   "common": {
     "features": "Features",
@@ -392,10 +393,15 @@
     "mostPopular": "Most popular",
     "free": "Free",
     "perMonth": "mo",
+    "perYear": "yr",
     "yourPlan": "Your plan",
     "downgrade": "Downgrade",
     "upgrade": "Upgrade",
     "whatIncl": "What's included",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
     "tiers": {
       "hobby": "Hobby",
       "freelancer": "Freelancer",
@@ -403,12 +409,18 @@
       "enterprise": "Enterprise",
       "upToXEVMo": "Up to {{amount}} events per month.",
       "xEvMo": "{{amount}} events per month.",
+      "upToXVMo": "Up to {{amount}} visits per month.",
+      "xVMo": "{{amount}} visits per month.",
       "upToXProjects": "Create up to {{amount}} projects.",
+      "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} months of data retention.",
-      "highStandardSec": "High standard security.",
       "evXPlanIncl": "Everything {{plan}} plan includes.",
       "smallBusiSupport": "By buying this in you are supporting a small business.",
-      "carbonRemoval": "Your subscription contributes to carbon removal."
+      "dataExports": "Unlimited data exports.",
+      "dataOwnership": "100% data ownership.",
+      "noBanners": "No cookie banners required.",
+      "dashboards": "Shared & Public Dashboards.",
+      "reports": "Email reports."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
