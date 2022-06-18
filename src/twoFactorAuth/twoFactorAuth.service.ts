@@ -19,7 +19,7 @@ export class TwoFactorAuthService {
 
   async generateTwoFactorAuthenticationSecret(user: User) {
     const secret = authenticator.generateSecret()
-    const otpauthUrl = authenticator.keyuri(user.id, TWO_FACTOR_AUTHENTICATION_APP_NAME, secret)
+    const otpauthUrl = authenticator.keyuri(user.email, TWO_FACTOR_AUTHENTICATION_APP_NAME, secret)
 
     await this.userService.update(user.id, {
       twoFactorAuthenticationSecret: secret,
