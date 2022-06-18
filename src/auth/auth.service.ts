@@ -110,7 +110,7 @@ export class AuthService {
     return userData
   }
 
-  login(user: User | object): object {
+  login(user: User | object, isSecondFactorAuthenticated = false): object {
     let userData = user
 
     if (isSelfhosted) {
@@ -125,7 +125,7 @@ export class AuthService {
     }
 
     // @ts-ignore
-    const token = sign({ user_id: userData.id }, process.env.JWT_SECRET, {
+    const token = sign({ user_id: userData.id, isSecondFactorAuthenticated }, process.env.JWT_SECRET, {
       expiresIn: JWT_LIFE_TIME,
     })
 

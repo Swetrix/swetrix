@@ -11,6 +11,7 @@ import { Project } from './project/entity/project.entity'
 import { ProjectModule } from './project/project.module'
 import { MailerModule } from './mailer/mailer.module'
 import { ActionTokensModule } from './action-tokens/action-tokens.module'
+import { TwoFactorAuthModule } from './twoFactorAuth/twoFactorAuth.module'
 import { ActionToken } from './action-tokens/action-token.entity'
 import { ProjectShare } from './project/entity/project-share.entity'
 import { TaskManagerModule } from './task-manager/task-manager.module'
@@ -36,6 +37,7 @@ import { PingModule } from './ping/ping.module'
     UserModule,
     MailerModule,
     ActionTokensModule,
+    TwoFactorAuthModule,
     ProjectModule,
     AnalyticsModule,
     WebhookModule,

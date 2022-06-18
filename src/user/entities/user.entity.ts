@@ -126,6 +126,12 @@ export class User {
   @Column('varchar', { length: 50, default: DEFAULT_TIMEZONE })
   timezone: string
 
+  @Column('varchar', { length: 32, nullable: true })
+  twoFactorAuthenticationSecret: string
+
+  @Column({ default: false })
+  isTwoFactorAuthenticationEnabled: boolean
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date

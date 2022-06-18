@@ -1,7 +1,7 @@
 import { 
   Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards, Ip, Headers, UnprocessableEntityException,
 } from '@nestjs/common'
-import e, { Request } from 'express'
+import { Request } from 'express'
 import { ApiTags } from '@nestjs/swagger'
 
 import { AuthService } from './auth.service'
