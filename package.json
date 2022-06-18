@@ -49,6 +49,7 @@
     "isbot": "^3.4.6",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
+    "milliparsec": "^2.2.2",
     "mysql": "^2.18.1",
     "nodemailer": "^6.7.3",
     "passport": "^0.5.2",
