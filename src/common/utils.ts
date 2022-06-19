@@ -1,5 +1,6 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common'
 import { hash } from 'blake3'
+import * as randomstring from 'randomstring'
 import * as _sample from 'lodash/sample'
 import * as _join from 'lodash/join'
 import * as _filter from 'lodash/filter'
@@ -113,6 +114,13 @@ const createProjectClickhouse = async (project: Project) => {
   return await clickhouse.query(query, paramsData).toPromise()
 }
 
+const generateRecoveryCode = () => randomstring.generate({
+  length: 30,
+  charset: 'alphabetic',
+  capitalization: 'uppercase',
+})
+
 export {
-  getRandomTip, checkRateLimit, createProjectClickhouse, getProjectsClickhouse, updateProjectClickhouse, deleteProjectClickhouse, splitAt,
+  getRandomTip, checkRateLimit, createProjectClickhouse, getProjectsClickhouse, updateProjectClickhouse,
+  deleteProjectClickhouse, splitAt, generateRecoveryCode,
 }

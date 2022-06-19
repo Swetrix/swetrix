@@ -104,6 +104,7 @@ export class AuthService {
       // @ts-ignore
       ...user,
       password: undefined,
+      twoFactorRecoveryCode: undefined,
       maxEventsCount,
     }
 
