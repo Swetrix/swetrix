@@ -59,8 +59,16 @@ const UserSettingsContainer = () => {
     }
   }
 
+  const updateUserData = (data) => {
+    dispatch(authActions.updateUserData(data))
+  }
+
   const onDeleteProjectCache = () => {
     dispatch(UIActions.deleteProjectCache())
+  }
+
+  const login = (user) => {
+    dispatch(authActions.loginSuccess(user))
   }
 
   const onSubmit = (data) => {
@@ -110,6 +118,10 @@ const UserSettingsContainer = () => {
     dispatch(errorsActions.sharedProjectFailed(message))
   }
 
+  const genericError = (message) => {
+    dispatch(errorsActions.genericError(message))
+  }
+
   const removeProject = (projectId) => {
     dispatch(UIActions.removeProject(projectId))
   }
@@ -141,6 +153,9 @@ const UserSettingsContainer = () => {
       sharedProjectError={sharedProjectError}
       onEmailConfirm={onEmailConfirm}
       onDeleteProjectCache={onDeleteProjectCache}
+      updateUserData={updateUserData}
+      login={login}
+      genericError={genericError}
     />
   )
 }

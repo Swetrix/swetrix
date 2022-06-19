@@ -54,6 +54,20 @@ export const authActions = {
     }
   },
 
+  setDontRemember(dontRemember) {
+    return {
+      type: types.SET_DONT_REMEMBER,
+      payload: { dontRemember },
+    }
+  },
+
+  updateUserData(data) {
+    return {
+      type: types.UPDATE_USER_DATA,
+      payload: { data },
+    }
+  },
+
   deleteAccountSuccess() {
     removeAccessToken()
     removeItem('user_info')

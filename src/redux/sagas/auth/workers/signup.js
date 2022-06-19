@@ -14,6 +14,7 @@ export default function* signupWorder({ payload: { data: rawData, callback, t } 
 
     yield put(authActions.signupSuccess(response.user))
     yield call(setAccessToken, response.access_token, dontRemember)
+    yield put(authActions.setDontRemember(dontRemember))
     yield put(UIActions.loadProjects())
     callback(true)
   } catch (error) {

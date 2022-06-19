@@ -14,6 +14,7 @@ export default function* singinWorker({ payload: { credentials, callback } }) {
 
     yield put(authActions.loginSuccess(response.user))
     yield call(setAccessToken, response.access_token, dontRemember)
+    yield put(authActions.setDontRemember(dontRemember))
     yield put(UIActions.loadProjects())
     callback(true)
   } catch (error) {
