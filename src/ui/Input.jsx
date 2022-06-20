@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { ExclamationCircleIcon } from '@heroicons/react/solid'
 
 const Input = ({
-  label, hint, placeholder, type, id, name, className, onChange, error, value, disabled,
+  label, hint, placeholder, type, id, name, className, onChange, error, value, disabled, onKeyDown,
 }) => {
   const identifier = id || name || type
   const isError = !_isEmpty(error)
@@ -26,6 +26,7 @@ const Input = ({
           name={name}
           id={identifier}
           onChange={onChange}
+          onKeyDown={onKeyDown}
           className={cx('shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-gray-700 rounded-md', {
             'border-red-300 text-red-900 placeholder-red-300': isError,
           })}
@@ -55,6 +56,7 @@ Input.propTypes = {
   hint: PropTypes.string,
   placeholder: PropTypes.string,
   onChange: PropTypes.func,
+  onKeyDown: PropTypes.func,
   id: PropTypes.string,
   type: PropTypes.string,
   className: PropTypes.string,
@@ -70,6 +72,7 @@ Input.defaultProps = {
   hint: '',
   placeholder: '',
   onChange: () => { },
+  onKeyDown: () => { },
   id: '',
   type: '',
   className: '',

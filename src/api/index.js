@@ -325,3 +325,47 @@ export const changeShareRole = (id, data) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const generate2FA = () =>
+  api
+    .post('2fa/generate')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const enable2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/enable', { twoFactorAuthenticationCode })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const disable2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/disable', { twoFactorAuthenticationCode })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const submit2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/authenticate', { twoFactorAuthenticationCode })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

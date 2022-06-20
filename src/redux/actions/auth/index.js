@@ -4,7 +4,6 @@ import { LS_VIEW_PREFS_SETTING } from 'redux/constants'
 import { types } from './types'
 
 export const authActions = {
-  // Synchronous
   loginSuccess(user) {
     return {
       type: types.LOGIN_SUCCESSFUL,
@@ -51,6 +50,20 @@ export const authActions = {
     return {
       type: types.SAVE_PATH,
       payload: { path },
+    }
+  },
+
+  setDontRemember(dontRemember) {
+    return {
+      type: types.SET_DONT_REMEMBER,
+      payload: { dontRemember },
+    }
+  },
+
+  updateUserData(data) {
+    return {
+      type: types.UPDATE_USER_DATA,
+      payload: { data },
     }
   },
 

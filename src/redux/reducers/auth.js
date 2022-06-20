@@ -7,6 +7,7 @@ const initialState = {
   authenticated: false,
   loading: true,
   user: {},
+  dontRemember: false,
 }
 
 // eslint-disable-next-line default-param-last
@@ -36,6 +37,16 @@ const authReducer = (state = initialState, { type, payload }) => {
       // eslint-disable-next-line no-case-declarations
       const { id } = payload
       return { ...state, user: { ...state.user, sharedProjects: _filter(state.user.sharedProjects, (item) => item.id !== id) } }
+    }
+
+    case types.SET_DONT_REMEMBER: {
+      const { dontRemember } = payload
+      return { ...state, dontRemember }
+    }
+
+    case types.UPDATE_USER_DATA: {
+      const { data } = payload
+      return { ...state, user: { ...state.user, ...data } }
     }
 
     case types.SET_USER_SHARE_DATA: {
