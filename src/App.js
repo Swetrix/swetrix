@@ -128,7 +128,7 @@ const App = () => {
         }
       }
     })()
-  }, [accessToken, authenticated]) // eslint-disable-line
+  }, [authenticated]) // eslint-disable-line
 
   useEffect(() => {
     if (error) {

@@ -9,6 +9,7 @@ import _isNull from 'lodash/isNull'
 import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
+import _isString from 'lodash/isString'
 import { MailIcon } from '@heroicons/react/outline'
 import QRCode from 'react-qr-code'
 import PropTypes from 'prop-types'
@@ -150,54 +151,79 @@ const TwoFA = ({
   }
 
   const _generate2FA = async () => {
-    setIsTwoFaLoading(true)
+    if (!isTwoFaLoading) {
+      setIsTwoFaLoading(true)
 
-    try {
-      const result = await generate2FA()
-      setTwoFAConfigurating(true)
-      setTwoFAConfigData(result)
-    } catch (e) {
-      console.error(`[ERROR] Failed to generate 2FA: ${e}`)
-      genericError(t('apiNotifications.generate2FAError'))
-      setTwoFAConfigurating(false)
-      setTwoFAConfigData({})
+      try {
+        const result = await generate2FA()
+        setTwoFAConfigurating(true)
+        setTwoFAConfigData(result)
+      } catch (e) {
+        if (_isString(e)) {
+          genericError(e)
+        } else {
+          genericError(t('apiNotifications.generate2FAError'))
+        }
+        console.error(`[ERROR] Failed to generate 2FA: ${e}`)
+        setTwoFAConfigurating(false)
+        setTwoFAConfigData({})
+      }
+
+      setIsTwoFaLoading(false)
     }
-
-    setIsTwoFaLoading(false)
   }
 
   const _enable2FA = async () => {
-    setIsTwoFaLoading(true)
+    if (!isTwoFaLoading) {
+      setIsTwoFaLoading(true)
 
-    try {
-      const { twoFactorRecoveryCode, accessToken, user: updatedUser } = await enable2FA(twoFACode)
-      login(updatedUser)
-      setAccessToken(accessToken, dontRemember)
-      setTwoFARecovery(twoFactorRecoveryCode)
-    } catch {
-      setTwoFACodeError(t('profileSettings.invalid2fa'))
+      try {
+        const { twoFactorRecoveryCode, access_token: accessToken, user: updatedUser } = await enable2FA(twoFACode)
+        login(updatedUser)
+        setAccessToken(accessToken, dontRemember)
+        setTwoFARecovery(twoFactorRecoveryCode)
+      } catch (e) {
+        if (_isString(e)) {
+          genericError(e)
+        }
+        setTwoFACodeError(t('profileSettings.invalid2fa'))
+      }
+
+      setTwoFACode('')
+      setIsTwoFaLoading(false)
     }
-
-    setTwoFACode('')
-    setIsTwoFaLoading(false)
   }
 
   const _disable2FA = async () => {
-    setIsTwoFaLoading(true)
+    if (!isTwoFaLoading) {
+      setIsTwoFaLoading(true)
 
-    try {
-      await disable2FA(twoFACode)
-      updateUserData({ isTwoFactorAuthenticationEnabled: false })
-    } catch {
-      setTwoFACodeError(t('profileSettings.invalid2fa'))
+      try {
+        await disable2FA(twoFACode)
+        updateUserData({ isTwoFactorAuthenticationEnabled: false })
+      } catch (e) {
+        if (_isString(e)) {
+          genericError(e)
+        }
+        setTwoFACodeError(t('profileSettings.invalid2fa'))
+      }
+
+      setTwoFACode('')
+      setIsTwoFaLoading(false)
     }
+  }
 
-    setTwoFACode('')
-    setIsTwoFaLoading(false)
+  const callFnOnKeyPress = (fn, key = 'Enter') => (e) => {
+    e.stopPropagation()
+
+    if (e.key === key) {
+      fn(e)
+    }
   }
 
   const recoverySaved = () => {
     setTwoFARecovery(null)
+    setTwoFAConfigurating(false)
   }
 
   if (twoFARecovery) {
@@ -210,7 +236,6 @@ const TwoFA = ({
           type='text'
           className='mt-4'
           value={twoFARecovery}
-          twoFARecovery
         />
         <Button
           onClick={recoverySaved}
@@ -238,7 +263,9 @@ const TwoFA = ({
               placeholder={t('profileSettings.yourOneTimeCode')}
               className='sm:col-span-3'
               onChange={handle2FAInput}
+              onKeyDown={callFnOnKeyPress(_disable2FA)}
               error={twoFACodeError}
+              disabled={isTwoFaLoading}
             />
             <Button
               className={cx('ml-2', {
@@ -294,7 +321,9 @@ const TwoFA = ({
             placeholder={t('profileSettings.yourOneTimeCode')}
             className='sm:col-span-3'
             onChange={handle2FAInput}
+            onKeyDown={callFnOnKeyPress(_enable2FA)}
             error={twoFACodeError}
+            disabled={isTwoFaLoading}
           />
           <Button
             className={cx('ml-2', {

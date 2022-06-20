@@ -135,7 +135,11 @@
     "signin": {
       "title": "Sign in to your account",
       "forgot": "Forgot password?",
-      "button": "Sign in"
+      "button": "Sign in",
+      "2fa": "Two-factor authentication",
+      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
+      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
+      "6digitCode": "6-digit authentication code"
     },
     "signup": {
       "button": "Sign up",

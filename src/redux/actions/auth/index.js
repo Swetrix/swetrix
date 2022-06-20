@@ -4,7 +4,6 @@ import { LS_VIEW_PREFS_SETTING } from 'redux/constants'
 import { types } from './types'
 
 export const authActions = {
-  // Synchronous
   loginSuccess(user) {
     return {
       type: types.LOGIN_SUCCESSFUL,

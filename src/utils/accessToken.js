@@ -2,6 +2,7 @@ import _isEmpty from 'lodash/isEmpty'
 import { TOKEN } from 'redux/constants'
 import { getItem, setItem, removeItem } from './localstorage'
 
+// It's important to first check in local storage, then in session storage, not vice versa.
 export const getAccessToken = () => {
   let accessToken = getItem(TOKEN)
 
