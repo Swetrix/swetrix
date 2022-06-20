@@ -307,7 +307,7 @@ export class UserController {
       }
       // delete internal properties from userDTO before updating it
       // todo: use _pick instead of _omit
-      const userToUpdate = _omit(userDTO, ['id', 'sharedProjects', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode', 'billingFrequency', 'nextBillDate'])
+      const userToUpdate = _omit(userDTO, ['id', 'sharedProjects', 'isActive', 'evWarningSentOn', 'exportedAt', 'subID', 'subUpdateURL', 'subCancelURL', 'projects', 'actionTokens', 'roles', 'created', 'updated', 'planCode', 'billingFrequency', 'nextBillDate', 'twoFactorRecoveryCode', 'twoFactorAuthenticationSecret', 'isTwoFactorAuthenticationEnabled'])
       await this.userService.update(id, userToUpdate)
 
       const updatedUser = await this.userService.findOneWhere({ id })

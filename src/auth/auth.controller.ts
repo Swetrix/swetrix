@@ -1,7 +1,7 @@
 import { 
   Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards, Ip, Headers, UnprocessableEntityException,
 } from '@nestjs/common'
-import e, { Request } from 'express'
+import { Request } from 'express'
 import { ApiTags } from '@nestjs/swagger'
 
 import { AuthService } from './auth.service'
@@ -85,6 +85,12 @@ export class AuthController {
       })
     } else {
       const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
+
+      if (user.isTwoFactorAuthenticationEnabled) {
+        const processedUser = this.authService.postLoginProcess(user)
+        return this.authService.login(processedUser)
+      }
+
       const sharedProjects = await this.projectService.findShare({
         where: {
           user: user.id,

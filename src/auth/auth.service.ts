@@ -5,6 +5,7 @@ import * as crypto from 'crypto'
 import * as https from 'https'
 import * as _toUpper from 'lodash/toUpper'
 import * as _includes from 'lodash/includes'
+import * as _pick from 'lodash/pick'
 
 import { UserService } from '../user/user.service'
 import { ACCOUNT_PLANS } from '../user/entities/user.entity'
@@ -99,18 +100,28 @@ export class AuthService {
 
   processUser(user: User): object {
     // @ts-ignore
-    const maxEventsCount = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit || 0
+    const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
     const userData = {
       // @ts-ignore
       ...user,
       password: undefined,
+      twoFactorRecoveryCode: undefined,
+      twoFactorAuthenticationSecret: undefined,
       maxEventsCount,
     }
 
     return userData
   }
 
-  login(user: User | object): object {
+  postLoginProcess(user: User): object {
+    if (user.isTwoFactorAuthenticationEnabled) {
+      return _pick(user, ['id', 'email', 'isTwoFactorAuthenticationEnabled'])
+    }
+
+    return user
+  }
+
+  login(user: User | object, isSecondFactorAuthenticated = false): object {
     let userData = user
 
     if (isSelfhosted) {
@@ -125,7 +136,7 @@ export class AuthService {
     }
 
     // @ts-ignore
-    const token = sign({ user_id: userData.id }, process.env.JWT_SECRET, {
+    const token = sign({ user_id: userData.id, isSecondFactorAuthenticated }, process.env.JWT_SECRET, {
       expiresIn: JWT_LIFE_TIME,
     })
 

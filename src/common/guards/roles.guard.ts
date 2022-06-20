@@ -18,6 +18,7 @@ export class RolesGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const secret = process.env.JWT_SECRET
     const roles = this.reflector.get<string[]>('roles', context.getHandler())
+    const twoFaNotRequired = this.reflector.get<boolean>('twoFaNotRequired', context.getHandler())
     if (!roles || isSelfhosted) {
       return true
     }
@@ -36,7 +37,16 @@ export class RolesGuard implements CanActivate {
       if (decoded) {
         let user: User = await this.userService.findOneWhere({ id: decoded.user_id })
         const hasRole = user.roles.some(role => !!roles.find(item => item === role))
-        return hasRole
+
+        if (!hasRole) {
+          throw new Error()
+        }
+
+        if (!twoFaNotRequired && user.isTwoFactorAuthenticationEnabled && !decoded.isSecondFactorAuthenticated) {
+          throw new Error()
+        }
+
+        return true
       }
     } catch {
       throw new UnauthorizedException()
