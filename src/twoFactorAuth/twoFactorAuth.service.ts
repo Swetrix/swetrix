@@ -3,7 +3,6 @@ import { authenticator } from 'otplib'
 
 import { UserService } from '../user/user.service'
 import { User } from '../user/entities/user.entity'
-import { AppLoggerService } from '../logger/logger.service'
 import {
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
 } from '../common/constants'
@@ -12,7 +11,6 @@ import {
 export class TwoFactorAuthService {
   constructor(
     private userService: UserService,
-    private readonly logger: AppLoggerService
   ) { }
 
   async generateTwoFactorAuthenticationSecret(user: User) {

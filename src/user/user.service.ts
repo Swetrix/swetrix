@@ -53,7 +53,7 @@ export class UserService {
   }
 
   omitSensitiveData(user: User): User {
-    return _omit(user, ['password', 'twoFactorRecoveryCode'])
+    return _omit(user, ['password', 'twoFactorRecoveryCode', 'twoFactorAuthenticationSecret'])
   }
 
   findOneWhere(where: Record<string, unknown>, relations: string[] = []): Promise<User> {

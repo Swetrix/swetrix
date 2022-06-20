@@ -85,6 +85,12 @@ export class AuthController {
       })
     } else {
       const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
+
+      if (user.isTwoFactorAuthenticationEnabled) {
+        const processedUser = this.authService.postLoginProcess(user)
+        return this.authService.login(processedUser)
+      }
+
       const sharedProjects = await this.projectService.findShare({
         where: {
           user: user.id,

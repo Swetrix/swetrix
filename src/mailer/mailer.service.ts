@@ -58,7 +58,17 @@ const metaInfoJson = {
     subject: {
       en: () => 'You have been invited to join the project.',
     },
-  }
+  },
+  [LetterTemplate.TwoFAOn]: {
+    subject: {
+      en: () => '2FA has been enabled on your Swetrix account',
+    },
+  },
+  [LetterTemplate.TwoFAOff]: {
+    subject: {
+      en: () => '2FA has been disabled on your Swetrix account',
+    },
+  },
 }
 
 interface Params {
