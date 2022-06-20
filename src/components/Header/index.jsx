@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react/no-unstable-nested-components */
-import React, { memo, Fragment } from 'react'
+import React, { memo, Fragment, useRef } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
 import { useDispatch } from 'react-redux'
@@ -21,6 +21,7 @@ import Dropdown from 'ui/Dropdown'
 const Header = ({ authenticated, theme }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
+  const buttonRef = useRef()
 
   const logoutHandler = () => {
     dispatch(authActions.logout())
@@ -188,7 +189,7 @@ const Header = ({ authenticated, theme }) => {
                     <img className='h-10' src='/assets/logo_blue.svg' alt='' />
                   )}
                 </Link>
-                <Popover.Button className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
+                <Popover.Button ref={buttonRef} className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
                   <span className='sr-only'>
                     {t('common.closeMenu')}
                   </span>
@@ -218,34 +219,34 @@ const Header = ({ authenticated, theme }) => {
                 />
                 {authenticated ? (
                   <>
-                    <Popover.Button>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.you')}
                       </Link>
-                    </Popover.Button>
-                    <Popover.Button>
+                    </div>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.dashboard} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.dashboard')}
                       </Link>
-                    </Popover.Button>
-                    <Popover.Button>
+                    </div>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to='#' className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={logoutHandler}>
                         {t('common.logout')}
                       </Link>
-                    </Popover.Button>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <Popover.Button>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.signin} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50'>
                         {t('auth.common.signin')}
                       </Link>
-                    </Popover.Button>
-                    <Popover.Button>
+                    </div>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.signup} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.getStarted')}
                       </Link>
-                    </Popover.Button>
+                    </div>
                   </>
                 )}
               </div>
