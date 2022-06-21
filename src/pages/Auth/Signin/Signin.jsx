@@ -138,13 +138,13 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
               error={twoFACodeError}
             />
             <div className='flex justify-between mt-3'>
-              <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-50'>
+              <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
                 {!isSelfhosted && (
                   <Trans
                     t={t}
                     i18nKey='auth.signin.2faUnavailable'
                     components={{
-                      ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-300' />,
+                      ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />,
                     }}
                   />
                 )}
