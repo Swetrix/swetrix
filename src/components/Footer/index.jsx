@@ -19,6 +19,7 @@ const navigation = {
     () => ({ key: 'guides', href: `${routes.docs}#docs-ht` }),
   ],
   company: [
+    { key: 'about', href: routes.about, internal: true },
     { key: 'contact', href: routes.contact, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'donate', href: DONATE_URL },
@@ -103,8 +104,8 @@ const Footer = ({ minimal, authenticated }) => {
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routes.docs} className='text-base text-gray-300 hover:text-white'>
-                {t('common.docs')}
+              <Link to={routes.about} className='text-base text-gray-300 hover:text-white'>
+                {t('footer.about')}
               </Link>
             </div>
             {!isSelfhosted && (
