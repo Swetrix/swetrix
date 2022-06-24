@@ -1,5 +1,7 @@
 /* eslint-disable react/forbid-prop-types */
-import React, { memo, useState } from 'react'
+import React, {
+  memo, useState, useMemo, useEffect,
+} from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -22,10 +24,12 @@ import Loader from 'ui/Loader'
 import { ActivePin, InactivePin, WarningPin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
-import { acceptShareProject } from 'api'
+import { acceptShareProject, getProjects } from 'api'
+
+import Pagination from 'ui/Pagination'
 
 const ProjectCart = ({
   name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
@@ -172,6 +176,10 @@ const Dashboard = ({
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
+  const [paginationProject, setPaginationProject] = useState(projects)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageAmount = useMemo(() => Math.ceil(paginationProject.total / ENTRIES_PER_PAGE_DASHBOARD), [paginationProject])
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
@@ -180,6 +188,20 @@ const Dashboard = ({
       setShowActivateEmailModal(true)
     }
   }
+
+  useEffect(() => {
+    getProjects(ENTRIES_PER_PAGE_DASHBOARD, (currentPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+      .then((res) => {
+        const { results } = res
+
+        if (!_isEmpty(results)) {
+          setPaginationProject({ ...res })
+        }
+      })
+      .catch((e) => {
+        console.log(e)
+      })
+  }, [currentPage])
 
   if (error && !isLoading) {
     return (
@@ -220,7 +242,7 @@ const Dashboard = ({
               ) : (
                 <div className='shadow overflow-hidden sm:rounded-md mt-10'>
                   <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                    {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
+                    {_map(_filter(paginationProject.results, ({ uiHidden }) => !uiHidden), ({
                       name, id, created, active, overall, live, public: isPublic, confirmed, shared,
                     }) => (
                       <div key={confirmed ? `${id}-confirmed` : id}>
@@ -268,6 +290,11 @@ const Dashboard = ({
                 </div>
               )}
             </div>
+            {
+              pageAmount > 1 && (
+                <Pagination page={currentPage} setPage={(page) => setCurrentPage(page)} pageAmount={pageAmount || 0} />
+              )
+            }
           </div>
         </div>
         <Modal
