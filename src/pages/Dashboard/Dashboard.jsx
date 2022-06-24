@@ -27,7 +27,7 @@ import routes from 'routes'
 import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
-import { acceptShareProject, getProjects } from 'api'
+import { acceptShareProject } from 'api'
 
 import Pagination from 'ui/Pagination'
 
@@ -171,15 +171,13 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError,
+  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, total, setCurentPageRedux, curentPageRedux,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
-  const [paginationProject, setPaginationProject] = useState(projects)
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const pageAmount = useMemo(() => Math.ceil(paginationProject.total / ENTRIES_PER_PAGE_DASHBOARD), [paginationProject])
+  const pageAmount = useMemo(() => Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD), [total])
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
@@ -190,18 +188,9 @@ const Dashboard = ({
   }
 
   useEffect(() => {
-    getProjects(ENTRIES_PER_PAGE_DASHBOARD, (currentPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
-      .then((res) => {
-        const { results } = res
-
-        if (!_isEmpty(results)) {
-          setPaginationProject({ ...res })
-        }
-      })
-      .catch((e) => {
-        console.log(e)
-      })
-  }, [currentPage])
+    loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (curentPageRedux - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [curentPageRedux])
 
   if (error && !isLoading) {
     return (
@@ -242,7 +231,7 @@ const Dashboard = ({
               ) : (
                 <div className='shadow overflow-hidden sm:rounded-md mt-10'>
                   <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                    {_map(_filter(paginationProject.results, ({ uiHidden }) => !uiHidden), ({
+                    {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
                       name, id, created, active, overall, live, public: isPublic, confirmed, shared,
                     }) => (
                       <div key={confirmed ? `${id}-confirmed` : id}>
@@ -289,12 +278,13 @@ const Dashboard = ({
                   </ul>
                 </div>
               )}
+
+              {
+                pageAmount > 1 && (
+                  <Pagination page={curentPageRedux} setPage={(page) => setCurentPageRedux(page)} pageAmount={pageAmount || 0} />
+                )
+              }
             </div>
-            {
-              pageAmount > 1 && (
-                <Pagination page={currentPage} setPage={(page) => setCurrentPage(page)} pageAmount={pageAmount || 0} />
-              )
-            }
           </div>
         </div>
         <Modal
@@ -329,6 +319,10 @@ Dashboard.propTypes = {
   setUserShareData: PropTypes.func.isRequired,
   sharedProjectError: PropTypes.func.isRequired,
   userSharedUpdate: PropTypes.func.isRequired,
+  loadProjects: PropTypes.func.isRequired,
+  total: PropTypes.number.isRequired,
+  setCurentPageRedux: PropTypes.func.isRequired,
+  curentPageRedux: PropTypes.number.isRequired,
 }
 
 Dashboard.defaultProps = {

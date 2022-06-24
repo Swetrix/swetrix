@@ -1,7 +1,8 @@
 import { types } from './types'
 
-const loadProjects = () => ({
+const loadProjects = (take, skip) => ({
   type: types.LOAD_PROJECTS,
+  payload: { take, skip },
 })
 
 const setProjects = (projects) => ({
@@ -15,6 +16,20 @@ const setTotalMonthlyEvents = (totalMonthlyEvents) => ({
   type: types.SET_TOTAL_MONTHLY_EVENTS,
   payload: {
     totalMonthlyEvents,
+  },
+})
+
+const setTotal = (total) => ({
+  type: types.SET_TOTAL,
+  payload: {
+    total,
+  },
+})
+
+const setCurentPage = (page) => ({
+  type: types.SET_CURENT_PAGE,
+  payload: {
+    page,
   },
 })
 
@@ -138,6 +153,8 @@ const UIActions = {
   setGeneralStats,
   setPaddleLastEvent,
   setTotalMonthlyEvents,
+  setCurentPage,
+  setTotal,
   setShowNoEventsLeftBanner,
   setProjectsShareData,
   shareVerifyAsync,

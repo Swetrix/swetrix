@@ -9,7 +9,9 @@ const mapStateToProps = (state) => ({
   projects: state.ui.projects.projects,
   user: state.auth.user,
   isLoading: state.ui.projects.isLoading,
+  total: state.ui.projects.total,
   error: state.ui.projects.error,
+  curentPageRedux: state.ui.projects.curentPage,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -27,6 +29,12 @@ const mapDispatchToProps = (dispatch) => ({
   },
   sharedProjectError: (message) => {
     dispatch(errorsActions.sharedProjectFailed(message))
+  },
+  loadProjects: (take, skip) => {
+    dispatch(UIActions.loadProjects(take, skip))
+  },
+  setCurentPageRedux: (page) => {
+    dispatch(UIActions.setCurentPage(page))
   },
 })
 

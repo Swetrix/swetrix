@@ -9,6 +9,8 @@ const getInitialState = () => {
     isLoading: true,
     error: null,
     totalMonthlyEvents: null,
+    total: 0,
+    curentPage: 1,
   }
 }
 
@@ -24,11 +26,27 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
+    case types.SET_CURENT_PAGE: {
+      const { page } = payload
+      return {
+        ...state,
+        curentPage: page,
+      }
+    }
+
     case types.SET_TOTAL_MONTHLY_EVENTS: {
       const { totalMonthlyEvents } = payload
       return {
         ...state,
         totalMonthlyEvents,
+      }
+    }
+
+    case types.SET_TOTAL: {
+      const { total } = payload
+      return {
+        ...state,
+        total,
       }
     }
 
