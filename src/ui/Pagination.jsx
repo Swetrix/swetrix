@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { ArrowNarrowLeftIcon, ArrowNarrowRightIcon } from '@heroicons/react/solid'
 import _map from 'lodash/map'
 import cx from 'clsx'
+import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 
 const Pagination = ({ page, setPage, pageAmount }) => {
+  const { t } = useTranslation('common')
+
   return (
     <nav className='border-t border-gray-200 px-4 flex items-center justify-between sm:px-0'>
       <div className='-mt-px w-0 flex-1 flex'>
@@ -15,7 +19,7 @@ const Pagination = ({ page, setPage, pageAmount }) => {
               className='border-t-2 border-transparent pt-4 pr-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300'
             >
               <ArrowNarrowLeftIcon className='mr-3 h-5 w-5 text-gray-400' aria-hidden='true' />
-              Previous
+              { t('project.prev') }
             </button>
           )
         }
@@ -69,7 +73,7 @@ const Pagination = ({ page, setPage, pageAmount }) => {
               onClick={() => setPage(page + 1)}
               className='border-t-2 border-transparent pt-4 pl-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300'
             >
-              Next
+              { t('project.next') }
               <ArrowNarrowRightIcon className='ml-3 h-5 w-5 text-gray-400' aria-hidden='true' />
             </button>
           )
@@ -79,4 +83,10 @@ const Pagination = ({ page, setPage, pageAmount }) => {
   )
 }
 
-export default Pagination
+Pagination.propTypes = {
+  page: PropTypes.number.isRequired,
+  setPage: PropTypes.func.isRequired,
+  pageAmount: PropTypes.number.isRequired,
+}
+
+export default memo(Pagination)

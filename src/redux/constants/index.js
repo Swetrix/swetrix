@@ -165,4 +165,4 @@ export const roleAdmin = {
 }
 
 export const INVITATION_EXPIRES_IN = 48 // hours
-export const ENTRIES_PER_PAGE_DASHBOARD = 4
+export const ENTRIES_PER_PAGE_DASHBOARD = 10

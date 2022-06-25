@@ -26,8 +26,8 @@ const setTotal = (total) => ({
   },
 })
 
-const setCurentPage = (page) => ({
-  type: types.SET_CURENT_PAGE,
+const setDashboardPaginationPage = (page) => ({
+  type: types.SET_DASHBOARD_PAGINATION_PAGE,
   payload: {
     page,
   },
@@ -153,7 +153,7 @@ const UIActions = {
   setGeneralStats,
   setPaddleLastEvent,
   setTotalMonthlyEvents,
-  setCurentPage,
+  setDashboardPaginationPage,
   setTotal,
   setShowNoEventsLeftBanner,
   setProjectsShareData,

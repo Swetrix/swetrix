@@ -13,6 +13,7 @@ import _map from 'lodash/map'
 import _isUndefined from 'lodash/isUndefined'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
+import _ceil from 'lodash/ceil'
 import { useTranslation } from 'react-i18next'
 import { EyeIcon, CalendarIcon } from '@heroicons/react/outline'
 import { ArrowSmUpIcon, ArrowSmDownIcon, XCircleIcon } from '@heroicons/react/solid'
@@ -171,13 +172,13 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, total, setCurentPageRedux, curentPageRedux,
+  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, total, setDashboardPaginationPage, dashboardPaginationPage,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
 
-  const pageAmount = useMemo(() => Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD), [total])
+  const pageAmount = useMemo(() => _ceil(total / ENTRIES_PER_PAGE_DASHBOARD), [total])
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
@@ -188,9 +189,9 @@ const Dashboard = ({
   }
 
   useEffect(() => {
-    loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (curentPageRedux - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+    loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [curentPageRedux])
+  }, [dashboardPaginationPage])
 
   if (error && !isLoading) {
     return (
@@ -281,7 +282,7 @@ const Dashboard = ({
 
               {
                 pageAmount > 1 && (
-                  <Pagination page={curentPageRedux} setPage={(page) => setCurentPageRedux(page)} pageAmount={pageAmount || 0} />
+                  <Pagination page={dashboardPaginationPage} setPage={(page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} />
                 )
               }
             </div>
@@ -321,8 +322,8 @@ Dashboard.propTypes = {
   userSharedUpdate: PropTypes.func.isRequired,
   loadProjects: PropTypes.func.isRequired,
   total: PropTypes.number.isRequired,
-  setCurentPageRedux: PropTypes.func.isRequired,
-  curentPageRedux: PropTypes.number.isRequired,
+  setDashboardPaginationPage: PropTypes.func.isRequired,
+  dashboardPaginationPage: PropTypes.number.isRequired,
 }
 
 Dashboard.defaultProps = {

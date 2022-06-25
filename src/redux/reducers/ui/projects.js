@@ -10,7 +10,7 @@ const getInitialState = () => {
     error: null,
     totalMonthlyEvents: null,
     total: 0,
-    curentPage: 1,
+    dashboardPaginationPage: 1,
   }
 }
 
@@ -26,11 +26,11 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
-    case types.SET_CURENT_PAGE: {
+    case types.SET_DASHBOARD_PAGINATION_PAGE: {
       const { page } = payload
       return {
         ...state,
-        curentPage: page,
+        dashboardPaginationPage: page,
       }
     }
 

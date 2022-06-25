@@ -11,7 +11,7 @@ const mapStateToProps = (state) => ({
   isLoading: state.ui.projects.isLoading,
   total: state.ui.projects.total,
   error: state.ui.projects.error,
-  curentPageRedux: state.ui.projects.curentPage,
+  dashboardPaginationPage: state.ui.projects.dashboardPaginationPage,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -33,8 +33,8 @@ const mapDispatchToProps = (dispatch) => ({
   loadProjects: (take, skip) => {
     dispatch(UIActions.loadProjects(take, skip))
   },
-  setCurentPageRedux: (page) => {
-    dispatch(UIActions.setCurentPage(page))
+  setDashboardPaginationPage: (page) => {
+    dispatch(UIActions.setDashboardPaginationPage(page))
   },
 })
 
