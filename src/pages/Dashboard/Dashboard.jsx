@@ -282,7 +282,7 @@ const Dashboard = ({
 
               {
                 pageAmount > 1 && (
-                  <Pagination page={dashboardPaginationPage} setPage={(page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} />
+                  <Pagination page={dashboardPaginationPage} setPage={(page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={total} />
                 )
               }
             </div>
