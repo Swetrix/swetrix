@@ -12,6 +12,13 @@ const setProjects = (projects) => ({
   },
 })
 
+const setShareProjects = (projects) => ({
+  type: types.SET_SHARE_PROJECTS,
+  payload: {
+    projects,
+  },
+})
+
 const setTotalMonthlyEvents = (totalMonthlyEvents) => ({
   type: types.SET_TOTAL_MONTHLY_EVENTS,
   payload: {
@@ -158,6 +165,7 @@ const UIActions = {
   setShowNoEventsLeftBanner,
   setProjectsShareData,
   shareVerifyAsync,
+  setShareProjects,
 }
 
 export default UIActions

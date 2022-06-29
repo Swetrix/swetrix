@@ -237,41 +237,43 @@ const Dashboard = ({
                     }) => (
                       <div key={confirmed ? `${id}-confirmed` : id}>
                         {
-                          (_isUndefined(confirmed) || confirmed) ? (
-                            <Link to={_replace(routes.project, ':id', id)}>
+                          !(dashboardPaginationPage > 1 && shared) && (
+                            (_isUndefined(confirmed) || confirmed) ? (
+                              <Link to={_replace(routes.project, ':id', id)}>
+                                <ProjectCart
+                                  t={t}
+                                  language={language}
+                                  name={name}
+                                  created={created}
+                                  shared={shared}
+                                  active={active}
+                                  isPublic={isPublic}
+                                  confirmed={confirmed}
+                                  overall={overall}
+                                  live={_isNumber(live) ? live : 'N/A'}
+                                />
+                              </Link>
+                            ) : (
                               <ProjectCart
                                 t={t}
+                                id={id}
                                 language={language}
                                 name={name}
                                 created={created}
                                 shared={shared}
                                 active={active}
                                 isPublic={isPublic}
-                                confirmed={confirmed}
                                 overall={overall}
+                                confirmed={confirmed}
+                                sharedProjects={user.sharedProjects}
+                                setProjectsShareData={setProjectsShareData}
+                                setUserShareData={setUserShareData}
                                 live={_isNumber(live) ? live : 'N/A'}
+                                userSharedUpdate={userSharedUpdate}
+                                sharedProjectError={sharedProjectError}
+                                deleteProjectFailed={deleteProjectFailed}
                               />
-                            </Link>
-                          ) : (
-                            <ProjectCart
-                              t={t}
-                              id={id}
-                              language={language}
-                              name={name}
-                              created={created}
-                              shared={shared}
-                              active={active}
-                              isPublic={isPublic}
-                              overall={overall}
-                              confirmed={confirmed}
-                              sharedProjects={user.sharedProjects}
-                              setProjectsShareData={setProjectsShareData}
-                              setUserShareData={setUserShareData}
-                              live={_isNumber(live) ? live : 'N/A'}
-                              userSharedUpdate={userSharedUpdate}
-                              sharedProjectError={sharedProjectError}
-                              deleteProjectFailed={deleteProjectFailed}
-                            />
+                            )
                           )
                         }
                       </div>

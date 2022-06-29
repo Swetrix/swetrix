@@ -26,6 +26,15 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
+    case types.SET_SHARE_PROJECTS: {
+      const { projects } = payload
+      return {
+        ...state,
+        sharedProjects: projects,
+        isLoading: false,
+      }
+    }
+
     case types.SET_DASHBOARD_PAGINATION_PAGE: {
       const { page } = payload
       return {
