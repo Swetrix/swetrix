@@ -99,6 +99,7 @@ const Features = ({ t }) => (
 const Main = () => {
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
+  // const stats = useSelector(state => state.ui.misc.stats)
   const [liveDemoHover, setLiveDemoHover] = useState(false)
 
   return (
@@ -201,7 +202,7 @@ const Main = () => {
 
         <Features t={t} />
 
-        {/* <div className='py-6 overflow-hidden bg-white'>
+        {/* <div className='py-6 overflow-hidden bg-gray-50 dark:bg-gray-700'>
           <div className='w-11/12 container mx-auto'>
             <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 text-center'>
               {t('main.ourStats')}
@@ -209,31 +210,31 @@ const Main = () => {
             <p className='max-w-3xl mx-auto mt-3 text-xl text-center text-gray-500 dark:text-gray-200 sm:mt-4'>
               {t('main.statsDesc')}
             </p>
-            <div className='pb-12 mt-10 bg-white sm:pb-16'>
+            <div className='pb-12 mt-10 bg-gray-50 dark:bg-gray-700 sm:pb-16'>
               <div className='relative w-full'>
                 <div className='mx-auto'>
-                  <dl className='bg-white rounded-lg sm:grid sm:grid-cols-3'>
+                  <dl className='bg-gray-50 dark:bg-gray-700 rounded-lg sm:grid sm:grid-cols-3'>
                     <div className='flex flex-col p-6 text-center border-b border-gray-100 sm:border-0 sm:border-r'>
-                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 leading-6'>
+                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 dark:text-gray-100 leading-6'>
                         {t('main.users')}
                       </dt>
-                      <dd className='order-1 text-5xl font-extrabold text-indigo-600'>
+                      <dd className='order-1 text-5xl font-extrabold text-indigo-600 dark:text-indigo-500'>
                         {Number(stats.users).toLocaleString()}
                       </dd>
                     </div>
                     <div className='flex flex-col p-6 text-center border-t border-b border-gray-100 sm:border-0 sm:border-l sm:border-r'>
-                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 leading-6'>
+                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 dark:text-gray-100 leading-6'>
                         {t('main.websites')}
                       </dt>
-                      <dd className='order-1 text-5xl font-extrabold text-indigo-600'>
+                      <dd className='order-1 text-5xl font-extrabold text-indigo-600 dark:text-indigo-500'>
                         {Number(stats.projects).toLocaleString()}
                       </dd>
                     </div>
                     <div className='flex flex-col p-6 text-center border-t border-gray-100 sm:border-0 sm:border-l'>
-                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 leading-6'>
+                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 dark:text-gray-100 leading-6'>
                         {t('main.pageviews')}
                       </dt>
-                      <dd className='order-1 text-5xl font-extrabold text-indigo-600'>
+                      <dd className='order-1 text-5xl font-extrabold text-indigo-600 dark:text-indigo-500'>
                         {nFormatter(Number(stats.pageviews), 1)}
                       </dd>
                     </div>
