@@ -5,6 +5,11 @@ const loadProjects = (take, skip) => ({
   payload: { take, skip },
 })
 
+const loadSharedProjects = (take, skip) => ({
+  type: types.LOAD_SHARED_PROJECTS,
+  payload: { take, skip },
+})
+
 const setProjects = (projects) => ({
   type: types.SET_PROJECTS,
   payload: {
@@ -139,6 +144,7 @@ const shareVerifyAsync = (data, successfulCallback, errorCallback) => ({
 
 const UIActions = {
   loadProjects,
+  loadSharedProjects,
   setProjects,
   setProjectsError,
   setProjectsLoading,

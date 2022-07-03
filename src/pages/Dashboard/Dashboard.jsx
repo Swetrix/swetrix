@@ -25,7 +25,9 @@ import Loader from 'ui/Loader'
 import { ActivePin, InactivePin, WarningPin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
-import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
+import {
+  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabsForDashboard, tabForOwnedProject, tabForSharedProject,
+} from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
 import { acceptShareProject } from 'api'
@@ -172,12 +174,12 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, total, setDashboardPaginationPage, dashboardPaginationPage,
+  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects, total, setDashboardPaginationPage, dashboardPaginationPage,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
-
+  const [tabProjects, setTabProjects] = useState(tabForOwnedProject)
   const pageAmount = useMemo(() => _ceil(total / ENTRIES_PER_PAGE_DASHBOARD), [total])
 
   const onNewProject = () => {
@@ -192,6 +194,12 @@ const Dashboard = ({
     loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage])
+
+  useEffect(() => {
+    if (tabProjects === tabForSharedProject) {
+      loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+    }
+  }, [tabProjects, tabForSharedProject])
 
   if (error && !isLoading) {
     return (
@@ -220,24 +228,74 @@ const Dashboard = ({
           <div className='flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
             <div className='max-w-7xl w-full mx-auto'>
               <div className='flex justify-between'>
-                <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+                <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
                   {t('titles.dashboard')}
                 </h2>
                 <span onClick={onNewProject} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
                   {t('dashboard.newProject')}
                 </span>
               </div>
+              <div className='mt-6'>
+                <nav className='-mb-px flex space-x-8'>
+                  {_map(tabsForDashboard, (tab) => (
+                    <button
+                      key={tab.name}
+                      type='button'
+                      onClick={() => setTabProjects(tab.name)}
+                      className={cx(
+                        tabProjects === tab.name
+                          ? 'border-indigo-500 text-indigo-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                        'whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md',
+                      )}
+                      aria-current={tab.name === tabProjects ? 'page' : undefined}
+                    >
+                      {t(tab.label)}
+                    </button>
+                  ))}
+                </nav>
+              </div>
               {_isEmpty(projects) ? (
                 <NoProjects t={t} />
               ) : (
-                <div className='shadow overflow-hidden sm:rounded-md mt-10'>
-                  <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                    {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                      name, id, created, active, overall, live, public: isPublic, confirmed, shared,
-                    }) => (
-                      <div key={confirmed ? `${id}-confirmed` : id}>
-                        {
-                          !(dashboardPaginationPage > 1 && shared) && (
+                <div className='shadow overflow-hidden sm:rounded-md'>
+                  {tabProjects === tabForOwnedProject && (
+                    <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                      {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
+                        name, id, created, active, overall, live, public: isPublic, confirmed, shared,
+                      }) => (
+                        <div key={confirmed ? `${id}-confirmed` : id}>
+                          <ProjectCart
+                            t={t}
+                            id={id}
+                            language={language}
+                            name={name}
+                            created={created}
+                            shared={shared}
+                            active={active}
+                            isPublic={isPublic}
+                            overall={overall}
+                            confirmed={confirmed}
+                            sharedProjects={user.sharedProjects}
+                            setProjectsShareData={setProjectsShareData}
+                            setUserShareData={setUserShareData}
+                            live={_isNumber(live) ? live : 'N/A'}
+                            userSharedUpdate={userSharedUpdate}
+                            sharedProjectError={sharedProjectError}
+                            deleteProjectFailed={deleteProjectFailed}
+                          />
+                        </div>
+                      ))}
+                    </ul>
+                  )}
+
+                  {tabProjects === tabForSharedProject && (
+                    <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                      {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
+                        name, id, created, active, overall, live, public: isPublic, confirmed, shared,
+                      }) => (
+                        <div key={confirmed ? `${id}-confirmed` : id}>
+                          {
                             (_isUndefined(confirmed) || confirmed) ? (
                               <Link to={_replace(routes.project, ':id', id)}>
                                 <ProjectCart
@@ -274,11 +332,11 @@ const Dashboard = ({
                                 deleteProjectFailed={deleteProjectFailed}
                               />
                             )
-                          )
-                        }
-                      </div>
-                    ))}
-                  </ul>
+                          }
+                        </div>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
 

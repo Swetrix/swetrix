@@ -33,6 +33,9 @@ const mapDispatchToProps = (dispatch) => ({
   loadProjects: (take, skip) => {
     dispatch(UIActions.loadProjects(take, skip))
   },
+  loadSharedProjects: (take, skip) => {
+    dispatch(UIActions.loadSharedProjects(take, skip))
+  },
   setDashboardPaginationPage: (page) => {
     dispatch(UIActions.setDashboardPaginationPage(page))
   },

@@ -173,6 +173,17 @@ export const getProjects = (take = 0, skip = 0) =>
         : error.response.data.message
     })
 
+export const getSharedProjects = (take = 0, skip = 0) =>
+  api
+    .get(`/project/shared?take=${take}&skip=${skip}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const getProject = (pid) =>
   api
     .get(`/project/${pid}`)
