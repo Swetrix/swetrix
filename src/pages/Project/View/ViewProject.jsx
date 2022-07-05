@@ -99,24 +99,24 @@ const RefRow = memo(({ rowName, showIcons }) => {
   )
 })
 
-const getColumns = (chart, showTotal, t) => {
+const getColumns = (chart, showTotal) => {
   if (showTotal) {
     return [
       ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-      [t('project.unique'), ...chart.uniques],
-      [t('project.total'), ...chart.visits],
+      ['unique', ...chart.uniques],
+      ['total', ...chart.visits],
     ]
   }
 
   return [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-    [t('project.unique'), ...chart.uniques],
+    ['unique', ...chart.uniques],
   ]
 }
 
 const noRegionPeriods = ['custom', 'yesterday']
 
-const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
+const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
   const xAxisSize = _size(chart.x)
   let regions
 
@@ -130,7 +130,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
     }
 
     regions = {
-      [t('project.unique')]: [
+      unique: [
         {
           start: regionStart,
           style: {
@@ -138,7 +138,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
           },
         },
       ],
-      [t('project.total')]: [
+      total: [
         {
           start: regionStart,
           style: {
@@ -152,11 +152,11 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
   return {
     data: {
       x: 'x',
-      columns: getColumns(chart, showTotal, t),
+      columns: getColumns(chart, showTotal),
       type: area(),
       colors: {
-        [t('project.unique')]: '#2563EB',
-        [t('project.total')]: '#D97706',
+        unique: '#2563EB',
+        total: '#D97706',
       },
       regions,
     },
@@ -397,7 +397,7 @@ const ViewProject = ({
           setIsPanelsDataEmpty(true)
         } else {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chart, timeBucket, showTotal, applyRegions, t)
+          const bbSettings = getSettings(chart, timeBucket, showTotal, applyRegions)
           setChartData(chart)
 
           setPanelsData({
@@ -410,7 +410,11 @@ const ViewProject = ({
             mainChart.destroy()
           }
 
-          setMainChart(bb.generate(bbSettings))
+          setMainChart(() => {
+            const generete = bb.generate(bbSettings)
+            generete.data.names({ unique: `${t('project.unique')} ` })
+            return generete
+          })
           setIsPanelsDataEmpty(false)
         }
 
@@ -462,11 +466,12 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
         mainChart.load({
-          columns: getColumns(chartData, true, t),
+          columns: getColumns(chartData, true),
         })
+        mainChart.data.names({ unique: t('project.unique'), total: t('project.total') })
       } else {
         mainChart.unload({
-          ids: [t('project.total')],
+          ids: 'total',
         })
       }
     }
