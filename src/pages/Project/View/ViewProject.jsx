@@ -465,7 +465,6 @@ const ViewProject = ({
   useEffect(() => {
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
-        console.log(mainChart)
         mainChart.load({
           columns: getColumns(chartData, true),
         })
