@@ -167,7 +167,7 @@ export class ProjectController {
       throw new NotImplementedException('This feature is not available on selfhosted yet')
     } else {
       const where = Object()
-      where.admin = userId
+      where.user = userId
 
       const paginated = await this.projectService.paginateShared(
         { take, skip },
