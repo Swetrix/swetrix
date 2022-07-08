@@ -7,8 +7,10 @@ import ProjectSettings from './ProjectSettings'
 
 const mapStateToProps = (state) => ({
   projects: state.ui.projects.projects,
+  sharedProjects: state.ui.projects.sharedProjects,
   isLoading: state.ui.projects.isLoading,
   user: state.auth.user,
+  isSharedProject: false,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -27,11 +29,15 @@ const mapDispatchToProps = (dispatch) => ({
   deleteProjectFailed: (message) => {
     dispatch(errorsActions.deleteProjectFailed(message))
   },
-  loadProjects: () => {
-    dispatch(UIActions.loadProjects())
+  loadProjects: (shared) => {
+    if (shared) {
+      dispatch(UIActions.loadSharedProjects())
+    } else {
+      dispatch(UIActions.loadProjects())
+    }
   },
-  removeProject: (pid) => {
-    dispatch(UIActions.removeProject(pid))
+  removeProject: (pid, shared) => {
+    dispatch(UIActions.removeProject(pid, shared))
   },
   showError: (message) => {
     dispatch(errorsActions.genericError(message))

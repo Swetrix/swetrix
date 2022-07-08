@@ -18,8 +18,8 @@ function* mainUISaga() {
   yield fork(isEventsAvailable)
   // yield fork(generalStats)
   yield takeEvery(types.SET_PROJECT_VIEW_PREFS, setProjectViewPrefs)
-  yield takeEvery(types.LOAD_PROJECTS, loadProjects)
   yield takeEvery(types.LOAD_SHARED_PROJECTS, loadSharedProjects)
+  yield takeEvery(types.LOAD_PROJECTS, loadProjects)
   yield takeEvery(authTypes.LOGOUT, logout)
   yield takeLatest(types.SHARE_VERIFY_ASYNC, shareVerify)
 }

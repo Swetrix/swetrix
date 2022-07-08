@@ -46,7 +46,7 @@ const ProjectCart = ({
 
     try {
       await acceptShareProject(pid)
-      setProjectsShareData({ confirmed: true }, id)
+      setProjectsShareData({ confirmed: true }, id, true)
       setUserShareData({ confirmed: true }, pid)
       userSharedUpdate(t('apiNotifications.acceptInvitation'))
     } catch (e) {
@@ -174,12 +174,15 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects, total, setDashboardPaginationPage, dashboardPaginationPage,
+  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData,
+  setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
+  total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
+  setDashboardTabs, sharedTotal,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
-  const [tabProjects, setTabProjects] = useState(tabForOwnedProject)
+  const [tabProjects, setTabProjects] = useState(dashboardTabs)
   const pageAmount = useMemo(() => _ceil(total / ENTRIES_PER_PAGE_DASHBOARD), [total])
 
   const onNewProject = () => {
@@ -191,15 +194,18 @@ const Dashboard = ({
   }
 
   useEffect(() => {
-    loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dashboardPaginationPage])
+    setDashboardTabs(tabProjects)
+  }, [tabProjects, setDashboardTabs])
 
   useEffect(() => {
+    if (tabProjects === tabForOwnedProject) {
+      loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+    }
     if (tabProjects === tabForSharedProject) {
       loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
     }
-  }, [tabProjects, tabForSharedProject])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dashboardPaginationPage])
 
   if (error && !isLoading) {
     return (
@@ -236,24 +242,26 @@ const Dashboard = ({
                 </span>
               </div>
               <div className='mt-6'>
-                <nav className='-mb-px flex space-x-8'>
-                  {_map(tabsForDashboard, (tab) => (
-                    <button
-                      key={tab.name}
-                      type='button'
-                      onClick={() => setTabProjects(tab.name)}
-                      className={cx(
-                        tabProjects === tab.name
-                          ? 'border-indigo-500 text-indigo-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                        'whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md',
-                      )}
-                      aria-current={tab.name === tabProjects ? 'page' : undefined}
-                    >
-                      {t(tab.label)}
-                    </button>
-                  ))}
-                </nav>
+                {sharedTotal > 0 && (
+                  <nav className='-mb-px flex space-x-8'>
+                    {_map(tabsForDashboard, (tab) => (
+                      <button
+                        key={tab.name}
+                        type='button'
+                        onClick={() => setTabProjects(tab.name)}
+                        className={cx(
+                          tabProjects === tab.name
+                            ? 'border-indigo-500 text-indigo-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                          'whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md',
+                        )}
+                        aria-current={tab.name === tabProjects ? 'page' : undefined}
+                      >
+                        {t(tab.label)}
+                      </button>
+                    ))}
+                  </nav>
+                )}
               </div>
               {_isEmpty(projects) ? (
                 <NoProjects t={t} />
@@ -262,28 +270,23 @@ const Dashboard = ({
                   {tabProjects === tabForOwnedProject && (
                     <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                       {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                        name, id, created, active, overall, live, public: isPublic, confirmed, shared,
+                        name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
                       }) => (
                         <div key={confirmed ? `${id}-confirmed` : id}>
-                          <ProjectCart
-                            t={t}
-                            id={id}
-                            language={language}
-                            name={name}
-                            created={created}
-                            shared={shared}
-                            active={active}
-                            isPublic={isPublic}
-                            overall={overall}
-                            confirmed={confirmed}
-                            sharedProjects={user.sharedProjects}
-                            setProjectsShareData={setProjectsShareData}
-                            setUserShareData={setUserShareData}
-                            live={_isNumber(live) ? live : 'N/A'}
-                            userSharedUpdate={userSharedUpdate}
-                            sharedProjectError={sharedProjectError}
-                            deleteProjectFailed={deleteProjectFailed}
-                          />
+                          <Link to={_replace(routes.project, ':id', id)}>
+                            <ProjectCart
+                              t={t}
+                              language={language}
+                              name={name}
+                              created={created}
+                              shared={shared}
+                              active={active}
+                              isPublic={isPublic}
+                              confirmed={confirmed}
+                              overall={overall}
+                              live={_isNumber(live) ? live : 'N/A'}
+                            />
+                          </Link>
                         </div>
                       ))}
                     </ul>
@@ -291,42 +294,42 @@ const Dashboard = ({
 
                   {tabProjects === tabForSharedProject && (
                     <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                      {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                        name, id, created, active, overall, live, public: isPublic, confirmed, shared,
+                      {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
+                        project, confirmed, shared = true,
                       }) => (
-                        <div key={confirmed ? `${id}-confirmed` : id}>
+                        <div key={confirmed ? `${project.id}-confirmed` : project.id}>
                           {
                             (_isUndefined(confirmed) || confirmed) ? (
-                              <Link to={_replace(routes.project, ':id', id)}>
+                              <Link to={_replace(routes.project, ':id', project.id)}>
                                 <ProjectCart
                                   t={t}
                                   language={language}
-                                  name={name}
-                                  created={created}
+                                  name={project.name}
+                                  created={project.created}
                                   shared={shared}
-                                  active={active}
-                                  isPublic={isPublic}
+                                  active={project.active}
+                                  isPublic={project.public}
                                   confirmed={confirmed}
-                                  overall={overall}
-                                  live={_isNumber(live) ? live : 'N/A'}
+                                  overall={project.overall}
+                                  live={_isNumber(project.live) ? project.live : 'N/A'}
                                 />
                               </Link>
                             ) : (
                               <ProjectCart
                                 t={t}
-                                id={id}
+                                id={project.id}
                                 language={language}
-                                name={name}
-                                created={created}
+                                name={project.name}
+                                created={project.created}
                                 shared={shared}
-                                active={active}
-                                isPublic={isPublic}
-                                overall={overall}
+                                active={project.active}
+                                isPublic={project.public}
+                                overall={project.overall}
                                 confirmed={confirmed}
                                 sharedProjects={user.sharedProjects}
                                 setProjectsShareData={setProjectsShareData}
                                 setUserShareData={setUserShareData}
-                                live={_isNumber(live) ? live : 'N/A'}
+                                live={_isNumber(project.live) ? project.live : 'N/A'}
                                 userSharedUpdate={userSharedUpdate}
                                 sharedProjectError={sharedProjectError}
                                 deleteProjectFailed={deleteProjectFailed}
@@ -372,6 +375,7 @@ const Dashboard = ({
 
 Dashboard.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  sharedProjects: PropTypes.arrayOf(PropTypes.object).isRequired,
   user: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
   error: PropTypes.string,
@@ -384,6 +388,9 @@ Dashboard.propTypes = {
   total: PropTypes.number.isRequired,
   setDashboardPaginationPage: PropTypes.func.isRequired,
   dashboardPaginationPage: PropTypes.number.isRequired,
+  dashboardTabs: PropTypes.string.isRequired,
+  setDashboardTabs: PropTypes.func.isRequired,
+  sharedTotal: PropTypes.number.isRequired,
 }
 
 Dashboard.defaultProps = {

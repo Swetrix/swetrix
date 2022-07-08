@@ -13,6 +13,7 @@ import _join from 'lodash/join'
 import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
+import _map from 'lodash/map'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
@@ -34,12 +35,12 @@ const MAX_ORIGINS_LENGTH = 300
 
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
-  loadProjects, isLoading, projects, showError, removeProject, user,
+  loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
 }) => {
   const { t } = useTranslation('common')
   const { pathname } = useLocation()
   const { id } = useParams()
-  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
+  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
   const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
   const history = useHistory()
 
@@ -93,7 +94,7 @@ const ProjectSettings = ({
           newProject(t('project.settings.created'))
         }
 
-        loadProjects()
+        loadProjects(isSharedProject)
         history.push(routes.dashboard)
       } catch (e) {
         if (isSettings) {
@@ -113,7 +114,7 @@ const ProjectSettings = ({
       setProjectDeleting(true)
       try {
         await deleteProject(id)
-        removeProject(id)
+        removeProject(id, isSharedProject)
         projectDeleted()
         history.push(routes.dashboard)
       } catch (e) {
@@ -308,6 +309,7 @@ ProjectSettings.propTypes = {
   showError: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
+  isSharedProject: PropTypes.bool.isRequired,
 }
 
 export default memo(withAuthentication(ProjectSettings, auth.authenticated))

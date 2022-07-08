@@ -18,17 +18,10 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
 
     let {
       // eslint-disable-next-line prefer-const
-      results, totalMonthlyEvents, shared, total,
+      results, totalMonthlyEvents, total,
     } = yield call(getProjects, take, skip)
-    const projectWithShared = [..._map(shared, (item) => {
-      return {
-        shared: true,
-        confirmed: item.confirmed,
-        ...item.project,
-      }
-    }), ...results]
 
-    const pids = _map(projectWithShared, result => result.id)
+    const pids = _map(results, result => result.id)
     let overall
 
     try {
@@ -37,7 +30,7 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
       debug('failed to overall stats: %s', e)
     }
 
-    results = _map(projectWithShared, res => ({
+    results = _map(results, res => ({
       ...res,
       overall: overall?.[res.id],
     }))
