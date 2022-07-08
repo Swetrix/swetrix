@@ -183,7 +183,7 @@ const Dashboard = ({
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
   const [tabProjects, setTabProjects] = useState(dashboardTabs)
-  const pageAmount = useMemo(() => _ceil(total / ENTRIES_PER_PAGE_DASHBOARD), [total])
+  const pageAmount = useMemo(() => (dashboardTabs === tabForSharedProject ? _ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD) : _ceil(total / ENTRIES_PER_PAGE_DASHBOARD)), [total, sharedTotal, dashboardTabs])
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
@@ -194,8 +194,17 @@ const Dashboard = ({
   }
 
   useEffect(() => {
+    if (sharedTotal <= 0) {
+      setDashboardTabs(tabForOwnedProject)
+      setTabProjects(tabForOwnedProject)
+    }
+
     setDashboardTabs(tabProjects)
-  }, [tabProjects, setDashboardTabs])
+  }, [tabProjects, setDashboardTabs, sharedTotal])
+
+  useEffect(() => {
+    setDashboardPaginationPage(1)
+  }, [tabProjects, setDashboardPaginationPage])
 
   useEffect(() => {
     if (tabProjects === tabForOwnedProject) {
@@ -345,7 +354,7 @@ const Dashboard = ({
 
               {
                 pageAmount > 1 && (
-                  <Pagination page={dashboardPaginationPage} setPage={(page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={total} />
+                  <Pagination page={dashboardPaginationPage} setPage={(page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={tabProjects === tabForSharedProject ? sharedTotal : total} />
                 )
               }
             </div>

@@ -209,13 +209,15 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       if (shared) {
         return {
           ...state,
-          sharedProjects: _filter(state.sharedProjects, (project) => project.id !== pid),
+          sharedProjects: _filter(state.sharedProjects, (item) => item.project.id !== pid),
+          sharedTotal: state.sharedTotal - 1,
         }
       }
 
       return {
         ...state,
         projects: _filter(state.projects, (project) => project.id !== pid),
+        total: state.total - 1,
       }
     }
 

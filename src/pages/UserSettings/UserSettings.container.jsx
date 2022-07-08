@@ -123,7 +123,7 @@ const UserSettingsContainer = () => {
   }
 
   const removeProject = (projectId) => {
-    dispatch(UIActions.removeProject(projectId))
+    dispatch(UIActions.removeProject(projectId, true))
   }
 
   const removeShareProject = (id) => {
@@ -131,7 +131,7 @@ const UserSettingsContainer = () => {
   }
 
   const setProjectsShareData = (data, id) => {
-    dispatch(UIActions.setProjectsShareData(data, id))
+    dispatch(UIActions.setProjectsShareData(data, id, true))
   }
 
   const setUserShareData = (data, id) => {

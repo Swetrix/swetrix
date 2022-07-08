@@ -3,6 +3,7 @@ import UIActions from 'redux/actions/ui'
 import { alertsActions } from 'redux/actions/alerts'
 import { errorsActions } from 'redux/actions/errors'
 
+import { tabForSharedProject } from 'redux/constants'
 import ProjectSettings from './ProjectSettings'
 
 const mapStateToProps = (state) => ({
@@ -10,7 +11,7 @@ const mapStateToProps = (state) => ({
   sharedProjects: state.ui.projects.sharedProjects,
   isLoading: state.ui.projects.isLoading,
   user: state.auth.user,
-  isSharedProject: false,
+  isSharedProject: state.ui.projects.dashboardTabs === tabForSharedProject,
 })
 
 const mapDispatchToProps = (dispatch) => ({
