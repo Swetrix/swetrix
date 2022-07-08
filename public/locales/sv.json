@@ -17,7 +17,8 @@
     "quitProject": "You have quit the project",
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
-    "subscriptionUpdated": "Your subscription has been updated"
+    "subscriptionUpdated": "Your subscription has been updated",
+    "generate2FAError": "Error occurred while generating 2FA code"
   },
   "common": {
     "features": "Funktioner",
@@ -50,7 +51,9 @@
     "accept": "Accept",
     "reject": "Reject",
     "delete": "Delete",
-    "quit": "Quit"
+    "quit": "Quit",
+    "enable": "Enable",
+    "disable": "Disable"
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
@@ -132,7 +135,11 @@
     "signin": {
       "title": "Logga in på ditt konto",
       "forgot": "Glömt lösenord?",
-      "button": "Logga in"
+      "button": "Logga in",
+      "2fa": "Two-factor authentication",
+      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
+      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
+      "6digitCode": "6-digit authentication code"
     },
     "signup": {
       "button": "Registrera dig",
@@ -223,7 +230,21 @@
       "role": "Role",
       "joinedOn": "Joined on"
     },
-    "noSharedProjects": "Nobody is sharing a project with you yet."
+    "noSharedProjects": "Nobody is sharing a project with you yet.",
+    "2fa": "Two-factor authentication (2FA)",
+    "2faEnable": "Enable 2FA to make your account more secure.",
+    "2faEnableBtn": "Enable 2FA",
+    "2faDisableBtn": "Disable 2FA",
+    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
+    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
+    "enter2faToEnable": "Enter your one-time code to enable 2FA",
+    "enter2faToDisable": "Enter your one-time code or a recovery code",
+    "yourOneTimeCode": "Your one-time code",
+    "invalid2fa": "Invalid 2FA code, please try again",
+    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
+    "2faRecoverySaved": "I have saved this recovery code",
+    "2faEnabled": "Two-factor authenticated is enabled on your account.",
+    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below."
   },
   "dashboard": {
     "newProject": "Nytt projekt",
@@ -468,6 +489,7 @@
     "privacy": "Sekretess",
     "terms": "Villkor",
     "status": "Status",
-    "donate": "Donera"
+    "donate": "Donera",
+    "about": "About us"
   }
 }
