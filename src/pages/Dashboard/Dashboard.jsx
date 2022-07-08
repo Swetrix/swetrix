@@ -263,7 +263,7 @@ const Dashboard = ({
                   </nav>
                 )}
               </div>
-              {_isEmpty(projects) ? (
+              {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
                 <NoProjects t={t} />
               ) : (
                 <div className='shadow overflow-hidden sm:rounded-md'>
