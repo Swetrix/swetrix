@@ -258,12 +258,10 @@ const Dashboard = ({
                         key={tab.name}
                         type='button'
                         onClick={() => setTabProjects(tab.name)}
-                        className={cx(
-                          tabProjects === tab.name
-                            ? 'border-indigo-500 text-indigo-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                          'whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md',
-                        )}
+                        className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                          'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
+                          'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
+                        })}
                         aria-current={tab.name === tabProjects ? 'page' : undefined}
                       >
                         {t(tab.label)}
