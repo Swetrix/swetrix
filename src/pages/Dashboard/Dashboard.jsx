@@ -361,8 +361,8 @@ const Dashboard = ({
                     </div>
                   )}
                 </div>
-
               )}
+
               {
                 pageAmount > 1 && (
                   <Pagination page={dashboardPaginationPage} setPage={(page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={tabProjects === tabForSharedProject ? sharedTotal : total} />
