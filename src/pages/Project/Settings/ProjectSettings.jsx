@@ -184,7 +184,7 @@ const ProjectSettings = ({
         })}
       >
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {title}
           </h2>
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>

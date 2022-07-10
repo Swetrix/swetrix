@@ -606,7 +606,7 @@ const ViewProject = ({
           ref={dashboardRef}
         >
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
-            <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 break-words'>
+            <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
               {name}
             </h2>
             <div className='flex mt-3 md:mt-0'>
@@ -799,7 +799,7 @@ const ViewProject = ({
         {!authenticated && (
           <div className='bg-indigo-600'>
             <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-              <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
+              <h2 className='text-3xl sm:text-4xl font-bold tracking-tight text-gray-900'>
                 <span className='block text-white'>{t('project.ad')}</span>
                 <span className='block text-gray-300'>
                   {t('main.exploreService')}

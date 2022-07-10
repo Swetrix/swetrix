@@ -121,7 +121,7 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
       <Title title={t('titles.signin')}>
         <div className='min-h-page bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
           <form className='max-w-prose mx-auto' onSubmit={_submit2FA}>
-            <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+            <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
               {t('auth.signin.2fa')}
             </h2>
             <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
@@ -163,7 +163,7 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
     <Title title={t('titles.signin')}>
       <div className='min-h-page bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {t('auth.signin.title')}
           </h2>
           <Input

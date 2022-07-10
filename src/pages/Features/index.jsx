@@ -16,7 +16,7 @@ const Features = () => {
     <Title title={t('titles.features')}>
       <div className='bg-gray-50 dark:bg-gray-800'>
         <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-          <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight'>
+          <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('titles.features')}
           </h1>
 
@@ -62,7 +62,7 @@ const Features = () => {
       </div>
       <div className='bg-indigo-600 dark:bg-gray-750'>
         <div className='w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-          <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50'>
+          <h2 className='text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
             <span className='block text-white'>
               {t('features.ready')}
             </span>

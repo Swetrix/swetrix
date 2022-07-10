@@ -243,12 +243,12 @@ const Pricing = ({ t, language }) => {
                     )}
                     <p className='mt-4'>
                       {tier.planCode === 'free' ? (
-                        <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
+                        <span className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
                           {t('pricing.free')}
                         </span>
                       ) : (
                         <>
-                          <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
+                          <span className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
                             $
                             {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
                           </span>
