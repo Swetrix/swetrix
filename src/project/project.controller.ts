@@ -451,6 +451,7 @@ export class ProjectController {
     }
 
     if (isSelfhosted) {
+      // todo: delete share for selfhosted
       await deleteProjectClickhouse(id)
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
@@ -484,6 +485,7 @@ export class ProjectController {
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
 
       try {
+        await this.projectService.deleteMultipleShare(`project = "${id}"`)
         await this.projectService.delete(id)
         await deleteProjectRedis(id)
         await clickhouse.query(query1).toPromise()

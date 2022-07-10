@@ -116,7 +116,7 @@ export class ProjectService {
       .execute()
   }
 
-  async deleteMultipleShare(where): Promise<any> {
+  async deleteMultipleShare(where: string): Promise<any> {
     return this.projectShareRepository.createQueryBuilder()
       .delete()
       .where(where)
