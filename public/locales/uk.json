@@ -225,6 +225,7 @@
     "quitProject": "Ви впевнені, що хочете покинути цей проєкт?",
     "quitProjectTitle": "Покинути {{project}}?",
     "shared": "Спільні проєкти",
+    "owned": "Власні проєкти",
     "sharedTable": {
       "project": "Проєкт",
       "role": "Роль",

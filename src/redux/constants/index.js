@@ -172,7 +172,7 @@ export const tabForSharedProject = 'shared'
 export const tabsForDashboard = [
   {
     name: tabForOwnedProject,
-    label: 'Owned projects',
+    label: 'profileSettings.owned',
   },
   {
     name: tabForSharedProject,

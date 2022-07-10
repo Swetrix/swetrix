@@ -225,6 +225,7 @@
     "quitProject": "Are you sure you want to quit this project?",
     "quitProjectTitle": "Quit {{project}}?",
     "shared": "Shared projects",
+    "owned": "Owned projects",
     "sharedTable": {
       "project": "Project",
       "role": "Role",
