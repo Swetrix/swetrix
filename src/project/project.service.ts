@@ -74,6 +74,24 @@ export class ProjectService {
     })
   }
 
+  async paginateShared(options: PaginationOptionsInterface, where: Record<string, unknown> | undefined): Promise<Pagination<ProjectShare>> {
+    const [results, total] = await this.projectShareRepository.findAndCount({
+      take: options.take || 100,
+      skip: options.skip || 0,
+      where,
+      order: {
+        project: 'ASC',
+      },
+      relations: ['project'],
+    })
+
+    return new Pagination<ProjectShare>({
+      // results: processProjectsUser(results),
+      results,
+      total,
+    })
+  }
+
   async count(): Promise<number> {
     return await this.projectsRepository.count()
   }
@@ -98,7 +116,7 @@ export class ProjectService {
       .execute()
   }
 
-  async deleteMultipleShare(where): Promise<any> {
+  async deleteMultipleShare(where: string): Promise<any> {
     return this.projectShareRepository.createQueryBuilder()
       .delete()
       .where(where)

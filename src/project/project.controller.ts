@@ -13,6 +13,7 @@ import {
   NotFoundException,
   ForbiddenException,
   Headers,
+  NotImplementedException,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -119,6 +120,7 @@ export class ProjectController {
     @Query('skip') skip: number | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
+
     if (isSelfhosted) {
       const results = await getProjectsClickhouse()
       const formatted = _map(results, this.projectService.formatFromClickhouse)
@@ -136,20 +138,44 @@ export class ProjectController {
         { take, skip },
         where,
       )
-      const shared = await this.projectService.findShare({
-        where: {
-          user: userId,
-        },
-        relations: ['project'],
-      })
       const totalMonthlyEvents = await this.projectService.getRedisCount(
         userId,
       )
 
       return {
         ...paginated,
-        shared,
         totalMonthlyEvents,
+      }
+    }
+  }
+
+  @Get('/shared')
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiResponse({ status: 200, type: [Project] })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getShared(
+    @CurrentUserId() userId: string,
+    @Query('take') take: number | undefined,
+    @Query('skip') skip: number | undefined,
+  ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
+    this.logger.log({ userId, take, skip }, 'GET /project/shared')
+
+    if (isSelfhosted) {
+      throw new NotImplementedException('This feature is not available on selfhosted yet')
+    } else {
+      const where = Object()
+      where.user = userId
+
+      const paginated = await this.projectService.paginateShared(
+        { take, skip },
+        where,
+      )
+
+      return {
+        ...paginated,
       }
     }
   }
@@ -425,6 +451,7 @@ export class ProjectController {
     }
 
     if (isSelfhosted) {
+      // todo: delete share for selfhosted
       await deleteProjectClickhouse(id)
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
@@ -458,6 +485,7 @@ export class ProjectController {
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
 
       try {
+        await this.projectService.deleteMultipleShare(`project = "${id}"`)
         await this.projectService.delete(id)
         await deleteProjectRedis(id)
         await clickhouse.query(query1).toPromise()
