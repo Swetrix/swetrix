@@ -1,13 +1,20 @@
 import { types } from './types'
 
-const loadProjects = () => ({
+const loadProjects = (take, skip) => ({
   type: types.LOAD_PROJECTS,
+  payload: { take, skip },
 })
 
-const setProjects = (projects) => ({
+const loadSharedProjects = (take, skip) => ({
+  type: types.LOAD_SHARED_PROJECTS,
+  payload: { take, skip },
+})
+
+const setProjects = (projects, shared) => ({
   type: types.SET_PROJECTS,
   payload: {
     projects,
+    shared,
   },
 })
 
@@ -18,6 +25,21 @@ const setTotalMonthlyEvents = (totalMonthlyEvents) => ({
   },
 })
 
+const setTotal = (total, shared) => ({
+  type: types.SET_TOTAL,
+  payload: {
+    total,
+    shared,
+  },
+})
+
+const setDashboardPaginationPage = (page) => ({
+  type: types.SET_DASHBOARD_PAGINATION_PAGE,
+  payload: {
+    page,
+  },
+})
+
 const setShowNoEventsLeftBanner = (showNoEventsLeftBanner) => ({
   type: types.SET_SHOW_NO_EVENTS_LEFT,
   payload: {
@@ -25,31 +47,34 @@ const setShowNoEventsLeftBanner = (showNoEventsLeftBanner) => ({
   },
 })
 
-const setLiveStats = (data) => ({
+const setLiveStats = (data, shared) => ({
   type: types.SET_LIVE_STATS,
   payload: {
     data,
+    shared,
   },
 })
 
-const setLiveStatsForProject = (id, count) => ({
+const setLiveStatsForProject = (id, count, shared) => ({
   type: types.SET_LIVE_STATS_PROJECT,
   payload: {
-    id, count,
+    id, count, shared,
   },
 })
 
-const setPublicProject = (project) => ({
+const setPublicProject = (project, shared) => ({
   type: types.SET_PUBLIC_PROJECT,
   payload: {
     project,
+    shared,
   },
 })
 
-const removeProject = (pid) => ({
+const removeProject = (pid, shared) => ({
   type: types.REMOVE_PROJECT,
   payload: {
     pid,
+    shared,
   },
 })
 
@@ -109,11 +134,12 @@ const setPaddleLastEvent = (event) => ({
   },
 })
 
-const setProjectsShareData = (data, id) => ({
+const setProjectsShareData = (data, id, shared) => ({
   type: types.SET_PROJECTS_SHARE_DATA,
   payload: {
     data,
     id,
+    shared,
   },
 })
 
@@ -122,8 +148,14 @@ const shareVerifyAsync = (data, successfulCallback, errorCallback) => ({
   payload: { data, successfulCallback, errorCallback },
 })
 
+const setDashboardTabs = (tab) => ({
+  type: types.SET_DASHBOARD_TABS,
+  payload: { tab },
+})
+
 const UIActions = {
   loadProjects,
+  loadSharedProjects,
   setProjects,
   setProjectsError,
   setProjectsLoading,
@@ -138,9 +170,12 @@ const UIActions = {
   setGeneralStats,
   setPaddleLastEvent,
   setTotalMonthlyEvents,
+  setDashboardPaginationPage,
+  setTotal,
   setShowNoEventsLeftBanner,
   setProjectsShareData,
   shareVerifyAsync,
+  setDashboardTabs,
 }
 
 export default UIActions

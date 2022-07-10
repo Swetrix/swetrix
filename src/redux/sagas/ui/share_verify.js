@@ -7,6 +7,7 @@ export default function* shareVerify({ payload: { data, successfulCallback, erro
   try {
     yield call(verifyShare, data)
     yield put(UIActions.loadProjects())
+    yield put(UIActions.loadSharedProjects())
     successfulCallback()
   } catch (error) {
     errorCallback(error)

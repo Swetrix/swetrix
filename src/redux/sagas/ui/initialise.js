@@ -12,6 +12,7 @@ export default function* initialise() {
 
     if (token) {
       yield put(UIActions.loadProjects())
+      yield put(UIActions.loadSharedProjects())
     }
   } catch (e) {
     debug('An error occured whilst initialising: %s', e)

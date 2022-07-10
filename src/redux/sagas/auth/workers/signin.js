@@ -24,6 +24,7 @@ export default function* singinWorker({ payload: { credentials, callback } }) {
     yield put(authActions.loginSuccess(user))
     yield call(setAccessToken, accessToken, dontRemember)
     yield put(UIActions.loadProjects())
+    yield put(UIActions.loadSharedProjects())
     callback(true, false)
   } catch (error) {
     const err = _isObject(error) ? error.message : error

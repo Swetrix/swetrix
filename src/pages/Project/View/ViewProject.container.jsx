@@ -1,10 +1,12 @@
 import { connect } from 'react-redux'
 import { errorsActions } from 'redux/actions/errors'
 import UIActions from 'redux/actions/ui'
+
 import ViewProject from './ViewProject'
 
 const mapStateToProps = (state) => ({
   projects: state.ui.projects.projects,
+  sharedProjects: state.ui.projects.sharedProjects,
   isLoading: state.ui.projects.isLoading,
   cache: state.ui.cache.analytics,
   projectViewPrefs: state.ui.cache.projectViewPrefs,

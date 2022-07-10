@@ -12,6 +12,7 @@ const mapDispatchToProps = (dispatch) => ({
   loginSuccess: (user) => {
     dispatch(authActions.loginSuccess(user))
     dispatch(UIActions.loadProjects())
+    dispatch(UIActions.loadSharedProjects())
   },
   loginFailed: (error) => {
     dispatch(errorsActions.loginFailed(error))

@@ -317,14 +317,14 @@ const Filters = ({
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
-  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
+  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
@@ -837,6 +837,7 @@ const ViewProject = ({
 
 ViewProject.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  sharedProjects: PropTypes.arrayOf(PropTypes.object).isRequired,
   cache: PropTypes.objectOf(PropTypes.object).isRequired,
   projectViewPrefs: PropTypes.objectOf(PropTypes.object).isRequired,
   showError: PropTypes.func.isRequired,

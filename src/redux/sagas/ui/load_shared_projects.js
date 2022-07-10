@@ -7,21 +7,29 @@ import UIActions from 'redux/actions/ui'
 
 import { ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
 import {
-  getProjects, getOverallStats, getLiveVisitors,
+  getSharedProjects, getOverallStats, getLiveVisitors,
 } from '../../../api'
 
 const debug = Debug('swetrix:rx:s:load-projects')
 
-export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0 } }) {
+export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0 } }) {
   try {
     yield put(UIActions.setProjectsLoading(true))
 
     let {
       // eslint-disable-next-line prefer-const
       results, totalMonthlyEvents, total,
-    } = yield call(getProjects, take, skip)
-
-    const pids = _map(results, result => result.id)
+    } = yield call(getSharedProjects, take, skip)
+    const projectsWithShared = _map(results, (project) => {
+      return {
+        ...project,
+        project: {
+          ...project.project,
+          shared: true,
+        },
+      }
+    })
+    const pids = _map(projectsWithShared, ({ project }) => project.id)
     let overall
 
     try {
@@ -30,17 +38,20 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
       debug('failed to overall stats: %s', e)
     }
 
-    results = _map(results, res => ({
+    results = _map(projectsWithShared, res => ({
       ...res,
-      overall: overall?.[res.id],
+      project: {
+        ...res.project,
+        overall: overall?.[res.project.id],
+      },
     }))
 
-    yield put(UIActions.setProjects(results))
+    yield put(UIActions.setProjects(results, true))
     yield put(UIActions.setTotalMonthlyEvents(totalMonthlyEvents))
-    yield put(UIActions.setTotal(total))
+    yield put(UIActions.setTotal(total, true))
 
     const liveStats = yield call(getLiveVisitors, pids)
-    yield put(UIActions.setLiveStats(liveStats))
+    yield put(UIActions.setLiveStats(liveStats, true))
   } catch ({ message }) {
     if (_isString(message)) {
       yield put(UIActions.setProjectsError(message))
