@@ -272,86 +272,97 @@ const Dashboard = ({
                   </nav>
                 )}
               </div>
-              {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
-                <NoProjects t={t} />
-              ) : (
-                <div className='shadow overflow-hidden sm:rounded-md'>
-                  {tabProjects === tabForOwnedProject && (
-                    <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                      {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                        name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
-                      }) => (
-                        <div key={confirmed ? `${id}-confirmed` : id}>
-                          <Link to={_replace(routes.project, ':id', id)}>
-                            <ProjectCart
-                              t={t}
-                              language={language}
-                              name={name}
-                              created={created}
-                              shared={shared}
-                              active={active}
-                              isPublic={isPublic}
-                              confirmed={confirmed}
-                              overall={overall}
-                              live={_isNumber(live) ? live : 'N/A'}
-                            />
-                          </Link>
-                        </div>
-                      ))}
-                    </ul>
-                  )}
 
-                  {tabProjects === tabForSharedProject && (
-                    <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                      {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
-                        project, confirmed, shared = true,
-                      }) => (
-                        <div key={confirmed ? `${project.id}-confirmed` : project.id}>
-                          {
-                            (_isUndefined(confirmed) || confirmed) ? (
-                              <Link to={_replace(routes.project, ':id', project.id)}>
-                                <ProjectCart
-                                  t={t}
-                                  language={language}
-                                  name={project.name}
-                                  created={project.created}
-                                  shared={shared}
-                                  active={project.active}
-                                  isPublic={project.public}
-                                  confirmed={confirmed}
-                                  overall={project.overall}
-                                  live={_isNumber(project.live) ? project.live : 'N/A'}
-                                />
-                              </Link>
-                            ) : (
+              {tabProjects === tabForOwnedProject && (
+                <div>
+                  {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
+                    <NoProjects t={t} />
+                  ) : (
+                    <div className='shadow overflow-hidden sm:rounded-md'>
+                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                        {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
+                          name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
+                        }) => (
+                          <div key={confirmed ? `${id}-confirmed` : id}>
+                            <Link to={_replace(routes.project, ':id', id)}>
                               <ProjectCart
                                 t={t}
-                                id={project.id}
                                 language={language}
-                                name={project.name}
-                                created={project.created}
+                                name={name}
+                                created={created}
                                 shared={shared}
-                                active={project.active}
-                                isPublic={project.public}
-                                overall={project.overall}
+                                active={active}
+                                isPublic={isPublic}
                                 confirmed={confirmed}
-                                sharedProjects={user.sharedProjects}
-                                setProjectsShareData={setProjectsShareData}
-                                setUserShareData={setUserShareData}
-                                live={_isNumber(project.live) ? project.live : 'N/A'}
-                                userSharedUpdate={userSharedUpdate}
-                                sharedProjectError={sharedProjectError}
-                                deleteProjectFailed={deleteProjectFailed}
+                                overall={overall}
+                                live={_isNumber(live) ? live : 'N/A'}
                               />
-                            )
-                          }
-                        </div>
-                      ))}
-                    </ul>
+                            </Link>
+                          </div>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               )}
 
+              {tabProjects === tabForSharedProject && (
+                <div>
+                  {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
+                    <NoProjects t={t} />
+                  ) : (
+                    <div className='shadow overflow-hidden sm:rounded-md'>
+                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                        {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
+                          project, confirmed, shared = true,
+                        }) => (
+                          <div key={confirmed ? `${project.id}-confirmed` : project.id}>
+                            {
+                                (_isUndefined(confirmed) || confirmed) ? (
+                                  <Link to={_replace(routes.project, ':id', project.id)}>
+                                    <ProjectCart
+                                      t={t}
+                                      language={language}
+                                      name={project.name}
+                                      created={project.created}
+                                      shared={shared}
+                                      active={project.active}
+                                      isPublic={project.public}
+                                      confirmed={confirmed}
+                                      overall={project.overall}
+                                      live={_isNumber(project.live) ? project.live : 'N/A'}
+                                    />
+                                  </Link>
+                                ) : (
+                                  <ProjectCart
+                                    t={t}
+                                    id={project.id}
+                                    language={language}
+                                    name={project.name}
+                                    created={project.created}
+                                    shared={shared}
+                                    active={project.active}
+                                    isPublic={project.public}
+                                    overall={project.overall}
+                                    confirmed={confirmed}
+                                    sharedProjects={user.sharedProjects}
+                                    setProjectsShareData={setProjectsShareData}
+                                    setUserShareData={setUserShareData}
+                                    live={_isNumber(project.live) ? project.live : 'N/A'}
+                                    userSharedUpdate={userSharedUpdate}
+                                    sharedProjectError={sharedProjectError}
+                                    deleteProjectFailed={deleteProjectFailed}
+                                  />
+                                )
+                              }
+                          </div>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+              )}
               {
                 pageAmount > 1 && (
                   <Pagination page={dashboardPaginationPage} setPage={(page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={tabProjects === tabForSharedProject ? sharedTotal : total} />
