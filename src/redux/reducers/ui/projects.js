@@ -9,6 +9,7 @@ const getInitialState = () => {
     projects: [],
     sharedProjects: [],
     isLoading: true,
+    isLoadingShared: true,
     error: null,
     totalMonthlyEvents: null,
     total: 0,
@@ -26,6 +27,7 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       if (shared) {
         return {
           ...state,
+          isLoadingShared: false,
           sharedProjects: projects,
         }
       }
@@ -221,7 +223,13 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
     }
 
     case types.SET_PROJECTS_LOADING: {
-      const { isLoading } = payload
+      const { isLoading, shared = false } = payload
+      if (shared) {
+        return {
+          ...state,
+          isLoadingShared: isLoading,
+        }
+      }
       return {
         ...state,
         isLoading,
