@@ -85,10 +85,11 @@ const setProjectsError = (error) => ({
   },
 })
 
-const setProjectsLoading = (isLoading) => ({
+const setProjectsLoading = (isLoading, shared) => ({
   type: types.SET_PROJECTS_LOADING,
   payload: {
     isLoading,
+    shared,
   },
 })
 
