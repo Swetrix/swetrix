@@ -14,8 +14,6 @@ const debug = Debug('swetrix:rx:s:load-projects')
 
 export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0 } }) {
   try {
-    yield put(UIActions.setProjectsLoading(true))
-
     let {
       // eslint-disable-next-line prefer-const
       results, totalMonthlyEvents, total,
