@@ -27,7 +27,6 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
         return {
           ...state,
           sharedProjects: projects,
-          isLoading: false,
         }
       }
 
