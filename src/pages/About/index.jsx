@@ -84,7 +84,7 @@ const About = () => (
   <Title title='About us'>
     <div className='bg-gray-50 dark:bg-gray-800 min-h-min-footer'>
       <div className='max-w-prose md:max-w-none md:w-8/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-        <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
           About us
         </h1>
         <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
@@ -99,7 +99,7 @@ const About = () => (
           We will not and will never sell, abuse, share or otherwise negatively manipulate your data. Our priority is simplicity and transparency.
         </p>
 
-        <h2 className='text-3xl mt-4 font-extrabold text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h2 className='text-3xl mt-4 font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
           Meet our team
         </h2>
 

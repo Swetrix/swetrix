@@ -458,7 +458,7 @@ const UserSettings = ({
     <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {t('titles.profileSettings')}
           </h2>
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
