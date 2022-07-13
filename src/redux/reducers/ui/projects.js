@@ -3,6 +3,7 @@ import _filter from 'lodash/filter'
 import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import { tabForOwnedProject } from 'redux/constants'
+import { setItem, getItem } from 'utils/localstorage'
 
 const getInitialState = () => {
   return {
@@ -15,7 +16,7 @@ const getInitialState = () => {
     total: 0,
     sharedTotal: 0,
     dashboardPaginationPage: 1,
-    dashboardTabs: tabForOwnedProject,
+    dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
   }
 }
 
@@ -238,6 +239,9 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
 
     case types.SET_DASHBOARD_TABS: {
       const { tab } = payload
+
+      setItem('dashboardTabs', tab)
+
       return {
         ...state,
         dashboardTabs: tab,
