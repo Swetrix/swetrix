@@ -25,7 +25,7 @@ import { alertsActions } from 'redux/actions/alerts'
 import UIActions from 'redux/actions/ui'
 import { authMe } from './api'
 
-const MainPage = lazy(() => import('pages/MainPage'))
+const MainPage = lazy(() => import('pages/MainPage/NewMainPage'))
 const SignUp = lazy(() => import('pages/Auth/Signup'))
 const SignIn = lazy(() => import('pages/Auth/Signin'))
 const ForgotPassword = lazy(() => import('pages/Auth/ForgotPassword'))
