@@ -263,7 +263,7 @@ const Main = () => {
               </div>
             </div>
             {/* Core features section */}
-            <section className='bg-white pt-20 relative'>
+            <section className='bg-white pt-20 relative pb-14'>
               <h1 className='mx-auto text-[#293451] font-bold text-[45px] w-fit'>Core features</h1>
               <div className='mt-[60px] flex items-center max-w-[1300px] w-full mx-auto flex-wrap justify-center xl:justify-between'>
                 <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
@@ -314,7 +314,23 @@ const Main = () => {
                 </div>
               </div>
             </section>
-
+            <section className='bg-white pt-24 sm:px-5 px-3 relative'>
+              <h1 className='mx-auto text-[#293451] font-bold text-[30px] sm:text-[45px] w-fit text-center'>Support all popular platforms</h1>
+              <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-[1300px] w-full mx-auto justify-between'>
+                <img src='/assets/supports/Slack.png' alt='Slack' />
+                <img src='/assets/supports/NuxtJS.png' alt='NuxtJS' />
+                <img src='/assets/supports/Webflow.png' alt='Webflow' />
+                <img src='/assets/supports/next-js.png' alt='next-js' />
+                <img src='/assets/supports/Notion.png' alt='Notion' />
+                <img src='/assets/supports/react.png' alt='react' />
+                <img src='/assets/supports/angular.png' alt='angular' />
+                <img src='/assets/supports/WordPress.png' alt='WordPress' />
+                <img src='/assets/supports/Wix.png' alt='Wix' />
+                <img src='/assets/supports/ghost.png' alt='ghost' />
+                <img src='/assets/supports/Gatsby.png' alt='Gatsby' />
+                <img src='/assets/supports/Cloudflare.png' alt='Cloudflare' />
+              </div>
+            </section>
           </main>
         </div>
         {/* form singup */}
