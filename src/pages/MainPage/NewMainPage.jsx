@@ -90,6 +90,7 @@ const Main = () => {
       <div>
         <div className='bg-gray-800'>
           <main>
+            {/* first block with live demo */}
             <div className='relativ overflow-x-hidden'>
               <div
                 className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'
@@ -136,6 +137,7 @@ const Main = () => {
             </div>
 
             <div className='bg-white px-4 pb-24'>
+              {/* section Core Analytics Features */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
                 <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Core Analytics Features' />
                 <div className='max-w-[516px]'>
@@ -151,6 +153,7 @@ const Main = () => {
                   </Button>
                 </div>
               </section>
+              {/* section Marketplace & build-in Extensions */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
                 <div className='max-w-[516px]'>
                   <h1 className='font-extrabold text-4xl text-[#293451]'>Marketplace & build-in Extensions</h1>
@@ -167,6 +170,7 @@ const Main = () => {
                 </div>
                 <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Core Analytics Features' />
               </section>
+              {/* section Privacy compliance. */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
                 <img className='md:max-w-[360px] lg:max-w-full' src='/assets/privacy-section.png' alt='Core Analytics Features' />
                 <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0'>
@@ -218,6 +222,7 @@ const Main = () => {
                 </div>
               </section>
             </div>
+            {/*  block singup */}
             <div className='overflow-hidden'>
               <div className='py-24 max-w-[1280px] w-full flex justify-between items-center mx-auto'>
                 <div className='mt-16 sm:mt-24 lg:mt-0 lg:col-span-6'>
