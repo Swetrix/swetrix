@@ -314,7 +314,7 @@ const Main = () => {
                 </div>
               </div>
             </section>
-            <section className='bg-white pt-24 sm:px-5 px-3 relative'>
+            <section className='bg-white pt-24 sm:px-5 px-3 relative pb-28'>
               <h1 className='mx-auto text-[#293451] font-bold text-[30px] sm:text-[45px] w-fit text-center'>Support all popular platforms</h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-[1300px] w-full mx-auto justify-between'>
                 <img src='/assets/supports/Slack.png' alt='Slack' />
@@ -331,6 +331,73 @@ const Main = () => {
                 <img src='/assets/supports/Cloudflare.png' alt='Cloudflare' />
               </div>
             </section>
+            <div className='overflow-hidden'>
+              <div className='relative max-w-[1300px] w-full mx-auto'>
+                <div
+                  className='absolute w-[446px] h-[558px] z-40 left-[10vw] -top-[10vh]'
+                  style={{
+                    background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
+                    filter: 'blur(200px)',
+                    transform: 'rotate(-50.32deg)',
+                  }}
+                />
+                <section className='relative z-50 px-3'>
+                  <h1 className='mt-20 text-center text-[30px] md:text-[45px] text-white font-extrabold max-w-[512px] w-full mx-auto'>Marketplace and extension features</h1>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-24 justify-between justify-items-center text-white pt-20 pb-36'>
+                    <div className='max-w-[290px] w-full'>
+                      <div className='flex items-center'>
+                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>1</span>
+                        <h2 className='font-semibold text-[20px]'>Аdditional features</h2>
+                      </div>
+                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
+                    </div>
+                    <div className='max-w-[290px] w-full'>
+                      <div className='flex items-center'>
+                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>2</span>
+                        <h2 className='font-semibold text-[20px]'>Open source code</h2>
+                      </div>
+                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
+                    </div>
+                    <div className='max-w-[290px] w-full'>
+                      <div className='flex items-center'>
+                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>3</span>
+                        <h2 className='font-semibold text-[20px]'>Marketplace</h2>
+                      </div>
+                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
+                    </div>
+                    <div className='max-w-[290px] w-full'>
+                      <div className='flex items-center'>
+                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>4</span>
+                        <h2 className='font-semibold text-[20px]'>Easy integration</h2>
+                      </div>
+                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
+                    </div>
+                    <div className='max-w-[290px] w-full'>
+                      <div className='flex items-center'>
+                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>5</span>
+                        <h2 className='font-semibold text-[20px]'>Solve your tasks, not create</h2>
+                      </div>
+                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
+                    </div>
+                    <div className='max-w-[290px] w-full'>
+                      <div className='flex items-center'>
+                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>6</span>
+                        <h2 className='font-semibold text-[20px]'>Share your best solutions</h2>
+                      </div>
+                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
+                    </div>
+                  </div>
+                </section>
+                <div
+                  className='absolute w-[446px] h-[558px] z-40 left-[70vw] top-[30vh]'
+                  style={{
+                    background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
+                    filter: 'blur(200px)',
+                    transform: 'rotate(-50.32deg)',
+                  }}
+                />
+              </div>
+            </div>
           </main>
         </div>
         {/* form singup */}
