@@ -252,9 +252,7 @@ const Main = () => {
                       filter: 'blur(150px)',
                       transform: 'rotate(-50.32deg)',
                     }}
-                  >
-                    <p className='sr-only'>elipse gradient</p>
-                  </div>
+                  />
                   <img className='relative z-50' src='/assets/section-singup-image.png' alt='Swetrix core analytics' />
                 </div>
               </div>
