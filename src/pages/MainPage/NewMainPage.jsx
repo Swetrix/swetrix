@@ -224,8 +224,8 @@ const Main = () => {
             </div>
             {/*  block singup */}
             <div className='overflow-hidden'>
-              <div className='py-24 max-w-[1280px] w-full flex justify-between items-center mx-auto'>
-                <div className='mt-16 sm:mt-24 lg:mt-0 lg:col-span-6'>
+              <div className='py-24 max-w-[1280px] w-full flex justify-between items-center mx-auto px-5'>
+                <div className='relative z-50 mt-16 sm:mt-24 lg:mt-0 lg:col-span-6'>
                   <div className='bg-white dark:bg-gray-700 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
                       <p className='text-lg text-gray-900 dark:text-white text-center'>
@@ -398,6 +398,62 @@ const Main = () => {
                 />
               </div>
             </div>
+            <Pricing t={t} language={language} />
+            <section className='bg-white pt-20 pb-20'>
+              <div className='max-w-[1000px] w-full mx-auto'>
+                <h1 className='text-[#293451] text-center font-extrabold text-[45px]'>Testimonials</h1>
+                <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
+                  <div
+                    className='max-w-[310px] w-full'
+                    style={{
+                      boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
+                      borderRadius: '100px 30px 30px 30px',
+                    }}
+                  >
+                    <img className='mx-auto relative -top-4' src='/assets/Quote.png' alt='quote' />
+                    <div className='px-14 mb-12'>
+                      <p className='text-[#707482] text-[14px] mt-8'>Joe Massad</p>
+                      <p className='text-[#212936] text-[18px] mt-2 leading-9'>
+                        Start out for free, no credit card needed.
+                        When your business grows, you can upgrade your plan at any time.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className='max-w-[310px] w-full md:mx-4 mt-10 md:mt-0'
+                    style={{
+                      boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
+                      borderRadius: '100px 30px 30px 30px',
+                    }}
+                  >
+                    <img className='mx-auto relative -top-4' src='/assets/Quote-yellow.png' alt='quote' />
+                    <div className='px-14 mb-12'>
+                      <p className='text-[#707482] text-[14px] mt-8'>Joe Massad</p>
+                      <p className='text-[#212936] text-[18px] mt-2 leading-9'>
+                        Start out for free, no credit card needed.
+                        When your business grows, you can upgrade your plan at any time.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className='max-w-[310px] w-full mt-10 md:mt-0'
+                    style={{
+                      boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
+                      borderRadius: '100px 30px 30px 30px',
+                    }}
+                  >
+                    <img className='mx-auto relative -top-4' src='/assets/Quote.png' alt='quote' />
+                    <div className='px-14 mb-12'>
+                      <p className='text-[#707482] text-[14px] mt-8'>Joe Massad</p>
+                      <p className='text-[#212936] text-[18px] mt-2 leading-9'>
+                        Start out for free, no credit card needed.
+                        When your business grows, you can upgrade your plan at any time.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
           </main>
         </div>
         {/* form singup */}
@@ -505,7 +561,6 @@ const Main = () => {
           </div>
         </div> */}
 
-        <Pricing t={t} language={language} />
         <FAQs t={t} />
 
         <div className='bg-white dark:bg-gray-750'>
