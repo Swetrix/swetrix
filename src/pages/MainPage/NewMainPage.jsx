@@ -224,8 +224,8 @@ const Main = () => {
             </div>
             {/*  block singup */}
             <div className='overflow-hidden'>
-              <div className='py-24 max-w-[1280px] w-full flex justify-between items-center mx-auto px-5'>
-                <div className='relative z-50 mt-16 sm:mt-24 lg:mt-0 lg:col-span-6'>
+              <div className='py-24 max-w-[1280px] w-full flex justify-center md:justify-between items-center mx-auto px-5'>
+                <div className='relative z-50 lg:col-span-6 rounded-xl'>
                   <div className='bg-white dark:bg-gray-700 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
                       <p className='text-lg text-gray-900 dark:text-white text-center'>
@@ -258,7 +258,7 @@ const Main = () => {
                       transform: 'rotate(-50.32deg)',
                     }}
                   />
-                  <img className='relative z-50' src='/assets/section-singup-image.png' alt='Swetrix core analytics' />
+                  <img className='relative z-50 hidden md:block' src='/assets/section-singup-image.png' alt='Swetrix core analytics' />
                 </div>
               </div>
             </div>
