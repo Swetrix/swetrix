@@ -454,6 +454,28 @@ const Main = () => {
                 </div>
               </div>
             </section>
+
+            <div className='bg-white px-4 md:px-8'>
+              <section className='max-w-[1300px] w-full mx-auto bg-[#212936] overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
+                <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
+                  <div className='max-w-[430px] w-full pt-[60px] pr-3 mb-16 md:mb-0'>
+                    <h1 className='font-bold text-[24px] leading-9 sm:text-[36px] sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[36px] lg:leading-[48px] text-white mb-3'>
+                      <span className='text-transparent bg-clip-text' style={{ background: 'linear-gradient(91.37deg, #4E46DD 10%, #5C3CDA 55%, #A274EF 100%)' }}>Open source</span>
+                      {' '}
+                      analytics - a powerful and simple tool.
+                    </h1>
+                    <p className='text-[#C8D1E2] mb-9 font-medium text-base sm:text-lg'>Yes, it&apos;s standard. But keep track of exactly where your users are from as it is.</p>
+                    <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
+                      <span className='text-base font-semibold mr-1'>Start for free</span>
+                      <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
+                    </Link>
+                  </div>
+                  <div className='max-w-md xl:max-w-lg block h-[450px]'>
+                    <img className='rounded-xl border' style={{ minheight: '600px', minWidth: '880px' }} src='/assets/mainSectionDemo.png' width='100%' height='auto' alt='demo-main-section' />
+                  </div>
+                </div>
+              </section>
+            </div>
           </main>
         </div>
         {/* form singup */}
