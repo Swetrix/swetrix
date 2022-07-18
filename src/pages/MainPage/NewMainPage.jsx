@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { ExternalLinkIcon, ArrowSmRightIcon, CheckCircleIcon } from '@heroicons/react/solid'
+import { CheckCircleIcon as CheckCircleIconOutline, CogIcon, ClockIcon } from '@heroicons/react/outline'
 import _map from 'lodash/map'
 
 import routes from 'routes'
@@ -476,6 +477,150 @@ const Main = () => {
                 </div>
               </section>
             </div>
+
+            <section className='bg-white px-4 md:px-8 pt-24'>
+              <h1 className='text-[#293451] text-[45px] font-extrabold text-center'>Checklist</h1>
+              <div className='flex flex-col lg:flex-row items-center justify-between max-w-[1080px] w-full mx-auto mt-16'>
+                <div
+                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden'
+                  style={{ borderRadius: '20px 10px 10px 10px' }}
+                >
+                  <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#FDBC64] py-4'>
+                    <h2 className='text-[20px] text-white font-semibold'>Done</h2>
+                    <CheckCircleIconOutline className='w-[26px] h-[26px] text-white' />
+                  </div>
+                  <div className='mt-14 px-11 pb-12'>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      {' '}
+                      Up to 5,000 visits per month.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      {' '}
+                      Add up to 10 websites.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      {' '}
+                      Unlimited data exports.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      {' '}
+                      100% data ownership.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      {' '}
+                      No cookie banners required.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      {' '}
+                      Shared & Public Dashboards.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center'>
+                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      {' '}
+                      Email reports.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden my-[38px] lg:my-0'
+                  style={{ borderRadius: '20px 10px 10px 10px' }}
+                >
+                  <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#9970E7] py-4'>
+                    <h2 className='text-[20px] text-white font-semibold'>In progress</h2>
+                    <CogIcon alt='Swetrix settings icon' className='w-[26px] h-[26px] text-white' />
+                  </div>
+                  <div className='mt-14 px-11 pb-12'>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      {' '}
+                      Up to 5,000 visits per month.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      {' '}
+                      Add up to 10 websites.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      {' '}
+                      Unlimited data exports.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      {' '}
+                      100% data ownership.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      {' '}
+                      No cookie banners required.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      {' '}
+                      Shared & Public Dashboards.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center'>
+                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      {' '}
+                      Email reports.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden'
+                  style={{ borderRadius: '20px 10px 10px 10px' }}
+                >
+                  <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#212936] py-4'>
+                    <h2 className='text-[20px] text-white font-semibold'>Plans</h2>
+                    <ClockIcon className='w-[26px] h-[26px] text-white' />
+                  </div>
+                  <div className='mt-14 px-11 pb-12'>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                      {' '}
+                      Up to 5,000 visits per month.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                      {' '}
+                      Add up to 10 websites.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                      {' '}
+                      Unlimited data exports.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                      {' '}
+                      100% data ownership.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                      {' '}
+                      No cookie banners required.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                      {' '}
+                      Shared & Public Dashboards.
+                    </p>
+                    <p className='text-[#707482] text-xs flex items-center'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                      {' '}
+                      Email reports.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
           </main>
         </div>
         {/* form singup */}
