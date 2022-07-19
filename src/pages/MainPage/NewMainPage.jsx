@@ -651,13 +651,13 @@ const Main = () => {
                 </div>
               </div>
             </section>
-            <section className='bg-white py-20'>
+            <section className='bg-white pt-20 pb-44'>
               <div className='max-w-[1080px] w-full mx-auto'>
                 <div className='max-w-[400px] w-full mx-auto'>
                   <h1 className='text-[#170F49] text-[38px] font-extrabold text-center'>Become a developer</h1>
                   <p className='text-[#7D818C] text-base font-medium text-center'>Write your extensions, follow the news and join our developer community.</p>
                 </div>
-                <div className='flex items-center justify-between mt-10'>
+                <div className='flex items-center justify-between mt-32'>
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
                       99
