@@ -335,14 +335,14 @@ const Main = () => {
             <div className='overflow-hidden'>
               <div className='relative max-w-[1300px] w-full mx-auto'>
                 <div
-                  className='absolute w-[446px] h-[558px] z-40 left-[10vw] -top-[10vh]'
+                  className='absolute w-[446px] h-[558px] z-10 left-[10vw] -top-[10vh]'
                   style={{
                     background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
                     filter: 'blur(200px)',
                     transform: 'rotate(-50.32deg)',
                   }}
                 />
-                <section className='relative z-50 px-3'>
+                <section className='relative z-20 px-3'>
                   <h1 className='mt-20 text-center text-[30px] sm:text-[45px] text-white font-extrabold max-w-[512px] w-full mx-auto'>Marketplace and extension features</h1>
                   <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-24 justify-between justify-items-center text-white pt-20 pb-36'>
                     <div className='max-w-[290px] w-full'>
@@ -390,7 +390,7 @@ const Main = () => {
                   </div>
                 </section>
                 <div
-                  className='absolute w-[446px] h-[558px] z-40 -left-[30vw] top-[80vh] sm:left-[70vw] sm:top-[30vh]'
+                  className='absolute w-[446px] h-[558px] z-10 -left-[30vw] top-[80vh] sm:left-[70vw] sm:top-[30vh]'
                   style={{
                     background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
                     filter: 'blur(200px)',
