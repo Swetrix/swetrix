@@ -478,7 +478,7 @@ const Main = () => {
               </section>
             </div>
 
-            <section className='bg-white px-4 md:px-8 pt-24'>
+            <section className='bg-white px-4 md:px-8 pt-24 pb-32'>
               <h1 className='text-[#293451] text-[45px] font-extrabold text-center'>Checklist</h1>
               <div className='flex flex-col lg:flex-row items-center justify-between max-w-[1080px] w-full mx-auto mt-16'>
                 <div
@@ -621,33 +621,71 @@ const Main = () => {
                 </div>
               </div>
             </section>
+            <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-[1300px] w-full mx-auto py-20 lg:py-32 px-5'>
+              <img src='/assets/openSource.png' alt='Swetrix open source' />
+              <div className='max-w-[516px] w-full lg:ml-5'>
+                <h1 className='text-[30px] md:text-[38px] text-white font-extrabold'>Adventages of using Open source + link to github</h1>
+                <hr className='border-[#535151] border-1 max-w-[346px] my-6' />
+                <div className='max-w-[438px] w-full lg:mb-0 mb-9'>
+                  <p className='text-[#CECDD7] text-sm leading-6 flex items-center mb-3'>
+                    <span>
+                      <CheckCircleIcon className='w-[24px] h-[24px] text-[#FDBC64] mr-[14px]' />
+                    </span>
+                    {' '}
+                    Install analytics on your own servers - the source code is available to everyone.
+                  </p>
+                  <p className='text-[#CECDD7] text-sm leading-6 flex items-center mb-3'>
+                    <span>
+                      <CheckCircleIcon className='w-[24px] h-[24px] text-[#FDBC64] mr-[14px]' />
+                    </span>
+                    {' '}
+                    Find bugs and suggest improvements - the community will be grateful to you.
+                  </p>
+                  <p className='text-[#CECDD7] text-sm leading-6 flex items-center mb-3'>
+                    <span>
+                      <CheckCircleIcon className='w-[24px] h-[24px] text-[#FDBC64] mr-[14px]' />
+                    </span>
+                    {' '}
+                    Your data is protected, all errors and features are implemented in a matter of days by our developers.
+                  </p>
+                </div>
+              </div>
+            </section>
+            <section className='bg-white py-20'>
+              <div className='max-w-[1080px] w-full mx-auto'>
+                <div className='max-w-[400px] w-full mx-auto'>
+                  <h1 className='text-[#170F49] text-[38px] font-extrabold text-center'>Become a developer</h1>
+                  <p className='text-[#7D818C] text-base font-medium text-center'>Write your extensions, follow the news and join our developer community.</p>
+                </div>
+                <div className='flex items-center justify-between mt-10'>
+                  <div>
+                    <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
+                      99
+                      <span className='text-[#170F49]'>k+</span>
+                    </p>
+                    <p className='text-[#6F6C90] text-[18px]'>Developer community</p>
+                  </div>
+                  <div className='bg-[#212936] w-2 h-2 rounded-full mx-5' />
+                  <div>
+                    <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
+                      99
+                      <span className='text-[#170F49]'>k+</span>
+                    </p>
+                    <p className='text-[#6F6C90] text-[18px]'>Developer community</p>
+                  </div>
+                  <div className='bg-[#212936] w-2 h-2 rounded-full mx-5' />
+                  <div>
+                    <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
+                      99
+                      <span className='text-[#170F49]'>k+</span>
+                    </p>
+                    <p className='text-[#6F6C90] text-[18px]'>Developer community</p>
+                  </div>
+                </div>
+              </div>
+            </section>
           </main>
         </div>
-        {/* form singup */}
-        {/* <div className='mt-16 sm:mt-24 lg:mt-0 lg:col-span-6'>
-                  <div className='bg-white dark:bg-gray-700 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
-                    <div className='px-4 py-8 sm:px-10'>
-                      <p className='text-lg text-gray-900 dark:text-white text-center'>
-                        {t('main.signup')}
-                      </p>
-                      <div className='mt-6'>
-                        <SignUp />
-                      </div>
-                    </div>
-                    <div className='px-4 py-6 bg-gray-50 dark:bg-gray-700 border-t-2 border-gray-200 dark:border-gray-500 sm:px-10'>
-                      <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
-                        <Trans
-                          t={t}
-                          i18nKey='main.signupTerms'
-                          components={{
-                            tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
-                            pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
-                          }}
-                        />
-                      </p>
-                    </div>
-                  </div>
-                </div> */}
         {/* live demo */}
         {/* <div className='relative'>
           <div className='absolute inset-0 flex flex-col' aria-hidden='true'>
@@ -727,35 +765,6 @@ const Main = () => {
             </div>
           </div>
         </div> */}
-
-        <FAQs t={t} />
-
-        <div className='bg-white dark:bg-gray-750'>
-          <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:w-11/12 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-            <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50'>
-              <span className='block'>
-                {t('main.readyToStart')}
-              </span>
-              <span className='block bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-indigo-300 dark:to-indigo-500 bg-clip-text text-transparent'>
-                {t('main.exploreService')}
-              </span>
-            </h2>
-            <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
-              <Link
-                to={routes.features}
-                className='flex items-center justify-center whitespace-nowrap bg-gradient-to-r from-purple-600 to-indigo-600 bg-origin-border px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white hover:from-purple-700 hover:to-indigo-700'
-              >
-                {t('common.features')}
-              </Link>
-              <Link
-                to={routes.signup}
-                className='flex items-center justify-center whitespace-nowrap px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
-              >
-                {t('common.getStarted')}
-              </Link>
-            </div>
-          </div>
-        </div>
       </div>
     </Title>
   )
