@@ -1,8 +1,12 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common'
-import * as crypto from 'crypto'
-import * as Serialize from 'php-serialize'
-import * as _includes from 'lodash/includes'
-import { AppLoggerService } from '../logger/logger.service'
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
+import * as crypto from 'crypto';
+import * as Serialize from 'php-serialize';
+import * as _includes from 'lodash/includes';
+import { AppLoggerService } from '../logger/logger.service';
 
 const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqFcHslKkXcJlTYg4FL6j
@@ -17,7 +21,7 @@ mx7yrcfyeObxKGhLoGiwcTwmeK1OnCQSgrCkEBjtCTqlqiYvBfXO4vuqBRmpCgZC
 0p7cqvGNvtO+OupqNImTb0sNVk8oeVBpqsQzlI5lN2FdA5FRUYtgodT09rPFleX+
 PFP+Wo9wV4n1J8KYm8nfpOiSCrPKT9XktsWhAneg6Obzy+LdDM3m2w2/pk+Ja4AO
 ThpjdAzyWEhdnTyWWbxeoxsCAwEAAQ==
------END PUBLIC KEY-----`
+-----END PUBLIC KEY-----`;
 
 const paddleWhitelistIPs = [
   // Production IPs
@@ -28,57 +32,57 @@ const paddleWhitelistIPs = [
   '34.194.127.46',
   '54.234.237.108',
   '3.208.120.145',
-]
+];
 
 @Injectable()
 export class WebhookService {
-  constructor(
-    private readonly logger: AppLoggerService,
-  ) { }
+  constructor(private readonly logger: AppLoggerService) {}
 
   ksort(obj) {
-    const keys = Object.keys(obj).sort()
-    let sortedObj = {}
+    const keys = Object.keys(obj).sort();
+    let sortedObj = {};
     for (let i in keys) {
-      sortedObj[keys[i]] = obj[keys[i]]
+      sortedObj[keys[i]] = obj[keys[i]];
     }
-    return sortedObj
+    return sortedObj;
   }
 
   validateWebhook(data) {
     // Grab p_signature
-    const mySig = Buffer.from(data.p_signature, 'base64')
+    const mySig = Buffer.from(data.p_signature, 'base64');
     // Remove p_signature from object - not included in array of fields used in verification.
-    delete data.p_signature
+    delete data.p_signature;
     // Need to sort array by key in ascending order
-    data = this.ksort(data)
+    data = this.ksort(data);
     for (let property in data) {
-      if (data.hasOwnProperty(property) && (typeof data[property]) !== "string") {
-        if (Array.isArray(data[property])) { // is it an array
-          data[property] = data[property].toString()
-        } else { // if its not an array and not a string, then it is a JSON obj
-          data[property] = JSON.stringify(data[property])
+      if (data.hasOwnProperty(property) && typeof data[property] !== 'string') {
+        if (Array.isArray(data[property])) {
+          // is it an array
+          data[property] = data[property].toString();
+        } else {
+          // if its not an array and not a string, then it is a JSON obj
+          data[property] = JSON.stringify(data[property]);
         }
       }
     }
     // Serialise remaining fields of jsonObj
-    const serialized = Serialize.serialize(data)
+    const serialized = Serialize.serialize(data);
     // verify the serialized array against the signature using SHA1 with your public key.
-    const verifier = crypto.createVerify('sha1')
-    verifier.update(serialized)
-    verifier.end()
+    const verifier = crypto.createVerify('sha1');
+    verifier.update(serialized);
+    verifier.end();
 
-    const verification = verifier.verify(PADDLE_PUB_KEY, mySig)
+    const verification = verifier.verify(PADDLE_PUB_KEY, mySig);
 
     if (!verification) {
-      this.logger.error(`Webhook signature verification failed: ${data}`)
-      throw new BadRequestException('Webhook signature verification failed')
+      this.logger.error(`Webhook signature verification failed: ${data}`);
+      throw new BadRequestException('Webhook signature verification failed');
     }
   }
 
   verifyIP(reqIP: string) {
     if (!_includes(paddleWhitelistIPs, reqIP)) {
-      throw new ForbiddenException('You have no access to this endpoint')
+      throw new ForbiddenException('You have no access to this endpoint');
     }
   }
 }

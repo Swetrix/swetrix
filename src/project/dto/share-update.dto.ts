@@ -1,7 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
-import { Role } from '../entity/project-share.entity'
+import { Role } from '../entity/project-share.entity';
 
 export class ShareUpdateDTO {
   @ApiProperty({
@@ -10,5 +10,5 @@ export class ShareUpdateDTO {
     description: 'Users role in your project',
   })
   @IsNotEmpty()
-  role: Role
+  role: Role;
 }

@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { ActionToken, ActionTokenType } from './action-token.entity'
-import { User } from '../user/entities/user.entity'
+import { ActionToken, ActionTokenType } from './action-token.entity';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class ActionTokensService {
@@ -13,21 +13,29 @@ export class ActionTokensService {
   ) {}
 
   async deleteMultiple(where: string): Promise<any> {
-    return this.actionTokensRepository.createQueryBuilder()
+    return this.actionTokensRepository
+      .createQueryBuilder()
       .delete()
       .where(where)
-      .execute()
+      .execute();
   }
 
-  async createForUser(user: User, action: ActionTokenType, newValue: string = null): Promise<ActionToken> {
-    return this.actionTokensRepository.save({ user, action, newValue })
+  async createForUser(
+    user: User,
+    action: ActionTokenType,
+    newValue: string = null,
+  ): Promise<ActionToken> {
+    return this.actionTokensRepository.save({ user, action, newValue });
   }
 
   async find(id: string): Promise<ActionToken> {
-    return this.actionTokensRepository.findOneOrFail(id, { relations: ['user'] })
+    return this.actionTokensRepository.findOneOrFail({
+      where: { id },
+      relations: ['user'],
+    });
   }
 
   async delete(id: string): Promise<void> {
-    await this.actionTokensRepository.delete(id)
+    await this.actionTokensRepository.delete(id);
   }
 }

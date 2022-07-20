@@ -1,22 +1,29 @@
-import { 
-  Controller, Post, UseGuards, HttpCode, Body, BadRequestException, Headers, Ip,
-} from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import {
+  Controller,
+  Post,
+  UseGuards,
+  HttpCode,
+  Body,
+  BadRequestException,
+  Headers,
+  Ip,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
-import { TwoFactorAuthService } from './twoFactorAuth.service'
-import { UserService } from '../user/user.service'
-import { AuthService } from 'src/auth/auth.service'
-import { UserType } from '../user/entities/user.entity'
-import { AppLoggerService } from '../logger/logger.service'
-import { MailerService } from '../mailer/mailer.service'
-import { LetterTemplate } from '../mailer/letter'
-import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
-import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
-import { Roles } from '../common/decorators/roles.decorator'
-import { TwoFaNotRequired } from '../common/decorators/2fa-disabled.decorator'
-import { RolesGuard } from 'src/common/guards/roles.guard'
-import { TwoFactorAuthDTO } from './dto/2fa-auth.dto'
-import { generateRecoveryCode, checkRateLimit } from 'src/common/utils'
+import { TwoFactorAuthService } from './twoFactorAuth.service';
+import { UserService } from '../user/user.service';
+import { AuthService } from 'src/auth/auth.service';
+import { UserType } from '../user/entities/user.entity';
+import { AppLoggerService } from '../logger/logger.service';
+import { MailerService } from '../mailer/mailer.service';
+import { LetterTemplate } from '../mailer/letter';
+import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator';
+import { SelfhostedGuard } from '../common/guards/selfhosted.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { TwoFaNotRequired } from '../common/decorators/2fa-disabled.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { TwoFactorAuthDTO } from './dto/2fa-auth.dto';
+import { generateRecoveryCode, checkRateLimit } from 'src/common/utils';
 
 @ApiTags('2fa')
 @Controller('2fa')
@@ -35,9 +42,11 @@ export class TwoFactorAuthController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
   async register(@CurrentUserId() id: string) {
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOneWhere({ id });
 
-    return await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(user)
+    return await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(
+      user,
+    );
   }
 
   @Post('enable')
@@ -45,40 +54,48 @@ export class TwoFactorAuthController {
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
-  async turnOnTwoFactorAuthentication(@Body() body: TwoFactorAuthDTO, @CurrentUserId() id: string, @Headers() headers, @Ip() reqIP) {
-    this.logger.log({ body }, 'POST /2fa/enable')
+  async turnOnTwoFactorAuthentication(
+    @Body() body: TwoFactorAuthDTO,
+    @CurrentUserId() id: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    this.logger.log({ body }, 'POST /2fa/enable');
 
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    await checkRateLimit(ip, '2fa-enable', 10, 1800)
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || '';
+    await checkRateLimit(ip, '2fa-enable', 10, 1800);
 
-    const user = await this.userService.findOneWhere({ id })
-    const { twoFactorAuthenticationCode } = body
+    const user = await this.userService.findOneWhere({ id });
+    const { twoFactorAuthenticationCode } = body;
 
-    const isCodeValid = this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode, user,
-    )
+    const isCodeValid =
+      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+        twoFactorAuthenticationCode,
+        user,
+      );
 
     if (!isCodeValid) {
-      throw new BadRequestException('Wrong authentication code')
+      throw new BadRequestException('Wrong authentication code');
     }
 
-    const twoFactorRecoveryCode = generateRecoveryCode()
+    const twoFactorRecoveryCode = generateRecoveryCode();
 
     await this.userService.update(user.id, {
       isTwoFactorAuthenticationEnabled: true,
       twoFactorRecoveryCode,
-    })
+    });
 
-    await this.mailerService.sendEmail(user.email, LetterTemplate.TwoFAOn)
+    await this.mailerService.sendEmail(user.email, LetterTemplate.TwoFAOn);
 
-    user.isTwoFactorAuthenticationEnabled = true
+    user.isTwoFactorAuthenticationEnabled = true;
 
-    const authData = this.authService.login(user, true)
+    const authData = this.authService.login(user, true);
 
     return {
       twoFactorRecoveryCode,
       ...authData,
-    }
+    };
   }
 
   @Post('disable')
@@ -86,28 +103,39 @@ export class TwoFactorAuthController {
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async turnOffTwoFactorAuthentication(@Body() body: TwoFactorAuthDTO, @CurrentUserId() id: string, @Headers() headers, @Ip() reqIP) {
-    this.logger.log({ body }, 'POST /2fa/disable')
+  async turnOffTwoFactorAuthentication(
+    @Body() body: TwoFactorAuthDTO,
+    @CurrentUserId() id: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    this.logger.log({ body }, 'POST /2fa/disable');
 
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    await checkRateLimit(ip, '2fa-disable', 10, 1800)
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || '';
+    await checkRateLimit(ip, '2fa-disable', 10, 1800);
 
-    const user = await this.userService.findOneWhere({ id })
-    const { twoFactorAuthenticationCode } = body
+    const user = await this.userService.findOneWhere({ id });
+    const { twoFactorAuthenticationCode } = body;
 
-    const isCodeValid = user.twoFactorRecoveryCode === twoFactorAuthenticationCode || this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode, user)
+    const isCodeValid =
+      user.twoFactorRecoveryCode === twoFactorAuthenticationCode ||
+      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+        twoFactorAuthenticationCode,
+        user,
+      );
 
     if (!isCodeValid) {
-      throw new BadRequestException('Wrong authentication code')
+      throw new BadRequestException('Wrong authentication code');
     }
 
-    await this.mailerService.sendEmail(user.email, LetterTemplate.TwoFAOff)
+    await this.mailerService.sendEmail(user.email, LetterTemplate.TwoFAOff);
 
     await this.userService.update(user.id, {
       isTwoFactorAuthenticationEnabled: false,
       twoFactorRecoveryCode: null,
       twoFactorAuthenticationSecret: null,
-    })
+    });
   }
 
   @Post('authenticate')
@@ -116,21 +144,32 @@ export class TwoFactorAuthController {
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
-  async authenticate(@Body() body: TwoFactorAuthDTO, @CurrentUserId() id: string, @Headers() headers, @Ip() reqIP) {
-    this.logger.log({ body }, 'POST /2fa/authenticate')
+  async authenticate(
+    @Body() body: TwoFactorAuthDTO,
+    @CurrentUserId() id: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    this.logger.log({ body }, 'POST /2fa/authenticate');
 
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    await checkRateLimit(ip, '2fa-auth', 10, 1800)
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || '';
+    await checkRateLimit(ip, '2fa-auth', 10, 1800);
 
-    const user = await this.userService.findOneWhere({ id })
-    const { twoFactorAuthenticationCode } = body
+    const user = await this.userService.findOneWhere({ id });
+    const { twoFactorAuthenticationCode } = body;
 
-    const isCodeValid = user.twoFactorRecoveryCode === twoFactorAuthenticationCode || this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode, user)
+    const isCodeValid =
+      user.twoFactorRecoveryCode === twoFactorAuthenticationCode ||
+      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+        twoFactorAuthenticationCode,
+        user,
+      );
 
     if (!isCodeValid) {
-      throw new BadRequestException('Wrong authentication code')
+      throw new BadRequestException('Wrong authentication code');
     }
 
-    return this.authService.login(user, true)
+    return this.authService.login(user, true);
   }
 }

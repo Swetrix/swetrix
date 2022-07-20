@@ -1,17 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail } from 'class-validator';
 
 export class UpdateUserProfileDTO {
   @ApiProperty({ example: 'you@example.com', required: true })
   @IsEmail()
-  email: string
+  email: string;
 
   @ApiProperty({ example: 'your_password123' })
-  password: string
+  password: string;
 
   @ApiProperty({ example: 'week' })
-  reportFrequency: string
+  reportFrequency: string;
 
   @ApiProperty({ example: 'Europe/Kiev' })
-  timezone: string
+  timezone: string;
 }

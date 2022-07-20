@@ -1,9 +1,8 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import csurf from 'csurf';
+import * as bodyParser from 'body-parser';
+import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
@@ -20,7 +19,7 @@ async function bootstrap(): Promise<void> {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
-  app.use(cookieParser(), helmet(), csurf());
+  app.use(cookieParser(), helmet());
   app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
   app.useGlobalPipes(
     new ValidationPipe({

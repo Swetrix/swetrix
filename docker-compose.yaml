@@ -32,6 +32,8 @@ services:
     restart: always
     environment:
       - REDIS_PASSWORD=password
+    ports:
+      - '6379:6379'
   #   volumes:
   #     - '/opt/redis-volume:/data'
   mariadb:
@@ -42,15 +44,19 @@ services:
       - MYSQL_DATABASE=analytics
       - MYSQL_USER=swetrix
       - MYSQL_PASSWORD=password
+    ports:
+      - '3306:3306'
   #   volumes:
   #    - '/opt/mysql-volume:/var/lib/mysql'
   clickhouse:
-    image: yandex/clickhouse-server:latest-alpine
+    image: yandex/clickhouse-server:latest
     environment:
       - CLICKHOUSE_DB=analytics
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=password
     restart: always
+    ports:
+      - '8123:8123'
     volumes:
       - '/opt/clickhouse-volume:/var/lib/clickhouse'
     ulimits:

@@ -1,7 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
-import { Role } from '../entity/project-share.entity'
+import { Role } from '../entity/project-share.entity';
 
 export class ShareDTO {
   @ApiProperty({
@@ -10,7 +10,7 @@ export class ShareDTO {
     description: 'User you want to invite to your project',
   })
   @IsNotEmpty()
-  email: string
+  email: string;
 
   @ApiProperty({
     example: 'viewer',
@@ -18,5 +18,5 @@ export class ShareDTO {
     description: 'Users role in your project',
   })
   @IsNotEmpty()
-  role: Role
+  role: Role;
 }

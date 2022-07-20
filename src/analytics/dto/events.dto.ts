@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
 export class EventsDTO {
   @ApiProperty({
@@ -8,7 +8,7 @@ export class EventsDTO {
     description: 'The project ID',
   })
   @IsNotEmpty()
-  pid: string
+  pid: string;
 
   @ApiProperty({
     example: 'user-subscribed',
@@ -16,10 +16,11 @@ export class EventsDTO {
     maxLength: 64,
   })
   @IsNotEmpty()
-  ev: string
+  ev: string;
 
   @ApiProperty({
-    description: 'If true, only 1 event with the same ID will be saved per user session',
+    description:
+      'If true, only 1 event with the same ID will be saved per user session',
   })
-  unique: object
+  unique: object;
 }

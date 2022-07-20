@@ -1,4 +1,4 @@
-import { PaginationResultInterface } from './pagination.results.interface'
+import { PaginationResultInterface } from './pagination.results.interface';
 
 export class Pagination<PaginationEntity> {
   public results: PaginationEntity[];
@@ -6,8 +6,8 @@ export class Pagination<PaginationEntity> {
   public total: number;
 
   constructor(paginationResults: PaginationResultInterface<PaginationEntity>) {
-    this.results = paginationResults.results
-    this.page_total = paginationResults.results.length
-    this.total = paginationResults.total
+    this.results = paginationResults.results;
+    this.page_total = paginationResults.results.length;
+    this.total = paginationResults.total;
   }
 }

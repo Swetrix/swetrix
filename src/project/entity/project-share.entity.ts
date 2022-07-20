@@ -1,10 +1,16 @@
-import { Entity, Column, ManyToOne, BeforeUpdate, PrimaryGeneratedColumn } from 'typeorm'
-import { ApiProperty } from '@nestjs/swagger'
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  BeforeUpdate,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
-import { User } from '../../user/entities/user.entity'
-import { Project } from './project.entity'
+import { User } from '../../user/entities/user.entity';
+import { Project } from './project.entity';
 
-export const roles = ['admin', 'viewer']
+export const roles = ['admin', 'viewer'];
 
 export enum Role {
   viewer = 'viewer',
@@ -14,35 +20,35 @@ export enum Role {
 @Entity()
 export class ProjectShare {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id: string;
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, user => user.sharedProjects)
-  user: User
+  @ManyToOne(() => User, (user) => user.sharedProjects)
+  user: User;
 
-  @ManyToOne(() => Project, project => project.share)
-  project: Project
+  @ManyToOne(() => Project, (project) => project.share)
+  project: Project;
 
   @ApiProperty()
   @Column({
     default: false,
   })
-  confirmed: boolean
+  confirmed: boolean;
 
   @Column({
     type: 'enum',
     enum: Role,
   })
-  role: Role
+  role: Role;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created: Date
+  created: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated: Date
+  updated: Date;
 
   @BeforeUpdate()
   updateTimestamp() {
-    this.updated = new Date
+    this.updated = new Date();
   }
 }

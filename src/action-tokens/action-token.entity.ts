@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Timestamp, CreateDateColumn, Column } from 'typeorm'
-import { User } from '../user/entities/user.entity'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  Timestamp,
+  CreateDateColumn,
+  Column,
+} from 'typeorm';
+import { User } from '../user/entities/user.entity';
 
 export enum ActionTokenType {
   EMAIL_VERIFICATION,
@@ -11,20 +18,20 @@ export enum ActionTokenType {
 @Entity()
 export class ActionToken {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id: string;
 
-  @ManyToOne(() => User, user => user.actionTokens, { onDelete: 'CASCADE' })
-  user: User
+  @ManyToOne(() => User, (user) => user.actionTokens, { onDelete: 'CASCADE' })
+  user: User;
 
   @CreateDateColumn()
-  created: Timestamp
+  created: Timestamp;
 
   @Column('varchar', { length: 254, default: null })
-  newValue: string
+  newValue: string;
 
   @Column({
     type: 'enum',
     enum: ActionTokenType,
   })
-  action: ActionTokenType
+  action: ActionTokenType;
 }
