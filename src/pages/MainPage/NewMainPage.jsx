@@ -12,11 +12,10 @@ import routes from 'routes'
 import { CONTACT_EMAIL } from 'redux/constants'
 import Title from 'components/Title'
 import Button from 'ui/Button'
+import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import { withAuthentication, auth } from '../../hoc/protected'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
-
-import './NewMainPage.css'
 
 const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 
@@ -89,7 +88,7 @@ const Main = () => {
         <ExternalLinkIcon className='h-4 w-4 text-white ml-1 hidden md:block' />
       </div>
       <div>
-        <div className='bg-gray-800'>
+        <div className='bg-gray-800 dark:bg-[#181F29]'>
           <main>
             {/* first block with live demo */}
             <div className='relativ overflow-x-hidden'>
@@ -137,18 +136,18 @@ const Main = () => {
               </div>
             </div>
 
-            <div className='bg-white px-4 pb-24'>
+            <div className='dark:bg-[#181F29] bg-white px-4 pb-24'>
               {/* section Core Analytics Features */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
                 <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Core Analytics Features' />
                 <div className='max-w-[516px]'>
-                  <h1 className='font-extrabold text-4xl text-[#293451]'>Core Analytics Features</h1>
-                  <p className='mt-6 text-[#7D818C] mb-11'>
+                  <h1 className='font-extrabold text-4xl dark:text-[#FFFFFF] text-[#293451]'>Core Analytics Features</h1>
+                  <p className='mt-6 dark:text-[#BEBFC2] text-[#7D818C] mb-11'>
                     Powerful and easy analytic to display all main metrics that you need. Cookie less.
                     You don&apos;t need to be data scientist to understand
                     our analytic.
                   </p>
-                  <Button className='text-[#4E46DD] !font-bold border-0'>
+                  <Button className='dark:text-[#8A84FB] text-[#4E46DD] !font-bold border-0'>
                     Traffic Insights
                     <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
                   </Button>
@@ -157,14 +156,14 @@ const Main = () => {
               {/* section Marketplace & build-in Extensions */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
                 <div className='max-w-[516px]'>
-                  <h1 className='font-extrabold text-4xl text-[#293451]'>Marketplace & build-in Extensions</h1>
-                  <p className='mt-6 text-[#7D818C] mb-3'>
+                  <h1 className='font-extrabold text-4xl text-[#293451] dark:text-[#FFFFFF]'>Marketplace & build-in Extensions</h1>
+                  <p className='mt-6 text-[#7D818C] dark:text-[#BEBFC2] mb-3'>
                     Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!
                   </p>
-                  <p className='text-[#7D818C] mb-11'>
+                  <p className='text-[#7D818C] dark:text-[#BEBFC2] mb-11'>
                     Install extensions and sell your own. Come up with a great extension for your company - great! Publish it on the marketplace and share your insights with the whole community.
                   </p>
-                  <Button className='text-[#4E46DD] !font-bold border-0'>
+                  <Button className='text-[#4E46DD] dark:text-[#8A84FB] !font-bold border-0'>
                     Traffic Insights
                     <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
                   </Button>
@@ -173,17 +172,18 @@ const Main = () => {
               </section>
               {/* section Privacy compliance. */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
-                <img className='md:max-w-[360px] lg:max-w-full' src='/assets/privacy-section.png' alt='Core Analytics Features' />
+                <img className='md:max-w-[360px] lg:max-w-full dark:hidden' src='/assets/privacy-section.png' alt='Core Analytics Features' />
+                <img className='md:max-w-[360px] lg:max-w-full hidden dark:block' src='/assets/privacy-section-dark.png' alt='Core Analytics Features' />
                 <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0'>
-                  <h1 className='font-extrabold text-4xl text-[#293451]'>Privacy compliance.</h1>
+                  <h1 className='font-extrabold text-4xl text-[#293451] dark:text-[#FFFFFF]'>Privacy compliance.</h1>
                   <div className='mt-6 mb-4 flex items-center text-[16px]'>
                     <div className='mr-3'>
                       <CheckCircleIcon className='fill-[#FDBC64] w-[24px] h-[24px]' />
                     </div>
                     <p>
-                      <span className=''>GDPR</span>
-                      <span className='mr-1 ml-1'>-</span>
-                      <span className='text-[#7D818C]'>data and processing based in EU zone.</span>
+                      <span className='dark:text-white'>GDPR</span>
+                      <span className='mr-1 ml-1 dark:text-white'>-</span>
+                      <span className='text-[#7D818C] dark:text-[#BEBFC2]'>data and processing based in EU zone.</span>
                     </p>
                   </div>
                   <div className='mb-4 flex items-center'>
@@ -191,9 +191,9 @@ const Main = () => {
                       <CheckCircleIcon className='fill-[#FDBC64] w-[24px] h-[24px]' />
                     </div>
                     <p>
-                      <span className=''>HIPAA</span>
-                      <span className='mr-1 ml-1'>-</span>
-                      <span className='text-[#7D818C]'>protect sensitive info.</span>
+                      <span className='dark:text-white'>HIPAA</span>
+                      <span className='mr-1 ml-1 dark:text-white'>-</span>
+                      <span className='text-[#7D818C] dark:text-[#BEBFC2]'>protect sensitive info.</span>
                     </p>
                   </div>
                   <div className='mb-4 flex items-center'>
@@ -201,9 +201,9 @@ const Main = () => {
                       <CheckCircleIcon className='fill-[#FDBC64] w-[24px] h-[24px]' />
                     </div>
                     <p>
-                      <span className=''>PCI DSS</span>
-                      <span className='mr-1 ml-1'>-</span>
-                      <span className='text-[#7D818C]'>payment data security.</span>
+                      <span className='dark:text-white'>PCI DSS</span>
+                      <span className='mr-1 ml-1 dark:text-white'>-</span>
+                      <span className='text-[#7D818C] dark:text-[#BEBFC2]'>payment data security.</span>
                     </p>
                   </div>
                   <div className='mb-10 flex items-center'>
@@ -211,12 +211,12 @@ const Main = () => {
                       <CheckCircleIcon className='fill-[#FDBC64] w-[24px] h-[24px]' />
                     </div>
                     <p>
-                      <span className=''>CCPA</span>
-                      <span className='mr-1 ml-1'>-</span>
-                      <span className='text-[#7D818C]'>control over the personal information.</span>
+                      <span className='dark:text-white'>CCPA</span>
+                      <span className='mr-1 ml-1 dark:text-white'>-</span>
+                      <span className='text-[#7D818C] dark:text-[#BEBFC2]'>control over the personal information.</span>
                     </p>
                   </div>
-                  <Button className='text-[#4E46DD] !font-bold border-0'>
+                  <Button className='text-[#4E46DD] dark:text-[#8A84FB] !font-bold border-0'>
                     More about Data Protection
                     <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
                   </Button>
@@ -227,7 +227,7 @@ const Main = () => {
             <div className='overflow-hidden'>
               <div className='py-24 max-w-[1280px] w-full flex justify-center md:justify-between items-center mx-auto px-5'>
                 <div className='relative z-50 lg:col-span-6 rounded-xl'>
-                  <div className='bg-white dark:bg-gray-700 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
+                  <div className='bg-white dark:bg-[#202A3A] sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
                       <p className='text-lg text-gray-900 dark:text-white text-center'>
                         {t('main.signup')}
@@ -236,7 +236,7 @@ const Main = () => {
                         <SignUp />
                       </div>
                     </div>
-                    <div className='px-4 py-6 bg-gray-50 dark:bg-gray-700 border-t-2 border-gray-200 dark:border-gray-500 sm:px-10'>
+                    <div className='px-4 py-6 bg-gray-50 dark:bg-[#202A3A]  border-t-2 border-gray-200 dark:border-gray-500 sm:px-10'>
                       <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
                         <Trans
                           t={t}
@@ -264,65 +264,65 @@ const Main = () => {
               </div>
             </div>
             {/* Core features section */}
-            <section className='bg-white pt-20 relative pb-14'>
-              <img className='absolute -left-8' src='/assets/background/shapes.svg' alt='shapes' />
+            <section className='bg-white dark:bg-[#181F29] pt-20 relative pb-14'>
+              <BackgroundSvg className='absolute -left-8' type='shapes' />
               <div className='mx-auto text-[#293451] font-extrabold text-[30px] sm:text-[45px] w-fit relative'>
-                <h1 className='relative z-20'>
+                <h1 className='relative z-20 dark:text-white'>
                   Core features
                 </h1>
-                <img className='absolute right-0 sm:-right-16 top-9 z-10' src='/assets/background/semicircles.svg' alt='semiciecles' />
+                <BackgroundSvg className='absolute right-0 sm:-right-16 top-9 z-10' type='semicircle' />
               </div>
               <div className='mt-[60px] flex items-center max-w-[1300px] w-full mx-auto flex-wrap justify-center xl:justify-between'>
                 <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
                   <span className='text-[#FDBC64] text-3xl font-semibold'>1</span>
                   <div className='mt-2'>
-                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Measure website traffic with 99% of accuracy</h2>
-                    <p className='text-gray-500 max-w-[320px] mx-auto'>The most accurate analytics solution to track all basic metrics and see the RIGHT data.</p>
+                    <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Measure website traffic with 99% of accuracy</h2>
+                    <p className='text-gray-500 max-w-[320px] mx-auto dark:text-[#BEBFC2]'>The most accurate analytics solution to track all basic metrics and see the RIGHT data.</p>
                   </div>
                 </div>
                 <div className='w-[416px] h-[250px]  px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
                   <span className='text-[#FDBC64] text-3xl font-semibold'>2</span>
                   <div className='mt-2'>
-                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Demo & Geo reports</h2>
-                    <p className='text-gray-500 max-w-[303px] mx-auto'>Yes, it&apos;s standard. But keep track of exactly where your users are from as it is.</p>
+                    <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Demo & Geo reports</h2>
+                    <p className='text-gray-500 max-w-[303px] mx-auto dark:text-[#BEBFC2]'>Yes, it&apos;s standard. But keep track of exactly where your users are from as it is.</p>
                   </div>
                 </div>
                 <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
                   <span className='text-[#FDBC64] text-3xl font-semibold'>3</span>
                   <div className='mt-2'>
-                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>UTM & Reffers tracking</h2>
-                    <p className='text-gray-500 max-w-[320px] mx-auto'>All traffic from your companies and websites will be shown without data loss.</p>
+                    <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>UTM & Reffers tracking</h2>
+                    <p className='text-gray-500 max-w-[320px] mx-auto dark:text-[#BEBFC2]'>All traffic from your companies and websites will be shown without data loss.</p>
                   </div>
                 </div>
                 <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
                   <span className='text-[#FDBC64] text-3xl font-semibold'>4</span>
                   <div className='mt-2'>
-                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Agile system</h2>
-                    <p className='text-gray-500 max-w-[303px] mx-auto'>A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customize.</p>
+                    <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Agile system</h2>
+                    <p className='text-gray-500 max-w-[303px] mx-auto dark:text-[#BEBFC2]'>A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customize.</p>
                   </div>
                 </div>
                 <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
                   <span className='text-[#FDBC64] text-3xl font-semibold'>5</span>
                   <div className='mt-2'>
-                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>
+                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3 dark:text-white'>
                       Custom events
                       <br />
                       (really easy to setup)
                     </h2>
-                    <p className='text-gray-500 max-w-[303px] mx-auto'>User-friendly interface and ease of setting goals will help you measure the effectiveness of your website.</p>
+                    <p className='text-gray-500 max-w-[303px] mx-auto dark:text-[#BEBFC2]'>User-friendly interface and ease of setting goals will help you measure the effectiveness of your website.</p>
                   </div>
                 </div>
                 <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer '>
                   <span className='text-[#FDBC64] text-3xl font-semibold'>6</span>
                   <div className='mt-2'>
-                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>User flow</h2>
-                    <p className='text-gray-500 max-w-[303px] mx-auto text-base'>Track how users get to your site and where they go. Study the behavior and patterns of your visitor.</p>
+                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3 dark:text-white'>User flow</h2>
+                    <p className='text-gray-500 max-w-[303px] mx-auto text-base dark:text-[#BEBFC2]'>Track how users get to your site and where they go. Study the behavior and patterns of your visitor.</p>
                   </div>
                 </div>
               </div>
             </section>
-            <section className='bg-white pt-24 sm:px-5 px-3 relative pb-28'>
-              <h1 className='mx-auto text-[#293451] font-bold text-[30px] sm:text-[45px] w-fit text-center'>Support all popular platforms</h1>
+            <section className='bg-white dark:bg-[#202A3A] pt-24 sm:px-5 px-3 relative pb-28'>
+              <h1 className='mx-auto text-[#293451] dark:text-white font-bold text-[30px] sm:text-[45px] w-fit text-center'>Support all popular platforms</h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-[1300px] w-full mx-auto justify-between'>
                 <img src='/assets/supports/Slack.png' alt='Slack' />
                 <img src='/assets/supports/NuxtJS.png' alt='NuxtJS' />
@@ -406,18 +406,18 @@ const Main = () => {
               </div>
             </div>
             <Pricing t={t} language={language} />
-            <section className='bg-white pt-20 pb-20 relative'>
+            <section className='bg-white dark:bg-[#181F29] pt-20 pb-20 relative'>
               <div className='absolute right-0 -top-16'>
-                <img src='/assets/background/circles.svg' alt='shapes' />
+                <BackgroundSvg type='circle' />
               </div>
               <div className='absolute rotate-[135deg] left-0 z-0'>
-                <img src='/assets/background/shapes.svg' alt='shapes' />
+                <BackgroundSvg type='shapes' />
               </div>
               <div className='max-w-[1000px] w-full mx-auto'>
-                <h1 className='text-[#293451] text-center font-extrabold text-[45px] relative z-20'>Testimonials</h1>
+                <h1 className='text-[#293451] text-center font-extrabold text-[45px] relative z-20 dark:text-white'>Testimonials</h1>
                 <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
                   <div
-                    className='max-w-[310px] w-full'
+                    className='max-w-[310px] w-full dark:bg-[#212B3B]'
                     style={{
                       boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
                       borderRadius: '100px 30px 30px 30px',
@@ -425,15 +425,15 @@ const Main = () => {
                   >
                     <img className='mx-auto relative -top-4' src='/assets/Quote.png' alt='quote' />
                     <div className='px-14 mb-12'>
-                      <p className='text-[#707482] text-[14px] mt-8'>Joe Massad</p>
-                      <p className='text-[#212936] text-[18px] mt-2 leading-9'>
+                      <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
+                      <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
                         Start out for free, no credit card needed.
                         When your business grows, you can upgrade your plan at any time.
                       </p>
                     </div>
                   </div>
                   <div
-                    className='max-w-[310px] w-full md:mx-4 mt-10 md:mt-0'
+                    className='max-w-[310px] w-full md:mx-4 mt-10 md:mt-0 dark:bg-[#212B3B]'
                     style={{
                       boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
                       borderRadius: '100px 30px 30px 30px',
@@ -441,15 +441,15 @@ const Main = () => {
                   >
                     <img className='mx-auto relative -top-4' src='/assets/Quote-yellow.png' alt='quote' />
                     <div className='px-14 mb-12'>
-                      <p className='text-[#707482] text-[14px] mt-8'>Joe Massad</p>
-                      <p className='text-[#212936] text-[18px] mt-2 leading-9'>
+                      <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
+                      <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
                         Start out for free, no credit card needed.
                         When your business grows, you can upgrade your plan at any time.
                       </p>
                     </div>
                   </div>
                   <div
-                    className='max-w-[310px] w-full mt-10 md:mt-0'
+                    className='max-w-[310px] w-full mt-10 md:mt-0 dark:bg-[#212B3B]'
                     style={{
                       boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
                       borderRadius: '100px 30px 30px 30px',
@@ -457,8 +457,8 @@ const Main = () => {
                   >
                     <img className='mx-auto relative -top-4' src='/assets/Quote.png' alt='quote' />
                     <div className='px-14 mb-12'>
-                      <p className='text-[#707482] text-[14px] mt-8'>Joe Massad</p>
-                      <p className='text-[#212936] text-[18px] mt-2 leading-9'>
+                      <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
+                      <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
                         Start out for free, no credit card needed.
                         When your business grows, you can upgrade your plan at any time.
                       </p>
@@ -468,7 +468,7 @@ const Main = () => {
               </div>
             </section>
 
-            <div className='bg-white px-4 md:px-8'>
+            <div className='bg-white dark:bg-[#181F29] px-4 md:px-8 dark:pb-12'>
               <section className='max-w-[1300px] w-full mx-auto bg-[#212936] overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
                 <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
                   <div className='max-w-[430px] w-full pt-[60px] pr-3 mb-16 md:mb-0'>
@@ -490,14 +490,14 @@ const Main = () => {
               </section>
             </div>
 
-            <section className='bg-white px-4 md:px-8 pt-24 pb-32 relative'>
+            <section className='bg-white dark:bg-[#202A3A] px-4 md:px-8 pt-24 pb-32 relative'>
               <div className='absolute right-0 top-0 z-0 sm:top-28'>
-                <img src='/assets/background/circles.svg' alt='circles' />
+                <BackgroundSvg type='circle' />
               </div>
               <div className='absolute left-10'>
-                <img src='/assets/background/shapes.svg' alt='shapes' />
+                <BackgroundSvg type='shapes' />
               </div>
-              <h1 className='text-[#293451] text-[45px] font-extrabold text-center relative z-20'>Checklist</h1>
+              <h1 className='text-[#293451] text-[45px] font-extrabold text-center relative z-20 dark:text-white'>Checklist</h1>
               <div className='flex flex-col lg:flex-row items-center justify-between max-w-[1080px] w-full mx-auto mt-16'>
                 <div
                   className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden relative z-10'
@@ -508,37 +508,37 @@ const Main = () => {
                     <CheckCircleIconOutline className='w-[26px] h-[26px] text-white' />
                   </div>
                   <div className='mt-14 px-11 pb-12'>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
                       {' '}
                       Up to 5,000 visits per month.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
                       {' '}
                       Add up to 10 websites.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
                       {' '}
                       Unlimited data exports.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
                       {' '}
                       100% data ownership.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
                       {' '}
                       No cookie banners required.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
                       {' '}
                       Shared & Public Dashboards.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center'>
                       <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
                       {' '}
                       Email reports.
@@ -554,37 +554,37 @@ const Main = () => {
                     <CogIcon alt='Swetrix settings icon' className='w-[26px] h-[26px] text-white' />
                   </div>
                   <div className='mt-14 px-11 pb-12'>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
                       {' '}
                       Up to 5,000 visits per month.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
                       {' '}
                       Add up to 10 websites.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
                       {' '}
                       Unlimited data exports.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
                       {' '}
                       100% data ownership.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
                       {' '}
                       No cookie banners required.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
                       <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
                       {' '}
                       Shared & Public Dashboards.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center'>
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center'>
                       <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
                       {' '}
                       Email reports.
@@ -595,43 +595,43 @@ const Main = () => {
                   className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden relative z-10'
                   style={{ borderRadius: '20px 10px 10px 10px' }}
                 >
-                  <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#212936] py-4'>
+                  <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#212936] dark:bg-[#184388] py-4'>
                     <h2 className='text-[20px] text-white font-semibold'>Plans</h2>
                     <ClockIcon className='w-[26px] h-[26px] text-white' />
                   </div>
                   <div className='mt-14 px-11 pb-12'>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Up to 5,000 visits per month.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Add up to 10 websites.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Unlimited data exports.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       100% data ownership.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       No cookie banners required.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Shared & Public Dashboards.
                     </p>
-                    <p className='text-[#707482] text-xs flex items-center'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] mr-2' />
+                    <p className='text-[#707482] dark:text-white text-xs flex items-center'>
+                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Email reports.
                     </p>
@@ -669,41 +669,41 @@ const Main = () => {
                 </div>
               </div>
             </section>
-            <section className='bg-white pt-20 pb-44 relative'>
+            <section className='bg-white dark:bg-[#202A3A] pt-20 pb-44 relative'>
               <div className='absolute right-0 top-16 z-0'>
-                <img src='/assets/background/circles.svg' alt='circles' />
+                <BackgroundSvg type='circle' />
               </div>
               <div className='absolute -left-9 top-52 rotate-90'>
-                <img src='/assets/background/shapes.svg' alt='shapes' />
+                <BackgroundSvg type='shapes' />
               </div>
               <div className='max-w-[1080px] w-full mx-auto px-3'>
                 <div className='max-w-[400px] w-full mx-auto'>
-                  <h1 className='text-[#170F49] text-[30px] md:text-[38px] font-extrabold text-center'>Become a developer</h1>
-                  <p className='text-[#7D818C] text-base font-medium text-center'>Write your extensions, follow the news and join our developer community.</p>
+                  <h1 className='text-[#170F49] dark:text-white text-[30px] md:text-[38px] font-extrabold text-center'>Become a developer</h1>
+                  <p className='text-[#7D818C] dark:text-[#BEBFC2] text-base font-medium text-center'>Write your extensions, follow the news and join our developer community.</p>
                 </div>
                 <div className='flex items-center justify-between mt-20 md:mt-32 md:flex-row flex-col'>
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
                       99
-                      <span className='text-[#170F49]'>k+</span>
+                      <span className='text-[#170F49] dark:text-[#C8DCFC]'>k+</span>
                     </p>
-                    <p className='text-[#6F6C90] text-[18px]'>Developer community</p>
+                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>Developer community</p>
                   </div>
-                  <div className='bg-[#212936] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
+                  <div className='bg-[#212936] dark:bg-[#DEE3EB] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
                       280
-                      <span className='text-[#170F49]'>+</span>
+                      <span className='text-[#170F49] dark:text-[#C8DCFC]'>+</span>
                     </p>
-                    <p className='text-[#6F6C90] text-[18px]'>Contributors</p>
+                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>Contributors</p>
                   </div>
-                  <div className='bg-[#212936] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
+                  <div className='bg-[#212936] dark:bg-[#DEE3EB] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
                       44
-                      <span className='text-[#170F49]'>b+</span>
+                      <span className='text-[#170F49] dark:text-[#C8DCFC]'>b+</span>
                     </p>
-                    <p className='text-[#6F6C90] text-[18px]'>Events tracked</p>
+                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>Events tracked</p>
                   </div>
                 </div>
               </div>
