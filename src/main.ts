@@ -1,36 +1,38 @@
-import { NestFactory } from '@nestjs/core'
-import { ValidationPipe } from '@nestjs/common'
-import * as cookieParser from 'cookie-parser'
-import * as bodyParser from 'body-parser'
+import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import csurf from 'csurf';
+import helmet from 'helmet';
+import { AppModule } from './app.module';
 
-import { AppModule } from './app.module'
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
-  app.use(cookieParser())
-  app.useGlobalPipes(new ValidationPipe())
+  app.enableCors({
+    origin: configService.get('APP_ORIGIN'),
+    credentials: true,
+  });
+  app.enableShutdownHooks();
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+  app.use(cookieParser(), helmet(), csurf());
+  app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    }),
+  );
 
-  app.use(async (req, res, next) => {
-    res.header('Cross-Origin-Embedder-Policy', 'require-corp; report-to=\'default\'')
-    res.header('Cross-Origin-Opener-Policy', 'same-site; report-to=\'default\'')
-    res.header('Cross-Origin-Resource-Policy', 'same-site')
-    res.header('Permissions-Policy', 'interest-cohort=()')
-    res.header('Referrer-Policy', 'strict-origin-when-cross-origin')
-    res.header('X-Frame-Options', 'DENY')
-    res.header('X-Powered-By', 'Mountain Dew')
-    res.header('X-XSS-Protection', '1; mode=block')
-    res.header('Access-Control-Allow-Origin', process.env.API_ORIGINS || '*')
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE')
-    res.header('Access-Control-Allow-Headers', '*')
-
-    if (req.method === 'OPTIONS') {
-      return await res.sendStatus(204)
-    }
-
-    next()
-  })
-
-  app.use('/webhook', bodyParser.raw({ type: 'application/json' }))
-  await app.listen(5005)
+  await app.listen(
+    +configService.get('APP_PORT'),
+    configService.get('APP_HOST'),
+  );
 }
-bootstrap()
+
+bootstrap();
