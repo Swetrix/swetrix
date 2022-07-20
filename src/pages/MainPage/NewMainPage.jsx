@@ -265,7 +265,13 @@ const Main = () => {
             </div>
             {/* Core features section */}
             <section className='bg-white pt-20 relative pb-14'>
-              <h1 className='mx-auto text-[#293451] font-bold text-[45px] w-fit'>Core features</h1>
+              <img className='absolute -left-8' src='/assets/background/shapes.svg' alt='shapes' />
+              <div className='mx-auto text-[#293451] font-extrabold text-[30px] sm:text-[45px] w-fit relative'>
+                <h1 className='relative z-20'>
+                  Core features
+                </h1>
+                <img className='absolute right-0 sm:-right-16 top-9 z-10' src='/assets/background/semicircles.svg' alt='semiciecles' />
+              </div>
               <div className='mt-[60px] flex items-center max-w-[1300px] w-full mx-auto flex-wrap justify-center xl:justify-between'>
                 <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
                   <span className='text-[#FDBC64] text-3xl font-semibold'>1</span>
@@ -400,9 +406,15 @@ const Main = () => {
               </div>
             </div>
             <Pricing t={t} language={language} />
-            <section className='bg-white pt-20 pb-20'>
+            <section className='bg-white pt-20 pb-20 relative'>
+              <div className='absolute right-0 -top-16'>
+                <img src='/assets/background/circles.svg' alt='shapes' />
+              </div>
+              <div className='absolute rotate-[135deg] left-0 z-0'>
+                <img src='/assets/background/shapes.svg' alt='shapes' />
+              </div>
               <div className='max-w-[1000px] w-full mx-auto'>
-                <h1 className='text-[#293451] text-center font-extrabold text-[45px]'>Testimonials</h1>
+                <h1 className='text-[#293451] text-center font-extrabold text-[45px] relative z-20'>Testimonials</h1>
                 <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
                   <div
                     className='max-w-[310px] w-full'
@@ -478,11 +490,17 @@ const Main = () => {
               </section>
             </div>
 
-            <section className='bg-white px-4 md:px-8 pt-24 pb-32'>
-              <h1 className='text-[#293451] text-[45px] font-extrabold text-center'>Checklist</h1>
+            <section className='bg-white px-4 md:px-8 pt-24 pb-32 relative'>
+              <div className='absolute right-0 top-0 z-0 sm:top-28'>
+                <img src='/assets/background/circles.svg' alt='circles' />
+              </div>
+              <div className='absolute left-10'>
+                <img src='/assets/background/shapes.svg' alt='shapes' />
+              </div>
+              <h1 className='text-[#293451] text-[45px] font-extrabold text-center relative z-20'>Checklist</h1>
               <div className='flex flex-col lg:flex-row items-center justify-between max-w-[1080px] w-full mx-auto mt-16'>
                 <div
-                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden'
+                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden relative z-10'
                   style={{ borderRadius: '20px 10px 10px 10px' }}
                 >
                   <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#FDBC64] py-4'>
@@ -574,7 +592,7 @@ const Main = () => {
                   </div>
                 </div>
                 <div
-                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden'
+                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden relative z-10'
                   style={{ borderRadius: '20px 10px 10px 10px' }}
                 >
                   <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#212936] py-4'>
@@ -651,13 +669,19 @@ const Main = () => {
                 </div>
               </div>
             </section>
-            <section className='bg-white pt-20 pb-44'>
-              <div className='max-w-[1080px] w-full mx-auto'>
+            <section className='bg-white pt-20 pb-44 relative'>
+              <div className='absolute right-0 top-16 z-0'>
+                <img src='/assets/background/circles.svg' alt='circles' />
+              </div>
+              <div className='absolute -left-9 top-52 rotate-90'>
+                <img src='/assets/background/shapes.svg' alt='shapes' />
+              </div>
+              <div className='max-w-[1080px] w-full mx-auto px-3'>
                 <div className='max-w-[400px] w-full mx-auto'>
-                  <h1 className='text-[#170F49] text-[38px] font-extrabold text-center'>Become a developer</h1>
+                  <h1 className='text-[#170F49] text-[30px] md:text-[38px] font-extrabold text-center'>Become a developer</h1>
                   <p className='text-[#7D818C] text-base font-medium text-center'>Write your extensions, follow the news and join our developer community.</p>
                 </div>
-                <div className='flex items-center justify-between mt-32'>
+                <div className='flex items-center justify-between mt-20 md:mt-32 md:flex-row flex-col'>
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
                       99
@@ -665,21 +689,21 @@ const Main = () => {
                     </p>
                     <p className='text-[#6F6C90] text-[18px]'>Developer community</p>
                   </div>
-                  <div className='bg-[#212936] w-2 h-2 rounded-full mx-5' />
+                  <div className='bg-[#212936] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
-                      99
-                      <span className='text-[#170F49]'>k+</span>
+                      280
+                      <span className='text-[#170F49]'>+</span>
                     </p>
-                    <p className='text-[#6F6C90] text-[18px]'>Developer community</p>
+                    <p className='text-[#6F6C90] text-[18px]'>Contributors</p>
                   </div>
-                  <div className='bg-[#212936] w-2 h-2 rounded-full mx-5' />
+                  <div className='bg-[#212936] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
-                      99
-                      <span className='text-[#170F49]'>k+</span>
+                      44
+                      <span className='text-[#170F49]'>b+</span>
                     </p>
-                    <p className='text-[#6F6C90] text-[18px]'>Developer community</p>
+                    <p className='text-[#6F6C90] text-[18px]'>Events tracked</p>
                   </div>
                 </div>
               </div>
