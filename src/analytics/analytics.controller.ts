@@ -65,7 +65,7 @@ const getSessionKeyCustom = (
   ua: string,
   pid: string,
   ev: string,
-  salt: string = '',
+  salt: string = ''
 ) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`;
 
 const analyticsDTO = (
@@ -81,7 +81,7 @@ const analyticsDTO = (
   ca: string,
   lt: number | string,
   cc: string,
-  unique: number,
+  unique: number
 ): Array<string | number> => {
   return [
     uuidv4(),
@@ -113,7 +113,7 @@ const customLogDTO = (pid: string, ev: string): string => {
   return JSON.stringify(dto);
 };
 
-const getElValue = (el) => {
+const getElValue = el => {
   if (el === undefined || el === null || el === 'NULL') return 'NULL';
   return `'${el}'`;
 };
@@ -123,11 +123,11 @@ const getPIDsArray = (pids, pid) => {
   const pidEmpty = _isEmpty(pid);
   if (pidsEmpty && pidEmpty)
     throw new BadRequestException(
-      "An array of Project ID's (pids) or a Project ID (pid) has to be provided",
+      "An array of Project ID's (pids) or a Project ID (pid) has to be provided"
     );
   else if (!pidsEmpty && !pidEmpty)
     throw new BadRequestException(
-      "Please provide either an array of Project ID's (pids) or a Project ID (pid), but not both",
+      "Please provide either an array of Project ID's (pids) or a Project ID (pid), but not both"
     );
   else if (!pidEmpty) {
     pids = JSON.stringify([pid]);
@@ -137,13 +137,13 @@ const getPIDsArray = (pids, pid) => {
     pids = JSON.parse(pids);
   } catch (e) {
     throw new UnprocessableEntityException(
-      "Cannot process the provided array of Project ID's",
+      "Cannot process the provided array of Project ID's"
     );
   }
 
   if (!_isArray(pids)) {
     throw new UnprocessableEntityException(
-      "An array of Project ID's has to be provided as a 'pids' param",
+      "An array of Project ID's has to be provided as a 'pids' param"
     );
   }
 
@@ -153,7 +153,7 @@ const getPIDsArray = (pids, pid) => {
 // needed for serving 1x1 px GIF
 const TRANSPARENT_GIF_BUFFER = Buffer.from(
   'R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=',
-  'base64',
+  'base64'
 );
 
 @ApiTags('Analytics')
@@ -163,13 +163,13 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
-    private readonly taskManagerService: TaskManagerService,
+    private readonly taskManagerService: TaskManagerService
   ) {}
 
   @Get('/')
   async getData(
     @Query() data: AnalyticsGET_DTO,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<any> {
     const {
       pid,
@@ -210,19 +210,19 @@ export class AnalyticsController {
     if (!_isEmpty(from) && !_isEmpty(to)) {
       if (!isValidDate(from)) {
         throw new PreconditionFailedException(
-          "The timeframe 'from' parameter is invalid",
+          "The timeframe 'from' parameter is invalid"
         );
       }
 
       if (!isValidDate(to)) {
         throw new PreconditionFailedException(
-          "The timeframe 'to' parameter is invalid",
+          "The timeframe 'to' parameter is invalid"
         );
       }
 
       if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
         throw new PreconditionFailedException(
-          "The timeframe 'from' parameter cannot be greater than 'to'",
+          "The timeframe 'from' parameter cannot be greater than 'to'"
         );
       }
 
@@ -283,7 +283,7 @@ export class AnalyticsController {
       }
     } else {
       throw new BadRequestException(
-        'The timeframe (either from/to pair or period) has to be provided',
+        'The timeframe (either from/to pair or period) has to be provided'
       );
     }
 
@@ -300,12 +300,12 @@ export class AnalyticsController {
       subQuery,
       filtersQuery,
       paramsData,
-      timezone,
+      timezone
     );
 
     const customs = await this.analyticsService.processCustomEV(
       queryCustoms,
-      paramsData,
+      paramsData
     );
 
     return {
@@ -319,7 +319,7 @@ export class AnalyticsController {
   // returns overall short statistics per project
   async getOverallStats(
     @Query() data,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<any> {
     const { pids, pid } = data;
     const pidsArray = getPIDsArray(pids, pid);
@@ -338,7 +338,7 @@ export class AnalyticsController {
     const exists = await redis.exists(
       REDIS_USERS_COUNT_KEY,
       REDIS_PROJECTS_COUNT_KEY,
-      REDIS_PAGEVIEWS_COUNT_KEY,
+      REDIS_PAGEVIEWS_COUNT_KEY
     );
 
     if (exists) {
@@ -359,7 +359,7 @@ export class AnalyticsController {
   @Get('/hb')
   async getHeartBeatStats(
     @Query() data,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<object> {
     const { pids, pid } = data;
     const pidsArray = getPIDsArray(pids, pid);
@@ -387,7 +387,7 @@ export class AnalyticsController {
   async logCustom(
     @Body() eventsDTO: EventsDTO,
     @Headers() headers,
-    @Ip() reqIP,
+    @Ip() reqIP
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers;
 
@@ -408,13 +408,13 @@ export class AnalyticsController {
         userAgent,
         eventsDTO.pid,
         eventsDTO.ev,
-        salt,
+        salt
       );
       const unique = await this.analyticsService.isUnique(sessionHash);
 
       if (!unique) {
         throw new ForbiddenException(
-          'The unique option provided, while the custom event have already been created for this session',
+          'The unique option provided, while the custom event have already been created for this session'
         );
       }
     }
@@ -427,7 +427,7 @@ export class AnalyticsController {
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException(
-        'Error occured while saving the custom event',
+        'Error occured while saving the custom event'
       );
     }
   }
@@ -436,7 +436,7 @@ export class AnalyticsController {
   async heartbeat(
     @Body() logDTO: PageviewsDTO,
     @Headers() headers,
-    @Ip() reqIP,
+    @Ip() reqIP
   ): Promise<any> {
     const { 'user-agent': userAgent } = headers;
     const { pid } = logDTO;
@@ -446,7 +446,7 @@ export class AnalyticsController {
     const sessionID = await this.analyticsService.validateHB(
       logDTO,
       userAgent,
-      ip,
+      ip
     );
     await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME);
     return;
@@ -457,7 +457,7 @@ export class AnalyticsController {
   async log(
     @Body() logDTO: PageviewsDTO,
     @Headers() headers,
-    @Ip() reqIP,
+    @Ip() reqIP
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers;
 
@@ -498,7 +498,7 @@ export class AnalyticsController {
         logDTO.ca,
         'NULL' /* logDTO.lt */,
         cc,
-        1,
+        1
       );
     } else if (!logDTO.unique) {
       dto = analyticsDTO(
@@ -514,11 +514,11 @@ export class AnalyticsController {
         'NULL',
         'NULL',
         'NULL',
-        0,
+        0
       );
     } else {
       throw new BadRequestException(
-        'Event was not saved because it was not unique while unique only param is provided',
+        'Event was not saved because it was not unique while unique only param is provided'
       );
     }
 
@@ -530,7 +530,7 @@ export class AnalyticsController {
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException(
-        'Error occured while saving the log data',
+        'Error occured while saving the log data'
       );
     }
   }
@@ -542,7 +542,7 @@ export class AnalyticsController {
     @Query() data,
     @Headers() headers,
     @Ip() reqIP,
-    @Response() res,
+    @Response() res
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers;
     const { pid } = data;
@@ -589,7 +589,7 @@ export class AnalyticsController {
         'NULL',
         'NULL',
         cc,
-        1,
+        1
       );
     } else {
       dto = analyticsDTO(
@@ -605,7 +605,7 @@ export class AnalyticsController {
         'NULL',
         'NULL',
         'NULL',
-        0,
+        0
       );
     }
 

@@ -148,13 +148,13 @@ export class User {
     this.updated = new Date();
   }
 
-  @OneToMany(() => Project, (project) => project.admin)
+  @OneToMany(() => Project, project => project.admin)
   projects: Project[];
 
-  @OneToMany(() => ProjectShare, (sharedProjects) => sharedProjects.user)
+  @OneToMany(() => ProjectShare, sharedProjects => sharedProjects.user)
   sharedProjects: ProjectShare[];
 
-  @OneToMany(() => ActionToken, (actionToken) => actionToken.user)
+  @OneToMany(() => ActionToken, actionToken => actionToken.user)
   actionTokens: ActionToken[];
 
   @Column({
@@ -167,7 +167,7 @@ export class User {
   @Column({ type: 'date', nullable: true })
   nextBillDate: Date;
 
-  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
+  @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
   @JoinTable()
   refreshTokens?: RefreshToken[];
 }

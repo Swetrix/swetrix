@@ -9,7 +9,7 @@ import { User } from '../user/entities/user.entity';
 export class ActionTokensService {
   constructor(
     @InjectRepository(ActionToken)
-    private actionTokensRepository: Repository<ActionToken>,
+    private actionTokensRepository: Repository<ActionToken>
   ) {}
 
   async deleteMultiple(where: string): Promise<any> {
@@ -23,7 +23,7 @@ export class ActionTokensService {
   async createForUser(
     user: User,
     action: ActionTokenType,
-    newValue: string = null,
+    newValue: string = null
   ): Promise<ActionToken> {
     return this.actionTokensRepository.save({ user, action, newValue });
   }

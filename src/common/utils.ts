@@ -63,7 +63,7 @@ const checkRateLimit = async (
   ip: string,
   action: string,
   reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
-  reqTimeout: number = RATE_LIMIT_TIMEOUT,
+  reqTimeout: number = RATE_LIMIT_TIMEOUT
 ): Promise<void> => {
   const rlHash = _getRateLimitHash(ip, action);
   let rlCount: number = _toNumber(await redis.get(rlHash)) || 0;
@@ -98,24 +98,24 @@ const getProjectsClickhouse = async (id = null) => {
 
 const updateProjectClickhouse = async (project: object) => {
   const filtered = _reduce(
-    _filter(_keys(project), (key) => allowedToUpdateKeys.includes(key)),
+    _filter(_keys(project), key => allowedToUpdateKeys.includes(key)),
     (obj, key) => {
       obj[key] = project[key];
       return obj;
     },
-    {},
+    {}
   );
   const columns = _keys(filtered);
   const values = _values(filtered);
   // @ts-ignore
   const query = `ALTER table project UPDATE ${_join(
     _map(columns, (col, id) => `${col}='${values[id]}'`),
-    ', ',
+    ', '
   )} WHERE id='${project.id}'`;
   return await clickhouse.query(query).toPromise();
 };
 
-const deleteProjectClickhouse = async (id) => {
+const deleteProjectClickhouse = async id => {
   const query = `ALTER table project DELETE WHERE WHERE id='${id}'`;
   return await clickhouse.query(query).toPromise();
 };

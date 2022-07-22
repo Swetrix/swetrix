@@ -12,7 +12,7 @@ const redis = new Redis(
   {
     password: process.env.REDIS_PASSWORD,
     username: process.env.REDIS_USER,
-  },
+  }
 );
 
 redis.defineCommand('countKeysByPattern', {
@@ -123,7 +123,7 @@ const TWO_FACTOR_AUTHENTICATION_APP_NAME =
 function getPercentageChange(
   oldVal: number,
   newVal: number,
-  round: number = 2,
+  round: number = 2
 ) {
   if (oldVal === 0) {
     if (newVal === 0) {

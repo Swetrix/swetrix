@@ -13,7 +13,7 @@ import { UserProfileDTO } from './dto/user.dto';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private usersRepository: Repository<User>
   ) {}
 
   async create(userDTO: UserProfileDTO | User): Promise<User> {
@@ -21,7 +21,7 @@ export class UserService {
   }
 
   async paginate(
-    options: PaginationOptionsInterface,
+    options: PaginationOptionsInterface
   ): Promise<Pagination<User>> {
     const [results, total] = await this.usersRepository.findAndCount({
       take: options.take || 10,
@@ -40,14 +40,14 @@ export class UserService {
 
   async updateByEmail(
     email: string,
-    update: Record<string, unknown>,
+    update: Record<string, unknown>
   ): Promise<any> {
     return this.usersRepository.update({ email }, update);
   }
 
   async updateBySubID(
     subID: string,
-    update: Record<string, unknown>,
+    update: Record<string, unknown>
   ): Promise<any> {
     return this.usersRepository.update({ subID }, update);
   }
@@ -70,7 +70,7 @@ export class UserService {
 
   findOneWhere(
     where: Record<string, unknown>,
-    relations: string[] = [],
+    relations: string[] = []
   ): Promise<User> {
     return this.usersRepository.findOne({ where, relations });
   }
@@ -88,7 +88,7 @@ export class UserService {
 
   findWhereWithRelations(
     where: Record<string, unknown>,
-    relations: string[],
+    relations: string[]
   ): Promise<User[]> {
     return this.usersRepository.find({
       where,

@@ -42,7 +42,7 @@ export class TaskManagerService {
     private readonly userService: UserService,
     private readonly analyticsService: AnalyticsService,
     private readonly projectService: ProjectService,
-    private readonly actionTokensService: ActionTokensService,
+    private readonly actionTokensService: ActionTokensService
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -112,7 +112,7 @@ export class TaskManagerService {
           email,
           LetterTemplate.TierWarning,
           emailParams,
-          'broadcast',
+          'broadcast'
         );
         await this.userService.update(id, {
           evWarningSentOn: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
@@ -128,10 +128,10 @@ export class TaskManagerService {
       .subtract(PROJECT_INVITE_EXPIRE, 'h')
       .format('YYYY-MM-DD HH:mm:ss');
     await this.actionTokensService.deleteMultiple(
-      `action="${ActionTokenType.PROJECT_SHARE}" AND created<"${minDate}"`,
+      `action="${ActionTokenType.PROJECT_SHARE}" AND created<"${minDate}"`
     );
     await this.projectService.deleteMultipleShare(
-      `confirmed=0 AND created<"${minDate}"`,
+      `confirmed=0 AND created<"${minDate}"`
     );
   }
 
@@ -165,7 +165,7 @@ export class TaskManagerService {
         continue;
       }
 
-      const ids = _map(users[i].projects, (p) => p.id);
+      const ids = _map(users[i].projects, p => p.id);
       const data = await this.analyticsService.getSummary(ids, 'w');
 
       const result = {
@@ -182,7 +182,7 @@ export class TaskManagerService {
         users[i].email,
         LetterTemplate.ProjectReport,
         result,
-        'broadcast',
+        'broadcast'
       );
     }
   }
@@ -211,7 +211,7 @@ export class TaskManagerService {
         continue;
       }
 
-      const ids = _map(users[i].projects, (p) => p.id);
+      const ids = _map(users[i].projects, p => p.id);
       const data = await this.analyticsService.getSummary(ids, 'M');
 
       const result = {
@@ -228,7 +228,7 @@ export class TaskManagerService {
         users[i].email,
         LetterTemplate.ProjectReport,
         result,
-        'broadcast',
+        'broadcast'
       );
     }
   }

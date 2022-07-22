@@ -25,12 +25,12 @@ async function bootstrap(): Promise<void> {
     new ValidationPipe({
       transform: true,
       whitelist: true,
-    }),
+    })
   );
 
   await app.listen(
     +configService.get('APP_PORT'),
-    configService.get('APP_HOST'),
+    configService.get('APP_HOST')
   );
 }
 

@@ -23,10 +23,10 @@ export class ProjectShare {
   id: string;
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, (user) => user.sharedProjects)
+  @ManyToOne(() => User, user => user.sharedProjects)
   user: User;
 
-  @ManyToOne(() => Project, (project) => project.share)
+  @ManyToOne(() => Project, project => project.share)
   project: Project;
 
   @ApiProperty()

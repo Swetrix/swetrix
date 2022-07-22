@@ -14,7 +14,7 @@ export class TwoFactorAuthService {
     const otpauthUrl = authenticator.keyuri(
       user.email,
       TWO_FACTOR_AUTHENTICATION_APP_NAME,
-      secret,
+      secret
     );
 
     await this.userService.update(user.id, {
@@ -29,7 +29,7 @@ export class TwoFactorAuthService {
 
   isTwoFactorAuthenticationCodeValid(
     twoFactorAuthenticationCode: string,
-    user: User,
+    user: User
   ) {
     return authenticator.verify({
       token: twoFactorAuthenticationCode,

@@ -29,7 +29,7 @@ export class WebhookController {
   constructor(
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
-    private readonly webhookService: WebhookService,
+    private readonly webhookService: WebhookService
   ) {}
 
   @UseGuards(SelfhostedGuard)
@@ -37,7 +37,7 @@ export class WebhookController {
   async paddleWebhook(
     @Body() body,
     @Headers() headers,
-    @Ip() reqIP,
+    @Ip() reqIP
   ): Promise<any> {
     const ip =
       headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || '';
@@ -63,29 +63,27 @@ export class WebhookController {
           uid = JSON.parse(passthrough)?.uid;
         } catch {
           this.logger.error(
-            `[${body.alert_name}] Cannot parse the uid: ${JSON.stringify(
-              body,
-            )}`,
+            `[${body.alert_name}] Cannot parse the uid: ${JSON.stringify(body)}`
           );
         }
 
         let monthlyBilling = true;
         let plan = _find(
           ACCOUNT_PLANS,
-          ({ pid }) => pid === subscription_plan_id,
+          ({ pid }) => pid === subscription_plan_id
         );
 
         if (!plan) {
           monthlyBilling = false;
           plan = _find(
             ACCOUNT_PLANS,
-            ({ ypid }) => ypid === subscription_plan_id,
+            ({ ypid }) => ypid === subscription_plan_id
           );
         }
 
         if (!plan) {
           throw new NotFoundException(
-            `The selected account plan (${subscription_plan_id}) is not available`,
+            `The selected account plan (${subscription_plan_id}) is not available`
           );
         }
 

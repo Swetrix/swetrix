@@ -70,7 +70,7 @@ const updateProjectRedis = async (id: string, project: Project) => {
       key,
       JSON.stringify(project),
       'EX',
-      redisProjectCacheTimeout,
+      redisProjectCacheTimeout
     );
   } catch {
     await redis.del(key);
@@ -105,7 +105,7 @@ export class ProjectController {
     private readonly userService: UserService,
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
-    private readonly mailerService: MailerService,
+    private readonly mailerService: MailerService
   ) {}
 
   @Get('/')
@@ -118,7 +118,7 @@ export class ProjectController {
   async get(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
+    @Query('skip') skip: number | undefined
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project');
 
@@ -137,10 +137,10 @@ export class ProjectController {
 
       const paginated = await this.projectService.paginate(
         { take, skip },
-        where,
+        where
       );
       const totalMonthlyEvents = await this.projectService.getRedisCount(
-        userId,
+        userId
       );
 
       return {
@@ -160,13 +160,13 @@ export class ProjectController {
   async getShared(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
+    @Query('skip') skip: number | undefined
   ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project/shared');
 
     if (isSelfhosted) {
       throw new NotImplementedException(
-        'This feature is not available on selfhosted yet',
+        'This feature is not available on selfhosted yet'
       );
     } else {
       const where = Object();
@@ -174,7 +174,7 @@ export class ProjectController {
 
       const paginated = await this.projectService.paginateShared(
         { take, skip },
-        where,
+        where
       );
 
       return {
@@ -192,7 +192,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async getAllProjects(
     @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
+    @Query('skip') skip: number | undefined
   ): Promise<Project | object> {
     this.logger.log({ take, skip }, 'GET /all');
 
@@ -211,7 +211,7 @@ export class ProjectController {
   async getUserProject(
     @Param('id') userId: string,
     @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
+    @Query('skip') skip: number | undefined
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /user/:id');
 
@@ -231,12 +231,12 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id');
     if (!isValidPID(id)) {
       throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
+        'The provided Project ID (pid) is incorrect'
       );
     }
 
@@ -268,7 +268,7 @@ export class ProjectController {
   @Roles(UserType.ADMIN)
   async createForAdmin(
     @Param('id') userId: string,
-    @Body() projectDTO: ProjectDTO,
+    @Body() projectDTO: ProjectDTO
   ): Promise<Project> {
     this.logger.log({ userId, projectDTO }, 'POST /project/admin/:id');
 
@@ -279,13 +279,13 @@ export class ProjectController {
 
     if (!user.isActive) {
       throw new ForbiddenException(
-        "User's email address has to be verified first",
+        "User's email address has to be verified first"
       );
     }
 
     if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
       throw new ForbiddenException(
-        `The user's plan supports maximum of ${maxProjects} projects`,
+        `The user's plan supports maximum of ${maxProjects} projects`
       );
     }
 
@@ -307,7 +307,7 @@ export class ProjectController {
       if (e.code === 'ER_DUP_ENTRY') {
         if (e.sqlMessage.includes(projectDTO.id)) {
           throw new BadRequestException(
-            'Project with selected ID already exists',
+            'Project with selected ID already exists'
           );
         }
       }
@@ -322,7 +322,7 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(
     @Body() projectDTO: ProjectDTO,
-    @CurrentUserId() userId: string,
+    @CurrentUserId() userId: string
   ): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project');
 
@@ -352,7 +352,7 @@ export class ProjectController {
 
       if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
         throw new ForbiddenException(
-          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`
         );
       }
 
@@ -375,7 +375,7 @@ export class ProjectController {
         if (e.code === 'ER_DUP_ENTRY') {
           if (e.sqlMessage.includes(projectDTO.id)) {
             throw new BadRequestException(
-              'Project with selected ID already exists',
+              'Project with selected ID already exists'
             );
           }
         }
@@ -393,7 +393,7 @@ export class ProjectController {
   async update(
     @Param('id') id: string,
     @Body() projectDTO: ProjectDTO,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<any> {
     this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id');
     this.projectService.validateProject(projectDTO);
@@ -411,7 +411,7 @@ export class ProjectController {
       project.public = projectDTO.public;
 
       await updateProjectClickhouse(
-        this.projectService.formatToClickhouse(project),
+        this.projectService.formatToClickhouse(project)
       );
     } else {
       project = await this.projectService.findOne(id, {
@@ -446,12 +446,12 @@ export class ProjectController {
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
     @Param('id') id: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<any> {
     this.logger.log({ uid, id }, 'DELETE /project/:id');
     if (!isValidPID(id)) {
       throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
+        'The provided Project ID (pid) is incorrect'
       );
     }
 
@@ -477,7 +477,7 @@ export class ProjectController {
         {
           relations: ['admin'],
           select: ['id'],
-        },
+        }
       );
 
       if (_isEmpty(project)) {
@@ -513,13 +513,13 @@ export class ProjectController {
   async deleteShare(
     @Param('pid') pid: string,
     @Param('shareId') shareId: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<any> {
     this.logger.log({ uid, pid, shareId }, 'DELETE /project/:pid/:shareId');
 
     if (!isValidPID(pid)) {
       throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
+        'The provided Project ID (pid) is incorrect'
       );
     }
 
@@ -532,7 +532,7 @@ export class ProjectController {
       {
         relations: ['admin'],
         select: ['id', 'admin'],
-      },
+      }
     );
 
     if (_isEmpty(project)) {
@@ -557,13 +557,13 @@ export class ProjectController {
     @Param('pid') pid: string,
     @Body() shareDTO: ShareDTO,
     @CurrentUserId() uid: string,
-    @Headers() headers,
+    @Headers() headers
   ): Promise<Project> {
     this.logger.log({ uid, pid, shareDTO }, 'POST /project/:pid/share');
 
     if (!isValidPID(pid)) {
       throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
+        'The provided Project ID (pid) is incorrect'
       );
     }
 
@@ -577,7 +577,7 @@ export class ProjectController {
       {
         relations: ['admin', 'share'],
         select: ['id', 'admin', 'share'],
-      },
+      }
     );
 
     if (_isEmpty(project)) {
@@ -590,12 +590,12 @@ export class ProjectController {
       {
         email: shareDTO.email,
       },
-      ['sharedProjects'],
+      ['sharedProjects']
     );
 
     if (!invitee) {
       throw new NotFoundException(
-        `User with email ${shareDTO.email} is not registered on Swetrix`,
+        `User with email ${shareDTO.email} is not registered on Swetrix`
       );
     }
 
@@ -613,12 +613,12 @@ export class ProjectController {
             id: invitee.id,
           },
         },
-      }),
+      })
     );
 
     if (isSharingWithUser) {
       throw new BadRequestException(
-        `You're already sharing the project with ${invitee.email}`,
+        `You're already sharing the project with ${invitee.email}`
       );
     }
 
@@ -642,7 +642,7 @@ export class ProjectController {
       const actionToken = await this.actionTokensService.createForUser(
         user,
         ActionTokenType.PROJECT_SHARE,
-        share.id,
+        share.id
       );
       const url = `${headers.origin}/share/${actionToken.id}`;
       await this.mailerService.sendEmail(
@@ -654,7 +654,7 @@ export class ProjectController {
           name: project.name,
           role: share.role,
           expiration: PROJECT_INVITE_EXPIRE,
-        },
+        }
       );
 
       const updatedProject = await this.projectService.findOne(pid, {
@@ -666,7 +666,7 @@ export class ProjectController {
       return processProjectUser(updatedProject);
     } catch (e) {
       console.error(
-        `[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`,
+        `[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`
       );
       throw new BadRequestException(e);
     }
@@ -681,7 +681,7 @@ export class ProjectController {
   async updateShare(
     @Param('shareId') shareId: string,
     @Body() shareDTO: ShareUpdateDTO,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<ProjectShare> {
     this.logger.log({ uid, shareDTO, shareId }, 'PUT /project/share/:shareId');
 

@@ -13,7 +13,7 @@ export class RefreshTokensService {
   constructor(
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
 
   async generate(userId: string): Promise<RefreshToken> {
@@ -22,7 +22,7 @@ export class RefreshTokensService {
       this.configService.get('JWT_REFRESH_SECRET'),
       {
         expiresIn: EXPIRES_IN,
-      },
+      }
     );
 
     const refreshTokenHash = createHash('sha1')

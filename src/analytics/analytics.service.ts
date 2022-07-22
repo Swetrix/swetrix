@@ -52,7 +52,7 @@ export const getSessionKey = (
   ip: string,
   ua: string,
   pid: string,
-  salt: string = '',
+  salt: string = ''
 ) => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`;
 
 export const cols = [
@@ -128,7 +128,7 @@ export const isValidTimezone = (timezone: string): boolean => {
 
 export const isValidDate = (
   date: string,
-  format: string = 'YYYY-MM-DD',
+  format: string = 'YYYY-MM-DD'
 ): boolean => {
   if (_isEmpty(date)) {
     return false;
@@ -140,7 +140,7 @@ export const isValidDate = (
 export const checkIfTBAllowed = (
   timeBucket: TimeBucketType,
   from: string,
-  to: string,
+  to: string
 ): void => {
   const diff = dayjs(to).diff(dayjs(from), 'days');
 
@@ -148,7 +148,7 @@ export const checkIfTBAllowed = (
 
   if (_isEmpty(tbMap)) {
     throw new PreconditionFailedException(
-      "The difference between 'from' and 'to' is greater than allowed",
+      "The difference between 'from' and 'to' is greater than allowed"
     );
   }
 
@@ -156,7 +156,7 @@ export const checkIfTBAllowed = (
 
   if (!_includes(tb, timeBucket)) {
     throw new PreconditionFailedException(
-      "The specified 'timeBucket' parameter cannot be applied to the date range",
+      "The specified 'timeBucket' parameter cannot be applied to the date range"
     );
   }
 };
@@ -183,7 +183,7 @@ export class AnalyticsService {
       }
       if (_isEmpty(project))
         throw new BadRequestException(
-          'The provided Project ID (pid) is incorrect',
+          'The provided Project ID (pid) is incorrect'
         );
 
       if (!isSelfhosted) {
@@ -201,14 +201,14 @@ export class AnalyticsService {
         pidKey,
         JSON.stringify(project),
         'EX',
-        redisProjectCacheTimeout,
+        redisProjectCacheTimeout
       );
     } else {
       try {
         project = JSON.parse(project);
       } catch {
         throw new InternalServerErrorException(
-          'Error while processing project',
+          'Error while processing project'
         );
       }
     }
@@ -229,14 +229,14 @@ export class AnalyticsService {
       if (origin === 'null') {
         if (!_includes(project.origins, 'null')) {
           throw new BadRequestException(
-            "'null' origin is not added to your project's whitelist. To send requests from this origin either add it to your origins policy or leave it empty.",
+            "'null' origin is not added to your project's whitelist. To send requests from this origin either add it to your origins policy or leave it empty."
           );
         }
       } else {
         const hostname = new URL(origin).hostname;
         if (!_includes(project.origins, hostname)) {
           throw new BadRequestException(
-            "This origin is prohibited by the project's origins policy",
+            "This origin is prohibited by the project's origins policy"
           );
         }
       }
@@ -248,14 +248,14 @@ export class AnalyticsService {
       throw new BadRequestException('The Project ID (pid) has to be provided');
     if (!isValidPID(pid))
       throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
+        'The provided Project ID (pid) is incorrect'
       );
   }
 
   async validate(
     logDTO: PageviewsDTO | EventsDTO,
     origin: string,
-    type: 'custom' | 'log' = 'log',
+    type: 'custom' | 'log' = 'log'
   ): Promise<string | null> {
     if (_isEmpty(logDTO))
       throw new BadRequestException('The request cannot be empty');
@@ -273,7 +273,7 @@ export class AnalyticsService {
 
       if (!customEVvalidate.test(ev)) {
         throw new BadRequestException(
-          'An incorrect event name (ev) is provided',
+          'An incorrect event name (ev) is provided'
         );
       }
     } else {
@@ -305,7 +305,7 @@ export class AnalyticsService {
 
     if (!project.active)
       throw new BadRequestException(
-        'Incoming analytics is disabled for this project',
+        'Incoming analytics is disabled for this project'
       );
 
     if (!isSelfhosted) {
@@ -315,7 +315,7 @@ export class AnalyticsService {
 
       if (count >= maxCount) {
         throw new ForbiddenException(
-          'You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.',
+          'You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.'
         );
       }
     }
@@ -328,7 +328,7 @@ export class AnalyticsService {
   async validateHB(
     logDTO: PageviewsDTO,
     userAgent: string,
-    ip: string,
+    ip: string
   ): Promise<string | null> {
     if (_isEmpty(logDTO))
       throw new BadRequestException('The request cannot be empty');
@@ -349,7 +349,7 @@ export class AnalyticsService {
   validatePeriod(period: string): void {
     if (!_includes(validPeriods, period)) {
       throw new UnprocessableEntityException(
-        'The provided period is incorrect',
+        'The provided period is incorrect'
       );
     }
   }
@@ -380,7 +380,7 @@ export class AnalyticsService {
 
       if (!_includes(cols, column)) {
         throw new UnprocessableEntityException(
-          `The provided filter (${column}) is not supported`,
+          `The provided filter (${column}) is not supported`
         );
       }
       // working only on 1 filter per 1 column
@@ -401,7 +401,7 @@ export class AnalyticsService {
   validateTimebucket(tb: TimeBucketType): void {
     if (!_includes(validTimebuckets, tb)) {
       throw new UnprocessableEntityException(
-        'The provided timebucket is incorrect',
+        'The provided timebucket is incorrect'
       );
     }
   }
@@ -424,7 +424,7 @@ export class AnalyticsService {
       const pid = pids[i];
       if (!isValidPID(pid))
         throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
+          `The provided Project ID (${pid}) is incorrect`
         );
 
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss');
@@ -471,7 +471,7 @@ export class AnalyticsService {
         };
       } catch {
         throw new InternalServerErrorException(
-          "Can't process the provided PID. Please, try again later.",
+          "Can't process the provided PID. Please, try again later."
         );
       }
     }
@@ -486,7 +486,7 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    timezone: string
   ): Promise<object | void> {
     const params = {};
 
@@ -504,7 +504,7 @@ export class AnalyticsService {
       }
     }
 
-    if (!_some(_values(params), (val) => !_isEmpty(val))) {
+    if (!_some(_values(params), val => !_isEmpty(val))) {
       return Promise.resolve();
     }
 
@@ -591,8 +591,8 @@ export class AnalyticsService {
     }
 
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-      x = _map(x, (el) =>
-        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+      x = _map(x, el =>
+        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss')
       );
     }
 

@@ -61,7 +61,7 @@ export class UserController {
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-    private readonly logger: AppLoggerService,
+    private readonly logger: AppLoggerService
   ) {}
 
   @Get('/')
@@ -72,7 +72,7 @@ export class UserController {
   @Roles(UserType.ADMIN)
   async get(
     @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
+    @Query('skip') skip: number | undefined
   ): Promise<Pagination<User> | User[]> {
     this.logger.log({ take, skip }, 'GET /user');
     return await this.userService.paginate({ take, skip });
@@ -84,7 +84,7 @@ export class UserController {
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async searchUsers(
-    @Query('query') query: string | undefined,
+    @Query('query') query: string | undefined
   ): Promise<User[]> {
     this.logger.log({ query }, 'GET /user/search');
     return await this.userService.search(query);
@@ -121,7 +121,7 @@ export class UserController {
   @Roles(UserType.ADMIN)
   async delete(
     @Param('id') id: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<any> {
     this.logger.log({ id, uid }, 'DELETE /user/:id');
     const user = await this.userService.findOne(id, {
@@ -140,8 +140,8 @@ export class UserController {
     try {
       if (!_isEmpty(user.projects)) {
         const pids = _join(
-          _map(user.projects, (el) => `'${el.id}'`),
-          ',',
+          _map(user.projects, el => `'${el.id}'`),
+          ','
         );
         const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`;
         const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`;
@@ -178,8 +178,8 @@ export class UserController {
     try {
       if (!_isEmpty(user.projects)) {
         const pids = _join(
-          _map(user.projects, (el) => `'${el.id}'`),
-          ',',
+          _map(user.projects, el => `'${el.id}'`),
+          ','
         );
         const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`;
         const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`;
@@ -205,7 +205,7 @@ export class UserController {
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
     @Param('shareId') shareId: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<any> {
     this.logger.log({ uid, shareId }, 'DELETE /user/share/:shareId');
 
@@ -235,7 +235,7 @@ export class UserController {
   @ApiResponse({ status: 204, description: 'Empty body' })
   async acceptShare(
     @Param('shareId') shareId: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string
   ): Promise<any> {
     this.logger.log({ uid, shareId }, 'GET /user/share/:shareId');
 
@@ -265,7 +265,7 @@ export class UserController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(
     @CurrentUserId() id: string,
-    @Req() request: Request,
+    @Req() request: Request
   ): Promise<boolean> {
     this.logger.log({ id }, 'POST /user/confirm_email');
 
@@ -282,7 +282,7 @@ export class UserController {
     const token = await this.actionTokensService.createForUser(
       user,
       ActionTokenType.EMAIL_VERIFICATION,
-      user.email,
+      user.email
     );
     const url = `${request.headers.origin}/verify/${token.id}`;
 
@@ -301,7 +301,7 @@ export class UserController {
   @Roles(UserType.ADMIN)
   async update(
     @Body() userDTO: AdminUpdateUserProfileDTO,
-    @Param('id') id: string,
+    @Param('id') id: string
   ): Promise<User> {
     this.logger.log({ userDTO, id }, 'PUT /user/:id');
 
@@ -319,7 +319,7 @@ export class UserController {
       await this.userService.update(id, { ...user, ...userDTO });
       // omit sensitive data before returning using this.userService.omitSensitiveData function
       return this.userService.omitSensitiveData(
-        await this.userService.findOne(id),
+        await this.userService.findOne(id)
       );
     } catch (e) {
       if (e.code === 'ER_DUP_ENTRY') {
@@ -338,7 +338,7 @@ export class UserController {
   async updateCurrentUser(
     @Body() userDTO: UpdateUserProfileDTO,
     @CurrentUserId() id: string,
-    @Req() request: Request,
+    @Req() request: Request
   ): Promise<User> {
     this.logger.log({ userDTO, id }, 'PUT /user');
     const user = await this.userService.findOneWhere({ id });
@@ -348,7 +348,7 @@ export class UserController {
       userDTO.password = await this.authService.hashPassword(userDTO.password);
       await this.mailerService.sendEmail(
         userDTO.email,
-        LetterTemplate.PasswordChanged,
+        LetterTemplate.PasswordChanged
       );
     }
 
@@ -365,13 +365,13 @@ export class UserController {
         const token = await this.actionTokensService.createForUser(
           user,
           ActionTokenType.EMAIL_CHANGE,
-          userDTO.email,
+          userDTO.email
         );
         const url = `${request.headers.origin}/change-email/${token.id}`;
         await this.mailerService.sendEmail(
           user.email,
           LetterTemplate.MailAddressChangeConfirmation,
-          { url },
+          { url }
         );
       }
       // delete internal properties from userDTO before updating it
@@ -420,11 +420,11 @@ export class UserController {
       !_isNull(user.exportedAt) &&
       !dayjs().isAfter(
         dayjs.utc(user.exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'),
-        'day',
+        'day'
       )
     ) {
       throw new MethodNotAllowedException(
-        `Please, try again later. You can request a GDPR Export only once per ${GDPR_EXPORT_TIMEFRAME} days.`,
+        `Please, try again later. You can request a GDPR Export only once per ${GDPR_EXPORT_TIMEFRAME} days.`
       );
     }
 
@@ -443,7 +443,7 @@ export class UserController {
         subUpdateURL: user.subUpdateURL || '-',
         subCancelURL: user.subCancelURL || '-',
       },
-      projects: _map(projects, (project) => ({
+      projects: _map(projects, project => ({
         ...project,
         created: dayjs(project.created).format('YYYY/MM/DD HH:mm:ss'),
         origins: _join(project.origins, ', '),
@@ -453,7 +453,7 @@ export class UserController {
     await this.mailerService.sendEmail(
       user.email,
       LetterTemplate.GDPRDataExport,
-      data,
+      data
     );
     await this.userService.update(user.id, {
       exportedAt: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),

@@ -98,7 +98,7 @@ export class MailerService {
     email: string,
     templateName: LetterTemplate,
     params: Params = null,
-    messageStream: 'broadcast' | 'outbound' = 'outbound',
+    messageStream: 'broadcast' | 'outbound' = 'outbound'
   ): Promise<void> {
     try {
       const templatePath = `${TEMPLATES_PATH}/en/${templateName}.html`;
@@ -122,7 +122,7 @@ export class MailerService {
             params,
           },
           'sendEmail',
-          true,
+          true
         );
       } else {
         await mailClient.sendEmail(message);

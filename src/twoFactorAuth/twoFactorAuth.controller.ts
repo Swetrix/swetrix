@@ -33,7 +33,7 @@ export class TwoFactorAuthController {
     private userService: UserService,
     private authService: AuthService,
     private readonly logger: AppLoggerService,
-    private readonly mailerService: MailerService,
+    private readonly mailerService: MailerService
   ) {}
 
   @Post('generate')
@@ -45,7 +45,7 @@ export class TwoFactorAuthController {
     const user = await this.userService.findOneWhere({ id });
 
     return await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(
-      user,
+      user
     );
   }
 
@@ -58,7 +58,7 @@ export class TwoFactorAuthController {
     @Body() body: TwoFactorAuthDTO,
     @CurrentUserId() id: string,
     @Headers() headers,
-    @Ip() reqIP,
+    @Ip() reqIP
   ) {
     this.logger.log({ body }, 'POST /2fa/enable');
 
@@ -72,7 +72,7 @@ export class TwoFactorAuthController {
     const isCodeValid =
       this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
-        user,
+        user
       );
 
     if (!isCodeValid) {
@@ -107,7 +107,7 @@ export class TwoFactorAuthController {
     @Body() body: TwoFactorAuthDTO,
     @CurrentUserId() id: string,
     @Headers() headers,
-    @Ip() reqIP,
+    @Ip() reqIP
   ) {
     this.logger.log({ body }, 'POST /2fa/disable');
 
@@ -122,7 +122,7 @@ export class TwoFactorAuthController {
       user.twoFactorRecoveryCode === twoFactorAuthenticationCode ||
       this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
-        user,
+        user
       );
 
     if (!isCodeValid) {
@@ -148,7 +148,7 @@ export class TwoFactorAuthController {
     @Body() body: TwoFactorAuthDTO,
     @CurrentUserId() id: string,
     @Headers() headers,
-    @Ip() reqIP,
+    @Ip() reqIP
   ) {
     this.logger.log({ body }, 'POST /2fa/authenticate');
 
@@ -163,7 +163,7 @@ export class TwoFactorAuthController {
       user.twoFactorRecoveryCode === twoFactorAuthenticationCode ||
       this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
-        user,
+        user
       );
 
     if (!isCodeValid) {

@@ -35,11 +35,11 @@ export class Project {
   public: boolean;
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, (user) => user.projects)
+  @ManyToOne(() => User, user => user.projects)
   admin: User;
 
   @ApiProperty({ type: () => ProjectShare })
-  @OneToMany(() => ProjectShare, (share) => share.project)
+  @OneToMany(() => ProjectShare, share => share.project)
   share: ProjectShare[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

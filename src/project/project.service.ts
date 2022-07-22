@@ -65,12 +65,12 @@ export class ProjectService {
     @InjectRepository(Project)
     private projectsRepository: Repository<Project>,
     @InjectRepository(ProjectShare)
-    private projectShareRepository: Repository<ProjectShare>,
+    private projectShareRepository: Repository<ProjectShare>
   ) {}
 
   async paginate(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: Record<string, unknown> | undefined
   ): Promise<Pagination<Project>> {
     const [results, total] = await this.projectsRepository.findAndCount({
       take: options.take || 100,
@@ -90,7 +90,7 @@ export class ProjectService {
 
   async paginateShared(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: Record<string, unknown> | undefined
   ): Promise<Pagination<ProjectShare>> {
     const [results, total] = await this.projectShareRepository.findAndCount({
       take: options.take || 100,
@@ -159,14 +159,14 @@ export class ProjectService {
   }
 
   async findShare(
-    params: FindManyOptions<ProjectShare>,
+    params: FindManyOptions<ProjectShare>
   ): Promise<ProjectShare[]> {
     return this.projectShareRepository.find({ ...params });
   }
 
   async findOneShare(
     id: string,
-    params: Object = {},
+    params: Object = {}
   ): Promise<ProjectShare | null> {
     return this.projectShareRepository.findOne({ where: { id }, ...params });
   }
@@ -191,7 +191,7 @@ export class ProjectService {
   }
   findOneWhere(
     where: Record<string, unknown>,
-    params: object = {},
+    params: object = {}
   ): Promise<Project> {
     return this.projectsRepository.findOne({ where, ...params });
   }
@@ -211,20 +211,20 @@ export class ProjectService {
   allowedToManage(
     project: Project,
     uid: string,
-    roles: Array<UserType> = [],
+    roles: Array<UserType> = []
   ): void {
     if (
       uid === project.admin?.id ||
       _includes(roles, UserType.ADMIN) ||
       _findIndex(
         project.share,
-        (share) => share.user?.id === uid && share.role === Role.admin,
+        share => share.user?.id === uid && share.role === Role.admin
       ) !== -1
     ) {
       return;
     } else {
       throw new ForbiddenException(
-        'You are not allowed to manage this project',
+        'You are not allowed to manage this project'
       );
     }
   }
@@ -270,17 +270,17 @@ export class ProjectService {
   validateProject(projectDTO: ProjectDTO) {
     if (!isValidPID(projectDTO.id))
       throw new UnprocessableEntityException(
-        'The provided Project ID (pid) is incorrect',
+        'The provided Project ID (pid) is incorrect'
       );
     if (_size(projectDTO.name) > 50)
       throw new UnprocessableEntityException('The project name is too long');
     if (!_isArray(projectDTO.origins))
       throw new UnprocessableEntityException(
-        'The list of allowed origins has to be an array of strings',
+        'The list of allowed origins has to be an array of strings'
       );
     if (_size(_join(projectDTO.origins, ',')) > 300)
       throw new UnprocessableEntityException(
-        'The list of allowed origins has to be smaller than 300 symbols',
+        'The list of allowed origins has to be smaller than 300 symbols'
       );
   }
 
@@ -315,12 +315,12 @@ export class ProjectService {
       }
 
       const count_ev_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(
-        _map(pids, (el) => `'${el.id}'`),
-        ',',
+        _map(pids, el => `'${el.id}'`),
+        ','
       )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`;
       const count_custom_ev_query = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(
-        _map(pids, (el) => `'${el.id}'`),
-        ',',
+        _map(pids, el => `'${el.id}'`),
+        ','
       )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`;
 
       const pageviews = (await clickhouse.query(count_ev_query).toPromise())[0][
@@ -336,7 +336,7 @@ export class ProjectService {
         countKey,
         `${pageviews}`,
         'EX',
-        redisProjectCountCacheTimeout,
+        redisProjectCountCacheTimeout
       );
     } else {
       try {
@@ -346,7 +346,7 @@ export class ProjectService {
         count = 0;
         console.error(e);
         throw new InternalServerErrorException(
-          'Error while processing project',
+          'Error while processing project'
         );
       }
     }

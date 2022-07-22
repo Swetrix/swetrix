@@ -35,7 +35,7 @@ const httpsOptions = {
 export class AuthService {
   constructor(
     private userService: UserService,
-    private readonly logger: AppLoggerService,
+    private readonly logger: AppLoggerService
   ) {}
 
   async hashPassword(pass: string): Promise<string> {
@@ -46,14 +46,14 @@ export class AuthService {
   async get(hash) {
     return new Promise((resolve, reject) => {
       https
-        .get(`${HIBP_URL}/${hash}`, httpsOptions, (res) => {
+        .get(`${HIBP_URL}/${hash}`, httpsOptions, res => {
           let data = '';
 
           if (res.statusCode !== 200) {
             return reject(`Failed to load ${HIBP_URL} API: ${res.statusCode}`);
           }
 
-          res.on('data', (chunk) => {
+          res.on('data', chunk => {
             data += chunk;
           });
 
@@ -63,16 +63,16 @@ export class AuthService {
 
           return true;
         })
-        .on('error', (err) => {
+        .on('error', err => {
           reject(err);
         });
     });
   }
 
   async sha1hash(string): Promise<string> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const shasum = _toUpper(
-        crypto.createHash('sha1').update(string).digest('hex'),
+        crypto.createHash('sha1').update(string).digest('hex')
       );
       resolve(shasum);
     });
@@ -96,7 +96,7 @@ export class AuthService {
 
   async checkPassword(
     passToCheck: string,
-    hashedPass: string,
+    hashedPass: string
   ): Promise<boolean> {
     return await bcrypt.compare(passToCheck, hashedPass);
   }
@@ -157,7 +157,7 @@ export class AuthService {
       process.env.JWT_SECRET,
       {
         expiresIn: JWT_LIFE_TIME,
-      },
+      }
     );
 
     return { access_token: token, user: userData };

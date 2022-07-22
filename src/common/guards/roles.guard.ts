@@ -22,7 +22,7 @@ export class RolesGuard implements CanActivate {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
     const twoFaNotRequired = this.reflector.get<boolean>(
       'twoFaNotRequired',
-      context.getHandler(),
+      context.getHandler()
     );
     if (!roles || isSelfhosted) {
       return true;
@@ -44,7 +44,7 @@ export class RolesGuard implements CanActivate {
           id: decoded.user_id,
         });
         const hasRole = user.roles.some(
-          (role) => !!roles.find((item) => item === role),
+          role => !!roles.find(item => item === role)
         );
 
         if (!hasRole) {

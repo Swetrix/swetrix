@@ -53,7 +53,7 @@ export class AuthController {
     private actionTokensService: ActionTokensService,
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
-    private readonly refreshTokensService: RefreshTokensService,
+    private readonly refreshTokensService: RefreshTokensService
   ) {}
 
   @Get('/me')
@@ -70,7 +70,7 @@ export class AuthController {
       };
     } else {
       user = this.authService.processUser(
-        await this.userService.findOneWhere({ id: user_id }),
+        await this.userService.findOneWhere({ id: user_id })
       );
       const sharedProjects = await this.projectService.findShare({
         where: {
@@ -92,7 +92,7 @@ export class AuthController {
     @Body() userLoginDTO: UserLoginDTO,
     @Headers() headers,
     @Ip() reqIP,
-    @Res({ passthrough: true }) res,
+    @Res({ passthrough: true }) res
   ): Promise<any> {
     this.logger.log({ userLoginDTO }, 'POST /auth/login');
     const ip =
@@ -106,7 +106,7 @@ export class AuthController {
         userLoginDTO.password !== SELFHOSTED_PASSWORD
       ) {
         throw new UnprocessableEntityException(
-          'Email or password is incorrect',
+          'Email or password is incorrect'
         );
       }
       return this.authService.login({
@@ -115,7 +115,7 @@ export class AuthController {
     } else {
       const user = await this.authService.validateUser(
         userLoginDTO.email,
-        userLoginDTO.password,
+        userLoginDTO.password
       );
 
       if (user.isTwoFactorAuthenticationEnabled) {
@@ -152,7 +152,7 @@ export class AuthController {
     /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request,
     @Headers() headers,
     @Ip() reqIP,
-    @Res({ passthrough: true }) res,
+    @Res({ passthrough: true }) res
   ): Promise<any> {
     this.logger.log({ userDTO }, 'POST /auth/register');
     const ip =
@@ -182,7 +182,7 @@ export class AuthController {
       const user = await this.userService.create(userToUpdate);
       const actionToken = await this.actionTokensService.createForUser(
         user,
-        ActionTokenType.EMAIL_VERIFICATION,
+        ActionTokenType.EMAIL_VERIFICATION
       );
       const url = `${request.headers.origin}/verify/${actionToken.id}`;
       await this.mailerService.sendEmail(userDTO.email, LetterTemplate.SignUp, {
@@ -202,7 +202,7 @@ export class AuthController {
       this.logger.log(
         `[ERROR WHILE CREATING ACCOUNT]: ${e}`,
         'POST /auth/register',
-        true,
+        true
       );
     }
   }
@@ -249,7 +249,7 @@ export class AuthController {
       await this.mailerService.sendEmail(
         actionToken.user.email,
         LetterTemplate.MailAddressHadChanged,
-        actionToken.user.locale,
+        actionToken.user.locale
       );
       await this.actionTokensService.delete(actionToken.id);
       return;
@@ -262,7 +262,7 @@ export class AuthController {
     @Body() body: RequestPasswordChangeDTO,
     @Req() request: Request,
     @Headers() headers,
-    @Ip() reqIP,
+    @Ip() reqIP
   ): Promise<string> {
     this.logger.log({ body }, 'POST /auth/password-reset');
     const { email } = body;
@@ -279,14 +279,14 @@ export class AuthController {
 
     const actionToken = await this.actionTokensService.createForUser(
       user,
-      ActionTokenType.PASSWORD_RESET,
+      ActionTokenType.PASSWORD_RESET
     );
     const url = `${request.headers.origin}/password-reset/${actionToken.id}`;
 
     await this.mailerService.sendEmail(
       email,
       LetterTemplate.ConfirmPasswordChange,
-      { url },
+      { url }
     );
     return 'A password reset URL has been sent to your email';
   }
@@ -295,7 +295,7 @@ export class AuthController {
   @Post('/password-reset/:id')
   async reset(
     @Param('id') id: string,
-    @Body() body: PasswordChangeDTO,
+    @Body() body: PasswordChangeDTO
   ): Promise<User> {
     this.logger.log({ id }, 'POST /auth/password-reset/:id');
     this.userService.validatePassword(body.password);
@@ -323,7 +323,7 @@ export class AuthController {
   @Get('logout')
   async logoutUser(
     @Req() request,
-    @Res({ passthrough: true }) response,
+    @Res({ passthrough: true }) response
   ): Promise<void> {
     const { refreshToken } = request.cookies;
 
