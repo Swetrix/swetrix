@@ -13,18 +13,26 @@ export class ActionTokensService {
   ) {}
 
   async deleteMultiple(where: string): Promise<any> {
-    return this.actionTokensRepository.createQueryBuilder()
+    return this.actionTokensRepository
+      .createQueryBuilder()
       .delete()
       .where(where)
       .execute()
   }
 
-  async createForUser(user: User, action: ActionTokenType, newValue: string = null): Promise<ActionToken> {
+  async createForUser(
+    user: User,
+    action: ActionTokenType,
+    newValue: string = null,
+  ): Promise<ActionToken> {
     return this.actionTokensRepository.save({ user, action, newValue })
   }
 
   async find(id: string): Promise<ActionToken> {
-    return this.actionTokensRepository.findOneOrFail(id, { relations: ['user'] })
+    return this.actionTokensRepository.findOneOrFail({
+      where: { id },
+      relations: ['user'],
+    })
   }
 
   async delete(id: string): Promise<void> {

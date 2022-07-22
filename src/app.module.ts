@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
-import { ScheduleModule } from '@nestjs/schedule' 
+import { ScheduleModule } from '@nestjs/schedule'
 
 import { AuthModule } from './auth/auth.module'
 import { UserModule } from './user/user.module'
@@ -17,10 +17,12 @@ import { ProjectShare } from './project/entity/project-share.entity'
 import { TaskManagerModule } from './task-manager/task-manager.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
+import { RefreshToken } from './refresh-tokens/entity/refresh-token.entity'
+import { RefreshTokensModule } from './refresh-tokens/refresh-token.module'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: '.env' }),
+    ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.MYSQL_HOST,
@@ -28,8 +30,8 @@ import { PingModule } from './ping/ping.module'
       username: process.env.MYSQL_USER,
       password: process.env.MYSQL_ROOT_PASSWORD,
       database: process.env.MYSQL_DATABASE,
-      synchronize: false,
-      entities: [User, ActionToken, Project, ProjectShare],
+      synchronize: true ? process.env.NODE_ENV === 'development' : false,
+      entities: [User, ActionToken, Project, ProjectShare, RefreshToken],
     }),
     ScheduleModule.forRoot(),
     TaskManagerModule,
@@ -42,7 +44,7 @@ import { PingModule } from './ping/ping.module'
     AnalyticsModule,
     WebhookModule,
     PingModule,
+    RefreshTokensModule,
   ],
 })
-
 export class AppModule {}

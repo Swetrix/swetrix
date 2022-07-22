@@ -6,6 +6,7 @@ import { MailerModule } from '../mailer/mailer.module'
 import { ProjectModule } from '../project/project.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { AppLoggerModule } from '../logger/logger.module'
+import { RefreshTokensModule } from 'src/refresh-tokens/refresh-token.module'
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AppLoggerModule } from '../logger/logger.module'
     ActionTokensModule,
     AppLoggerModule,
     ProjectModule,
+    RefreshTokensModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

@@ -10,7 +10,7 @@ describe('TaskManagerService', () => {
     }).compile()
 
     service = module.get<TaskManagerService>(TaskManagerService)
-  });
+  })
 
   it('should be defined', () => {
     expect(service).toBeDefined()

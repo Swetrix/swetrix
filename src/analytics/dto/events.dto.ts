@@ -19,7 +19,8 @@ export class EventsDTO {
   ev: string
 
   @ApiProperty({
-    description: 'If true, only 1 event with the same ID will be saved per user session',
+    description:
+      'If true, only 1 event with the same ID will be saved per user session',
   })
   unique: object
 }

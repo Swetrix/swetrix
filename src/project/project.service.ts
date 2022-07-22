@@ -1,6 +1,12 @@
-import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException, InternalServerErrorException } from '@nestjs/common'
+import {
+  ForbiddenException,
+  Injectable,
+  BadRequestException,
+  UnprocessableEntityException,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { FindManyOptions, Repository } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isString from 'lodash/isString'
 import * as _isArray from 'lodash/isArray'
@@ -21,7 +27,12 @@ import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
 import { Role } from '../project/entity/project-share.entity'
 import {
-  isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
+  isValidPID,
+  redisProjectCountCacheTimeout,
+  getRedisUserCountKey,
+  redis,
+  clickhouse,
+  isSelfhosted,
 } from '../common/constants'
 
 dayjs.extend(utc)
@@ -57,7 +68,10 @@ export class ProjectService {
     private projectShareRepository: Repository<ProjectShare>,
   ) {}
 
-  async paginate(options: PaginationOptionsInterface, where: Record<string, unknown> | undefined): Promise<Pagination<Project>> {
+  async paginate(
+    options: PaginationOptionsInterface,
+    where: Record<string, unknown> | undefined,
+  ): Promise<Pagination<Project>> {
     const [results, total] = await this.projectsRepository.findAndCount({
       take: options.take || 100,
       skip: options.skip || 0,
@@ -74,13 +88,18 @@ export class ProjectService {
     })
   }
 
-  async paginateShared(options: PaginationOptionsInterface, where: Record<string, unknown> | undefined): Promise<Pagination<ProjectShare>> {
+  async paginateShared(
+    options: PaginationOptionsInterface,
+    where: Record<string, unknown> | undefined,
+  ): Promise<Pagination<ProjectShare>> {
     const [results, total] = await this.projectShareRepository.findAndCount({
       take: options.take || 100,
       skip: options.skip || 0,
       where,
       order: {
-        project: 'ASC',
+        project: {
+          id: 'ASC',
+        },
       },
       relations: ['project'],
     })
@@ -109,15 +128,19 @@ export class ProjectService {
   }
 
   async deleteMultiple(pids: string[]): Promise<any> {
-    return this.projectsRepository.createQueryBuilder()
-      .delete()
-      // TODO: !!! Enforce Prepared Statements and Parameterization
-      .where(`id IN (${pids})`)
-      .execute()
+    return (
+      this.projectsRepository
+        .createQueryBuilder()
+        .delete()
+        // TODO: !!! Enforce Prepared Statements and Parameterization
+        .where(`id IN (${pids})`)
+        .execute()
+    )
   }
 
   async deleteMultipleShare(where: string): Promise<any> {
-    return this.projectShareRepository.createQueryBuilder()
+    return this.projectShareRepository
+      .createQueryBuilder()
       .delete()
       .where(where)
       .execute()
@@ -135,20 +158,28 @@ export class ProjectService {
     return this.projectShareRepository.update(id, share)
   }
 
-  async findShare(params: object): Promise<ProjectShare[]> {
-    return this.projectShareRepository.find(params)
+  async findShare(
+    params: FindManyOptions<ProjectShare>,
+  ): Promise<ProjectShare[]> {
+    return this.projectShareRepository.find({ ...params })
   }
 
-  async findOneShare(id: string, params: Object = {}): Promise<ProjectShare | null> {
-    return this.projectShareRepository.findOne(id, params)
+  async findOneShare(
+    id: string,
+    params: Object = {},
+  ): Promise<ProjectShare | null> {
+    return this.projectShareRepository.findOne({ where: { id }, ...params })
   }
 
   findOneWithRelations(id: string): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, { relations: ['admin'] })
+    return this.projectsRepository.findOne({
+      where: { id },
+      relations: ['admin'],
+    })
   }
 
   findOne(id: string, params: Object = {}): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, params)
+    return this.projectsRepository.findOne({ where: { id }, ...params })
   }
 
   findWhere(where: Record<string, unknown>): Promise<Project[]> {
@@ -158,20 +189,38 @@ export class ProjectService {
   find(params: object): Promise<Project[]> {
     return this.projectsRepository.find(params)
   }
-  findOneWhere(where: Record<string, unknown>, params: object = {}): Promise<Project> {
+  findOneWhere(
+    where: Record<string, unknown>,
+    params: object = {},
+  ): Promise<Project> {
     return this.projectsRepository.findOne({ where, ...params })
   }
 
   allowedToView(project: Project, uid: string | null): void {
-    if (project.public || uid === project.admin?.id || _findIndex(project.share, ({ user }) => user?.id === uid) !== -1) {
+    if (
+      project.public ||
+      uid === project.admin?.id ||
+      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
+    ) {
       return
     } else {
       throw new ForbiddenException('You are not allowed to view this project')
     }
   }
 
-  allowedToManage(project: Project, uid: string, roles: Array<UserType> = []): void {
-    if (uid === project.admin?.id || _includes(roles, UserType.ADMIN) || _findIndex(project.share, (share) => share.user?.id === uid && share.role === Role.admin) !== -1) {
+  allowedToManage(
+    project: Project,
+    uid: string,
+    roles: Array<UserType> = [],
+  ): void {
+    if (
+      uid === project.admin?.id ||
+      _includes(roles, UserType.ADMIN) ||
+      _findIndex(
+        project.share,
+        share => share.user?.id === uid && share.role === Role.admin,
+      ) !== -1
+    ) {
       return
     } else {
       throw new ForbiddenException('You are not allowed to manage this project')
@@ -199,7 +248,9 @@ export class ProjectService {
     // @ts-ignore
     updProject.public = Number(updProject.public)
     // @ts-ignore
-    updProject.origins = _isString(updProject.origins) ? updProject.origins : _join(updProject.origins, ',')
+    updProject.origins = _isString(updProject.origins)
+      ? updProject.origins
+      : _join(updProject.origins, ',')
 
     return updProject
   }
@@ -215,10 +266,20 @@ export class ProjectService {
   }
 
   validateProject(projectDTO: ProjectDTO) {
-    if (!isValidPID(projectDTO.id)) throw new UnprocessableEntityException('The provided Project ID (pid) is incorrect')
-    if (_size(projectDTO.name) > 50) throw new UnprocessableEntityException('The project name is too long')
-    if (!_isArray(projectDTO.origins)) throw new UnprocessableEntityException('The list of allowed origins has to be an array of strings')
-    if (_size(_join(projectDTO.origins, ',')) > 300) throw new UnprocessableEntityException('The list of allowed origins has to be smaller than 300 symbols')
+    if (!isValidPID(projectDTO.id))
+      throw new UnprocessableEntityException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    if (_size(projectDTO.name) > 50)
+      throw new UnprocessableEntityException('The project name is too long')
+    if (!_isArray(projectDTO.origins))
+      throw new UnprocessableEntityException(
+        'The list of allowed origins has to be an array of strings',
+      )
+    if (_size(_join(projectDTO.origins, ',')) > 300)
+      throw new UnprocessableEntityException(
+        'The list of allowed origins has to be smaller than 300 symbols',
+      )
   }
 
   // Returns amount of existing events starting from month
@@ -227,7 +288,10 @@ export class ProjectService {
     let count: string | number = await redis.get(countKey)
 
     if (_isEmpty(count)) {
-      const monthStart = dayjs.utc().startOf('month').format('YYYY-MM-DD HH:mm:ss')
+      const monthStart = dayjs
+        .utc()
+        .startOf('month')
+        .format('YYYY-MM-DD HH:mm:ss')
       const monthEnd = dayjs.utc().endOf('month').format('YYYY-MM-DD HH:mm:ss')
 
       let pids
@@ -248,15 +312,30 @@ export class ProjectService {
         return 0
       }
 
-      const count_ev_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
-      const count_custom_ev_query = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(_map(pids, el => `'${el.id}'`), ',')}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const count_ev_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(
+        _map(pids, el => `'${el.id}'`),
+        ',',
+      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const count_custom_ev_query = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(
+        _map(pids, el => `'${el.id}'`),
+        ',',
+      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
 
-      const pageviews = (await clickhouse.query(count_ev_query).toPromise())[0]['count()']
-      const customEvents = (await clickhouse.query(count_custom_ev_query).toPromise())[0]['count()']
+      const pageviews = (await clickhouse.query(count_ev_query).toPromise())[0][
+        'count()'
+      ]
+      const customEvents = (
+        await clickhouse.query(count_custom_ev_query).toPromise()
+      )[0]['count()']
 
       count = pageviews + customEvents
-      
-      await redis.set(countKey, `${pageviews}`, 'EX', redisProjectCountCacheTimeout)
+
+      await redis.set(
+        countKey,
+        `${pageviews}`,
+        'EX',
+        redisProjectCountCacheTimeout,
+      )
     } else {
       try {
         // @ts-ignore

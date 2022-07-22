@@ -27,13 +27,15 @@ export class ProjectDTO {
 
   @ApiProperty({
     required: false,
-    description: 'The project\'s state. If enabled - all the incoming analytics data will be saved.',
+    description:
+      "The project's state. If enabled - all the incoming analytics data will be saved.",
   })
   active: boolean
 
   @ApiProperty({
     required: false,
-    description: 'When true, anyone on the internet (including Google) would be able to see the project\'s Dashboard.',
+    description:
+      "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
   })
   public: boolean
 }

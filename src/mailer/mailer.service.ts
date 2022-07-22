@@ -46,12 +46,14 @@ const metaInfoJson = {
   },
   [LetterTemplate.ProjectReport]: {
     subject: {
-      en: (p: Params) => `${p.type === 'w' ? 'Weekly' : 'Monthly'} Report: ${p.date}`,
+      en: (p: Params) =>
+        `${p.type === 'w' ? 'Weekly' : 'Monthly'} Report: ${p.date}`,
     },
   },
   [LetterTemplate.TierWarning]: {
     subject: {
-      en: () => `You have used more than ${SEND_WARNING_AT_PERC}% of the available events per your tier for this month.`,
+      en: () =>
+        `You have used more than ${SEND_WARNING_AT_PERC}% of the available events per your tier for this month.`,
     },
   },
   [LetterTemplate.ProjectInvitation]: {
@@ -76,7 +78,7 @@ interface Params {
 }
 
 handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
-  return (arg1 == arg2) ? options.fn(this) : options.inverse(this)
+  return arg1 == arg2 ? options.fn(this) : options.inverse(this)
 })
 
 handlebars.registerHelper('greater', function (v1, v2, options) {
@@ -90,11 +92,14 @@ const mailClient = new postmark.ServerClient(process.env.SMTP_PASSWORD)
 
 @Injectable()
 export class MailerService {
-  constructor(
-    private readonly logger: AppLoggerService,
-  ) { }
+  constructor(private readonly logger: AppLoggerService) {}
 
-  async sendEmail(email: string, templateName: LetterTemplate, params: Params = null, messageStream: 'broadcast' | 'outbound' = 'outbound'): Promise<void> {
+  async sendEmail(
+    email: string,
+    templateName: LetterTemplate,
+    params: Params = null,
+    messageStream: 'broadcast' | 'outbound' = 'outbound',
+  ): Promise<void> {
     try {
       const templatePath = `${TEMPLATES_PATH}/en/${templateName}.html`
       const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
@@ -111,10 +116,14 @@ export class MailerService {
       }
 
       if (process.env.SMTP_MOCK) {
-        this.logger.log({
-          ...message,
-          params,
-        }, 'sendEmail', true)
+        this.logger.log(
+          {
+            ...message,
+            params,
+          },
+          'sendEmail',
+          true,
+        )
       } else {
         await mailClient.sendEmail(message)
       }

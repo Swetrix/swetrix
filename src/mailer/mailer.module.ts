@@ -5,6 +5,6 @@ import { MailerService } from './mailer.service'
 @Module({
   providers: [MailerService],
   exports: [MailerService],
-  imports: [AppLoggerModule]
+  imports: [AppLoggerModule],
 })
 export class MailerModule {}
