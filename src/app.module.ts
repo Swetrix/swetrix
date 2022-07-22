@@ -1,24 +1,24 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
+import { Module } from '@nestjs/common'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { ConfigModule } from '@nestjs/config'
+import { ScheduleModule } from '@nestjs/schedule'
 
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { AnalyticsModule } from './analytics/analytics.module';
-import { User } from './user/entities/user.entity';
-import { Project } from './project/entity/project.entity';
-import { ProjectModule } from './project/project.module';
-import { MailerModule } from './mailer/mailer.module';
-import { ActionTokensModule } from './action-tokens/action-tokens.module';
-import { TwoFactorAuthModule } from './twoFactorAuth/twoFactorAuth.module';
-import { ActionToken } from './action-tokens/action-token.entity';
-import { ProjectShare } from './project/entity/project-share.entity';
-import { TaskManagerModule } from './task-manager/task-manager.module';
-import { WebhookModule } from './webhook/webhook.module';
-import { PingModule } from './ping/ping.module';
-import { RefreshToken } from './refresh-tokens/entity/refresh-token.entity';
-import { RefreshTokensModule } from './refresh-tokens/refresh-token.module';
+import { AuthModule } from './auth/auth.module'
+import { UserModule } from './user/user.module'
+import { AnalyticsModule } from './analytics/analytics.module'
+import { User } from './user/entities/user.entity'
+import { Project } from './project/entity/project.entity'
+import { ProjectModule } from './project/project.module'
+import { MailerModule } from './mailer/mailer.module'
+import { ActionTokensModule } from './action-tokens/action-tokens.module'
+import { TwoFactorAuthModule } from './twoFactorAuth/twoFactorAuth.module'
+import { ActionToken } from './action-tokens/action-token.entity'
+import { ProjectShare } from './project/entity/project-share.entity'
+import { TaskManagerModule } from './task-manager/task-manager.module'
+import { WebhookModule } from './webhook/webhook.module'
+import { PingModule } from './ping/ping.module'
+import { RefreshToken } from './refresh-tokens/entity/refresh-token.entity'
+import { RefreshTokensModule } from './refresh-tokens/refresh-token.module'
 
 @Module({
   imports: [

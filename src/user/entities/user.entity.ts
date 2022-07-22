@@ -5,11 +5,11 @@ import {
   OneToMany,
   BeforeUpdate,
   JoinTable,
-} from 'typeorm';
-import { ActionToken } from 'src/action-tokens/action-token.entity';
-import { Project } from 'src/project/entity/project.entity';
-import { ProjectShare } from 'src/project/entity/project-share.entity';
-import { RefreshToken } from 'src/refresh-tokens/entity/refresh-token.entity';
+} from 'typeorm'
+import { ActionToken } from 'src/action-tokens/action-token.entity'
+import { Project } from 'src/project/entity/project.entity'
+import { ProjectShare } from 'src/project/entity/project-share.entity'
+import { RefreshToken } from 'src/refresh-tokens/entity/refresh-token.entity'
 
 export enum PlanCode {
   free = 'free',
@@ -49,7 +49,7 @@ export const ACCOUNT_PLANS = {
     pid: '752318',
     ypid: '776471',
   },
-};
+}
 
 export enum UserType {
   CUSTOMER = 'customer',
@@ -67,107 +67,107 @@ export enum BillingFrequency {
   Yearly = 'yearly',
 }
 
-export const MAX_EMAIL_REQUESTS = 4; // 1 confirmation email on sign up + 3 additional ones
+export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 additional ones
 
-export const DEFAULT_TIMEZONE = 'Etc/GMT';
+export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @Column({
     type: 'set',
     enum: UserType,
     default: UserType.CUSTOMER,
   })
-  roles: UserType[];
+  roles: UserType[]
 
   @Column({
     type: 'enum',
     enum: PlanCode,
     default: PlanCode.free,
   })
-  planCode: PlanCode;
+  planCode: PlanCode
 
   @Column('varchar', { length: 254, unique: true })
-  email: string;
+  email: string
 
   @Column('varchar', { length: 60, default: '' })
-  password: string;
+  password: string
 
   @Column({ default: false })
-  isActive: boolean;
+  isActive: boolean
 
   @Column({
     type: 'enum',
     enum: ReportFrequency,
     default: ReportFrequency.Monthly,
   })
-  reportFrequency: ReportFrequency;
+  reportFrequency: ReportFrequency
 
   @Column('int', { default: 1 })
-  emailRequests: number;
+  emailRequests: number
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created: Date;
+  created: Date
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated: Date;
+  updated: Date
 
   // the date when the 'you are running out of events' warning email was last sent on
   @Column({ type: 'timestamp', nullable: true })
-  evWarningSentOn: Date;
+  evWarningSentOn: Date
 
   @Column({ type: 'timestamp', nullable: true })
-  exportedAt: Date;
+  exportedAt: Date
 
   @Column('varchar', { length: 15, nullable: true })
-  subID: string;
+  subID: string
 
   @Column('varchar', { length: 200, nullable: true })
-  subUpdateURL: string;
+  subUpdateURL: string
 
   @Column('varchar', { length: 200, nullable: true })
-  subCancelURL: string;
+  subCancelURL: string
 
   @Column('varchar', { length: 50, default: DEFAULT_TIMEZONE })
-  timezone: string;
+  timezone: string
 
   @Column('varchar', { length: 32, nullable: true })
-  twoFactorAuthenticationSecret: string;
+  twoFactorAuthenticationSecret: string
 
   @Column('varchar', { length: 30, nullable: true })
-  twoFactorRecoveryCode: string;
+  twoFactorRecoveryCode: string
 
   @Column({ default: false })
-  isTwoFactorAuthenticationEnabled: boolean;
+  isTwoFactorAuthenticationEnabled: boolean
 
   @BeforeUpdate()
   updateTimestamp() {
-    this.updated = new Date();
+    this.updated = new Date()
   }
 
   @OneToMany(() => Project, project => project.admin)
-  projects: Project[];
+  projects: Project[]
 
   @OneToMany(() => ProjectShare, sharedProjects => sharedProjects.user)
-  sharedProjects: ProjectShare[];
+  sharedProjects: ProjectShare[]
 
   @OneToMany(() => ActionToken, actionToken => actionToken.user)
-  actionTokens: ActionToken[];
+  actionTokens: ActionToken[]
 
   @Column({
     type: 'enum',
     enum: BillingFrequency,
     nullable: true,
   })
-  billingFrequency: BillingFrequency;
+  billingFrequency: BillingFrequency
 
   @Column({ type: 'date', nullable: true })
-  nextBillDate: Date;
+  nextBillDate: Date
 
   @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
   @JoinTable()
-  refreshTokens?: RefreshToken[];
+  refreshTokens?: RefreshToken[]
 }

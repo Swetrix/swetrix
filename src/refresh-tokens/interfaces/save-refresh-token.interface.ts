@@ -1,4 +1,4 @@
 export interface ISaveRefreshToken {
-  userId: string;
-  refreshTokenHash: string;
+  userId: string
+  refreshTokenHash: string
 }

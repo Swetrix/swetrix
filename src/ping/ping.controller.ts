@@ -1,5 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get } from '@nestjs/common'
+import { ApiTags } from '@nestjs/swagger'
 
 @ApiTags('Ping')
 @Controller('ping')
@@ -8,6 +8,6 @@ export class PingController {
 
   @Get('/')
   async get(): Promise<any> {
-    return;
+    return
   }
 }

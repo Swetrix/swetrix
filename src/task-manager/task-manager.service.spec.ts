@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TaskManagerService } from './task-manager.service';
+import { Test, TestingModule } from '@nestjs/testing'
+import { TaskManagerService } from './task-manager.service'
 
 describe('TaskManagerService', () => {
-  let service: TaskManagerService;
+  let service: TaskManagerService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [TaskManagerService],
-    }).compile();
+    }).compile()
 
-    service = module.get<TaskManagerService>(TaskManagerService);
-  });
+    service = module.get<TaskManagerService>(TaskManagerService)
+  })
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+    expect(service).toBeDefined()
+  })
+})

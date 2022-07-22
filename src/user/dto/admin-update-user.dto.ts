@@ -1,35 +1,35 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger'
+import { IsEmail } from 'class-validator'
 
 export class AdminUpdateUserProfileDTO {
   @ApiProperty({ example: 'you@example.com', required: true })
   @IsEmail()
-  email: string;
+  email: string
 
   @ApiProperty({ example: 'your_password123' })
-  password: string;
+  password: string
 
   @ApiProperty({ example: true })
-  isActive: boolean;
+  isActive: boolean
 
   @ApiProperty({ example: 'free' })
-  planCode: string;
+  planCode: string
 
   @ApiProperty({ example: 'customer' })
-  roles: Array<string>;
+  roles: Array<string>
 
   @ApiProperty({ example: 'date' })
-  created: string;
+  created: string
 
   @ApiProperty({ example: 'Number' })
-  emailRequests: number;
+  emailRequests: number
 
   @ApiProperty({ example: 'reportFrequency' })
-  reportFrequency: string;
+  reportFrequency: string
 
   @ApiProperty({ example: 'updated' })
-  updated: string;
+  updated: string
 
   @ApiProperty({ example: 'Europe/Kiev' })
-  timezone: string;
+  timezone: string
 }

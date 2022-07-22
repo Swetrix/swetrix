@@ -1,4 +1,4 @@
-import { User } from 'src/user/entities/user.entity';
+import { User } from 'src/user/entities/user.entity'
 import {
   Column,
   CreateDateColumn,
@@ -6,23 +6,23 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
+} from 'typeorm'
 
 @Entity()
 export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: string
 
   @Column({ type: 'varchar', length: 36 })
-  userId!: string;
+  userId!: string
 
   @Column('text')
-  refreshTokenHash!: string;
+  refreshTokenHash!: string
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Date
 
   @ManyToOne(() => User, user => user.refreshTokens, { onDelete: 'CASCADE' })
   @JoinColumn()
-  user!: User;
+  user!: User
 }

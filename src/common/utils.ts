@@ -1,23 +1,23 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { hash } from 'blake3';
-import * as randomstring from 'randomstring';
-import * as _sample from 'lodash/sample';
-import * as _join from 'lodash/join';
-import * as _filter from 'lodash/filter';
-import * as _values from 'lodash/values';
-import * as _reduce from 'lodash/reduce';
-import * as _keys from 'lodash/keys';
-import * as _toNumber from 'lodash/toNumber';
-import * as _isEmpty from 'lodash/isEmpty';
-import * as _head from 'lodash/head';
-import * as dayjs from 'dayjs';
-import * as utc from 'dayjs/plugin/utc';
-import * as _map from 'lodash/map';
-import { redis } from './constants';
-import { clickhouse } from './constants';
-import { Project } from 'src/project/entity/project.entity';
+import { ForbiddenException, NotFoundException } from '@nestjs/common'
+import { hash } from 'blake3'
+import * as randomstring from 'randomstring'
+import * as _sample from 'lodash/sample'
+import * as _join from 'lodash/join'
+import * as _filter from 'lodash/filter'
+import * as _values from 'lodash/values'
+import * as _reduce from 'lodash/reduce'
+import * as _keys from 'lodash/keys'
+import * as _toNumber from 'lodash/toNumber'
+import * as _isEmpty from 'lodash/isEmpty'
+import * as _head from 'lodash/head'
+import * as dayjs from 'dayjs'
+import * as utc from 'dayjs/plugin/utc'
+import * as _map from 'lodash/map'
+import { redis } from './constants'
+import { clickhouse } from './constants'
+import { Project } from 'src/project/entity/project.entity'
 
-dayjs.extend(utc);
+dayjs.extend(utc)
 
 const marketingTips = {
   en: [
@@ -39,105 +39,105 @@ const marketingTips = {
     'Make sure your site is fast.\nEver found yourself waiting thirty seconds for a webpage to load? Me neither. If your site takes forever to load, your bounce rate will be sky high. Make sure that your pages are as technically optimized as possible, including image file sizes, page structure and the functionality of third-party plugins. The faster your site loads, the better.',
     'Submit your content to aggregator sites.\nFirstly, a disclaimer – do not spam Reddit and other similar sites hoping to "hit the jackpot" of referral traffic, because it is not going to happen. Members of communities like Reddit are extraordinarily savvy to spam disguised as legitimate links, but every now and again, it does not hurt to submit links that these audiences will find genuinely useful. Choose a relevant subreddit, submit your content, then watch the traffic pour in.',
   ],
-};
+}
 
-const RATE_LIMIT_REQUESTS_AMOUNT = 3;
-const RATE_LIMIT_TIMEOUT = 86400; // 24 hours
+const RATE_LIMIT_REQUESTS_AMOUNT = 3
+const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
-const allowedToUpdateKeys = ['name', 'origins', 'active', 'public'];
+const allowedToUpdateKeys = ['name', 'origins', 'active', 'public']
 
 const _getRateLimitHash = (ip: string, salt: string = '') =>
-  `rl:${hash(`${ip}${salt}`).toString('hex')}`;
+  `rl:${hash(`${ip}${salt}`).toString('hex')}`
 
 const splitAt = (x, index): Array<Array<any> | string> => [
   x.slice(0, index),
   x.slice(index),
-];
+]
 
 const getRandomTip = (language: string = 'en'): string => {
-  return _sample(marketingTips[language]);
-};
+  return _sample(marketingTips[language])
+}
 
 // 'action' is used as a salt to differ rate limiting routes
 const checkRateLimit = async (
   ip: string,
   action: string,
   reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
-  reqTimeout: number = RATE_LIMIT_TIMEOUT
+  reqTimeout: number = RATE_LIMIT_TIMEOUT,
 ): Promise<void> => {
-  const rlHash = _getRateLimitHash(ip, action);
-  let rlCount: number = _toNumber(await redis.get(rlHash)) || 0;
+  const rlHash = _getRateLimitHash(ip, action)
+  let rlCount: number = _toNumber(await redis.get(rlHash)) || 0
 
   if (rlCount >= reqAmount) {
-    throw new ForbiddenException('Too many requests, please try again later');
+    throw new ForbiddenException('Too many requests, please try again later')
   }
-  await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout);
-};
+  await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
+}
 
 const getProjectsClickhouse = async (id = null) => {
   if (!id) {
-    const query = 'SELECT * FROM project;';
-    return await clickhouse.query(query).toPromise();
+    const query = 'SELECT * FROM project;'
+    return await clickhouse.query(query).toPromise()
   }
 
   const paramsData = {
     params: {
       id,
     },
-  };
-
-  const query = `SELECT * FROM project WHERE id = {id:FixedString(12)};`;
-  const project = await clickhouse.query(query, paramsData).toPromise();
-
-  if (_isEmpty(project)) {
-    throw new NotFoundException(`Project ${id} was not found in the database`);
   }
 
-  return _head(project);
-};
+  const query = `SELECT * FROM project WHERE id = {id:FixedString(12)};`
+  const project = await clickhouse.query(query, paramsData).toPromise()
+
+  if (_isEmpty(project)) {
+    throw new NotFoundException(`Project ${id} was not found in the database`)
+  }
+
+  return _head(project)
+}
 
 const updateProjectClickhouse = async (project: object) => {
   const filtered = _reduce(
     _filter(_keys(project), key => allowedToUpdateKeys.includes(key)),
     (obj, key) => {
-      obj[key] = project[key];
-      return obj;
+      obj[key] = project[key]
+      return obj
     },
-    {}
-  );
-  const columns = _keys(filtered);
-  const values = _values(filtered);
+    {},
+  )
+  const columns = _keys(filtered)
+  const values = _values(filtered)
   // @ts-ignore
   const query = `ALTER table project UPDATE ${_join(
     _map(columns, (col, id) => `${col}='${values[id]}'`),
-    ', '
-  )} WHERE id='${project.id}'`;
-  return await clickhouse.query(query).toPromise();
-};
+    ', ',
+  )} WHERE id='${project.id}'`
+  return await clickhouse.query(query).toPromise()
+}
 
 const deleteProjectClickhouse = async id => {
-  const query = `ALTER table project DELETE WHERE WHERE id='${id}'`;
-  return await clickhouse.query(query).toPromise();
-};
+  const query = `ALTER table project DELETE WHERE WHERE id='${id}'`
+  return await clickhouse.query(query).toPromise()
+}
 
 const createProjectClickhouse = async (project: Project) => {
   const paramsData = {
     params: {
       ...project,
     },
-  };
+  }
   const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'',1,0,'${dayjs
     .utc()
-    .format('YYYY-MM-DD HH:mm:ss')}')`;
-  return await clickhouse.query(query, paramsData).toPromise();
-};
+    .format('YYYY-MM-DD HH:mm:ss')}')`
+  return await clickhouse.query(query, paramsData).toPromise()
+}
 
 const generateRecoveryCode = () =>
   randomstring.generate({
     length: 30,
     charset: 'alphabetic',
     capitalization: 'uppercase',
-  });
+  })
 
 export {
   getRandomTip,
@@ -148,4 +148,4 @@ export {
   deleteProjectClickhouse,
   splitAt,
   generateRecoveryCode,
-};
+}

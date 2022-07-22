@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
-import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity';
+import { ApiProperty } from '@nestjs/swagger'
+import { IsNotEmpty } from 'class-validator'
+import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 
 export enum TimeBucketType {
   HOUR = 'hour',
@@ -12,30 +12,30 @@ export enum TimeBucketType {
 export class AnalyticsGET_DTO {
   @ApiProperty()
   @IsNotEmpty()
-  pid: string;
+  pid: string
 
   @ApiProperty()
-  period: string;
+  period: string
 
   @ApiProperty({ enum: TimeBucketType })
   @IsNotEmpty()
-  timeBucket: TimeBucketType;
+  timeBucket: TimeBucketType
 
   @ApiProperty()
-  from: string;
+  from: string
 
   @ApiProperty()
-  to: string;
+  to: string
 
   @ApiProperty({
     description:
       'A stringified array of properties to filter [{ column, filter, isExclusive }]',
   })
-  filters: string;
+  filters: string
 
   @ApiProperty({
     description: 'Timezone to display data in',
     default: DEFAULT_TIMEZONE,
   })
-  timezone: string;
+  timezone: string
 }

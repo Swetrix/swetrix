@@ -1,1 +1,1 @@
-export const EXPIRES_IN = '30d';
+export const EXPIRES_IN = '30d'

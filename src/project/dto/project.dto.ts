@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger'
+import { IsNotEmpty } from 'class-validator'
 
 export class ProjectDTO {
   @ApiProperty({
@@ -8,7 +8,7 @@ export class ProjectDTO {
     description: 'A display name for your project',
   })
   @IsNotEmpty()
-  name: string;
+  name: string
 
   @ApiProperty({
     example: 'aUn1quEid-3',
@@ -16,26 +16,26 @@ export class ProjectDTO {
     description: 'A unique project ID',
   })
   @IsNotEmpty()
-  id: string;
+  id: string
 
   @ApiProperty({
     example: 'localhost:3000,example.com',
     required: false,
     description: 'An array allowed origins',
   })
-  origins: string[];
+  origins: string[]
 
   @ApiProperty({
     required: false,
     description:
       "The project's state. If enabled - all the incoming analytics data will be saved.",
   })
-  active: boolean;
+  active: boolean
 
   @ApiProperty({
     required: false,
     description:
       "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
   })
-  public: boolean;
+  public: boolean
 }

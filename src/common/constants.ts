@@ -1,10 +1,10 @@
-import { ClickHouse } from 'clickhouse';
-import Redis from 'ioredis';
-import { v5 as uuidv5 } from 'uuid';
-import * as _toNumber from 'lodash/toNumber';
-import * as _round from 'lodash/round';
+import { ClickHouse } from 'clickhouse'
+import Redis from 'ioredis'
+import { v5 as uuidv5 } from 'uuid'
+import * as _toNumber from 'lodash/toNumber'
+import * as _round from 'lodash/round'
 
-require('dotenv').config();
+require('dotenv').config()
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -12,13 +12,13 @@ const redis = new Redis(
   {
     password: process.env.REDIS_PASSWORD,
     username: process.env.REDIS_USER,
-  }
-);
+  },
+)
 
 redis.defineCommand('countKeysByPattern', {
   numberOfKeys: 0,
   lua: "return #redis.call('keys', ARGV[1])",
-});
+})
 
 const clickhouse = new ClickHouse({
   url: process.env.CLICKHOUSE_HOST,
@@ -37,9 +37,9 @@ const clickhouse = new ClickHouse({
     enable_http_compression: 0,
     database: process.env.CLICKHOUSE_DATABASE,
   },
-});
+})
 
-const isSelfhosted = Boolean(process.env.SELFHOSTED);
+const isSelfhosted = Boolean(process.env.SELFHOSTED)
 
 const CLICKHOUSE_INIT_QUERIES = [
   'CREATE DATABASE IF NOT EXISTS analytics',
@@ -87,31 +87,31 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (created);`,
-];
+]
 
 const initialiseClickhouse = async () => {
-  console.log('Initialising Clickhouse');
+  console.log('Initialising Clickhouse')
 
   for (const query of CLICKHOUSE_INIT_QUERIES) {
     if (query) {
-      await clickhouse.query(query).toPromise();
+      await clickhouse.query(query).toPromise()
     }
   }
 
-  console.log('Initialising Clickhouse: DONE');
-  console.log(`Swetrix API version is: ${process.env.npm_package_version}`);
-};
+  console.log('Initialising Clickhouse: DONE')
+  console.log(`Swetrix API version is: ${process.env.npm_package_version}`)
+}
 
-initialiseClickhouse();
+initialiseClickhouse()
 
-const SELFHOSTED_EMAIL = process.env.EMAIL;
-const SELFHOSTED_PASSWORD = process.env.PASSWORD;
-const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68';
+const SELFHOSTED_EMAIL = process.env.EMAIL
+const SELFHOSTED_PASSWORD = process.env.PASSWORD
+const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
 const SELFHOSTED_UUID = isSelfhosted
   ? uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE)
-  : '';
+  : ''
 const TWO_FACTOR_AUTHENTICATION_APP_NAME =
-  process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME;
+  process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME
 
 /**
  * Calculates in percent, the change between 2 numbers.
@@ -123,56 +123,56 @@ const TWO_FACTOR_AUTHENTICATION_APP_NAME =
 function getPercentageChange(
   oldVal: number,
   newVal: number,
-  round: number = 2
+  round: number = 2,
 ) {
   if (oldVal === 0) {
     if (newVal === 0) {
-      return 0;
+      return 0
     } else {
-      return _round(-100 * newVal, round);
+      return _round(-100 * newVal, round)
     }
   }
 
-  const decrease = oldVal - newVal;
-  return _round((decrease / oldVal) * 100, round);
+  const decrease = oldVal - newVal
+  return _round((decrease / oldVal) * 100, round)
 }
 
-const JWT_LIFE_TIME = 7 * 24 * 60 * 60;
-const HISTORY_LIFE_TIME_DAYS = 30;
+const JWT_LIFE_TIME = 7 * 24 * 60 * 60
+const HISTORY_LIFE_TIME_DAYS = 30
 
-const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/;
-const isValidPID = (pid: string) => PID_REGEX.test(pid);
+const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
+const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
 // redis keys
-const getRedisProjectKey = (pid: string) => `pid_${pid}`;
-const getRedisUserCountKey = (uid: string) => `user_c_${uid}`;
+const getRedisProjectKey = (pid: string) => `pid_${pid}`
+const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 
-const REDIS_LOG_DATA_CACHE_KEY = 'log_cache';
-const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache';
-const REDIS_SESSION_SALT_KEY = 'log_salt'; // is updated every 24 hours
-const REDIS_USERS_COUNT_KEY = 'stats:users_count';
-const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count';
-const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews';
+const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
+const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache'
+const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
+const REDIS_USERS_COUNT_KEY = 'stats:users_count'
+const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
+const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
 
 // 3600 sec -> 1 hour
-const redisProjectCacheTimeout = 3600;
+const redisProjectCacheTimeout = 3600
 
 // 15 minutes
-const redisProjectCountCacheTimeout = 900;
+const redisProjectCountCacheTimeout = 900
 
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
-const UNIQUE_SESSION_LIFE_TIME = 1800;
+const UNIQUE_SESSION_LIFE_TIME = 1800
 
 // 35 seconds
-const HEARTBEAT_SID_LIFE_TIME = 35;
+const HEARTBEAT_SID_LIFE_TIME = 35
 
 // how often can user request a fresh GDPR export of their data; in days.
-const GDPR_EXPORT_TIMEFRAME = 14;
+const GDPR_EXPORT_TIMEFRAME = 14
 
 // send email warning when 85% of events in tier are used
-const SEND_WARNING_AT_PERC = 85;
+const SEND_WARNING_AT_PERC = 85
 
-const PROJECT_INVITE_EXPIRE = 48;
+const PROJECT_INVITE_EXPIRE = 48
 
 export {
   clickhouse,
@@ -203,4 +203,4 @@ export {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
-};
+}
