@@ -1,3 +1,11 @@
 .elipse-main-page {
     transform: matrix(0.5, 2, 3, 1, 30, 15)!important;
-} 
+}
+
+body.dark > .svg-logo > path {
+    fill: #FFFFFF;
+}
+
+body.light > .svg-logo > path {
+    fill: #000000;
+}

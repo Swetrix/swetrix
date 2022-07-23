@@ -1,6 +1,5 @@
-import React, { memo, useState } from 'react'
-import cx from 'clsx'
-import { Link } from 'react-router-dom'
+import React, { memo } from 'react'
+import { Link, useHistory } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { ExternalLinkIcon, ArrowSmRightIcon, CheckCircleIcon } from '@heroicons/react/solid'
@@ -9,75 +8,24 @@ import _map from 'lodash/map'
 
 import routes from 'routes'
 // import { nFormatter } from 'utils/generic'
-import { CONTACT_EMAIL } from 'redux/constants'
 import Title from 'components/Title'
 import Button from 'ui/Button'
+import { GITHUB_URL } from 'redux/constants'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
+import Webflow from 'ui/icons/Webflow'
+import Gatsby from 'ui/icons/Gatsby'
+import Wix from 'ui/icons/Wix'
 import { withAuthentication, auth } from '../../hoc/protected'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
 
 const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 
-const FAQs = ({ t }) => (
-  <div id='faqs' className='bg-gray-50 dark:bg-gray-800'>
-    <div className='w-11/12 mx-auto py-16 px-4 sm:px-6 lg:py-20 lg:px-8'>
-      <div className='lg:grid lg:grid-cols-3 lg:gap-8'>
-        <div>
-          <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
-            {t('main.faq.title')}
-          </h2>
-          <p className='mt-4 text-lg text-gray-500 dark:text-gray-200'>
-            <Trans
-              t={t}
-              i18nKey='main.custSupport'
-              components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
-                mail: <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
-              }}
-            />
-          </p>
-        </div>
-        <div className='mt-12 lg:mt-0 lg:col-span-2'>
-          <dl className='space-y-12'>
-            {_map(t('main.faq.list', { returnObjects: true }), (faq) => (
-              <div key={faq.question}>
-                <dt className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>{faq.question}</dt>
-                <dd className='mt-2 text-base text-gray-500 dark:text-gray-300 whitespace-pre-line'>{faq.answer}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </div>
-    </div>
-  </div>
-)
-
-const Features = ({ t }) => (
-  <div className='bg-white dark:bg-gray-800'>
-    <div className='w-11/12 mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8'>
-      <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 text-center'>
-        {t('main.whyUs')}
-      </h2>
-      <div className='mt-12'>
-        <dl className='space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:grid-rows-2 md:gap-x-8 md:gap-y-12 lg:grid-cols-3'>
-          {_map(t('main.features', { returnObjects: true }), (feature) => (
-            <div key={feature.name}>
-              <dt className='text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>{feature.name}</dt>
-              <dd className='mt-2 text-base text-gray-500 dark:text-gray-300'>{feature.description}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-    </div>
-  </div>
-)
-
 const Main = () => {
+  const history = useHistory()
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
   // const stats = useSelector(state => state.ui.misc.stats)
-  const [liveDemoHover, setLiveDemoHover] = useState(false)
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
@@ -103,35 +51,37 @@ const Main = () => {
                 <div className='flex flex-row content-between 2xl:mr-[14vw] 2xl:justify-center justify-center lg:justify-start'>
                   <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
                     <h1 className='max-w-2xl text-4xl sm:text-5xl md:text-[4rem] font-extrabold text-white sm:leading-none lg:text-5xl xl:text-[4.1rem] xl:leading-[110%]'>
-                      <span className='from-indigo-600 text-transparent bg-clip-text bg-gradient-to-r to-indigo-400'>Ultimate open-source</span>
-                      <br />
-                      <span className='from-indigo-600 text-transparent bg-clip-text bg-gradient-to-r to-indigo-400'>analytics</span>
-                      {' '}
-                      to satisfy all your needs.
+                      <Trans
+                        t={t}
+                        i18nKey='main.slogan'
+                        components={{
+                          span: <span className='from-indigo-600 text-transparent bg-clip-text bg-gradient-to-r to-indigo-400' />,
+                        }}
+                      />
                     </h1>
                     <p className='mt-3 text-base text-gray-300 sm:mt-[24px] sm:text-xl lg:text-lg xl:text-[1.1rem]'>
-                      Swetrix brings an advanced and customisable analytics service
-                      <br />
-                      for your web applications.
+                      {t('main.description')}
                       <br />
                       {t('main.trackEveryMetric')}
                     </p>
                     <div className='mt-10 flex flex-col items-center sm:flex-row'>
                       <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[350px] sm:max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
-                        <span className='text-base font-semibold mr-1'>Start for free</span>
+                        <span className='text-base font-semibold mr-1'>
+                          {t('main.start')}
+                        </span>
                         <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
                       </Link>
-                      <Link to={LIVE_DEMO_URL} className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-[#E6E8EC] border w-full max-w-[350px] sm:max-w-[210px] h-[50px] flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-[#1a273b]'>
+                      <a href={LIVE_DEMO_URL} className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-[#E6E8EC] border w-full max-w-[350px] sm:max-w-[210px] h-[50px] flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-[#1a273b]' target='_blank' rel='noopener noreferrer'>
                         <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
-                      </Link>
+                      </a>
                     </div>
                   </div>
                   <div className='max-w-md xl:max-w-lg hidden lg:block'>
-                    <img className='rounded-xl border' style={{ height: '100%', minWidth: '880px' }} src='/assets/mainSectionDemo.png' width='100%' height='auto' alt='demo-main-section' />
+                    <img className='rounded-xl' style={{ height: '100%', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </div>
                 </div>
                 <div className='my-10 block lg:hidden'>
-                  <img className='rounded-xl border shadow-colored-2xl w-full' src='/assets/mainSectionDemo.png' alt='Swetrix analytics dashboard' width='100%' height='auto' />
+                  <img className='rounded-xl shadow-colored-2xl w-full' src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} alt='Swetrix Analytics dashboard' width='100%' height='auto' />
                 </div>
               </div>
             </div>
@@ -141,11 +91,11 @@ const Main = () => {
               <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
                 <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Core Analytics Features' />
                 <div className='max-w-[516px]'>
-                  <h1 className='font-extrabold text-4xl dark:text-[#FFFFFF] text-[#293451]'>Core Analytics Features</h1>
+                  <h1 className='font-extrabold text-4xl dark:text-[#FFFFFF] text-[#293451]'>
+                    {t('main.coreFeatures.title')}
+                  </h1>
                   <p className='mt-6 dark:text-[#BEBFC2] text-[#7D818C] mb-11'>
-                    Powerful and easy analytic to display all main metrics that you need. Cookie less.
-                    You don&apos;t need to be data scientist to understand
-                    our analytic.
+                    {t('main.coreFeatures.desc')}
                   </p>
                   <Button className='dark:text-[#8A84FB] text-[#4E46DD] !font-bold border-0'>
                     Traffic Insights
@@ -156,12 +106,14 @@ const Main = () => {
               {/* section Marketplace & build-in Extensions */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
                 <div className='max-w-[516px]'>
-                  <h1 className='font-extrabold text-4xl text-[#293451] dark:text-[#FFFFFF]'>Marketplace & build-in Extensions</h1>
+                  <h1 className='font-extrabold text-4xl text-[#293451] dark:text-[#FFFFFF]'>
+                    {t('main.marketplace.title')}
+                  </h1>
                   <p className='mt-6 text-[#7D818C] dark:text-[#BEBFC2] mb-3'>
-                    Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!
+                    {t('main.marketplace.desc1')}
                   </p>
                   <p className='text-[#7D818C] dark:text-[#BEBFC2] mb-11'>
-                    Install extensions and sell your own. Come up with a great extension for your company - great! Publish it on the marketplace and share your insights with the whole community.
+                    {t('main.marketplace.desc2')}
                   </p>
                   <Button className='text-[#4E46DD] dark:text-[#8A84FB] !font-bold border-0'>
                     Traffic Insights
@@ -175,49 +127,23 @@ const Main = () => {
                 <img className='md:max-w-[360px] lg:max-w-full dark:hidden' src='/assets/privacy-section.png' alt='Core Analytics Features' />
                 <img className='md:max-w-[360px] lg:max-w-full hidden dark:block' src='/assets/privacy-section-dark.png' alt='Core Analytics Features' />
                 <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0'>
-                  <h1 className='font-extrabold text-4xl text-[#293451] dark:text-[#FFFFFF]'>Privacy compliance.</h1>
-                  <div className='mt-6 mb-4 flex items-center text-[16px]'>
-                    <div className='mr-3'>
-                      <CheckCircleIcon className='fill-[#FDBC64] w-[24px] h-[24px]' />
+                  <h1 className='font-extrabold mb-6 text-4xl text-[#293451] dark:text-[#FFFFFF]'>
+                    {t('main.privacy.title')}
+                  </h1>
+                  {_map(t('main.privacy.list', { returnObjects: true }), (item) => (
+                    <div key={item.label} className='mb-4 flex items-center'>
+                      <div className='mr-3'>
+                        <CheckCircleIcon className='fill-indigo-500 w-[24px] h-[24px]' />
+                      </div>
+                      <p>
+                        <span className='dark:text-white'>{item.label}</span>
+                        <span className='mr-1 ml-1 dark:text-white'>-</span>
+                        <span className='text-[#7D818C] dark:text-[#BEBFC2]'>{item.desc}</span>
+                      </p>
                     </div>
-                    <p>
-                      <span className='dark:text-white'>GDPR</span>
-                      <span className='mr-1 ml-1 dark:text-white'>-</span>
-                      <span className='text-[#7D818C] dark:text-[#BEBFC2]'>data and processing based in EU zone.</span>
-                    </p>
-                  </div>
-                  <div className='mb-4 flex items-center'>
-                    <div className='mr-3'>
-                      <CheckCircleIcon className='fill-[#FDBC64] w-[24px] h-[24px]' />
-                    </div>
-                    <p>
-                      <span className='dark:text-white'>HIPAA</span>
-                      <span className='mr-1 ml-1 dark:text-white'>-</span>
-                      <span className='text-[#7D818C] dark:text-[#BEBFC2]'>protect sensitive info.</span>
-                    </p>
-                  </div>
-                  <div className='mb-4 flex items-center'>
-                    <div className='mr-3'>
-                      <CheckCircleIcon className='fill-[#FDBC64] w-[24px] h-[24px]' />
-                    </div>
-                    <p>
-                      <span className='dark:text-white'>PCI DSS</span>
-                      <span className='mr-1 ml-1 dark:text-white'>-</span>
-                      <span className='text-[#7D818C] dark:text-[#BEBFC2]'>payment data security.</span>
-                    </p>
-                  </div>
-                  <div className='mb-10 flex items-center'>
-                    <div className='mr-3'>
-                      <CheckCircleIcon className='fill-[#FDBC64] w-[24px] h-[24px]' />
-                    </div>
-                    <p>
-                      <span className='dark:text-white'>CCPA</span>
-                      <span className='mr-1 ml-1 dark:text-white'>-</span>
-                      <span className='text-[#7D818C] dark:text-[#BEBFC2]'>control over the personal information.</span>
-                    </p>
-                  </div>
-                  <Button className='text-[#4E46DD] dark:text-[#8A84FB] !font-bold border-0'>
-                    More about Data Protection
+                  ))}
+                  <Button onClick={() => history.push(routes.privacy)} className='mt-10 text-[#4E46DD] dark:text-[#8A84FB] !font-bold border-0'>
+                    {t('main.dataProtection')}
                     <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
                   </Button>
                 </div>
@@ -268,73 +194,36 @@ const Main = () => {
               <BackgroundSvg className='absolute -left-8' type='shapes' />
               <div className='mx-auto text-[#293451] font-extrabold text-[30px] sm:text-[45px] w-fit relative'>
                 <h1 className='relative z-20 dark:text-white'>
-                  Core features
+                  {t('main.coreFeaturesBlock')}
                 </h1>
                 <BackgroundSvg className='absolute right-0 sm:-right-16 top-9 z-10' type='semicircle' />
               </div>
               <div className='mt-[60px] flex items-center max-w-[1300px] w-full mx-auto flex-wrap justify-center xl:justify-between'>
-                <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
-                  <span className='text-[#FDBC64] text-3xl font-semibold'>1</span>
-                  <div className='mt-2'>
-                    <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Measure website traffic with 99% of accuracy</h2>
-                    <p className='text-gray-500 max-w-[320px] mx-auto dark:text-[#BEBFC2]'>The most accurate analytics solution to track all basic metrics and see the RIGHT data.</p>
+                {_map(t('main.features', { returnObjects: true }), (item, index) => (
+                  <div key={item.name} className='w-[416px] h-[250px] px-7 py-11 text-center'>
+                    <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
+                    <div className='mt-2'>
+                      <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
+                      <p className='text-gray-500 max-w-[320px] mx-auto dark:text-[#BEBFC2]'>{item.desc}</p>
+                    </div>
                   </div>
-                </div>
-                <div className='w-[416px] h-[250px]  px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
-                  <span className='text-[#FDBC64] text-3xl font-semibold'>2</span>
-                  <div className='mt-2'>
-                    <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Demo & Geo reports</h2>
-                    <p className='text-gray-500 max-w-[303px] mx-auto dark:text-[#BEBFC2]'>Yes, it&apos;s standard. But keep track of exactly where your users are from as it is.</p>
-                  </div>
-                </div>
-                <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
-                  <span className='text-[#FDBC64] text-3xl font-semibold'>3</span>
-                  <div className='mt-2'>
-                    <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>UTM & Reffers tracking</h2>
-                    <p className='text-gray-500 max-w-[320px] mx-auto dark:text-[#BEBFC2]'>All traffic from your companies and websites will be shown without data loss.</p>
-                  </div>
-                </div>
-                <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
-                  <span className='text-[#FDBC64] text-3xl font-semibold'>4</span>
-                  <div className='mt-2'>
-                    <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3'>Agile system</h2>
-                    <p className='text-gray-500 max-w-[303px] mx-auto dark:text-[#BEBFC2]'>A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customize.</p>
-                  </div>
-                </div>
-                <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer'>
-                  <span className='text-[#FDBC64] text-3xl font-semibold'>5</span>
-                  <div className='mt-2'>
-                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3 dark:text-white'>
-                      Custom events
-                      <br />
-                      (really easy to setup)
-                    </h2>
-                    <p className='text-gray-500 max-w-[303px] mx-auto dark:text-[#BEBFC2]'>User-friendly interface and ease of setting goals will help you measure the effectiveness of your website.</p>
-                  </div>
-                </div>
-                <div className='w-[416px] h-[250px] px-7 py-11 text-center hover:shadow-2xl hover:rounded-xl duration-300 hover:-translate-y-2 transition-all ease-in cursor-pointer '>
-                  <span className='text-[#FDBC64] text-3xl font-semibold'>6</span>
-                  <div className='mt-2'>
-                    <h2 className='text-[#293451] text-[20px] font-semibold max-w-[300px] mx-auto mb-3 dark:text-white'>User flow</h2>
-                    <p className='text-gray-500 max-w-[303px] mx-auto text-base dark:text-[#BEBFC2]'>Track how users get to your site and where they go. Study the behavior and patterns of your visitor.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </section>
             <section className='bg-white dark:bg-[#202A3A] pt-24 sm:px-5 px-3 relative pb-28'>
               <h1 className='mx-auto text-[#293451] dark:text-white font-bold text-[30px] sm:text-[45px] w-fit text-center'>Support all popular platforms</h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-[1300px] w-full mx-auto justify-between'>
-                <img src='/assets/supports/Slack.png' alt='Slack' />
+                <img src={theme === 'dark' ? '/assets/supports/slack_w.png' : '/assets/supports/Slack.png'} alt='Slack' />
                 <img src='/assets/supports/NuxtJS.png' alt='NuxtJS' />
-                <img src='/assets/supports/Webflow.png' alt='Webflow' />
-                <img src='/assets/supports/next-js.png' alt='next-js' />
+                <Webflow theme={theme} />
+                <img src='/assets/supports/next-js.png' alt='NextJS' />
                 <img src='/assets/supports/Notion.png' alt='Notion' />
-                <img src='/assets/supports/react.png' alt='react' />
-                <img src='/assets/supports/angular.png' alt='angular' />
+                <img src='/assets/supports/react.png' alt='React' />
+                <img src='/assets/supports/angular.png' alt='Angular' />
                 <img src='/assets/supports/WordPress.png' alt='WordPress' />
-                <img src='/assets/supports/Wix.png' alt='Wix' />
-                <img src='/assets/supports/ghost.png' alt='ghost' />
-                <img src='/assets/supports/Gatsby.png' alt='Gatsby' />
+                <Wix theme={theme} />
+                <img src='/assets/supports/ghost.png' alt='Ghost' />
+                <Gatsby theme={theme} />
                 <img src='/assets/supports/Cloudflare.png' alt='Cloudflare' />
               </div>
             </section>
@@ -349,50 +238,19 @@ const Main = () => {
                   }}
                 />
                 <section className='relative z-20 px-3'>
-                  <h1 className='mt-20 text-center text-[30px] sm:text-[45px] text-white font-extrabold max-w-[512px] w-full mx-auto'>Marketplace and extension features</h1>
+                  <h1 className='mt-20 text-center text-[30px] sm:text-[45px] text-white font-extrabold max-w-[512px] w-full mx-auto'>
+                    {t('main.marketplaceBlock')}
+                  </h1>
                   <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-24 justify-between justify-items-center text-white pt-20 pb-36'>
-                    <div className='max-w-[290px] w-full'>
-                      <div className='flex items-center'>
-                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>1</span>
-                        <h2 className='font-semibold text-[20px]'>Аdditional features</h2>
+                    {_map(t('main.mFeatures', { returnObjects: true }), (item, index) => (
+                      <div key={item.name} className='max-w-[290px] w-full'>
+                        <div className='flex items-center'>
+                          <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>{1 + index}</span>
+                          <h2 className='font-semibold text-[20px]'>{item.name}</h2>
+                        </div>
+                        <p className='pl-9 text-[#CECDD7]'>{item.desc}</p>
                       </div>
-                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
-                    </div>
-                    <div className='max-w-[290px] w-full'>
-                      <div className='flex items-center'>
-                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>2</span>
-                        <h2 className='font-semibold text-[20px]'>Open source code</h2>
-                      </div>
-                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
-                    </div>
-                    <div className='max-w-[290px] w-full'>
-                      <div className='flex items-center'>
-                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>3</span>
-                        <h2 className='font-semibold text-[20px]'>Marketplace</h2>
-                      </div>
-                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
-                    </div>
-                    <div className='max-w-[290px] w-full'>
-                      <div className='flex items-center'>
-                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>4</span>
-                        <h2 className='font-semibold text-[20px]'>Easy integration</h2>
-                      </div>
-                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
-                    </div>
-                    <div className='max-w-[290px] w-full'>
-                      <div className='flex items-center'>
-                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>5</span>
-                        <h2 className='font-semibold text-[20px]'>Solve your tasks, not create</h2>
-                      </div>
-                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
-                    </div>
-                    <div className='max-w-[290px] w-full'>
-                      <div className='flex items-center'>
-                        <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>6</span>
-                        <h2 className='font-semibold text-[20px]'>Share your best solutions</h2>
-                      </div>
-                      <p className='pl-9 text-[#CECDD7]'>Browser, notifications and two-factor authentication</p>
-                    </div>
+                    ))}
                   </div>
                 </section>
                 <div
@@ -414,7 +272,9 @@ const Main = () => {
                 <BackgroundSvg type='shapes' />
               </div>
               <div className='max-w-[1000px] w-full mx-auto'>
-                <h1 className='text-[#293451] text-center font-extrabold text-[45px] relative z-20 dark:text-white'>Testimonials</h1>
+                <h1 className='text-[#293451] text-center font-extrabold text-[45px] relative z-20 dark:text-white'>
+                  {t('main.testimonials')}
+                </h1>
                 <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
                   <div
                     className='max-w-[310px] w-full dark:bg-[#212B3B]'
@@ -479,12 +339,12 @@ const Main = () => {
                     </h1>
                     <p className='text-[#C8D1E2] mb-9 font-medium text-base sm:text-lg'>Yes, it&apos;s standard. But keep track of exactly where your users are from as it is.</p>
                     <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
-                      <span className='text-base font-semibold mr-1'>Start for free</span>
+                      <span className='text-base font-semibold mr-1'>{t('main.start')}</span>
                       <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
                     </Link>
                   </div>
                   <div className='max-w-md xl:max-w-lg block h-[450px]'>
-                    <img className='rounded-xl border' style={{ minheight: '600px', minWidth: '880px' }} src='/assets/mainSectionDemo.png' width='100%' height='auto' alt='demo-main-section' />
+                    <img className='rounded-xl border' style={{ minheight: '600px', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </div>
                 </div>
               </section>
@@ -642,30 +502,26 @@ const Main = () => {
             <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-[1300px] w-full mx-auto py-20 lg:py-32 px-5'>
               <img src='/assets/openSource.png' alt='Swetrix open source' />
               <div className='max-w-[516px] w-full lg:ml-5'>
-                <h1 className='text-[30px] md:text-[38px] text-white font-extrabold'>Adventages of using Open source + link to github</h1>
+                <h1 className='text-[30px] md:text-[38px] text-white font-extrabold'>
+                  <Trans
+                    t={t}
+                    i18nKey='main.opensourceAdv'
+                    components={{
+                      // eslint-disable-next-line jsx-a11y/anchor-has-content
+                      url: <a href={GITHUB_URL} className='hover:underline' target='_blank' rel='noopener noreferrer' />,
+                    }}
+                  />
+                </h1>
                 <hr className='border-[#535151] border-1 max-w-[346px] my-6' />
                 <div className='max-w-[438px] w-full lg:mb-0 mb-9'>
-                  <p className='text-[#CECDD7] text-sm leading-6 flex items-center mb-3'>
-                    <span>
-                      <CheckCircleIcon className='w-[24px] h-[24px] text-[#FDBC64] mr-[14px]' />
-                    </span>
-                    {' '}
-                    Install analytics on your own servers - the source code is available to everyone.
-                  </p>
-                  <p className='text-[#CECDD7] text-sm leading-6 flex items-center mb-3'>
-                    <span>
-                      <CheckCircleIcon className='w-[24px] h-[24px] text-[#FDBC64] mr-[14px]' />
-                    </span>
-                    {' '}
-                    Find bugs and suggest improvements - the community will be grateful to you.
-                  </p>
-                  <p className='text-[#CECDD7] text-sm leading-6 flex items-center mb-3'>
-                    <span>
-                      <CheckCircleIcon className='w-[24px] h-[24px] text-[#FDBC64] mr-[14px]' />
-                    </span>
-                    {' '}
-                    Your data is protected, all errors and features are implemented in a matter of days by our developers.
-                  </p>
+                  {_map(t('main.opensource', { returnObjects: true }), (item) => (
+                    <p key={item.desc} className='text-[#CECDD7] text-sm leading-6 flex items-center mb-3'>
+                      <span>
+                        <CheckCircleIcon className='w-[24px] h-[24px] text-indigo-500 mr-[14px]' />
+                      </span>
+                      {item.desc}
+                    </p>
+                  ))}
                 </div>
               </div>
             </section>
@@ -710,43 +566,7 @@ const Main = () => {
             </section>
           </main>
         </div>
-        {/* live demo */}
-        {/* <div className='relative'>
-          <div className='absolute inset-0 flex flex-col' aria-hidden='true'>
-            <div className='flex-1' />
-            <div className='flex-1 w-full bg-white dark:bg-gray-800' />
-          </div>
-          <div className='w-11/12 mx-auto relative' onMouseEnter={() => setLiveDemoHover(true)} onMouseLeave={() => setLiveDemoHover(false)}>
-            {theme === 'dark' ? (
-              <img
-                className={cx('relative rounded-md md:rounded-lg shadow-lg w-full transition-all', {
-                  'brightness-75': liveDemoHover,
-                })}
-                src='/assets/screenshot_dark.png'
-                alt=''
-              />
-            ) : (
-              <img
-                className={cx('relative rounded-md md:rounded-lg shadow-lg w-full transition-all', {
-                  'brightness-75': liveDemoHover,
-                })}
-                src='/assets/screenshot_light.png'
-                alt=''
-              />
-            )}
-            {liveDemoHover && (
-              <a
-                href={LIVE_DEMO_URL}
-                className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center whitespace-nowrap px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700'
-                target='_blank'
-                rel='noreferrer noopener'
-              >
-                {t('common.liveDemo')}
-              </a>
-            )}
-          </div>
-        </div> */}
-
+        {/* Some statistics */}
         {/* <div className='py-6 overflow-hidden bg-gray-50 dark:bg-gray-700'>
           <div className='w-11/12 container mx-auto'>
             <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 text-center'>
