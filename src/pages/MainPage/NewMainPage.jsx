@@ -13,6 +13,13 @@ import Button from 'ui/Button'
 import { GITHUB_URL } from 'redux/constants'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
+import NextJS from 'ui/icons/NextJS'
+import NuxtJS from 'ui/icons/NuxtJS'
+import Slack from 'ui/icons/Slack'
+import Wordpress from 'ui/icons/Wordpress'
+import Cloudflare from 'ui/icons/Cloudflare'
+import Notion from 'ui/icons/Notion'
+import Ghost from 'ui/icons/Ghost'
 import Gatsby from 'ui/icons/Gatsby'
 import Wix from 'ui/icons/Wix'
 import { withAuthentication, auth } from '../../hoc/protected'
@@ -222,18 +229,19 @@ const Main = () => {
                 {t('main.supports')}
               </h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-[1300px] w-full mx-auto justify-between'>
-                <img src={theme === 'dark' ? '/assets/supports/slack_w.png' : '/assets/supports/Slack.png'} alt='Slack' />
-                <img src='/assets/supports/NuxtJS.png' alt='NuxtJS' />
+                {/* <img src={theme === 'dark' ? '/assets/supports/slack_w.png' : '/assets/supports/Slack.png'} alt='Slack' /> */}
+                <Slack theme={theme} className='max-w-[150px] max-h-12' />
+                <NuxtJS theme={theme} />
                 <Webflow theme={theme} />
-                <img src='/assets/supports/next-js.png' alt='NextJS' />
-                <img src='/assets/supports/Notion.png' alt='Notion' />
+                <NextJS theme={theme} className='max-w-[150px]' />
+                <Notion theme={theme} />
                 <img src='/assets/supports/react.png' alt='React' />
                 <img src='/assets/supports/angular.png' alt='Angular' />
-                <img src='/assets/supports/WordPress.png' alt='WordPress' />
+                <Wordpress theme={theme} />
                 <Wix theme={theme} className='max-w-[150px] max-h-12' />
-                <img src='/assets/supports/ghost.png' alt='Ghost' />
+                <Ghost theme={theme} />
                 <Gatsby theme={theme} />
-                <img src='/assets/supports/Cloudflare.png' alt='Cloudflare' />
+                <Cloudflare theme={theme} />
               </div>
             </section>
             <div className='overflow-hidden'>
