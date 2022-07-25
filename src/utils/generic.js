@@ -1,6 +1,5 @@
 import _find from 'lodash/find'
 import _replace from 'lodash/replace'
-import _isNaN from 'lodash/isNaN'
 
 const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
 
