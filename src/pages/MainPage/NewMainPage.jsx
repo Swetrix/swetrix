@@ -18,6 +18,7 @@ import Wix from 'ui/icons/Wix'
 import { withAuthentication, auth } from '../../hoc/protected'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
+import './NewMainPage.css'
 
 const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 
@@ -180,10 +181,9 @@ const Main = () => {
                 </div>
                 <div className='relative'>
                   <div
-                    className='absolute w-[446px] h-[558px] z-40 left-[10vw]'
+                    className='absolute w-[146px] h-[558px] z-40 left-[10vw] filter_blur'
                     style={{
                       background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
-                      filter: 'blur(150px)',
                       transform: 'rotate(-50.32deg)',
                     }}
                   />
@@ -232,10 +232,9 @@ const Main = () => {
             <div className='overflow-hidden'>
               <div className='relative max-w-[1300px] w-full mx-auto'>
                 <div
-                  className='absolute w-[446px] h-[558px] z-10 left-[10vw] -top-[10vh]'
+                  className='absolute w-[246px] h-[458px] z-10 left-[10vw] -top-[10vh] filter_blur'
                   style={{
                     background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
-                    filter: 'blur(200px)',
                     transform: 'rotate(-50.32deg)',
                   }}
                 />
@@ -256,10 +255,9 @@ const Main = () => {
                   </div>
                 </section>
                 <div
-                  className='absolute w-[446px] h-[558px] z-10 -left-[30vw] top-[80vh] sm:left-[70vw] sm:top-[30vh]'
+                  className='absolute w-[346px] h-[558px] z-10 -left-[30vw] top-[80vh] sm:left-[70vw] sm:top-[30vh] filter_blur'
                   style={{
                     background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
-                    filter: 'blur(200px)',
                     transform: 'rotate(-50.32deg)',
                   }}
                 />
