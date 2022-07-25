@@ -221,7 +221,7 @@ const Main = () => {
                 <img src='/assets/supports/react.png' alt='React' />
                 <img src='/assets/supports/angular.png' alt='Angular' />
                 <img src='/assets/supports/WordPress.png' alt='WordPress' />
-                <Wix theme={theme} />
+                <Wix theme={theme} className='max-w-[150px] max-h-12' />
                 <img src='/assets/supports/ghost.png' alt='Ghost' />
                 <Gatsby theme={theme} />
                 <img src='/assets/supports/Cloudflare.png' alt='Cloudflare' />
