@@ -171,6 +171,9 @@
         "desc": "...the description..."
       }
     ],
+    "supports": "Supports all popular platforms",
+    "becomeDev": "Become a developer",
+    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
     "marketplaceBlock": "Marketplace and extension features",
     "coreFeaturesBlock": "Core features",
     "testimonials": "Testimonials",
@@ -192,7 +195,7 @@
     "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
     "users": "Registered users",
     "websites": "Added websites",
-    "pageviews": "Tracked pageviews"
+    "pageviews": "Events tracked"
   },
   "auth": {
     "recovery": {

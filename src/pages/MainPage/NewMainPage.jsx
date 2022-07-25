@@ -7,7 +7,7 @@ import { CheckCircleIcon as CheckCircleIconOutline, CogIcon, ClockIcon } from '@
 import _map from 'lodash/map'
 
 import routes from 'routes'
-// import { nFormatter } from 'utils/generic'
+import { nFormatterSeparated } from 'utils/generic'
 import Title from 'components/Title'
 import Button from 'ui/Button'
 import { GITHUB_URL } from 'redux/constants'
@@ -26,7 +26,11 @@ const Main = () => {
   const history = useHistory()
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
-  // const stats = useSelector(state => state.ui.misc.stats)
+  const stats = useSelector(state => state.ui.misc.stats)
+
+  const events = nFormatterSeparated(Number(stats.pageviews), 0)
+  const users = nFormatterSeparated(Number(stats.users), 0)
+  const websites = nFormatterSeparated(Number(stats.projects), 0)
 
   return (
     <Title title='Privacy Respecting Web Analytics Platform'>
@@ -214,7 +218,9 @@ const Main = () => {
               <BackgroundSvg className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
             </section>
             <section className='bg-white dark:bg-[#202A3A] pt-24 sm:px-5 px-3 relative pb-28'>
-              <h1 className='mx-auto text-[#293451] dark:text-white font-bold text-[30px] sm:text-[45px] w-fit text-center'>Support all popular platforms</h1>
+              <h1 className='mx-auto text-[#293451] dark:text-white font-bold text-[30px] sm:text-[45px] w-fit text-center'>
+                {t('main.supports')}
+              </h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-[1300px] w-full mx-auto justify-between'>
                 <img src={theme === 'dark' ? '/assets/supports/slack_w.png' : '/assets/supports/Slack.png'} alt='Slack' />
                 <img src='/assets/supports/NuxtJS.png' alt='NuxtJS' />
@@ -535,81 +541,63 @@ const Main = () => {
               </div>
               <div className='max-w-[1080px] w-full mx-auto px-3'>
                 <div className='max-w-[400px] w-full mx-auto'>
-                  <h1 className='text-[#170F49] dark:text-white text-[30px] md:text-[38px] font-extrabold text-center'>Become a developer</h1>
-                  <p className='text-[#7D818C] dark:text-[#BEBFC2] text-base font-medium text-center'>Write your extensions, follow the news and join our developer community.</p>
+                  <h1 className='text-[#170F49] dark:text-white text-[30px] md:text-[38px] font-extrabold text-center'>
+                    {t('main.becomeDev')}
+                  </h1>
+                  <p className='text-[#7D818C] dark:text-[#BEBFC2] text-base font-medium text-center'>
+                    {t('main.becomeDevDesc')}
+                  </p>
                 </div>
                 <div className='flex items-center justify-between mt-20 md:mt-32 md:flex-row flex-col'>
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
-                      99
-                      <span className='text-[#170F49] dark:text-[#C8DCFC]'>k+</span>
+                      {users[0]}
+                      {users[1] && (
+                        <span className='text-[#170F49] dark:text-[#C8DCFC]'>
+                          {users[1]}
+                          +
+                        </span>
+                      )}
                     </p>
-                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>Developer community</p>
+                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>
+                      {t('main.users')}
+                    </p>
                   </div>
                   <div className='bg-[#212936] dark:bg-[#DEE3EB] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
-                      280
-                      <span className='text-[#170F49] dark:text-[#C8DCFC]'>+</span>
+                      {websites[0]}
+                      {websites[1] && (
+                        <span className='text-[#170F49] dark:text-[#C8DCFC]'>
+                          {websites[1]}
+                          +
+                        </span>
+                      )}
                     </p>
-                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>Contributors</p>
+                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>
+                      {t('main.websites')}
+                    </p>
                   </div>
                   <div className='bg-[#212936] dark:bg-[#DEE3EB] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
                   <div>
                     <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
-                      44
-                      <span className='text-[#170F49] dark:text-[#C8DCFC]'>b+</span>
+                      {events[0]}
+                      {events[1] && (
+                        <span className='text-[#170F49] dark:text-[#C8DCFC]'>
+                          {events[1]}
+                          +
+                        </span>
+                      )}
                     </p>
-                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>Events tracked</p>
+                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>
+                      {t('main.pageviews')}
+                    </p>
                   </div>
                 </div>
               </div>
             </section>
           </main>
         </div>
-        {/* Some statistics */}
-        {/* <div className='py-6 overflow-hidden bg-gray-50 dark:bg-gray-700'>
-          <div className='w-11/12 container mx-auto'>
-            <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 text-center'>
-              {t('main.ourStats')}
-            </h2>
-            <p className='max-w-3xl mx-auto mt-3 text-xl text-center text-gray-500 dark:text-gray-200 sm:mt-4'>
-              {t('main.statsDesc')}
-            </p>
-            <div className='pb-12 mt-10 bg-gray-50 dark:bg-gray-700 sm:pb-16'>
-              <div className='relative w-full'>
-                <div className='mx-auto'>
-                  <dl className='bg-gray-50 dark:bg-gray-700 rounded-lg sm:grid sm:grid-cols-3'>
-                    <div className='flex flex-col p-6 text-center border-b border-gray-100 sm:border-0 sm:border-r'>
-                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 dark:text-gray-100 leading-6'>
-                        {t('main.users')}
-                      </dt>
-                      <dd className='order-1 text-5xl font-extrabold text-indigo-600 dark:text-indigo-500'>
-                        {Number(stats.users).toLocaleString()}
-                      </dd>
-                    </div>
-                    <div className='flex flex-col p-6 text-center border-t border-b border-gray-100 sm:border-0 sm:border-l sm:border-r'>
-                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 dark:text-gray-100 leading-6'>
-                        {t('main.websites')}
-                      </dt>
-                      <dd className='order-1 text-5xl font-extrabold text-indigo-600 dark:text-indigo-500'>
-                        {Number(stats.projects).toLocaleString()}
-                      </dd>
-                    </div>
-                    <div className='flex flex-col p-6 text-center border-t border-gray-100 sm:border-0 sm:border-l'>
-                      <dt className='order-2 mt-2 text-lg font-medium text-gray-500 dark:text-gray-100 leading-6'>
-                        {t('main.pageviews')}
-                      </dt>
-                      <dd className='order-1 text-5xl font-extrabold text-indigo-600 dark:text-indigo-500'>
-                        {nFormatter(Number(stats.pageviews), 1)}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
     </Title>
   )
