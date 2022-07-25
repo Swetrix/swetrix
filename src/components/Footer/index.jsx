@@ -223,9 +223,9 @@ const Footer = ({ minimal, authenticated }) => {
               </div>
             </div>
             <div className='flex gap-5 flex-wrap col-span-2 items-center justify-end'>
-              <img className='h-10 w-28' src='/assets/pci.png' height='40' width='112' loading='lazy' alt='PCI Complaint' />
-              <img className='h-10 w-28' src='/assets/visa.png' height='40' width='112' loading='lazy' alt='' />
-              <img className='h-10 w-28' src='/assets/mc.png' height='40' width='112' loading='lazy' alt='' />
+              <img className='h-10 w-auto' src='/assets/pci.png' height='40' width='auto' loading='lazy' alt='' />
+              <img className='h-10 w-auto' src='/assets/visa.png' height='40' width='auto' loading='lazy' alt='' />
+              <img className='h-10 w-auto' src='/assets/mc.png' height='40' width='auto' loading='lazy' alt='' />
             </div>
           </div>
         </div>
