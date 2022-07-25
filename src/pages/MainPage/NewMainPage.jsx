@@ -211,6 +211,7 @@ const Main = () => {
                   </div>
                 ))}
               </div>
+              <BackgroundSvg className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
             </section>
             <section className='bg-white dark:bg-[#202A3A] pt-24 sm:px-5 px-3 relative pb-28'>
               <h1 className='mx-auto text-[#293451] dark:text-white font-bold text-[30px] sm:text-[45px] w-fit text-center'>Support all popular platforms</h1>
@@ -265,8 +266,8 @@ const Main = () => {
             </div>
             <Pricing t={t} language={language} />
             <section className='bg-white dark:bg-[#181F29] pt-20 pb-20 relative'>
-              <div className='absolute right-0 -top-16'>
-                <BackgroundSvg type='circle' />
+              <div className='absolute right-0 top-0'>
+                <BackgroundSvg type='twolinecircle2' />
               </div>
               <div className='absolute rotate-[135deg] left-0 z-0'>
                 <BackgroundSvg type='shapes' />
@@ -527,7 +528,7 @@ const Main = () => {
             </section>
             <section className='bg-white dark:bg-[#202A3A] pt-20 pb-44 relative'>
               <div className='absolute right-0 top-16 z-0'>
-                <BackgroundSvg type='circle' />
+                <BackgroundSvg type='threecircle' />
               </div>
               <div className='absolute -left-9 top-52 rotate-90'>
                 <BackgroundSvg type='shapes' />
