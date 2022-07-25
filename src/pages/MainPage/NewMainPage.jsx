@@ -344,7 +344,7 @@ const Main = () => {
                     </Link>
                   </div>
                   <div className='max-w-md xl:max-w-lg block h-[450px]'>
-                    <img className='rounded-xl border' style={{ minheight: '600px', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                    <img className='rounded-xl' style={{ minheight: '600px', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </div>
                 </div>
               </section>
