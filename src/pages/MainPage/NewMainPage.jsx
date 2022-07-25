@@ -155,24 +155,26 @@ const Main = () => {
                 <div className='relative z-50 lg:col-span-6 rounded-xl'>
                   <div className='bg-white dark:bg-[#202A3A] sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
-                      <p className='text-lg text-gray-900 dark:text-white text-center'>
+                      <p className='text-lg text-gray-900 dark:text-white text-center md:text-xl font-semibold'>
                         {t('main.signup')}
                       </p>
                       <div className='mt-6'>
                         <SignUp />
                       </div>
                     </div>
-                    <div className='px-4 py-6 bg-gray-50 dark:bg-[#202A3A]  border-t-2 border-gray-200 dark:border-gray-500 sm:px-10'>
-                      <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
-                        <Trans
-                          t={t}
-                          i18nKey='main.signupTerms'
-                          components={{
-                            tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
-                            pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
-                          }}
-                        />
-                      </p>
+                    <div className='px-4 sm:px-10'>
+                      <div className='py-6 bg-gray-50 dark:bg-[#202A3A]  border-t-2 border-gray-200 dark:border-gray-500'>
+                        <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
+                          <Trans
+                            t={t}
+                            i18nKey='main.signupTerms'
+                            components={{
+                              tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
+                              pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
+                            }}
+                          />
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
