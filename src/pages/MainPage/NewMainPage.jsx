@@ -198,7 +198,11 @@ const Main = () => {
                       transform: 'rotate(-50.32deg)',
                     }}
                   />
-                  <img className='relative z-50 hidden md:block' src='/assets/section-singup-image.png' alt='Swetrix core analytics' />
+                  <img
+                    className='relative z-50 hidden md:block'
+                    src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
+                    alt=''
+                  />
                 </div>
               </div>
             </div>
