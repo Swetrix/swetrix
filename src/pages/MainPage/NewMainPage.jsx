@@ -102,7 +102,7 @@ const Main = () => {
             <div className='dark:bg-[#181F29] bg-white px-4 pb-24'>
               {/* section Core Analytics Features */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
-                <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Core Analytics Features' />
+                <img className='md:max-w-[450px] lg:max-w-full md:relative md:-top-10' src='/assets/CoreFeaturesLight.png' alt='Core Analytics Features' />
                 <div className='max-w-[516px]'>
                   <h1 className='font-extrabold text-4xl dark:text-[#FFFFFF] text-[#293451]'>
                     {t('main.coreFeatures.title')}
