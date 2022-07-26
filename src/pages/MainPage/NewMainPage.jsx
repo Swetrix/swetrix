@@ -133,12 +133,11 @@ const Main = () => {
                     <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
                   </Button>
                 </div>
-                <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Core Analytics Features' />
+                <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Marketplace' />
               </section>
               {/* section Privacy compliance. */}
               <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
-                <img className='md:max-w-[360px] lg:max-w-full dark:hidden' src='/assets/privacy-section.png' alt='Core Analytics Features' />
-                <img className='md:max-w-[360px] lg:max-w-full hidden dark:block' src='/assets/privacy-section-dark.png' alt='Core Analytics Features' />
+                <img className='md:max-w-[360px] lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
                 <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0'>
                   <h1 className='font-extrabold mb-6 text-4xl text-[#293451] dark:text-[#FFFFFF]'>
                     {t('main.privacy.title')}
