@@ -9,6 +9,9 @@ const Webflow = ({ theme, className }) => (
     y='0px'
     viewBox='0 0 808.3 203.3'
   >
+    <title>
+      Webflow
+    </title>
     <path
       className={cx({
         'fill-white': theme === 'dark',

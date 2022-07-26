@@ -240,8 +240,8 @@ const Main = () => {
                 <Webflow theme={theme} />
                 <NextJS theme={theme} className='max-w-[150px]' />
                 <Notion theme={theme} />
-                <img src='/assets/supports/react.png' alt='React' />
-                <img src='/assets/supports/angular.png' alt='Angular' />
+                <img src='/assets/supports/react.png' alt='React' title='React.js' />
+                <img src='/assets/supports/angular.png' alt='Angular' title='Angular' />
                 <Wordpress theme={theme} />
                 <Wix theme={theme} className='max-w-[150px] max-h-12' />
                 <Ghost theme={theme} />

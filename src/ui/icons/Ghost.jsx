@@ -10,6 +10,9 @@ const Ghost = ({ theme, className }) => {
 
   return (
     <svg className={className} viewBox='0 0 671.98 288'>
+      <title>
+        Ghost
+      </title>
       <g opacity='0.7'>
         <rect x='112.197' y='168.302' className={cn} width='31.703' height='15.852' />
         <rect x='159.75' y='168.302' className={cn} width='31.683' height='15.852' />
