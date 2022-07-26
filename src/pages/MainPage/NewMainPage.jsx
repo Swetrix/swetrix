@@ -15,6 +15,7 @@ import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
 import NextJS from 'ui/icons/NextJS'
 import NuxtJS from 'ui/icons/NuxtJS'
+import Quote from 'ui/icons/Quote'
 import Slack from 'ui/icons/Slack'
 import Wordpress from 'ui/icons/Wordpress'
 import Cloudflare from 'ui/icons/Cloudflare'
@@ -302,7 +303,7 @@ const Main = () => {
                       borderRadius: '100px 30px 30px 30px',
                     }}
                   >
-                    <img className='mx-auto relative -top-4' src='/assets/Quote.png' alt='quote' />
+                    <Quote theme={theme} color='black' className='mx-auto relative -top-4' />
                     <div className='px-14 mb-12'>
                       <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
                       <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
@@ -318,7 +319,7 @@ const Main = () => {
                       borderRadius: '100px 30px 30px 30px',
                     }}
                   >
-                    <img className='mx-auto relative -top-4' src='/assets/Quote-yellow.png' alt='quote' />
+                    <Quote theme={theme} color='yellow' className='mx-auto relative -top-4' />
                     <div className='px-14 mb-12'>
                       <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
                       <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
@@ -334,7 +335,7 @@ const Main = () => {
                       borderRadius: '100px 30px 30px 30px',
                     }}
                   >
-                    <img className='mx-auto relative -top-4' src='/assets/Quote.png' alt='quote' />
+                    <Quote theme={theme} color='black' className='mx-auto relative -top-4' />
                     <div className='px-14 mb-12'>
                       <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
                       <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
