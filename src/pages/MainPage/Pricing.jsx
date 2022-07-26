@@ -291,7 +291,7 @@ const Pricing = ({ t, language }) => {
                     )}
                   </div>
                   <div className='px-6 border-none'>
-                    <hr className='w-full mx-auto border-[1px] border-[#D5D5D5]' />
+                    <hr className='w-full mx-auto border border-gray-300 dark:border-gray-600' />
                   </div>
                   <div className='pt-6 pb-8 px-6 border-none'>
                     <h3 className='text-xs font-medium text-gray-900 dark:text-gray-50 tracking-wide uppercase'>
