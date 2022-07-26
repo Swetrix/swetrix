@@ -213,7 +213,7 @@ const Main = () => {
                 <h1 className='relative z-20 dark:text-white'>
                   {t('main.coreFeaturesBlock')}
                 </h1>
-                <BackgroundSvg className='absolute right-0 sm:-right-16 top-9 z-10' type='semicircle' />
+                <BackgroundSvg className='absolute right-0 sm:-right-16 top-9 z-10 opacity-30' type='semicircle' />
               </div>
               <div className='mt-[60px] flex items-center max-w-[1300px] w-full mx-auto flex-wrap justify-center xl:justify-between'>
                 {_map(t('main.features', { returnObjects: true }), (item, index) => (
