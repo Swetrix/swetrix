@@ -41,7 +41,7 @@ const Main = () => {
   const websites = nFormatterSeparated(Number(stats.projects), 0)
 
   return (
-    <Title title='Privacy Respecting Web Analytics Platform'>
+    <Title title={t('titles.main')}>
       <div className='relative flex justify-center items-center bg-gray-900 py-2 px-2'>
         <a href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi' target='_blank' rel='noreferrer noopener' className='text-white border-gray-900 border-b-2 hover:border-white text-center'>
           {t('main.ukrSupport')}
