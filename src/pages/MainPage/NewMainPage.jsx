@@ -72,19 +72,19 @@ const Main = () => {
                         }}
                       />
                     </h1>
-                    <p className='mt-3 text-base text-gray-300 sm:mt-[24px] sm:text-xl lg:text-lg xl:text-[1.1rem]'>
+                    <p className='mt-3 text-base text-gray-300 sm:mt-6 sm:text-xl lg:text-lg xl:text-lg'>
                       {t('main.description')}
                       <br />
                       {t('main.trackEveryMetric')}
                     </p>
                     <div className='mt-10 flex flex-col items-center sm:flex-row'>
-                      <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[350px] sm:max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
+                      <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[350px] sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
                         <span className='text-base font-semibold mr-1'>
                           {t('main.start')}
                         </span>
-                        <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
+                        <ArrowSmRightIcon className='h-4 w-5 mt-[1px]' />
                       </Link>
-                      <a href={LIVE_DEMO_URL} className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-[#E6E8EC] border w-full max-w-[350px] sm:max-w-[210px] h-[50px] flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-[#1a273b]' target='_blank' rel='noopener noreferrer'>
+                      <a href={LIVE_DEMO_URL} className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-[#E6E8EC] border w-full max-w-[350px] sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-[#1a273b]' target='_blank' rel='noopener noreferrer'>
                         <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
                       </a>
                     </div>
@@ -101,9 +101,9 @@ const Main = () => {
 
             <div className='dark:bg-[#181F29] bg-white px-4 pb-24'>
               {/* section Core Analytics Features */}
-              <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
-                <img className='md:max-w-[450px] lg:max-w-full md:relative md:-top-10' src='/assets/CoreFeaturesLight.png' alt='Core Analytics Features' />
-                <div className='max-w-[516px]'>
+              <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
+                <img className='md:max-w-md lg:max-w-full md:relative md:-top-10' src='/assets/CoreFeaturesLight.png' alt='Core Analytics Features' />
+                <div className='max-w-lg'>
                   <h1 className='font-extrabold text-4xl dark:text-[#FFFFFF] text-[#293451]'>
                     {t('main.coreFeatures.title')}
                   </h1>
@@ -112,12 +112,12 @@ const Main = () => {
                   </p>
                   <Button className='dark:text-[#8A84FB] text-[#4E46DD] !font-bold border-0'>
                     Traffic Insights
-                    <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
+                    <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                   </Button>
                 </div>
               </section>
               {/* section Marketplace & build-in Extensions */}
-              <section className='flex pt-[86px] md:pt-[190px] flex-col md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
+              <section className='flex pt-20 md:pt-48 flex-col md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <div className='max-w-[516px]'>
                   <h1 className='font-extrabold text-4xl text-[#293451] dark:text-[#FFFFFF]'>
                     {t('main.marketplace.title')}
@@ -130,13 +130,13 @@ const Main = () => {
                   </p>
                   <Button className='text-[#4E46DD] dark:text-[#8A84FB] !font-bold border-0'>
                     Traffic Insights
-                    <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
+                    <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                   </Button>
                 </div>
                 <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Marketplace' />
               </section>
               {/* section Privacy compliance. */}
-              <section className='flex pt-[86px] md:pt-[190px] flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-[1300px] m-auto'>
+              <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <img className='md:max-w-[360px] lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
                 <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0'>
                   <h1 className='font-extrabold mb-6 text-4xl text-[#293451] dark:text-[#FFFFFF]'>
@@ -156,14 +156,14 @@ const Main = () => {
                   ))}
                   <Button onClick={() => history.push(routes.privacy)} className='mt-10 text-[#4E46DD] dark:text-[#8A84FB] !font-bold border-0'>
                     {t('main.dataProtection')}
-                    <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
+                    <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                   </Button>
                 </div>
               </section>
             </div>
             {/*  block singup */}
             <div className='overflow-hidden'>
-              <div className='py-24 max-w-[1280px] w-full flex justify-center md:justify-between items-center mx-auto px-5'>
+              <div className='py-24 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5'>
                 <div className='relative z-50 lg:col-span-6 rounded-xl'>
                   <div className='bg-white dark:bg-[#202A3A] sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
@@ -192,7 +192,7 @@ const Main = () => {
                 </div>
                 <div className='relative'>
                   <div
-                    className='absolute w-[146px] h-[558px] z-40 left-[10vw] filter_blur'
+                    className='absolute w-36 h-[558px] z-40 left-[10vw] filter_blur'
                     style={{
                       background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
                       transform: 'rotate(-50.32deg)',
@@ -209,19 +209,19 @@ const Main = () => {
             {/* Core features section */}
             <section className='bg-white dark:bg-[#181F29] pt-20 relative pb-14'>
               <BackgroundSvg className='absolute -left-8' type='shapes' />
-              <div className='mx-auto text-[#293451] font-extrabold text-[30px] sm:text-[45px] w-fit relative'>
+              <div className='mx-auto text-[#293451] font-extrabold text-3xl sm:text-5xl w-fit relative'>
                 <h1 className='relative z-20 dark:text-white'>
                   {t('main.coreFeaturesBlock')}
                 </h1>
                 <BackgroundSvg className='absolute right-0 sm:-right-16 top-9 z-10 opacity-30' type='semicircle' />
               </div>
-              <div className='mt-[60px] flex items-center max-w-[1300px] w-full mx-auto flex-wrap justify-center xl:justify-between'>
+              <div className='mt-[60px] flex items-center max-w-7xl w-full mx-auto flex-wrap justify-center xl:justify-between'>
                 {_map(t('main.features', { returnObjects: true }), (item, index) => (
-                  <div key={item.name} className='w-[416px] h-[250px] px-7 py-11 text-center'>
+                  <div key={item.name} className='w-[416px] h-64 px-7 py-11 text-center'>
                     <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
                     <div className='mt-2'>
-                      <h2 className='text-[#293451] dark:text-white text-[20px] font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
-                      <p className='text-gray-500 max-w-[320px] mx-auto dark:text-[#BEBFC2]'>{item.desc}</p>
+                      <h2 className='text-[#293451] dark:text-white text-xl font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
+                      <p className='text-gray-500 max-w-xs mx-auto dark:text-[#BEBFC2]'>{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -229,10 +229,10 @@ const Main = () => {
               <BackgroundSvg className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
             </section>
             <section className='bg-white dark:bg-[#202A3A] pt-24 sm:px-5 px-3 relative pb-28'>
-              <h1 className='mx-auto text-[#293451] dark:text-white font-bold text-[30px] sm:text-[45px] w-fit text-center'>
+              <h1 className='mx-auto text-[#293451] dark:text-white font-bold text-3xl sm:ext-5xl w-fit text-center'>
                 {t('main.supports')}
               </h1>
-              <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-[1300px] w-full mx-auto justify-between'>
+              <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-7xl w-full mx-auto justify-between'>
                 {/* <img src={theme === 'dark' ? '/assets/supports/slack_w.png' : '/assets/supports/Slack.png'} alt='Slack' /> */}
                 <Slack theme={theme} className='max-w-[150px] max-h-12' />
                 <NuxtJS theme={theme} className='max-w-[150px] max-h-12' />
@@ -249,16 +249,16 @@ const Main = () => {
               </div>
             </section>
             <div className='overflow-hidden'>
-              <div className='relative max-w-[1300px] w-full mx-auto'>
+              <div className='relative max-w-7xl w-full mx-auto'>
                 <div
-                  className='absolute w-[246px] h-[458px] z-10 left-[10vw] -top-[10vh] filter_blur'
+                  className='absolute w-60 h-[458px] z-10 left-[10vw] -top-[10vh] filter_blur'
                   style={{
                     background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
                     transform: 'rotate(-50.32deg)',
                   }}
                 />
                 <section className='relative z-20 px-3'>
-                  <h1 className='mt-20 text-center text-[30px] sm:text-[45px] text-white font-extrabold max-w-[512px] w-full mx-auto'>
+                  <h1 className='mt-20 text-center text-3xl sm:text-5xl text-white font-extrabold max-w-lg w-full mx-auto'>
                     {t('main.marketplaceBlock')}
                   </h1>
                   <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-24 justify-between justify-items-center text-white pt-20 pb-36'>
@@ -266,7 +266,7 @@ const Main = () => {
                       <div key={item.name} className='max-w-[290px] w-full'>
                         <div className='flex items-center'>
                           <span className='text-[#E0E9FF] font-bold text-[26px] mr-6'>{1 + index}</span>
-                          <h2 className='font-semibold text-[20px]'>{item.name}</h2>
+                          <h2 className='font-semibold text-xl'>{item.name}</h2>
                         </div>
                         <p className='pl-9 text-[#CECDD7]'>{item.desc}</p>
                       </div>
@@ -274,7 +274,7 @@ const Main = () => {
                   </div>
                 </section>
                 <div
-                  className='absolute w-[346px] h-[558px] z-10 -left-[30vw] top-[80vh] sm:left-[70vw] sm:top-[30vh] filter_blur'
+                  className='absolute w-80 h-[558px] z-10 -left-[30vw] top-[80vh] sm:left-[70vw] sm:top-[30vh] filter_blur'
                   style={{
                     background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
                     transform: 'rotate(-50.32deg)',
@@ -291,12 +291,12 @@ const Main = () => {
                 <BackgroundSvg type='shapes' />
               </div>
               <div className='max-w-[1000px] w-full mx-auto'>
-                <h1 className='text-[#293451] text-center font-extrabold text-[45px] relative z-20 dark:text-white'>
+                <h1 className='text-[#293451] text-center font-extrabold text-5xl relative z-20 dark:text-white'>
                   {t('main.testimonials')}
                 </h1>
                 <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
                   <div
-                    className='max-w-[310px] w-full dark:bg-[#212B3B]'
+                    className='max-w-xs w-full dark:bg-[#212B3B]'
                     style={{
                       boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
                       borderRadius: '100px 30px 30px 30px',
@@ -304,15 +304,15 @@ const Main = () => {
                   >
                     <Quote theme={theme} color='black' className='mx-auto relative -top-4' />
                     <div className='px-14 mb-12'>
-                      <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
-                      <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
+                      <p className='text-[#707482] text-sm mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
+                      <p className='text-[#212936] dark:text-white text-lg text mt-2 leading-9'>
                         Start out for free, no credit card needed.
                         When your business grows, you can upgrade your plan at any time.
                       </p>
                     </div>
                   </div>
                   <div
-                    className='max-w-[310px] w-full md:mx-4 mt-10 md:mt-0 dark:bg-[#212B3B]'
+                    className='max-w-xs w-full md:mx-4 mt-10 md:mt-0 dark:bg-[#212B3B]'
                     style={{
                       boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
                       borderRadius: '100px 30px 30px 30px',
@@ -320,15 +320,15 @@ const Main = () => {
                   >
                     <Quote theme={theme} color='yellow' className='mx-auto relative -top-4' />
                     <div className='px-14 mb-12'>
-                      <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
-                      <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
+                      <p className='text-[#707482] text-sm mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
+                      <p className='text-[#212936] dark:text-white text-lg mt-2 leading-9'>
                         Start out for free, no credit card needed.
                         When your business grows, you can upgrade your plan at any time.
                       </p>
                     </div>
                   </div>
                   <div
-                    className='max-w-[310px] w-full mt-10 md:mt-0 dark:bg-[#212B3B]'
+                    className='max-w-xs w-full mt-10 md:mt-0 dark:bg-[#212B3B]'
                     style={{
                       boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
                       borderRadius: '100px 30px 30px 30px',
@@ -336,8 +336,8 @@ const Main = () => {
                   >
                     <Quote theme={theme} color='black' className='mx-auto relative -top-4' />
                     <div className='px-14 mb-12'>
-                      <p className='text-[#707482] text-[14px] mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
-                      <p className='text-[#212936] dark:text-white text-[18px] mt-2 leading-9'>
+                      <p className='text-[#707482] text-sm mt-8 dark:text-[#BEBFC2]'>Joe Massad</p>
+                      <p className='text-[#212936] dark:text-white text-lg mt-2 leading-9'>
                         Start out for free, no credit card needed.
                         When your business grows, you can upgrade your plan at any time.
                       </p>
@@ -348,10 +348,10 @@ const Main = () => {
             </section>
 
             <div className='bg-white dark:bg-[#181F29] px-4 md:px-8 dark:pb-12'>
-              <section className='max-w-[1300px] w-full mx-auto bg-[#212936] overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
+              <section className='max-w-7xl w-full mx-auto bg-[#212936] overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
                 <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
-                  <div className='max-w-[430px] w-full pt-[60px] pr-3 mb-16 md:mb-0'>
-                    <h1 className='font-bold text-[24px] leading-9 sm:text-[36px] sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[36px] lg:leading-[48px] text-white mb-3'>
+                  <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
+                    <h1 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-4xl lg:leading-[48px] text-white mb-3'>
                       <span className='text-transparent bg-clip-text' style={{ background: 'linear-gradient(91.37deg, #4E46DD 10%, #5C3CDA 55%, #A274EF 100%)' }}>Open source</span>
                       {' '}
                       analytics - a powerful and simple tool.
@@ -359,7 +359,7 @@ const Main = () => {
                     <p className='text-[#C8D1E2] mb-9 font-medium text-base sm:text-lg'>Yes, it&apos;s standard. But keep track of exactly where your users are from as it is.</p>
                     <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
                       <span className='text-base font-semibold mr-1'>{t('main.start')}</span>
-                      <ArrowSmRightIcon className='w-[20px] h-[16px] mt-[1px]' />
+                      <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                     </Link>
                   </div>
                   <div className='max-w-md xl:max-w-lg block h-[450px]'>
@@ -376,141 +376,141 @@ const Main = () => {
               <div className='absolute left-10'>
                 <BackgroundSvg type='shapes' />
               </div>
-              <h1 className='text-[#293451] text-[45px] font-extrabold text-center relative z-20 dark:text-white'>Checklist</h1>
-              <div className='flex flex-col lg:flex-row items-center justify-between max-w-[1080px] w-full mx-auto mt-16'>
+              <h1 className='text-[#293451] text-5xl font-extrabold text-center relative z-20 dark:text-white'>Checklist</h1>
+              <div className='flex flex-col lg:flex-row items-center justify-between max-w-5xl w-full mx-auto mt-16'>
                 <div
-                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden relative z-10'
+                  className='max-w-xs w-full mx-auto shadow-lg overflow-hidden relative z-10'
                   style={{ borderRadius: '20px 10px 10px 10px' }}
                 >
-                  <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#FDBC64] py-4'>
-                    <h2 className='text-[20px] text-white font-semibold'>Done</h2>
-                    <CheckCircleIconOutline className='w-[26px] h-[26px] text-white' />
+                  <div className='flex items-center justify-between pl-11 pr-6 bg-[#FDBC64] py-4'>
+                    <h2 className='text-xl text-white font-semibold'>Done</h2>
+                    <CheckCircleIconOutline className='w-7 h-7 text-white' />
                   </div>
                   <div className='mt-14 px-11 pb-12'>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      <CheckCircleIconOutline className='h-5 w-5 text-[#FDBC64] mr-2' />
                       {' '}
                       Up to 5,000 visits per month.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      <CheckCircleIconOutline className='h-5 w-5 text-[#FDBC64] mr-2' />
                       {' '}
                       Add up to 10 websites.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      <CheckCircleIconOutline className='h-5 w-5 text-[#FDBC64] mr-2' />
                       {' '}
                       Unlimited data exports.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      <CheckCircleIconOutline className='h-5 w-5 text-[#FDBC64] mr-2' />
                       {' '}
                       100% data ownership.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      <CheckCircleIconOutline className='h-5 w-5 text-[#FDBC64] mr-2' />
                       {' '}
                       No cookie banners required.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      <CheckCircleIconOutline className='h-5 w-5 text-[#FDBC64] mr-2' />
                       {' '}
                       Shared & Public Dashboards.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center'>
-                      <CheckCircleIconOutline className='w-[18px] h-[18px] text-[#FDBC64] mr-2' />
+                      <CheckCircleIconOutline className='h-5 w-5 text-[#FDBC64] mr-2' />
                       {' '}
                       Email reports.
                     </p>
                   </div>
                 </div>
                 <div
-                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden my-[38px] lg:my-0'
+                  className='max-w-xs w-full mx-auto shadow-lg overflow-hidden my-9 lg:my-0'
                   style={{ borderRadius: '20px 10px 10px 10px' }}
                 >
-                  <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#9970E7] py-4'>
-                    <h2 className='text-[20px] text-white font-semibold'>In progress</h2>
-                    <CogIcon alt='Swetrix settings icon' className='w-[26px] h-[26px] text-white' />
+                  <div className='flex items-center justify-between pl-11 pr-6 bg-[#9970E7] py-4'>
+                    <h2 className='text-xl text-white font-semibold'>In progress</h2>
+                    <CogIcon alt='Swetrix settings icon' className='w-7 h-7 text-white' />
                   </div>
                   <div className='mt-14 px-11 pb-12'>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      <CogIcon className='h-5 w-5 text-[#9970E7] mr-2' />
                       {' '}
                       Up to 5,000 visits per month.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      <CogIcon className='h-5 w-5 text-[#9970E7] mr-2' />
                       {' '}
                       Add up to 10 websites.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      <CogIcon className='h-5 w-5 text-[#9970E7] mr-2' />
                       {' '}
                       Unlimited data exports.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      <CogIcon className='h-5 w-5 text-[#9970E7] mr-2' />
                       {' '}
                       100% data ownership.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      <CogIcon className='h-5 w-5 text-[#9970E7] mr-2' />
                       {' '}
                       No cookie banners required.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      <CogIcon className='h-5 w-5 text-[#9970E7] mr-2' />
                       {' '}
                       Shared & Public Dashboards.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center'>
-                      <CogIcon className='w-[18px] h-[18px] text-[#9970E7] mr-2' />
+                      <CogIcon className='h-5 w-5 text-[#9970E7] mr-2' />
                       {' '}
                       Email reports.
                     </p>
                   </div>
                 </div>
                 <div
-                  className='max-w-[310px] w-full mx-auto shadow-lg overflow-hidden relative z-10'
+                  className='max-w-xs w-full mx-auto shadow-lg overflow-hidden relative z-10'
                   style={{ borderRadius: '20px 10px 10px 10px' }}
                 >
-                  <div className='flex items-center justify-between pl-[43px] pr-[26px] bg-[#212936] dark:bg-[#184388] py-4'>
-                    <h2 className='text-[20px] text-white font-semibold'>Plans</h2>
-                    <ClockIcon className='w-[26px] h-[26px] text-white' />
+                  <div className='flex items-center justify-between pl-11 pr-6 bg-[#212936] dark:bg-[#184388] py-4'>
+                    <h2 className='text-xl text-white font-semibold'>Plans</h2>
+                    <ClockIcon className='w-7 h-7 text-white' />
                   </div>
                   <div className='mt-14 px-11 pb-12'>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
+                      <ClockIcon className='h-5 w-5 text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Up to 5,000 visits per month.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
+                      <ClockIcon className='h-5 w-5 text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Add up to 10 websites.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
+                      <ClockIcon className='h-5 w-5 text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Unlimited data exports.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
+                      <ClockIcon className='h-5 w-5 text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       100% data ownership.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
+                      <ClockIcon className='h-5 w-5 text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       No cookie banners required.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
+                      <ClockIcon className='h-5 w-5 text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Shared & Public Dashboards.
                     </p>
                     <p className='text-[#707482] dark:text-white text-xs flex items-center'>
-                      <ClockIcon className='w-[18px] h-[18px] text-[#212936] dark:text-[#184388] mr-2' />
+                      <ClockIcon className='h-5 w-5 text-[#212936] dark:text-[#184388] mr-2' />
                       {' '}
                       Email reports.
                     </p>
@@ -518,10 +518,10 @@ const Main = () => {
                 </div>
               </div>
             </section>
-            <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-[1300px] w-full mx-auto py-20 lg:py-32 px-5'>
+            <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-7xl w-full mx-auto py-20 lg:py-32 px-5'>
               <img src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'} loading='lazy' alt='Swetrix open source' />
-              <div className='max-w-[516px] w-full lg:ml-5'>
-                <h1 className='text-[30px] md:text-[38px] text-white font-extrabold'>
+              <div className='max-w-lg w-full lg:ml-5'>
+                <h1 className='text-3xl md:text-4xl text-white font-extrabold'>
                   <Trans
                     t={t}
                     i18nKey='main.opensourceAdv'
@@ -532,11 +532,11 @@ const Main = () => {
                   />
                 </h1>
                 <hr className='border-[#535151] border-1 max-w-[346px] my-6' />
-                <div className='max-w-[438px] w-full lg:mb-0 mb-9'>
+                <div className='max-w-md w-full lg:mb-0 mb-9'>
                   {_map(t('main.opensource', { returnObjects: true }), (item) => (
                     <p key={item.desc} className='text-[#CECDD7] text-sm leading-6 flex items-center mb-3'>
                       <span>
-                        <CheckCircleIcon className='w-[24px] h-[24px] text-indigo-500 mr-[14px]' />
+                        <CheckCircleIcon className='w-6 h-6 text-indigo-500 mr-4' />
                       </span>
                       {item.desc}
                     </p>
@@ -551,18 +551,18 @@ const Main = () => {
               <div className='absolute -left-9 top-52 rotate-90'>
                 <BackgroundSvg type='shapes' />
               </div>
-              <div className='max-w-[1080px] w-full mx-auto px-3'>
-                <div className='max-w-[400px] w-full mx-auto'>
-                  <h1 className='text-[#170F49] dark:text-white text-[30px] md:text-[38px] font-extrabold text-center'>
+              <div className='max-w-5xl w-full mx-auto px-3'>
+                <div className='max-w-sm w-full mx-auto'>
+                  <h1 className='text-[#170F49] dark:text-white text-3xl md:text-4xl font-extrabold text-center'>
                     {t('main.becomeDev')}
                   </h1>
-                  <p className='text-[#7D818C] dark:text-[#BEBFC2] text-base font-medium text-center'>
+                  <p className='text-[#7D818C] dark:text-[#BEBFC2] text-base font-medium text-center mt-2'>
                     {t('main.becomeDevDesc')}
                   </p>
                 </div>
                 <div className='flex items-center justify-between mt-20 md:mt-32 md:flex-row flex-col'>
                   <div>
-                    <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
+                    <p className='text-[#4E46DD] text-5xl font-extrabold text-center'>
                       {users[0]}
                       {users[1] && (
                         <span className='text-[#170F49] dark:text-[#C8DCFC]'>
@@ -571,13 +571,13 @@ const Main = () => {
                         </span>
                       )}
                     </p>
-                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>
+                    <p className='text-[#6F6C90] text-lg dark:text-[#DEE3EB]'>
                       {t('main.users')}
                     </p>
                   </div>
-                  <div className='bg-[#212936] dark:bg-[#DEE3EB] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
+                  <div className='bg-[#212936] dark:bg-[#DEE3EB] w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
                   <div>
-                    <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
+                    <p className='text-[#4E46DD] text-5xl font-extrabold text-center'>
                       {websites[0]}
                       {websites[1] && (
                         <span className='text-[#170F49] dark:text-[#C8DCFC]'>
@@ -586,13 +586,13 @@ const Main = () => {
                         </span>
                       )}
                     </p>
-                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>
+                    <p className='text-[#6F6C90] text-lg dark:text-[#DEE3EB]'>
                       {t('main.websites')}
                     </p>
                   </div>
-                  <div className='bg-[#212936] dark:bg-[#DEE3EB] w-2 h-2 rounded-full mx-5 mb-[60px] mt-[70px] md:mb-0 md:mt-0' />
+                  <div className='bg-[#212936] dark:bg-[#DEE3EB] w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
                   <div>
-                    <p className='text-[#4E46DD] text-[50px] font-extrabold text-center'>
+                    <p className='text-[#4E46DD] text-5xl font-extrabold text-center'>
                       {events[0]}
                       {events[1] && (
                         <span className='text-[#170F49] dark:text-[#C8DCFC]'>
@@ -601,7 +601,7 @@ const Main = () => {
                         </span>
                       )}
                     </p>
-                    <p className='text-[#6F6C90] text-[18px] dark:text-[#DEE3EB]'>
+                    <p className='text-[#6F6C90] text-lg dark:text-[#DEE3EB]'>
                       {t('main.pageviews')}
                     </p>
                   </div>
