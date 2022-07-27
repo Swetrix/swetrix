@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
+import cx from 'clsx'
 import { useSelector } from 'react-redux'
 import { ExternalLinkIcon, ArrowSmRightIcon, CheckCircleIcon } from '@heroicons/react/solid'
 import { CheckCircleIcon as CheckCircleIconOutline, CogIcon, ClockIcon } from '@heroicons/react/outline'
@@ -297,54 +298,30 @@ const Main = () => {
                   {t('main.testimonials')}
                 </h1>
                 <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
-                  <div
-                    className='max-w-xs w-full dark:bg-gray-800'
-                    style={{
-                      boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
-                      borderRadius: '100px 30px 30px 30px',
-                    }}
-                  >
-                    <Quote theme={theme} color='black' className='mx-auto relative -top-4' />
-                    <div className='px-14 mb-12'>
-                      <p className='text-gray-500 text-sm mt-8 dark:text-gray-400'>Joe Massad</p>
-                      <p className='text-gray-800 dark:text-white text-lg text mt-2 leading-9'>
-                        Start out for free, no credit card needed.
-                        When your business grows, you can upgrade your plan at any time.
-                      </p>
+                  {_map(t('main.lTestimonials', { returnObjects: true }), (item, index) => (
+                    <div
+                      key={item.name}
+                      className={cx('max-w-xs w-full dark:bg-gray-800', {
+                        'mt-5 md:mt-0': index > 0,
+                      })}
+                      style={{
+                        boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
+                        borderRadius: '100px 30px 30px 30px',
+                      }}
+                    >
+                      <Quote theme={theme} color={index === 1 ? 'yellow' : 'black'} className='mx-auto relative -top-4' />
+                      <div className='px-10 mb-10 max-h-80 overflow-auto'>
+                        <p className='text-gray-500 text-sm mt-8 dark:text-gray-400'>
+                          {item.name}
+                          <br />
+                          {item.role}
+                        </p>
+                        <p className='text-gray-800 dark:text-white text-md text mt-2 leading-9 whitespace-pre-line'>
+                          {item.desc}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    className='max-w-xs w-full md:mx-4 mt-10 md:mt-0 dark:bg-gray-800'
-                    style={{
-                      boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
-                      borderRadius: '100px 30px 30px 30px',
-                    }}
-                  >
-                    <Quote theme={theme} color='yellow' className='mx-auto relative -top-4' />
-                    <div className='px-14 mb-12'>
-                      <p className='text-gray-500 text-sm mt-8 dark:text-gray-400'>Joe Massad</p>
-                      <p className='text-gray-800 dark:text-white text-lg mt-2 leading-9'>
-                        Start out for free, no credit card needed.
-                        When your business grows, you can upgrade your plan at any time.
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    className='max-w-xs w-full mt-10 md:mt-0 dark:bg-gray-800'
-                    style={{
-                      boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
-                      borderRadius: '100px 30px 30px 30px',
-                    }}
-                  >
-                    <Quote theme={theme} color='black' className='mx-auto relative -top-4' />
-                    <div className='px-14 mb-12'>
-                      <p className='text-gray-500 text-sm mt-8 dark:text-gray-400'>Joe Massad</p>
-                      <p className='text-gray-800 dark:text-white text-lg mt-2 leading-9'>
-                        Start out for free, no credit card needed.
-                        When your business grows, you can upgrade your plan at any time.
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </section>
@@ -371,7 +348,8 @@ const Main = () => {
               </section>
             </div>
 
-            <section className='bg-white dark:bg-gray-800 px-4 md:px-8 pt-24 pb-32 relative'>
+            {/* Checklist section */}
+            {/* <section className='bg-white dark:bg-gray-800 px-4 md:px-8 pt-24 pb-32 relative'>
               <div className='absolute right-0 top-0 z-0 sm:top-28'>
                 <BackgroundSvg type='circle' />
               </div>
@@ -519,7 +497,7 @@ const Main = () => {
                   </div>
                 </div>
               </div>
-            </section>
+            </section> */}
             <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-7xl w-full mx-auto py-20 lg:py-32 px-5'>
               <img src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'} loading='lazy' alt='Swetrix open source' />
               <div className='max-w-lg w-full lg:ml-5'>

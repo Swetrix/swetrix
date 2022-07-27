@@ -177,6 +177,23 @@
     "marketplaceBlock": "Marketplace and extension features",
     "coreFeaturesBlock": "Core features",
     "testimonials": "Testimonials",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Startup founder",
+        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+      },
+      {
+        "name": "Michael",
+        "role": "Small business owner",
+        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+      },
+      {
+        "name": "Rachel",
+        "role": "CMO at NDA Company",
+        "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
+      }
+    ],
     "opensourceAdv": "Adventages of using <url>open source</url>",
     "opensource": [
       {
