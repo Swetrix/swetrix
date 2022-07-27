@@ -3,17 +3,28 @@ import _replace from 'lodash/replace'
 
 const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
 
-export const nFormatter = (num, digits) => {
-  const lookup = [
-    { value: 1, symbol: '' },
-    { value: 1e3, symbol: 'k' },
-    { value: 1e6, symbol: 'M' },
-    { value: 1e9, symbol: 'B' },
-  ]
+const formatterLookup = [
+  { value: 1, symbol: '' },
+  { value: 1e3, symbol: 'k' },
+  { value: 1e6, symbol: 'M' },
+  { value: 1e9, symbol: 'B' },
+]
 
-  const item = _find(lookup.slice().reverse(), ({ value }) => num >= value)
+export const nFormatter = (num, digits = 1) => {
+  const item = _find(formatterLookup.slice().reverse(), ({ value }) => num >= value)
 
   return item ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol : '0'
+}
+
+// returns something like [123, 'k'], [5.5, 'M'], [425, null]
+export const nFormatterSeparated = (num, digits = 1) => {
+  const item = _find(formatterLookup.slice().reverse(), ({ value }) => num >= value)
+
+  if (item) {
+    return [Number(_replace((num / item.value).toFixed(digits), rx, '$1')), item.symbol || null]
+  }
+
+  return [0, null]
 }
 
 export const secondsTillNextMonth = () => {

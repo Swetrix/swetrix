@@ -122,18 +122,15 @@ const Footer = ({ minimal, authenticated }) => {
   }
 
   return (
-    <footer className='bg-gray-800 dark:bg-gray-900' aria-labelledby='footer-heading'>
+    <footer className='bg-gray-800 dark:bg-[#181F29]' aria-labelledby='footer-heading'>
       <h2 id='footer-heading' className='sr-only'>
         Footer
       </h2>
-      <div className='w-11/12 mx-auto py-8 px-4 sm:px-6 lg:px-8'>
+      <div className='w-11/12 mx-auto pt-8 pb-5 px-4 sm:px-6 lg:px-8'>
         <div className='xl:grid xl:grid-cols-3 xl:gap-8'>
           <div className='space-y-8 xl:col-span-1'>
             <div className='flex gap-5 flex-wrap'>
               <img className='h-10' src='/assets/logo_white.svg' loading='lazy' alt='Swetrix Analytics' />
-              <img className='h-10 w-28' src='/assets/pci.png' height='40' width='112' loading='lazy' alt='PCI Complaint' />
-              <img className='h-10 w-28' src='/assets/mc.png' height='40' width='112' loading='lazy' alt='' />
-              <img className='h-10 w-28' src='/assets/visa.png' height='40' width='112' loading='lazy' alt='' />
             </div>
             <p className='text-gray-300 text-base'>
               {t('footer.slogan')}
@@ -171,7 +168,7 @@ const Footer = ({ minimal, authenticated }) => {
             <div className='md:grid md:grid-cols-2 md:gap-8'>
               <div />
               <div className='mt-12 md:mt-0'>
-                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>
+                <h3 className='text-sm font-semibold text-white tracking-wider uppercase'>
                   {t('footer.support')}
                 </h3>
                 <ul className='mt-4 space-y-4'>
@@ -191,7 +188,7 @@ const Footer = ({ minimal, authenticated }) => {
             </div>
             <div className='md:grid md:grid-cols-2 md:gap-8'>
               <div>
-                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>
+                <h3 className='text-sm font-semibold text-white tracking-wider uppercase'>
                   {t('footer.company')}
                 </h3>
                 <ul className='mt-4 space-y-4'>
@@ -211,7 +208,7 @@ const Footer = ({ minimal, authenticated }) => {
                 </ul>
               </div>
               <div className='mt-12 md:mt-0'>
-                <h3 className='text-sm font-semibold text-gray-400 tracking-wider uppercase'>
+                <h3 className='text-sm font-semibold text-white tracking-wider uppercase'>
                   {t('footer.legal')}
                 </h3>
                 <ul className='mt-4 space-y-4'>
@@ -225,10 +222,15 @@ const Footer = ({ minimal, authenticated }) => {
                 </ul>
               </div>
             </div>
+            <div className='flex gap-5 flex-wrap col-span-2 items-center justify-end'>
+              <img className='h-10 w-auto' src='/assets/pci.png' height='40' width='auto' loading='lazy' alt='' />
+              <img className='h-10 w-auto' src='/assets/visa.png' height='40' width='auto' loading='lazy' alt='' />
+              <img className='h-10 w-auto' src='/assets/mc.png' height='40' width='auto' loading='lazy' alt='' />
+            </div>
           </div>
         </div>
-        <div className='mt-8 border-t border-gray-200 pt-8'>
-          <p className='text-base text-gray-400 xl:text-center'>
+        <div className='mt-6 border-t border-[#727987] pt-5'>
+          <p className='text-base text-gray-300 xl:text-center'>
             &copy;
             {' '}
             {year}
