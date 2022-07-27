@@ -120,7 +120,7 @@ const Main = () => {
                 </div>
               </section>
               {/* section Marketplace & build-in Extensions */}
-              <section className='flex pt-20 md:pt-48 flex-col md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
+              <section className='flex pt-20 md:pt-30 flex-col md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <div className='max-w-[516px]'>
                   <h1 className='font-extrabold text-4xl text-text-gray-800 dark:text-white'>
                     {t('main.marketplace.title')}
@@ -136,7 +136,7 @@ const Main = () => {
                     <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                   </Button>
                 </div>
-                <img className='md:max-w-[450px] lg:max-w-full' src='/assets/section-demo-1.png' alt='Marketplace' />
+                <img className='md:max-w-[450px] lg:max-w-lg' src='/assets/teardown.svg' alt='Marketplace' />
               </section>
               {/* section Privacy compliance. */}
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
