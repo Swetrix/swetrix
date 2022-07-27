@@ -76,6 +76,7 @@
       "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
       "desc2": "Install extensions and sell your own. Come up with a great extension for your company - great! Publish it on the marketplace and share your insights with the whole community."
     },
+    "visitAddons": "Visit Swetrix extensions",
     "privacy": {
       "title": "Privacy compliance",
       "list": [
@@ -145,6 +146,7 @@
         "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
       }
     ],
+    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
     "mFeatures": [
       {
         "name": "Expand your possibilities",
@@ -206,7 +208,8 @@
         "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
       }
     ],
-    "custSupport": "Could not find the answer you’re looking for? Reach out to our <mail>customer support</mail> team.",
+    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "Why us",
     "ourStats": "Our statistics",
     "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",

@@ -4,7 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
 import { ExternalLinkIcon, ArrowSmRightIcon, CheckCircleIcon } from '@heroicons/react/solid'
-import { CheckCircleIcon as CheckCircleIconOutline, CogIcon, ClockIcon } from '@heroicons/react/outline'
+// import { CheckCircleIcon as CheckCircleIconOutline, CogIcon, ClockIcon } from '@heroicons/react/outline'
 import _map from 'lodash/map'
 
 import routes from 'routes'
@@ -113,10 +113,10 @@ const Main = () => {
                   <p className='mt-6 dark:text-gray-400 text-gray-600 mb-11'>
                     {t('main.coreFeatures.desc')}
                   </p>
-                  <Button className='dark:text-indigo-400 text-indigo-700 !font-bold border-0'>
-                    Traffic Insights
+                  <a href={LIVE_DEMO_URL} className='dark:text-indigo-400 text-indigo-700 !font-bold border-0 flex items-center' target='_blank' rel='noopener noreferrer'>
+                    {t('common.liveDemo')}
                     <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
-                  </Button>
+                  </a>
                 </div>
               </section>
               {/* section Marketplace & build-in Extensions */}
@@ -132,7 +132,7 @@ const Main = () => {
                     {t('main.marketplace.desc2')}
                   </p>
                   <Button className='text-indigo-700 dark:text-indigo-400 !font-bold border-0'>
-                    Traffic Insights
+                    {t('main.visitAddons')}
                     <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                   </Button>
                 </div>
@@ -236,7 +236,6 @@ const Main = () => {
                 {t('main.supports')}
               </h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-7xl w-full mx-auto justify-between'>
-                {/* <img src={theme === 'dark' ? '/assets/supports/slack_w.png' : '/assets/supports/Slack.png'} alt='Slack' /> */}
                 <Slack theme={theme} className='max-w-[150px] max-h-12' />
                 <NuxtJS theme={theme} className='max-w-[150px] max-h-12' />
                 <Webflow theme={theme} className='max-w-[150px] max-h-12' />
@@ -331,11 +330,18 @@ const Main = () => {
                 <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
                   <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
                     <h1 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-4xl lg:leading-[48px] text-white mb-3'>
-                      <span className='text-transparent bg-clip-text' style={{ background: 'linear-gradient(91.37deg, #4E46DD 10%, #5C3CDA 55%, #A274EF 100%)' }}>Open source</span>
-                      {' '}
-                      analytics - a powerful and simple tool.
+                      <Trans
+                        t={t}
+                        i18nKey='main.os'
+                        components={{
+                          // eslint-disable-next-line jsx-a11y/anchor-has-content
+                          gradi: <span className='text-transparent bg-clip-text' style={{ background: 'linear-gradient(91.37deg, #4E46DD 10%, #5C3CDA 55%, #A274EF 100%)' }} />,
+                        }}
+                      />
                     </h1>
-                    <p className='text-gray-300 mb-9 font-medium text-base sm:text-lg'>Yes, it&apos;s standard. But keep track of exactly where your users are from as it is.</p>
+                    <p className='text-gray-300 mb-9 font-medium text-base sm:text-lg'>
+                      {t('main.demoGeoReports')}
+                    </p>
                     <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
                       <span className='text-base font-semibold mr-1'>{t('main.start')}</span>
                       <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
