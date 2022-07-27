@@ -3,13 +3,13 @@ import cx from 'clsx'
 import PropTypes from 'prop-types'
 
 const NuxtJS = ({ theme, className }) => {
-  const cn = cx(className, {
+  const cn = cx({
     'fill-white': theme === 'dark',
     'fill-slate-800': theme === 'light',
   })
 
   return (
-    <svg viewBox='0 0 221 65' fill='none'>
+    <svg className={className} viewBox='0 0 221 65' fill='none'>
       <title>
         NuxtJS
       </title>
