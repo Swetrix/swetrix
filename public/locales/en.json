@@ -147,28 +147,28 @@
     ],
     "mFeatures": [
       {
-        "name": "Additional features",
-        "desc": "Browser, notifications and two-factor authentication"
+        "name": "Expand your possibilities",
+        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
       },
       {
-        "name": "Open source code",
-        "desc": "...the description..."
+        "name": "Opensource",
+        "desc": "Customise Swetrix for your needs or selfhost it easily."
       },
       {
-        "name": "Marketplace",
-        "desc": "...the description..."
+        "name": "Marketplace options",
+        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
       },
       {
         "name": "Easy integration",
-        "desc": "...the description..."
+        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
       },
       {
         "name": "Solve your tasks, not create",
-        "desc": "...the description..."
+        "desc": "Get insights and use the best solutions to solve your problems."
       },
       {
         "name": "Share your best solutions",
-        "desc": "...the description..."
+        "desc": "Share your best solutions with the community, get popularity and money."
       }
     ],
     "supports": "Supports all popular platforms",
