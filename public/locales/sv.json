@@ -57,15 +57,48 @@
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
-    "slogan": "En <span>kraftfull</span> analysplattform som respekterar <span>användarens integritet<span>",
+    "slogan": "<span>Ultimate open-source analytics</span> to satisfy all your needs.",
     "trackEveryMetric": "Spåra alla statistik du behöver utan att invadera användarnas integritet.",
     "description": "Swetrix erbjuder en avancerad och anpassningsbar analystjänst för dina webbapplikationer.",
+    "start": "Start for free",
     "signup": "Registrera dig, det är gratis!",
     "signupTerms": "Genom att registrera dig godkänner du våra <tos>villkor</tos> och <pp>sekretesspolicy</pp>.",
     "techDetails": "Vill du veta mer tekniska detaljer?",
     "lookAtDocs": "Titta på dokumentationen och live demonstrationssidor.",
     "readyToStart": "Redo att komma igång?",
     "exploreService": "Utforska vår tjänst eller skapa ett konto.",
+    "coreFeatures": {
+      "title": "Core Analytics Features",
+      "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
+    },
+    "marketplace": {
+      "title": "Marketplace & build-in Extensions",
+      "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
+      "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
+    },
+    "visitAddons": "Visit Swetrix extensions",
+    "privacy": {
+      "title": "Privacy compliance",
+      "list": [
+        {
+          "label": "GDPR",
+          "desc": "data and processing based in EU zone."
+        },
+        {
+          "label": "HIPAA",
+          "desc": "protect sensitive info."
+        },
+        {
+          "label": "PCI DSS",
+          "desc": "payment data security."
+        },
+        {
+          "label": "CCPA",
+          "desc": "control over the personal information."
+        }
+      ]
+    },
+    "dataProtection": "More about Data Protection",
     "faq": {
       "title": "Få några frågor besvarade",
       "list": [
@@ -89,37 +122,100 @@
     },
     "features": [
       {
-        "name": "Öppen källkod",
-        "description": "Swetrix är helt öppen källkod och tillgänglig för alla att utforska. Vi spårar bara data som vi deklarerar."
+        "name": "Measure website traffic with 99% accuracy",
+        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
       },
       {
-        "name": "Fullt händelsespårning",
-        "description": "Hos oss kan du inte bara spåra din trafik utan även anpassade händelser som knappklick eller registreringar."
+        "name": "Demo & Geo reports",
+        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
       },
       {
-        "name": "Webbläsare tillägg",
-        "description": "Visa omedelbart de viktigaste insikterna, få meddelanden om trafikspikar och mycket mer utan att du behöver besöka webbplatsen."
+        "name": "UTM & Reffers tracking",
+        "desc": "All the traffic from your companies and websites will be shown without a data loss."
       },
       {
-        "name": "Ingen cookie banner behövs",
-        "description": "Vi gör ingen riktad reklam eller profilering och vi använder oss inte alls av spårningscookies. Vår affärsmodell är att sälja programvara, inte data."
+        "name": "Agile system",
+        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
       },
       {
-        "name": "Vi är snabba",
-        "description": "Vi använder globala CDN för att betjäna våra applikationer och våra analysskript laddar gånger snabbare än konkurrenterna."
+        "name": "Custom events\n(really easy to setup)",
+        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
       },
       {
-        "name": "Jämför, utforska och njut av data",
-        "description": "Du kan visa data efter valda kategorier och även korrelera statistik, t.ex. separera unika användare från vanliga sidvisningar."
+        "name": "User flow",
+        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
       }
     ],
-    "custSupport": "Kunde du inte hitta svaret du letar efter? Nå ut till vårt <mail>kundtjänst</mail> team.",
+    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
+    "mFeatures": [
+      {
+        "name": "Expand your possibilities",
+        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
+      },
+      {
+        "name": "Opensource",
+        "desc": "Customise Swetrix for your needs or selfhost it easily."
+      },
+      {
+        "name": "Marketplace options",
+        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
+      },
+      {
+        "name": "Easy integration",
+        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
+      },
+      {
+        "name": "Solve your tasks, not create",
+        "desc": "Get insights and use the best solutions to solve your problems."
+      },
+      {
+        "name": "Share your best solutions",
+        "desc": "Share your best solutions with the community, get popularity and money."
+      }
+    ],
+    "supports": "Supports all popular platforms",
+    "becomeDev": "Become a developer",
+    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "marketplaceBlock": "Marketplace and extension features",
+    "coreFeaturesBlock": "Core features",
+    "testimonials": "Testimonials",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Startup founder",
+        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+      },
+      {
+        "name": "Michael",
+        "role": "Small business owner",
+        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+      },
+      {
+        "name": "Rachel",
+        "role": "CMO at NDA Company",
+        "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
+      }
+    ],
+    "opensourceAdv": "Advantages of using <url>open source</url>",
+    "opensource": [
+      {
+        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
+      },
+      {
+        "desc": "Find bugs and suggest improvements - the community will be grateful to you."
+      },
+      {
+        "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
+      }
+    ],
+    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "Varför oss",
     "ourStats": "Vår statistik",
     "statsDesc": "Swetrix bygger på användarnas förtroende för tjänsten och kan även hantera tusentals användare och webbplatser.",
     "users": "Registrerade användare",
     "websites": "Tillagda webbplatser",
-    "pageviews": "Spårade sidvisningar"
+    "pageviews": "Events tracked"
   },
   "auth": {
     "recovery": {
@@ -466,7 +562,8 @@
     "dashboard": "Instrumentbräda",
     "docs": "Dokumentation",
     "billing": "Fakturering",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "main": "Ultimate open-source analytics to satisfy all your needs"
   },
   "footer": {
     "slogan": "De bästa apparna behöver de bästa tjänsterna.",
