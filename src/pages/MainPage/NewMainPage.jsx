@@ -235,17 +235,17 @@ const Main = () => {
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-[1300px] w-full mx-auto justify-between'>
                 {/* <img src={theme === 'dark' ? '/assets/supports/slack_w.png' : '/assets/supports/Slack.png'} alt='Slack' /> */}
                 <Slack theme={theme} className='max-w-[150px] max-h-12' />
-                <NuxtJS theme={theme} />
-                <Webflow theme={theme} />
-                <NextJS theme={theme} className='max-w-[150px]' />
-                <Notion theme={theme} />
+                <NuxtJS theme={theme} className='max-w-[150px] max-h-12' />
+                <Webflow theme={theme} className='max-w-[150px] max-h-12' />
+                <NextJS theme={theme} className='max-w-[150px] max-h-12' />
+                <Notion theme={theme} className='max-w-[150px] max-h-12' />
                 <img src='/assets/supports/react.png' alt='React' title='React.js' />
                 <img src='/assets/supports/angular.png' alt='Angular' title='Angular' />
-                <Wordpress theme={theme} />
+                <Wordpress theme={theme} className='max-w-[200px] max-h-16' />
                 <Wix theme={theme} className='max-w-[150px] max-h-12' />
-                <Ghost theme={theme} />
-                <Gatsby theme={theme} />
-                <Cloudflare theme={theme} />
+                <Ghost theme={theme} className='max-w-[200px] max-h-20' />
+                <Gatsby theme={theme} className='max-w-[150px] max-h-12' />
+                <Cloudflare theme={theme} className='max-w-[150px] max-h-12' />
               </div>
             </section>
             <div className='overflow-hidden'>
