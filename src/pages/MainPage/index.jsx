@@ -325,7 +325,7 @@ const Main = () => {
               </div>
             </section>
 
-            <div className='bg-white dark:bg-gray-900 px-4 md:px-8 dark:pb-12'>
+            <div className='bg-white dark:bg-gray-900 px-4 md:px-8 pb-12'>
               <section className='max-w-7xl w-full mx-auto bg-gray-800 overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
                 <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
                   <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
