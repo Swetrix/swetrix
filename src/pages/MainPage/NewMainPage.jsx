@@ -52,16 +52,18 @@ const Main = () => {
         <div className='bg-gray-800 dark:bg-gray-900'>
           <main>
             {/* first block with live demo */}
-            <div className='relativ overflow-x-hidden'>
+            <div className='relativ overflow-x-clip'>
               <div
                 className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'
-                style={{
-                  backgroundPosition: 'bottom',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundImage: 'url(\'/assets/Elipse.png\')',
-                }}
               >
-                <div className='flex flex-row content-between 2xl:mr-[14vw] 2xl:justify-center justify-center lg:justify-start'>
+                <div
+                  className='absolute w-36 h-[558px] z-10 bottom-0 right-[50vw] filter_blur'
+                  style={{
+                    background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
+                    transform: 'rotate(-50.32deg)',
+                  }}
+                />
+                <div className='relative z-20 flex flex-row content-between 2xl:mr-[14vw] 2xl:justify-center justify-center lg:justify-start'>
                   <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
                     <h1 className='max-w-2xl text-4xl sm:text-5xl md:text-[4rem] font-extrabold text-white sm:leading-none lg:text-5xl xl:text-[4.1rem] xl:leading-[110%]'>
                       <Trans
@@ -93,7 +95,7 @@ const Main = () => {
                     <img className='rounded-xl' style={{ height: '100%', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </div>
                 </div>
-                <div className='my-10 block lg:hidden'>
+                <div className='my-10 block lg:hidden relative z-20'>
                   <img className='rounded-xl shadow-colored-2xl w-full' src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} alt='Swetrix Analytics dashboard' width='100%' height='auto' />
                 </div>
               </div>
@@ -162,7 +164,7 @@ const Main = () => {
               </section>
             </div>
             {/*  block singup */}
-            <div className='overflow-hidden'>
+            <div className='overflow-x-clip'>
               <div className='py-24 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5'>
                 <div className='relative z-50 lg:col-span-6 rounded-xl'>
                   <div className='bg-white dark:bg-gray-800 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
