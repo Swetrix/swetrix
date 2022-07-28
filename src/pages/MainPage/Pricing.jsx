@@ -189,11 +189,11 @@ const Pricing = ({ t, language }) => {
                 </p>
               </>
             )}
-            <div className='relative self-center mt-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 flex sm:mt-8 small:flex-row flex-col'>
+            <div className='relative self-center mt-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 flex sm:mt-8'>
               <button
                 type='button'
                 onClick={() => setBillingFrequency(BillingFrequency.monthly)}
-                className={cx('relative small:w-1/2 rounded-md shadow-sm py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
+                className={cx('relative w-1/2 rounded-md shadow-sm py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
                   'bg-white border-gray-200 text-gray-900 dark:bg-gray-800 dark:border-gray-800 dark:text-gray-50': billingFrequency === BillingFrequency.monthly,
                   'text-gray-700 dark:text-gray-100': billingFrequency === BillingFrequency.yearly,
                 })}
@@ -203,7 +203,7 @@ const Pricing = ({ t, language }) => {
               <button
                 type='button'
                 onClick={() => setBillingFrequency(BillingFrequency.yearly)}
-                className={cx('ml-0.5 relative small:w-1/2 border border-transparent rounded-md py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
+                className={cx('ml-0.5 relative w-1/2 border border-transparent rounded-md py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
                   'text-gray-700 dark:text-gray-100': billingFrequency === BillingFrequency.monthly,
                   'bg-white border-gray-200 text-gray-900 dark:bg-gray-800 dark:border-gray-800 dark:text-gray-50': billingFrequency === BillingFrequency.yearly,
                 })}
