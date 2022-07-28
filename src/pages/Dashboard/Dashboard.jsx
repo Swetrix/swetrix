@@ -57,7 +57,7 @@ const ProjectCart = ({
 
   return (
     <li>
-      <div onClick={() => !confirmed && setShowInviteModal(true)} className='block cursor-pointer hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-800 dark:border-gray-700'>
+      <div onClick={() => !confirmed && setShowInviteModal(true)} className='block cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-700'>
         <div className='px-4 py-4 sm:px-6'>
           <div className='flex items-center justify-between'>
             <p className='text-lg font-medium text-indigo-600 dark:text-gray-50 truncate'>
