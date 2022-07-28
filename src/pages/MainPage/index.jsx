@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
@@ -10,7 +10,6 @@ import _map from 'lodash/map'
 import routes from 'routes'
 import { nFormatterSeparated } from 'utils/generic'
 import Title from 'components/Title'
-import Button from 'ui/Button'
 import { GITHUB_URL } from 'redux/constants'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
@@ -32,7 +31,6 @@ import './styles.css'
 const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 
 const Main = () => {
-  const history = useHistory()
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
   const stats = useSelector(state => state.ui.misc.stats)
@@ -113,7 +111,7 @@ const Main = () => {
                   <p className='mt-6 dark:text-gray-400 text-gray-600 mb-11'>
                     {t('main.coreFeatures.desc')}
                   </p>
-                  <a href={LIVE_DEMO_URL} className='dark:text-indigo-400 text-indigo-700 !font-bold border-0 flex items-center' target='_blank' rel='noopener noreferrer'>
+                  <a href={LIVE_DEMO_URL} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center' target='_blank' rel='noopener noreferrer'>
                     {t('common.liveDemo')}
                     <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                   </a>
@@ -131,10 +129,10 @@ const Main = () => {
                   <p className='text-gray-600 dark:text-gray-400 mb-11'>
                     {t('main.marketplace.desc2')}
                   </p>
-                  <Button className='text-indigo-700 dark:text-indigo-400 !font-bold border-0'>
+                  <Link to='#!' className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'>
                     {t('main.visitAddons')}
                     <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
-                  </Button>
+                  </Link>
                 </div>
                 <img className='md:max-w-[450px] lg:max-w-lg' src='/assets/teardown.svg' alt='Marketplace' />
               </section>
@@ -157,10 +155,10 @@ const Main = () => {
                       </p>
                     </div>
                   ))}
-                  <Button onClick={() => history.push(routes.privacy)} className='mt-10 text-indigo-700 dark:text-indigo-400 !font-bold border-0'>
+                  <Link to={routes.privacy} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'>
                     {t('main.dataProtection')}
                     <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
-                  </Button>
+                  </Link>
                 </div>
               </section>
             </div>
