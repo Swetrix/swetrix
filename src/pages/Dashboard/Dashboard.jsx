@@ -384,7 +384,7 @@ const Dashboard = ({
 
   return (
     <Title title={t('titles.dashboard')}>
-      <div className='min-h-min-footer'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
         <Loader />
       </div>
     </Title>

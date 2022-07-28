@@ -35,7 +35,7 @@ const VerifyEmail = () => {
   if (loading) {
     return (
       <Title title={t('titles.verification')}>
-        <div className='min-h-page'>
+        <div className='min-h-page bg-gray-50 dark:bg-gray-800'>
           <Loader />
         </div>
       </Title>

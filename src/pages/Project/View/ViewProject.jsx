@@ -828,7 +828,7 @@ const ViewProject = ({
 
   return (
     <Title title={name}>
-      <div className='min-h-min-footer dark:bg-gray-800'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
         <Loader />
       </div>
     </Title>
