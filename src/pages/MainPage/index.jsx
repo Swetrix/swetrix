@@ -47,7 +47,7 @@ const Main = () => {
         </a>
         <ExternalLinkIcon className='h-4 w-4 text-white ml-1 hidden md:block' />
       </div>
-      <div>
+      <div className='overflow-hidden'>
         <div className='bg-gray-800 dark:bg-gray-900'>
           <main>
             {/* first block with live demo */}
