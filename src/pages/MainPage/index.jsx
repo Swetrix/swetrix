@@ -107,7 +107,7 @@ const Main = () => {
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <img className='md:max-w-md lg:max-w-full md:relative md:-top-10' src='/assets/CoreFeaturesLight.png' alt='Core Analytics Features' />
                 <div className='max-w-lg'>
-                  <h1 className='font-extrabold text-4xl dark:text-white text-text-gray-800'>
+                  <h1 className='font-extrabold text-4xl dark:text-white text-gray-800'>
                     {t('main.coreFeatures.title')}
                   </h1>
                   <p className='mt-6 dark:text-gray-400 text-gray-600 mb-11'>
@@ -122,7 +122,7 @@ const Main = () => {
               {/* section Marketplace & build-in Extensions */}
               <section className='flex pt-20 md:pt-30 flex-col md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <div className='max-w-[516px]'>
-                  <h1 className='font-extrabold text-4xl text-text-gray-800 dark:text-white'>
+                  <h1 className='font-extrabold text-4xl text-gray-800 dark:text-white'>
                     {t('main.marketplace.title')}
                   </h1>
                   <p className='mt-6 text-gray-600 dark:text-gray-400 mb-3'>
@@ -142,7 +142,7 @@ const Main = () => {
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <img className='md:max-w-[360px] lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
                 <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0'>
-                  <h1 className='font-extrabold mb-6 text-4xl text-text-gray-800 dark:text-white'>
+                  <h1 className='font-extrabold mb-6 text-4xl text-gray-800 dark:text-white'>
                     {t('main.privacy.title')}
                   </h1>
                   {_map(t('main.privacy.list', { returnObjects: true }), (item) => (
@@ -212,7 +212,7 @@ const Main = () => {
             {/* Core features section */}
             <section className='bg-white dark:bg-gray-900 pt-20 relative pb-14'>
               <BackgroundSvg className='absolute -left-8' type='shapes' />
-              <div className='mx-auto text-text-gray-800 font-extrabold text-3xl sm:text-5xl w-fit relative'>
+              <div className='mx-auto text-gray-800 font-extrabold text-3xl sm:text-5xl w-fit relative'>
                 <h1 className='relative z-20 dark:text-white'>
                   {t('main.coreFeaturesBlock')}
                 </h1>
@@ -223,7 +223,7 @@ const Main = () => {
                   <div key={item.name} className='w-[416px] h-64 px-7 py-11 text-center'>
                     <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
                     <div className='mt-2'>
-                      <h2 className='text-text-gray-800 dark:text-white text-xl font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
+                      <h2 className='text-gray-800 dark:text-white text-xl font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
                       <p className='text-gray-500 max-w-xs mx-auto dark:text-gray-400'>{item.desc}</p>
                     </div>
                   </div>
@@ -232,7 +232,7 @@ const Main = () => {
               <BackgroundSvg className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
             </section>
             <section className='bg-white dark:bg-gray-800 pt-24 sm:px-5 px-3 relative pb-28'>
-              <h1 className='mx-auto text-text-gray-800 dark:text-white font-bold text-3xl sm:ext-5xl w-fit text-center'>
+              <h1 className='mx-auto text-gray-800 dark:text-white font-bold text-3xl sm:ext-5xl w-fit text-center'>
                 {t('main.supports')}
               </h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-7xl w-full mx-auto justify-between'>
@@ -293,7 +293,7 @@ const Main = () => {
                 <BackgroundSvg type='shapes' />
               </div>
               <div className='max-w-[1000px] w-full mx-auto'>
-                <h1 className='text-text-gray-800 text-center font-extrabold text-5xl relative z-20 dark:text-white'>
+                <h1 className='text-gray-800 text-center font-extrabold text-5xl relative z-20 dark:text-white'>
                   {t('main.testimonials')}
                 </h1>
                 <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
@@ -308,7 +308,7 @@ const Main = () => {
                         borderRadius: '100px 30px 30px 30px',
                       }}
                     >
-                      <Quote theme={theme} color={index === 1 ? 'yellow' : 'black'} className='mx-auto relative -top-4' />
+                      <Quote theme={theme} color={index === 1 ? 'indigo' : 'black'} className='mx-auto relative -top-4' />
                       <div className='px-10 mb-10 max-h-80 overflow-auto'>
                         <p className='text-gray-500 text-sm mt-8 dark:text-gray-400'>
                           {item.name}
@@ -362,7 +362,7 @@ const Main = () => {
               <div className='absolute left-10'>
                 <BackgroundSvg type='shapes' />
               </div>
-              <h1 className='text-text-gray-800 text-5xl font-extrabold text-center relative z-20 dark:text-white'>Checklist</h1>
+              <h1 className='text-gray-800 text-5xl font-extrabold text-center relative z-20 dark:text-white'>Checklist</h1>
               <div className='flex flex-col lg:flex-row items-center justify-between max-w-5xl w-full mx-auto mt-16'>
                 <div
                   className='max-w-xs w-full mx-auto shadow-lg overflow-hidden relative z-10'

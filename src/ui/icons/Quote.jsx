@@ -6,8 +6,8 @@ const Quote = ({ theme, className, color }) => (
   <svg
     className={cx(className, {
       'fill-[#232536]': color === 'black' && theme === 'light',
-      'fill-[#9970E7]': color === 'black' && theme === 'dark',
-      'fill-[#FFC26F]': color === 'yellow',
+      'fill-sky-600': color === 'black' && theme === 'dark',
+      'fill-indigo-600': color === 'indigo',
     })}
     width='42'
     height='30'
@@ -22,7 +22,7 @@ const Quote = ({ theme, className, color }) => (
 Quote.propTypes = {
   className: PropTypes.string,
   theme: PropTypes.string.isRequired,
-  color: PropTypes.oneOf(['yellow', 'black']).isRequired,
+  color: PropTypes.oneOf(['indigo', 'black']).isRequired,
 }
 
 Quote.defaultProps = {
