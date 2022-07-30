@@ -215,7 +215,6 @@ const TwoFA = ({
 
   const callFnOnKeyPress = (fn, key = 'Enter') => (e) => {
     e.stopPropagation()
-
     if (e.key === key) {
       fn(e)
     }
