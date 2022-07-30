@@ -92,7 +92,7 @@ const PanelContainer = ({
         </div>
       )}
     </div>
-    <div className='flex flex-col h-full scroll-auto'>
+    <div className='flex flex-col h-full scroll-auto overflow-auto'>
       {children}
     </div>
   </div>
