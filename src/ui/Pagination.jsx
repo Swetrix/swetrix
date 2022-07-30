@@ -13,27 +13,29 @@ const Pagination = ({
   const paginationRange = usePagination(total, page)
 
   return (
-    <nav className='border-t border-gray-200 px-4 flex items-center justify-between sm:px-0'>
+    <nav className='border-t-0 border-gray-200 px-4 flex items-center justify-between sm:px-0'>
       <div className='-mt-px w-0 flex-1 flex'>
-        {
+        <div className='dark:hover:text-gray-400 hover:text-gray-700 dark:text-gray-300 text-gray-500'>
+          {
           page > 1 && (
             <button
               type='button'
               onClick={() => setPage(page - 1)}
-              className='border-t-2 border-transparent pt-4 pr-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              className='pt-4 pr-1 inline-flex items-center text-sm font-medium'
             >
-              <ArrowNarrowLeftIcon className='mr-3 h-5 w-5 text-gray-400' aria-hidden='true' />
+              <ArrowNarrowLeftIcon className='mr-3 h-5 w-5' aria-hidden='true' />
               { t('project.prev') }
             </button>
           )
-        }
+          }
+        </div>
       </div>
       <div className='hidden md:-mt-px md:flex'>
         {
           _map(paginationRange, (item, index) => {
             if (item === DOTS) {
               return (
-                <span className='border-transparent text-gray-500 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium' key={item + index}>
+                <span className='border-transparent text-gray-500 dark:text-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium' key={item + index}>
                   { DOTS }
                 </span>
               )
@@ -46,7 +48,7 @@ const Pagination = ({
                 onClick={() => setPage(item)}
                 className={cx({
                   'border-indigo-500 text-indigo-600 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium': item === page,
-                  'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium': item !== page,
+                  'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-400 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium': item !== page,
                 })}
               >
                 {item}
@@ -56,18 +58,20 @@ const Pagination = ({
         }
       </div>
       <div className='-mt-px w-0 flex-1 flex justify-end'>
-        {
+        <div className='dark:hover:text-gray-400 hover:text-gray-700 dark:text-gray-300 text-gray-500'>
+          {
           page !== pageAmount && (
             <button
               type='button'
               onClick={() => setPage(page + 1)}
-              className='border-t-2 border-transparent pt-4 pl-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              className='pt-4 pl-1 inline-flex items-center text-sm font-medium'
             >
               { t('project.next') }
-              <ArrowNarrowRightIcon className='ml-3 h-5 w-5 text-gray-400' aria-hidden='true' />
+              <ArrowNarrowRightIcon className='ml-3 h-5 w-5' aria-hidden='true' />
             </button>
           )
-        }
+          }
+        </div>
       </div>
     </nav>
   )
