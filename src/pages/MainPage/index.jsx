@@ -545,7 +545,7 @@ const Main = () => {
                   </p>
                 </div>
                 <div className='flex items-center justify-between mt-20 md:mt-32 md:flex-row flex-col'>
-                  <div>
+                  <div className='text-center'>
                     <p className='text-indigo-700 text-5xl font-extrabold text-center'>
                       {users[0]}
                       {users[1] && (
@@ -560,7 +560,7 @@ const Main = () => {
                     </p>
                   </div>
                   <div className='bg-gray-800 dark:bg-gray-200 w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
-                  <div>
+                  <div className='text-center'>
                     <p className='text-indigo-700 text-5xl font-extrabold text-center'>
                       {websites[0]}
                       {websites[1] && (
@@ -575,7 +575,7 @@ const Main = () => {
                     </p>
                   </div>
                   <div className='bg-gray-800 dark:bg-gray-200 w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
-                  <div>
+                  <div className='text-center'>
                     <p className='text-indigo-700 text-5xl font-extrabold text-center'>
                       {events[0]}
                       {events[1] && (
