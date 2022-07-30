@@ -94,7 +94,7 @@ const Main = () => {
                     <img className='rounded-xl' style={{ height: '100%', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </div>
                 </div>
-                <div className='my-10 block lg:hidden relative z-20'>
+                <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
                   <img className='rounded-xl shadow-colored-2xl w-full' src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} alt='Swetrix Analytics dashboard' width='100%' height='auto' />
                 </div>
               </div>
