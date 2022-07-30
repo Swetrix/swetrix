@@ -64,7 +64,7 @@ const Main = () => {
                 />
                 <div className='relative z-20 flex flex-row content-between 2xl:mr-[14vw] 2xl:justify-center justify-center lg:justify-start'>
                   <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
-                    <h1 className='max-w-2xl text-4xl sm:text-5xl md:text-[4rem] font-extrabold text-white sm:leading-none lg:text-5xl xl:text-[4.1rem] xl:leading-[110%]'>
+                    <h1 className='max-w-2xl text-3xl sm:text-5xl md:text-5xl font-extrabold text-white sm:leading-none lg:text-5xl xl:text-6xl xl:leading-[110%]'>
                       <Trans
                         t={t}
                         i18nKey='main.slogan'
@@ -327,7 +327,7 @@ const Main = () => {
               <section className='max-w-7xl w-full mx-auto bg-gray-800 overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
                 <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
                   <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
-                    <h1 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-4xl lg:leading-[48px] text-white mb-3'>
+                    <h1 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px] text-white mb-3'>
                       <Trans
                         t={t}
                         i18nKey='main.os'
@@ -345,7 +345,7 @@ const Main = () => {
                       <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                     </Link>
                   </div>
-                  <div className='max-w-md xl:max-w-lg block h-[450px]'>
+                  <div className='max-w-md xl:max-w-lg block h-[450px] md:shadow-[8px_8px_10px_3px] md:rounded-md '>
                     <img className='rounded-xl' style={{ minheight: '600px', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </div>
                 </div>
