@@ -16,6 +16,7 @@ const getInitialState = () => {
     total: 0,
     sharedTotal: 0,
     dashboardPaginationPage: 1,
+    dashboardPaginationPageShared: 1,
     dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
   }
 }
@@ -45,6 +46,14 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       return {
         ...state,
         dashboardPaginationPage: page,
+      }
+    }
+
+    case types.SET_DASHBOARD_PAGINATION_PAGE_SHARED: {
+      const { page } = payload
+      return {
+        ...state,
+        dashboardPaginationPageShared: page,
       }
     }
 
