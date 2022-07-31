@@ -32,6 +32,7 @@ import People from './People'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
+const MAX_IPBLACKLIST_LENGTH = 300
 
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
@@ -83,6 +84,7 @@ const ProjectSettings = ({
         const formalisedData = {
           ...data,
           origins: _split(data.origins, ','),
+          ipBlacklist: _split(data.ipBlacklist, ','),
         }
 
         if (isSettings) {
@@ -138,6 +140,10 @@ const ProjectSettings = ({
 
     if (_size(form.origins) > MAX_ORIGINS_LENGTH) {
       allErrors.origins = t('project.settings.oxCharsError', { amount: MAX_ORIGINS_LENGTH })
+    }
+
+    if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
+      allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -224,6 +230,17 @@ const ProjectSettings = ({
                 className='mt-4'
                 onChange={handleInput}
                 error={beenSubmitted ? errors.origins : null}
+              />
+              <Input
+                name='ipBlacklist'
+                id='ipBlacklist'
+                type='text'
+                label="IP's to blacklist"
+                hint={t('project.settings.originsHint')}
+                value={form.ipBlacklist}
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.ipBlacklist : null}
               />
               <Checkbox
                 checked={Boolean(form.active)}
