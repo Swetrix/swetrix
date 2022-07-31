@@ -177,7 +177,7 @@ const Dashboard = ({
   projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData,
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
-  setDashboardTabs, sharedTotal,
+  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
@@ -203,18 +203,14 @@ const Dashboard = ({
   }, [tabProjects, setDashboardTabs, sharedTotal])
 
   useEffect(() => {
-    setDashboardPaginationPage(1)
-  }, [tabProjects, setDashboardPaginationPage])
-
-  useEffect(() => {
     if (tabProjects === tabForOwnedProject) {
       loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
     }
     if (tabProjects === tabForSharedProject) {
-      loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+      loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageShared - 1) * ENTRIES_PER_PAGE_DASHBOARD)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dashboardPaginationPage])
+  }, [dashboardPaginationPage, dashboardPaginationPageShared])
 
   if (error && !isLoading) {
     return (
@@ -363,7 +359,7 @@ const Dashboard = ({
 
               {
                 pageAmount > 1 && (
-                  <Pagination page={dashboardPaginationPage} setPage={(page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={tabProjects === tabForSharedProject ? sharedTotal : total} />
+                  <Pagination page={tabProjects === tabForSharedProject ? dashboardPaginationPageShared : dashboardPaginationPage} setPage={tabProjects === tabForSharedProject ? (page) => setDashboardPaginationPageShared(page) : (page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={tabProjects === tabForSharedProject ? sharedTotal : total} />
                 )
               }
             </div>
@@ -405,7 +401,9 @@ Dashboard.propTypes = {
   loadProjects: PropTypes.func.isRequired,
   total: PropTypes.number.isRequired,
   setDashboardPaginationPage: PropTypes.func.isRequired,
+  setDashboardPaginationPageShared: PropTypes.func.isRequired,
   dashboardPaginationPage: PropTypes.number.isRequired,
+  dashboardPaginationPageShared: PropTypes.number.isRequired,
   dashboardTabs: PropTypes.string.isRequired,
   setDashboardTabs: PropTypes.func.isRequired,
   sharedTotal: PropTypes.number.isRequired,

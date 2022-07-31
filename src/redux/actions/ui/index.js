@@ -40,6 +40,13 @@ const setDashboardPaginationPage = (page) => ({
   },
 })
 
+const setDashboardPaginationPageShared = (page) => ({
+  type: types.SET_DASHBOARD_PAGINATION_PAGE_SHARED,
+  payload: {
+    page,
+  },
+})
+
 const setShowNoEventsLeftBanner = (showNoEventsLeftBanner) => ({
   type: types.SET_SHOW_NO_EVENTS_LEFT,
   payload: {
@@ -172,6 +179,7 @@ const UIActions = {
   setPaddleLastEvent,
   setTotalMonthlyEvents,
   setDashboardPaginationPage,
+  setDashboardPaginationPageShared,
   setTotal,
   setShowNoEventsLeftBanner,
   setProjectsShareData,

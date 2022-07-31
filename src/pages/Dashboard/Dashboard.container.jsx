@@ -14,6 +14,7 @@ const mapStateToProps = (state) => ({
   sharedTotal: state.ui.projects.sharedTotal,
   error: state.ui.projects.error,
   dashboardPaginationPage: state.ui.projects.dashboardPaginationPage,
+  dashboardPaginationPageShared: state.ui.projects.dashboardPaginationPageShared,
   dashboardTabs: state.ui.projects.dashboardTabs,
 })
 
@@ -41,6 +42,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   setDashboardPaginationPage: (page) => {
     dispatch(UIActions.setDashboardPaginationPage(page))
+  },
+  setDashboardPaginationPageShared: (page) => {
+    dispatch(UIActions.setDashboardPaginationPageShared(page))
   },
   setDashboardTabs: (tab) => {
     dispatch(UIActions.setDashboardTabs(tab))
