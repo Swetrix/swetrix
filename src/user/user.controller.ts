@@ -94,6 +94,22 @@ export class UserController {
     }
   }
 
+  @Delete('/api-key')
+  @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
+    this.logger.log({ userId }, 'DELETE /user/api-key')
+
+    const user = await this.userService.findOne(userId)
+
+    if (_isNull(user.apiKey)) {
+      throw new ConflictException("You don't have an API key")
+    }
+
+    await this.userService.update(userId, { apiKey: null })
+  }
+
   @Delete('/:id')
   @HttpCode(204)
   @UseGuards(RolesGuard)
@@ -358,8 +374,9 @@ export class UserController {
     return user
   }
 
-  @Post('api-key')
+  @Post('/api-key')
   @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async generateApiKey(@CurrentUserId() userId: string): Promise<{
     apiKey: string
@@ -379,18 +396,4 @@ export class UserController {
     return { apiKey }
   }
 
-  @Delete('api-key')
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
-    this.logger.log({ userId }, 'DELETE /user/api-key')
-
-    const user = await this.userService.findOne(userId)
-
-    if (_isNull(user.apiKey)) {
-      throw new ConflictException("You don't have an API key")
-    }
-
-    await this.userService.update(userId, { apiKey: null })
-  }
 }
