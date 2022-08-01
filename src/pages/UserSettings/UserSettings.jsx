@@ -356,7 +356,7 @@ const TwoFA = ({
 const UserSettings = ({
   onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t,
   removeProject, removeShareProject, setUserShareData, setProjectsShareData, language,
-  userSharedUpdate, sharedProjectError, updateUserData, login, genericError,
+  userSharedUpdate, sharedProjectError, updateUserData, login, genericError, onApiKeyGenerate, onApiKeyDelete,
 }) => {
   const { user, dontRemember } = useSelector(state => state.auth)
 
@@ -372,6 +372,7 @@ const UserSettings = ({
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState(null)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
@@ -537,6 +538,45 @@ const UserSettings = ({
           </Button>
           <hr className='mt-5' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.apiKey')}
+            <div className='ml-5'>
+              <Beta />
+            </div>
+          </h3>
+          {user.apiKey ? (
+            <>
+              <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.apiKeyWarning')}
+              </p>
+              <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
+                <Input
+                  name='apiKey'
+                  id='apiKey'
+                  type='text'
+                  label={t('profileSettings.apiKey')}
+                  value={user.apiKey}
+                  className='mt-4'
+                  onChange={handleInput}
+                  disabled
+                />
+              </div>
+            </>
+          ) : (
+            <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+              {t('profileSettings.noApiKey')}
+            </p>
+          )}
+          {user.apiKey ? (
+            <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
+              {t('profileSettings.deleteApiKeyBtn')}
+            </Button>
+          ) : (
+            <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
+              {t('profileSettings.addApiKeyBtn')}
+            </Button>
+          )}
+          <hr className='mt-5' />
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.2fa')}
             <div className='ml-5'>
               <Beta />
@@ -647,6 +687,17 @@ const UserSettings = ({
           isOpened={showModal}
         />
         <Modal
+          onClose={() => setShowAPIDeleteModal(false)}
+          onSubmit={() => { setShowAPIDeleteModal(false); onApiKeyDelete() }}
+          submitText={t('profileSettings.deleteApiKeyBtn')}
+          closeText={t('common.close')}
+          title={t('profileSettings.apiKeyDelete')}
+          submitType='danger'
+          type='error'
+          message={t('profileSettings.apiKeyDeleteConf')}
+          isOpened={showAPIDeleteModal}
+        />
+        <Modal
           onClose={() => { setError('') }}
           closeText={t('common.gotIt')}
           type='error'
@@ -675,6 +726,8 @@ UserSettings.propTypes = {
   updateUserData: PropTypes.func.isRequired,
   login: PropTypes.func.isRequired,
   genericError: PropTypes.func.isRequired,
+  onApiKeyDelete: PropTypes.func.isRequired,
+  onApiKeyGenerate: PropTypes.func.isRequired,
 }
 
 export default memo(UserSettings)
