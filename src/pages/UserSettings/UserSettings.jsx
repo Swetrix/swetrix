@@ -578,18 +578,12 @@ const UserSettings = ({
           <hr className='mt-5' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.2fa')}
-            <div className='ml-5'>
-              <Beta />
-            </div>
           </h3>
           <TwoFA t={t} user={user} dontRemember={dontRemember} updateUserData={updateUserData} login={login} genericError={genericError} />
 
           <hr className='mt-5' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.shared')}
-            <div className='ml-5'>
-              <Beta />
-            </div>
           </h3>
           <div>
             {!_isEmpty(user.sharedProjects) ? (

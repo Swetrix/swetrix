@@ -3,9 +3,10 @@ import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
 import { ExclamationCircleIcon } from '@heroicons/react/solid'
+import Beta from 'ui/Beta'
 
 const Input = ({
-  label, hint, placeholder, type, id, name, className, onChange, error, value, disabled, onKeyDown,
+  label, hint, placeholder, type, id, name, className, onChange, error, value, disabled, onKeyDown, isBeta,
 }) => {
   const identifier = id || name || type
   const isError = !_isEmpty(error)
@@ -17,7 +18,14 @@ const Input = ({
           'flex justify-between': label && hint,
         })}
       >
-        <label htmlFor={identifier} className='block text-sm font-medium text-gray-700 dark:text-gray-200'>{label}</label>
+        <label htmlFor={identifier} className='block text-sm font-medium text-gray-700 dark:text-gray-200 flex'>
+          {label}
+          {isBeta && (
+            <div className='ml-5'>
+              <Beta />
+            </div>
+          )}
+        </label>
       </div>
       <div className='mt-1 relative'>
         <input
@@ -65,6 +73,7 @@ Input.propTypes = {
   ]),
   name: PropTypes.string,
   disabled: PropTypes.bool,
+  isBeta: PropTypes.bool,
 }
 
 Input.defaultProps = {
@@ -79,6 +88,7 @@ Input.defaultProps = {
   error: null,
   name: '',
   disabled: false,
+  isBeta: false,
 }
 
 export default memo(Input)
