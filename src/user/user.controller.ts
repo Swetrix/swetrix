@@ -94,6 +94,28 @@ export class UserController {
     }
   }
 
+  @Post('/api-key')
+  @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async generateApiKey(@CurrentUserId() userId: string): Promise<{
+    apiKey: string
+  }> {
+    this.logger.log({ userId }, 'POST /user/api-key')
+
+    const user = await this.userService.findOne(userId)
+
+    if (!_isNull(user.apiKey)) {
+      throw new ConflictException('You already have an API key')
+    }
+
+    const apiKey: string = uuidv4()
+
+    await this.userService.update(userId, { apiKey })
+
+    return { apiKey }
+  }
+
   @Delete('/api-key')
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
@@ -372,28 +394,6 @@ export class UserController {
     })
 
     return user
-  }
-
-  @Post('/api-key')
-  @UseGuards(RolesGuard)
-  @UseGuards(SelfhostedGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async generateApiKey(@CurrentUserId() userId: string): Promise<{
-    apiKey: string
-  }> {
-    this.logger.log({ userId }, 'POST /user/api-key')
-
-    const user = await this.userService.findOne(userId)
-
-    if (!_isNull(user.apiKey)) {
-      throw new ConflictException('You already have an API key')
-    }
-
-    const apiKey: string = uuidv4()
-
-    await this.userService.update(userId, { apiKey })
-
-    return { apiKey }
   }
 
 }
