@@ -20,6 +20,18 @@ services:
       - '6379:6379'
     volumes:
       - redis:/data
+  clickhouse:
+    image: clickhouse/clickhouse-server:${CLICKHOUSE_VERSION}
+    restart: always
+    environment:
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+    ports:
+      - '8123:8123'
+    volumes:
+      - clickhouse:/var/lib/clickhouse
 volumes:
   mysql:
   redis:
+  clickhouse:
