@@ -362,31 +362,35 @@ export class UserController {
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async generateApiKey(@CurrentUserId() userId: string): Promise<{
-    apiKey: string;
+    apiKey: string
   }> {
-    const user = await this.userService.findOne(userId);
+    this.logger.log({ userId }, 'POST /user/api-key')
+
+    const user = await this.userService.findOne(userId)
 
     if (!_isNull(user.apiKey)) {
-      throw new ConflictException('You already have an API key');
+      throw new ConflictException('You already have an API key')
     }
 
-    const apiKey: string = uuidv4();
+    const apiKey: string = uuidv4()
 
-    await this.userService.update(userId, { apiKey });
+    await this.userService.update(userId, { apiKey })
 
-    return { apiKey };
+    return { apiKey }
   }
 
   @Delete('api-key')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
-    const user = await this.userService.findOne(userId);
+    this.logger.log({ userId }, 'DELETE /user/api-key')
+
+    const user = await this.userService.findOne(userId)
 
     if (_isNull(user.apiKey)) {
-      throw new ConflictException("You don't have an API key");
+      throw new ConflictException("You don't have an API key")
     }
 
-    await this.userService.update(userId, { apiKey: null });
+    await this.userService.update(userId, { apiKey: null })
   }
 }
