@@ -12,6 +12,7 @@ const Beta = ({
 
   return (
     <Tooltip
+      className='max-w-content !w-full'
       tooltipNode={(
         <WarningPin className={className} label={t('beta.title')} />
       )}
