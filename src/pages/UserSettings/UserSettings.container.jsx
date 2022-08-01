@@ -143,7 +143,6 @@ const UserSettingsContainer = () => {
   const onApiKeyGenerate = async () => {
     try {
       const res = await generateApiKey()
-      console.log(res)
       dispatch(authActions.setApiKey(res.apiKey))
     } catch (e) {
       dispatch(errorsActions.updateProfileFailed(e))
@@ -152,8 +151,7 @@ const UserSettingsContainer = () => {
 
   const onApiKeyDelete = async () => {
     try {
-      const res = await deleteApiKey()
-      console.log(res)
+      await deleteApiKey()
       dispatch(authActions.setApiKey(null))
     } catch (e) {
       dispatch(errorsActions.updateProfileFailed(e))

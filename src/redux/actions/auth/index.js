@@ -144,5 +144,4 @@ export const authActions = {
       payload: { apiKey },
     }
   },
-
 }
