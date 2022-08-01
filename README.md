@@ -42,12 +42,15 @@ Then fill out the Environment Variables below accordingly.
 
 Below you will find the Environment Variables that are required to run the API. The values next to them are their default values. You can change them to your own values or just not set them if they suit you anyway. (e.g. Ports, Username, etc.)
 
+_(current versions at the time of publication August 1, 2022)_
+
 #### Security
 
 `JWT_SECRET`=SOME_SECRET_TOKEN
 
 #### MySQL Database
 
+`MYSQL_VERSION`=8.0.30\
 `MYSQL_HOST`=localhost\
 `MYSQL_USER`=root\
 `MYSQL_ROOT_PASSWORD`=password\
@@ -55,6 +58,7 @@ Below you will find the Environment Variables that are required to run the API. 
 
 #### Redis Database
 
+`REDIS_VERSION`=7.0.4\
 `REDIS_HOST`=localhost\
 `REDIS_PORT`=6379\
 `REDIS_USER`=default\
@@ -62,6 +66,7 @@ Below you will find the Environment Variables that are required to run the API. 
 
 #### Clickhouse Database
 
+`CLICKHOUSE_VERSION`=22.6.4.35\
 `CLICKHOUSE_HOST`=http://localhost \
 `CLICKHOUSE_USER`=default\
 `CLICKHOUSE_PORT`=8123\
