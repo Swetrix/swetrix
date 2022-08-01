@@ -26,6 +26,9 @@ const authReducer = (state = initialState, { type, payload }) => {
     case types.SAVE_PATH:
       return { ...state, redirectPath: payload.path }
 
+    case types.SET_API_KEY:
+      return { ...state, user: { ...state.user, apiKey: payload.apiKey } }
+
     case types.LOGOUT:
     case types.DELETE_ACCOUNT_SUCCESS:
       return { ...state, authenticated: false, user: {} }

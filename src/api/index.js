@@ -380,3 +380,25 @@ export const submit2FA = (twoFactorAuthenticationCode) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const generateApiKey = () =>
+  api
+    .post('user/api-key')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const deleteApiKey = () =>
+  api
+    .delete('user/api-key')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

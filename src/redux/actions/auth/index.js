@@ -138,4 +138,11 @@ export const authActions = {
     }
   },
 
+  setApiKey(apiKey) {
+    return {
+      type: types.SET_API_KEY,
+      payload: { apiKey },
+    }
+  },
+
 }
