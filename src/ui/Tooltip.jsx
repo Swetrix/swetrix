@@ -20,7 +20,8 @@ const Tooltip = ({
       {
         'items-end': language === 'el',
         'items-center': language !== 'el',
-      },)
+      },
+    )}
     >
       {tooltipNode || (
       <QuestionMarkCircleIcon className='w-5 h-5 text-gray-700  dark:text-gray-300' />
