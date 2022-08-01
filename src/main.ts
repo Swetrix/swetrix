@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
   app.enableCors({
-    origin: process.env.API_ORIGINS || false,
+    origin: process.env.APP_ORIGIN || false,
     credentials: true,
   })
   app.enableShutdownHooks()
