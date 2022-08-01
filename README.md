@@ -44,39 +44,7 @@ Below you will find the Environment Variables that are required to run the API. 
 
 _(current versions at the time of publication August 1, 2022)_
 
-#### Security
-
-`JWT_SECRET`=SOME_SECRET_TOKEN
-
-#### MySQL Database
-
-`MYSQL_VERSION`=8.0.30\
-`MYSQL_HOST`=localhost\
-`MYSQL_USER`=root\
-`MYSQL_ROOT_PASSWORD`=password\
-`MYSQL_DATABASE`=analytics
-
-#### Redis Database
-
-`REDIS_VERSION`=7.0.4\
-`REDIS_HOST`=localhost\
-`REDIS_PORT`=6379\
-`REDIS_USER`=default\
-`REDIS_PASSWORD`=password
-
-#### Clickhouse Database
-
-`CLICKHOUSE_VERSION`=22.6.4.35\
-`CLICKHOUSE_HOST`=http://localhost \
-`CLICKHOUSE_USER`=default\
-`CLICKHOUSE_PORT`=8123\
-`CLICKHOUSE_PASSWORD`=password\
-`CLICKHOUSE_DATABASE`=analytics
-
-#### Swetrix Admin Account
-
-`EMAIL`=test@test.com\
-`PASSWORD`=12345678
+[Environment variables example](.env.example)
 
 ### Running Swetrix-API behind a Reverse Proxy
 
