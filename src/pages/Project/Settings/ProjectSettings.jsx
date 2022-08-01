@@ -235,8 +235,8 @@ const ProjectSettings = ({
                 name='ipBlacklist'
                 id='ipBlacklist'
                 type='text'
-                label="IP's to blacklist"
-                hint={t('project.settings.originsHint')}
+                label={t('project.settings.ipBlacklist')}
+                hint={t('project.settings.ipBlacklistHint')}
                 value={form.ipBlacklist}
                 className='mt-4'
                 onChange={handleInput}
@@ -262,7 +262,7 @@ const ProjectSettings = ({
               />
               <div className='flex justify-between mt-8'>
                 <div>
-                  <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
+                  <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
                     {t('common.cancel')}
                   </Button>
                   <Button type='submit' loading={projectSaving} primary regular>
@@ -290,7 +290,7 @@ const ProjectSettings = ({
 
           {!isSettings && (
             <div>
-              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
+              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
                 {t('common.cancel')}
               </Button>
               <Button type='submit' loading={projectSaving} primary regular>
