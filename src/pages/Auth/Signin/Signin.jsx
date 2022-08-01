@@ -1,9 +1,10 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
+import _isString from 'lodash/isString'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -15,18 +16,23 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 import { isSelfhosted } from 'redux/constants'
+import { submit2FA } from 'api'
+import { setAccessToken } from 'utils/accessToken'
 
-const Signin = ({ login }) => {
+const Signin = ({ login, loginSuccess, loginFailed }) => {
   const { t } = useTranslation('common')
   const [form, setForm] = useState({
     email: '',
     password: '',
-    keep_signedin: false,
+    dontRemember: false,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isTwoFARequired, setIsTwoFARequired] = useState(false)
+  const [twoFACode, setTwoFACode] = useState('')
+  const [twoFACodeError, setTwoFACodeError] = useState(null)
 
   const validate = () => {
     const allErrors = {}
@@ -49,14 +55,45 @@ const Signin = ({ login }) => {
     validate()
   }, [form]) // eslint-disable-line
 
+  const handle2FAInput = event => {
+    const { target: { value } } = event
+    setTwoFACode(value)
+    setTwoFACodeError(null)
+  }
+
   const onSubmit = data => {
     if (!isLoading) {
       setIsLoading(true)
-      login(data, (result) => {
+      login(data, (result, twoFARequired) => {
         if (!result) {
           setIsLoading(false)
+          setIsTwoFARequired(twoFARequired)
         }
       })
+    }
+  }
+
+  const _submit2FA = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!isLoading) {
+      setIsLoading(true)
+
+      try {
+        const { access_token: accessToken, user } = await submit2FA(twoFACode)
+        setAccessToken(accessToken, form.dontRemember)
+        loginSuccess(user)
+      } catch (err) {
+        if (_isString(err)) {
+          loginFailed(err)
+        }
+        console.error(`[ERROR] Failed to authenticate with 2FA: ${err}`)
+        setTwoFACodeError(t('profileSettings.invalid2fa'))
+      }
+
+      setTwoFACode('')
+      setIsLoading(false)
     }
   }
 
@@ -79,11 +116,54 @@ const Signin = ({ login }) => {
     }
   }
 
+  if (isTwoFARequired) {
+    return (
+      <Title title={t('titles.signin')}>
+        <div className='min-h-page bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+          <form className='max-w-prose mx-auto' onSubmit={_submit2FA}>
+            <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+              {t('auth.signin.2fa')}
+            </h2>
+            <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
+              {t('auth.signin.2faDesc')}
+            </p>
+            <Input
+              type='text'
+              label={t('profileSettings.enter2faToDisable')}
+              value={twoFACode}
+              placeholder={t('auth.signin.6digitCode')}
+              className='mt-4'
+              onChange={handle2FAInput}
+              disabled={isLoading}
+              error={twoFACodeError}
+            />
+            <div className='flex justify-between mt-3'>
+              <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
+                {!isSelfhosted && (
+                  <Trans
+                    t={t}
+                    i18nKey='auth.signin.2faUnavailable'
+                    components={{
+                      ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />,
+                    }}
+                  />
+                )}
+              </div>
+              <Button type='submit' loading={isLoading} primary large>
+                {t('common.continue')}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </Title>
+    )
+  }
+
   return (
     <Title title={t('titles.signin')}>
       <div className='min-h-page bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {t('auth.signin.title')}
           </h2>
           <Input
@@ -110,10 +190,10 @@ const Signin = ({ login }) => {
             error={beenSubmitted && errors.password}
           />
           <Checkbox
-            checked={form.keep_signedin}
+            checked={form.dontRemember}
             onChange={handleInput}
-            name='keep_signedin'
-            id='keep_signedin'
+            name='dontRemember'
+            id='dontRemember'
             className='mt-4'
             label={t('auth.common.noRemember')}
           />
@@ -143,6 +223,8 @@ const Signin = ({ login }) => {
 
 Signin.propTypes = {
   login: PropTypes.func.isRequired,
+  loginSuccess: PropTypes.func.isRequired,
+  loginFailed: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(Signin, auth.notAuthenticated))

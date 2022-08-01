@@ -26,7 +26,7 @@ const Signup = ({ signup }) => {
     password: '',
     repeat: '',
     tos: false,
-    keep_signedin: false,
+    dontRemember: false,
     checkIfLeaked: true,
   })
   const [validated, setValidated] = useState(false)
@@ -104,7 +104,7 @@ const Signup = ({ signup }) => {
     <Title title={t('titles.signup')}>
       <div className='min-h-page bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {t('titles.signup')}
           </h2>
           <Input
@@ -159,6 +159,7 @@ const Signup = ({ signup }) => {
                 />
               </span>
             )}
+            hintClassName='!text-red-600 dark:!text-red-500'
             hint={beenSubmitted ? errors.tos : ''}
           />
           <div className='flex mt-4'>
@@ -187,10 +188,10 @@ const Signup = ({ signup }) => {
             />
           </div>
           <Checkbox
-            checked={form.keep_signedin}
+            checked={form.dontRemember}
             onChange={handleInput}
-            name='keep_signedin'
-            id='keep_signedin'
+            name='dontRemember'
+            id='dontRemember'
             className='mt-4'
             label={t('auth.common.noRemember')}
           />

@@ -149,3 +149,36 @@ export const paddleLanguageMapping = {
   uk: 'ru',
   el: 'en',
 }
+
+// dashboard && projects
+
+export const roles = ['admin', 'viewer']
+
+export const roleViewer = {
+  name: 'Viewer',
+  role: 'viewer',
+  description: 'Can view the project',
+}
+
+export const roleAdmin = {
+  name: 'Admin',
+  role: 'admin',
+  description: 'Can manage the project',
+}
+
+export const tabForOwnedProject = 'owned'
+export const tabForSharedProject = 'shared'
+
+export const tabsForDashboard = [
+  {
+    name: tabForOwnedProject,
+    label: 'profileSettings.owned',
+  },
+  {
+    name: tabForSharedProject,
+    label: 'profileSettings.shared',
+  },
+]
+
+export const INVITATION_EXPIRES_IN = 48 // hours
+export const ENTRIES_PER_PAGE_DASHBOARD = 10

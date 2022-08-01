@@ -1,16 +1,35 @@
 import { connect } from 'react-redux'
 import { errorsActions } from 'redux/actions/errors'
 import UIActions from 'redux/actions/ui'
+import { tabForSharedProject } from 'redux/constants'
+
 import ViewProject from './ViewProject'
 
-const mapStateToProps = (state) => ({
-  projects: state.ui.projects.projects,
-  isLoading: state.ui.projects.isLoading,
-  cache: state.ui.cache.analytics,
-  projectViewPrefs: state.ui.cache.projectViewPrefs,
-  authenticated: state.auth.authenticated,
-  timezone: state.auth.user.timezone,
-})
+const mapStateToProps = (state) => {
+  if (state.ui.projects.dashboardTabs === tabForSharedProject) {
+    return {
+      projects: state.ui.projects.projects,
+      sharedProjects: state.ui.projects.sharedProjects,
+      isLoading: state.ui.projects.isLoadingShared,
+      cache: state.ui.cache.analytics,
+      projectViewPrefs: state.ui.cache.projectViewPrefs,
+      authenticated: state.auth.authenticated,
+      timezone: state.auth.user.timezone,
+      user: state.auth.user,
+    }
+  }
+
+  return {
+    projects: state.ui.projects.projects,
+    sharedProjects: state.ui.projects.sharedProjects,
+    isLoading: state.ui.projects.isLoading,
+    cache: state.ui.cache.analytics,
+    projectViewPrefs: state.ui.cache.projectViewPrefs,
+    authenticated: state.auth.authenticated,
+    timezone: state.auth.user.timezone,
+    user: state.auth.user,
+  }
+}
 
 const mapDispatchToProps = (dispatch) => ({
   showError: (message) => {

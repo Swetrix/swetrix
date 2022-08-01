@@ -13,6 +13,10 @@ const alertsReducer = (state = initialState, { type, payload }) => {
     case types.NEW_PASSWORD:
     case types.DELETE_PROJECT_SUCCESS:
     case types.CREATE_NEW_PROJECT_SUCCESS:
+    case types.ROLE_UPDATED:
+    case types.INVITE_USER:
+    case types.REMOVE_USER:
+    case types.USER_SHARED_UPDATE:
       return { ...state, message: payload.message, type: payload.type }
 
     case types.CLEAR_ALERTS:

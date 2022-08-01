@@ -151,9 +151,31 @@ export const verifyEmail = ({ path, id }) =>
         : error.response.data.message
     })
 
-export const getProjects = () =>
+export const verifyShare = ({ path, id }) =>
   api
-    .get('/project')
+    .get(`/project/${path}/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getProjects = (take = 0, skip = 0) =>
+  api
+    .get(`/project?take=${take}&skip=${skip}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getSharedProjects = (take = 0, skip = 0) =>
+  api
+    .get(`/project/shared?take=${take}&skip=${skip}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -252,6 +274,105 @@ export const getLiveVisitors = (pids) =>
 export const getGeneralStats = () =>
   api
     .get('log/generalStats')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const shareProject = (pid, data) =>
+  api
+    .post(`/project/${pid}/share`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const deleteShareProjectUsers = (pid, userId) =>
+  api
+    .delete(`/project/${pid}/${userId}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const deleteShareProject = (pid) =>
+  api
+    .delete(`user/share/${pid}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const acceptShareProject = (id) =>
+  api
+    .get(`user/share/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const changeShareRole = (id, data) =>
+  api
+    .put(`project/share/${id}`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const generate2FA = () =>
+  api
+    .post('2fa/generate')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const enable2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/enable', { twoFactorAuthenticationCode })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const disable2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/disable', { twoFactorAuthenticationCode })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const submit2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/authenticate', { twoFactorAuthenticationCode })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

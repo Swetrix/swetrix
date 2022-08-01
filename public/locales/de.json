@@ -6,7 +6,19 @@
     "rateLimitHit": "Too many requests, please try again later",
     "cancelSubFirst": "Please cancel your paid subscription first",
     "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account"
+    "accountDeleteError": "Error while deleting your account",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occurred while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occurred while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occurred while removing the user from your project",
+    "quitProjectError": "Error occurred while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occurred while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated",
+    "generate2FAError": "Error occurred while generating 2FA code"
   },
   "common": {
     "features": "Funktionen",
@@ -33,19 +45,60 @@
     "yes": "Ja",
     "no": "Nein",
     "is": "ist",
-    "isNot": "ist nicht"
+    "isNot": "ist nicht",
+    "invite": "Invite",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit",
+    "enable": "Enable",
+    "disable": "Disable"
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
-    "slogan": "Eine <span>leistungsstarke</span> Analyse-Plattform, welche die <span>Privatsphäre ihrer Anwender<span> berücksichtigt",
+    "slogan": "<span>Ultimate open-source analytics</span> to satisfy all your needs.",
     "trackEveryMetric": "Analysieren Sie alle benötigten Metriken, ohne die Privatsphäre Ihrer Anwender zu verletzen.",
     "description": "Swetrix bietet einen fortgeschrittenen und konfigurierbaren Analysedienst für Ihre Webanwendungen.",
+    "start": "Start for free",
     "signup": "Jetzt gratis registrieren!",
     "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
     "techDetails": "Möchten Sie weitere technische Details erfahren?",
     "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
     "readyToStart": "Sind Sie bereit los zu legen?",
     "exploreService": "Erkundigen Sie sich über unseren Dienst oder registrieren Sie sich.",
+    "coreFeatures": {
+      "title": "Core Analytics Features",
+      "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
+    },
+    "marketplace": {
+      "title": "Marketplace & build-in Extensions",
+      "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
+      "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
+    },
+    "visitAddons": "Visit Swetrix extensions",
+    "privacy": {
+      "title": "Privacy compliance",
+      "list": [
+        {
+          "label": "GDPR",
+          "desc": "data and processing based in EU zone."
+        },
+        {
+          "label": "HIPAA",
+          "desc": "protect sensitive info."
+        },
+        {
+          "label": "PCI DSS",
+          "desc": "payment data security."
+        },
+        {
+          "label": "CCPA",
+          "desc": "control over the personal information."
+        }
+      ]
+    },
+    "dataProtection": "More about Data Protection",
     "faq": {
       "title": "Häufig gestellte Fragen",
       "list": [
@@ -69,37 +122,100 @@
     },
     "features": [
       {
-        "name": "Open-Source",
-        "description": "Unser Tracking-Script ist quelloffen und frei zugänglich für Jeden. Wir erfassen nur die Daten, die wir ausdrücklich angeben."
+        "name": "Measure website traffic with 99% accuracy",
+        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
       },
       {
-        "name": "Vollständige Ereignisverfolgung",
-        "description": "Mit uns können Sie nicht nur Ihren Traffic verfolgen, sondern auch benutzerdefinierte Ereignisse wie Button-Klicks oder Registrierungen analysieren."
+        "name": "Demo & Geo reports",
+        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
       },
       {
-        "name": "Browser-Addons",
-        "description": "Sehen Sie sofort die wichtigsten Einblicke, erhalten Sie Traffic-Spike-Benachrichtigungen und vieles mehr, ohne jemals die Website aufzurufen."
+        "name": "UTM & Reffers tracking",
+        "desc": "All the traffic from your companies and websites will be shown without a data loss."
       },
       {
-        "name": "Keine Cookie-Banner erforderlich",
-        "description": "Wir distanzieren uns bewusst von zielgerichteter Werbung und Profiling und setzen auch keine Tracking-Cookies ein. Unser Geschäftsmodell ist es, Software zu verkaufen, nicht Daten."
+        "name": "Agile system",
+        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
       },
       {
-        "name": "Wir sind schnell",
-        "description": "Wir verwenden ein globales CDN für die Bereitstellung unserer Anwendungen, und unser Tracking-Script wird um ein Vielfaches schneller geladen als das unserer Konkurrenten."
+        "name": "Custom events\n(really easy to setup)",
+        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
       },
       {
-        "name": "Vergleichen, untersuchen und genießen Sie die Daten",
-        "description": "Sie können Daten nach bestimmten Kategorien sortieren und auch Statistiken korrelieren, wie z. B. einzigartige Nutzer von regelmäßigen Seitenaufrufen unterscheiden."
+        "name": "User flow",
+        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
       }
     ],
-    "custSupport": "Ist ihre Frage hier nicht aufgelistet? Wenden Sie sich gerne an unseren <mail>Kundendienst</mail>.",
+    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
+    "mFeatures": [
+      {
+        "name": "Expand your possibilities",
+        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
+      },
+      {
+        "name": "Opensource",
+        "desc": "Customise Swetrix for your needs or selfhost it easily."
+      },
+      {
+        "name": "Marketplace options",
+        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
+      },
+      {
+        "name": "Easy integration",
+        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
+      },
+      {
+        "name": "Solve your tasks, not create",
+        "desc": "Get insights and use the best solutions to solve your problems."
+      },
+      {
+        "name": "Share your best solutions",
+        "desc": "Share your best solutions with the community, get popularity and money."
+      }
+    ],
+    "supports": "Supports all popular platforms",
+    "becomeDev": "Become a developer",
+    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "marketplaceBlock": "Marketplace and extension features",
+    "coreFeaturesBlock": "Core features",
+    "testimonials": "Testimonials",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Startup founder",
+        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+      },
+      {
+        "name": "Michael",
+        "role": "Small business owner",
+        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+      },
+      {
+        "name": "Rachel",
+        "role": "CMO at NDA Company",
+        "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
+      }
+    ],
+    "opensourceAdv": "Advantages of using <url>open source</url>",
+    "opensource": [
+      {
+        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
+      },
+      {
+        "desc": "Find bugs and suggest improvements - the community will be grateful to you."
+      },
+      {
+        "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
+      }
+    ],
+    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "Warum uns",
     "ourStats": "Unsere Statistiken",
     "statsDesc": "Swetrix basiert auf dem Vertrauen der Nutzer in den Dienst und ist auch in der Lage, Tausende von Benutzern und Websites zu verwalten.",
     "users": "Registrierte Nutzer",
     "websites": "Hinzugefügte Webseiten",
-    "pageviews": "Getrackte Aufrufe"
+    "pageviews": "Events tracked"
   },
   "auth": {
     "recovery": {
@@ -115,7 +231,11 @@
     "signin": {
       "title": "Bei Ihrem Konto anmelden",
       "forgot": "Passwort vergessen?",
-      "button": "Anmelden"
+      "button": "Anmelden",
+      "2fa": "Two-factor authentication",
+      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
+      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
+      "6digitCode": "6-digit authentication code"
     },
     "signup": {
       "button": "Registrieren",
@@ -197,7 +317,31 @@
     "confTimeout": "Eine E-Mail wurde bereits versendet. Überprüfen Sie Ihr Postfach oder versuchen Sie es in ein paar Minuten erneut.",
     "confSent": "Ein Link zur Kontobestätigung wurde an Ihre E-Mail-Adresse gesendet.",
     "noConfLeft": "Leider sind Ihre E-Mail-Bestätigungsanfragen aufgebraucht.\nBitte vergewissern Sie sich, dass Sie in der Lage sind, E-Mails zu empfangen, und überprüfen Sie Ihren Spam-Ordner erneut auf Nachrichten.\nSie können versuchen, eine andere E-Mail-Adresse zu verwenden oder unseren Kundendienst zu kontaktieren.",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "owned": "Owned projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet.",
+    "2fa": "Two-factor authentication (2FA)",
+    "2faEnable": "Enable 2FA to make your account more secure.",
+    "2faEnableBtn": "Enable 2FA",
+    "2faDisableBtn": "Disable 2FA",
+    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
+    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
+    "enter2faToEnable": "Enter your one-time code to enable 2FA",
+    "enter2faToDisable": "Enter your one-time code or a recovery code",
+    "yourOneTimeCode": "Your one-time code",
+    "invalid2fa": "Invalid 2FA code, please try again",
+    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
+    "2faRecoverySaved": "I have saved this recovery code",
+    "2faEnabled": "Two-factor authenticated is enabled on your account.",
+    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below."
   },
   "dashboard": {
     "newProject": "Neues Projekt",
@@ -210,6 +354,7 @@
     "createProject": "Erstellen Sie hier ein neues Projekt, um unseren Dienst zu nutzen",
     "active": "Aktiv",
     "public": "Öffentliche",
+    "shared": "Shared",
     "disabled": "Deaktiviert",
     "pageviews": "Seitenaufrufe",
     "unique": "Einzigartige Ansichten",
@@ -217,7 +362,9 @@
     "inc": "Gestiegen um",
     "dec": "Gesunken um",
     "liveVisitors": "Live-Besucher",
-    "bounceRate": "Bounce rate"
+    "bounceRate": "Bounce rate",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
   "docs": {
     "titles": {
@@ -324,14 +471,39 @@
       "createHint": "*Sie können Ihr Projekt im Anschluss an die Erstellung noch weiter einrichten.",
       "delete": "Projekt löschen",
       "qDelete": "Das Projekt löschen?",
-      "deleteHint": "Wenn Sie auf \"Projekt löschen\" klicken, verstehen Sie, dass diese Aktion nicht rückgängig zu machen ist.\nDas Projekt und alle damit verbundenen Daten werden von unseren Servern gelöscht."
+      "deleteHint": "Wenn Sie auf \"Projekt löschen\" klicken, verstehen Sie, dass diese Aktion nicht rückgängig zu machen ist.\nDas Projekt und alle damit verbundenen Daten werden von unseren Servern gelöscht.",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role."
     }
   },
   "billing": {
     "title": "Rechnung & Abonnement",
     "desc": "Der Einstieg und die Nutzung unserer Dienste ist gratis.\nWenn Sie mehr Datenverkehr bewältigen müssen, empfiehlt sich wahrscheinlich ein Upgrade Ihres Abonnements.\nNachstehend finden Sie eine Liste der verfügbaren Abomodelle. Keine versteckten Gebühren oder sonstiger Blödsinn, alles ist klar und transparent!",
     "contact": "Müssen Sie mehr als 1 Million Tracking-Events pro Monat erfassen?\nKontaktieren Sie uns unter <mail>{{email}}</mail>, um Ihre Wünsche zu besprechen.",
-    "update": "Update payment details"
+    "update": "Update payment details",
+    "nextBillDate": "Next bill date:"
   },
   "pricing": {
     "title": "Abomodelle",
@@ -340,10 +512,15 @@
     "mostPopular": "Most popular",
     "free": "Gratis",
     "perMonth": "mo",
+    "perYear": "yr",
     "yourPlan": "Ihr Abonnement",
     "downgrade": "Herabstufen",
     "upgrade": "Aufstufen",
     "whatIncl": "Was ist enthalten?",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
     "tiers": {
       "hobby": "Hobby",
       "freelancer": "Freelancer",
@@ -351,12 +528,18 @@
       "enterprise": "Enterprise",
       "upToXEVMo": "Bis zu {{amount}} Tracking-Events pro Monat.",
       "xEvMo": "{{amount}} Tracking-Events pro Monat.",
+      "upToXVMo": "Up to {{amount}} visits per month.",
+      "xVMo": "{{amount}} visits per month.",
       "upToXProjects": "Erstellen Sie bis zu {{amount}} Projekte.",
+      "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} Monate Datenspeicherung.",
-      "highStandardSec": "Hoher Sicherheitsstandard.",
       "evXPlanIncl": "Alles was das {{plan}} Abo enthält.",
       "smallBusiSupport": "Mit dem Kauf dieses Artikels unterstützen Sie ein kleines Unternehmen.",
-      "carbonRemoval": "Ihr Abonnement trägt zum Klimaschutz bei."
+      "dataExports": "Unlimited data exports.",
+      "dataOwnership": "100% data ownership.",
+      "noBanners": "No cookie banners required.",
+      "dashboards": "Shared & Public Dashboards.",
+      "reports": "Email reports."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
@@ -373,12 +556,14 @@
     "signin": "Anmelden",
     "signup": "Registrieren",
     "verification": "E-Mail Verifizierung",
+    "invitation": "Shared project invitation",
     "profileSettings": "Profil-Einstellungen",
     "features": "Funktionen",
     "dashboard": "Dashboard",
     "docs": "Dokumentation",
     "billing": "Rechnung",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "main": "Ultimate open-source analytics to satisfy all your needs"
   },
   "footer": {
     "slogan": "Die besten Apps brauchen den besten Service.",
@@ -402,6 +587,7 @@
     "privacy": "Datenschutz",
     "terms": "AGB",
     "status": "Status",
-    "donate": "Unterstützen"
+    "donate": "Unterstützen",
+    "about": "About us"
   }
 }

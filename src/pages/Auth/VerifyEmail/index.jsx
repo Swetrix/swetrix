@@ -30,12 +30,14 @@ const VerifyEmail = () => {
         },
       ),
     )
-  }, [dispatch, id])
+  }, [id]) // eslint-disable-line
 
   if (loading) {
     return (
       <Title title={t('titles.verification')}>
-        <Loader />
+        <div className='min-h-page bg-gray-50 dark:bg-gray-800'>
+          <Loader />
+        </div>
       </Title>
     )
   }
@@ -62,7 +64,7 @@ const VerifyEmail = () => {
   }
 
   return (
-    <Title title='Email verification'>
+    <Title title={t('titles.verification')}>
       <div className='min-h-page bg-gray-50 dark:bg-gray-800'>
         <div className='flex justify-center pt-10'>
           <div className='rounded-md p-4 w-11/12 bg-green-50 lg:w-4/6'>

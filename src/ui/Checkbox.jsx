@@ -3,7 +3,7 @@ import cx from 'clsx'
 import PropTypes from 'prop-types'
 
 const Checkbox = ({
-  label, hint, id, name, className, onChange, checked,
+  label, hint, id, name, className, onChange, checked, hintClassName,
 }) => {
   const identifier = id || name
 
@@ -23,7 +23,7 @@ const Checkbox = ({
       <div className='ml-3 text-sm'>
         <label htmlFor={identifier} className='font-medium text-gray-700 dark:text-gray-200 cursor-pointer'>{label}</label>
         {hint && (
-          <p id={`${identifier}-description`} className='text-gray-500 dark:text-gray-300'>{hint}</p>
+          <p id={`${identifier}-description`} className={cx('text-gray-500 dark:text-gray-300', hintClassName)}>{hint}</p>
         )}
       </div>
     </div>
@@ -40,6 +40,7 @@ Checkbox.propTypes = {
   id: PropTypes.string,
   className: PropTypes.string,
   name: PropTypes.string,
+  hintClassName: PropTypes.string,
 }
 
 Checkbox.defaultProps = {
@@ -49,6 +50,7 @@ Checkbox.defaultProps = {
   id: '',
   className: '',
   name: '',
+  hintClassName: '',
 }
 
 export default memo(Checkbox)

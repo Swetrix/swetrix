@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react/no-unstable-nested-components */
-import React, { memo, Fragment } from 'react'
+import React, { memo, Fragment, useRef } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
 import { useDispatch } from 'react-redux'
@@ -21,6 +21,7 @@ import Dropdown from 'ui/Dropdown'
 const Header = ({ authenticated, theme }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
+  const buttonRef = useRef()
 
   const logoutHandler = () => {
     dispatch(authActions.logout())
@@ -113,11 +114,11 @@ const Header = ({ authenticated, theme }) => {
                 </>
               ) : (
                 <>
-                  <Link to={routes.signin} className='inline-block select-none bg-indigo-500 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75'>
+                  <Link to={routes.signin} className='inline-block select-none bg-indigo-500 dark:bg-gray-700 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-gray-600'>
                     {t('auth.common.signin')}
                   </Link>
                   {!isSelfhosted && (
-                    <Link to={routes.signup} className='inline-block select-none bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>
+                    <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-gray-700 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-gray-600'>
                       {t('common.getStarted')}
                     </Link>
                   )}
@@ -176,7 +177,7 @@ const Header = ({ authenticated, theme }) => {
         leaveFrom='opacity-100 scale-100'
         leaveTo='opacity-0 scale-95'
       >
-        <Popover.Panel focus className='absolute top-0 z-10 inset-x-0 p-2 transition transform origin-top-right md:hidden'>
+        <Popover.Panel focus className='absolute top-0 z-50 inset-x-0 p-2 transition transform origin-top-right md:hidden'>
           <div className='rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white dark:bg-gray-750 divide-y-2 divide-gray-50 dark:divide-gray-800'>
             <div className='pt-5 pb-6 px-5'>
               <div className='flex items-center justify-between'>
@@ -188,7 +189,7 @@ const Header = ({ authenticated, theme }) => {
                     <img className='h-10' src='/assets/logo_blue.svg' alt='' />
                   )}
                 </Link>
-                <Popover.Button className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
+                <Popover.Button ref={buttonRef} className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
                   <span className='sr-only'>
                     {t('common.closeMenu')}
                   </span>
@@ -218,34 +219,34 @@ const Header = ({ authenticated, theme }) => {
                 />
                 {authenticated ? (
                   <>
-                    <Popover.Button>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.you')}
                       </Link>
-                    </Popover.Button>
-                    <Popover.Button>
+                    </div>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.dashboard} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.dashboard')}
                       </Link>
-                    </Popover.Button>
-                    <Popover.Button>
+                    </div>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to='#' className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={logoutHandler}>
                         {t('common.logout')}
                       </Link>
-                    </Popover.Button>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <Popover.Button>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.signin} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50'>
                         {t('auth.common.signin')}
                       </Link>
-                    </Popover.Button>
-                    <Popover.Button>
+                    </div>
+                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.signup} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.getStarted')}
                       </Link>
-                    </Popover.Button>
+                    </div>
                   </>
                 )}
               </div>

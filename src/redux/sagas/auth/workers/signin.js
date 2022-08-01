@@ -9,16 +9,27 @@ import { login } from 'api'
 
 export default function* singinWorker({ payload: { credentials, callback } }) {
   try {
-    const response = yield call(login, credentials)
+    const { dontRemember } = credentials
+    const { user, access_token: accessToken } = yield call(login, credentials)
 
-    yield put(authActions.loginSuccess(response.user))
-    yield call(setAccessToken, response.access_token)
+    yield put(authActions.setDontRemember(dontRemember))
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      yield call(setAccessToken, accessToken, true)
+      yield put(authActions.updateUserData(user))
+      callback(false, true)
+      return
+    }
+
+    yield put(authActions.loginSuccess(user))
+    yield call(setAccessToken, accessToken, dontRemember)
     yield put(UIActions.loadProjects())
-    callback(true)
+    yield put(UIActions.loadSharedProjects())
+    callback(true, false)
   } catch (error) {
     const err = _isObject(error) ? error.message : error
     yield put(errorsActions.loginFailed(err))
-    callback(false)
+    callback(false, false)
   } finally {
     yield put(authActions.finishLoading())
   }

@@ -9,11 +9,14 @@ import { signup } from 'api'
 export default function* signupWorder({ payload: { data: rawData, callback, t } }) {
   try {
     const { repeat, ...data } = rawData
+    const { dontRemember } = data
     const response = yield call(signup, data)
 
     yield put(authActions.signupSuccess(response.user))
-    yield call(setAccessToken, response.access_token)
+    yield call(setAccessToken, response.access_token, dontRemember)
+    yield put(authActions.setDontRemember(dontRemember))
     yield put(UIActions.loadProjects())
+    yield put(UIActions.loadSharedProjects())
     callback(true)
   } catch (error) {
     const message = error.message || (typeof error === 'string' ? error : error[0])

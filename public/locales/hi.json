@@ -6,7 +6,19 @@
     "rateLimitHit": "Too many requests, please try again later",
     "cancelSubFirst": "Please cancel your paid subscription first",
     "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account"
+    "accountDeleteError": "Error while deleting your account",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occurred while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occurred while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occurred while removing the user from your project",
+    "quitProjectError": "Error occurred while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occurred while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated",
+    "generate2FAError": "Error occurred while generating 2FA code"
   },
   "common": {
     "features": "विशेषताएं",
@@ -33,19 +45,60 @@
     "yes": "Yes",
     "no": "No",
     "is": "is",
-    "isNot": "is not"
+    "isNot": "is not",
+    "invite": "Invite",
+    "pending": "Pending",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit",
+    "enable": "Enable",
+    "disable": "Disable"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
-    "slogan": "एक <span>शक्तिशाली</span> एनालिटिक्स प्लेटफॉर्म जो <span>उपयोगकर्ता की गोपनीयता<span>का सम्मान करता है",
+    "slogan": "<span>Ultimate open-source analytics</span> to satisfy all your needs.",
     "trackEveryMetric": "अपने उपयोगकर्ताओं की गोपनीयता को प्रभावित किए बिना अपनी ज़रूरत के हर मैट्रिक को ट्रैक करें।",
     "description": "स्वेट्रिक्स आपके वेब एप्लीकेशन को एक उन्नत और अनुकूलन योग्य एनालिटिक्स सेवा देता है।",
+    "start": "Start for free",
     "signup": "साइन अप करें, यह फ्री है!",
     "signupTerms": "साइन अप करने पर आप हमारे <tos>नियम और शर्तों</tos> और <pp>गोपनीयता नीति से सहमत होते हैं।</pp>",
     "techDetails": "क्या आप और अधिक तकनीकी विवरण जानना चाहते हैं?",
     "lookAtDocs": "दस्तावेज़ीकरण और विशेषताएं पृष्ठ को देखें।",
     "readyToStart": "शुरू करने के लिए तैयार हैं?",
     "exploreService": "हमारी सेवाओं के बारे मे जानें या अकाउंट बनाएं।",
+    "coreFeatures": {
+      "title": "Core Analytics Features",
+      "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
+    },
+    "marketplace": {
+      "title": "Marketplace & build-in Extensions",
+      "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
+      "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
+    },
+    "visitAddons": "Visit Swetrix extensions",
+    "privacy": {
+      "title": "Privacy compliance",
+      "list": [
+        {
+          "label": "GDPR",
+          "desc": "data and processing based in EU zone."
+        },
+        {
+          "label": "HIPAA",
+          "desc": "protect sensitive info."
+        },
+        {
+          "label": "PCI DSS",
+          "desc": "payment data security."
+        },
+        {
+          "label": "CCPA",
+          "desc": "control over the personal information."
+        }
+      ]
+    },
+    "dataProtection": "More about Data Protection",
     "faq": {
       "title": "कुछ सवालों के जवाब पाएं",
       "list": [
@@ -69,37 +122,100 @@
     },
     "features": [
       {
-        "name": "Open source",
-        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
+        "name": "Measure website traffic with 99% accuracy",
+        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
       },
       {
-        "name": "Full event tracking",
-        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
+        "name": "Demo & Geo reports",
+        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
       },
       {
-        "name": "Browser Addons",
-        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
+        "name": "UTM & Reffers tracking",
+        "desc": "All the traffic from your companies and websites will be shown without a data loss."
       },
       {
-        "name": "कुकी बैनर की जरूरत नहीं",
-        "description": "हम टारगेटेड विज्ञापन या प्रोफाइलिंग नहीं करते हैं और हम कुकीज़ को ट्रैक करने पर बिल्कुल भी भरोसा नहीं करते हैं। हमारा बिजनेस मॉडल सॉफ्टवेयर बेचना है, डेटा नहीं।"
+        "name": "Agile system",
+        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
       },
       {
-        "name": "हम तेज़ हैं",
-        "description": "हम अपने अनुप्रयोगों की सर्विस के लिए वैश्विक सीडीएन का उपयोग करते हैं और हमारी एनालिटिक्स स्क्रिप्ट प्रतिस्पर्धियों की तुलना में कई गुना तेजी से लोड होती है।"
+        "name": "Custom events\n(really easy to setup)",
+        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
       },
       {
-        "name": "तुलना करें, एक्सप्लोर करें और डेटा का आनंद लें",
-        "description": "आप चयनित श्रेणियों के आधार पर डेटा देख सकते हैं और आँकड़ों को भी सहसंबंधित कर सकते हैं, जैसे विशिष्ट उपयोगकर्ताओं को नियमित पृष्ठ से अलग करना।"
+        "name": "User flow",
+        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
       }
     ],
-    "custSupport": "क्या आप जिस उत्तर की तलाश कर रहे हैं वह नहीं मिल रहा? हमारे <mail>ग्राहक सहायता</mail> टीम से संपर्क करें।",
+    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
+    "mFeatures": [
+      {
+        "name": "Expand your possibilities",
+        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
+      },
+      {
+        "name": "Opensource",
+        "desc": "Customise Swetrix for your needs or selfhost it easily."
+      },
+      {
+        "name": "Marketplace options",
+        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
+      },
+      {
+        "name": "Easy integration",
+        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
+      },
+      {
+        "name": "Solve your tasks, not create",
+        "desc": "Get insights and use the best solutions to solve your problems."
+      },
+      {
+        "name": "Share your best solutions",
+        "desc": "Share your best solutions with the community, get popularity and money."
+      }
+    ],
+    "supports": "Supports all popular platforms",
+    "becomeDev": "Become a developer",
+    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "marketplaceBlock": "Marketplace and extension features",
+    "coreFeaturesBlock": "Core features",
+    "testimonials": "Testimonials",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Startup founder",
+        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+      },
+      {
+        "name": "Michael",
+        "role": "Small business owner",
+        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+      },
+      {
+        "name": "Rachel",
+        "role": "CMO at NDA Company",
+        "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
+      }
+    ],
+    "opensourceAdv": "Advantages of using <url>open source</url>",
+    "opensource": [
+      {
+        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
+      },
+      {
+        "desc": "Find bugs and suggest improvements - the community will be grateful to you."
+      },
+      {
+        "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
+      }
+    ],
+    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "हम क्यों?",
     "ourStats": "Our statistics",
     "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
     "users": "Registered users",
     "websites": "Added websites",
-    "pageviews": "Tracked pageviews"
+    "pageviews": "Events tracked"
   },
   "auth": {
     "recovery": {
@@ -115,7 +231,11 @@
     "signin": {
       "title": "अपने अकाउंट में साइन इन करें",
       "forgot": "पासवर्ड भूल गए?",
-      "button": "साइन इन करें"
+      "button": "साइन इन करें",
+      "2fa": "Two-factor authentication",
+      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
+      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
+      "6digitCode": "6-digit authentication code"
     },
     "signup": {
       "button": "साइन अप करें",
@@ -197,7 +317,31 @@
     "confTimeout": "एक ईमेल पहले ही भेजा जा चुका है, अपना मेलबॉक्स चेक करें या कुछ समय बाद पुन: प्रयास करें",
     "confSent": "आपके ईमेल पर अकाउंट पुष्टिकरण का लिंक भेज दिया गया है",
     "noConfLeft": "दुर्भाग्यवश, आपके ईमेल पुष्टिकरण अनुरोध समाप्त हो गए हैं।\nकृपया सुनिश्चित करें कि आप ईमेल प्राप्त करने में सक्षम हैं और संदेशों के लिए अपना स्पैम फ़ोल्डर फिर से चेक करें।\nआप अन्य ईमेल पते का उपयोग कर सकते हैं या हमारी ग्राहक सहायता सेवा से संपर्क कर सकते हैं।",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting."
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "owned": "Owned projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet.",
+    "2fa": "Two-factor authentication (2FA)",
+    "2faEnable": "Enable 2FA to make your account more secure.",
+    "2faEnableBtn": "Enable 2FA",
+    "2faDisableBtn": "Disable 2FA",
+    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
+    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
+    "enter2faToEnable": "Enter your one-time code to enable 2FA",
+    "enter2faToDisable": "Enter your one-time code or a recovery code",
+    "yourOneTimeCode": "Your one-time code",
+    "invalid2fa": "Invalid 2FA code, please try again",
+    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
+    "2faRecoverySaved": "I have saved this recovery code",
+    "2faEnabled": "Two-factor authenticated is enabled on your account.",
+    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below."
   },
   "dashboard": {
     "newProject": "नया प्रोजेक्ट",
@@ -210,6 +354,7 @@
     "createProject": "हमारी सेवा का उपयोग शुरू करने के लिए यहां एक नया प्रोजेक्ट बनाएं",
     "active": "सक्रिय",
     "public": "Public",
+    "shared": "Shared",
     "disabled": "अक्षम",
     "pageviews": "पेज व्यूज",
     "unique": "विशिष्ट व्यूज",
@@ -217,7 +362,9 @@
     "inc": "की वृद्धि हुई",
     "dec": "से कम हुआ",
     "liveVisitors": "लाइव विज़िटर",
-    "bounceRate": "Bounce rate"
+    "bounceRate": "Bounce rate",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
   "docs": {
     "titles": {
@@ -324,14 +471,39 @@
       "createHint": "*अपने प्रोजेक्ट को बनाने के बाद आप उसे और अच्छी तरह से सेट अप कर सकते हैं",
       "delete": "प्रोजेक्ट हटाएं",
       "qDelete": "प्रोजेक्ट को हटाएं?",
-      "deleteHint": "'प्रोजेक्ट हटाएं' पर क्लिक करने से आप समझते हैं कि यह क्रिया अपरिवर्तनीय है।\nप्रोजेक्ट और इससे संबंधित सभी डेटा हमारे सर्वर से हटा दिए जाएंगे।"
+      "deleteHint": "'प्रोजेक्ट हटाएं' पर क्लिक करने से आप समझते हैं कि यह क्रिया अपरिवर्तनीय है।\nप्रोजेक्ट और इससे संबंधित सभी डेटा हमारे सर्वर से हटा दिए जाएंगे।",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role."
     }
   },
   "billing": {
     "title": "बिलिंग और प्लान",
     "desc": "शुरुआत करना और हमारी सेवाओं का उपयोग करना फ्री है।\nयदि आपको और अधिक ट्रैफ़िक संभालने की आवश्यकता है, तो आपको शायद अपने प्लान को अपग्रेड करने की आवश्यकता होगी।\nनीचे उपलब्ध प्लान्स की एक सूची है। कोई छिपी हुई फीस या अन्य बीएस नहीं है, सब कुछ स्पष्ट और पारदर्शी है!",
     "contact": "क्या प्रति माह 1 मिलियन से अधिक इवेंट को ट्रैक करने की आवश्यकता है?\nअपनी आवश्यकताओं पर चर्चा करने के लिए हमसे <mail>{{email}}</mail> पर संपर्क करें।",
-    "update": "Update payment details"
+    "update": "Update payment details",
+    "nextBillDate": "Next bill date:"
   },
   "pricing": {
     "title": "मूल्य निर्धारण प्लान",
@@ -340,10 +512,15 @@
     "mostPopular": "Most popular",
     "free": "फ्री",
     "perMonth": "माह",
+    "perYear": "yr",
     "yourPlan": "आपका प्लान",
     "downgrade": "डाउनग्रेड",
     "upgrade": "अपग्रेड",
     "whatIncl": "क्या शामिल है",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
     "tiers": {
       "hobby": "शौक",
       "freelancer": "फ्रीलांसर",
@@ -351,12 +528,18 @@
       "enterprise": "एंटरप्राइस",
       "upToXEVMo": "हर महीने {{amount}} इवेंट तक।",
       "xEvMo": "{{amount}} इवेंट प्रति माह।",
+      "upToXVMo": "Up to {{amount}} visits per month.",
+      "xVMo": "{{amount}} visits per month.",
       "upToXProjects": "{{amount}} प्रोजेक्ट तक बनाएं।",
+      "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} महीने का डेटा प्रतिधारण।",
-      "highStandardSec": "उच्च मानक सुरक्षा।",
       "evXPlanIncl": "वह सब कुछ जो  {{plan}} प्लान में शामिल है।",
       "smallBusiSupport": "इसे खरीदकर आप एक छोटे व्यवसाय का समर्थन कर रहे हैं।",
-      "carbonRemoval": "आपकी सदस्यता कार्बन हटाने में योगदान करेगी।"
+      "dataExports": "Unlimited data exports.",
+      "dataOwnership": "100% data ownership.",
+      "noBanners": "No cookie banners required.",
+      "dashboards": "Shared & Public Dashboards.",
+      "reports": "Email reports."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
@@ -373,12 +556,14 @@
     "signin": "साइन इन करें",
     "signup": "साइन अप करें",
     "verification": "ईमेल सत्यापन",
+    "invitation": "Shared project invitation",
     "profileSettings": "प्रोफाइल सेटिंग्स",
     "features": "विशेषताएं",
     "dashboard": "डैशबोर्ड",
     "docs": "दस्तावेज़ीकरण",
     "billing": "बिलिंग",
-    "contact": "संपर्क"
+    "contact": "संपर्क",
+    "main": "Ultimate open-source analytics to satisfy all your needs"
   },
   "footer": {
     "slogan": "सर्वश्रेष्ठ ऐप्स को सर्वोत्तम सर्विस की आवश्यकता होती है।",
@@ -402,6 +587,7 @@
     "privacy": "गोपनीयता",
     "terms": "शर्तें",
     "status": "स्थिति",
-    "donate": "दान करना"
+    "donate": "दान करना",
+    "about": "About us"
   }
 }

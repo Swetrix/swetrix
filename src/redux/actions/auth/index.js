@@ -1,9 +1,9 @@
 import { removeItem } from 'utils/localstorage'
-import { TOKEN, LS_VIEW_PREFS_SETTING } from 'redux/constants'
+import { removeAccessToken } from 'utils/accessToken'
+import { LS_VIEW_PREFS_SETTING } from 'redux/constants'
 import { types } from './types'
 
 export const authActions = {
-  // Synchronous
   loginSuccess(user) {
     return {
       type: types.LOGIN_SUCCESSFUL,
@@ -32,7 +32,7 @@ export const authActions = {
   },
 
   logout() {
-    removeItem(TOKEN)
+    removeAccessToken()
     removeItem(LS_VIEW_PREFS_SETTING)
 
     return {
@@ -53,8 +53,22 @@ export const authActions = {
     }
   },
 
+  setDontRemember(dontRemember) {
+    return {
+      type: types.SET_DONT_REMEMBER,
+      payload: { dontRemember },
+    }
+  },
+
+  updateUserData(data) {
+    return {
+      type: types.UPDATE_USER_DATA,
+      payload: { data },
+    }
+  },
+
   deleteAccountSuccess() {
-    removeItem('access_token')
+    removeAccessToken()
     removeItem('user_info')
 
     return {
@@ -109,4 +123,19 @@ export const authActions = {
       },
     }
   },
+
+  deleteShareProject(id) {
+    return {
+      type: types.DELETE_SHARE_PROJECT,
+      payload: { id },
+    }
+  },
+
+  setUserShareData(data, id) {
+    return {
+      type: types.SET_USER_SHARE_DATA,
+      payload: { data, id },
+    }
+  },
+
 }

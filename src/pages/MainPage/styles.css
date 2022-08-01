@@ -1,0 +1,14 @@
+.filter_blur {
+    -ms-filter: blur(150px);
+    -o-filter: blur(150px);
+    -webkit-filter: blur(150px);
+    filter: blur(150px);
+}
+
+@-moz-document url-prefix() {
+    .filter_blur  {
+        width: 300px !important;
+        height: 500px !important;
+        opacity: 0.3 !important;
+    }
+}

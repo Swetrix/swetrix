@@ -73,7 +73,7 @@ const PanelContainer = ({
           />
         </div>
       )}
-      {type === 'ce' && (
+      {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
         <div className='flex'>
           <ViewListIcon
             className={cx(iconClassName, 'cursor-pointer', {
@@ -92,7 +92,7 @@ const PanelContainer = ({
         </div>
       )}
     </div>
-    <div className='flex flex-col h-full scroll-auto'>
+    <div className='flex flex-col h-full scroll-auto overflow-auto'>
       {children}
     </div>
   </div>
@@ -445,6 +445,64 @@ const Panel = ({
           )}
           size='large'
         />
+      </PanelContainer>
+    )
+  }
+
+  if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
+    const tQuantity = t('project.quantity')
+    const tRatio = t('project.ratio')
+
+    const options = {
+      data: {
+        columns: _map(data, (e, index) => [index, e]),
+        type: pie(),
+      },
+      tooltip: {
+        contents: {
+          text: {
+            QUANTITY: _values(data),
+          },
+          template: `
+            <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+              {{
+                <li class='flex'>
+                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <span>{=NAME}</span>
+                </li>
+                <hr class='border-gray-200 dark:border-gray-600' />
+                <li class='flex justify-between'>
+                  <span>${tQuantity}</span>
+                  <span class='pl-4'>{=QUANTITY}</span>
+                </li>
+                <li class='flex justify-between'>
+                  <span>${tRatio}</span>
+                  <span class='pl-4'>{=VALUE}</span>
+                </li>
+              }}
+            </ul>`,
+        },
+      },
+    }
+
+    return (
+      <PanelContainer
+        name={name}
+        icon={icon}
+        type={id}
+        setActiveFragment={setActiveFragment}
+        activeFragment={activeFragment}
+      >
+        {_isEmpty(data) ? (
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
+            {t('project.noParamData')}
+          </p>
+        ) : (
+          <Chart
+            options={options}
+            current={`Panels-${id}`}
+          />
+        )}
       </PanelContainer>
     )
   }

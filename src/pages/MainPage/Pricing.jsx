@@ -24,51 +24,65 @@ const getTiers = (t) => [
     planCode: 'free',
     priceMonthly: null,
     includedFeatures: [
-      t('pricing.tiers.upToXEVMo', { amount: 5000 }),
-      t('pricing.tiers.upToXProjects', { amount: 10 }),
+      t('pricing.tiers.upToXVMo', { amount: '5,000' }),
+      t('pricing.tiers.upToXWebsites', { amount: 10 }),
       // t('pricing.tiers.xMoDataRetention', { amount: 3 }),
-      t('pricing.tiers.highStandardSec'),
+      t('pricing.tiers.dataExports'),
+      t('pricing.tiers.dataOwnership'),
+      t('pricing.tiers.noBanners'),
+      t('pricing.tiers.dashboards'),
+      t('pricing.tiers.reports'),
     ],
   },
   {
     name: t('pricing.tiers.freelancer'),
     planCode: 'freelancer',
     priceMonthly: 15,
+    priceYearly: 150,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
-      t('pricing.tiers.xEvMo', { amount: '100k' }),
-      t('pricing.tiers.upToXProjects', { amount: 20 }),
+      t('pricing.tiers.xVMo', { amount: '100,000' }),
+      t('pricing.tiers.upToXWebsites', { amount: 20 }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
       t('pricing.tiers.smallBusiSupport'),
-      t('pricing.tiers.carbonRemoval'),
     ],
-    pid: 752316,
+    pid: 752316, // Plan ID
+    ypid: 776469, // Plan ID - Yearly billing
   },
   {
     name: t('pricing.tiers.startup'),
     planCode: 'startup',
     priceMonthly: 59,
+    priceYearly: 590,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
-      t('pricing.tiers.xEvMo', { amount: '500k' }),
+      t('pricing.tiers.xVMo', { amount: '1,000,000' }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
     ],
     pid: 752317,
+    ypid: 776470,
     mostPopular: true,
   },
   {
     name: t('pricing.tiers.enterprise'),
     planCode: 'enterprise',
     priceMonthly: 110,
+    priceYearly: 1100,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.startup') }),
-      t('pricing.tiers.xEvMo', { amount: '1m' }),
-      t('pricing.tiers.upToXProjects', { amount: 30 }),
+      t('pricing.tiers.xVMo', { amount: '5,000,000' }),
+      t('pricing.tiers.upToXWebsites', { amount: 30 }),
       // t('pricing.tiers.xMoDataRetention', { amount: 24 }),
     ],
     pid: 752318,
+    ypid: 776471,
   },
 ]
+
+const BillingFrequency = {
+  monthly: 'monthly',
+  yearly: 'yearly',
+}
 
 const Pricing = ({ t, language }) => {
   const dispatch = useDispatch()
@@ -78,6 +92,7 @@ const Pricing = ({ t, language }) => {
   const [planCodeLoading, setPlanCodeLoading] = useState(null)
   const [downgradeTo, setDowngradeTo] = useState(null)
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
+  const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
   const tiers = getTiers(t)
 
   useEffect(() => {
@@ -98,7 +113,7 @@ const Pricing = ({ t, language }) => {
             dispatch(authActions.logout())
           }
 
-          dispatch(alertsActions.accountUpdated('The subscription has been upgraded.'))
+          dispatch(alertsActions.accountUpdated(t('apiNotifications.subscriptionUpdated')))
         }, 3000)
         setPlanCodeLoading(null)
         setDowngradeTo(null)
@@ -109,10 +124,10 @@ const Pricing = ({ t, language }) => {
     }
 
     lastEventHandler(lastEvent)
-  }, [lastEvent, dispatch])
+  }, [lastEvent, dispatch, t])
 
   const onPlanChange = (tier) => {
-    if (planCodeLoading === null && user.planCode !== tier.planCode) {
+    if (planCodeLoading === null && (user.planCode !== tier.planCode || (user.billingFrequency !== billingFrequency && user.planCode !== 'free'))) {
       setPlanCodeLoading(tier.planCode)
 
       if (!window.Paddle) {
@@ -138,7 +153,7 @@ const Pricing = ({ t, language }) => {
       }
 
       window.Paddle.Checkout.open({
-        product: tier.pid,
+        product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
         email: user.email,
         passthrough: JSON.stringify({
           uid: user.id,
@@ -174,22 +189,30 @@ const Pricing = ({ t, language }) => {
                 </p>
               </>
             )}
-            {/* <div className='relative self-center mt-6 bg-gray-100 rounded-lg p-0.5 flex sm:mt-8'>
+            <div className='relative self-center mt-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 flex sm:mt-8 xs:flex-row flex-col'>
               <button
                 type='button'
-                className='relative w-1/2 bg-white border-gray-200 rounded-md shadow-sm py-2 text-sm font-medium text-gray-900 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 sm:w-auto sm:px-8'
+                onClick={() => setBillingFrequency(BillingFrequency.monthly)}
+                className={cx('relative xs:w-1/2 rounded-md shadow-sm py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
+                  'bg-white border-gray-200 text-gray-900 dark:bg-gray-800 dark:border-gray-800 dark:text-gray-50': billingFrequency === BillingFrequency.monthly,
+                  'text-gray-700 dark:text-gray-100': billingFrequency === BillingFrequency.yearly,
+                })}
               >
-                Monthly billing
+                {t('pricing.monthlyBilling')}
               </button>
               <button
                 type='button'
-                className='ml-0.5 relative w-1/2 border border-transparent rounded-md py-2 text-sm font-medium text-gray-700 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 sm:w-auto sm:px-8'
+                onClick={() => setBillingFrequency(BillingFrequency.yearly)}
+                className={cx('ml-0.5 relative xs:w-1/2 border border-transparent rounded-md py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
+                  'text-gray-700 dark:text-gray-100': billingFrequency === BillingFrequency.monthly,
+                  'bg-white border-gray-200 text-gray-900 dark:bg-gray-800 dark:border-gray-800 dark:text-gray-50': billingFrequency === BillingFrequency.yearly,
+                })}
               >
-                Yearly billing
+                {t('pricing.yearlyBilling')}
               </button>
-            </div> */}
+            </div>
           </div>
-          <div className='mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-4'>
+          <div className='mt-6 space-y-4 sm:mt-10 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-4'>
             {_map(tiers, (tier) => {
               const planCodeID = _findIndex(tiers, (el) => el.planCode === tier.planCode)
               const downgrade = planCodeID < userPlancodeID
@@ -197,7 +220,7 @@ const Pricing = ({ t, language }) => {
               return (
                 <div
                   key={tier.name}
-                  className={cx('relative border rounded-lg shadow-sm divide-y divide-gray-200 dark:divide-gray-500', {
+                  className={cx('relative border rounded-2xl shadow-sm divide-y bg-[#F5F5F5] dark:bg-[#212936] divide-gray-200 dark:divide-gray-500', {
                     'border-indigo-400': user.planCode === tier.planCode,
                     'border-gray-200 dark:border-gray-500': user.planCode !== tier.planCode,
                   })}
@@ -212,27 +235,27 @@ const Pricing = ({ t, language }) => {
                     </div>
                   )}
                   <div className='p-6 border-none'>
-                    <h2 className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>{tier.name}</h2>
+                    <h2 className='text-lg leading-6 font-semibold text-[#4D4D4D] dark:text-gray-50 text-center'>{tier.name}</h2>
                     {tier.mostPopular && !authenticated && (
                       <p className='absolute top-0 py-1.5 px-4 bg-indigo-600 rounded-full text-xs font-semibold uppercase tracking-wide text-white transform -translate-y-1/2'>
                         {t('pricing.mostPopular')}
                       </p>
                     )}
-                    <p className='mt-4'>
+                    <p className='mt-4 text-center'>
                       {tier.planCode === 'free' ? (
-                        <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
+                        <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
                           {t('pricing.free')}
                         </span>
                       ) : (
                         <>
-                          <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
+                          <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
                             $
-                            {tier.priceMonthly}
+                            {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
                           </span>
                           &nbsp;
                           <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
                             /
-                            {t('pricing.perMonth')}
+                            {t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
                           </span>
                         </>
                       )}
@@ -241,14 +264,22 @@ const Pricing = ({ t, language }) => {
                       <span
                         onClick={() => downgrade ? downgradeHandler(tier) : onPlanChange(tier)}
                         className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center select-none', {
-                          'bg-indigo-600 hover:bg-indigo-700 cursor-pointer': planCodeLoading === null && tier.planCode !== user.planCode,
-                          'bg-indigo-400 cursor-default': planCodeLoading !== null || tier.planCode === user.planCode,
+                          'bg-indigo-600 hover:bg-indigo-700 cursor-pointer': planCodeLoading === null && (tier.planCode !== user.planCode || (user.billingFrequency !== billingFrequency && user.planCode !== 'free')),
+                          'bg-indigo-400 cursor-default': planCodeLoading !== null || (tier.planCode === user.planCode && (user.billingFrequency === billingFrequency || user.planCode === 'free')),
                         })}
                       >
                         {planCodeLoading === tier.planCode && (
                           <Spin />
                         )}
-                        {planCodeID > userPlancodeID ? t('pricing.upgrade') : downgrade ? t('pricing.downgrade') : t('pricing.yourPlan')}
+                        {planCodeID > userPlancodeID
+                          ? t('pricing.upgrade')
+                          : downgrade
+                            ? t('pricing.downgrade')
+                            : (user.billingFrequency === billingFrequency || user.planCode === 'free')
+                              ? t('pricing.yourPlan')
+                              : billingFrequency === BillingFrequency.monthly
+                                ? t('pricing.switchToMonthly')
+                                : t('pricing.switchToYearly')}
                       </span>
                     ) : (
                       <Link
@@ -259,7 +290,10 @@ const Pricing = ({ t, language }) => {
                       </Link>
                     )}
                   </div>
-                  <div className='pt-6 pb-8 px-6'>
+                  <div className='px-6 border-none'>
+                    <hr className='w-full mx-auto border border-gray-300 dark:border-gray-600' />
+                  </div>
+                  <div className='pt-6 pb-8 px-6 border-none'>
                     <h3 className='text-xs font-medium text-gray-900 dark:text-gray-50 tracking-wide uppercase'>
                       {t('pricing.whatIncl')}
                     </h3>
