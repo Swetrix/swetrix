@@ -18,7 +18,7 @@ const Input = ({
           'flex justify-between': label && hint,
         })}
       >
-        <label htmlFor={identifier} className='block text-sm font-medium text-gray-700 dark:text-gray-200 flex'>
+        <label htmlFor={identifier} className='flex text-sm font-medium text-gray-700 dark:text-gray-200'>
           {label}
           {isBeta && (
             <div className='ml-5'>
