@@ -103,7 +103,7 @@ const Main = () => {
             <div className='dark:bg-gray-900 bg-white px-4 pb-24'>
               {/* section Core Analytics Features */}
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
-                <img className='md:max-w-md lg:max-w-full md:relative md:-top-10' src='/assets/CoreFeaturesLight.png' alt='Core Analytics Features' />
+                <img className='md:max-w-md md:mr-3 mt-3 md:mt-0 lg:max-w-full md:relative md:-top-10' src='/assets/CoreFeaturesLight.png' alt='Core Analytics Features' />
                 <div className='max-w-lg'>
                   <h1 className='font-extrabold text-4xl dark:text-white text-gray-800'>
                     {t('main.coreFeatures.title')}
@@ -118,7 +118,7 @@ const Main = () => {
                 </div>
               </section>
               {/* section Marketplace & build-in Extensions */}
-              <section className='flex pt-20 md:pt-30 flex-col md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
+              <section className='flex pt-20 md:pt-30 flex-col md:flex-row items-center md:justify-between max-w-7xl m-auto'>
                 <div className='max-w-[516px]'>
                   <h1 className='font-extrabold text-4xl text-gray-800 dark:text-white'>
                     {t('main.marketplace.title')}
@@ -134,12 +134,12 @@ const Main = () => {
                     <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
                   </Link>
                 </div>
-                <img className='md:max-w-[450px] lg:max-w-lg' src='/assets/teardown.svg' alt='Marketplace' />
+                <img className='md:max-w-[450px] lg:max-w-lg md:ml-5 mt-8 md:mt-0' src='/assets/teardown.svg' alt='Marketplace' />
               </section>
               {/* section Privacy compliance. */}
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
-                <img className='md:max-w-[360px] lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
-                <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0'>
+                <img className='md:max-w-[360px] md:mr-3 mt-3 md:mt-0 lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
+                <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0 md:pt-8'>
                   <h1 className='font-extrabold mb-6 text-4xl text-gray-800 dark:text-white'>
                     {t('main.privacy.title')}
                   </h1>
@@ -237,15 +237,15 @@ const Main = () => {
                 <Slack theme={theme} className='max-w-[150px] max-h-12' />
                 <NuxtJS theme={theme} className='max-w-[150px] max-h-12' />
                 <Webflow theme={theme} className='max-w-[150px] max-h-12' />
-                <NextJS theme={theme} className='max-w-[150px] max-h-12' />
-                <Notion theme={theme} className='max-w-[150px] max-h-12' />
+                <NextJS theme={theme} className='max-w-[80px] max-h-12' />
+                <Notion theme={theme} className='max-w-[130px] max-h-12' />
                 <img src='/assets/supports/react.png' alt='React' title='React.js' />
                 <img src='/assets/supports/angular.png' alt='Angular' title='Angular' />
-                <Wordpress theme={theme} className='max-w-[200px] max-h-16' />
-                <Wix theme={theme} className='max-w-[150px] max-h-12' />
-                <Ghost theme={theme} className='max-w-[200px] max-h-20' />
+                <Wordpress theme={theme} className='max-w-[160px] max-h-16' />
+                <Wix theme={theme} className='max-w-[120px] max-h-12' />
+                <Ghost theme={theme} className='max-w-[150px] max-h-20' />
                 <Gatsby theme={theme} className='max-w-[150px] max-h-12' />
-                <Cloudflare theme={theme} className='max-w-[150px] max-h-12' />
+                <Cloudflare theme={theme} className='max-w-[140px] max-h-12' />
               </div>
             </section>
             <div className='overflow-hidden'>
@@ -263,9 +263,9 @@ const Main = () => {
                   </h1>
                   <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-24 justify-between justify-items-center text-white pt-20 pb-36'>
                     {_map(t('main.mFeatures', { returnObjects: true }), (item, index) => (
-                      <div key={item.name} className='max-w-[290px] w-full'>
+                      <div key={item.name} className='max-w-[310px] w-full'>
                         <div className='flex items-center'>
-                          <span className='text-gray-200 font-bold text-[26px] mr-6'>{1 + index}</span>
+                          <span className='text-gray-200 font-bold text-[26px] mr-[18px]'>{1 + index}</span>
                           <h2 className='font-semibold text-xl'>{item.name}</h2>
                         </div>
                         <p className='pl-9 text-gray-300'>{item.desc}</p>
