@@ -478,6 +478,10 @@ const ViewProject = ({
   }, [isLoading, showTotal, chartData, mainChart, t])
 
   useEffect(() => {
+    setPeriodPairs(tbPeriodPairs(t))
+  }, [t])
+
+  useEffect(() => {
     loadAnalytics()
   }, [project, period, timeBucket, periodPairs, t]) // eslint-disable-line
 
