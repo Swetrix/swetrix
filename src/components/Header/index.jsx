@@ -14,7 +14,7 @@ import routes from 'routes'
 import { authActions } from 'redux/actions/auth'
 import UIActions from 'redux/actions/ui'
 import {
-  whitelist, languages, languageFlag, isSelfhosted,
+  whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
@@ -46,9 +46,9 @@ const Header = ({ authenticated, theme }) => {
                 <img className='h-10' src='/assets/logo_white.svg' alt='' />
               </Link>
               <div className='hidden ml-10 space-x-1 lg:block'>
-                <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
-                  {t('common.features')}
-                </NavLink>
+                <a href={BLOG_URL} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
+                  {t('footer.blog')}
+                </a>
                 {!isSelfhosted && (
                   authenticated ? (
                     <NavLink to={routes.billing} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
@@ -56,11 +56,11 @@ const Header = ({ authenticated, theme }) => {
                     </NavLink>
                   ) : (
                     <>
+                      <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                        {t('common.features')}
+                      </NavLink>
                       <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
                         {t('common.pricing')}
-                      </HashLink>
-                      <HashLink to={`${routes.main}#faqs`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='FAQs'>
-                        {t('common.faqs')}
                       </HashLink>
                     </>
                   )
@@ -144,9 +144,9 @@ const Header = ({ authenticated, theme }) => {
             </div>
           </div>
           <div className='py-4 flex flex-wrap justify-center space-x-2 lg:hidden'>
-            <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
-              {t('common.features')}
-            </NavLink>
+            <a href={BLOG_URL} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
+              {t('footer.blog')}
+            </a>
             {authenticated ? (
               <NavLink to={routes.billing} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
                 {t('common.billing')}
@@ -156,9 +156,9 @@ const Header = ({ authenticated, theme }) => {
                 <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
                   {t('common.pricing')}
                 </HashLink>
-                <HashLink to={`${routes.main}#faqs`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='FAQs'>
-                  {t('common.faqs')}
-                </HashLink>
+                <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                  {t('common.features')}
+                </NavLink>
               </>
             )}
             <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>

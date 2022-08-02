@@ -8,7 +8,7 @@ import PropTypes from 'prop-types'
 
 import {
   isSelfhosted, DONATE_URL, FIREFOX_ADDON_URL, CHROME_EXTENSION_URL, GITHUB_URL,
-  LINKEDIN_URL, STATUSPAGE_URL, TWITTER_URL,
+  LINKEDIN_URL, STATUSPAGE_URL, TWITTER_URL, BLOG_URL,
 } from 'redux/constants'
 import routes from 'routes'
 
@@ -23,6 +23,7 @@ const navigation = {
     { key: 'contact', href: routes.contact, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'donate', href: DONATE_URL },
+    { key: 'blog', href: BLOG_URL },
   ],
   legal: [
     { key: 'privacy', href: routes.privacy },
