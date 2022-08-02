@@ -13,6 +13,7 @@ import * as _findIndex from 'lodash/findIndex'
 import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import validateIP from 'validate-ip-node'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
@@ -21,7 +22,7 @@ import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
 import { Role } from '../project/entity/project-share.entity'
 import {
-  isValidPID, isValidIP, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
+  isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
 } from '../common/constants'
 
 dayjs.extend(utc)
@@ -221,9 +222,9 @@ export class ProjectService {
     if (_size(_join(projectDTO.origins, ',')) > 300) throw new UnprocessableEntityException('The list of allowed origins has to be smaller than 300 symbols')
     if (_size(_join(projectDTO.ipBlacklist, ',')) > 300) throw new UnprocessableEntityException('The list of allowed blacklisted IP addresses must be less than 300 characters.')
 
-    projectDTO.ipBlacklist.map((ip) => {
-      if (!isValidIP(ip)) throw new ConflictException(`IP address ${ip} is not correct`)
-    })
+    _map(projectDTO.ipBlacklist, ip => {
+      if (!validateIP(ip)) throw new ConflictException(`IP address ${ip} is not correct`)
+    });
   }
 
   // Returns amount of existing events starting from month
