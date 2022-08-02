@@ -13,7 +13,7 @@ import * as _findIndex from 'lodash/findIndex'
 import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
-import validateIP from 'validate-ip-node'
+import * as validateIP from 'validate-ip-node'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
