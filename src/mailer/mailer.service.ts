@@ -110,7 +110,7 @@ export class MailerService {
         MessageStream: messageStream,
       }
 
-      if (process.env.NODE_ENV === 'development' ? true : false) {
+      if (process.env.NODE_ENV === 'development') {
         this.logger.log({
           ...message,
           params,
