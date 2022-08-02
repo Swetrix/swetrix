@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException, InternalServerErrorException } from '@nestjs/common'
+import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException, InternalServerErrorException, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -21,7 +21,7 @@ import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
 import { Role } from '../project/entity/project-share.entity'
 import {
-  isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
+  isValidPID, isValidIP, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
 } from '../common/constants'
 
 dayjs.extend(utc)
@@ -220,6 +220,10 @@ export class ProjectService {
     if (!_isArray(projectDTO.origins)) throw new UnprocessableEntityException('The list of allowed origins has to be an array of strings')
     if (_size(_join(projectDTO.origins, ',')) > 300) throw new UnprocessableEntityException('The list of allowed origins has to be smaller than 300 symbols')
     if (_size(_join(projectDTO.ipBlacklist, ',')) > 300) throw new UnprocessableEntityException('The list of allowed blacklisted IP addresses must be less than 300 characters.')
+
+    projectDTO.ipBlacklist.map((ip) => {
+      if (!isValidIP(ip)) throw new ConflictException(`IP address ${ip} is not correct`)
+    })
   }
 
   // Returns amount of existing events starting from month
