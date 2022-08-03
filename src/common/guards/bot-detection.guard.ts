@@ -22,6 +22,6 @@ export class BotDetectionGuard implements CanActivate {
       throw new ForbiddenException('Bot traffic is ignored')
     }
 
-    return false
+    return true
   }
 }
