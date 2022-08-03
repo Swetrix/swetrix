@@ -16,7 +16,7 @@ const AlertTemplate = ({
 
   return (
     <div
-      className={cx('flex justify-between items-center mb-5 mr-2 rounded-md p-4 z-20 shadow-sm w-96 pointer-events-auto', {
+      className={cx('flex justify-between items-center mb-5 mr-2 rounded-md p-4 z-50 shadow-sm w-96 pointer-events-auto', {
         'bg-green-50': isSuccess,
         'bg-blue-50': isInfo,
         'bg-red-50': isError,
