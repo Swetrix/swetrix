@@ -49,3 +49,21 @@ code {
 .hoverable:hover {
   opacity: 0.75;
 }
+
+/* custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background-color: #3b82f6;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: #4f46e5;
+}
