@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException, InternalServerErrorException } from '@nestjs/common'
+import { ForbiddenException, Injectable, BadRequestException, UnprocessableEntityException, InternalServerErrorException, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -9,10 +9,12 @@ import * as _join from 'lodash/join'
 import * as _find from 'lodash/find'
 import * as _map from 'lodash/map'
 import * as _pick from 'lodash/pick'
+import * as _trim from 'lodash/trim'
 import * as _findIndex from 'lodash/findIndex'
 import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import * as validateIP from 'validate-ip-node'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
@@ -21,7 +23,7 @@ import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
 import { Role } from '../project/entity/project-share.entity'
 import {
-  isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted,
+  isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted, IP_REGEX,
 } from '../common/constants'
 
 dayjs.extend(utc)
@@ -219,9 +221,18 @@ export class ProjectService {
     if (_size(projectDTO.name) > 50) throw new UnprocessableEntityException('The project name is too long')
     if (!_isArray(projectDTO.origins)) throw new UnprocessableEntityException('The list of allowed origins has to be an array of strings')
     if (_size(_join(projectDTO.origins, ',')) > 300) throw new UnprocessableEntityException('The list of allowed origins has to be smaller than 300 symbols')
+    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300) throw new UnprocessableEntityException('The list of allowed blacklisted IP addresses must be less than 300 characters.')
+
+    _map(projectDTO.ipBlacklist, ip => {
+      if (!validateIP(_trim(ip))) {
+        if (!IP_REGEX.test(_trim(ip))) {
+          throw new ConflictException(`IP address ${ip} is not correct`)
+        }
+      }
+    });
   }
 
-  // Returns amount of existing events starting from month
+  // Returns amount of exirsting events starting from month
   async getRedisCount(uid: string): Promise<number | null> {
     const countKey = getRedisUserCountKey(uid)
     let count: string | number = await redis.get(countKey)
@@ -255,7 +266,7 @@ export class ProjectService {
       const customEvents = (await clickhouse.query(count_custom_ev_query).toPromise())[0]['count()']
 
       count = pageviews + customEvents
-      
+
       await redis.set(countKey, `${pageviews}`, 'EX', redisProjectCountCacheTimeout)
     } else {
       try {
