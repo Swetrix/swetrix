@@ -2,13 +2,19 @@ import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
 import * as cookieParser from 'cookie-parser'
 import * as bodyParser from 'body-parser'
+import newrelic from 'newrelic';
 
 import { AppModule } from './app.module'
+import { NewrelicInterceptor } from './common/interceptors/newrelic.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe())
+
+  if (process.env.SELFHOSTED) {
+    app.useGlobalInterceptors(new NewrelicInterceptor())
+  }
 
   app.use(async (req, res, next) => {
     res.header('Cross-Origin-Embedder-Policy', 'require-corp; report-to=\'default\'')
