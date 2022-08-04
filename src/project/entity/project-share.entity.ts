@@ -17,11 +17,11 @@ export class ProjectShare {
   id: string
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, user => user.sharedProjects)
+  @ManyToOne(() => User, user => user.sharedProjects, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User
 
-  @ManyToOne(() => Project, project => project.share)
+  @ManyToOne(() => Project, project => project.share, { onDelete: 'CASCADE' })
   @JoinColumn()
   project: Project
 

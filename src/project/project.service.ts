@@ -251,7 +251,7 @@ export class ProjectService {
       } else {
         pids = await this.find({
           where: {
-            admin: uid,
+            adminId: uid,
           },
           select: ['id'],
         })

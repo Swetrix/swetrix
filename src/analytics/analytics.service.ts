@@ -136,7 +136,7 @@ export class AnalyticsService {
       if (!isSelfhosted) {
         const share = await this.projectService.findShare({
           where: {
-            project: pid,
+            projectId: pid,
           },
           relations: ['user'],
         })

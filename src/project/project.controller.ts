@@ -599,8 +599,8 @@ export class ProjectController {
 
     const isSharingWithUser = !_isEmpty(await this.projectService.findShare({
       where: {
-        project: project.id,
-        user: invitee.id,
+        projectId: project.id,
+        userId: invitee.id,
       },
     }))
 

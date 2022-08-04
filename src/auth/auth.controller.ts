@@ -1,4 +1,4 @@
-import { 
+import {
   Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards, Ip, Headers, UnprocessableEntityException,
 } from '@nestjs/common'
 import { Request } from 'express'
@@ -55,7 +55,7 @@ export class AuthController {
     } else {
       const sharedProjects = await this.projectService.findShare({
         where: {
-          user: user_id,
+          userId: user_id,
         },
         relations: ['project'],
       })
@@ -93,7 +93,7 @@ export class AuthController {
 
       const sharedProjects = await this.projectService.findShare({
         where: {
-          user: user.id,
+          userId: user.id,
         },
         relations: ['project'],
       })
@@ -224,7 +224,7 @@ export class AuthController {
 
       await this.userService.update(actionToken.user.id, { ...actionToken.user, password })
       await this.actionTokensService.delete(actionToken.id)
-      return 
+      return
     }
   }
 }

@@ -39,7 +39,7 @@ export class Project {
   public: boolean
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, user => user.projects)
+  @ManyToOne(() => User, user => user.projects, { onDelete: 'CASCADE' })
   @JoinColumn()
   admin: User
 
