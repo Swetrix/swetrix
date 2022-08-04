@@ -28,7 +28,7 @@ import { PingModule } from './ping/ping.module'
       username: process.env.MYSQL_USER,
       password: process.env.MYSQL_ROOT_PASSWORD,
       database: process.env.MYSQL_DATABASE,
-      synchronize: process.env.NODE_ENV === 'development' ? true : false,
+      synchronize: process.env.NODE_ENV === 'development',
       entities: [User, ActionToken, Project, ProjectShare],
     }),
     ScheduleModule.forRoot(),
