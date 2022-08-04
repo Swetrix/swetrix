@@ -71,6 +71,7 @@ const ProjectSettings = ({
       } else {
         setForm({
           ...project,
+          ipBlacklist: _isString(project.ipBlacklist) ? project.ipBlacklist : _join(project.ipBlacklist, ', '),
           origins: _isString(project.origins) ? project.origins : _join(project.origins, ', '),
         })
       }
