@@ -34,6 +34,8 @@ import {
   REDIS_LOG_DATA_CACHE_KEY, redis, REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
+import { BotDetection } from 'src/common/decorators/bot-detection.decorator'
+import { BotDetectionGuard } from 'src/common/guards/bot-detection.guard'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -244,13 +246,10 @@ export class AnalyticsController {
 
   // Log custom event
   @Post('/custom')
+  @UseGuards(BotDetectionGuard)
+  @BotDetection()
   async logCustom(@Body() eventsDTO: EventsDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
-
-    // todo: create a decorator for bot traffic detection
-    if (isbot(userAgent)) {
-      throw new ForbiddenException('Bot traffic is ignored')
-    }
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
@@ -290,13 +289,10 @@ export class AnalyticsController {
 
   // Log pageview event
   @Post('/')
+  @UseGuards(BotDetectionGuard)
+  @BotDetection()
   async log(@Body() logDTO: PageviewsDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
-
-    // todo: create a decorator for bot traffic detection
-    if (isbot(userAgent)) {
-      throw new ForbiddenException('Bot traffic is ignored')
-    }
 
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 

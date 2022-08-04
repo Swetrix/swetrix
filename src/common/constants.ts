@@ -109,7 +109,7 @@ const TWO_FACTOR_AUTHENTICATION_APP_NAME = process.env.TWO_FACTOR_AUTHENTICATION
 /**
  * Calculates in percent, the change between 2 numbers.
  * e.g from 1000 to 500 = 50%
- * 
+ *
  * @param oldVal The initial value
  * @param newVal The value that changed
  */
@@ -129,6 +129,7 @@ function getPercentageChange(oldVal: number, newVal: number, round: number = 2) 
 const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
 
+const IP_REGEX = /^(([12]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\.|\/)){4}([1-2]?[0-9]|3[0-2])$/;
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
 const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
@@ -170,5 +171,5 @@ export {
   REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME, isSelfhosted, UUIDV5_NAMESPACE, SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD, SELFHOSTED_UUID, CLICKHOUSE_INIT_QUERIES, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY,
   REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC, PROJECT_INVITE_EXPIRE, TWO_FACTOR_AUTHENTICATION_APP_NAME,
-  isNewRelicEnabled,
+  IP_REGEX, isNewRelicEnabled,
 }

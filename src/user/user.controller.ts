@@ -1,5 +1,5 @@
 import {
-  Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards, MethodNotAllowedException, ConflictException,
+  Controller, Query, Req, Body, Param, Get, Post, Put, Delete, HttpCode, BadRequestException, UseGuards, MethodNotAllowedException, ConflictException, Headers, Ip
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
@@ -36,6 +36,7 @@ import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { AppLoggerService } from 'src/logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
+import { checkRateLimit } from 'src/common/utils'
 
 dayjs.extend(utc)
 
@@ -98,10 +99,14 @@ export class UserController {
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async generateApiKey(@CurrentUserId() userId: string): Promise<{
+  async generateApiKey(@CurrentUserId() userId: string, @Headers() headers, @Ip() reqIP): Promise<{
     apiKey: string
   }> {
     this.logger.log({ userId }, 'POST /user/api-key')
+
+    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+
+    await checkRateLimit(ip, 'generate-api-key', 5, 3600)
 
     const user = await this.userService.findOne(userId)
 
