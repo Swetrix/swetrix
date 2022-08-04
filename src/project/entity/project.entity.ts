@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from 'typeorm'
+import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
@@ -40,6 +40,7 @@ export class Project {
 
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.projects)
+  @JoinColumn()
   admin: User
 
   @ApiProperty({ type: () => ProjectShare })
@@ -48,4 +49,7 @@ export class Project {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
+
+  @Column('varchar')
+  adminId: string
 }

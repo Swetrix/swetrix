@@ -82,7 +82,9 @@ export class ProjectService {
       skip: options.skip || 0,
       where,
       order: {
-        project: 'ASC',
+        project: {
+          id: 'ASC'
+        },
       },
       relations: ['project'],
     })
@@ -142,15 +144,15 @@ export class ProjectService {
   }
 
   async findOneShare(id: string, params: Object = {}): Promise<ProjectShare | null> {
-    return this.projectShareRepository.findOne(id, params)
+    return this.projectShareRepository.findOne({where: {id}, ...params})
   }
 
   findOneWithRelations(id: string): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, { relations: ['admin'] })
+    return this.projectsRepository.findOne({ where: { id }, relations: ['admin'] })
   }
 
   findOne(id: string, params: Object = {}): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, params)
+    return this.projectsRepository.findOne({ where: { id }, ...params })
   }
 
   findWhere(where: Record<string, unknown>): Promise<Project[]> {

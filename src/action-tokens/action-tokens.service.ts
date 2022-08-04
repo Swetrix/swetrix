@@ -24,7 +24,7 @@ export class ActionTokensService {
   }
 
   async find(id: string): Promise<ActionToken> {
-    return this.actionTokensRepository.findOneOrFail(id, { relations: ['user'] })
+    return this.actionTokensRepository.findOneOrFail({ where: {id}, relations: ['user'] })
   }
 
   async delete(id: string): Promise<void> {

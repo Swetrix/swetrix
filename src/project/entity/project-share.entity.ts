@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, BeforeUpdate, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, ManyToOne, BeforeUpdate, PrimaryGeneratedColumn, JoinColumn } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
@@ -18,9 +18,11 @@ export class ProjectShare {
 
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.sharedProjects)
+  @JoinColumn()
   user: User
 
   @ManyToOne(() => Project, project => project.share)
+  @JoinColumn()
   project: Project
 
   @ApiProperty()
@@ -45,4 +47,10 @@ export class ProjectShare {
   updateTimestamp() {
     this.updated = new Date
   }
+
+  @Column('varchar')
+  userId: string
+
+  @Column('project')
+  projectId: string
 }

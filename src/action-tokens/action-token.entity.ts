@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Timestamp, CreateDateColumn, Column } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Timestamp, CreateDateColumn, Column, JoinColumn } from 'typeorm'
 import { User } from '../user/entities/user.entity'
 
 export enum ActionTokenType {
@@ -14,6 +14,7 @@ export class ActionToken {
   id: string
 
   @ManyToOne(() => User, user => user.actionTokens, { onDelete: 'CASCADE' })
+  @JoinColumn()
   user: User
 
   @CreateDateColumn()
@@ -27,4 +28,7 @@ export class ActionToken {
     enum: ActionTokenType,
   })
   action: ActionTokenType
+
+  @Column('varchar')
+  userId: string
 }

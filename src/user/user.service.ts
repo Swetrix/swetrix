@@ -25,7 +25,7 @@ export class UserService {
       take: options.take || 10,
       skip: options.skip || 0,
     })
-  
+
     return new Pagination<User>({
       results,
       total,
@@ -67,7 +67,7 @@ export class UserService {
   }
 
   findOneWithRelations(id: string, relations: string[]): Promise<User> {
-    return this.usersRepository.findOne(id, { relations })
+    return this.usersRepository.findOne({ where: {id}, relations })
   }
 
   findWhereWithRelations(where: Record<string, unknown>, relations: string[]): Promise<User[]> {
