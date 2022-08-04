@@ -59,11 +59,11 @@ code {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-	background-color: #3b82f6;
+	background-color: #9ca3af;
   border-radius: 10px;
   cursor: pointer;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background-color: #4f46e5;
+	background-color: #6b7280;
 }
