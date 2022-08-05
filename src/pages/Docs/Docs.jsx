@@ -58,20 +58,24 @@ const integrations = [
   },
   {
     name: 'Python Django',
-    link: 'https://github.com/Swetrix/integrations/tree/main/django',
+    link: 'https://github.com/Swetrix/integrations/blob/main/django/README.md',
   },
   {
     name: 'Webflow',
-    link: 'https://github.com/Swetrix/integrations/tree/main/webflow',
+    link: 'https://github.com/Swetrix/integrations/blob/main/webflow/README.md',
   },
   {
     name: 'Wordpress',
-    link: 'https://github.com/Swetrix/integrations/tree/main/wordpress',
+    link: 'https://github.com/Swetrix/integrations/blob/main/wordpress/README.md',
   },
   {
     name: 'Wix',
-    link: 'https://github.com/Swetrix/integrations/tree/main/wix',
+    link: 'https://github.com/Swetrix/integrations/blob/main/wix/README.md',
   },
+  {
+    name: 'Ghost',
+    link: 'https://github.com/Swetrix/integrations/blob/main/ghost/README.md'
+  }
 ]
 
 const Contents = ({ t }) => {
@@ -234,7 +238,7 @@ const Docs = () => {
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <i>Last updated: August 6, 2022.</i><br />
               <div>
-                - Added Wordpress, Wix, Webflow and Django&nbsp;
+                - Added Wordpress, Wix, Webflow, Django and Ghost&nbsp;
                 <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-int'>integration instructions.</a>
               </div>
             </div>
