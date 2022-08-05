@@ -232,11 +232,10 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4' />
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <i>Last updated: May 22, 2022 (Swetrix.js v1.3.2).</i><br />
+              <i>Last updated: August 6, 2022.</i><br />
               <div>
-                - Added documentation related to&nbsp;
-                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-tv'>the object</a>
-                &nbsp;trackViews function returns.
+                - Added Wordpress, Wix, Webflow and Django&nbsp;
+                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-int'>integration instructions.</a>
               </div>
             </div>
           </div>
