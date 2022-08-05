@@ -78,6 +78,15 @@ const team = [
       Github: 'https://github.com/kruzhambus',
     },
   },
+  {
+    name: '🇺🇦 Ivan Kolesov',
+    role: 'Software Engineer.',
+    photo: '/assets/ivan.jpg',
+    desc: 'Works on Swetrix Telegram integrations.',
+    socials: {
+      Github: 'https://github.com/ivan1kolesov',
+    },
+  },
 ]
 
 const About = () => (
