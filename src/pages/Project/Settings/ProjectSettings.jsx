@@ -85,7 +85,7 @@ const ProjectSettings = ({
         const formalisedData = {
           ...data,
           origins: _split(data.origins, ','),
-          ipBlacklist: _split(data.ipBlacklist, ','),
+          ipBlacklist: isSettings ? _split(data.ipBlacklist, ',') : null,
         }
 
         if (isSettings) {
