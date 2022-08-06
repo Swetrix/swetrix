@@ -5,6 +5,7 @@ import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
 
 // In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
+// and to add them to the GDPR data export email template
 @Entity()
 export class Project {
   @ApiProperty()

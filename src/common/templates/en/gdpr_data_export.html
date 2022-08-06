@@ -83,11 +83,15 @@
                                                 <b>Email confirmed:</b>&nbsp;{{#if user.isActive}} Yes {{else}} No {{/if}}<br />
                                                 <b>Verification emails sent:</b>&nbsp;{{user.emailRequests}}<br />
                                                 <b>Summary report frequency:</b>&nbsp;{{user.reportFrequency}}<br />
+                                                <b>Is 2FA Enabled:</b>&nbsp;{{#if user.isTwoFactorAuthenticationEnabled}} Yes {{else}} No {{/if}}<br />
                                                 <b>Account created at:</b>&nbsp;{{user.created}}<br />
                                                 <b>Account updated at:</b>&nbsp;{{user.updated}}<br />
                                                 <b>Last report generation time:</b>&nbsp;{{user.exportedAt}}<br />
                                                 <b>Last tier warning email sent on:</b>&nbsp;{{user.evWarningSentOn}}<br />
                                                 <b>Timezone:</b>&nbsp;{{user.timezone}}<br />
+                                                <b>API Key:</b>&nbsp;{{#if user.apiKey}}{{user.apiKey}}{{else}}-{{/if}}<br />
+                                                <b>Billing frequency:</b>&nbsp;{{#if user.billingFrequency}}{{user.billingFrequency}}{{else}}-{{/if}}<br />
+                                                <b>Next billing date:</b>&nbsp;{{#if user.nextBillDate}}{{user.nextBillDate}}{{else}}-{{/if}}<br />
                                                 <b>Paddle: Subscription ID:</b>&nbsp;{{user.subID}}<br />
                                                 <b>Paddle: Update subscription URL:</b>&nbsp;{{user.subUpdateURL}}<br />
                                                 <b>Paddle: Cancel subscription URL:</b>&nbsp;{{user.subCancelURL}}
@@ -100,6 +104,7 @@
                                                   <b>Active:</b>&nbsp;{{#if active}} Yes {{else}} No {{/if}}<br />
                                                   <b>Public:</b>&nbsp;{{#if public}} Yes {{else}} No {{/if}}<br />
                                                   <b>Allowed origins:</b>&nbsp;{{#if origins}}{{origins}}{{else}}*{{/if}}<br />
+                                                  <b>Blacklisted IPs:</b>&nbsp;{{#if ipBlacklist}}{{ipBlacklist}}{{else}}-{{/if}}<br />
                                                   <b>Created at:</b>&nbsp;{{created}}<br /><br />
                                                 {{else}}
                                                   There are no projects associated with this account.

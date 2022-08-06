@@ -390,6 +390,7 @@ export class UserController {
         ...project,
         created: dayjs(project.created).format('YYYY/MM/DD HH:mm:ss'),
         origins: _join(project.origins, ', '),
+        ipBlacklist: _join(project.ipBlacklist, ', '),
       }))
     }
 
