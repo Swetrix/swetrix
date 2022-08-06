@@ -85,7 +85,7 @@ const ProjectSettings = ({
         const formalisedData = {
           ...data,
           origins: _split(data.origins, ','),
-          ipBlacklist: isSettings ? _split(data.ipBlacklist, ',') : null,
+          ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
         }
 
         if (isSettings) {
@@ -238,7 +238,7 @@ const ProjectSettings = ({
                 type='text'
                 label={t('project.settings.ipBlacklist')}
                 hint={t('project.settings.ipBlacklistHint')}
-                value={form.ipBlacklist}
+                value={form.ipBlacklist || ''}
                 className='mt-4'
                 onChange={handleInput}
                 error={beenSubmitted ? errors.ipBlacklist : null}
