@@ -74,8 +74,8 @@ const integrations = [
   },
   {
     name: 'Ghost',
-    link: 'https://github.com/Swetrix/integrations/blob/main/ghost/README.md'
-  }
+    link: 'https://github.com/Swetrix/integrations/blob/main/ghost/README.md',
+  },
 ]
 
 const Contents = ({ t }) => {
