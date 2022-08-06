@@ -341,7 +341,14 @@
     "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
     "2faRecoverySaved": "I have saved this recovery code",
     "2faEnabled": "Two-factor authenticated is enabled on your account.",
-    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below."
+    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
+    "apiKey": "API Key",
+    "noApiKey": "You haven't created any API keys yet.",
+    "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
+    "addApiKeyBtn": "Generate API Key",
+    "deleteApiKeyBtn": "Delete API Key",
+    "apiKeyDelete": "Delete your API Key?",
+    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled."
   },
   "dashboard": {
     "newProject": "Neues Projekt",
@@ -495,7 +502,9 @@
           "shortDesc": "Can only view the project"
         }
       },
-      "errorNoRole": "Please select a role."
+      "errorNoRole": "Please select a role.",
+      "ipBlacklist": "IP's to blacklist",
+      "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
     }
   },
   "billing": {
