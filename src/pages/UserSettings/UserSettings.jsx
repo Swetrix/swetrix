@@ -326,7 +326,7 @@ const TwoFA = ({
           />
           <Button
             className={cx('ml-2', {
-              'mt-4': _isNull(twoFACodeError),
+              'mt-8  xs:mt-4': _isNull(twoFACodeError),
               'mb-1': !_isNull(twoFACodeError),
             })}
             onClick={_enable2FA}
