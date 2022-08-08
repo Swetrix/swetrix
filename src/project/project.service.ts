@@ -24,7 +24,7 @@ import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
 import { Role } from '../project/entity/project-share.entity'
 import {
-  isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted, IP_REGEX,
+  isValidPID, redisProjectCountCacheTimeout, getRedisUserCountKey, redis, clickhouse, isSelfhosted, IP_REGEX, ORIGINS_REGEX,
 } from '../common/constants'
 
 dayjs.extend(utc)
@@ -224,13 +224,20 @@ export class ProjectService {
     if (_size(_join(projectDTO.origins, ',')) > 300) throw new UnprocessableEntityException('The list of allowed origins has to be smaller than 300 symbols')
     if (_size(_join(projectDTO.ipBlacklist, ',')) > 300) throw new UnprocessableEntityException('The list of allowed blacklisted IP addresses must be less than 300 characters.')
 
+
+    _map(projectDTO.origins, host => {
+      if (!ORIGINS_REGEX.test(_trim(host))) {
+        throw new ConflictException(`Host ${host} is not correct`)
+      }
+    })
+
     _map(projectDTO.ipBlacklist, ip => {
       if (!validateIP(_trim(ip))) {
         if (!IP_REGEX.test(_trim(ip))) {
           throw new ConflictException(`IP address ${ip} is not correct`)
         }
       }
-    });
+    })
   }
 
   // Returns amount of exirsting events starting from month

@@ -129,7 +129,8 @@ function getPercentageChange(oldVal: number, newVal: number, round: number = 2) 
 const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
 
-const IP_REGEX = /^(([12]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\.|\/)){4}([1-2]?[0-9]|3[0-2])$/;
+const ORIGINS_REGEX = /^(?=.{1,255}$)[0-9A-Za-z\:](?:(?:[0-9A-Za-z\:]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z\:](?:(?:[0-9A-Za-z\:]|-){0,61}[0-9A-Za-z\:])?)*\.?$/
+const IP_REGEX = /^(([12]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\.|\/)){4}([1-2]?[0-9]|3[0-2])$/
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
 const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
@@ -171,5 +172,5 @@ export {
   REDIS_SESSION_SALT_KEY, HEARTBEAT_SID_LIFE_TIME, isSelfhosted, UUIDV5_NAMESPACE, SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD, SELFHOSTED_UUID, CLICKHOUSE_INIT_QUERIES, REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY,
   REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC, PROJECT_INVITE_EXPIRE, TWO_FACTOR_AUTHENTICATION_APP_NAME,
-  IP_REGEX, isNewRelicEnabled,
+  IP_REGEX, isNewRelicEnabled, ORIGINS_REGEX,
 }
