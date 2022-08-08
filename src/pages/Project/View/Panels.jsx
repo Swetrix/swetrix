@@ -49,6 +49,7 @@ const PanelContainer = ({
         )}
         {name}
       </h3>
+      {/* if it is a Country tab  */}
       {type === 'cc' && (
         <div className='flex'>
           <ViewListIcon
@@ -73,6 +74,7 @@ const PanelContainer = ({
           />
         </div>
       )}
+      {/* if this tab using Circle showing stats panel */}
       {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
         <div className='flex'>
           <ViewListIcon
@@ -92,6 +94,7 @@ const PanelContainer = ({
         </div>
       )}
     </div>
+    {/* for other tabs */}
     <div className='flex flex-col h-full scroll-auto overflow-auto'>
       {children}
     </div>
@@ -114,6 +117,7 @@ PanelContainer.defaultProps = {
   setActiveFragment: () => { },
 }
 
+// First tab with stats
 const Overview = ({
   overall, chartData, activePeriod, t, live,
 }) => {
@@ -259,6 +263,7 @@ const Overview = ({
   )
 }
 
+// Options for circle chart showing the stats of data
 const getPieOptions = (customs, uniques, t) => {
   const tQuantity = t('project.quantity')
   const tConversion = t('project.conversion')
@@ -300,6 +305,7 @@ const getPieOptions = (customs, uniques, t) => {
   }
 }
 
+// Tabs with custom events like submit form, press button, go to the link rate etc.
 const CustomEvents = ({
   customs, chartData, t,
 }) => {
@@ -320,7 +326,7 @@ const CustomEvents = ({
       })
     }
   }, [chartData, customs, t]) // eslint-disable-line react-hooks/exhaustive-deps
-
+  // for showing chart circle of stats a data
   if (activeFragment === 1 && !_isEmpty(chartData)) {
     return (
       <PanelContainer
@@ -416,7 +422,7 @@ const Panel = ({
       setPage(page + 1)
     }
   }
-
+  // Showing map of stats a data
   if (id === 'cc' && activeFragment === 1 && !_isEmpty(data)) {
     return (
       <PanelContainer
@@ -448,7 +454,7 @@ const Panel = ({
       </PanelContainer>
     )
   }
-
+  // Showing chart of stats a data (start if)
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')
     const tRatio = t('project.ratio')
@@ -506,6 +512,7 @@ const Panel = ({
       </PanelContainer>
     )
   }
+  // Showing chart of stats a data (end if)
 
   return (
     <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment}>
@@ -559,6 +566,7 @@ const Panel = ({
           </Fragment>
         )
       })}
+      {/* for pagination in tabs */}
       {_size(keys) > 5 && (
         <div className='absolute bottom-0 w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
