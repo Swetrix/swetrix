@@ -23,7 +23,7 @@ export class ProjectDTO {
     required: false,
     description: 'An array allowed origins',
   })
-  origins: string[]
+  origins: string[] | null
 
   @ApiProperty({
     example: '::1,127.0.0.1,192.168.0.1/32',
