@@ -14,6 +14,7 @@ import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
+import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
@@ -48,7 +49,6 @@ const ProjectSettings = ({
   const [form, setForm] = useState({
     name: '',
     id: id || nanoid(),
-    origins: '', // origins string, ',' is used as a separator. converted to an array on the backend side.
     public: false,
   })
   const [validated, setValidated] = useState(false)
@@ -84,10 +84,18 @@ const ProjectSettings = ({
       try {
         const formalisedData = {
           ...data,
-          origins: _split(data.origins, ','),
+          origins: _isEmpty(data.origins) ? null : _map(_split(data.origins, ','), (origin) => {
+            try {
+              if (_includes(origin, 'localhost')) {
+                return origin
+              }
+              return new URL(origin).host
+            } catch (e) {
+              return origin
+            }
+          }),
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
         }
-
         if (isSettings) {
           await updateProject(id, formalisedData)
           newProject(t('project.settings.updated'))
@@ -227,7 +235,7 @@ const ProjectSettings = ({
                 type='text'
                 label={t('project.settings.origins')}
                 hint={t('project.settings.originsHint')}
-                value={form.origins}
+                value={form.origins || ''}
                 className='mt-4'
                 onChange={handleInput}
                 error={beenSubmitted ? errors.origins : null}

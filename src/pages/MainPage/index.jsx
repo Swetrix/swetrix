@@ -512,6 +512,7 @@ const Main = () => {
                 </div>
               </div>
             </section> */}
+            
             {/* Advantages of using open source */}
             <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-7xl w-full mx-auto py-20 lg:py-32 px-5'>
               <img src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'} loading='lazy' alt='Swetrix open source' />
