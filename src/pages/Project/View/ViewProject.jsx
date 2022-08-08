@@ -48,6 +48,7 @@ import {
 import './styles.css'
 import { onCSVExportClick } from './ViewProject.helpers'
 
+// component for the Country icon
 const CCRow = memo(({ rowName, language }) => (
   <>
     <Flag
@@ -60,7 +61,7 @@ const CCRow = memo(({ rowName, language }) => (
     {countries.getName(rowName, language)}
   </>
 ))
-
+// component for the Link icon
 const RefRow = memo(({ rowName, showIcons }) => {
   let isUrl = true
   let url = rowName
@@ -98,7 +99,7 @@ const RefRow = memo(({ rowName, showIcons }) => {
     </div>
   )
 })
-
+// function to filtering the data for the chart
 const getColumns = (chart, showTotal) => {
   if (showTotal) {
     return [
@@ -114,8 +115,10 @@ const getColumns = (chart, showTotal) => {
   ]
 }
 
+// setting the default values for the time period dropdown
 const noRegionPeriods = ['custom', 'yesterday']
 
+// function to get the settings and data for the chart(main diagram)
 const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
   const xAxisSize = _size(chart.x)
   let regions
@@ -235,6 +238,7 @@ const panelIconMapping = {
   os: <ServerIcon className={iconClassName} />,
 }
 
+// This function return date using the same format as the backend
 const getFormatDate = (date) => {
   const yyyy = date.getFullYear()
   let mm = date.getMonth() + 1
@@ -244,6 +248,7 @@ const getFormatDate = (date) => {
   return `${yyyy}-${mm}-${dd}`
 }
 
+// this component is used to display text if the data is not available
 const NoEvents = ({ t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
@@ -263,6 +268,7 @@ const NoEvents = ({ t }) => (
   </div>
 )
 
+// this component is used for showing the filter in panel
 const Filter = ({
   column, filter, isExclusive, onRemoveFilter, onChangeExclusive, tnMapping, language, t,
 }) => {
@@ -300,6 +306,7 @@ const Filter = ({
   )
 }
 
+// this component is used for rendering the filter panel
 const Filters = ({
   filters, onRemoveFilter, onChangeExclusive, language, t, tnMapping,
 }) => (
@@ -355,6 +362,7 @@ const ViewProject = ({
     history.push(routes.dashboard)
   }
 
+  // this function is used for requesting the data from the API
   const loadAnalytics = async (forced = false, newFilters = null) => {
     if (forced || (!isLoading && !_isEmpty(project) && !dataLoading)) {
       setDataLoading(true)
@@ -426,6 +434,7 @@ const ViewProject = ({
     }
   }
 
+  // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column, filter, isExclusive = false) => {
     let newFilters
 
@@ -446,6 +455,7 @@ const ViewProject = ({
     loadAnalytics(true, newFilters)
   }
 
+  // this function is used for requesting the data from the API when the exclusive filter is changed
   const onChangeExclusive = (column, filter, isExclusive) => {
     const newFilters = _map(filters, (f) => {
       if (f.column === column && f.filter === filter) {
