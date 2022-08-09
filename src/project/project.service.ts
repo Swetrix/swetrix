@@ -223,7 +223,6 @@ export class ProjectService {
     if (_size(_join(projectDTO.origins, ',')) > 300) throw new UnprocessableEntityException('The list of allowed origins has to be smaller than 300 symbols')
     if (_size(_join(projectDTO.ipBlacklist, ',')) > 300) throw new UnprocessableEntityException('The list of allowed blacklisted IP addresses must be less than 300 characters.')
 
-
     _map(projectDTO.origins, host => {
       if (!ORIGINS_REGEX.test(_trim(host))) {
         throw new ConflictException(`Host ${host} is not correct`)
