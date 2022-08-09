@@ -231,10 +231,8 @@ export class ProjectService {
     })
 
     _map(projectDTO.ipBlacklist, ip => {
-      if (!validateIP(_trim(ip))) {
-        if (!IP_REGEX.test(_trim(ip))) {
-          throw new ConflictException(`IP address ${ip} is not correct`)
-        }
+      if (!validateIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+        throw new ConflictException(`IP address ${ip} is not correct`)
       }
     })
   }
