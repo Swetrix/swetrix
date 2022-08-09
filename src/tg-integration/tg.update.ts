@@ -1,5 +1,5 @@
-import { Command, Ctx, Hears, Start, Update, Sender } from 'nestjs-telegraf';
-import { UpdateType as TelegrafUpdateType } from 'telegraf/typings/telegram-types';
+import { Command, Ctx, Hears, Start, Update, Sender } from 'nestjs-telegraf'
+import { UpdateType as TelegrafUpdateType } from 'telegraf/typings/telegram-types'
 import { Context } from 'src/common/interfaces/context.interface'
 import { UpdateType } from 'src/common/decorators/update-type.decorator'
 
