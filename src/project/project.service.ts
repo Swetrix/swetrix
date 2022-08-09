@@ -225,10 +225,8 @@ export class ProjectService {
     if (_size(_join(projectDTO.ipBlacklist, ',')) > 300) throw new UnprocessableEntityException('The list of allowed blacklisted IP addresses must be less than 300 characters.')
 
     _map(projectDTO.ipBlacklist, ip => {
-      if (!validateIP(_trim(ip))) {
-        if (!IP_REGEX.test(_trim(ip))) {
-          throw new ConflictException(`IP address ${ip} is not correct`)
-        }
+      if (!validateIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+        throw new ConflictException(`IP address ${ip} is not correct`)
       }
     });
   }
