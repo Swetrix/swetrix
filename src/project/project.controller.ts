@@ -380,6 +380,64 @@ export class ProjectController {
     }
   }
 
+  @Delete('/reset/:id')
+  @HttpCode(204)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async reset(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, id }, 'DELETE /project/reset/:id')
+    if (!isValidPID(id)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    if (isSelfhosted) {
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+
+      try {
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        return 'Project resetted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while resetting your project'
+      }
+    } else {
+      const user = await this.userService.findOne(uid)
+      const project = await this.projectService.findOneWhere(
+        { id },
+        {
+          relations: ['admin'],
+          select: ['id'],
+        },
+      )
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+
+      try {
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        return 'Project resetted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while resetting your project'
+      }
+    }
+  }
+
   @Put('/:id')
   @HttpCode(200)
   @UseGuards(RolesGuard)
