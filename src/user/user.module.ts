@@ -1,10 +1,10 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
-import { UserController } from './user.controller'
-import { UserService } from './user.service'
-import { User } from './entities/user.entity'
-import { ActionTokensModule } from 'src/action-tokens/action-tokens.module'
+import { ActionTokensModule } from 'src/action-tokens/action-tokens.module';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
+import { User } from './entities/user.entity';
 import { MailerModule } from '../mailer/mailer.module'
 import { AuthModule } from '../auth/auth.module'
 import { AppLoggerModule } from '../logger/logger.module'

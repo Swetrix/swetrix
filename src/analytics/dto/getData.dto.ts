@@ -28,7 +28,8 @@ export class AnalyticsGET_DTO {
   to: string
 
   @ApiProperty({
-    description: 'A stringified array of properties to filter [{ column, filter, isExclusive }]',
+    description:
+      'A stringified array of properties to filter [{ column, filter, isExclusive }]',
   })
   filters: string
 

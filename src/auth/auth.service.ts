@@ -1,4 +1,8 @@
-import { Injectable, UnprocessableEntityException, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  UnprocessableEntityException,
+  BadRequestException,
+} from '@nestjs/common'
 import { sign } from 'jsonwebtoken'
 import * as bcrypt from 'bcrypt'
 import * as crypto from 'crypto'
@@ -8,11 +12,12 @@ import * as _includes from 'lodash/includes'
 import * as _pick from 'lodash/pick'
 
 import { UserService } from '../user/user.service'
-import { ACCOUNT_PLANS } from '../user/entities/user.entity'
-import { AppLoggerService } from '../logger/logger.service'
-import { User } from '../user/entities/user.entity'
+import { ACCOUNT_PLANS, User } from '../user/entities/user.entity';
+import { AppLoggerService } from '../logger/logger.service';
 import {
-  isSelfhosted, JWT_LIFE_TIME, SELFHOSTED_UUID,
+  isSelfhosted,
+  JWT_LIFE_TIME,
+  SELFHOSTED_UUID,
 } from '../common/constants'
 import { splitAt } from '../common/utils'
 
@@ -22,48 +27,52 @@ const BCRYPT_SALT_ROUNDS = 10
 const httpsOptions = {
   headers: {
     'User-Agent': 'Swetrix API (contact@swetrix.com)',
-  }
-}
+  },
+};
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
-    private readonly logger: AppLoggerService
-  ) { }
+    private readonly logger: AppLoggerService,
+  ) {}
 
   async hashPassword(pass: string): Promise<string> {
     const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS)
-    return await bcrypt.hash(pass, salt)
+    return bcrypt.hash(pass, salt)
   }
 
   async get(hash) {
     return new Promise((resolve, reject) => {
-      https.get(`${HIBP_URL}/${hash}`, httpsOptions, (res) => {
-        let data = ''
+      https
+        .get(`${HIBP_URL}/${hash}`, httpsOptions, res => {
+          let data = ''
 
-        if (res.statusCode !== 200) {
-          return reject(`Failed to load ${HIBP_URL} API: ${res.statusCode}`)
-        }
+          if (res.statusCode !== 200) {
+            return reject(`Failed to load ${HIBP_URL} API: ${res.statusCode}`)
+          }
 
-        res.on('data', (chunk) => {
-          data += chunk
+          res.on('data', chunk => {
+            data += chunk
+          })
+
+          res.on('end', () => {
+            resolve(data)
+          })
+
+          return true
         })
-
-        res.on('end', () => {
-          resolve(data)
+        .on('error', err => {
+          reject(err)
         })
-
-        return true
-      }).on('error', (err) => {
-        reject(err)
-      })
     })
   }
 
   async sha1hash(string): Promise<string> {
-    return new Promise((resolve) => {
-      const shasum = _toUpper(crypto.createHash('sha1').update(string).digest('hex'))
+    return new Promise(resolve => {
+      const shasum = _toUpper(
+        crypto.createHash('sha1').update(string).digest('hex'),
+      )
       resolve(shasum)
     })
   }
@@ -84,14 +93,19 @@ export class AuthService {
     }
   }
 
-  async checkPassword(passToCheck: string, hashedPass: string): Promise<boolean> {
-    return await bcrypt.compare(passToCheck, hashedPass)
+  async checkPassword(
+    passToCheck: string,
+    hashedPass: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(passToCheck, hashedPass)
   }
 
   async validateUser(email: string, pass: string): Promise<User> {
-    const user = await this.userService.findOneWhere({ email }, ['sharedProjects'])
+    const user = await this.userService.findOneWhere({ email }, [
+      'sharedProjects',
+    ])
 
-    if (user && await this.checkPassword(pass, user.password)) {
+    if (user && (await this.checkPassword(pass, user.password))) {
       return user
     }
 
@@ -136,9 +150,13 @@ export class AuthService {
     }
 
     // @ts-ignore
-    const token = sign({ user_id: userData.id, isSecondFactorAuthenticated }, process.env.JWT_SECRET, {
-      expiresIn: JWT_LIFE_TIME,
-    })
+    const token = sign(
+      { user_id: userData.id, isSecondFactorAuthenticated },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: JWT_LIFE_TIME,
+      },
+    )
 
     return { access_token: token, user: userData }
   }

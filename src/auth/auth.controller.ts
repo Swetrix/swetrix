@@ -1,18 +1,35 @@
-import { 
-  Controller, Post, Body, Req, Get, Param, BadRequestException, UseGuards, Ip, Headers, UnprocessableEntityException,
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Get,
+  Param,
+  BadRequestException,
+  UseGuards,
+  Ip,
+  Headers,
+  UnprocessableEntityException,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags } from '@nestjs/swagger'
 
-import { AuthService } from './auth.service'
-import { UserLoginDTO } from './dto/user-login.dto'
-import { SignupUserDTO } from './dto/user-signup.dto'
-import { UserService } from '../user/user.service'
-import { MailerService } from '../mailer/mailer.service'
-import { ActionTokensService } from '../action-tokens/action-tokens.service'
-import { ActionTokenType } from '../action-tokens/action-token.entity'
-import { User, UserType } from '../user/entities/user.entity'
-import { ProjectService } from 'src/project/project.service'
+import { ProjectService } from 'src/project/project.service';
+import {
+  isSelfhosted,
+  SELFHOSTED_EMAIL,
+  SELFHOSTED_PASSWORD,
+  SELFHOSTED_UUID,
+} from 'src/common/constants';
+import * as _pick from 'lodash/pick';
+import { AuthService } from './auth.service';
+import { UserLoginDTO } from './dto/user-login.dto';
+import { SignupUserDTO } from './dto/user-signup.dto';
+import { UserService } from '../user/user.service';
+import { MailerService } from '../mailer/mailer.service';
+import { ActionTokensService } from '../action-tokens/action-tokens.service';
+import { ActionTokenType } from '../action-tokens/action-token.entity';
+import { User, UserType } from '../user/entities/user.entity';
 import { PasswordChangeDTO } from './dto/password-change.dto'
 import { RequestPasswordChangeDTO } from './dto/request-pass-change.dto'
 import { RolesGuard } from '../common/guards/roles.guard'
@@ -22,10 +39,6 @@ import { checkRateLimit } from '../common/utils'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
-import {
-  isSelfhosted, SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD, SELFHOSTED_UUID,
-} from 'src/common/constants'
-import * as _pick from 'lodash/pick'
 
 // TODO: Add logout endpoint to invalidate the token
 @ApiTags('Auth')
@@ -37,7 +50,7 @@ export class AuthController {
     private mailerService: MailerService,
     private actionTokensService: ActionTokensService,
     private readonly projectService: ProjectService,
-    private readonly logger: AppLoggerService
+    private readonly logger: AppLoggerService,
   ) {}
 
   @Get('/me')
@@ -60,8 +73,8 @@ export class AuthController {
         relations: ['project'],
       })
       user = this.authService.processUser(
-        await this.userService.findOneWhere({ id: user_id })
-      )
+        await this.userService.findOneWhere({ id: user_id }),
+      );
 
       user.sharedProjects = sharedProjects
     }
@@ -70,45 +83,60 @@ export class AuthController {
   }
 
   @Post('/login')
-  async loginUser(@Body() userLoginDTO: UserLoginDTO, @Headers() headers, @Ip() reqIP): Promise<any> {
-    this.logger.log({ userLoginDTO }, 'POST /auth/login')
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    await checkRateLimit(ip, 'login', 10, 1800)
+  async loginUser(
+    @Body() userLoginDTO: UserLoginDTO,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    this.logger.log({ userLoginDTO }, 'POST /auth/login');
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || '';
+    await checkRateLimit(ip, 'login', 10, 1800);
     // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
 
     if (isSelfhosted) {
-      if (userLoginDTO.email !== SELFHOSTED_EMAIL || userLoginDTO.password !== SELFHOSTED_PASSWORD) {
-        throw new UnprocessableEntityException('Email or password is incorrect')
+      if (
+        userLoginDTO.email !== SELFHOSTED_EMAIL ||
+        userLoginDTO.password !== SELFHOSTED_PASSWORD
+      ) {
+        throw new UnprocessableEntityException('Email or password is incorrect');
       }
       return this.authService.login({
         email: SELFHOSTED_EMAIL,
-      })
-    } else {
-      const user = await this.authService.validateUser(userLoginDTO.email, userLoginDTO.password)
-
-      if (user.isTwoFactorAuthenticationEnabled) {
-        const processedUser = this.authService.postLoginProcess(user)
-        return this.authService.login(processedUser)
-      }
-
-      const sharedProjects = await this.projectService.findShare({
-        where: {
-          user: user.id,
-        },
-        relations: ['project'],
-      })
-
-      user.sharedProjects = sharedProjects
-
-      return this.authService.login(user)
+      });
     }
+    const user = await this.authService.validateUser(
+      userLoginDTO.email,
+      userLoginDTO.password,
+    );
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      const processedUser = this.authService.postLoginProcess(user);
+      return this.authService.login(processedUser);
+    }
+
+    const sharedProjects = await this.projectService.findShare({
+      where: {
+        user: user.id,
+      },
+      relations: ['project'],
+    });
+
+    user.sharedProjects = sharedProjects;
+
+    return this.authService.login(user);
   }
 
   @UseGuards(SelfhostedGuard)
   @Post('/register')
-  async register(@Body() userDTO: SignupUserDTO, /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<any> {
+  async register(
+    @Body() userDTO: SignupUserDTO,
+    /* @Body('recaptcha') recaptcha: string, */ @Req() request: Request,
+      @Headers() headers,
+      @Ip() reqIP,
+  ): Promise<any> {
     this.logger.log({ userDTO }, 'POST /auth/register')
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip =      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
     if (userDTO.checkIfLeaked) {
       await this.authService.checkIfPasswordLeaked(userDTO.password)
@@ -132,64 +160,84 @@ export class AuthController {
     try {
       const userToUpdate = _pick(userDTO, ['email', 'password'])
       const user = await this.userService.create(userToUpdate)
-      const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.EMAIL_VERIFICATION)
+      const actionToken = await this.actionTokensService.createForUser(
+        user,
+        ActionTokenType.EMAIL_VERIFICATION,
+      )
       const url = `${request.headers.origin}/verify/${actionToken.id}`
-      await this.mailerService.sendEmail(userDTO.email, LetterTemplate.SignUp, { url })
+      await this.mailerService.sendEmail(userDTO.email, LetterTemplate.SignUp, {
+        url,
+      })
       user.sharedProjects = []
 
       return this.authService.login(user)
-    } catch(e) {
-      this.logger.log(`[ERROR WHILE CREATING ACCOUNT]: ${e}`, 'POST /auth/register', true)
+    } catch (e) {
+      this.logger.log(
+        `[ERROR WHILE CREATING ACCOUNT]: ${e}`,
+        'POST /auth/register',
+        true,
+      )
     }
   }
 
   @UseGuards(SelfhostedGuard)
   @Get('/verify/:id')
   async verify(@Param('id') id: string): Promise<User> {
-    this.logger.log({ id }, 'GET /auth/verify/:id')
-    let actionToken
+    this.logger.log({ id }, 'GET /auth/verify/:id');
+    let actionToken;
 
     try {
-      actionToken = await this.actionTokensService.find(id)
+      actionToken = await this.actionTokensService.find(id);
     } catch {
-      throw new BadRequestException('Incorrect token provided')
+      throw new BadRequestException('Incorrect token provided');
     }
 
     if (actionToken.action === ActionTokenType.EMAIL_VERIFICATION) {
-      await this.userService.update(actionToken.user.id, { ...actionToken.user, isActive: true})
-      await this.actionTokensService.delete(actionToken.id)
-      return
+      await this.userService.update(actionToken.user.id, {
+        ...actionToken.user,
+        isActive: true,
+      });
+      await this.actionTokensService.delete(actionToken.id);
     }
   }
 
   @UseGuards(SelfhostedGuard)
   @Get('/change-email/:id')
   async changeEmail(@Param('id') id: string): Promise<User> {
-    this.logger.log({ id }, 'GET /auth/change-email/:id')
-    let actionToken
+    this.logger.log({ id }, 'GET /auth/change-email/:id');
+    let actionToken;
 
     try {
-      actionToken = await this.actionTokensService.find(id)
+      actionToken = await this.actionTokensService.find(id);
     } catch {
-      throw new BadRequestException('Incorrect token provided')
+      throw new BadRequestException('Incorrect token provided');
     }
 
     if (actionToken.action === ActionTokenType.EMAIL_CHANGE) {
-      await this.userService.update(actionToken.user.id,
-        { ...actionToken.user, email: actionToken.newValue })
-      await this.mailerService.sendEmail(actionToken.user.email,
-        LetterTemplate.MailAddressHadChanged, actionToken.user.locale)
-      await this.actionTokensService.delete(actionToken.id)
-      return
+      await this.userService.update(actionToken.user.id, {
+        ...actionToken.user,
+        email: actionToken.newValue,
+      })
+      await this.mailerService.sendEmail(
+        actionToken.user.email,
+        LetterTemplate.MailAddressHadChanged,
+        actionToken.user.locale,
+      );
+      await this.actionTokensService.delete(actionToken.id);
     }
   }
 
   @UseGuards(SelfhostedGuard)
   @Post('/reset-password')
-  async requestReset(@Body() body: RequestPasswordChangeDTO, @Req() request: Request, @Headers() headers, @Ip() reqIP): Promise<string> {
+  async requestReset(
+    @Body() body: RequestPasswordChangeDTO,
+      @Req() request: Request,
+      @Headers() headers,
+      @Ip() reqIP,
+  ): Promise<string> {
     this.logger.log({ body }, 'POST /auth/password-reset')
     const { email } = body
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip =      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
     await checkRateLimit(ip, 'reset-password')
     await checkRateLimit(email, 'reset-password')
 
@@ -199,32 +247,45 @@ export class AuthController {
       return 'A password reset URL has been sent to your email'
     }
 
-    const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PASSWORD_RESET)
+    const actionToken = await this.actionTokensService.createForUser(
+      user,
+      ActionTokenType.PASSWORD_RESET,
+    )
     const url = `${request.headers.origin}/password-reset/${actionToken.id}`
 
-    await this.mailerService.sendEmail(email, LetterTemplate.ConfirmPasswordChange, { url })
+    await this.mailerService.sendEmail(
+      email,
+      LetterTemplate.ConfirmPasswordChange,
+      { url },
+    )
     return 'A password reset URL has been sent to your email'
   }
 
   @UseGuards(SelfhostedGuard)
   @Post('/password-reset/:id')
-  async reset(@Param('id') id: string, @Body() body: PasswordChangeDTO): Promise<User> {
-    this.logger.log({ id }, 'POST /auth/password-reset/:id')
-    this.userService.validatePassword(body.password)
-    let actionToken
+  async reset(
+    @Param('id') id: string,
+    @Body() body: PasswordChangeDTO,
+  ): Promise<User> {
+    this.logger.log({ id }, 'POST /auth/password-reset/:id');
+    this.userService.validatePassword(body.password);
+    let actionToken;
 
     try {
-      actionToken = await this.actionTokensService.find(id)
+      actionToken = await this.actionTokensService.find(id);
     } catch {
-      throw new BadRequestException('Incorrect token provided')
+      throw new BadRequestException('Incorrect token provided');
     }
 
     if (actionToken.action === ActionTokenType.PASSWORD_RESET) {
-      const password = await this.authService.hashPassword(body.password)
+      const password = await this.authService.hashPassword(body.password);
 
-      await this.userService.update(actionToken.user.id, { ...actionToken.user, password })
-      await this.actionTokensService.delete(actionToken.id)
-      return 
+      await this.userService.update(actionToken.user.id, {
+        ...actionToken.user,
+        password,
+      });
+      await this.actionTokensService.delete(actionToken.id);
+
     }
   }
 }

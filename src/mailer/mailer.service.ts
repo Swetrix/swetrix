@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import * as postmark from 'postmark'
 import handlebars from 'handlebars'
-import { LetterTemplate } from './letter'
-import fs = require('fs')
-import path = require('path')
-import { AppLoggerService } from 'src/logger/logger.service'
-import { SEND_WARNING_AT_PERC } from 'src/common/constants'
+import fs = require('fs');
+import path = require('path');
+import { AppLoggerService } from 'src/logger/logger.service';
+import { SEND_WARNING_AT_PERC } from 'src/common/constants';
+import { LetterTemplate } from './letter';
 
 const TEMPLATES_PATH = path.join(__dirname, '..', 'common', 'templates')
 const metaInfoJson = {
@@ -76,7 +76,7 @@ interface Params {
 }
 
 handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
-  return (arg1 == arg2) ? options.fn(this) : options.inverse(this)
+  return arg1 == arg2 ? options.fn(this) : options.inverse(this)
 })
 
 handlebars.registerHelper('greater', function (v1, v2, options) {
@@ -90,11 +90,14 @@ const mailClient = new postmark.ServerClient(process.env.SMTP_PASSWORD)
 
 @Injectable()
 export class MailerService {
-  constructor(
-    private readonly logger: AppLoggerService,
-  ) { }
+  constructor(private readonly logger: AppLoggerService) {}
 
-  async sendEmail(email: string, templateName: LetterTemplate, params: Params = null, messageStream: 'broadcast' | 'outbound' = 'outbound'): Promise<void> {
+  async sendEmail(
+    email: string,
+    templateName: LetterTemplate,
+    params: Params = null,
+    messageStream: 'broadcast' | 'outbound' = 'outbound',
+  ): Promise<void> {
     try {
       const templatePath = `${TEMPLATES_PATH}/en/${templateName}.html`
       const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
@@ -111,10 +114,14 @@ export class MailerService {
       }
 
       if (process.env.SMTP_MOCK) {
-        this.logger.log({
-          ...message,
-          params,
-        }, 'sendEmail', true)
+        this.logger.log(
+          {
+            ...message,
+            params,
+          },
+          'sendEmail',
+          true,
+        )
       } else {
         await mailClient.sendEmail(message)
       }

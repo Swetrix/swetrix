@@ -8,8 +8,8 @@ export const CurrentUserId = createParamDecorator(
     const request: Request = context.switchToHttp().getRequest()
     let token = ''
 
-    if (request.cookies['token']) {
-      token = request.cookies['token']
+    if (request.cookies.token) {
+      token = request.cookies.token;
     } else {
       const extract = ExtractJwt.fromAuthHeaderAsBearerToken()
       token = extract(request)
@@ -21,5 +21,5 @@ export const CurrentUserId = createParamDecorator(
     } catch {
       return null
     }
-  }
-)
+  },
+);

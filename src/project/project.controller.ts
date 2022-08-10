@@ -24,14 +24,14 @@ import * as _values from 'lodash/values'
 import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
 
-import { ProjectService, processProjectUser } from './project.service'
-import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
-import { ActionTokenType } from '../action-tokens/action-token.entity'
-import { ActionTokensService } from '../action-tokens/action-tokens.service'
-import { MailerService } from '../mailer/mailer.service'
-import { LetterTemplate } from '../mailer/letter'
-import { Roles } from '../common/decorators/roles.decorator'
-import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard'
+import { SelfhostedGuard } from 'src/common/guards/selfhosted.guard';
+import { ProjectService, processProjectUser } from './project.service';
+import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity';
+import { ActionTokenType } from '../action-tokens/action-token.entity';
+import { ActionTokensService } from '../action-tokens/action-tokens.service';
+import { MailerService } from '../mailer/mailer.service';
+import { LetterTemplate } from '../mailer/letter';
+import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
@@ -86,15 +86,12 @@ export const deleteProjectRedis = async (id: string) => {
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 
 const isValidShareDTO = (share: ShareDTO): boolean => {
-  return (
-    !_isEmpty(_trim(share.email)) &&
-    _includes(roles, share.role)
-  )
-}
+  return !_isEmpty(_trim(share.email)) && _includes(roles, share.role)
+};
 
 const isValidUpdateShareDTO = (share: ShareUpdateDTO): boolean => {
   return _includes(roles, share.role)
-}
+};
 
 @ApiTags('Project')
 @Controller('project')
@@ -105,7 +102,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-  ) { }
+  ) {}
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -116,37 +113,31 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async get(
     @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
+      @Query('take') take: number | undefined,
+      @Query('skip') skip: number | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
-    this.logger.log({ userId, take, skip }, 'GET /project')
+    this.logger.log({ userId, take, skip }, 'GET /project');
 
     if (isSelfhosted) {
-      const results = await getProjectsClickhouse()
-      const formatted = _map(results, this.projectService.formatFromClickhouse)
+      const results = await getProjectsClickhouse();
+      const formatted = _map(results, this.projectService.formatFromClickhouse);
       return {
         results,
         page_total: _size(formatted),
         total: _size(formatted),
         totalMonthlyEvents: 0, // not needed as it's selfhosed
-      }
-    } else {
-      const where = Object()
-      where.admin = userId
-
-      const paginated = await this.projectService.paginate(
-        { take, skip },
-        where,
-      )
-      const totalMonthlyEvents = await this.projectService.getRedisCount(
-        userId,
-      )
-
-      return {
-        ...paginated,
-        totalMonthlyEvents,
-      }
+      };
     }
+    const where = Object();
+    where.admin = userId;
+
+    const paginated = await this.projectService.paginate({ take, skip }, where);
+    const totalMonthlyEvents = await this.projectService.getRedisCount(userId);
+
+    return {
+      ...paginated,
+      totalMonthlyEvents,
+    };
   }
 
   @Get('/shared')
@@ -164,7 +155,9 @@ export class ProjectController {
     this.logger.log({ userId, take, skip }, 'GET /project/shared')
 
     if (isSelfhosted) {
-      throw new NotImplementedException('This feature is not available on selfhosted yet')
+      throw new NotImplementedException(
+        'This feature is not available on selfhosted yet',
+      )
     } else {
       const where = Object()
       where.user = userId
@@ -194,7 +187,7 @@ export class ProjectController {
     this.logger.log({ take, skip }, 'GET /all')
 
     const where = Object()
-    return await this.projectService.paginate({ take, skip }, where)
+    return this.projectService.paginate({ take, skip }, where)
   }
 
   @Get('/user/:id')
@@ -275,7 +268,9 @@ export class ProjectController {
     const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
 
     if (!user.isActive) {
-      throw new ForbiddenException('User\'s email address has to be verified first')
+      throw new ForbiddenException(
+        "User's email address has to be verified first",
+      )
     }
 
     if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
@@ -317,66 +312,65 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(
     @Body() projectDTO: ProjectDTO,
-    @CurrentUserId() userId: string,
+      @CurrentUserId() userId: string,
   ): Promise<Project> {
-    this.logger.log({ projectDTO, userId }, 'POST /project')
+    this.logger.log({ projectDTO, userId }, 'POST /project');
 
     if (isSelfhosted) {
-      const projects = await getProjectsClickhouse()
+      const projects = await getProjectsClickhouse();
 
-      this.projectService.validateProject(projectDTO)
-      this.projectService.checkIfIDUniqueClickhouse(projects, projectDTO.id)
+      this.projectService.validateProject(projectDTO);
+      this.projectService.checkIfIDUniqueClickhouse(projects, projectDTO.id);
 
-      const project = new Project()
-      Object.assign(project, projectDTO)
-      project.origins = _map(projectDTO.origins, _trim)
-      project.active = true
+      const project = new Project();
+      Object.assign(project, projectDTO);
+      project.origins = _map(projectDTO.origins, _trim);
+      project.active = true;
 
-      await createProjectClickhouse(project)
+      await createProjectClickhouse(project);
 
-      return project
-    } else {
-      const user = await this.userService.findOneWithRelations(userId, [
-        'projects',
-      ])
-      const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+      return project;
+    }
+    const user = await this.userService.findOneWithRelations(userId, [
+      'projects',
+    ]);
+    const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects;
 
-      if (!user.isActive) {
-        throw new ForbiddenException('Please, verify your email address first')
-      }
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first');
+    }
 
-      if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
-        throw new ForbiddenException(
-          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-        )
-      }
+    if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
+      throw new ForbiddenException(
+        `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+      );
+    }
 
-      this.projectService.validateProject(projectDTO)
+    this.projectService.validateProject(projectDTO);
 
-      await this.projectService.checkIfIDUnique(projectDTO.id)
+    await this.projectService.checkIfIDUnique(projectDTO.id);
 
-      try {
-        const project = new Project()
-        Object.assign(project, projectDTO)
-        project.origins = _map(projectDTO.origins, _trim)
+    try {
+      const project = new Project();
+      Object.assign(project, projectDTO);
+      project.origins = _map(projectDTO.origins, _trim);
 
-        const newProject = await this.projectService.create(project)
-        user.projects.push(project)
+      const newProject = await this.projectService.create(project);
+      user.projects.push(project);
 
-        await this.userService.create(user)
+      await this.userService.create(user);
 
-        return newProject
-      } catch (e) {
-        if (e.code === 'ER_DUP_ENTRY') {
-          if (e.sqlMessage.includes(projectDTO.id)) {
-            throw new BadRequestException(
-              'Project with selected ID already exists',
-            )
-          }
+      return newProject;
+    } catch (e) {
+      if (e.code === 'ER_DUP_ENTRY') {
+        if (e.sqlMessage.includes(projectDTO.id)) {
+          throw new BadRequestException(
+            'Project with selected ID already exists',
+          );
         }
-
-        throw new BadRequestException(e)
       }
+
+      throw new BadRequestException(e);
     }
   }
 
@@ -565,9 +559,7 @@ export class ProjectController {
     }
 
     if (!isValidShareDTO(shareDTO)) {
-      throw new BadRequestException(
-        'The provided ShareDTO is incorrect',
-      )
+      throw new BadRequestException('The provided ShareDTO is incorrect')
     }
 
     const user = await this.userService.findOne(uid)
@@ -585,27 +577,36 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const invitee = await this.userService.findOneWhere({
-      email: shareDTO.email,
-    }, ['sharedProjects'])
+    const invitee = await this.userService.findOneWhere(
+      {
+        email: shareDTO.email,
+      },
+      ['sharedProjects'],
+    )
 
     if (!invitee) {
-      throw new NotFoundException(`User with email ${shareDTO.email} is not registered on Swetrix`)
+      throw new NotFoundException(
+        `User with email ${shareDTO.email} is not registered on Swetrix`,
+      )
     }
 
     if (invitee.id === user.id) {
       throw new BadRequestException('You cannot share with yourself')
     }
 
-    const isSharingWithUser = !_isEmpty(await this.projectService.findShare({
-      where: {
-        project: project.id,
-        user: invitee.id,
-      },
-    }))
+    const isSharingWithUser = !_isEmpty(
+      await this.projectService.findShare({
+        where: {
+          project: project.id,
+          user: invitee.id,
+        },
+      }),
+    )
 
     if (isSharingWithUser) {
-      throw new BadRequestException(`You're already sharing the project with ${invitee.email}`)
+      throw new BadRequestException(
+        `You're already sharing the project with ${invitee.email}`,
+      )
     }
 
     try {
@@ -625,11 +626,23 @@ export class ProjectController {
       await this.userService.create(invitee)
 
       // TODO: Implement link expiration
-      const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PROJECT_SHARE, share.id)
+      const actionToken = await this.actionTokensService.createForUser(
+        user,
+        ActionTokenType.PROJECT_SHARE,
+        share.id,
+      )
       const url = `${headers.origin}/share/${actionToken.id}`
-      await this.mailerService.sendEmail(invitee.email, LetterTemplate.ProjectInvitation, {
-        url, email: user.email, name: project.name, role: share.role, expiration: PROJECT_INVITE_EXPIRE,
-      })
+      await this.mailerService.sendEmail(
+        invitee.email,
+        LetterTemplate.ProjectInvitation,
+        {
+          url,
+          email: user.email,
+          name: project.name,
+          role: share.role,
+          expiration: PROJECT_INVITE_EXPIRE,
+        },
+      )
 
       const updatedProject = await this.projectService.findOne(pid, {
         relations: ['share', 'share.user'],
@@ -639,7 +652,9 @@ export class ProjectController {
       await deleteProjectRedis(pid)
       return processProjectUser(updatedProject)
     } catch (e) {
-      console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)
+      console.error(
+        `[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`,
+      )
       throw new BadRequestException(e)
     }
   }
@@ -658,9 +673,7 @@ export class ProjectController {
     this.logger.log({ uid, shareDTO, shareId }, 'PUT /project/share/:shareId')
 
     if (!isValidUpdateShareDTO(shareDTO)) {
-      throw new BadRequestException(
-        'The provided ShareUpdateDTO is incorrect',
-      )
+      throw new BadRequestException('The provided ShareUpdateDTO is incorrect')
     }
 
     const user = await this.userService.findOne(uid)
@@ -673,7 +686,7 @@ export class ProjectController {
     }
 
     if (share.project?.admin?.id !== uid) {
-      throw new NotFoundException(`You are not allowed to edit this share`)
+      throw new NotFoundException('You are not allowed to edit this share')
     }
 
     this.projectService.allowedToManage(share.project, uid, user.roles)
@@ -684,7 +697,7 @@ export class ProjectController {
     })
 
     await deleteProjectRedis(share.project.id)
-    return await this.projectService.findOneShare(shareId)
+    return this.projectService.findOneShare(shareId)
   }
 
   @HttpCode(204)

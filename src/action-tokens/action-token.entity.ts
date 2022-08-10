@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Timestamp, CreateDateColumn, Column } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  Timestamp,
+  CreateDateColumn,
+  Column,
+} from 'typeorm'
 import { User } from '../user/entities/user.entity'
 
 export enum ActionTokenType {

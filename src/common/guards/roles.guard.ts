@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common'
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Request } from 'express'
 import { verify } from 'jsonwebtoken'
@@ -10,23 +15,23 @@ import { isSelfhosted } from '../constants'
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private userService: UserService,
-  ) { }
+  constructor(private reflector: Reflector, private userService: UserService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const secret = process.env.JWT_SECRET
     const roles = this.reflector.get<string[]>('roles', context.getHandler())
-    const twoFaNotRequired = this.reflector.get<boolean>('twoFaNotRequired', context.getHandler())
+    const twoFaNotRequired = this.reflector.get<boolean>(
+      'twoFaNotRequired',
+      context.getHandler(),
+    )
     if (!roles || isSelfhosted) {
       return true
     }
 
     const request: Request = context.switchToHttp().getRequest()
     let token = ''
-    if (request.cookies['token']) {
-      token = request.cookies['token']
+    if (request.cookies.token) {
+      token = request.cookies.token;
     } else {
       const extract = ExtractJwt.fromAuthHeaderAsBearerToken()
       token = extract(request)
@@ -35,14 +40,22 @@ export class RolesGuard implements CanActivate {
     try {
       const decoded: any = verify(token, secret)
       if (decoded) {
-        let user: User = await this.userService.findOneWhere({ id: decoded.user_id })
-        const hasRole = user.roles.some(role => !!roles.find(item => item === role))
+        const user: User = await this.userService.findOneWhere({
+          id: decoded.user_id,
+        });
+        const hasRole = user.roles.some(
+          role => !!roles.find(item => item === role),
+        )
 
         if (!hasRole) {
           throw new Error()
         }
 
-        if (!twoFaNotRequired && user.isTwoFactorAuthenticationEnabled && !decoded.isSecondFactorAuthenticated) {
+        if (
+          !twoFaNotRequired
+          && user.isTwoFactorAuthenticationEnabled
+          && !decoded.isSecondFactorAuthenticated
+        ) {
           throw new Error()
         }
 

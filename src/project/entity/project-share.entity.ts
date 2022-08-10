@@ -1,4 +1,10 @@
-import { Entity, Column, ManyToOne, BeforeUpdate, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  BeforeUpdate,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
@@ -43,6 +49,6 @@ export class ProjectShare {
 
   @BeforeUpdate()
   updateTimestamp() {
-    this.updated = new Date
+    this.updated = new Date();
   }
 }

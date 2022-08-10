@@ -13,9 +13,8 @@ import * as _head from 'lodash/head'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
-import { redis } from './constants'
-import { clickhouse } from './constants'
-import { Project } from 'src/project/entity/project.entity'
+import { Project } from 'src/project/entity/project.entity';
+import { redis, clickhouse } from './constants'
 
 dayjs.extend(utc)
 
@@ -28,7 +27,7 @@ const marketingTips = {
     'Contribute Articles to Expert Sites\nFind blogs or websites that are thought leaders in your industry, then submit articles that can put in front of their audience. This is also a great way to build backlinks and drive organic traffic to your website.',
     'Create an Affiliate Program\nAffiliate programs are an easy way to get people clicking to your website to learn more about your company. To date, 81% of brands have adopted an affiliate marketing program.\nAn affiliate program is a long term investment; you will have to build a program people will want to join, try to get and manage quality affiliates so you can get the fruits of your labour.',
     'Add Your Website Link To All Your Platforms\nAdding your links to all your platforms allows you to optimise your website for more clicks.',
-    'Have a Backlink Strategy\nGoogle\'s search engine uses links as one of the three most important search engine ranking factors for a website.\nBelieve it or not, you can improve your website\'s SEO by backlinking your website in the article you contribute as a guest writer.\nOnce you have a strategy in place, you will begin to see your website\'s click-through rate increase and traffic coming your way.',
+    "Have a Backlink Strategy\nGoogle's search engine uses links as one of the three most important search engine ranking factors for a website.\nBelieve it or not, you can improve your website's SEO by backlinking your website in the article you contribute as a guest writer.\nOnce you have a strategy in place, you will begin to see your website's click-through rate increase and traffic coming your way.",
     'Host a Giveaway on Your Website\nHosting a giveaway on your website is a sure way to promote your website. Giveaways pack more of a punch for your business than you think.',
     'Use Influencers To Market Your Website\nInfluencer Marketing has been in the top five marketing tools and strategies for the past four years and counting.\nYou can use influencers in a wide variety of ways. One way is to partner with an influencer for a do co-promotions like a giveaway, a special discount, or prize package.',
     'Fix Broken External Links & Errors\nBroken external links, just as the states, are links that lead nowhere or give users an error.\nMaybe your busy sharing other links from your site or there are some old content or web pages you forgot you deleted. Over time you will be losing potential traffic and clients if you forget to audit your site to find broken external links.',
@@ -46,29 +45,37 @@ const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
 const allowedToUpdateKeys = ['name', 'origins', 'active', 'public']
 
-const _getRateLimitHash = (ip: string, salt: string = '') => `rl:${hash(`${ip}${salt}`).toString('hex')}`
+const _getRateLimitHash = (ip: string, salt = '') => `rl:${hash(`${ip}${salt}`).toString('hex')}`
 
-const splitAt = (x, index): Array<Array<any> | string> => [x.slice(0, index), x.slice(index)]
+const splitAt = (x, index): Array<Array<any> | string> => [
+  x.slice(0, index),
+  x.slice(index),
+]
 
-const getRandomTip = (language: string = 'en'): string => {
+const getRandomTip = (language = 'en'): string => {
   return _sample(marketingTips[language])
-}
+};
 
 // 'action' is used as a salt to differ rate limiting routes
-const checkRateLimit = async (ip: string, action: string, reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT, reqTimeout: number = RATE_LIMIT_TIMEOUT): Promise<void> => {
+const checkRateLimit = async (
+  ip: string,
+  action: string,
+  reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
+  reqTimeout: number = RATE_LIMIT_TIMEOUT,
+): Promise<void> => {
   const rlHash = _getRateLimitHash(ip, action)
-  let rlCount: number = _toNumber(await redis.get(rlHash)) || 0
+  const rlCount: number = _toNumber(await redis.get(rlHash)) || 0;
 
   if (rlCount >= reqAmount) {
     throw new ForbiddenException('Too many requests, please try again later')
   }
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
-}
+};
 
 const getProjectsClickhouse = async (id = null) => {
   if (!id) {
     const query = 'SELECT * FROM project;'
-    return await clickhouse.query(query).toPromise()
+    return clickhouse.query(query).toPromise()
   }
 
   const paramsData = {
@@ -77,7 +84,7 @@ const getProjectsClickhouse = async (id = null) => {
     },
   }
 
-  const query = `SELECT * FROM project WHERE id = {id:FixedString(12)};`
+  const query = 'SELECT * FROM project WHERE id = {id:FixedString(12)};';
   const project = await clickhouse.query(query, paramsData).toPromise()
 
   if (_isEmpty(project)) {
@@ -85,24 +92,31 @@ const getProjectsClickhouse = async (id = null) => {
   }
 
   return _head(project)
-}
+};
 
 const updateProjectClickhouse = async (project: object) => {
-  const filtered = _reduce(_filter(_keys(project), key => allowedToUpdateKeys.includes(key)), (obj, key) => {
-    obj[key] = project[key]
-    return obj
-  }, {})
+  const filtered = _reduce(
+    _filter(_keys(project), key => allowedToUpdateKeys.includes(key)),
+    (obj, key) => {
+      obj[key] = project[key]
+      return obj
+    },
+    {},
+  )
   const columns = _keys(filtered)
   const values = _values(filtered)
   // @ts-ignore
-  const query = `ALTER table project UPDATE ${_join(_map(columns, (col, id) => `${col}='${values[id]}'`), ', ')} WHERE id='${project.id}'`
-  return await clickhouse.query(query).toPromise()
-}
+  const query = `ALTER table project UPDATE ${_join(
+    _map(columns, (col, id) => `${col}='${values[id]}'`),
+    ', ',
+  )} WHERE id='${project.id}'`
+  return clickhouse.query(query).toPromise()
+};
 
-const deleteProjectClickhouse = async (id) => {
+const deleteProjectClickhouse = async id => {
   const query = `ALTER table project DELETE WHERE WHERE id='${id}'`
-  return await clickhouse.query(query).toPromise()
-}
+  return clickhouse.query(query).toPromise()
+};
 
 const createProjectClickhouse = async (project: Project) => {
   const paramsData = {
@@ -110,17 +124,25 @@ const createProjectClickhouse = async (project: Project) => {
       ...project,
     },
   }
-  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'',1,0,'${dayjs.utc().format('YYYY-MM-DD HH:mm:ss')}')`
-  return await clickhouse.query(query, paramsData).toPromise()
-}
+  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'',1,0,'${dayjs
+    .utc()
+    .format('YYYY-MM-DD HH:mm:ss')}')`
+  return clickhouse.query(query, paramsData).toPromise()
+};
 
 const generateRecoveryCode = () => randomstring.generate({
-  length: 30,
-  charset: 'alphabetic',
-  capitalization: 'uppercase',
-})
+    length: 30,
+    charset: 'alphabetic',
+    capitalization: 'uppercase',
+  })
 
 export {
-  getRandomTip, checkRateLimit, createProjectClickhouse, getProjectsClickhouse, updateProjectClickhouse,
-  deleteProjectClickhouse, splitAt, generateRecoveryCode,
+  getRandomTip,
+  checkRateLimit,
+  createProjectClickhouse,
+  getProjectsClickhouse,
+  updateProjectClickhouse,
+  deleteProjectClickhouse,
+  splitAt,
+  generateRecoveryCode,
 }

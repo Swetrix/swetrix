@@ -47,13 +47,14 @@ const modules = [
 ]
 
 if (process.env.TG_BOT_TOKEN) {
-  modules.push(TelegrafModule.forRoot({
-    token: process.env.TG_BOT_TOKEN,
-  }))
+  modules.push(
+    TelegrafModule.forRoot({
+      token: process.env.TG_BOT_TOKEN,
+    }),
+  )
 }
 
 @Module({
   imports: modules,
 })
-
 export class AppModule {}

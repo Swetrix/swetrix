@@ -2,8 +2,8 @@ import { Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
-import * as _size  from 'lodash/size'
-import * as _omit  from 'lodash/omit'
+import * as _size from 'lodash/size'
+import * as _omit from 'lodash/omit'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { User } from './entities/user.entity'
@@ -17,30 +17,38 @@ export class UserService {
   ) {}
 
   async create(userDTO: UserProfileDTO | User): Promise<User> {
-    return await this.usersRepository.save(userDTO)
+    return this.usersRepository.save(userDTO)
   }
 
-  async paginate(options: PaginationOptionsInterface): Promise<Pagination<User>> {
+  async paginate(
+    options: PaginationOptionsInterface,
+  ): Promise<Pagination<User>> {
     const [results, total] = await this.usersRepository.findAndCount({
       take: options.take || 10,
       skip: options.skip || 0,
     })
-  
+
     return new Pagination<User>({
       results,
       total,
     })
-   }
+  }
 
   async update(id: string, update: Record<string, unknown>): Promise<any> {
     return this.usersRepository.update({ id }, update)
   }
 
-  async updateByEmail(email: string, update: Record<string, unknown>): Promise<any> {
+  async updateByEmail(
+    email: string,
+    update: Record<string, unknown>,
+  ): Promise<any> {
     return this.usersRepository.update({ email }, update)
   }
 
-  async updateBySubID(subID: string, update: Record<string, unknown>): Promise<any> {
+  async updateBySubID(
+    subID: string,
+    update: Record<string, unknown>,
+  ): Promise<any> {
     return this.usersRepository.update({ subID }, update)
   }
 
@@ -49,20 +57,28 @@ export class UserService {
   }
 
   async count(): Promise<number> {
-    return await this.usersRepository.count()
+    return this.usersRepository.count()
   }
 
   omitSensitiveData(user: User): User {
-    return _omit(user, ['password', 'twoFactorRecoveryCode', 'twoFactorAuthenticationSecret'])
+    return _omit(user, [
+      'password',
+      'twoFactorRecoveryCode',
+      'twoFactorAuthenticationSecret',
+    ])
   }
 
-  findOneWhere(where: Record<string, unknown>, relations: string[] = []): Promise<User> {
+  findOneWhere(
+    where: Record<string, unknown>,
+    relations: string[] = [],
+  ): Promise<User> {
     return this.usersRepository.findOne({ where, relations })
   }
 
   findOne(id: string, params: object = {}): Promise<User> {
     return this.usersRepository.findOne({
-      where: { id }, ...params,
+      where: { id },
+      ...params,
     })
   }
 
@@ -70,9 +86,13 @@ export class UserService {
     return this.usersRepository.findOne(id, { relations })
   }
 
-  findWhereWithRelations(where: Record<string, unknown>, relations: string[]): Promise<User[]> {
+  findWhereWithRelations(
+    where: Record<string, unknown>,
+    relations: string[],
+  ): Promise<User[]> {
     return this.usersRepository.find({
-      where, relations,
+      where,
+      relations,
     })
   }
 
@@ -90,11 +110,11 @@ export class UserService {
       err.push('Password cannot be empty')
     }
 
-    if(_size(pass) > 50) {
+    if (_size(pass) > 50) {
       err.push('Maximum password length is 50 letters')
     }
 
-    if(_size(pass) < 8) {
+    if (_size(pass) < 8) {
       err.push('at least 8 characters')
     }
 
