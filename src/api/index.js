@@ -228,6 +228,17 @@ export const deleteProject = (id) =>
         : error.response.data.message
     })
 
+export const resetProject = (id) =>
+  api
+    .delete(`/project/reset/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const getProjectData = (
   pid,
   tb = 'hour',

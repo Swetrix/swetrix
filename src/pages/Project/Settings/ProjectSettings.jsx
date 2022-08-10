@@ -16,12 +16,14 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
-import { ExclamationIcon } from '@heroicons/react/outline'
+import { ExclamationIcon, TrashIcon } from '@heroicons/react/outline'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted } from 'redux/constants'
-import { createProject, updateProject, deleteProject } from 'api'
+import {
+  createProject, updateProject, deleteProject, resetProject,
+} from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
@@ -39,6 +41,7 @@ const MAX_IPBLACKLIST_LENGTH = 300
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
+  deleteProjectCache,
 }) => {
   const { t } = useTranslation('common')
   const { pathname } = useLocation()
@@ -56,7 +59,9 @@ const ProjectSettings = ({
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
+  const [showReset, setShowReset] = useState(false)
   const [projectDeleting, setProjectDeleting] = useState(false)
+  const [projectResetting, setProjectResetting] = useState(false)
   const [projectSaving, setProjectSaving] = useState(false)
 
   useEffect(() => {
@@ -127,12 +132,29 @@ const ProjectSettings = ({
       try {
         await deleteProject(id)
         removeProject(id, isSharedProject)
-        projectDeleted()
+        projectDeleted(t('project.settings.deleted'))
         history.push(routes.dashboard)
       } catch (e) {
         deleteProjectFailed(e)
       } finally {
         setProjectDeleting(false)
+      }
+    }
+  }
+
+  const onReset = async () => {
+    setShowReset(false)
+    if (!projectResetting) {
+      setProjectResetting(true)
+      try {
+        await resetProject(id)
+        deleteProjectCache(id)
+        projectDeleted(t('project.settings.resetted'))
+        history.push(routes.dashboard)
+      } catch (e) {
+        deleteProjectFailed(e)
+      } finally {
+        setProjectResetting(false)
       }
     }
   }
@@ -281,10 +303,16 @@ const ProjectSettings = ({
                   </Button>
                 </div>
                 {!project.shared && (
-                  <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
-                    <ExclamationIcon className='w-5 h-5 mr-1' />
-                    {t('project.settings.delete')}
-                  </Button>
+                  <div>
+                    <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
+                      <TrashIcon className='w-5 h-5 mr-1' />
+                      {t('project.settings.reset')}
+                    </Button>
+                    <Button className='ml-2' onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                      <ExclamationIcon className='w-5 h-5 mr-1' />
+                      {t('project.settings.delete')}
+                    </Button>
+                  </div>
                 )}
               </div>
               <hr className='mt-5' />
@@ -322,6 +350,17 @@ const ProjectSettings = ({
           type='error'
           isOpened={showDelete}
         />
+        <Modal
+          onClose={() => setShowReset(false)}
+          onSubmit={onReset}
+          submitText={t('project.settings.reset')}
+          closeText={t('common.close')}
+          title={t('project.settings.qReset')}
+          message={t('project.settings.resetHint')}
+          submitType='danger'
+          type='error'
+          isOpened={showReset}
+        />
       </div>
     </Title>
   )
@@ -339,6 +378,7 @@ ProjectSettings.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
   isSharedProject: PropTypes.bool.isRequired,
+  deleteProjectCache: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(ProjectSettings, auth.authenticated))

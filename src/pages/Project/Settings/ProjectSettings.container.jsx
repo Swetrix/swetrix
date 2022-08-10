@@ -24,8 +24,8 @@ const mapDispatchToProps = (dispatch) => ({
   newProject: (message) => {
     dispatch(alertsActions.newProject(message))
   },
-  projectDeleted: () => {
-    dispatch(alertsActions.projectDeleted('The project has been deleted'))
+  projectDeleted: (message) => {
+    dispatch(alertsActions.projectDeleted(message))
   },
   deleteProjectFailed: (message) => {
     dispatch(errorsActions.deleteProjectFailed(message))
@@ -39,6 +39,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   removeProject: (pid, shared) => {
     dispatch(UIActions.removeProject(pid, shared))
+  },
+  deleteProjectCache: (pid) => {
+    dispatch(UIActions.deleteProjectCache(pid))
   },
   showError: (message) => {
     dispatch(errorsActions.genericError(message))
