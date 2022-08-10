@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
 import { Popover, Transition } from '@headlessui/react'
-import { MenuIcon, XIcon } from '@heroicons/react/outline'
+import {
+  MenuIcon, XIcon, DocumentTextIcon, CreditCardIcon, CollectionIcon, RssIcon,
+} from '@heroicons/react/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/solid'
 
 import routes from 'routes'
@@ -45,27 +47,32 @@ const Header = ({ authenticated, theme }) => {
                 <span className='sr-only'>Swetrix</span>
                 <img className='h-10' src='/assets/logo_white.svg' alt='' />
               </Link>
-              <div className='hidden ml-10 space-x-1 lg:block'>
-                <a href={BLOG_URL} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
+              <div className='hidden ml-10 space-x-1 lg:flex'>
+                <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
+                  <RssIcon className='w-5 h-5 mr-1' />
                   {t('footer.blog')}
                 </a>
                 {!isSelfhosted && (
                   authenticated ? (
-                    <NavLink to={routes.billing} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+                    <NavLink to={routes.billing} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+                      <CreditCardIcon className='w-5 h-5 mr-1' />
                       {t('common.billing')}
                     </NavLink>
                   ) : (
                     <>
-                      <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                      <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                        <CollectionIcon className='w-5 h-5 mr-1' />
                         {t('common.features')}
                       </NavLink>
-                      <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                      <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                        <CreditCardIcon className='w-5 h-5 mr-1' />
                         {t('common.pricing')}
                       </HashLink>
                     </>
                   )
                 )}
-                <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+                <NavLink to={routes.docs} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+                  <DocumentTextIcon className='w-5 h-5 mr-1' />
                   {t('common.docs')}
                 </NavLink>
               </div>
@@ -144,24 +151,29 @@ const Header = ({ authenticated, theme }) => {
             </div>
           </div>
           <div className='py-4 flex flex-wrap justify-center space-x-2 lg:hidden'>
-            <a href={BLOG_URL} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
+            <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
+              <RssIcon className='w-5 h-5 mr-1' />
               {t('footer.blog')}
             </a>
             {authenticated ? (
-              <NavLink to={routes.billing} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+              <NavLink to={routes.billing} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+                <CreditCardIcon className='w-5 h-5 mr-1' />
                 {t('common.billing')}
               </NavLink>
             ) : (
               <>
-                <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                  <CreditCardIcon className='w-5 h-5 mr-1' />
                   {t('common.pricing')}
                 </HashLink>
-                <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                  <CollectionIcon className='w-5 h-5 mr-1' />
                   {t('common.features')}
                 </NavLink>
               </>
             )}
-            <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+            <NavLink to={routes.docs} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+              <DocumentTextIcon className='w-5 h-5 mr-1' />
               {t('common.docs')}
             </NavLink>
           </div>
