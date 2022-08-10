@@ -16,6 +16,7 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
+import { ExclamationIcon } from '@heroicons/react/outline'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -280,7 +281,8 @@ const ProjectSettings = ({
                   </Button>
                 </div>
                 {!project.shared && (
-                  <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger large>
+                  <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                    <ExclamationIcon className='w-5 h-5 mr-1' />
                     {t('project.settings.delete')}
                   </Button>
                 )}
@@ -293,7 +295,7 @@ const ProjectSettings = ({
               }
             </>
           ) : (
-            <p className='text-gray-500 dark:text-gray-300 italic mt-2 text-sm'>
+            <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
               {t('project.settings.createHint')}
             </p>
           )}

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import Spin from './icons/Spin'
 
 const Button = ({
-  text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading,
+  text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading, semiSmall,
 }) => (
   <button
     type={type}
@@ -17,6 +17,7 @@ const Button = ({
       'text-gray-700 bg-white hover:bg-gray-50 border-transparent': white,
       'text-white bg-red-500 hover:bg-red-600 border-transparent': danger,
       'px-2.5 py-1.5 text-xs': small,
+      'px-2.5 py-1.5 text-sm': semiSmall,
       'px-4 py-2 text-sm': large,
       'px-6 py-3 text-base': giant,
       'px-3 py-2 text-sm': regular,
@@ -39,6 +40,7 @@ Button.propTypes = {
   white: PropTypes.bool,
   danger: PropTypes.bool,
   small: PropTypes.bool,
+  semiSmall: PropTypes.bool,
   regular: PropTypes.bool,
   large: PropTypes.bool,
   giant: PropTypes.bool,
@@ -54,6 +56,7 @@ Button.defaultProps = {
   secondary: false,
   white: false,
   small: false,
+  semiSmall: false,
   regular: false,
   large: false,
   danger: false,
