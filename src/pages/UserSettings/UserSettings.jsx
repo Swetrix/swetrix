@@ -10,7 +10,7 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import _isString from 'lodash/isString'
-import { MailIcon } from '@heroicons/react/outline'
+import { MailIcon, ExclamationIcon, DownloadIcon } from '@heroicons/react/outline'
 import QRCode from 'react-qr-code'
 import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
@@ -643,17 +643,19 @@ const UserSettings = ({
           <div className='flex justify-between mt-4'>
             <Button
               onClick={() => setShowExportModal(true)}
-              regular
+              semiSmall
               primary
             >
+              <DownloadIcon className='w-5 h-5 mr-1' />
               {t('profileSettings.requestExport')}
             </Button>
             <Button
               className='ml-3'
               onClick={() => setShowModal(true)}
-              regular
+              semiSmall
               danger
             >
+              <ExclamationIcon className='w-5 h-5 mr-1' />
               {t('profileSettings.delete')}
             </Button>
           </div>
