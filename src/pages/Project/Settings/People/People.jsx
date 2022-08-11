@@ -271,7 +271,7 @@ const People = ({
           </p>
         </div>
         <Button
-          className='h-8'
+          className='h-8 pl-2'
           primary
           regular
           type='button'

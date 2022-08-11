@@ -281,7 +281,7 @@ const ProjectSettings = ({
                   </Button>
                 </div>
                 {!project.shared && (
-                  <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                  <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall className='!pl-1.5'>
                     <ExclamationIcon className='w-5 h-5 mr-1' />
                     {t('project.settings.delete')}
                   </Button>
