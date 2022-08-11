@@ -293,8 +293,8 @@ const ProjectSettings = ({
                 label={t('project.settings.public')}
                 hint={t('project.settings.publicHint')}
               />
-              <div className='flex justify-between mt-8'>
-                <div>
+              <div className='flex justify-between mt-8 h-20 sm:h-min'>
+                <div className='flex flex-wrap items-center'>
                   <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
                     {t('common.cancel')}
                   </Button>
@@ -303,7 +303,7 @@ const ProjectSettings = ({
                   </Button>
                 </div>
                 {!project.shared && (
-                  <div>
+                  <div className='flex flex-wrap items-center justify-end'>
                     <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
                       <TrashIcon className='w-5 h-5 mr-1' />
                       {t('project.settings.reset')}
@@ -315,7 +315,7 @@ const ProjectSettings = ({
                   </div>
                 )}
               </div>
-              <hr className='mt-5' />
+              <hr className='mt-2 sm:mt-5' />
               {
                 !project.shared && (
                   <People project={project} />
