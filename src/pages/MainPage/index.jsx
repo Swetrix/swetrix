@@ -79,13 +79,13 @@ const Main = () => {
                       {t('main.trackEveryMetric')}
                     </p>
                     <div className='mt-10 flex flex-col items-center sm:flex-row'>
-                      <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[350px] sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
+                      <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
                         <span className='text-base font-semibold mr-1'>
                           {t('main.start')}
                         </span>
                         <ArrowSmRightIcon className='h-4 w-5 mt-[1px]' />
                       </Link>
-                      <a href={LIVE_DEMO_URL} className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-gray-200 border w-full max-w-[350px] sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-gray-800' target='_blank' rel='noopener noreferrer'>
+                      <a href={LIVE_DEMO_URL} className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-gray-200 border w-full sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-gray-800' target='_blank' rel='noopener noreferrer'>
                         <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
                       </a>
                     </div>

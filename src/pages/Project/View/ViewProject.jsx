@@ -681,10 +681,10 @@ const ViewProject = ({
             {(!isProjectPublic && !(sharedRoles === roleViewer.role)) && (
               <Button
                 onClick={openSettingsHandler}
-                className='flex justify-center items-center py-2 px-3 md:px-4 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
                 secondary
               >
-                <CogIcon className='w-5 h-5 mr-2' />
+                <CogIcon className='w-5 h-5 mr-1' />
                 {t('common.settings')}
               </Button>
             )}
