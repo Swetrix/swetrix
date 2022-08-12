@@ -9,8 +9,14 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { Roles } from '../../common/decorators/roles.decorator'
+import { RolesGuard } from '../../common/guards/roles.guard'
+import { UserType } from '../../user/entities/user.entity'
 import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'
 import { CreateCategory } from './dtos/create-category.dto'
@@ -22,10 +28,25 @@ import { UpdateCategory } from './dtos/update-category.dto'
 import { ISaveCategory } from './interfaces/save-category.interface'
 
 @ApiTags('categories')
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @ApiQuery({
+    description: 'Category offset',
+    example: '15',
+    name: 'offset',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Category limit',
+    example: '75',
+    name: 'limit',
+    required: false,
+    type: String,
+  })
   @Get()
   async getCategories(@Query() queries: GetCategoriesQueries): Promise<{
     categories: Category[]
@@ -39,6 +60,12 @@ export class CategoriesController {
     return { categories, count }
   }
 
+  @ApiParam({
+    name: 'categoryId',
+    description: 'Category ID',
+    example: '1',
+    type: String,
+  })
   @Get(':categoryId')
   async getCategory(@Param() params: GetCategoryParams): Promise<Category> {
     const category = await this.categoriesService.findById(params.categoryId)
@@ -50,6 +77,8 @@ export class CategoriesController {
     return category
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
   @Post()
   async createCategory(
     @Body() body: CreateCategory,
@@ -65,6 +94,14 @@ export class CategoriesController {
     return await this.categoriesService.save(categoryInstance)
   }
 
+  @ApiParam({
+    name: 'categoryId',
+    description: 'Category ID',
+    example: '1',
+    type: String,
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
   @Patch(':categoryId')
   async updateCategory(
     @Param() params: UpdateCategoryParams,
@@ -81,6 +118,14 @@ export class CategoriesController {
     return body
   }
 
+  @ApiParam({
+    name: 'categoryId',
+    description: 'Category ID',
+    example: '1',
+    type: String,
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
   @Delete(':categoryId')
   async deleteCategory(@Param() params: DeleteCategoryParams): Promise<void> {
     const category = await this.categoriesService.findById(params.categoryId)
