@@ -4,6 +4,7 @@ import { FindOneOptions, Repository } from 'typeorm'
 import { Category } from './category.entity'
 import { ICreateCategory } from './interfaces/create-category.interface'
 import { ISaveCategory } from './interfaces/save-category.interface'
+import { IUpdateCategory } from './interfaces/update-category.interface'
 
 @Injectable()
 export class CategoriesService {
@@ -26,5 +27,13 @@ export class CategoriesService {
 
   async save(category: ISaveCategory): Promise<ISaveCategory & Category> {
     return await this.categoryRepository.save(category)
+  }
+
+  async findById(id: number): Promise<Category> {
+    return await this.findOne({ where: { id } })
+  }
+
+  async update(id: number, category: IUpdateCategory): Promise<void> {
+    await this.categoryRepository.update({ id }, category)
   }
 }
