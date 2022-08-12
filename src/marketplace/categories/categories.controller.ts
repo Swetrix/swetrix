@@ -26,9 +26,17 @@ import { GetCategoryParams } from './dtos/get-category-params.dto'
 import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
 import { ISaveCategory } from './interfaces/save-category.interface'
+import { BodyValidationPipe } from './pipes/body-validation.pipe'
 
 @ApiTags('categories')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(
+  new ValidationPipe({
+    forbidNonWhitelisted: true,
+    forbidUnknownValues: true,
+    transform: true,
+    whitelist: true,
+  }),
+)
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
@@ -105,7 +113,7 @@ export class CategoriesController {
   @Patch(':categoryId')
   async updateCategory(
     @Param() params: UpdateCategoryParams,
-    @Body() body: UpdateCategory,
+    @Body(new BodyValidationPipe()) body: UpdateCategory,
   ): Promise<UpdateCategory> {
     const category = await this.categoriesService.findById(params.categoryId)
 
