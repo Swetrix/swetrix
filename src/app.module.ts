@@ -20,6 +20,7 @@ import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
 import { TGModule } from './tg-integration/tg.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
+import { Category } from './marketplace/categories/category.entity'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env' }),
@@ -31,7 +32,7 @@ const modules = [
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
     synchronize: process.env.NODE_ENV === 'development',
-    entities: [User, ActionToken, Project, ProjectShare],
+    entities: [User, ActionToken, Project, ProjectShare, Category],
   }),
   ScheduleModule.forRoot(),
   TaskManagerModule,
