@@ -3,6 +3,7 @@ import {
   ConflictException,
   Controller,
   Delete,
+  Get,
   NotFoundException,
   Param,
   Patch,
@@ -13,6 +14,7 @@ import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'
 import { CreateCategory } from './dtos/create-category.dto'
 import { DeleteCategoryParams } from './dtos/delete-category-params.dto'
+import { GetCategoryParams } from './dtos/get-category-params.dto'
 import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
 import { ISaveCategory } from './interfaces/save-category.interface'
@@ -21,6 +23,17 @@ import { ISaveCategory } from './interfaces/save-category.interface'
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
+
+  @Get(':categoryId')
+  async getCategory(@Param() params: GetCategoryParams): Promise<Category> {
+    const category = await this.categoriesService.findById(params.categoryId)
+
+    if (!category) {
+      throw new NotFoundException('Category not found.')
+    }
+
+    return category
+  }
 
   @Post()
   async createCategory(
