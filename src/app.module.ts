@@ -19,6 +19,7 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
 import { TGModule } from './tg-integration/tg.module'
+import { MarketplaceModule } from './marketplace/marketplace.module'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env' }),
@@ -44,16 +45,18 @@ const modules = [
   WebhookModule,
   PingModule,
   TGModule,
+  MarketplaceModule,
 ]
 
 if (process.env.TG_BOT_TOKEN) {
-  modules.push(TelegrafModule.forRoot({
-    token: process.env.TG_BOT_TOKEN,
-  }))
+  modules.push(
+    TelegrafModule.forRoot({
+      token: process.env.TG_BOT_TOKEN,
+    }),
+  )
 }
 
 @Module({
   imports: modules,
 })
-
 export class AppModule {}
