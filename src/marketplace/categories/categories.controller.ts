@@ -8,12 +8,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'
 import { CreateCategory } from './dtos/create-category.dto'
 import { DeleteCategoryParams } from './dtos/delete-category-params.dto'
+import { GetCategoriesQueries } from './dtos/get-categories-queries.dto'
 import { GetCategoryParams } from './dtos/get-category-params.dto'
 import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
@@ -23,6 +25,19 @@ import { ISaveCategory } from './interfaces/save-category.interface'
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
+
+  @Get()
+  async getCategories(@Query() queries: GetCategoriesQueries): Promise<{
+    categories: Category[]
+    count: number
+  }> {
+    const [categories, count] = await this.categoriesService.findAndCount({
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 25 : queries.limit || 25,
+    })
+
+    return { categories, count }
+  }
 
   @Get(':categoryId')
   async getCategory(@Param() params: GetCategoryParams): Promise<Category> {
