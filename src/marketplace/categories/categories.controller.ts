@@ -2,6 +2,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   NotFoundException,
   Param,
   Patch,
@@ -11,6 +12,7 @@ import { ApiTags } from '@nestjs/swagger'
 import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'
 import { CreateCategory } from './dtos/create-category.dto'
+import { DeleteCategoryParams } from './dtos/delete-category-params.dto'
 import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
 import { ISaveCategory } from './interfaces/save-category.interface'
@@ -49,5 +51,16 @@ export class CategoriesController {
     await this.categoriesService.update(category.id, body)
 
     return body
+  }
+
+  @Delete(':categoryId')
+  async deleteCategory(@Param() params: DeleteCategoryParams): Promise<void> {
+    const category = await this.categoriesService.findById(params.categoryId)
+
+    if (!category) {
+      throw new NotFoundException('Category not found.')
+    }
+
+    await this.categoriesService.delete(category.id)
   }
 }

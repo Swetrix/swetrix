@@ -36,4 +36,8 @@ export class CategoriesService {
   async update(id: number, category: IUpdateCategory): Promise<void> {
     await this.categoryRepository.update({ id }, category)
   }
+
+  async delete(id: number): Promise<void> {
+    await this.categoryRepository.delete({ id })
+  }
 }
