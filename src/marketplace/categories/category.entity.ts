@@ -8,6 +8,6 @@ export class Category {
   @Column({ type: 'varchar', unique: true })
   title!: string
 
-  @Column({ type: 'varchar', nullable: true, default: null })
+  @Column({ type: 'text', nullable: true, default: null })
   description!: string | null
 }
