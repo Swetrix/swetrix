@@ -24,7 +24,11 @@ export class ExtensionsService {
     return this.extensionRepository.create(extension)
   }
 
-  async save(category: ISaveExtension): Promise<ISaveExtension & Extension> {
-    return await this.extensionRepository.save(category)
+  async save(extension: ISaveExtension): Promise<ISaveExtension & Extension> {
+    return await this.extensionRepository.save(extension)
+  }
+
+  async findById(id: number): Promise<Extension> {
+    return await this.findOne({ where: { id } })
   }
 }
