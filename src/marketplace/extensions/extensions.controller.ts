@@ -15,7 +15,7 @@ import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { AddExtension } from './dtos/add-extension.dto'
 import { RemoveExtensionParams } from './dtos/remove-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
-import { GetExtensionsQueries } from './dtos/get-extensions-queries.dto'
+import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 import { Extension } from './extension.entity'
 import { ExtensionsService } from './extensions.service'
 import { ISaveExtension } from './interfaces/save-extension.interface'
@@ -48,7 +48,7 @@ export class ExtensionsController {
     type: String,
   })
   @Get()
-  async getExtensions(@Query() queries: GetExtensionsQueries): Promise<{
+  async getAllExtensions(@Query() queries: GetAllExtensionsQueries): Promise<{
     extensions: Extension[]
     count: number
   }> {

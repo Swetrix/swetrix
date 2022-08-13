@@ -1,6 +1,6 @@
 import { IsNumberString, IsOptional } from 'class-validator'
 
-export class GetExtensionsQueries {
+export class GetAllCategoriesQueries {
   @IsNumberString()
   @IsOptional()
   readonly offset?: number
