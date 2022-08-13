@@ -91,11 +91,17 @@ const Main = () => {
                     </div>
                   </div>
                   <div className='max-w-md xl:max-w-lg hidden lg:block'>
-                    <img className='rounded-xl' style={{ height: '100%', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                    <picture>
+                      <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
+                      <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} fetchpriority='high' className='rounded-xl' style={{ height: '100%', minWidth: '880px' }} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                    </picture>
                   </div>
                 </div>
                 <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
-                  <img className='rounded-xl shadow-colored-2xl w-full' src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} alt='Swetrix Analytics dashboard' width='100%' height='auto' />
+                  <picture>
+                    <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
+                    <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} fetchpriority='high' className='rounded-xl shadow-colored-2xl w-full' width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                  </picture>
                 </div>
               </div>
             </div>
@@ -103,7 +109,10 @@ const Main = () => {
             <div className='dark:bg-gray-900 bg-white px-4 pb-24'>
               {/* section Core Analytics Features */}
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
-                <img className='md:max-w-md md:mr-3 mt-3 md:mt-0 lg:max-w-full md:relative md:-top-10' src='/assets/CoreFeaturesLight.png' alt='Core Analytics Features' />
+                <picture>
+                  <source srcSet='/assets/CoreFeaturesLight.webp' type='image/webp' />
+                  <img src='/assets/CoreFeaturesLight.png' fetchpriority='high' className='md:max-w-md md:mr-3 mt-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />
+                </picture>
                 <div className='max-w-lg'>
                   <h1 className='font-extrabold text-4xl dark:text-white text-gray-800'>
                     {t('main.coreFeatures.title')}
@@ -199,11 +208,10 @@ const Main = () => {
                       transform: 'rotate(-50.32deg)',
                     }}
                   />
-                  <img
-                    className='relative z-50 hidden md:block'
-                    src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
-                    alt=''
-                  />
+                  <picture>
+                    <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
+                    <img src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'} className='relative z-50 hidden md:block' alt='' />
+                  </picture>
                 </div>
               </div>
             </div>
@@ -504,7 +512,10 @@ const Main = () => {
             </section> */}
 
             <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-7xl w-full mx-auto py-20 lg:py-32 px-5'>
-              <img src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'} loading='lazy' alt='Swetrix open source' />
+              <picture>
+                <source srcSet={theme === 'dark' ? '/assets/opensource_dark.webp' : '/assets/opensource_light.webp'} type='image/webp' />
+                <img src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'} loading='lazy' alt='Swetrix open source' />
+              </picture>
               <div className='max-w-lg w-full lg:ml-5'>
                 <h1 className='text-3xl md:text-4xl text-white font-extrabold'>
                   <Trans
