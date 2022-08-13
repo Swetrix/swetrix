@@ -1,6 +1,6 @@
 import { IsNumberString } from 'class-validator'
 
-export class DeleteExtensionParams {
+export class RemoveExtensionParams {
   @IsNumberString()
   readonly extensionId!: number
 }

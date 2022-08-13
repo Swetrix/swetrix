@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { AddExtension } from './dtos/add-extension.dto'
-import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
+import { RemoveExtensionParams } from './dtos/remove-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetExtensionsQueries } from './dtos/get-extensions-queries.dto'
 import { Extension } from './extension.entity'
@@ -99,7 +99,7 @@ export class ExtensionsController {
     type: String,
   })
   @Delete(':extensionId')
-  async deleteExtension(@Param() params: DeleteExtensionParams): Promise<void> {
+  async removeExtension(@Param() params: RemoveExtensionParams): Promise<void> {
     const extension = await this.extensionsService.findById(params.extensionId)
 
     if (!extension) {
