@@ -46,7 +46,6 @@ const modules = [
   WebhookModule,
   PingModule,
   TGModule,
-  MarketplaceModule,
 ]
 
 if (process.env.TG_BOT_TOKEN) {
@@ -55,6 +54,10 @@ if (process.env.TG_BOT_TOKEN) {
       token: process.env.TG_BOT_TOKEN,
     }),
   )
+}
+
+if (process.env.ACTIVATE_MARKETPLACE) {
+  modules.push(MarketplaceModule)
 }
 
 @Module({
