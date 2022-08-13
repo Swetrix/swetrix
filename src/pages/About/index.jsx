@@ -87,6 +87,15 @@ const team = [
       Github: 'https://github.com/ivan1kolesov',
     },
   },
+  {
+    name: '🇺🇦 Yevhenii Kulisidi',
+    role: 'Backend Developer.',
+    photo: '/assets/yevhenii.jpg',
+    desc: 'Works on Swetrix API and Swetrix Marketplace.',
+    socials: {
+      Github: 'https://github.com/rhaxma',
+    },
+  },
 ]
 
 const About = () => (
