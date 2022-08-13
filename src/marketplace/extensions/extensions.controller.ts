@@ -2,6 +2,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -12,6 +13,7 @@ import {
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { AddExtension } from './dtos/add-extension.dto'
+import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetExtensionsQueries } from './dtos/get-extensions-queries.dto'
 import { Extension } from './extension.entity'
@@ -88,5 +90,22 @@ export class ExtensionsController {
     const extensionInstance = this.extensionsService.create(body)
 
     return await this.extensionsService.save(extensionInstance)
+  }
+
+  @ApiParam({
+    name: 'extensionId',
+    description: 'Extension ID',
+    example: '1',
+    type: String,
+  })
+  @Delete(':extensionId')
+  async deleteExtension(@Param() params: DeleteExtensionParams): Promise<void> {
+    const extension = await this.extensionsService.findById(params.extensionId)
+
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    await this.extensionsService.delete(extension.id)
   }
 }

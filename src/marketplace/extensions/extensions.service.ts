@@ -32,6 +32,10 @@ export class ExtensionsService {
     return await this.findOne({ where: { id } })
   }
 
+  async delete(id: number): Promise<void> {
+    await this.extensionRepository.delete({ id })
+  }
+
   async findAndCount(
     options: FindManyOptions<Extension>,
   ): Promise<[Extension[], number]> {
