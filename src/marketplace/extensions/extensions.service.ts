@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindOneOptions, Repository } from 'typeorm'
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
 import { Extension } from './extension.entity'
 import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
@@ -30,5 +30,11 @@ export class ExtensionsService {
 
   async findById(id: number): Promise<Extension> {
     return await this.findOne({ where: { id } })
+  }
+
+  async findAndCount(
+    options: FindManyOptions<Extension>,
+  ): Promise<[Extension[], number]> {
+    return await this.extensionRepository.findAndCount({ ...options })
   }
 }

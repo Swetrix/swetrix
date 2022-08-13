@@ -6,12 +6,14 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiParam, ApiTags } from '@nestjs/swagger'
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { AddExtension } from './dtos/add-extension.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
+import { GetExtensionsQueries } from './dtos/get-extensions-queries.dto'
 import { Extension } from './extension.entity'
 import { ExtensionsService } from './extensions.service'
 import { ISaveExtension } from './interfaces/save-extension.interface'
@@ -28,6 +30,33 @@ import { ISaveExtension } from './interfaces/save-extension.interface'
 @Controller('extensions')
 export class ExtensionsController {
   constructor(private readonly extensionsService: ExtensionsService) {}
+
+  @ApiQuery({
+    description: 'Extension offset',
+    example: '5',
+    name: 'offset',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension limit',
+    example: '25',
+    name: 'limit',
+    required: false,
+    type: String,
+  })
+  @Get()
+  async getExtensions(@Query() queries: GetExtensionsQueries): Promise<{
+    extensions: Extension[]
+    count: number
+  }> {
+    const [extensions, count] = await this.extensionsService.findAndCount({
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 25 : queries.limit || 25,
+    })
+
+    return { extensions, count }
+  }
 
   @ApiParam({
     name: 'extensionId',
