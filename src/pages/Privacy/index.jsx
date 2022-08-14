@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import React from 'react'
 import { HashLink } from 'react-router-hash-link'
+import _map from 'lodash/map'
 
 import Title from 'components/Title'
 import { CONTACT_EMAIL, SECURITY_EMAIL } from 'redux/constants'
@@ -219,7 +220,7 @@ const Features = () => {
                         </tr>
                       </thead>
                       <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800'>
-                        {serviceProviders.map(({
+                        {_map(serviceProviders, ({
                           company, purpose, dataSubjects, location,
                         }) => (
                           <tr key={company}>
