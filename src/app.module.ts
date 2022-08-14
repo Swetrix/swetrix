@@ -23,6 +23,12 @@ import { MarketplaceModule } from './marketplace/marketplace.module'
 import { Category } from './marketplace/categories/category.entity'
 import { Extension } from './marketplace/extensions/extension.entity'
 
+const entities = [User, ActionToken, Project, ProjectShare, Category]
+
+if (process.env.ACTIVATE_MARKETPLACE) {
+  entities.push(Extension)
+}
+
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env' }),
   TypeOrmModule.forRoot({
@@ -33,7 +39,7 @@ const modules = [
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
     synchronize: process.env.NODE_ENV === 'development',
-    entities: [User, ActionToken, Project, ProjectShare, Category, Extension],
+    entities,
   }),
   ScheduleModule.forRoot(),
   TaskManagerModule,
