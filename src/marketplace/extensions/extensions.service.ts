@@ -4,6 +4,7 @@ import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
 import { Extension } from './extension.entity'
 import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
+import { IUpdateExtension } from './interfaces/update-extension.interface'
 
 @Injectable()
 export class ExtensionsService {
@@ -30,6 +31,10 @@ export class ExtensionsService {
 
   async findById(id: number): Promise<Extension> {
     return await this.findOne({ where: { id } })
+  }
+
+  async update(id: number, extension: IUpdateExtension) {
+    await this.extensionRepository.update({ id }, extension)
   }
 
   async delete(id: number): Promise<void> {

@@ -6,6 +6,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Query,
   UsePipes,
@@ -19,6 +20,9 @@ import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 import { Extension } from './extension.entity'
 import { ExtensionsService } from './extensions.service'
 import { ISaveExtension } from './interfaces/save-extension.interface'
+import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
+import { UpdateExtension } from './dtos/update-extension.dto'
+import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -90,6 +94,28 @@ export class ExtensionsController {
     const extensionInstance = this.extensionsService.create(body)
 
     return await this.extensionsService.save(extensionInstance)
+  }
+
+  @ApiParam({
+    name: 'extensionId',
+    description: 'Extension ID',
+    example: '1',
+    type: String,
+  })
+  @Patch(':extensionId')
+  async updateExtension(
+    @Param() params: UpdateExtensionParams,
+    @Body(new BodyValidationPipe()) body: UpdateExtension,
+  ): Promise<UpdateExtension> {
+    const extension = await this.extensionsService.findById(params.extensionId)
+
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    await this.extensionsService.update(extension.id, body)
+
+    return body
   }
 
   @ApiParam({

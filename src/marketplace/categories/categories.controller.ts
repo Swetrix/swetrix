@@ -26,7 +26,7 @@ import { GetCategoryParams } from './dtos/get-category-params.dto'
 import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
 import { ISaveCategory } from './interfaces/save-category.interface'
-import { BodyValidationPipe } from './pipes/body-validation.pipe'
+import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
 
 @ApiTags('categories')
 @UsePipes(
