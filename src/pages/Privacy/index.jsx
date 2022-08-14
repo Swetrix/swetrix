@@ -6,6 +6,39 @@ import Title from 'components/Title'
 import { CONTACT_EMAIL, SECURITY_EMAIL } from 'redux/constants'
 import routes from 'routes'
 
+const serviceProviders = [
+  {
+    company: 'Paddle.com Market Limited',
+    purpose: 'Payment and subscriptions',
+    dataSubjects: 'Customers',
+    location: 'United Kingdom',
+  },
+  {
+    company: 'Fastmail Pty Ltd',
+    purpose: 'Business emails',
+    dataSubjects: 'Customers',
+    location: 'Australia',
+  },
+  {
+    company: 'Cloudflare, Inc.',
+    purpose: 'Cloud services',
+    dataSubjects: 'Website Visitors, Customers, End Users',
+    location: 'United States',
+  },
+  {
+    company: 'Wildbit, LLC (Postmark)',
+    purpose: 'Transactional and marketing emails',
+    dataSubjects: 'Customers',
+    location: 'United States',
+  },
+  {
+    company: 'New Relic, Inc.',
+    purpose: 'Error tracking',
+    dataSubjects: 'Website Visitors, Customers, End Users',
+    location: 'United States',
+  },
+]
+
 const Features = () => {
   return (
     <Title title='Privacy Policy'>
@@ -23,22 +56,19 @@ const Features = () => {
             This Privacy Policy applies to the following data subjects:
             <br />
 
-            -
-            &nbsp;
+            {'- '}
             <b>Customers:</b>
-            &nbsp;
+            {' '}
             Those who register for an account on Swetrix and to whom Swetrix provides its Services. For purposes of this Policy, “Services” refers to all of the solutions offered, marketed, or sold by us.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>Website Visitors:</b>
-            &nbsp;
+            {' '}
             Those who visit our Websites, which may optionally provide an email address or other information to receive communications from us, or give us feedback. For the purposes of this Policy, “Websites” refer to swetrix.com as well as any other websites we operate on our own behalf and that link to this Policy. For clarity, “Websites” does not include any sites owned or operated by our Customers.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>End Users:</b>
-            &nbsp;
+            {' '}
             Those who access or use our Customers websites, networks, APIs, and applications.
             <br />
 
@@ -52,50 +82,44 @@ const Features = () => {
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             We may collect the following types of data in order to provide and improve our Services:
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>Personal Data:</b>
-            &nbsp;
+            {' '}
             While using our Services, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you. Personally identifiable information may include, but is not limited to your name, email address and billing addresses necessary to process payment and delivery of Services.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>Payment Information:</b>
-            &nbsp;
+            {' '}
             We do not require our Customers to have payment information on file with us unless they have a paid subscription to our Services.
             <br />
             When you sign up for one of our paid Subscriptions, you must provide payment and billing information. The information you will need to submit depends on which payment method you choose. For clarity, we do not store full credit card numbers or personal account numbers.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>Usage Data:</b>
-            &nbsp;
+            {' '}
             When you visit our Websites, we gather certain information and store it in log files to be able to provide you with our Services. This information may include but is not limited to Internet Protocol (IP) addresses, device or system information, URLs of referrer pages, browser information and language preferences.
             <br />
             For clarity, the purpose of these log files is to enable us to operate and provide you with our Services, and to monitor for overall trends on our Websites and for security. These log files are not shared with third parties.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>Cookie Data:</b>
-            &nbsp;
+            {' '}
             We use essential cookies on our Websites to provide our Services. Without these cookies, the services that you have asked for cannot be provided, and we only use these cookies to provide you those services.
             <br />
-            These cookies are essential for the functioning of our Websites. For example, we may store actions you do on our Websites to reduce requests sent to our servers.
+            These cookies are essential for the functioning of our Websites. For example, they help to authenticate you and to prevent fraudulent use of your account.
             <br />
-            You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
+            You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some parts of our Websites and Services.
             <br />
             At this time, our Websites do not respond to Do Not Track beacons sent by browser plugins.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>Log Data:</b>
-            &nbsp;
+            {' '}
             We process End Users information on behalf of our Customers. This information is processed when End Users access or use our Customers domains, websites, APIs, applications, devices, endpoints, and networks that use our Services.
             <br />
             The information processed may include but is not limited to IP addresses, device or system information, and other information about the traffic on our Customers websites, devices, applications, and/or networks (collectively, “Log Data”). You can find more information on the data collected and how we process it
-            &nbsp;
+            {' '}
             <HashLink className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' to={`${routes.docs}#docs-tv`}>here</HashLink>
-            &nbsp;
             .
           </p>
 
@@ -165,35 +189,52 @@ const Features = () => {
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>8. Information sharing</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            We do not rent or sell personal information.
+            We do not sell or rent personal information.
             <br />
-            We may disclose personal information to third parties who help us run the Services and our business (“Service Providers”). These Service Providers may only process personal information pursuant to our instructions and in compliance both with this Privacy Policy and other applicable security measures and regulations.
+            We may disclose personal information to service providers who help us run the Services and our business (“Service Providers”). These Service Providers may only process personal information pursuant to our instructions and in compliance both with this Privacy Policy and other applicable security measures and regulations.
             <br />
-            The following third parties may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.
+            Before engaging any Service Provider, we perform due diligence, including a security assessment. Our Service Providers are subject to strict contract terms designed to ensure that these Service Providers process personal data only for the purposes of providing services to Swetrix and in accordance with our commitments to applicable data protection laws.
             <br />
-            -
-            &nbsp;
-            <b>Paddle:</b>
-            &nbsp;
-            Payment processing;
+            The following Service Providers may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.
             <br />
-            -
-            &nbsp;
-            <b>Cloudflare:</b>
-            &nbsp;
-            Security, hosting, cloud infrastructure;
-            <br />
-            -
-            &nbsp;
-            <b>Postmark:</b>
-            &nbsp;
-            Transactional and marketing emails;
-            <br />
-            -
-            &nbsp;
-            <b>Fastmail:</b>
-            &nbsp;
-            Business emails.
+            <div className='mt-8 flex flex-col'>
+              <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                  <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                    <table className='min-w-full divide-y divide-gray-300 200 dark:divide-gray-500'>
+                      <thead className='bg-gray-50 dark:bg-gray-900'>
+                        <tr>
+                          <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'>
+                            Company
+                          </th>
+                          <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                            Purpose
+                          </th>
+                          <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                            Data subjects
+                          </th>
+                          <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                            Corporate location
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800'>
+                        {serviceProviders.map(({
+                          company, purpose, dataSubjects, location,
+                        }) => (
+                          <tr key={company}>
+                            <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>{company}</td>
+                            <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>{purpose}</td>
+                            <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>{dataSubjects}</td>
+                            <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>{location}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
             <br />
             In addition to sharing with Service Providers as described above, we also may share your information with others in the following circumstances:
             <br />
@@ -210,40 +251,34 @@ const Features = () => {
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             We would like to make sure you are fully aware of all of your data protection rights. In certain circumstances, you have the following data protection rights:
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>The right to access:</b>
-            &nbsp;
+            {' '}
             You have the right to request our Company for copies of your personal data.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>The right to rectification:</b>
-            &nbsp;
+            {' '}
             You have the right to request that our Company corrects any information you believe is inaccurate. You also have the right to request our Company to complete the information you believe is incomplete.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>The right to erasure:</b>
-            &nbsp;
+            {' '}
             You have the right to request that our Company erases your personal data, under certain conditions.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>The right to restrict processing:</b>
-            &nbsp;
+            {' '}
             You have the right to request that our Company restricts the processing of your personal data, under certain conditions.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>The right to object to processing:</b>
-            &nbsp;
+            {' '}
             You have the right to object to our Company's processing of your personal data, under certain conditions.
             <br />
-            -
-            &nbsp;
+            {'- '}
             <b>The right to data portability:</b>
-            &nbsp;
+            {' '}
             You have the right to request that our Company transfers the data that we have collected to another organization, or directly to you, under certain conditions.
             <br />
             If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us via email at&nbsp;
@@ -294,7 +329,7 @@ const Features = () => {
 
           <hr className='mt-10 mb-4' />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            <i>Last updated: April 2, 2022.</i>
+            <i>Last updated: August 14, 2022.</i>
           </p>
         </div>
       </div>
