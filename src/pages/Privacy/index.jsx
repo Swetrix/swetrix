@@ -194,8 +194,8 @@ const Features = () => {
             <br />
             We may disclose personal information to service providers who help us run the Services and our business (“Service Providers”). These Service Providers may only process personal information pursuant to our instructions and in compliance both with this Privacy Policy and other applicable security measures and regulations.
             <br />
-            Before engaging any Service Provider, we perform due diligence, including a security assessment. Our Service Providers are subject to strict contract terms designed to ensure that these Service Providers process personal data only for the purposes of providing services to Swetrix and in accordance with our commitments to applicable data protection laws.
-            <br />
+            {/* Before engaging any Service Provider, we perform due diligence, including a security assessment. Our Service Providers are subject to strict contract terms designed to ensure that these Service Providers process personal data only for the purposes of providing services to Swetrix and in accordance with our commitments to applicable data protection laws.
+            <br /> */}
             The following Service Providers may be considered our "sub-processors" under GDPR. We only share what's required for their purpose.
             <br />
             <div className='mt-8 flex flex-col'>
