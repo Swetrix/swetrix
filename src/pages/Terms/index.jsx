@@ -64,6 +64,8 @@ const Features = () => {
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Prohibited uses</h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             As a condition of your use of the Service, you will not use the Service for any purpose that is unlawful or prohibited by these Terms. You may not use the Service in any manner that could damage, disable, overburden, disrupt or impair any of our servers or APIs, or any networks connected to any of our server or APIs, or that could interfere with any other party's use and enjoyment of any Service. You may not transmit any viruses, worms, defects, Trojan horses, or any items of a destructive nature through your use of Service. You may not exceed or circumvent, or try to exceed or circumvent, limitations on the Service, including on any API calls, or otherwise use the Service in a manner that violates any Swetrix documentation or user manuals. You may not attempt to gain unauthorized access to any Service, other accounts, computer systems, or networks connected to any Swetrix server or to any of the Service through hacking, password mining, or any other means. You may not obtain or attempt to obtain any materials or information through any means not intentionally made available through the Service. You may not use the Service in any way that violates any applicable federal, state, local, or international law or regulation (including, without limitation, any laws regarding the export of data or software to and from the US or other countries).
+            <br />
+            Our Service is not intended for providing alerts on disaster scenarios or any other situations related to health or safety in any way. This includes but is not limited to natural disasters, acts of terrorism, or emergency responses, and you shall not use our Service for any such purposes.
           </p>
 
           <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Limitation of liability</h3>
@@ -186,7 +188,7 @@ const Features = () => {
 
           <hr className='mt-10 mb-4' />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            <i>Last updated: August 16, 2021.</i>
+            <i>Last updated: August 14, 2022.</i>
           </p>
         </div>
       </div>
