@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common'
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common'
 import * as crypto from 'crypto'
 import * as Serialize from 'php-serialize'
 import * as _includes from 'lodash/includes'
@@ -32,14 +36,12 @@ const paddleWhitelistIPs = [
 
 @Injectable()
 export class WebhookService {
-  constructor(
-    private readonly logger: AppLoggerService,
-  ) { }
+  constructor(private readonly logger: AppLoggerService) {}
 
   ksort(obj) {
     const keys = Object.keys(obj).sort()
-    let sortedObj = {}
-    for (let i in keys) {
+    const sortedObj = {}
+    for (const i in keys) {
       sortedObj[keys[i]] = obj[keys[i]]
     }
     return sortedObj
@@ -52,11 +54,13 @@ export class WebhookService {
     delete data.p_signature
     // Need to sort array by key in ascending order
     data = this.ksort(data)
-    for (let property in data) {
-      if (data.hasOwnProperty(property) && (typeof data[property]) !== "string") {
-        if (Array.isArray(data[property])) { // is it an array
+    for (const property in data) {
+      if (data.hasOwnProperty(property) && typeof data[property] !== 'string') {
+        if (Array.isArray(data[property])) {
+          // is it an array
           data[property] = data[property].toString()
-        } else { // if its not an array and not a string, then it is a JSON obj
+        } else {
+          // if its not an array and not a string, then it is a JSON obj
           data[property] = JSON.stringify(data[property])
         }
       }

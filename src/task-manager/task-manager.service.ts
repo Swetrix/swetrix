@@ -19,8 +19,17 @@ import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { ReportFrequency, ACCOUNT_PLANS } from '../user/entities/user.entity'
 import {
-  clickhouse, redis, REDIS_LOG_DATA_CACHE_KEY, REDIS_LOG_CUSTOM_CACHE_KEY, isSelfhosted, REDIS_SESSION_SALT_KEY,
-  REDIS_USERS_COUNT_KEY, REDIS_PROJECTS_COUNT_KEY, REDIS_PAGEVIEWS_COUNT_KEY, SEND_WARNING_AT_PERC, PROJECT_INVITE_EXPIRE,
+  clickhouse,
+  redis,
+  REDIS_LOG_DATA_CACHE_KEY,
+  REDIS_LOG_CUSTOM_CACHE_KEY,
+  isSelfhosted,
+  REDIS_SESSION_SALT_KEY,
+  REDIS_USERS_COUNT_KEY,
+  REDIS_PROJECTS_COUNT_KEY,
+  REDIS_PAGEVIEWS_COUNT_KEY,
+  SEND_WARNING_AT_PERC,
+  PROJECT_INVITE_EXPIRE,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 
@@ -34,7 +43,7 @@ export class TaskManagerService {
     private readonly analyticsService: AnalyticsService,
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
-  ) { }
+  ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
   async saveLogData(): Promise<void> {
@@ -68,13 +77,16 @@ export class TaskManagerService {
   async checkLeftEvents(): Promise<void> {
     const thisMonth = dayjs.utc().format('YYYY-MM-01')
     const users = await this.userService.find({
-      where: [{
-        evWarningSentOn: IsNull(),
-        isActive: true,
-      }, {
-        evWarningSentOn: LessThan(thisMonth),
-        isActive: true,
-      }],
+      where: [
+        {
+          evWarningSentOn: IsNull(),
+          isActive: true,
+        },
+        {
+          evWarningSentOn: LessThan(thisMonth),
+          isActive: true,
+        },
+      ],
       relations: ['projects'],
       select: ['id', 'email', 'planCode'],
     })
@@ -93,10 +105,15 @@ export class TaskManagerService {
       const maxEventsCount = ACCOUNT_PLANS[planCode].monthlyUsageLimit || 0
       const totalMonthlyEvents = await this.projectService.getRedisCount(id)
 
-      const usedEV = totalMonthlyEvents * 100 / maxEventsCount
+      const usedEV = (totalMonthlyEvents * 100) / maxEventsCount
 
       if (usedEV >= SEND_WARNING_AT_PERC) {
-        await this.mailerService.sendEmail(email, LetterTemplate.TierWarning, emailParams, 'broadcast')
+        await this.mailerService.sendEmail(
+          email,
+          LetterTemplate.TierWarning,
+          emailParams,
+          'broadcast',
+        )
         await this.userService.update(id, {
           evWarningSentOn: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
         })
@@ -106,9 +123,16 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_2_HOURS)
   async deleteOldShareInvitations(): Promise<void> {
-    const minDate = dayjs.utc().subtract(PROJECT_INVITE_EXPIRE, 'h').format('YYYY-MM-DD HH:mm:ss')
-    await this.actionTokensService.deleteMultiple(`action="${ActionTokenType.PROJECT_SHARE}" AND created<"${minDate}"`)
-    await this.projectService.deleteMultipleShare(`confirmed=0 AND created<"${minDate}"`)
+    const minDate = dayjs
+      .utc()
+      .subtract(PROJECT_INVITE_EXPIRE, 'h')
+      .format('YYYY-MM-DD HH:mm:ss')
+    await this.actionTokensService.deleteMultiple(
+      `action="${ActionTokenType.PROJECT_SHARE}" AND created<"${minDate}"`,
+    )
+    await this.projectService.deleteMultipleShare(
+      `confirmed=0 AND created<"${minDate}"`,
+    )
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -141,7 +165,7 @@ export class TaskManagerService {
         continue
       }
 
-      const ids = _map(users[i].projects, (p) => p.id)
+      const ids = _map(users[i].projects, p => p.id)
       const data = await this.analyticsService.getSummary(ids, 'w')
 
       const result = {
@@ -154,7 +178,12 @@ export class TaskManagerService {
         tip,
       }
 
-      await this.mailerService.sendEmail(users[i].email, LetterTemplate.ProjectReport, result, 'broadcast')
+      await this.mailerService.sendEmail(
+        users[i].email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
     }
   }
 
@@ -182,7 +211,7 @@ export class TaskManagerService {
         continue
       }
 
-      const ids = _map(users[i].projects, (p) => p.id)
+      const ids = _map(users[i].projects, p => p.id)
       const data = await this.analyticsService.getSummary(ids, 'M')
 
       const result = {
@@ -195,7 +224,12 @@ export class TaskManagerService {
         tip,
       }
 
-      await this.mailerService.sendEmail(users[i].email, LetterTemplate.ProjectReport, result, 'broadcast')
+      await this.mailerService.sendEmail(
+        users[i].email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
     }
   }
 
@@ -209,14 +243,18 @@ export class TaskManagerService {
     const CEquery = 'SELECT count(*) from customEV'
     const users = await this.userService.count()
     const projects = await this.projectService.count()
-    const pageviews = ((await clickhouse.query(PVquery).toPromise())[0]['count()']) + ((await clickhouse.query(CEquery).toPromise())[0]['count()'])
+    const pageviews =
+      (await clickhouse.query(PVquery).toPromise())[0]['count()'] +
+      (await clickhouse.query(CEquery).toPromise())[0]['count()']
 
     await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
     await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
     await redis.set(REDIS_PAGEVIEWS_COUNT_KEY, pageviews, 'EX', 630)
 
     return {
-      users, projects, pageviews,
+      users,
+      projects,
+      pageviews,
     }
   }
 }

@@ -5,7 +5,9 @@ import { isSelfhosted } from '../constants'
 export class SelfhostedGuard implements CanActivate {
   canActivate(): boolean {
     if (isSelfhosted) {
-      throw new ForbiddenException('This API route is disabled in selfhosted edition')
+      throw new ForbiddenException(
+        'This API route is disabled in selfhosted edition',
+      )
     }
 
     return true

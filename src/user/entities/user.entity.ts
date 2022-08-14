@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BeforeUpdate } from 'typeorm'
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  BeforeUpdate,
+} from 'typeorm'
 import { ActionToken } from 'src/action-tokens/action-token.entity'
 import { Project } from 'src/project/entity/project.entity'
 import { ProjectShare } from 'src/project/entity/project-share.entity'
@@ -137,7 +143,7 @@ export class User {
 
   @BeforeUpdate()
   updateTimestamp() {
-    this.updated = new Date
+    this.updated = new Date()
   }
 
   @OneToMany(() => Project, project => project.admin)

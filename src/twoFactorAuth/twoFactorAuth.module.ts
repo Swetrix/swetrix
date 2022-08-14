@@ -7,12 +7,7 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { MailerModule } from '../mailer/mailer.module'
 
 @Module({
-  imports: [
-    UserModule,
-    AppLoggerModule,
-    AuthModule,
-    MailerModule,
-  ],
+  imports: [UserModule, AppLoggerModule, AuthModule, MailerModule],
   controllers: [TwoFactorAuthController],
   providers: [TwoFactorAuthService],
   exports: [TwoFactorAuthService],

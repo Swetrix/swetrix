@@ -28,19 +28,21 @@ export class ProjectDTO {
   @ApiProperty({
     example: '::1,127.0.0.1,192.168.0.1/32',
     required: false,
-    description: 'Array of blocked IP addresses'
+    description: 'Array of blocked IP addresses',
   })
   ipBlacklist: string[] | null
 
   @ApiProperty({
     required: false,
-    description: 'The project\'s state. If enabled - all the incoming analytics data will be saved.',
+    description:
+      "The project's state. If enabled - all the incoming analytics data will be saved.",
   })
   active: boolean
 
   @ApiProperty({
     required: false,
-    description: 'When true, anyone on the internet (including Google) would be able to see the project\'s Dashboard.',
+    description:
+      "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
   })
   public: boolean
 }

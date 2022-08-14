@@ -1,9 +1,9 @@
 import { PaginationResultInterface } from './pagination.results.interface'
 
 export class Pagination<PaginationEntity> {
-  public results: PaginationEntity[];
-  public page_total: number;
-  public total: number;
+  public results: PaginationEntity[]
+  public page_total: number
+  public total: number
 
   constructor(paginationResults: PaginationResultInterface<PaginationEntity>) {
     this.results = paginationResults.results
