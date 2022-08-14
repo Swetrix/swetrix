@@ -21,12 +21,12 @@ import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'
 import { CreateCategory } from './dtos/create-category.dto'
 import { DeleteCategoryParams } from './dtos/delete-category-params.dto'
-import { GetCategoriesQueries } from './dtos/get-categories-queries.dto'
+import { GetAllCategoriesQueries } from './dtos/get-all-categories-queries.dto'
 import { GetCategoryParams } from './dtos/get-category-params.dto'
 import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
 import { ISaveCategory } from './interfaces/save-category.interface'
-import { BodyValidationPipe } from './pipes/body-validation.pipe'
+import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
 
 @ApiTags('categories')
 @UsePipes(
@@ -56,7 +56,7 @@ export class CategoriesController {
     type: String,
   })
   @Get()
-  async getCategories(@Query() queries: GetCategoriesQueries): Promise<{
+  async getAllCategories(@Query() queries: GetAllCategoriesQueries): Promise<{
     categories: Category[]
     count: number
   }> {
