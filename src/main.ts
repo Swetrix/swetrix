@@ -17,8 +17,11 @@ async function bootstrap() {
   }
 
   app.use(async (req, res, next) => {
-    res.header('Cross-Origin-Embedder-Policy', 'require-corp; report-to=\'default\'')
-    res.header('Cross-Origin-Opener-Policy', 'same-site; report-to=\'default\'')
+    res.header(
+      'Cross-Origin-Embedder-Policy',
+      "require-corp; report-to='default'",
+    )
+    res.header('Cross-Origin-Opener-Policy', "same-site; report-to='default'")
     res.header('Cross-Origin-Resource-Policy', 'same-site')
     res.header('Permissions-Policy', 'interest-cohort=()')
     res.header('Referrer-Policy', 'strict-origin-when-cross-origin')

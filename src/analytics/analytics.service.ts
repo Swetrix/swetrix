@@ -1,15 +1,11 @@
 import * as _isEmpty from 'lodash/isEmpty'
-import * as _isString from 'lodash/isString'
 import * as _split from 'lodash/split'
-import * as _filter from 'lodash/filter'
 import * as _size from 'lodash/size'
-import * as _isNull from 'lodash/isNull'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
 import * as _some from 'lodash/some'
-import * as _keys from 'lodash/keys'
 import * as _find from 'lodash/find'
 import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
@@ -19,14 +15,25 @@ import * as ipRangeCheck from 'ip-range-check'
 import { isLocale } from 'validator'
 import { hash } from 'blake3'
 import {
-  Injectable, BadRequestException, InternalServerErrorException, ForbiddenException, UnprocessableEntityException,
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+  ForbiddenException,
+  UnprocessableEntityException,
   PreconditionFailedException,
 } from '@nestjs/common'
 
 import { ACCOUNT_PLANS, DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
-  redis, isValidPID, getRedisProjectKey, redisProjectCacheTimeout, UNIQUE_SESSION_LIFE_TIME, clickhouse,
-  getPercentageChange, isSelfhosted, REDIS_SESSION_SALT_KEY,
+  redis,
+  isValidPID,
+  getRedisProjectKey,
+  redisProjectCacheTimeout,
+  UNIQUE_SESSION_LIFE_TIME,
+  clickhouse,
+  getPercentageChange,
+  isSelfhosted,
+  REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import { getProjectsClickhouse } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
@@ -38,10 +45,20 @@ import { TimeBucketType } from './dto/getData.dto'
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-export const getSessionKey = (ip: string, ua: string, pid: string, salt: string = '') => `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
+export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
+  `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
 export const cols = [
-  'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca',
+  'cc',
+  'pg',
+  'lc',
+  'br',
+  'os',
+  'dv',
+  'ref',
+  'so',
+  'me',
+  'ca',
 ]
 
 interface chartCHResponse {
@@ -55,8 +72,22 @@ interface customsCHResponse {
   'count()': number
 }
 
-const validPeriods = ['today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
-const validTimebuckets = [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH]
+const validPeriods = [
+  'today',
+  'yesterday',
+  '1d',
+  '7d',
+  '4w',
+  '3M',
+  '12M',
+  '24M',
+]
+const validTimebuckets = [
+  TimeBucketType.HOUR,
+  TimeBucketType.DAY,
+  TimeBucketType.WEEK,
+  TimeBucketType.MONTH,
+]
 
 // mapping of allowed timebuckets per difference between days
 // (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
@@ -70,7 +101,10 @@ const timeBucketToDays = [
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
-interface GetFiltersQuery extends Array<string | object> { 0: string; 1: object }
+interface GetFiltersQuery extends Array<string | object> {
+  0: string
+  1: object
+}
 
 export const isValidTimezone = (timezone: string): boolean => {
   if (_isEmpty(timezone)) {
@@ -85,7 +119,7 @@ export const isValidTimezone = (timezone: string): boolean => {
   }
 }
 
-export const isValidDate = (date: string, format: string = 'YYYY-MM-DD'): boolean => {
+export const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
   if (_isEmpty(date)) {
     return false
   }
@@ -93,27 +127,33 @@ export const isValidDate = (date: string, format: string = 'YYYY-MM-DD'): boolea
   return dayjs(date, format).format(format) === date
 }
 
-export const checkIfTBAllowed = (timeBucket: TimeBucketType, from: string, to: string): void => {
+export const checkIfTBAllowed = (
+  timeBucket: TimeBucketType,
+  from: string,
+  to: string,
+): void => {
   const diff = dayjs(to).diff(dayjs(from), 'days')
 
   const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
 
   if (_isEmpty(tbMap)) {
-    throw new PreconditionFailedException('The difference between \'from\' and \'to\' is greater than allowed')
+    throw new PreconditionFailedException(
+      "The difference between 'from' and 'to' is greater than allowed",
+    )
   }
 
   const { tb } = tbMap
 
   if (!_includes(tb, timeBucket)) {
-    throw new PreconditionFailedException('The specified \'timeBucket\' parameter cannot be applied to the date range')
+    throw new PreconditionFailedException(
+      "The specified 'timeBucket' parameter cannot be applied to the date range",
+    )
   }
 }
 
 @Injectable()
 export class AnalyticsService {
-  constructor(
-    private readonly projectService: ProjectService,
-  ) { }
+  constructor(private readonly projectService: ProjectService) {}
 
   async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
@@ -131,7 +171,10 @@ export class AnalyticsService {
           select: ['origins', 'active', 'admin', 'public', 'ipBlacklist'],
         })
       }
-      if (_isEmpty(project)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+      if (_isEmpty(project))
+        throw new BadRequestException(
+          'The provided Project ID (pid) is incorrect',
+        )
 
       if (!isSelfhosted) {
         const share = await this.projectService.findShare({
@@ -144,7 +187,12 @@ export class AnalyticsService {
         project = { ...project, share }
       }
 
-      await redis.set(pidKey, JSON.stringify(project), 'EX', redisProjectCacheTimeout)
+      await redis.set(
+        pidKey,
+        JSON.stringify(project),
+        'EX',
+        redisProjectCacheTimeout,
+      )
     } else {
       try {
         project = JSON.parse(project)
@@ -168,30 +216,49 @@ export class AnalyticsService {
     if (!_isEmpty(project.origins) && !_isEmpty(origin)) {
       if (origin === 'null') {
         if (!_includes(project.origins, 'null')) {
-          throw new BadRequestException('\'null\' origin is not added to your project\'s whitelist. To send requests from this origin either add it to your origins policy or leave it empty.')
+          throw new BadRequestException(
+            "'null' origin is not added to your project's whitelist. To send requests from this origin either add it to your origins policy or leave it empty.",
+          )
         }
       } else {
         const hostname = new URL(origin).hostname
         if (!_includes(project.origins, hostname)) {
-          throw new BadRequestException('This origin is prohibited by the project\'s origins policy')
+          throw new BadRequestException(
+            "This origin is prohibited by the project's origins policy",
+          )
         }
       }
     }
   }
 
   checkIpBlacklist(project: Project, ip: string): void {
-    if (!_isEmpty(project.ipBlacklist) && ipRangeCheck(ip, project.ipBlacklist)) {
-      throw new BadRequestException('Incoming analytics is disabled for this IP address')
+    if (
+      !_isEmpty(project.ipBlacklist) &&
+      ipRangeCheck(ip, project.ipBlacklist)
+    ) {
+      throw new BadRequestException(
+        'Incoming analytics is disabled for this IP address',
+      )
     }
   }
 
   validatePID(pid: string): void {
-    if (_isEmpty(pid)) throw new BadRequestException('The Project ID (pid) has to be provided')
-    if (!isValidPID(pid)) throw new BadRequestException('The provided Project ID (pid) is incorrect')
+    if (_isEmpty(pid))
+      throw new BadRequestException('The Project ID (pid) has to be provided')
+    if (!isValidPID(pid))
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
   }
 
-  async validate(logDTO: PageviewsDTO | EventsDTO, origin: string, type: 'custom' | 'log' = 'log', ip?: string): Promise<string | null> {
-    if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
+  async validate(
+    logDTO: PageviewsDTO | EventsDTO,
+    origin: string,
+    type: 'custom' | 'log' = 'log',
+    ip?: string,
+  ): Promise<string | null> {
+    if (_isEmpty(logDTO))
+      throw new BadRequestException('The request cannot be empty')
 
     const { pid } = logDTO
     this.validatePID(pid)
@@ -205,9 +272,12 @@ export class AnalyticsService {
       }
 
       if (!customEVvalidate.test(ev)) {
-        throw new BadRequestException('An incorrect event name (ev) is provided')
+        throw new BadRequestException(
+          'An incorrect event name (ev) is provided',
+        )
       }
-    } else { // the type is 'log'
+    } else {
+      // the type is 'log'
       // 'tz' does not need validation as it's based on getCountryForTimezone detection
       // @ts-ignore
       const { lc } = logDTO
@@ -235,14 +305,20 @@ export class AnalyticsService {
 
     this.checkIpBlacklist(project, ip)
 
-    if (!project.active) throw new BadRequestException('Incoming analytics is disabled for this project')
+    if (!project.active)
+      throw new BadRequestException(
+        'Incoming analytics is disabled for this project',
+      )
 
     if (!isSelfhosted) {
       const count = await this.projectService.getRedisCount(project.admin.id)
-      const maxCount = ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
+      const maxCount =
+        ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
 
       if (count >= maxCount) {
-        throw new ForbiddenException('You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.')
+        throw new ForbiddenException(
+          'You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.',
+        )
       }
     }
 
@@ -251,8 +327,13 @@ export class AnalyticsService {
     return null
   }
 
-  async validateHB(logDTO: PageviewsDTO, userAgent: string, ip: string): Promise<string | null> {
-    if (_isEmpty(logDTO)) throw new BadRequestException('The request cannot be empty')
+  async validateHB(
+    logDTO: PageviewsDTO,
+    userAgent: string,
+    ip: string,
+  ): Promise<string | null> {
+    if (_isEmpty(logDTO))
+      throw new BadRequestException('The request cannot be empty')
 
     const { pid } = logDTO
     this.validatePID(pid)
@@ -261,7 +342,8 @@ export class AnalyticsService {
     const sessionHash = getSessionKey(ip, userAgent, pid, salt)
     const sessionExists = await this.isSessionOpen(sessionHash)
 
-    if (!sessionExists) throw new ForbiddenException('The Heartbeat session does not exist')
+    if (!sessionExists)
+      throw new ForbiddenException('The Heartbeat session does not exist')
 
     return sessionHash
   }
@@ -297,7 +379,9 @@ export class AnalyticsService {
       const { column, filter, isExclusive } = parsed[i]
 
       if (!_includes(cols, column)) {
-        throw new UnprocessableEntityException(`The provided filter (${column}) is not supported`)
+        throw new UnprocessableEntityException(
+          `The provided filter (${column}) is not supported`,
+        )
       }
       // working only on 1 filter per 1 column
       const colFilter = `cf_${column}`
@@ -306,7 +390,9 @@ export class AnalyticsService {
         ...params,
         [colFilter]: filter,
       }
-      query += ` ${isExclusive ? 'AND NOT' : 'AND'} ${column}={${colFilter}:String}`
+      query += ` ${
+        isExclusive ? 'AND NOT' : 'AND'
+      } ${column}={${colFilter}:String}`
     }
 
     return [query, params]
@@ -314,7 +400,9 @@ export class AnalyticsService {
 
   validateTimebucket(tb: TimeBucketType): void {
     if (!_includes(validTimebuckets, tb)) {
-      throw new UnprocessableEntityException('The provided timebucket is incorrect')
+      throw new UnprocessableEntityException(
+        'The provided timebucket is incorrect',
+      )
     }
   }
 
@@ -334,7 +422,10 @@ export class AnalyticsService {
 
     for (let i = 0; i < _size(pids); ++i) {
       const pid = pids[i]
-      if (!isValidPID(pid)) throw new BadRequestException(`The provided Project ID (${pid}) is incorrect`)
+      if (!isValidPID(pid))
+        throw new BadRequestException(
+          `The provided Project ID (${pid}) is incorrect`,
+        )
 
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       const oneWRaw = dayjs.utc().subtract(1, period)
@@ -357,10 +448,16 @@ export class AnalyticsService {
         const q1res = await clickhouse.query(query1, paramsData).toPromise()
         const q2res = await clickhouse.query(query2, paramsData).toPromise()
 
-        const thisWeekUnique = _find(q1res, ({ unique }) => unique)?.['count()'] || 0
-        const thisWeekPV = (_find(q1res, ({ unique }) => !unique)?.['count()'] || 0) + thisWeekUnique
-        const lastWeekUnique = _find(q2res, ({ unique }) => unique)?.['count()'] || 0
-        const lastWeekPV = (_find(q2res, ({ unique }) => !unique)?.['count()'] || 0) + lastWeekUnique
+        const thisWeekUnique =
+          _find(q1res, ({ unique }) => unique)?.['count()'] || 0
+        const thisWeekPV =
+          (_find(q1res, ({ unique }) => !unique)?.['count()'] || 0) +
+          thisWeekUnique
+        const lastWeekUnique =
+          _find(q2res, ({ unique }) => unique)?.['count()'] || 0
+        const lastWeekPV =
+          (_find(q2res, ({ unique }) => !unique)?.['count()'] || 0) +
+          lastWeekUnique
 
         result[pid] = {
           thisWeek: thisWeekPV,
@@ -371,17 +468,27 @@ export class AnalyticsService {
           percChangeUnique: getPercentageChange(thisWeekUnique, lastWeekUnique),
         }
       } catch {
-        throw new InternalServerErrorException('Can\'t process the provided PID. Please, try again later.')
+        throw new InternalServerErrorException(
+          "Can't process the provided PID. Please, try again later.",
+        )
       }
     }
 
     return result
   }
 
-  async groupByTimeBucket(timeBucket: TimeBucketType, from: string, to: string, subQuery: string, filtersQuery: string, paramsData: object, timezone: string): Promise<object | void> {
+  async groupByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    timezone: string,
+  ): Promise<object | void> {
     const params = {}
 
-    for (let i of cols) {
+    for (const i of cols) {
       const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
@@ -395,7 +502,7 @@ export class AnalyticsService {
       }
     }
 
-    if (!_some(_values(params), (val) => !_isEmpty(val))) {
+    if (!_some(_values(params), val => !_isEmpty(val))) {
       return Promise.resolve()
     }
 
@@ -435,11 +542,17 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count() from analytics where pid = {pid:FixedString(12)} and created between '${xM[i]}' and '${xM[1 + i]}' ${filtersQuery} group by unique`
+      query += `select ${i} index, unique, count() from analytics where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
     // @ts-ignore
-    const result: Array<chartCHResponse> = (await clickhouse.query(query, paramsData).toPromise()).sort((a, b) => a.index - b.index)
+    const result: Array<chartCHResponse> = (
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+      // @ts-ignore
+      .sort((a, b) => a.index - b.index)
     const visits = []
     const uniques = []
 
@@ -478,7 +591,9 @@ export class AnalyticsService {
     }
 
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-      x = _map(x, el => dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
+      x = _map(x, el =>
+        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+      )
     }
 
     return Promise.resolve({
@@ -495,7 +610,9 @@ export class AnalyticsService {
     const result = {}
 
     // @ts-ignore
-    const rawCustoms: Array<customsCHResponse> = await clickhouse.query(query, params).toPromise()
+    const rawCustoms: Array<customsCHResponse> = await clickhouse
+      .query(query, params)
+      .toPromise()
     const size = _size(rawCustoms)
 
     for (let i = 0; i < size; ++i) {

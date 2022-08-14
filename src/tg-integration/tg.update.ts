@@ -9,7 +9,7 @@ const HELLO_SCENE_ID = 'HELLO_SCENE_ID'
 export class SwetrixUpdate {
   @Start()
   onStart(): string {
-    return 'Say hello to me';
+    return 'Say hello to me'
   }
 
   @Hears(['hi', 'hello', 'hey', 'qq'])
@@ -17,11 +17,11 @@ export class SwetrixUpdate {
     @UpdateType() updateType: TelegrafUpdateType,
     @Sender('first_name') firstName: string,
   ): string {
-    return `Hey ${firstName}`;
+    return `Hey ${firstName}`
   }
 
   @Command('scene')
   async onSceneCommand(@Ctx() ctx: Context): Promise<void> {
-    await ctx.scene.enter(HELLO_SCENE_ID);
+    await ctx.scene.enter(HELLO_SCENE_ID)
   }
 }

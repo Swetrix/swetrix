@@ -1,5 +1,12 @@
-import { 
-  Controller, Post, UseGuards, HttpCode, Body, BadRequestException, Headers, Ip,
+import {
+  Controller,
+  Post,
+  UseGuards,
+  HttpCode,
+  Body,
+  BadRequestException,
+  Headers,
+  Ip,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
@@ -37,7 +44,9 @@ export class TwoFactorAuthController {
   async register(@CurrentUserId() id: string) {
     const user = await this.userService.findOneWhere({ id })
 
-    return await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(user)
+    return await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(
+      user,
+    )
   }
 
   @Post('enable')
@@ -45,18 +54,26 @@ export class TwoFactorAuthController {
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
-  async turnOnTwoFactorAuthentication(@Body() body: TwoFactorAuthDTO, @CurrentUserId() id: string, @Headers() headers, @Ip() reqIP) {
+  async turnOnTwoFactorAuthentication(
+    @Body() body: TwoFactorAuthDTO,
+    @CurrentUserId() id: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
     this.logger.log({ body }, 'POST /2fa/enable')
 
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
     await checkRateLimit(ip, '2fa-enable', 10, 1800)
 
     const user = await this.userService.findOneWhere({ id })
     const { twoFactorAuthenticationCode } = body
 
-    const isCodeValid = this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode, user,
-    )
+    const isCodeValid =
+      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+        twoFactorAuthenticationCode,
+        user,
+      )
 
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code')
@@ -86,16 +103,27 @@ export class TwoFactorAuthController {
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async turnOffTwoFactorAuthentication(@Body() body: TwoFactorAuthDTO, @CurrentUserId() id: string, @Headers() headers, @Ip() reqIP) {
+  async turnOffTwoFactorAuthentication(
+    @Body() body: TwoFactorAuthDTO,
+    @CurrentUserId() id: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
     this.logger.log({ body }, 'POST /2fa/disable')
 
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
     await checkRateLimit(ip, '2fa-disable', 10, 1800)
 
     const user = await this.userService.findOneWhere({ id })
     const { twoFactorAuthenticationCode } = body
 
-    const isCodeValid = user.twoFactorRecoveryCode === twoFactorAuthenticationCode || this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode, user)
+    const isCodeValid =
+      user.twoFactorRecoveryCode === twoFactorAuthenticationCode ||
+      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+        twoFactorAuthenticationCode,
+        user,
+      )
 
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code')
@@ -116,16 +144,27 @@ export class TwoFactorAuthController {
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
-  async authenticate(@Body() body: TwoFactorAuthDTO, @CurrentUserId() id: string, @Headers() headers, @Ip() reqIP) {
+  async authenticate(
+    @Body() body: TwoFactorAuthDTO,
+    @CurrentUserId() id: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
     this.logger.log({ body }, 'POST /2fa/authenticate')
 
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
     await checkRateLimit(ip, '2fa-auth', 10, 1800)
 
     const user = await this.userService.findOneWhere({ id })
     const { twoFactorAuthenticationCode } = body
 
-    const isCodeValid = user.twoFactorRecoveryCode === twoFactorAuthenticationCode || this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode, user)
+    const isCodeValid =
+      user.twoFactorRecoveryCode === twoFactorAuthenticationCode ||
+      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+        twoFactorAuthenticationCode,
+        user,
+      )
 
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code')

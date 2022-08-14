@@ -20,7 +20,6 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
-import * as _values from 'lodash/values'
 import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
 
@@ -46,7 +45,6 @@ import {
   redis,
   isValidPID,
   getRedisProjectKey,
-  redisProjectCacheTimeout,
   clickhouse,
   isSelfhosted,
   PROJECT_INVITE_EXPIRE,
@@ -58,20 +56,20 @@ import {
   deleteProjectClickhouse,
 } from '../common/utils'
 
-const updateProjectRedis = async (id: string, project: Project) => {
-  const key = getRedisProjectKey(id)
+// const updateProjectRedis = async (id: string, project: Project) => {
+//   const key = getRedisProjectKey(id)
 
-  try {
-    await redis.set(
-      key,
-      JSON.stringify(project),
-      'EX',
-      redisProjectCacheTimeout,
-    )
-  } catch {
-    await redis.del(key)
-  }
-}
+//   try {
+//     await redis.set(
+//       key,
+//       JSON.stringify(project),
+//       'EX',
+//       redisProjectCacheTimeout,
+//     )
+//   } catch {
+//     await redis.del(key)
+//   }
+// }
 
 export const deleteProjectRedis = async (id: string) => {
   const key = getRedisProjectKey(id)
@@ -86,10 +84,7 @@ export const deleteProjectRedis = async (id: string) => {
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 
 const isValidShareDTO = (share: ShareDTO): boolean => {
-  return (
-    !_isEmpty(_trim(share.email)) &&
-    _includes(roles, share.role)
-  )
+  return !_isEmpty(_trim(share.email)) && _includes(roles, share.role)
 }
 
 const isValidUpdateShareDTO = (share: ShareUpdateDTO): boolean => {
@@ -105,7 +100,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-  ) { }
+  ) {}
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -138,9 +133,7 @@ export class ProjectController {
         { take, skip },
         where,
       )
-      const totalMonthlyEvents = await this.projectService.getRedisCount(
-        userId,
-      )
+      const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
 
       return {
         ...paginated,
@@ -164,7 +157,9 @@ export class ProjectController {
     this.logger.log({ userId, take, skip }, 'GET /project/shared')
 
     if (isSelfhosted) {
-      throw new NotImplementedException('This feature is not available on selfhosted yet')
+      throw new NotImplementedException(
+        'This feature is not available on selfhosted yet',
+      )
     } else {
       const where = Object()
       where.user = userId
@@ -275,7 +270,9 @@ export class ProjectController {
     const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
 
     if (!user.isActive) {
-      throw new ForbiddenException('User\'s email address has to be verified first')
+      throw new ForbiddenException(
+        "User's email address has to be verified first",
+      )
     }
 
     if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
@@ -623,9 +620,7 @@ export class ProjectController {
     }
 
     if (!isValidShareDTO(shareDTO)) {
-      throw new BadRequestException(
-        'The provided ShareDTO is incorrect',
-      )
+      throw new BadRequestException('The provided ShareDTO is incorrect')
     }
 
     const user = await this.userService.findOne(uid)
@@ -643,27 +638,36 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const invitee = await this.userService.findOneWhere({
-      email: shareDTO.email,
-    }, ['sharedProjects'])
+    const invitee = await this.userService.findOneWhere(
+      {
+        email: shareDTO.email,
+      },
+      ['sharedProjects'],
+    )
 
     if (!invitee) {
-      throw new NotFoundException(`User with email ${shareDTO.email} is not registered on Swetrix`)
+      throw new NotFoundException(
+        `User with email ${shareDTO.email} is not registered on Swetrix`,
+      )
     }
 
     if (invitee.id === user.id) {
       throw new BadRequestException('You cannot share with yourself')
     }
 
-    const isSharingWithUser = !_isEmpty(await this.projectService.findShare({
-      where: {
-        project: project.id,
-        user: invitee.id,
-      },
-    }))
+    const isSharingWithUser = !_isEmpty(
+      await this.projectService.findShare({
+        where: {
+          project: project.id,
+          user: invitee.id,
+        },
+      }),
+    )
 
     if (isSharingWithUser) {
-      throw new BadRequestException(`You're already sharing the project with ${invitee.email}`)
+      throw new BadRequestException(
+        `You're already sharing the project with ${invitee.email}`,
+      )
     }
 
     try {
@@ -683,11 +687,23 @@ export class ProjectController {
       await this.userService.create(invitee)
 
       // TODO: Implement link expiration
-      const actionToken = await this.actionTokensService.createForUser(user, ActionTokenType.PROJECT_SHARE, share.id)
+      const actionToken = await this.actionTokensService.createForUser(
+        user,
+        ActionTokenType.PROJECT_SHARE,
+        share.id,
+      )
       const url = `${headers.origin}/share/${actionToken.id}`
-      await this.mailerService.sendEmail(invitee.email, LetterTemplate.ProjectInvitation, {
-        url, email: user.email, name: project.name, role: share.role, expiration: PROJECT_INVITE_EXPIRE,
-      })
+      await this.mailerService.sendEmail(
+        invitee.email,
+        LetterTemplate.ProjectInvitation,
+        {
+          url,
+          email: user.email,
+          name: project.name,
+          role: share.role,
+          expiration: PROJECT_INVITE_EXPIRE,
+        },
+      )
 
       const updatedProject = await this.projectService.findOne(pid, {
         relations: ['share', 'share.user'],
@@ -697,7 +713,9 @@ export class ProjectController {
       await deleteProjectRedis(pid)
       return processProjectUser(updatedProject)
     } catch (e) {
-      console.error(`[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`)
+      console.error(
+        `[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`,
+      )
       throw new BadRequestException(e)
     }
   }
@@ -716,9 +734,7 @@ export class ProjectController {
     this.logger.log({ uid, shareDTO, shareId }, 'PUT /project/share/:shareId')
 
     if (!isValidUpdateShareDTO(shareDTO)) {
-      throw new BadRequestException(
-        'The provided ShareUpdateDTO is incorrect',
-      )
+      throw new BadRequestException('The provided ShareUpdateDTO is incorrect')
     }
 
     const user = await this.userService.findOne(uid)
@@ -762,7 +778,7 @@ export class ProjectController {
     }
 
     if (actionToken.action === ActionTokenType.PROJECT_SHARE) {
-      const { newValue: shareId, id, user } = actionToken
+      const { newValue: shareId, id } = actionToken
 
       const share = await this.projectService.findOneShare(shareId)
       share.confirmed = true

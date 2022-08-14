@@ -6,10 +6,7 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { WebhookService } from './webhook.service'
 
 @Module({
-  imports: [
-    forwardRef(() => UserModule),
-    AppLoggerModule,
-  ],
+  imports: [forwardRef(() => UserModule), AppLoggerModule],
   providers: [WebhookService],
   exports: [WebhookService],
   controllers: [WebhookController],
