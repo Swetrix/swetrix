@@ -100,6 +100,7 @@ export const GITHUB_URL = 'https://github.com/Swetrix'
 export const TWITTER_URL = 'https://twitter.com/swetrix'
 export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const BLOG_URL = 'https://blog.swetrix.com'
+export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
 
 export const SUPPORTED_THEMES = ['light', 'dark']
 

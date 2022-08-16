@@ -1,24 +1,24 @@
 {
   "apiNotifications": {
-    "somethingWentWrong": "Something went wrong, please try again",
-    "emailRegistered": "A user with this email already exists",
-    "leakedPassword": "The provided password is leaked, please use another one",
-    "rateLimitHit": "Too many requests, please try again later",
-    "cancelSubFirst": "Please cancel your paid subscription first",
-    "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account",
-    "roleUpdated": "User's role has been changed",
-    "roleUpdateError": "Error occurred while changing user's role",
-    "userInvited": "The user has been invited to your project",
-    "userInviteError": "Error occurred while inviting the user to your project",
-    "userRemoved": "The user has been removed from your project",
-    "userRemoveError": "Error occurred while removing the user from your project",
-    "quitProjectError": "Error occurred while quitting the project",
-    "quitProject": "You have quit the project",
-    "acceptInvitationError": "Error occurred while accepting the project invitation",
-    "acceptInvitation": "The project invitation has been accepted",
-    "subscriptionUpdated": "Your subscription has been updated",
-    "generate2FAError": "Error occurred while generating 2FA code"
+    "somethingWentWrong": "Ein Fehler ist aufgetreten. Bitte noch einmal versuchen",
+    "emailRegistered": "Ein Benutzer mit diesem Benutzernamen existiert bereits",
+    "leakedPassword": "Das angegebene Passwort ist geleakt worden und daher nicht sicher, bitte verwenden Sie ein anderes",
+    "rateLimitHit": "Zu viele Anfragen. Bitte versuchen Sie es später erneut",
+    "cancelSubFirst": "Bitte kündigen Sie zuerst Ihr bezahltes Abonnement",
+    "accountDeleted": "Ihr Konto wurde gelöscht",
+    "accountDeleteError": "Fehler beim Löschen Ihres Kontos",
+    "roleUpdated": "Die Rolle des Benutzers wurde geändert",
+    "roleUpdateError": "Fehler beim Ändern der Benutzerrolle",
+    "userInvited": "Der Benutzer wurde zu Ihrem Projekt eingeladen",
+    "userInviteError": "Fehler beim Einladen des Benutzers in Ihr Projekt",
+    "userRemoved": "Der Benutzer wurde aus Ihrem Projekt entfernt",
+    "userRemoveError": "Fehler beim Entfernen des Benutzers aus Ihrem Projekt",
+    "quitProjectError": "Es ist ein Fehler beim Verlassen des Projekts aufgetreten",
+    "quitProject": "Sie haben das Projekt verlassen",
+    "acceptInvitationError": "Beim Akzeptieren der Einladung ist ein Fehler aufgetreten",
+    "acceptInvitation": "Die Einladung zum Projekt wurde angenommen",
+    "subscriptionUpdated": "Ihr Abonnement wurde aktualisiert",
+    "generate2FAError": "Fehler beim Generieren des 2FA-Codes"
   },
   "common": {
     "features": "Funktionen",
@@ -41,26 +41,26 @@
     "settings": "Einstellungen",
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
-    "learnMore": "Learn more",
+    "learnMore": "Mehr erfahren",
     "yes": "Ja",
     "no": "Nein",
     "is": "ist",
     "isNot": "ist nicht",
-    "invite": "Invite",
-    "pending": "Pending",
-    "accept": "Accept",
-    "reject": "Reject",
-    "delete": "Delete",
-    "quit": "Quit",
-    "enable": "Enable",
-    "disable": "Disable"
+    "invite": "Einladen",
+    "pending": "Ausstehend",
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen",
+    "delete": "Löschen",
+    "quit": "Verlassen",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren"
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
-    "slogan": "<span>Ultimate open-source analytics</span> to satisfy all your needs.",
+    "slogan": "<span>Ultimative Open-Source-Analytics</span> um alle Ihre Wünsche zu befriedigen.",
     "trackEveryMetric": "Analysieren Sie alle benötigten Metriken, ohne die Privatsphäre Ihrer Anwender zu verletzen.",
     "description": "Swetrix bietet einen fortgeschrittenen und konfigurierbaren Analysedienst für Ihre Webanwendungen.",
-    "start": "Start for free",
+    "start": "Kostenlos beginnen",
     "signup": "Jetzt gratis registrieren!",
     "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
     "techDetails": "Möchten Sie weitere technische Details erfahren?",
@@ -68,37 +68,37 @@
     "readyToStart": "Sind Sie bereit los zu legen?",
     "exploreService": "Erkundigen Sie sich über unseren Dienst oder registrieren Sie sich.",
     "coreFeatures": {
-      "title": "Core Analytics Features",
-      "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
+      "title": "Kern-Analysefunktionen",
+      "desc": "Leistungsfähige und einfache Analytics um alle benötigten Kennzahlen anzuzeigen. Frei von Cookies. Man muss kein Datenwissenschaftler sein, um unsere Analytics zu verstehen."
     },
     "marketplace": {
-      "title": "Marketplace & build-in Extensions",
-      "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
-      "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
+      "title": "Marktplatz & integrierte Erweiterungen",
+      "desc1": "Benötigen Sie zusätzliche Funktionen? Verwenden Sie Erweiterungen oder programmieren Sie Ihre eigenen! Ab jetzt brauchen Sie nicht mehr viele Datenquellen aus verschiedenen Systemen zu nutzen - erweitern und ergänzen Sie alles in einem!",
+      "desc2": "Installieren Sie Erweiterungen und verkaufen Sie Ihre eigenen. Sie haben eine tolle Erweiterung für Ihr Unternehmen entwickelt? Großartig! Veröffentlichen Sie es auf dem Markt und teilen Sie Ihre Einblicke mit der ganzen Community."
     },
-    "visitAddons": "Visit Swetrix extensions",
+    "visitAddons": "Swetrix-Erweiterungen aufrufen",
     "privacy": {
-      "title": "Privacy compliance",
+      "title": "Datenschutzkonform",
       "list": [
         {
-          "label": "GDPR",
-          "desc": "data and processing based in EU zone."
+          "label": "DSGVO",
+          "desc": "daten und Verarbeitung mit Sitz in der EU Zone."
         },
         {
           "label": "HIPAA",
-          "desc": "protect sensitive info."
+          "desc": "vertrauliche Informationen schützen."
         },
         {
           "label": "PCI DSS",
-          "desc": "payment data security."
+          "desc": "Sicherheit der Zahlungsdaten."
         },
         {
           "label": "CCPA",
-          "desc": "control over the personal information."
+          "desc": "Kontrolle über die persönlichen Informationen."
         }
       ]
     },
-    "dataProtection": "More about Data Protection",
+    "dataProtection": "Mehr zum Datenschutz",
     "faq": {
       "title": "Häufig gestellte Fragen",
       "list": [
@@ -122,100 +122,100 @@
     },
     "features": [
       {
-        "name": "Measure website traffic with 99% accuracy",
-        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
+        "name": "Website-Traffic mit 99% Genauigkeit messen",
+        "desc": "Die genaueste Analytics-Lösung, um alle grundlegenden Metriken zu verfolgen und die RICHTIGEN Daten zu sehen."
       },
       {
-        "name": "Demo & Geo reports",
-        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
+        "name": "Demo & Geo-Berichte",
+        "desc": "Ja, es ist ein Standard. Aber wir verfolgen genau, wo Ihre Benutzer sind."
       },
       {
-        "name": "UTM & Reffers tracking",
-        "desc": "All the traffic from your companies and websites will be shown without a data loss."
+        "name": "UTM & Reffer-Tracking",
+        "desc": "Der gesamte Datenverkehr Ihrer Unternehmen und Websites wird ohne Datenverlust angezeigt."
       },
       {
-        "name": "Agile system",
-        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
+        "name": "Agiles System",
+        "desc": "Ein flexibles Einstellungssystem für die Grundregeln - wie die Session-Definition, Traffic-Accounting usw. ist einfach einzurichten und anzupassen."
       },
       {
-        "name": "Custom events\n(really easy to setup)",
-        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
+        "name": "Eigene Ereignisse\n(sehr einfach einzurichten)",
+        "desc": "Die benutzerfreundliche Oberfläche und das einfache Setzen von Zielen wird Ihnen helfen, die Effektivität Ihrer Website zu messen."
       },
       {
-        "name": "User flow",
-        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
+        "name": "Benutzerfluss",
+        "desc": "Verfolgen Sie, wie Benutzer auf Ihre Website gelangen und wohin sie gehen. Lernen Sie das Verhalten und die Muster Ihrer Besucher."
       }
     ],
-    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
+    "demoGeoReports": "Ja, es ist ein Standard. Aber wir verfolgen genau, wo Ihre Benutzer sind.",
     "mFeatures": [
       {
-        "name": "Expand your possibilities",
-        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
+        "name": "Erweitern Sie Ihre Möglichkeiten",
+        "desc": "Browser-Erweiterungen, Benachrichtigungen, 2FA, flexible Funktionalität und mehr!"
       },
       {
-        "name": "Opensource",
-        "desc": "Customise Swetrix for your needs or selfhost it easily."
+        "name": "Open-Source",
+        "desc": "Passen Sie Swetrix ganz einfach an Ihre Bedürfnisse an oder betreiben Sie es kinderleicht selbst."
       },
       {
-        "name": "Marketplace options",
-        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
+        "name": "Marktplatz-Einstellungen",
+        "desc": "Marktplatz mit von der Community entwickelten Erweiterungen, um Ihre analytischen Fähigkeiten zu verbessern."
       },
       {
-        "name": "Easy integration",
-        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
+        "name": "Einfache Integration",
+        "desc": "Integrieren Sie Ihre Projekte, fügen Sie neue Erweiterungen hinzu, tauchen Sie ein in die Welt der Analyse."
       },
       {
-        "name": "Solve your tasks, not create",
-        "desc": "Get insights and use the best solutions to solve your problems."
+        "name": "Ihre Aufgaben lösen, statt weitere zu erzeugen",
+        "desc": "Holen Sie sich Einblicke und nutzen Sie die besten Lösungen, um Ihre Probleme zu lösen."
       },
       {
-        "name": "Share your best solutions",
-        "desc": "Share your best solutions with the community, get popularity and money."
+        "name": "Teilen Sie Ihre besten Lösungen",
+        "desc": "Teilen Sie Ihre besten Lösungen mit der Community, erhalten Sie dafür Popularität und Geld."
       }
     ],
-    "supports": "Supports all popular platforms",
-    "becomeDev": "Become a developer",
-    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
-    "marketplaceBlock": "Marketplace and extension features",
-    "coreFeaturesBlock": "Core features",
-    "testimonials": "Testimonials",
+    "supports": "Unterstützt alle beliebten Plattformen",
+    "becomeDev": "Werden Sie Entwickler",
+    "becomeDevDesc": "Schreiben Sie Ihre Erweiterungen, folgen Sie den Neuigkeiten und treten Sie unserer Entwicklercommunity bei.",
+    "marketplaceBlock": "Marktplatz- und Erweiterungsfunktionen",
+    "coreFeaturesBlock": "Kernfunktionen",
+    "testimonials": "Kundenmeinungen",
     "lTestimonials": [
       {
         "name": "Alex",
-        "role": "Startup founder",
-        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+        "role": "Startup-Gründer",
+        "desc": "Wir verwenden für unser Projekt mehrere Analysesysteme, um die genauesten Daten zu erhalten.\nFür Webanalytik haben wir Swetrix als Lösung gewählt, bei der das Team ständig neue Verbesserungen und Funktionen vornimmt."
       },
       {
         "name": "Michael",
-        "role": "Small business owner",
-        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+        "role": "Kleinunternehmer",
+        "desc": "Im Geschäftsleben muss ich verstehen, wie sich Kunden auf einer Website verhalten und warum sie mein Produkt kaufen oder nicht kaufen.\nSwetrix gibt mir die notwendigen Daten und wertvolle Einblicke, um meine Website-Besucher zu verstehen und mir zu helfen, den Umsatz zu steigern."
       },
       {
         "name": "Rachel",
-        "role": "CMO at NDA Company",
-        "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
+        "role": "Vorstand eines Non-Profit-Unternehmens",
+        "desc": "Ich arbeite an einem ziemlich großen Projekt, und wir müssen die DPR-Abkommen und eine Reihe anderer Anforderungen erfüllen.\nWir arbeiten mit großen Unternehmen auf der ganzen Welt und Besucher unserer Ressourcen wollen sehen, dass wir ihnen treu sind aber gleichzeitig unsere Abteilung in die Lage versetzen, die Umstellung auf der Website zu erhöhen und wertvolle Einblicke zu erhalten, um neue Produktideen zu testen.\nDiese Aufgaben werden von Swetrix vollständig gelöst."
       }
     ],
-    "opensourceAdv": "Advantages of using <url>open source</url>",
+    "opensourceAdv": "Vorteile der Verwendung von <url>Open-Source-</url>",
     "opensource": [
       {
-        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
+        "desc": "Installieren Sie Swetrix auf Ihren eigenen Servern - der Quellcode ist für alle verfügbar."
       },
       {
-        "desc": "Find bugs and suggest improvements - the community will be grateful to you."
+        "desc": "Finden Sie Fehler und schlagen Sie Verbesserungen vor - die Community wird Ihnen dankbar sein."
       },
       {
-        "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
+        "desc": "Ihre Daten sind geschützt, alle Funktionen und Verbesserungen werden in wenigen Tagen von unseren Entwicklern implementiert."
       }
     ],
-    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
-    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
+    "os": "<gradi>Open-Source</gradi> Analytics - ein leistungsstarkes und einfaches Werkzeug.",
+    "custSupport": "Ist ihre Frage hier nicht aufgelistet? Wenden Sie sich gerne an unseren <mail>Kundendienst</mail>.",
     "whyUs": "Warum uns",
     "ourStats": "Unsere Statistiken",
     "statsDesc": "Swetrix basiert auf dem Vertrauen der Nutzer in den Dienst und ist auch in der Lage, Tausende von Benutzern und Websites zu verwalten.",
     "users": "Registrierte Nutzer",
     "websites": "Hinzugefügte Webseiten",
-    "pageviews": "Events tracked"
+    "pageviews": "Events verfolgt"
   },
   "auth": {
     "recovery": {
@@ -232,10 +232,10 @@
       "title": "Bei Ihrem Konto anmelden",
       "forgot": "Passwort vergessen?",
       "button": "Anmelden",
-      "2fa": "Two-factor authentication",
-      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
-      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
-      "6digitCode": "6-digit authentication code"
+      "2fa": "Zwei-Faktor-Authentifizierung",
+      "2faDesc": "Öffnen Sie die Zwei-Faktor-Authentifizierungs-App auf Ihrem Gerät, um Ihren Authentifizierungscode anzuzeigen und Ihre Identität zu bestätigen.\nSie können auch Ihren Wiederherstellungs-Code verwenden.",
+      "2faUnavailable": "Sie haben keinen Zugriff auf 2FA?\n<ctl>Kontaktieren Sie den Support</ctl>.",
+      "6digitCode": "6-stelliger Authentifizierungscode"
     },
     "signup": {
       "button": "Registrieren",
@@ -256,12 +256,12 @@
       "xCharsError": "Das Passwort muss aus mindestens {{amount}} Zeichen bestehen.",
       "noMatchError": "Die Passwörter stimmen nicht überein.",
       "badEmailError": "Bitte geben Sie eine gültige E-Mail-Adresse an.",
-      "passwordTooLong": "The provided password is too long, maximum length is {{amount}} characters",
+      "passwordTooLong": "Das angegebene Kennwort ist zu lang, die maximale Länge beträgt {{amount}} Zeichen",
       "tosError": "Sie müssen unsere AGB und Datenschutzerklärung akzeptieren, um unsere Dienste nutzen zu können.",
       "email": "E-Mail",
       "signin": "Anmelden",
-      "checkLeakedPassword": "Check if password is leaked",
-      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text."
+      "checkLeakedPassword": "Prüfen, ob das Passwort geleakt worden ist",
+      "checkLeakedPasswordDesc": "Bei Aktivierung überprüfen wir Ihr Passwort mit der <db>{{database}}</db> Datenbank. Wir senden Ihr Passwort nicht an den Dienst. Zuerst hashen wir Ihr Passwort (mittels SHA1) und senden nur die ersten 5 Zeichen dieses Hashs an den Dienst. Der Dienst gibt alle geleakten Passwörter zurück, die mit diesen 5 Zeichen beginnen. An unserem Ende überprüfen wir, ob eines dieser Passwörter mit Ihrem Passwort übereinstimmt. Wir zeigen Ihnen eine Warnung, wenn es vorher geleakt wurde. Wir speichern Ihr Passwort nie im Klartext."
     }
   },
   "features": {
@@ -298,7 +298,7 @@
     "general": "Allgemeine Einstellungen",
     "update": "Konto aktualisieren",
     "email": "E-Mail Berichte",
-    "timezone": "Timezone preference",
+    "timezone": "Zeitzonen-Einstellung",
     "frequency": "Wie oft sollen wir Ihnen eine E-Mail-Zusammenfassung über Ihre Websites schicken?",
     "noLink": "Sie haben keinen Link zur Bestätigung Ihrer E-Mail-Adresse erhalten? Fordern Sie ihn einfach erneut an.",
     "requestExport": "Datenexport anfordern",
@@ -317,51 +317,51 @@
     "confTimeout": "Eine E-Mail wurde bereits versendet. Überprüfen Sie Ihr Postfach oder versuchen Sie es in ein paar Minuten erneut.",
     "confSent": "Ein Link zur Kontobestätigung wurde an Ihre E-Mail-Adresse gesendet.",
     "noConfLeft": "Leider sind Ihre E-Mail-Bestätigungsanfragen aufgebraucht.\nBitte vergewissern Sie sich, dass Sie in der Lage sind, E-Mails zu empfangen, und überprüfen Sie Ihren Spam-Ordner erneut auf Nachrichten.\nSie können versuchen, eine andere E-Mail-Adresse zu verwenden oder unseren Kundendienst zu kontaktieren.",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
-    "quitProject": "Are you sure you want to quit this project?",
-    "quitProjectTitle": "Quit {{project}}?",
-    "shared": "Shared projects",
-    "owned": "Owned projects",
+    "timezoneDesc": "Dies ist die Zeitzone, in der die Daten angezeigt werden. Sie wird nur zur Visualisierung verwendet.\nEs werden keine Daten auf Basis dieser Einstellung geändert.",
+    "quitProject": "Sind Sie sicher, dass Sie dieses Projekt verlassen möchten?",
+    "quitProjectTitle": "{{project}} beenden?",
+    "shared": "Geteilte Projekte",
+    "owned": "Eigene Projekte",
     "sharedTable": {
-      "project": "Project",
-      "role": "Role",
-      "joinedOn": "Joined on"
+      "project": "Projekt",
+      "role": "Rolle",
+      "joinedOn": "Beigetreten am"
     },
-    "noSharedProjects": "Nobody is sharing a project with you yet.",
-    "2fa": "Two-factor authentication (2FA)",
-    "2faEnable": "Enable 2FA to make your account more secure.",
-    "2faEnableBtn": "Enable 2FA",
-    "2faDisableBtn": "Disable 2FA",
-    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
-    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
-    "enter2faToEnable": "Enter your one-time code to enable 2FA",
-    "enter2faToDisable": "Enter your one-time code or a recovery code",
-    "yourOneTimeCode": "Your one-time code",
-    "invalid2fa": "Invalid 2FA code, please try again",
-    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
-    "2faRecoverySaved": "I have saved this recovery code",
-    "2faEnabled": "Two-factor authenticated is enabled on your account.",
-    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
-    "apiKey": "API Key",
-    "noApiKey": "You haven't created any API keys yet.",
-    "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
-    "addApiKeyBtn": "Generate API Key",
-    "deleteApiKeyBtn": "Delete API Key",
-    "apiKeyDelete": "Delete your API Key?",
-    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled."
+    "noSharedProjects": "Niemand teilt bisher ein Projekt mit Ihnen.",
+    "2fa": "Zwei-Faktor-Authentifizierungscode (2FA)",
+    "2faEnable": "Aktivieren Sie 2FA, um Ihr Konto sicherer zu machen.",
+    "2faEnableBtn": "2FA aktivieren",
+    "2faDisableBtn": "2FA deaktivieren",
+    "2faDesc": "Eine Authentifikator-App, die zeitbasierte Einmalpasswörter unterstützt wie zum Beispiel \"Google Authenticator\" kann den QR-Code unten scannen, um 2FA auf Ihrem Swetrix-Konto zu aktivieren:",
+    "2faQRAlt": "Sie können den QR-Code nicht scannen?\nVerwenden Sie stattdessen diesen geheimen Schlüssel: {{key}}",
+    "enter2faToEnable": "Geben Sie Ihren Einmalcode ein, um 2FA zu aktivieren",
+    "enter2faToDisable": "Geben Sie Ihren Einmalcode oder einen Wiederherstellungscode ein",
+    "yourOneTimeCode": "Ihr Einmalcode",
+    "invalid2fa": "Ungültiger Code. Bitte versuchen Sie es erneut",
+    "2faRecoveryNote": "Wichtig: Wenn Sie irgendwann Ihre Authentifizierungs-App nicht verwenden können, weil Sie die App gelöscht haben oder Ihr Gerät verloren haben, benötigen Sie eine Möglichkeit, auf Ihr Konto zuzugreifen um 2FA zu deaktivieren.\n\nSie können dann diesen Wiederherstellungscode verwenden, um 2FA zu deaktivieren. Notieren und speichern Sie ihn an einem sicheren Ort.",
+    "2faRecoverySaved": "Ich habe diesen Wiederherstellungscode gespeichert",
+    "2faEnabled": "Zwei-Faktor-Authentifizierung ist auf Ihrem Konto aktiviert.",
+    "2faDisableHint": "Um die Zwei-Faktor-Authentifizierung zu deaktivieren, geben Sie bitte Ihren 6-stelligen Code oder einen Ihrer Wiederherstellungscodes unten ein.",
+    "apiKey": "API-Schlüssel",
+    "noApiKey": "Sie haben noch keine API-Schlüssel erstellt.",
+    "apiKeyWarning": "Behandeln Sie Ihren API-Schlüssel wie ein Passwort und bewahren Sie ihn geheim auf. Hardcodieren Sie ihn niemals in Ihre Programme und teilen Sie ihn mit niemandem.",
+    "addApiKeyBtn": "API-Schlüssel generieren",
+    "deleteApiKeyBtn": "API-Schlüssel löschen",
+    "apiKeyDelete": "API-Schlüssel löschen?",
+    "apiKeyDeleteConf": "Sind Sie sicher, dass Sie Ihren API-Schlüssel löschen möchten?\nAlle API-Zugriffe über diesen Schlüssel werden deaktiviert."
   },
   "dashboard": {
     "newProject": "Neues Projekt",
     "verifyEmailTitle": "Bitte bestätigen Sie zuerst die E-Mail-Adresse.",
     "verifyEmailDesc": "Um unseren Dienst nutzen und Ihre Projekte erstellen zu können, müssen Sie zunächst Ihre E-Mail-Adresse bestätigen.\n\nEin Link zur Bestätigung Ihres Kontos wurde an die E-Mail-Adresse geschickt, die Sie bei der Registrierung angegeben haben. Wenn er nicht zugestellt wurde, können Sie den Link in Ihren Kontoeinstellungen erneut anfordern.",
-    "lowEventsTitle": "You are running out of events!",
-    "lowEventsDesc": "You have used more than 85% of the available events per your tier for this month.\nThat means that in case you use 100% of the available events until the end of the month, all the subsequent traffic will not be saved.\nTo avoid this we recommend that you update your tier on the Billing page.",
-    "eventsXPercUsed": "You have used more than {{amount}}% of the available events per your tier for this month.",
+    "lowEventsTitle": "Sie haben keine Events mehr!",
+    "lowEventsDesc": "Sie haben für diesen Monat mehr als 85% des Eventkontingents ihres Abonnements verwendet.\nFalls Sie ihren gebuchten Kontigent noch diesen Monat überschreiten sollten, werden alle weiteren Events nicht mehr getrackt.\nUm dies zu vermeiden, empfehlen wir Ihnen, Ihr Abo auf der Rechnungsseite hochzustufen.",
+    "eventsXPercUsed": "Sie haben für diesen Monat mehr als {{amount}}% ihres verfügbaren Event-Kontingents für ihr Abonnement verbraucht.",
     "noProjects": "Sie haben noch keine Projekte erstellt",
     "createProject": "Erstellen Sie hier ein neues Projekt, um unseren Dienst zu nutzen",
     "active": "Aktiv",
     "public": "Öffentliche",
-    "shared": "Shared",
+    "shared": "Freigegeben",
     "disabled": "Deaktiviert",
     "pageviews": "Seitenaufrufe",
     "unique": "Einzigartige Ansichten",
@@ -369,16 +369,16 @@
     "inc": "Gestiegen um",
     "dec": "Gesunken um",
     "liveVisitors": "Live-Besucher",
-    "bounceRate": "Bounce rate",
-    "invitationFor": "Invitation for {{project}}",
-    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
+    "bounceRate": "Absprungrate",
+    "invitationFor": "Einladung zu {{project}}",
+    "invitationDesc": "Sie wurden eingeladen, dem Projekt {{project}} beizutreten.\nSie können die Einladung entweder annehmen oder in Ihren Kontoeinstellungen ablehnen."
   },
   "docs": {
     "titles": {
       "start": "Erste Schritte",
       "umd": "UMD-Build",
       "npm": "NPM Paket",
-      "int": "Integrations",
+      "int": "Integrationen",
       "how": "Wie Sie...",
       "pv": "Seitenaufrufe tracken",
       "ce": "benutzerdefinierte Ereignisse tracken",
@@ -387,7 +387,7 @@
     "install": "Sie können das Tracking-Script auch mit NPM oder Yarn installieren",
     "import": "Als nächstes sollten Sie das Modul in das Stammverzeichnis Ihres Projekts importieren, zum Beispiel",
     "track": "Danach können Sie alles tracken, was Sie wollen.\nLesen Sie die ausführliche Dokumentation zu Tracking-Parametern weiter unten.",
-    "integrations": "We support the following integrations (click on the title for details)",
+    "integrations": "Wir unterstützen die folgenden Integrationen (klicken Sie auf den Titel für Details)",
     "pv": "Das Swetrix.js-Tracking-Script bietet die Möglichkeit, ein Aufrufereignis zu erfassen, sobald die Seite geladen ist.\nDies kann durch den Aufruf der <link>trackViews()</link> Funktion erreicht werden:",
     "ce": "Zusätzlich zur Verfolgung der Seitenaufrufe bieten wir die Möglichkeit, benutzerdefinierte Tracking-Events zu erfassen.\nWenn Sie zum Beispiel ein Ereignis wie \"Anmeldung\" oder \"Newsletter-Abonnement\" verfolgen möchten, wäre diese Funktion sehr nützlich.\nIm Hintergrund ist das Prinzip dieser Funktion ähnlich zu trackViews.",
     "init": "Diese Funktion wird zur Initialisierung der Analyse verwendet.\nIm Grunde genommen teilen Sie dem Script mit, für welches Projekt Sie es verwenden möchten, und geben bei Bedarf Ihre eigenen Parameter an.",
@@ -406,14 +406,14 @@
         "pg": "Die Seite, die der Benutzer gerade sieht (z.B. /hello)."
       }
     },
-    "tvReturn": "The trackViews function returns an object with some methods allowing you to alter the behaviour of page tracking.",
+    "tvReturn": "Die trackViews-Funktion gibt ein Objekt mit einigen Methoden zurück, um das Verhalten der Seitenverfolgung zu ändern.",
     "contents": "Inhalt"
   },
   "notFoundPage": {
-    "title": "Page not found",
-    "description": "Sorry, we couldn’t find the page you’re looking for.\nPlease check the URL in the address bar and try again.",
-    "goHome": "Go back home",
-    "support": "Contact support"
+    "title": "Seite nicht gefunden",
+    "description": "Leider konnten wir die gesuchte Seite nicht finden.\nBitte überprüfen Sie die URL in der Adressleiste und versuchen Sie es erneut.",
+    "goHome": "Zurück auf die Homepage",
+    "support": "Support kontaktieren"
   },
   "project": {
     "ad": "Sie möchten diese Statistiken für Ihre eigene Webseite?",
@@ -422,7 +422,7 @@
     "asImage": "Als Bild",
     "asCSV": "Als CSV",
     "noEvTitle": "Noch keine Tracking-Events",
-    "showAll": "Show all views",
+    "showAll": "Alle Ansichten anzeigen",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <link>Doku</link> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",
@@ -440,7 +440,7 @@
     "event": "Ereignis",
     "quantity": "Anzahl",
     "conversion": "Konversionsrate",
-    "ratio": "Ratio",
+    "ratio": "Verhältnis",
     "customEv": "benutzerdefinierte Tracking-Events",
     "noParamData": "Noch keine Daten für diesen Parameter vorhanden.",
     "prev": "Zurück",
@@ -448,12 +448,12 @@
     "unique": "Einzigartige Besucher",
     "total": "Seitenaufrufe insgesamt",
     "today": "Heute",
-    "yesterday": "Yesterday",
-    "last24h": "Last 24 hours",
+    "yesterday": "Gestern",
+    "last24h": "Letzte 24 Stunden",
     "lastXDays": "Letzte {{amount}} Tage",
     "lastXWeeks": "Letzte {{amount}} Wochen",
     "lastXMonths": "Letzte {{amount}} Monate",
-    "custom": "Custom date",
+    "custom": "Benutzerdefiniertes Datum",
     "hour": "Stunde",
     "day": "Tag",
     "week": "Woche",
@@ -477,18 +477,18 @@
       "publicHint": "Wenn Sie diese Option aktivieren, kann jeder im Internet (einschließlich Google) das Dashboard dieses Projekts sehen. Nur der Projektadministrator kann die Einstellungen bearbeiten.",
       "createHint": "*Sie können Ihr Projekt im Anschluss an die Erstellung noch weiter einrichten.",
       "delete": "Projekt löschen",
-      "reset": "Reset project",
+      "reset": "Projekt zurücksetzen",
       "qDelete": "Das Projekt löschen?",
-      "qReset": "Reset the project?",
+      "qReset": "Projekt zurücksetzen?",
       "deleteHint": "Wenn Sie auf \"Projekt löschen\" klicken, verstehen Sie, dass diese Aktion nicht rückgängig zu machen ist.\nDas Projekt und alle damit verbundenen Daten werden von unseren Servern gelöscht.",
-      "resetHint": "By pressing 'Reset project' you understand, that this action is irreversible.\nThe project's pageviews and custom events will be removed from our servers, but the project identifier and other configuration will be retained.",
-      "deleted": "The project has been deleted",
-      "resetted": "The project has been resetted",
-      "noPeople": "No people have been added to this project yet.",
-      "removeMember": "Remove member",
-      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
-      "removeUser": "Remove {{user}}?",
-      "people": "People",
+      "resetHint": "Wenn Sie \"Projekt zurücksetzen\" drücken, verstehen Sie, dass diese Aktion unumkehrbar ist.\nDie Seitenansichten und benutzerdefinierte Ereignisse des Projekts werden von unseren Servern entfernt, aber die Projektkennung und andere Einstellungen werden beibehalten.",
+      "deleted": "Das Projekt wurde gelöscht",
+      "resetted": "Das Projekt wurde zurückgesetzt",
+      "noPeople": "Zu diesem Projekt wurden noch keine Personen hinzugefügt.",
+      "removeMember": "Mitglied entfernen",
+      "removeConfirm": "Sind Sie sicher, dass Sie das Teilen Ihres Projekts mit diesem Benutzer beenden möchten?",
+      "removeUser": "{{user}} entfernen?",
+      "people": "Personen",
       "inviteCoworkers": "Invite your coworkers",
       "invite": "Invite a user",
       "inviteTo": "Invite a user to {{project}}",
@@ -594,6 +594,7 @@
     "pp": "Datenschutzerklärung",
     "tos": "Allgemeine Geschäftsbedingungen",
     "blog": "Blog",
+    "utm": "UTM Generator",
     "billing": "Rechnung",
     "pricing": "Preisangaben",
     "docs": "Dokumentation",
