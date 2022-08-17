@@ -105,9 +105,9 @@ const Main = () => {
                 </div>
               </div>
             </div>
-
+            {/* end first block with live demo */}
+            {/* section Core Analytics Features */}
             <div className='dark:bg-gray-900 bg-white px-4 pb-24'>
-              {/* section Core Analytics Features */}
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <picture>
                   <source srcSet='/assets/CoreFeaturesLight.webp' type='image/webp' />
@@ -126,6 +126,7 @@ const Main = () => {
                   </a>
                 </div>
               </section>
+              {/* end section Core Analytics Features */}
               {/* section Marketplace & build-in Extensions */}
               <section className='flex pt-20 md:pt-30 flex-col md:flex-row items-center md:justify-between max-w-7xl m-auto'>
                 <div className='max-w-[516px]'>
@@ -145,6 +146,7 @@ const Main = () => {
                 </div>
                 <img className='md:max-w-[450px] lg:max-w-lg md:ml-5 mt-8 md:mt-0' src='/assets/teardown.svg' alt='Marketplace' />
               </section>
+              {/* end section Marketplace & build-in Extensions */}
               {/* section Privacy compliance. */}
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <img className='md:max-w-[360px] md:mr-3 mt-3 md:mt-0 lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
@@ -170,6 +172,7 @@ const Main = () => {
                   </Link>
                 </div>
               </section>
+              {/* end section Privacy compliance. */}
             </div>
             {/*  block singup */}
             <div className='overflow-x-clip'>
@@ -215,6 +218,7 @@ const Main = () => {
                 </div>
               </div>
             </div>
+            {/* end block singup */}
             {/* Core features section */}
             <section className='bg-white dark:bg-gray-900 pt-20 relative pb-14'>
               <BackgroundSvg className='absolute -left-8' type='shapes' />
@@ -237,6 +241,8 @@ const Main = () => {
               </div>
               <BackgroundSvg className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
             </section>
+            {/* end Core features section */}
+            {/* section supports */}
             <section className='bg-white dark:bg-gray-800 pt-24 sm:px-5 px-3 relative pb-28'>
               <h1 className='mx-auto text-gray-800 dark:text-white font-bold text-3xl sm:ext-5xl w-fit text-center'>
                 {t('main.supports')}
@@ -256,6 +262,8 @@ const Main = () => {
                 <Cloudflare theme={theme} className='max-w-[140px] max-h-12' />
               </div>
             </section>
+            {/* end section supports */}
+            {/* Marketplace and extension features */}
             <div className='overflow-hidden'>
               <div className='relative max-w-7xl w-full mx-auto'>
                 <div
@@ -290,7 +298,9 @@ const Main = () => {
                 />
               </div>
             </div>
+            {/* end Marketplace and extension features */}
             <Pricing t={t} language={language} />
+            {/* section Testimonials */}
             <section className='bg-white dark:bg-gray-900 pt-20 pb-20 relative'>
               <div className='absolute right-0 top-0'>
                 <BackgroundSvg type='twolinecircle2' />
@@ -330,7 +340,7 @@ const Main = () => {
                 </div>
               </div>
             </section>
-
+            {/* end section Testimonials */}
             <div className='bg-white dark:bg-gray-900 px-4 md:px-8 pb-12'>
               <section className='max-w-7xl w-full mx-auto bg-gray-800 overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
                 <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
@@ -510,7 +520,8 @@ const Main = () => {
                 </div>
               </div>
             </section> */}
-
+            
+            {/* Advantages of using open source */}
             <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-7xl w-full mx-auto py-20 lg:py-32 px-5'>
               <picture>
                 <source srcSet={theme === 'dark' ? '/assets/opensource_dark.webp' : '/assets/opensource_light.webp'} type='image/webp' />
@@ -540,6 +551,8 @@ const Main = () => {
                 </div>
               </div>
             </section>
+            {/* end Advantages of using open source */}
+            {/* Become a developer */}
             <section className='bg-white dark:bg-gray-800 pt-20 pb-44 relative'>
               <div className='absolute right-0 top-16 z-0'>
                 <BackgroundSvg type='threecircle' />
@@ -604,6 +617,7 @@ const Main = () => {
                 </div>
               </div>
             </section>
+            {/* end Become a developer */}
           </main>
         </div>
       </div>
