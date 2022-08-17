@@ -7,14 +7,16 @@ import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
 import { Popover, Transition } from '@headlessui/react'
-import { MenuIcon, XIcon } from '@heroicons/react/outline'
+import {
+  MenuIcon, XIcon, DocumentTextIcon, CreditCardIcon, CollectionIcon, RssIcon,
+} from '@heroicons/react/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/solid'
 
 import routes from 'routes'
 import { authActions } from 'redux/actions/auth'
 import UIActions from 'redux/actions/ui'
 import {
-  whitelist, languages, languageFlag, isSelfhosted,
+  whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
@@ -45,27 +47,32 @@ const Header = ({ authenticated, theme }) => {
                 <span className='sr-only'>Swetrix</span>
                 <img className='h-10' src='/assets/logo_white.svg' alt='' />
               </Link>
-              <div className='hidden ml-10 space-x-1 lg:block'>
-                <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
-                  {t('common.features')}
-                </NavLink>
+              <div className='hidden ml-10 space-x-1 lg:flex'>
+                <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
+                  <RssIcon className='w-5 h-5 mr-1' />
+                  {t('footer.blog')}
+                </a>
                 {!isSelfhosted && (
                   authenticated ? (
-                    <NavLink to={routes.billing} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+                    <NavLink to={routes.billing} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+                      <CreditCardIcon className='w-5 h-5 mr-1' />
                       {t('common.billing')}
                     </NavLink>
                   ) : (
                     <>
-                      <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                      <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                        <CollectionIcon className='w-5 h-5 mr-1' />
+                        {t('common.features')}
+                      </NavLink>
+                      <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                        <CreditCardIcon className='w-5 h-5 mr-1' />
                         {t('common.pricing')}
-                      </HashLink>
-                      <HashLink to={`${routes.main}#faqs`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='FAQs'>
-                        {t('common.faqs')}
                       </HashLink>
                     </>
                   )
                 )}
-                <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+                <NavLink to={routes.docs} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+                  <DocumentTextIcon className='w-5 h-5 mr-1' />
                   {t('common.docs')}
                 </NavLink>
               </div>
@@ -114,11 +121,11 @@ const Header = ({ authenticated, theme }) => {
                 </>
               ) : (
                 <>
-                  <Link to={routes.signin} className='inline-block select-none bg-indigo-500 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75'>
+                  <Link to={routes.signin} className='inline-block select-none bg-indigo-500 dark:bg-gray-700 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-gray-600'>
                     {t('auth.common.signin')}
                   </Link>
                   {!isSelfhosted && (
-                    <Link to={routes.signup} className='inline-block select-none bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50'>
+                    <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-gray-700 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-gray-600'>
                       {t('common.getStarted')}
                     </Link>
                   )}
@@ -144,24 +151,29 @@ const Header = ({ authenticated, theme }) => {
             </div>
           </div>
           <div className='py-4 flex flex-wrap justify-center space-x-2 lg:hidden'>
-            <NavLink to={routes.features} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
-              {t('common.features')}
-            </NavLink>
+            <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
+              <RssIcon className='w-5 h-5 mr-1' />
+              {t('footer.blog')}
+            </a>
             {authenticated ? (
-              <NavLink to={routes.billing} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+              <NavLink to={routes.billing} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+                <CreditCardIcon className='w-5 h-5 mr-1' />
                 {t('common.billing')}
               </NavLink>
             ) : (
               <>
-                <HashLink to={`${routes.main}#pricing`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                  <CreditCardIcon className='w-5 h-5 mr-1' />
                   {t('common.pricing')}
                 </HashLink>
-                <HashLink to={`${routes.main}#faqs`} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='FAQs'>
-                  {t('common.faqs')}
-                </HashLink>
+                <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                  <CollectionIcon className='w-5 h-5 mr-1' />
+                  {t('common.features')}
+                </NavLink>
               </>
             )}
-            <NavLink to={routes.docs} className='text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-3 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+            <NavLink to={routes.docs} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+              <DocumentTextIcon className='w-5 h-5 mr-1' />
               {t('common.docs')}
             </NavLink>
           </div>
@@ -177,7 +189,7 @@ const Header = ({ authenticated, theme }) => {
         leaveFrom='opacity-100 scale-100'
         leaveTo='opacity-0 scale-95'
       >
-        <Popover.Panel focus className='absolute top-0 z-10 inset-x-0 p-2 transition transform origin-top-right md:hidden'>
+        <Popover.Panel focus className='absolute top-0 z-50 inset-x-0 p-2 transition transform origin-top-right md:hidden'>
           <div className='rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white dark:bg-gray-750 divide-y-2 divide-gray-50 dark:divide-gray-800'>
             <div className='pt-5 pb-6 px-5'>
               <div className='flex items-center justify-between'>

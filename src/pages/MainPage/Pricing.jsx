@@ -189,11 +189,11 @@ const Pricing = ({ t, language }) => {
                 </p>
               </>
             )}
-            <div className='relative self-center mt-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 flex sm:mt-8'>
+            <div className='relative self-center mt-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 flex sm:mt-8 xs:flex-row flex-col'>
               <button
                 type='button'
                 onClick={() => setBillingFrequency(BillingFrequency.monthly)}
-                className={cx('relative w-1/2 rounded-md shadow-sm py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
+                className={cx('relative xs:w-1/2 rounded-md shadow-sm py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
                   'bg-white border-gray-200 text-gray-900 dark:bg-gray-800 dark:border-gray-800 dark:text-gray-50': billingFrequency === BillingFrequency.monthly,
                   'text-gray-700 dark:text-gray-100': billingFrequency === BillingFrequency.yearly,
                 })}
@@ -203,7 +203,7 @@ const Pricing = ({ t, language }) => {
               <button
                 type='button'
                 onClick={() => setBillingFrequency(BillingFrequency.yearly)}
-                className={cx('ml-0.5 relative w-1/2 border border-transparent rounded-md py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
+                className={cx('ml-0.5 relative xs:w-1/2 border border-transparent rounded-md py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
                   'text-gray-700 dark:text-gray-100': billingFrequency === BillingFrequency.monthly,
                   'bg-white border-gray-200 text-gray-900 dark:bg-gray-800 dark:border-gray-800 dark:text-gray-50': billingFrequency === BillingFrequency.yearly,
                 })}
@@ -220,7 +220,7 @@ const Pricing = ({ t, language }) => {
               return (
                 <div
                   key={tier.name}
-                  className={cx('relative border rounded-lg shadow-sm divide-y divide-gray-200 dark:divide-gray-500', {
+                  className={cx('relative border rounded-2xl shadow-sm divide-y bg-[#F5F5F5] dark:bg-[#212936] divide-gray-200 dark:divide-gray-500', {
                     'border-indigo-400': user.planCode === tier.planCode,
                     'border-gray-200 dark:border-gray-500': user.planCode !== tier.planCode,
                   })}
@@ -235,20 +235,20 @@ const Pricing = ({ t, language }) => {
                     </div>
                   )}
                   <div className='p-6 border-none'>
-                    <h2 className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>{tier.name}</h2>
+                    <h2 className='text-lg leading-6 font-semibold text-[#4D4D4D] dark:text-gray-50 text-center'>{tier.name}</h2>
                     {tier.mostPopular && !authenticated && (
                       <p className='absolute top-0 py-1.5 px-4 bg-indigo-600 rounded-full text-xs font-semibold uppercase tracking-wide text-white transform -translate-y-1/2'>
                         {t('pricing.mostPopular')}
                       </p>
                     )}
-                    <p className='mt-4'>
+                    <p className='mt-4 text-center'>
                       {tier.planCode === 'free' ? (
-                        <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
+                        <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
                           {t('pricing.free')}
                         </span>
                       ) : (
                         <>
-                          <span className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
+                          <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
                             $
                             {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
                           </span>
@@ -290,7 +290,10 @@ const Pricing = ({ t, language }) => {
                       </Link>
                     )}
                   </div>
-                  <div className='pt-6 pb-8 px-6'>
+                  <div className='px-6 border-none'>
+                    <hr className='w-full mx-auto border border-gray-300 dark:border-gray-600' />
+                  </div>
+                  <div className='pt-6 pb-8 px-6 border-none'>
                     <h3 className='text-xs font-medium text-gray-900 dark:text-gray-50 tracking-wide uppercase'>
                       {t('pricing.whatIncl')}
                     </h3>

@@ -51,6 +51,33 @@ const contents = (t) => [{
 
 const NEXTJS_REPO_URL = 'https://github.com/Swetrix/swetrix-nextjs'
 
+const integrations = [
+  {
+    name: 'Next.js',
+    link: NEXTJS_REPO_URL,
+  },
+  {
+    name: 'Python Django',
+    link: 'https://github.com/Swetrix/integrations/blob/main/django/README.md',
+  },
+  {
+    name: 'Webflow',
+    link: 'https://github.com/Swetrix/integrations/blob/main/webflow/README.md',
+  },
+  {
+    name: 'Wordpress',
+    link: 'https://github.com/Swetrix/integrations/blob/main/wordpress/README.md',
+  },
+  {
+    name: 'Wix',
+    link: 'https://github.com/Swetrix/integrations/blob/main/wix/README.md',
+  },
+  {
+    name: 'Ghost',
+    link: 'https://github.com/Swetrix/integrations/blob/main/ghost/README.md',
+  },
+]
+
 const Contents = ({ t }) => {
   const tContents = contents(t)
 
@@ -136,11 +163,13 @@ const Docs = () => {
               :
             </p>
             <ul className='ml-5 text-lg list-disc marker:text-gray-900 dark:marker:text-gray-50'>
-              <li>
-                <a href={NEXTJS_REPO_URL} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer'>
-                  Next.js
-                </a>
-              </li>
+              {_map(integrations, ({ name, link }) => (
+                <li key={name}>
+                  <a href={link} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer'>
+                    {name}
+                  </a>
+                </li>
+              ))}
             </ul>
 
             <CHeader id='docs-ht' name={t('docs.titles.how')} />
@@ -207,11 +236,10 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4' />
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <i>Last updated: May 22, 2022 (Swetrix.js v1.3.2).</i><br />
+              <i>Last updated: August 6, 2022.</i><br />
               <div>
-                - Added documentation related to&nbsp;
-                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-tv'>the object</a>
-                &nbsp;trackViews function returns.
+                - Added Wordpress, Wix, Webflow, Django and Ghost&nbsp;
+                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-int'>integration instructions.</a>
               </div>
             </div>
           </div>

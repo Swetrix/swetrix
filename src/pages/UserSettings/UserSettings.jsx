@@ -2,12 +2,16 @@ import React, {
   useState, useEffect, memo,
 } from 'react'
 import { useSelector } from 'react-redux'
+import cx from 'clsx'
 import _size from 'lodash/size'
 import _isEmpty from 'lodash/isEmpty'
+import _isNull from 'lodash/isNull'
 import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
-import { MailIcon } from '@heroicons/react/outline'
+import _isString from 'lodash/isString'
+import { MailIcon, ExclamationIcon, DownloadIcon } from '@heroicons/react/outline'
+import QRCode from 'react-qr-code'
 import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
 
@@ -22,8 +26,11 @@ import TimezonePicker from 'ui/TimezonePicker'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
+import { setAccessToken } from 'utils/accessToken'
 
-import { deleteShareProject, acceptShareProject } from 'api'
+import {
+  deleteShareProject, acceptShareProject, generate2FA, enable2FA, disable2FA,
+} from 'api'
 
 const ProjectList = ({
   item, t, removeShareProject, removeProject, setProjectsShareData, setUserShareData,
@@ -125,12 +132,233 @@ const NoSharedProjects = ({ t }) => (
   </div>
 )
 
+const TwoFA = ({
+  t, user, dontRemember, updateUserData, login, genericError,
+}) => {
+  const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)
+  const [twoFADisabling, setTwoFADisabling] = useState(false)
+  const [twoFAConfigData, setTwoFAConfigData] = useState({}) // { secret, otpauthUrl }
+  const [isTwoFaLoading, setIsTwoFaLoading] = useState(false)
+  const [twoFACode, setTwoFACode] = useState('')
+  const [twoFACodeError, setTwoFACodeError] = useState(null)
+  const [twoFARecovery, setTwoFARecovery] = useState(null)
+  const { isTwoFactorAuthenticationEnabled } = user
+
+  const handle2FAInput = event => {
+    const { target: { value } } = event
+    setTwoFACode(value)
+    setTwoFACodeError(null)
+  }
+
+  const _generate2FA = async () => {
+    if (!isTwoFaLoading) {
+      setIsTwoFaLoading(true)
+
+      try {
+        const result = await generate2FA()
+        setTwoFAConfigurating(true)
+        setTwoFAConfigData(result)
+      } catch (e) {
+        if (_isString(e)) {
+          genericError(e)
+        } else {
+          genericError(t('apiNotifications.generate2FAError'))
+        }
+        console.error(`[ERROR] Failed to generate 2FA: ${e}`)
+        setTwoFAConfigurating(false)
+        setTwoFAConfigData({})
+      }
+
+      setIsTwoFaLoading(false)
+    }
+  }
+
+  const _enable2FA = async () => {
+    if (!isTwoFaLoading) {
+      setIsTwoFaLoading(true)
+
+      try {
+        const { twoFactorRecoveryCode, access_token: accessToken, user: updatedUser } = await enable2FA(twoFACode)
+        login(updatedUser)
+        setAccessToken(accessToken, dontRemember)
+        setTwoFARecovery(twoFactorRecoveryCode)
+      } catch (e) {
+        if (_isString(e)) {
+          genericError(e)
+        }
+        setTwoFACodeError(t('profileSettings.invalid2fa'))
+      }
+
+      setTwoFACode('')
+      setIsTwoFaLoading(false)
+    }
+  }
+
+  const _disable2FA = async () => {
+    if (!isTwoFaLoading) {
+      setIsTwoFaLoading(true)
+
+      try {
+        await disable2FA(twoFACode)
+        updateUserData({ isTwoFactorAuthenticationEnabled: false })
+      } catch (e) {
+        if (_isString(e)) {
+          genericError(e)
+        }
+        setTwoFACodeError(t('profileSettings.invalid2fa'))
+      }
+
+      setTwoFACode('')
+      setIsTwoFaLoading(false)
+    }
+  }
+
+  const callFnOnKeyPress = (fn, key = 'Enter') => (e) => {
+    e.stopPropagation()
+    if (e.key === key) {
+      fn(e)
+    }
+  }
+
+  const recoverySaved = () => {
+    setTwoFARecovery(null)
+    setTwoFAConfigurating(false)
+  }
+
+  if (twoFARecovery) {
+    return (
+      <div className='max-w-prose'>
+        <p className='text-base text-gray-900 dark:text-gray-50'>
+          {t('profileSettings.2faRecoveryNote')}
+        </p>
+        <Input
+          type='text'
+          className='mt-4'
+          value={twoFARecovery}
+        />
+        <Button
+          onClick={recoverySaved}
+          primary
+          large
+        >
+          {t('profileSettings.2faRecoverySaved')}
+        </Button>
+      </div>
+    )
+  }
+
+  if (isTwoFactorAuthenticationEnabled) {
+    if (twoFADisabling) {
+      return (
+        <>
+          <p className='text-base max-w-prose text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.2faDisableHint')}
+          </p>
+          <div className='flex items-center mt-4'>
+            <Input
+              type='text'
+              label={t('profileSettings.enter2faToDisable')}
+              value={twoFACode}
+              placeholder={t('profileSettings.yourOneTimeCode')}
+              className='sm:col-span-3'
+              onChange={handle2FAInput}
+              onKeyDown={callFnOnKeyPress(_disable2FA)}
+              error={twoFACodeError}
+              disabled={isTwoFaLoading}
+            />
+            <Button
+              className={cx('ml-2', {
+                'mt-4': _isNull(twoFACodeError),
+                'mb-1': !_isNull(twoFACodeError),
+              })}
+              onClick={_disable2FA}
+              loading={isTwoFaLoading}
+              danger
+              large
+            >
+              {t('common.disable')}
+            </Button>
+          </div>
+        </>
+      )
+    }
+
+    return (
+      <>
+        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+          {t('profileSettings.2faEnabled')}
+        </p>
+        <Button
+          className='mt-4'
+          onClick={() => setTwoFADisabling(true)}
+          danger
+          large
+        >
+          {t('profileSettings.2faDisableBtn')}
+        </Button>
+      </>
+    )
+  }
+
+  if (twoFAConfigurating) {
+    return (
+      <>
+        <p className='text-base max-w-prose text-gray-900 dark:text-gray-50'>
+          {t('profileSettings.2faDesc')}
+        </p>
+        <div className='mt-4 p-4 bg-white w-max'>
+          <QRCode value={twoFAConfigData.otpauthUrl} />
+        </div>
+        <p className='text-base whitespace-pre-line mt-2 text-gray-900 dark:text-gray-50'>
+          {t('profileSettings.2faQRAlt', { key: twoFAConfigData.secret })}
+        </p>
+        <div className='flex items-center mt-4'>
+          <Input
+            type='text'
+            label={t('profileSettings.enter2faToEnable')}
+            value={twoFACode}
+            placeholder={t('profileSettings.yourOneTimeCode')}
+            className='sm:col-span-3'
+            onChange={handle2FAInput}
+            onKeyDown={callFnOnKeyPress(_enable2FA)}
+            error={twoFACodeError}
+            disabled={isTwoFaLoading}
+          />
+          <Button
+            className={cx('ml-2', {
+              'mt-8  xs:mt-4': _isNull(twoFACodeError),
+              'mb-1': !_isNull(twoFACodeError),
+            })}
+            onClick={_enable2FA}
+            loading={isTwoFaLoading}
+            primary
+            large
+          >
+            {t('common.enable')}
+          </Button>
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+        {t('profileSettings.2faEnable')}
+      </p>
+      <Button className='mt-4' onClick={_generate2FA} loading={isTwoFaLoading} primary large>
+        {t('profileSettings.2faEnableBtn')}
+      </Button>
+    </>
+  )
+}
+
 const UserSettings = ({
   onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t,
   removeProject, removeShareProject, setUserShareData, setProjectsShareData, language,
-  userSharedUpdate, sharedProjectError,
+  userSharedUpdate, sharedProjectError, updateUserData, login, genericError, onApiKeyGenerate, onApiKeyDelete,
 }) => {
-  const { user } = useSelector(state => state.auth)
+  const { user, dontRemember } = useSelector(state => state.auth)
 
   const [form, setForm] = useState({
     email: user.email || '',
@@ -144,6 +372,7 @@ const UserSettings = ({
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState(null)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
@@ -229,7 +458,7 @@ const UserSettings = ({
     <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {t('titles.profileSettings')}
           </h2>
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
@@ -275,11 +504,8 @@ const UserSettings = ({
             {t('profileSettings.update')}
           </Button>
           <hr className='mt-5' />
-          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.timezone')}
-            <div className='ml-5'>
-              <Beta />
-            </div>
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>
@@ -310,13 +536,54 @@ const UserSettings = ({
           <Button className='mt-4' onClick={handleReportSave} primary large>
             {t('common.save')}
           </Button>
+          <hr className='mt-5' />
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.apiKey')}
+            <div className='ml-5'>
+              <Beta />
+            </div>
+          </h3>
+          {user.apiKey ? (
+            <>
+              <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.apiKeyWarning')}
+              </p>
+              <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
+                <Input
+                  name='apiKey'
+                  id='apiKey'
+                  type='text'
+                  label={t('profileSettings.apiKey')}
+                  value={user.apiKey}
+                  className='mt-4'
+                  onChange={handleInput}
+                  disabled
+                />
+              </div>
+            </>
+          ) : (
+            <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+              {t('profileSettings.noApiKey')}
+            </p>
+          )}
+          {user.apiKey ? (
+            <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
+              {t('profileSettings.deleteApiKeyBtn')}
+            </Button>
+          ) : (
+            <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
+              {t('profileSettings.addApiKeyBtn')}
+            </Button>
+          )}
+          <hr className='mt-5' />
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.2fa')}
+          </h3>
+          <TwoFA t={t} user={user} dontRemember={dontRemember} updateUserData={updateUserData} login={login} genericError={genericError} />
 
           <hr className='mt-5' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.shared')}
-            <div className='ml-5'>
-              <Beta />
-            </div>
           </h3>
           <div>
             {!_isEmpty(user.sharedProjects) ? (
@@ -376,17 +643,19 @@ const UserSettings = ({
           <div className='flex justify-between mt-4'>
             <Button
               onClick={() => setShowExportModal(true)}
-              regular
+              semiSmall
               primary
             >
+              <DownloadIcon className='w-5 h-5 mr-1' />
               {t('profileSettings.requestExport')}
             </Button>
             <Button
               className='ml-3'
               onClick={() => setShowModal(true)}
-              regular
+              semiSmall
               danger
             >
+              <ExclamationIcon className='w-5 h-5 mr-1' />
               {t('profileSettings.delete')}
             </Button>
           </div>
@@ -414,6 +683,17 @@ const UserSettings = ({
           isOpened={showModal}
         />
         <Modal
+          onClose={() => setShowAPIDeleteModal(false)}
+          onSubmit={() => { setShowAPIDeleteModal(false); onApiKeyDelete() }}
+          submitText={t('profileSettings.deleteApiKeyBtn')}
+          closeText={t('common.close')}
+          title={t('profileSettings.apiKeyDelete')}
+          submitType='danger'
+          type='error'
+          message={t('profileSettings.apiKeyDeleteConf')}
+          isOpened={showAPIDeleteModal}
+        />
+        <Modal
           onClose={() => { setError('') }}
           closeText={t('common.gotIt')}
           type='error'
@@ -439,6 +719,11 @@ UserSettings.propTypes = {
   language: PropTypes.string.isRequired,
   userSharedUpdate: PropTypes.func.isRequired,
   sharedProjectError: PropTypes.func.isRequired,
+  updateUserData: PropTypes.func.isRequired,
+  login: PropTypes.func.isRequired,
+  genericError: PropTypes.func.isRequired,
+  onApiKeyDelete: PropTypes.func.isRequired,
+  onApiKeyGenerate: PropTypes.func.isRequired,
 }
 
 export default memo(UserSettings)

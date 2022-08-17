@@ -1,4 +1,6 @@
-import { put, call, delay, select } from 'redux-saga/effects'
+import {
+  put, call, delay, select,
+} from 'redux-saga/effects'
 import Debug from 'debug'
 
 import { getGeneralStats } from 'api'

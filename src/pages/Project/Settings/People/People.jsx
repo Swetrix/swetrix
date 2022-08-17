@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/solid'
-import { TrashIcon } from '@heroicons/react/outline'
+import { TrashIcon, UserAddIcon } from '@heroicons/react/outline'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -15,7 +15,6 @@ import { isValidEmail } from 'utils/validator'
 import Input from 'ui/Input'
 import { WarningPin } from 'ui/Pin'
 import Button from 'ui/Button'
-import Beta from 'ui/Beta'
 import Modal from 'ui/Modal'
 import {
   roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN,
@@ -266,21 +265,19 @@ const People = ({
         <div>
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('project.settings.people')}
-            <div className='ml-5'>
-              <Beta />
-            </div>
           </h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>
             {t('project.settings.inviteCoworkers')}
           </p>
         </div>
         <Button
-          className='h-8'
+          className='h-8 pl-2'
           primary
           regular
           type='button'
           onClick={() => setShowModal(true)}
         >
+          <UserAddIcon className='w-5 h-5 mr-1' />
           {t('project.settings.invite')}
         </Button>
       </div>

@@ -17,7 +17,8 @@
     "quitProject": "You have quit the project",
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
-    "subscriptionUpdated": "Your subscription has been updated"
+    "subscriptionUpdated": "Your subscription has been updated",
+    "generate2FAError": "Error occurred while generating 2FA code"
   },
   "common": {
     "features": "功能",
@@ -50,19 +51,54 @@
     "accept": "Accept",
     "reject": "Reject",
     "delete": "Delete",
-    "quit": "Quit"
+    "quit": "Quit",
+    "enable": "Enable",
+    "disable": "Disable"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
-    "slogan": "一个尊重<span>用户隐私<span>的<span>强大</span>分析平台",
+    "slogan": "<span>Ultimate open-source analytics</span> to satisfy all your needs.",
     "trackEveryMetric": "在不侵犯用户隐私的情况下跟踪您需要的每个指标。",
     "description": " Swetrix 为您的 Web 应用程序带来了高级且可定制的分析服务。",
+    "start": "Start for free",
     "signup": "免费注册",
     "signupTerms": "注册即表示您同意我们的<tos>条款和条件</tos>以及<pp>隐私政策。</pp>",
     "techDetails": "想了解更多技术细节？",
     "lookAtDocs": "查看文档和功能页面。",
     "readyToStart": "准备好了吗？",
     "exploreService": "探索我们的服务或创建一个帐户。",
+    "coreFeatures": {
+      "title": "Core Analytics Features",
+      "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
+    },
+    "marketplace": {
+      "title": "Marketplace & build-in Extensions",
+      "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
+      "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
+    },
+    "visitAddons": "Visit Swetrix extensions",
+    "privacy": {
+      "title": "Privacy compliance",
+      "list": [
+        {
+          "label": "GDPR",
+          "desc": "data and processing based in EU zone."
+        },
+        {
+          "label": "HIPAA",
+          "desc": "protect sensitive info."
+        },
+        {
+          "label": "PCI DSS",
+          "desc": "payment data security."
+        },
+        {
+          "label": "CCPA",
+          "desc": "control over the personal information."
+        }
+      ]
+    },
+    "dataProtection": "More about Data Protection",
     "faq": {
       "title": "得到一些问题的答案",
       "list": [
@@ -86,37 +122,100 @@
     },
     "features": [
       {
-        "name": "开源",
-        "description": "Swetrix是完全开源的，我们只收集和记录声明的数据，可以放心的使用。"
+        "name": "Measure website traffic with 99% accuracy",
+        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
       },
       {
-        "name": "全面的事件跟踪",
-        "description": "有了我们，您不仅可以监控您的流量，但也自定义事件，如按钮点击或注册。"
+        "name": "Demo & Geo reports",
+        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
       },
       {
-        "name": "浏览器插件",
-        "description": "无需访问网站, 即可实时查看最重要的信息、接收流量峰值通知等"
+        "name": "UTM & Reffers tracking",
+        "desc": "All the traffic from your companies and websites will be shown without a data loss."
       },
       {
-        "name": "无需 cookie 横幅",
-        "description": "我们不做有针对性的广告或分析，我们根本不依赖跟踪 cookie。 我们的商业模式是销售软件，而非数据。"
+        "name": "Agile system",
+        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
       },
       {
-        "name": "我们速度快",
-        "description": "我们使用全球 CDN 为我们的应用程序提供服务，我们的分析脚本加载速度比竞争对手快."
+        "name": "Custom events\n(really easy to setup)",
+        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
       },
       {
-        "name": "比较、探索和享受数据",
-        "description": "您可以按选定类别查看数据，还可以关联统计信息，例如将唯一用户与常规页面浏览量分开。"
+        "name": "User flow",
+        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
       }
     ],
-    "custSupport": "找不到您要找的答案？ 联系我们的<mail>客户支持</mail>团队。",
+    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
+    "mFeatures": [
+      {
+        "name": "Expand your possibilities",
+        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
+      },
+      {
+        "name": "Opensource",
+        "desc": "Customise Swetrix for your needs or selfhost it easily."
+      },
+      {
+        "name": "Marketplace options",
+        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
+      },
+      {
+        "name": "Easy integration",
+        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
+      },
+      {
+        "name": "Solve your tasks, not create",
+        "desc": "Get insights and use the best solutions to solve your problems."
+      },
+      {
+        "name": "Share your best solutions",
+        "desc": "Share your best solutions with the community, get popularity and money."
+      }
+    ],
+    "supports": "Supports all popular platforms",
+    "becomeDev": "Become a developer",
+    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "marketplaceBlock": "Marketplace and extension features",
+    "coreFeaturesBlock": "Core features",
+    "testimonials": "Testimonials",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Startup founder",
+        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+      },
+      {
+        "name": "Michael",
+        "role": "Small business owner",
+        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+      },
+      {
+        "name": "Rachel",
+        "role": "CMO at NDA Company",
+        "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
+      }
+    ],
+    "opensourceAdv": "Advantages of using <url>open source</url>",
+    "opensource": [
+      {
+        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
+      },
+      {
+        "desc": "Find bugs and suggest improvements - the community will be grateful to you."
+      },
+      {
+        "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
+      }
+    ],
+    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "为何选择我们",
     "ourStats": "我们的统计数据",
     "statsDesc": "Swetrix的服务强大，同时处理千万用户的数据访问",
     "users": "用户注册",
     "websites": "网站添加",
-    "pageviews": "监控网站浏览量"
+    "pageviews": "Events tracked"
   },
   "auth": {
     "recovery": {
@@ -132,7 +231,11 @@
     "signin": {
       "title": "登录您的账户",
       "forgot": "忘记密码？",
-      "button": "登录"
+      "button": "登录",
+      "2fa": "Two-factor authentication",
+      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
+      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
+      "6digitCode": "6-digit authentication code"
     },
     "signup": {
       "button": "注册",
@@ -218,12 +321,34 @@
     "quitProject": "Are you sure you want to quit this project?",
     "quitProjectTitle": "Quit {{project}}?",
     "shared": "Shared projects",
+    "owned": "Owned projects",
     "sharedTable": {
       "project": "Project",
       "role": "Role",
       "joinedOn": "Joined on"
     },
-    "noSharedProjects": "Nobody is sharing a project with you yet."
+    "noSharedProjects": "Nobody is sharing a project with you yet.",
+    "2fa": "Two-factor authentication (2FA)",
+    "2faEnable": "Enable 2FA to make your account more secure.",
+    "2faEnableBtn": "Enable 2FA",
+    "2faDisableBtn": "Disable 2FA",
+    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
+    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
+    "enter2faToEnable": "Enter your one-time code to enable 2FA",
+    "enter2faToDisable": "Enter your one-time code or a recovery code",
+    "yourOneTimeCode": "Your one-time code",
+    "invalid2fa": "Invalid 2FA code, please try again",
+    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
+    "2faRecoverySaved": "I have saved this recovery code",
+    "2faEnabled": "Two-factor authenticated is enabled on your account.",
+    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
+    "apiKey": "API Key",
+    "noApiKey": "You haven't created any API keys yet.",
+    "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
+    "addApiKeyBtn": "Generate API Key",
+    "deleteApiKeyBtn": "Delete API Key",
+    "apiKeyDelete": "Delete your API Key?",
+    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled."
   },
   "dashboard": {
     "newProject": "新项目",
@@ -352,8 +477,13 @@
       "publicHint": "通过勾选此项，互联网上的任何人（包括 Google）都可以看到该项目的管理面板。\n只有项目的管理员可以编辑设置。",
       "createHint": "*您在创建项目后将能够更彻底地进行设置",
       "delete": "删除项目",
+      "reset": "Reset project",
       "qDelete": "删除项目？",
+      "qReset": "Reset the project?",
       "deleteHint": "通过按“删除项目”，您了解此操作是不可逆的。\n该项目及其所有相关数据将从我们的服务器中删除。",
+      "resetHint": "By pressing 'Reset project' you understand, that this action is irreversible.\nThe project's pageviews and custom events will be removed from our servers, but the project identifier and other configuration will be retained.",
+      "deleted": "The project has been deleted",
+      "resetted": "The project has been resetted",
       "noPeople": "No people have been added to this project yet.",
       "removeMember": "Remove member",
       "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
@@ -377,7 +507,9 @@
           "shortDesc": "Can only view the project"
         }
       },
-      "errorNoRole": "Please select a role."
+      "errorNoRole": "Please select a role.",
+      "ipBlacklist": "IP's to blacklist",
+      "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
     }
   },
   "billing": {
@@ -444,7 +576,8 @@
     "dashboard": "管理面板",
     "docs": "文档",
     "billing": "账单",
-    "contact": "联系方式"
+    "contact": "联系方式",
+    "main": "Ultimate open-source analytics to satisfy all your needs"
   },
   "footer": {
     "slogan": "最好的应用需要最好的服务。",
@@ -461,6 +594,7 @@
     "pp": "隐私政策",
     "tos": "服务条款",
     "blog": "博客",
+    "utm": "UTM Generator",
     "billing": "账单",
     "pricing": "定价",
     "docs": "文档",
@@ -468,6 +602,7 @@
     "privacy": "隐私",
     "terms": "条款",
     "status": "状态",
-    "donate": "捐"
+    "donate": "捐",
+    "about": "About us"
   }
 }

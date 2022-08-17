@@ -8,7 +8,7 @@ import { saveAs } from 'file-saver'
 import bb, { area } from 'billboard.js'
 import Flag from 'react-flagkit'
 import {
-  GlobeIcon, TranslateIcon, DocumentTextIcon, DeviceMobileIcon, ArrowCircleRightIcon, SearchIcon, ServerIcon, DownloadIcon,
+  GlobeIcon, TranslateIcon, DocumentTextIcon, DeviceMobileIcon, ArrowCircleRightIcon, SearchIcon, ServerIcon, DownloadIcon, CogIcon,
 } from '@heroicons/react/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
@@ -99,24 +99,24 @@ const RefRow = memo(({ rowName, showIcons }) => {
   )
 })
 
-const getColumns = (chart, showTotal, t) => {
+const getColumns = (chart, showTotal) => {
   if (showTotal) {
     return [
       ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-      [t('project.unique'), ...chart.uniques],
-      [t('project.total'), ...chart.visits],
+      ['unique', ...chart.uniques],
+      ['total', ...chart.visits],
     ]
   }
 
   return [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-    [t('project.unique'), ...chart.uniques],
+    ['unique', ...chart.uniques],
   ]
 }
 
 const noRegionPeriods = ['custom', 'yesterday']
 
-const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
+const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
   const xAxisSize = _size(chart.x)
   let regions
 
@@ -130,7 +130,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
     }
 
     regions = {
-      [t('project.unique')]: [
+      unique: [
         {
           start: regionStart,
           style: {
@@ -138,7 +138,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
           },
         },
       ],
-      [t('project.total')]: [
+      total: [
         {
           start: regionStart,
           style: {
@@ -152,11 +152,11 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions, t) => {
   return {
     data: {
       x: 'x',
-      columns: getColumns(chart, showTotal, t),
+      columns: getColumns(chart, showTotal),
       type: area(),
       colors: {
-        [t('project.unique')]: '#2563EB',
-        [t('project.total')]: '#D97706',
+        unique: '#2563EB',
+        total: '#D97706',
       },
       regions,
     },
@@ -317,14 +317,14 @@ const Filters = ({
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
-  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
+  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
@@ -397,7 +397,7 @@ const ViewProject = ({
           setIsPanelsDataEmpty(true)
         } else {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chart, timeBucket, showTotal, applyRegions, t)
+          const bbSettings = getSettings(chart, timeBucket, showTotal, applyRegions)
           setChartData(chart)
 
           setPanelsData({
@@ -410,7 +410,11 @@ const ViewProject = ({
             mainChart.destroy()
           }
 
-          setMainChart(bb.generate(bbSettings))
+          setMainChart(() => {
+            const generete = bb.generate(bbSettings)
+            generete.data.names({ unique: `${t('project.unique')} ` })
+            return generete
+          })
           setIsPanelsDataEmpty(false)
         }
 
@@ -462,15 +466,20 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
         mainChart.load({
-          columns: getColumns(chartData, true, t),
+          columns: getColumns(chartData, true),
         })
+        mainChart.data.names({ unique: t('project.unique'), total: t('project.total') })
       } else {
         mainChart.unload({
-          ids: [t('project.total')],
+          ids: 'total',
         })
       }
     }
   }, [isLoading, showTotal, chartData, mainChart, t])
+
+  useEffect(() => {
+    setPeriodPairs(tbPeriodPairs(t))
+  }, [t])
 
   useEffect(() => {
     loadAnalytics()
@@ -601,7 +610,7 @@ const ViewProject = ({
           ref={dashboardRef}
         >
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
-            <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 break-words'>
+            <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
               {name}
             </h2>
             <div className='flex mt-3 md:mt-0'>
@@ -656,30 +665,28 @@ const ViewProject = ({
               checked={showTotal}
               onChange={(e) => setShowTotal(e.target.checked)}
             />
-            <div className={cx('h-full ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-              <Dropdown
-                items={exportTypes}
-                title={[
-                  <DownloadIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                  <Fragment key='export-data'>
-                    {t('project.exportData')}
-                  </Fragment>,
-                ]}
-                labelExtractor={item => item.label}
-                keyExtractor={item => item.label}
-                onSelect={item => item.onClick(panelsData, t)}
-              />
-            </div>
+            <Dropdown
+              items={exportTypes}
+              title={[
+                <DownloadIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                <Fragment key='export-data'>
+                  {t('project.exportData')}
+                </Fragment>,
+              ]}
+              labelExtractor={item => item.label}
+              keyExtractor={item => item.label}
+              onSelect={item => item.onClick(panelsData, t)}
+              className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+            />
             {(!isProjectPublic && !(sharedRoles === roleViewer.role)) && (
-              <div className='h-full ml-3'>
-                <Button
-                  onClick={openSettingsHandler}
-                  className='py-2.5 px-3 md:px-4 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                  secondary
-                >
-                  {t('common.settings')}
-                </Button>
-              </div>
+              <Button
+                onClick={openSettingsHandler}
+                className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                secondary
+              >
+                <CogIcon className='w-5 h-5 mr-1' />
+                {t('common.settings')}
+              </Button>
             )}
           </div>
           {analyticsLoading && (
@@ -794,7 +801,7 @@ const ViewProject = ({
         {!authenticated && (
           <div className='bg-indigo-600'>
             <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-              <h2 className='text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900'>
+              <h2 className='text-3xl sm:text-4xl font-bold tracking-tight text-gray-900'>
                 <span className='block text-white'>{t('project.ad')}</span>
                 <span className='block text-gray-300'>
                   {t('main.exploreService')}
@@ -823,7 +830,7 @@ const ViewProject = ({
 
   return (
     <Title title={name}>
-      <div className='min-h-min-footer dark:bg-gray-800'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
         <Loader />
       </div>
     </Title>
@@ -832,6 +839,7 @@ const ViewProject = ({
 
 ViewProject.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  sharedProjects: PropTypes.arrayOf(PropTypes.object).isRequired,
   cache: PropTypes.objectOf(PropTypes.object).isRequired,
   projectViewPrefs: PropTypes.objectOf(PropTypes.object).isRequired,
   showError: PropTypes.func.isRequired,

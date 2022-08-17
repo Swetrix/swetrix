@@ -97,6 +97,8 @@ export const LINKEDIN_URL = 'https://www.linkedin.com/company/swetrix/'
 export const GITHUB_URL = 'https://github.com/Swetrix'
 export const TWITTER_URL = 'https://twitter.com/swetrix'
 export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
+export const BLOG_URL = 'https://blog.swetrix.com'
+export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
 
 export const SUPPORTED_THEMES = ['light', 'dark']
 
@@ -149,6 +151,8 @@ export const paddleLanguageMapping = {
   el: 'en',
 }
 
+// dashboard && projects
+
 export const roles = ['admin', 'viewer']
 
 export const roleViewer = {
@@ -163,4 +167,19 @@ export const roleAdmin = {
   description: 'Can manage the project',
 }
 
+export const tabForOwnedProject = 'owned'
+export const tabForSharedProject = 'shared'
+
+export const tabsForDashboard = [
+  {
+    name: tabForOwnedProject,
+    label: 'profileSettings.owned',
+  },
+  {
+    name: tabForSharedProject,
+    label: 'profileSettings.shared',
+  },
+]
+
 export const INVITATION_EXPIRES_IN = 48 // hours
+export const ENTRIES_PER_PAGE_DASHBOARD = 10

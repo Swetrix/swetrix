@@ -162,9 +162,20 @@ export const verifyShare = ({ path, id }) =>
         : error.response.data.message
     })
 
-export const getProjects = () =>
+export const getProjects = (take = 0, skip = 0) =>
   api
-    .get('/project')
+    .get(`/project?take=${take}&skip=${skip}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getSharedProjects = (take = 0, skip = 0) =>
+  api
+    .get(`/project/shared?take=${take}&skip=${skip}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -209,6 +220,17 @@ export const updateProject = (id, data) =>
 export const deleteProject = (id) =>
   api
     .delete(`/project/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const resetProject = (id) =>
+  api
+    .delete(`/project/reset/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -318,6 +340,72 @@ export const acceptShareProject = (id) =>
 export const changeShareRole = (id, data) =>
   api
     .put(`project/share/${id}`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const generate2FA = () =>
+  api
+    .post('2fa/generate')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const enable2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/enable', { twoFactorAuthenticationCode })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const disable2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/disable', { twoFactorAuthenticationCode })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const submit2FA = (twoFactorAuthenticationCode) =>
+  api
+    .post('2fa/authenticate', { twoFactorAuthenticationCode })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const generateApiKey = () =>
+  api
+    .post('user/api-key')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const deleteApiKey = () =>
+  api
+    .delete('user/api-key')
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

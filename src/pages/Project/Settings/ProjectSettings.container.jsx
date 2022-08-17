@@ -3,12 +3,15 @@ import UIActions from 'redux/actions/ui'
 import { alertsActions } from 'redux/actions/alerts'
 import { errorsActions } from 'redux/actions/errors'
 
+import { tabForSharedProject } from 'redux/constants'
 import ProjectSettings from './ProjectSettings'
 
 const mapStateToProps = (state) => ({
   projects: state.ui.projects.projects,
+  sharedProjects: state.ui.projects.sharedProjects,
   isLoading: state.ui.projects.isLoading,
   user: state.auth.user,
+  isSharedProject: state.ui.projects.dashboardTabs === tabForSharedProject,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -21,17 +24,24 @@ const mapDispatchToProps = (dispatch) => ({
   newProject: (message) => {
     dispatch(alertsActions.newProject(message))
   },
-  projectDeleted: () => {
-    dispatch(alertsActions.projectDeleted('The project has been deleted'))
+  projectDeleted: (message) => {
+    dispatch(alertsActions.projectDeleted(message))
   },
   deleteProjectFailed: (message) => {
     dispatch(errorsActions.deleteProjectFailed(message))
   },
-  loadProjects: () => {
-    dispatch(UIActions.loadProjects())
+  loadProjects: (shared) => {
+    if (shared) {
+      dispatch(UIActions.loadSharedProjects())
+    } else {
+      dispatch(UIActions.loadProjects())
+    }
   },
-  removeProject: (pid) => {
-    dispatch(UIActions.removeProject(pid))
+  removeProject: (pid, shared) => {
+    dispatch(UIActions.removeProject(pid, shared))
+  },
+  deleteProjectCache: (pid) => {
+    dispatch(UIActions.deleteProjectCache(pid))
   },
   showError: (message) => {
     dispatch(errorsActions.genericError(message))

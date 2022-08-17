@@ -17,7 +17,8 @@
     "quitProject": "You have quit the project",
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
-    "subscriptionUpdated": "Your subscription has been updated"
+    "subscriptionUpdated": "Your subscription has been updated",
+    "generate2FAError": "Error occurred while generating 2FA code"
   },
   "common": {
     "features": "विशेषताएं",
@@ -50,19 +51,54 @@
     "accept": "Accept",
     "reject": "Reject",
     "delete": "Delete",
-    "quit": "Quit"
+    "quit": "Quit",
+    "enable": "Enable",
+    "disable": "Disable"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
-    "slogan": "एक <span>शक्तिशाली</span> एनालिटिक्स प्लेटफॉर्म जो <span>उपयोगकर्ता की गोपनीयता<span>का सम्मान करता है",
+    "slogan": "<span>Ultimate open-source analytics</span> to satisfy all your needs.",
     "trackEveryMetric": "अपने उपयोगकर्ताओं की गोपनीयता को प्रभावित किए बिना अपनी ज़रूरत के हर मैट्रिक को ट्रैक करें।",
     "description": "स्वेट्रिक्स आपके वेब एप्लीकेशन को एक उन्नत और अनुकूलन योग्य एनालिटिक्स सेवा देता है।",
+    "start": "Start for free",
     "signup": "साइन अप करें, यह फ्री है!",
     "signupTerms": "साइन अप करने पर आप हमारे <tos>नियम और शर्तों</tos> और <pp>गोपनीयता नीति से सहमत होते हैं।</pp>",
     "techDetails": "क्या आप और अधिक तकनीकी विवरण जानना चाहते हैं?",
     "lookAtDocs": "दस्तावेज़ीकरण और विशेषताएं पृष्ठ को देखें।",
     "readyToStart": "शुरू करने के लिए तैयार हैं?",
     "exploreService": "हमारी सेवाओं के बारे मे जानें या अकाउंट बनाएं।",
+    "coreFeatures": {
+      "title": "Core Analytics Features",
+      "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
+    },
+    "marketplace": {
+      "title": "Marketplace & build-in Extensions",
+      "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
+      "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
+    },
+    "visitAddons": "Visit Swetrix extensions",
+    "privacy": {
+      "title": "Privacy compliance",
+      "list": [
+        {
+          "label": "GDPR",
+          "desc": "data and processing based in EU zone."
+        },
+        {
+          "label": "HIPAA",
+          "desc": "protect sensitive info."
+        },
+        {
+          "label": "PCI DSS",
+          "desc": "payment data security."
+        },
+        {
+          "label": "CCPA",
+          "desc": "control over the personal information."
+        }
+      ]
+    },
+    "dataProtection": "More about Data Protection",
     "faq": {
       "title": "कुछ सवालों के जवाब पाएं",
       "list": [
@@ -86,37 +122,100 @@
     },
     "features": [
       {
-        "name": "Open source",
-        "description": "Swetrix is fully open source and available for everybody to explore. We only track data that we declare."
+        "name": "Measure website traffic with 99% accuracy",
+        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
       },
       {
-        "name": "Full event tracking",
-        "description": "With us, you can not only track your traffic but also custom events such as button clicks or registrations."
+        "name": "Demo & Geo reports",
+        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
       },
       {
-        "name": "Browser Addons",
-        "description": "Instantly view the most important insights, receive traffic spikes notifications and much more without ever visiting visiting the website."
+        "name": "UTM & Reffers tracking",
+        "desc": "All the traffic from your companies and websites will be shown without a data loss."
       },
       {
-        "name": "कुकी बैनर की जरूरत नहीं",
-        "description": "हम टारगेटेड विज्ञापन या प्रोफाइलिंग नहीं करते हैं और हम कुकीज़ को ट्रैक करने पर बिल्कुल भी भरोसा नहीं करते हैं। हमारा बिजनेस मॉडल सॉफ्टवेयर बेचना है, डेटा नहीं।"
+        "name": "Agile system",
+        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
       },
       {
-        "name": "हम तेज़ हैं",
-        "description": "हम अपने अनुप्रयोगों की सर्विस के लिए वैश्विक सीडीएन का उपयोग करते हैं और हमारी एनालिटिक्स स्क्रिप्ट प्रतिस्पर्धियों की तुलना में कई गुना तेजी से लोड होती है।"
+        "name": "Custom events\n(really easy to setup)",
+        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
       },
       {
-        "name": "तुलना करें, एक्सप्लोर करें और डेटा का आनंद लें",
-        "description": "आप चयनित श्रेणियों के आधार पर डेटा देख सकते हैं और आँकड़ों को भी सहसंबंधित कर सकते हैं, जैसे विशिष्ट उपयोगकर्ताओं को नियमित पृष्ठ से अलग करना।"
+        "name": "User flow",
+        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
       }
     ],
-    "custSupport": "क्या आप जिस उत्तर की तलाश कर रहे हैं वह नहीं मिल रहा? हमारे <mail>ग्राहक सहायता</mail> टीम से संपर्क करें।",
+    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
+    "mFeatures": [
+      {
+        "name": "Expand your possibilities",
+        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
+      },
+      {
+        "name": "Opensource",
+        "desc": "Customise Swetrix for your needs or selfhost it easily."
+      },
+      {
+        "name": "Marketplace options",
+        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
+      },
+      {
+        "name": "Easy integration",
+        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
+      },
+      {
+        "name": "Solve your tasks, not create",
+        "desc": "Get insights and use the best solutions to solve your problems."
+      },
+      {
+        "name": "Share your best solutions",
+        "desc": "Share your best solutions with the community, get popularity and money."
+      }
+    ],
+    "supports": "Supports all popular platforms",
+    "becomeDev": "Become a developer",
+    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "marketplaceBlock": "Marketplace and extension features",
+    "coreFeaturesBlock": "Core features",
+    "testimonials": "Testimonials",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Startup founder",
+        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+      },
+      {
+        "name": "Michael",
+        "role": "Small business owner",
+        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+      },
+      {
+        "name": "Rachel",
+        "role": "CMO at NDA Company",
+        "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
+      }
+    ],
+    "opensourceAdv": "Advantages of using <url>open source</url>",
+    "opensource": [
+      {
+        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
+      },
+      {
+        "desc": "Find bugs and suggest improvements - the community will be grateful to you."
+      },
+      {
+        "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
+      }
+    ],
+    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "हम क्यों?",
     "ourStats": "Our statistics",
     "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
     "users": "Registered users",
     "websites": "Added websites",
-    "pageviews": "Tracked pageviews"
+    "pageviews": "Events tracked"
   },
   "auth": {
     "recovery": {
@@ -132,7 +231,11 @@
     "signin": {
       "title": "अपने अकाउंट में साइन इन करें",
       "forgot": "पासवर्ड भूल गए?",
-      "button": "साइन इन करें"
+      "button": "साइन इन करें",
+      "2fa": "Two-factor authentication",
+      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
+      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
+      "6digitCode": "6-digit authentication code"
     },
     "signup": {
       "button": "साइन अप करें",
@@ -218,12 +321,34 @@
     "quitProject": "Are you sure you want to quit this project?",
     "quitProjectTitle": "Quit {{project}}?",
     "shared": "Shared projects",
+    "owned": "Owned projects",
     "sharedTable": {
       "project": "Project",
       "role": "Role",
       "joinedOn": "Joined on"
     },
-    "noSharedProjects": "Nobody is sharing a project with you yet."
+    "noSharedProjects": "Nobody is sharing a project with you yet.",
+    "2fa": "Two-factor authentication (2FA)",
+    "2faEnable": "Enable 2FA to make your account more secure.",
+    "2faEnableBtn": "Enable 2FA",
+    "2faDisableBtn": "Disable 2FA",
+    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
+    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
+    "enter2faToEnable": "Enter your one-time code to enable 2FA",
+    "enter2faToDisable": "Enter your one-time code or a recovery code",
+    "yourOneTimeCode": "Your one-time code",
+    "invalid2fa": "Invalid 2FA code, please try again",
+    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
+    "2faRecoverySaved": "I have saved this recovery code",
+    "2faEnabled": "Two-factor authenticated is enabled on your account.",
+    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
+    "apiKey": "API Key",
+    "noApiKey": "You haven't created any API keys yet.",
+    "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
+    "addApiKeyBtn": "Generate API Key",
+    "deleteApiKeyBtn": "Delete API Key",
+    "apiKeyDelete": "Delete your API Key?",
+    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled."
   },
   "dashboard": {
     "newProject": "नया प्रोजेक्ट",
@@ -352,8 +477,13 @@
       "publicHint": "इसे चेक करके, इंटरनेट पर (गूगल सहित) कोई भी व्यक्ति इस प्रोजेक्ट के डैशबोर्ड को देख सकेगा।\nकेवल प्रोजेक्ट का व्यवस्थापक ही सेटिंग्स को संपादित कर सकता है।",
       "createHint": "*अपने प्रोजेक्ट को बनाने के बाद आप उसे और अच्छी तरह से सेट अप कर सकते हैं",
       "delete": "प्रोजेक्ट हटाएं",
+      "reset": "Reset project",
       "qDelete": "प्रोजेक्ट को हटाएं?",
+      "qReset": "Reset the project?",
       "deleteHint": "'प्रोजेक्ट हटाएं' पर क्लिक करने से आप समझते हैं कि यह क्रिया अपरिवर्तनीय है।\nप्रोजेक्ट और इससे संबंधित सभी डेटा हमारे सर्वर से हटा दिए जाएंगे।",
+      "resetHint": "By pressing 'Reset project' you understand, that this action is irreversible.\nThe project's pageviews and custom events will be removed from our servers, but the project identifier and other configuration will be retained.",
+      "deleted": "The project has been deleted",
+      "resetted": "The project has been resetted",
       "noPeople": "No people have been added to this project yet.",
       "removeMember": "Remove member",
       "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
@@ -377,7 +507,9 @@
           "shortDesc": "Can only view the project"
         }
       },
-      "errorNoRole": "Please select a role."
+      "errorNoRole": "Please select a role.",
+      "ipBlacklist": "IP's to blacklist",
+      "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
     }
   },
   "billing": {
@@ -444,7 +576,8 @@
     "dashboard": "डैशबोर्ड",
     "docs": "दस्तावेज़ीकरण",
     "billing": "बिलिंग",
-    "contact": "संपर्क"
+    "contact": "संपर्क",
+    "main": "Ultimate open-source analytics to satisfy all your needs"
   },
   "footer": {
     "slogan": "सर्वश्रेष्ठ ऐप्स को सर्वोत्तम सर्विस की आवश्यकता होती है।",
@@ -461,6 +594,7 @@
     "pp": "गोपनीयता नीति",
     "tos": "सेवा की शर्तें",
     "blog": "ब्लॉग",
+    "utm": "UTM Generator",
     "billing": "बिलिंग",
     "pricing": "मूल्य निर्धारण",
     "docs": "दस्तावेज़ीकरण",
@@ -468,6 +602,7 @@
     "privacy": "गोपनीयता",
     "terms": "शर्तें",
     "status": "स्थिति",
-    "donate": "दान करना"
+    "donate": "दान करना",
+    "about": "About us"
   }
 }

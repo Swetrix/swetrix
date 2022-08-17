@@ -43,6 +43,7 @@ const Privacy = lazy(() => import('pages/Privacy'))
 const ConfirmShare = lazy(() => import('pages/Project/ConfirmShare'))
 const Terms = lazy(() => import('pages/Terms'))
 const NotFound = lazy(() => import('pages/NotFound'))
+const About = lazy(() => import('pages/About'))
 
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
@@ -128,7 +129,7 @@ const App = () => {
         }
       }
     })()
-  }, [accessToken, authenticated]) // eslint-disable-line
+  }, [authenticated]) // eslint-disable-line
 
   useEffect(() => {
     if (error) {
@@ -181,6 +182,7 @@ const App = () => {
                 <Route path={routes.privacy} component={Privacy} exact />
                 <Route path={routes.terms} component={Terms} exact />
                 <Route path={routes.confirm_share} component={ConfirmShare} exact />
+                <Route path={routes.about} component={About} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>

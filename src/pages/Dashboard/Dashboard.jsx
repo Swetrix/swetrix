@@ -1,5 +1,7 @@
 /* eslint-disable react/forbid-prop-types */
-import React, { memo, useState } from 'react'
+import React, {
+  memo, useState, useMemo, useEffect,
+} from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -11,8 +13,9 @@ import _map from 'lodash/map'
 import _isUndefined from 'lodash/isUndefined'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
+import _ceil from 'lodash/ceil'
 import { useTranslation } from 'react-i18next'
-import { EyeIcon, CalendarIcon } from '@heroicons/react/outline'
+import { EyeIcon, CalendarIcon, FolderAddIcon } from '@heroicons/react/outline'
 import { ArrowSmUpIcon, ArrowSmDownIcon, XCircleIcon } from '@heroicons/react/solid'
 
 import Modal from 'ui/Modal'
@@ -22,10 +25,14 @@ import Loader from 'ui/Loader'
 import { ActivePin, InactivePin, WarningPin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
-import { isSelfhosted } from 'redux/constants'
+import {
+  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabsForDashboard, tabForOwnedProject, tabForSharedProject,
+} from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
 import { acceptShareProject } from 'api'
+
+import Pagination from 'ui/Pagination'
 
 const ProjectCart = ({
   name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
@@ -39,7 +46,7 @@ const ProjectCart = ({
 
     try {
       await acceptShareProject(pid)
-      setProjectsShareData({ confirmed: true }, id)
+      setProjectsShareData({ confirmed: true }, id, true)
       setUserShareData({ confirmed: true }, pid)
       userSharedUpdate(t('apiNotifications.acceptInvitation'))
     } catch (e) {
@@ -50,7 +57,7 @@ const ProjectCart = ({
 
   return (
     <li>
-      <div onClick={() => !confirmed && setShowInviteModal(true)} className='block cursor-pointer hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-800 dark:border-gray-700'>
+      <div onClick={() => !confirmed && setShowInviteModal(true)} className='block cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-700'>
         <div className='px-4 py-4 sm:px-6'>
           <div className='flex items-center justify-between'>
             <p className='text-lg font-medium text-indigo-600 dark:text-gray-50 truncate'>
@@ -167,11 +174,16 @@ const NoProjects = ({ t }) => (
 )
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData, setUserShareData, userSharedUpdate, sharedProjectError,
+  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData,
+  setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
+  total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
+  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
+  const [tabProjects, setTabProjects] = useState(dashboardTabs)
+  const pageAmount = useMemo(() => (dashboardTabs === tabForSharedProject ? _ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD) : _ceil(total / ENTRIES_PER_PAGE_DASHBOARD)), [total, sharedTotal, dashboardTabs])
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
@@ -180,6 +192,25 @@ const Dashboard = ({
       setShowActivateEmailModal(true)
     }
   }
+
+  useEffect(() => {
+    if (sharedTotal <= 0) {
+      setDashboardTabs(tabForOwnedProject)
+      setTabProjects(tabForOwnedProject)
+    }
+
+    setDashboardTabs(tabProjects)
+  }, [tabProjects, setDashboardTabs, sharedTotal])
+
+  useEffect(() => {
+    if (tabProjects === tabForOwnedProject) {
+      loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+    }
+    if (tabProjects === tabForSharedProject) {
+      loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageShared - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dashboardPaginationPage, dashboardPaginationPageShared])
 
   if (error && !isLoading) {
     return (
@@ -200,32 +231,61 @@ const Dashboard = ({
     )
   }
 
-  if (!isLoading) {
-    return (
-      <Title title={t('titles.dashboard')}>
-        <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
-          <EventsRunningOutBanner />
-          <div className='flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-            <div className='max-w-7xl w-full mx-auto'>
-              <div className='flex justify-between'>
-                <h2 className='mt-2 text-3xl font-extrabold text-gray-900 dark:text-gray-50'>
-                  {t('titles.dashboard')}
-                </h2>
-                <span onClick={onNewProject} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
-                  {t('dashboard.newProject')}
-                </span>
-              </div>
-              {_isEmpty(projects) ? (
-                <NoProjects t={t} />
-              ) : (
-                <div className='shadow overflow-hidden sm:rounded-md mt-10'>
-                  <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
-                    {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                      name, id, created, active, overall, live, public: isPublic, confirmed, shared,
-                    }) => (
-                      <div key={confirmed ? `${id}-confirmed` : id}>
-                        {
-                          (_isUndefined(confirmed) || confirmed) ? (
+  return (
+    <Title title={t('titles.dashboard')}>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
+        <EventsRunningOutBanner />
+        <div className='flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+          <div className='max-w-7xl w-full mx-auto'>
+            <div className='flex justify-between'>
+              <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+                {t('titles.dashboard')}
+              </h2>
+              <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm'>
+                <FolderAddIcon className='w-5 h-5 mr-1' />
+                {t('dashboard.newProject')}
+              </span>
+            </div>
+            <div className='mt-6'>
+              {sharedTotal > 0 && (
+              <nav className='-mb-px flex space-x-8'>
+                {_map(tabsForDashboard, (tab) => (
+                  <button
+                    key={tab.name}
+                    type='button'
+                    onClick={() => setTabProjects(tab.name)}
+                    className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                      'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
+                      'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
+                    })}
+                    aria-current={tab.name === tabProjects ? 'page' : undefined}
+                  >
+                    {t(tab.label)}
+                  </button>
+                ))}
+              </nav>
+              )}
+            </div>
+            {isLoading ? (
+              <Title title={t('titles.dashboard')}>
+                <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
+                  <Loader />
+                </div>
+              </Title>
+            ) : (
+              <>
+
+                {tabProjects === tabForOwnedProject && (
+                <div>
+                  {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
+                    <NoProjects t={t} />
+                  ) : (
+                    <div className='shadow overflow-hidden sm:rounded-md'>
+                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                        {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
+                          name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
+                        }) => (
+                          <div key={confirmed ? `${id}-confirmed` : id}>
                             <Link to={_replace(routes.project, ':id', id)}>
                               <ProjectCart
                                 t={t}
@@ -240,60 +300,97 @@ const Dashboard = ({
                                 live={_isNumber(live) ? live : 'N/A'}
                               />
                             </Link>
-                          ) : (
-                            <ProjectCart
-                              t={t}
-                              id={id}
-                              language={language}
-                              name={name}
-                              created={created}
-                              shared={shared}
-                              active={active}
-                              isPublic={isPublic}
-                              overall={overall}
-                              confirmed={confirmed}
-                              sharedProjects={user.sharedProjects}
-                              setProjectsShareData={setProjectsShareData}
-                              setUserShareData={setUserShareData}
-                              live={_isNumber(live) ? live : 'N/A'}
-                              userSharedUpdate={userSharedUpdate}
-                              sharedProjectError={sharedProjectError}
-                              deleteProjectFailed={deleteProjectFailed}
-                            />
-                          )
-                        }
-                      </div>
-                    ))}
-                  </ul>
+                          </div>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+                )}
+
+                {tabProjects === tabForSharedProject && (
+                <div>
+                  {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
+                    <NoProjects t={t} />
+                  ) : (
+                    <div className='shadow overflow-hidden sm:rounded-md'>
+                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                        {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
+                          project, confirmed, shared = true,
+                        }) => (
+                          <div key={confirmed ? `${project.id}-confirmed` : project.id}>
+                            {
+                                (_isUndefined(confirmed) || confirmed) ? (
+                                  <Link to={_replace(routes.project, ':id', project.id)}>
+                                    <ProjectCart
+                                      t={t}
+                                      language={language}
+                                      name={project.name}
+                                      created={project.created}
+                                      shared={shared}
+                                      active={project.active}
+                                      isPublic={project.public}
+                                      confirmed={confirmed}
+                                      overall={project.overall}
+                                      live={_isNumber(project.live) ? project.live : 'N/A'}
+                                    />
+                                  </Link>
+                                ) : (
+                                  <ProjectCart
+                                    t={t}
+                                    id={project.id}
+                                    language={language}
+                                    name={project.name}
+                                    created={project.created}
+                                    shared={shared}
+                                    active={project.active}
+                                    isPublic={project.public}
+                                    overall={project.overall}
+                                    confirmed={confirmed}
+                                    sharedProjects={user.sharedProjects}
+                                    setProjectsShareData={setProjectsShareData}
+                                    setUserShareData={setUserShareData}
+                                    live={_isNumber(project.live) ? project.live : 'N/A'}
+                                    userSharedUpdate={userSharedUpdate}
+                                    sharedProjectError={sharedProjectError}
+                                    deleteProjectFailed={deleteProjectFailed}
+                                  />
+                                )
+                              }
+                          </div>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                )}
+              </>
+            )}
+
+            {
+                pageAmount > 1 && (
+                  <Pagination page={tabProjects === tabForSharedProject ? dashboardPaginationPageShared : dashboardPaginationPage} setPage={tabProjects === tabForSharedProject ? (page) => setDashboardPaginationPageShared(page) : (page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={tabProjects === tabForSharedProject ? sharedTotal : total} />
+                )
+              }
           </div>
         </div>
-        <Modal
-          onClose={() => setShowActivateEmailModal(false)}
-          onSubmit={() => setShowActivateEmailModal(false)}
-          submitText={t('common.gotIt')}
-          title={t('dashboard.verifyEmailTitle')}
-          type='info'
-          message={t('dashboard.verifyEmailDesc')}
-          isOpened={showActivateEmailModal}
-        />
-      </Title>
-    )
-  }
-
-  return (
-    <Title title={t('titles.dashboard')}>
-      <div className='min-h-min-footer'>
-        <Loader />
       </div>
+      <Modal
+        onClose={() => setShowActivateEmailModal(false)}
+        onSubmit={() => setShowActivateEmailModal(false)}
+        submitText={t('common.gotIt')}
+        title={t('dashboard.verifyEmailTitle')}
+        type='info'
+        message={t('dashboard.verifyEmailDesc')}
+        isOpened={showActivateEmailModal}
+      />
     </Title>
   )
 }
 
 Dashboard.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  sharedProjects: PropTypes.arrayOf(PropTypes.object).isRequired,
   user: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
   error: PropTypes.string,
@@ -302,6 +399,15 @@ Dashboard.propTypes = {
   setUserShareData: PropTypes.func.isRequired,
   sharedProjectError: PropTypes.func.isRequired,
   userSharedUpdate: PropTypes.func.isRequired,
+  loadProjects: PropTypes.func.isRequired,
+  total: PropTypes.number.isRequired,
+  setDashboardPaginationPage: PropTypes.func.isRequired,
+  setDashboardPaginationPageShared: PropTypes.func.isRequired,
+  dashboardPaginationPage: PropTypes.number.isRequired,
+  dashboardPaginationPageShared: PropTypes.number.isRequired,
+  dashboardTabs: PropTypes.string.isRequired,
+  setDashboardTabs: PropTypes.func.isRequired,
+  sharedTotal: PropTypes.number.isRequired,
 }
 
 Dashboard.defaultProps = {
