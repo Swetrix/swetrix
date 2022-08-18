@@ -463,8 +463,8 @@ export class AnalyticsService {
           lastWeek: lastWeekPV,
           thisWeekUnique,
           lastWeekUnique,
-          percChange: calculateRelativePercentage(thisWeekPV, lastWeekPV),
-          percChangeUnique: calculateRelativePercentage(thisWeekUnique, lastWeekUnique),
+          percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
+          percChangeUnique: calculateRelativePercentage(lastWeekUnique, thisWeekUnique),
         }
       } catch {
         throw new InternalServerErrorException(
