@@ -15,6 +15,8 @@ import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
 import NextJS from 'ui/icons/NextJS'
 import NuxtJS from 'ui/icons/NuxtJS'
+import Angular from 'ui/icons/Angular'
+import ReactSVG from 'ui/icons/ReactSVG'
 import Quote from 'ui/icons/Quote'
 import Slack from 'ui/icons/Slack'
 import Wordpress from 'ui/icons/Wordpress'
@@ -253,8 +255,8 @@ const Main = () => {
                 <Webflow theme={theme} className='max-w-[150px] max-h-12' />
                 <NextJS theme={theme} className='max-w-[80px] max-h-12' />
                 <Notion theme={theme} className='max-w-[130px] max-h-12' />
-                <img src='/assets/supports/react.png' alt='React' title='React.js' />
-                <img src='/assets/supports/angular.png' alt='Angular' title='Angular' />
+                <ReactSVG className='max-w-[150px] max-h-16' />
+                <Angular className='max-w-[160px] max-h-20' />
                 <Wordpress theme={theme} className='max-w-[160px] max-h-16' />
                 <Wix theme={theme} className='max-w-[120px] max-h-12' />
                 <Ghost theme={theme} className='max-w-[150px] max-h-20' />
