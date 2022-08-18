@@ -18,7 +18,7 @@ import NuxtJS from 'ui/icons/NuxtJS'
 import Angular from 'ui/icons/Angular'
 import ReactSVG from 'ui/icons/ReactSVG'
 import Quote from 'ui/icons/Quote'
-import Slack from 'ui/icons/Slack'
+import Telegram from 'ui/icons/Telegram'
 import Wordpress from 'ui/icons/Wordpress'
 import Cloudflare from 'ui/icons/Cloudflare'
 import Notion from 'ui/icons/Notion'
@@ -250,7 +250,7 @@ const Main = () => {
                 {t('main.supports')}
               </h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-7xl w-full mx-auto justify-between'>
-                <Slack theme={theme} className='max-w-[150px] max-h-12' />
+                <Telegram theme={theme} className='max-w-[150px] max-h-16' />
                 <NuxtJS theme={theme} className='max-w-[150px] max-h-12' />
                 <Webflow theme={theme} className='max-w-[150px] max-h-12' />
                 <NextJS theme={theme} className='max-w-[80px] max-h-12' />
