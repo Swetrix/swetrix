@@ -31,11 +31,10 @@ import {
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
   clickhouse,
-  getPercentageChange,
   isSelfhosted,
   REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
-import { getProjectsClickhouse } from '../common/utils'
+import { getProjectsClickhouse, calculateRelativePercentage } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -464,8 +463,8 @@ export class AnalyticsService {
           lastWeek: lastWeekPV,
           thisWeekUnique,
           lastWeekUnique,
-          percChange: getPercentageChange(thisWeekPV, lastWeekPV),
-          percChangeUnique: getPercentageChange(thisWeekUnique, lastWeekUnique),
+          percChange: calculateRelativePercentage(thisWeekPV, lastWeekPV),
+          percChangeUnique: calculateRelativePercentage(thisWeekUnique, lastWeekUnique),
         }
       } catch {
         throw new InternalServerErrorException(

@@ -2,7 +2,6 @@ import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import { v5 as uuidv5 } from 'uuid'
 import * as _toNumber from 'lodash/toNumber'
-import * as _round from 'lodash/round'
 
 require('dotenv').config()
 
@@ -114,26 +113,6 @@ const SELFHOSTED_UUID = isSelfhosted
 const TWO_FACTOR_AUTHENTICATION_APP_NAME =
   process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME
 
-/**
- * Calculates in percent, the change between 2 numbers.
- * e.g from 1000 to 500 = 50%
- *
- * @param oldVal The initial value
- * @param newVal The value that changed
- */
-function getPercentageChange(oldVal: number, newVal: number, round = 2) {
-  if (oldVal === 0) {
-    if (newVal === 0) {
-      return 0
-    } else {
-      return _round(-100 * newVal, round)
-    }
-  }
-
-  const decrease = oldVal - newVal
-  return _round((decrease / oldVal) * 100, round)
-}
-
 const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
 
@@ -183,7 +162,6 @@ export {
   isValidPID,
   getRedisProjectKey,
   redisProjectCacheTimeout,
-  getPercentageChange,
   UNIQUE_SESSION_LIFE_TIME,
   REDIS_LOG_DATA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME,

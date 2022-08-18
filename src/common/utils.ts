@@ -10,6 +10,7 @@ import * as _keys from 'lodash/keys'
 import * as _toNumber from 'lodash/toNumber'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _head from 'lodash/head'
+import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
@@ -34,10 +35,10 @@ const marketingTips = {
     'Fix Broken External Links & Errors\nBroken external links, just as the states, are links that lead nowhere or give users an error.\nMaybe your busy sharing other links from your site or there are some old content or web pages you forgot you deleted. Over time you will be losing potential traffic and clients if you forget to audit your site to find broken external links.',
     'Combine offline marketing with online marketing.\nYes, it is true, print media is still alive and well.',
     'Promote your product features.\nSince social media contests get so much engagement, treat it almost like mini ads for your products. Listing out the benefits and features so that potential buyers can see what your products have to offer. It will not only convince customers that they want your product but that they need it and can not live without it!',
-    'Link internally.\nThe strength of your link profile is not solely determined by how many sites link back to you – it can also be affected by your internal linking structure. When creating and publishing content, be sure to keep an eye out for opportunities for internal links. This not only helps with SEO, but also results in a better, more useful experience for the user – the cornerstone of increasing traffic to your website.',
+    'Link internally.\nThe strength of your link profile is not solely determined by how many sites link back to you - it can also be affected by your internal linking structure. When creating and publishing content, be sure to keep an eye out for opportunities for internal links. This not only helps with SEO, but also results in a better, more useful experience for the user - the cornerstone of increasing traffic to your website.',
     'Make sure your site is responsive.\nThe days when internet browsing was done exclusively on desktop PCs are long gone. Today, more people than ever before are using mobile devices to access the web, and if you force your visitors to pinch and scroll their way around your site, you are basically telling them to go elsewhere. Even if you have a basic website, you still need to ensure that it is accessible and comfortably viewable across a range of devices, including smaller smartphones.',
     'Make sure your site is fast.\nEver found yourself waiting thirty seconds for a webpage to load? Me neither. If your site takes forever to load, your bounce rate will be sky high. Make sure that your pages are as technically optimized as possible, including image file sizes, page structure and the functionality of third-party plugins. The faster your site loads, the better.',
-    'Submit your content to aggregator sites.\nFirstly, a disclaimer – do not spam Reddit and other similar sites hoping to "hit the jackpot" of referral traffic, because it is not going to happen. Members of communities like Reddit are extraordinarily savvy to spam disguised as legitimate links, but every now and again, it does not hurt to submit links that these audiences will find genuinely useful. Choose a relevant subreddit, submit your content, then watch the traffic pour in.',
+    'Submit your content to aggregator sites.\nFirstly, a disclaimer - do not spam Reddit and other similar sites hoping to "hit the jackpot" of referral traffic, because it is not going to happen. Members of communities like Reddit are extraordinarily savvy to spam disguised as legitimate links, but every now and again, it does not hurt to submit links that these audiences will find genuinely useful. Choose a relevant subreddit, submit your content, then watch the traffic pour in.',
   ],
 }
 
@@ -116,6 +117,46 @@ const updateProjectClickhouse = async (project: object) => {
   return await clickhouse.query(query).toPromise()
 }
 
+
+/**
+ * Calculates in percent, the change between 2 numbers.
+ * e.g from 1000 to 500 = 50%
+ *
+ * @param oldVal The initial value
+ * @param newVal The value that changed
+ * @param round Numbers after floating point
+ */
+const getPercentageChange = (oldVal: number, newVal: number, round = 2) => {
+  if (oldVal === 0) {
+    if (newVal === 0) {
+      return 0
+    } else {
+      return _round(-100 * newVal, round)
+    }
+  }
+
+  const decrease = oldVal - newVal
+  return _round((decrease / oldVal) * 100, round)
+}
+
+/**
+ * Checking the % change in one number relative to the other
+ * @param oldVal The initial value
+ * @param newVal The value that changed
+ * @param round Numbers after floating point
+ */
+const calculateRelativePercentage = (oldVal: number, newVal: number, round = 2) => {
+  if (oldVal === newVal) return 0
+  if (oldVal === 0) return 100
+  if (newVal === 0) return -100
+
+  if (newVal > oldVal) {
+    return _round((newVal / oldVal) * 100, round)
+  }
+
+  return _round((1 - newVal / oldVal) * -100, round)
+}
+
 const deleteProjectClickhouse = async id => {
   const query = `ALTER table project DELETE WHERE WHERE id='${id}'`
   return await clickhouse.query(query).toPromise()
@@ -149,4 +190,6 @@ export {
   deleteProjectClickhouse,
   splitAt,
   generateRecoveryCode,
+  getPercentageChange,
+  calculateRelativePercentage,
 }
