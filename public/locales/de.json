@@ -489,20 +489,20 @@
       "removeConfirm": "Sind Sie sicher, dass Sie das Teilen Ihres Projekts mit diesem Benutzer beenden möchten?",
       "removeUser": "{{user}} entfernen?",
       "people": "Personen",
-      "inviteCoworkers": "Invite your coworkers",
-      "invite": "Invite a user",
+      "inviteCoworkers": "Laden Sie Ihre Kollegen ein",
+      "invite": "Benutzer einladen",
       "inviteTo": "Invite a user to {{project}}",
       "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
       "inviteExpity": "The invitation will expire in {{amount}} hours.",
-      "role": "Role",
+      "role": "Rolle",
       "roles": {
         "admin": {
-          "name": "Administrator",
+          "name": "Verwalter",
           "desc": "Can manage the project's settings, add/remove members, and invite new users.",
           "shortDesc": "Can manage the project"
         },
         "viewer": {
-          "name": "Viewer",
+          "name": "Betrachter",
           "desc": "Has a read-only access to the project.",
           "shortDesc": "Can only view the project"
         }
@@ -523,7 +523,7 @@
     "title": "Abomodelle",
     "adv": "Sie können gratis anfangen. Es wird keine Kreditkarte benötigt.\nWenn Ihr Unternehmen wächst, können Sie Ihr Abonnement jederzeit aufstufen.",
     "currentPlan": "Derzeitiges Abo",
-    "mostPopular": "Most popular",
+    "mostPopular": "Beliebteste",
     "free": "Gratis",
     "perMonth": "mo",
     "perYear": "yr",
@@ -549,11 +549,11 @@
       "xMoDataRetention": "{{amount}} Monate Datenspeicherung.",
       "evXPlanIncl": "Alles was das {{plan}} Abo enthält.",
       "smallBusiSupport": "Mit dem Kauf dieses Artikels unterstützen Sie ein kleines Unternehmen.",
-      "dataExports": "Unlimited data exports.",
+      "dataExports": "Unbegrenzte Datenexporte.",
       "dataOwnership": "100% data ownership.",
-      "noBanners": "No cookie banners required.",
+      "noBanners": "Keine Cookie-Banner erforderlich.",
       "dashboards": "Shared & Public Dashboards.",
-      "reports": "Email reports."
+      "reports": "E-Mail Berichte."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
@@ -577,7 +577,7 @@
     "docs": "Dokumentation",
     "billing": "Rechnung",
     "contact": "Kontakt",
-    "main": "Ultimate open-source analytics to satisfy all your needs"
+    "main": "Ultimative Open-Source-Analytics um alle Ihre Wünsche zu befriedigen"
   },
   "footer": {
     "slogan": "Die besten Apps brauchen den besten Service.",
@@ -594,7 +594,7 @@
     "pp": "Datenschutzerklärung",
     "tos": "Allgemeine Geschäftsbedingungen",
     "blog": "Blog",
-    "utm": "UTM Generator",
+    "utm": "UTM-Generator",
     "billing": "Rechnung",
     "pricing": "Preisangaben",
     "docs": "Dokumentation",
@@ -603,6 +603,6 @@
     "terms": "AGB",
     "status": "Status",
     "donate": "Unterstützen",
-    "about": "About us"
+    "about": "Über uns"
   }
 }
