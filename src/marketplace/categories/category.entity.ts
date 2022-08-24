@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
+import { Extension } from '../extensions/extension.entity'
 
 @Entity()
 export class Category {
@@ -10,4 +17,8 @@ export class Category {
 
   @Column({ type: 'text', nullable: true, default: null })
   description!: string | null
+
+  @ManyToMany(() => Extension, extension => extension.categories)
+  @JoinTable()
+  extensions: Extension[]
 }

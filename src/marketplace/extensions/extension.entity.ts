@@ -40,7 +40,7 @@ export class Extension {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToMany(() => Category)
+  @ManyToMany(() => Category, category => category.extensions)
   @JoinTable()
   categories: Category[]
 }
