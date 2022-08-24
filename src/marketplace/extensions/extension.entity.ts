@@ -2,9 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
+import { Category } from '../categories/category.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
 
 @Entity()
@@ -36,4 +39,8 @@ export class Extension {
 
   @UpdateDateColumn()
   updatedAt: Date
+
+  @ManyToMany(() => Category)
+  @JoinTable()
+  categories: Category[]
 }
