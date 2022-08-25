@@ -13,6 +13,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { Like } from 'typeorm'
 import { AddExtension } from './dtos/add-extension.dto'
 import { RemoveExtensionParams } from './dtos/remove-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
@@ -23,6 +24,7 @@ import { ISaveExtension } from './interfaces/save-extension.interface'
 import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
 import { UpdateExtension } from './dtos/update-extension.dto'
 import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
+import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -57,6 +59,42 @@ export class ExtensionsController {
     count: number
   }> {
     const [extensions, count] = await this.extensionsService.findAndCount({
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 25 : queries.limit || 25,
+    })
+
+    return { extensions, count }
+  }
+
+  @ApiQuery({
+    description: 'Extension query',
+    example: '',
+    name: 'query',
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension offset',
+    example: '5',
+    name: 'offset',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension limit',
+    example: '25',
+    name: 'limit',
+    required: false,
+    type: String,
+  })
+  @Get('search')
+  async searchExtension(@Query() queries: SearchExtensionQueries): Promise<{
+    extensions: Extension[]
+    count: number
+  }> {
+    const [extensions, count] = await this.extensionsService.findAndCount({
+      where: {
+        title: Like(`%${queries.query}%`),
+      },
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
     })
