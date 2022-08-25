@@ -37,6 +37,7 @@ const Input = ({
           onKeyDown={onKeyDown}
           className={cx('shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-gray-700 rounded-md', {
             'border-red-300 text-red-900 placeholder-red-300': isError,
+            'cursor-text': disabled,
           })}
           placeholder={placeholder}
           aria-describedby={`${identifier}-optional`}
