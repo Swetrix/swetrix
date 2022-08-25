@@ -25,7 +25,6 @@ import { GetAllCategoriesQueries } from './dtos/get-all-categories-queries.dto'
 import { GetCategoryParams } from './dtos/get-category-params.dto'
 import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
-import { ISaveCategory } from './interfaces/save-category.interface'
 import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
 
 @ApiTags('categories')
@@ -76,7 +75,10 @@ export class CategoriesController {
   })
   @Get(':categoryId')
   async getCategory(@Param() params: GetCategoryParams): Promise<Category> {
-    const category = await this.categoriesService.findById(params.categoryId)
+    const category = await this.categoriesService.findOne({
+      where: { id: params.categoryId },
+      relations: ['extensions'],
+    })
 
     if (!category) {
       throw new NotFoundException('Category not found.')
@@ -88,9 +90,7 @@ export class CategoriesController {
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
   @Post()
-  async createCategory(
-    @Body() body: CreateCategory,
-  ): Promise<ISaveCategory & Category> {
+  async createCategory(@Body() body: CreateCategory): Promise<Category> {
     const title = await this.categoriesService.findTitle(body.title)
 
     if (title) {
@@ -98,8 +98,12 @@ export class CategoriesController {
     }
 
     const categoryInstance = this.categoriesService.create(body)
+    const createdCategory = await this.categoriesService.save(categoryInstance)
 
-    return await this.categoriesService.save(categoryInstance)
+    return await this.categoriesService.findOne({
+      where: { id: createdCategory.id },
+      relations: ['extensions'],
+    })
   }
 
   @ApiParam({
