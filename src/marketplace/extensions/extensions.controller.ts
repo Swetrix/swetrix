@@ -12,7 +12,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { Like } from 'typeorm'
+import { getRepository, Like } from 'typeorm'
 import { CreateExtension } from './dtos/create-extension.dto'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
@@ -77,6 +77,12 @@ export class ExtensionsController {
     type: String,
   })
   @ApiQuery({
+    description: 'Extension category',
+    example: '',
+    name: 'category',
+    type: String,
+  })
+  @ApiQuery({
     description: 'Extension offset',
     example: '5',
     name: 'offset',
@@ -95,6 +101,19 @@ export class ExtensionsController {
     extensions: Extension[]
     count: number
   }> {
+    if (queries.category) {
+      const [extensions, count] = await getRepository(Extension)
+        .createQueryBuilder('extension')
+        .leftJoin('extension.categories', 'category')
+        .where('extension.name LIKE :term', { term: `%${queries.term}%` })
+        .andWhere('category.name = :category', { category: queries.category })
+        .skip(queries.offset || 0)
+        .take(queries.limit > 100 ? 25 : queries.limit || 25)
+        .getManyAndCount()
+
+      return { extensions, count }
+    }
+
     const [extensions, count] = await this.extensionsService.findAndCount({
       where: {
         name: Like(`%${queries.term}%`),

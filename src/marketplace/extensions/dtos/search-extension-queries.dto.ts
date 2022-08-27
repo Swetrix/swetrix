@@ -4,6 +4,10 @@ export class SearchExtensionQueries {
   @IsString()
   readonly term!: string
 
+  @IsString()
+  @IsOptional()
+  readonly category!: string
+
   @IsNumberString()
   @IsOptional()
   readonly offset?: number
