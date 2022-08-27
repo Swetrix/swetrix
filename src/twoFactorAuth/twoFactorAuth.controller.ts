@@ -12,18 +12,18 @@ import { ApiTags } from '@nestjs/swagger'
 
 import { TwoFactorAuthService } from './twoFactorAuth.service'
 import { UserService } from '../user/user.service'
-import { AuthService } from 'src/auth/auth.service'
+import { AuthService } from '../auth/auth.service'
 import { UserType } from '../user/entities/user.entity'
 import { AppLoggerService } from '../logger/logger.service'
 import { MailerService } from '../mailer/mailer.service'
 import { LetterTemplate } from '../mailer/letter'
-import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
+import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { TwoFaNotRequired } from '../common/decorators/2fa-disabled.decorator'
-import { RolesGuard } from 'src/common/guards/roles.guard'
+import { RolesGuard } from '../common/guards/roles.guard'
 import { TwoFactorAuthDTO } from './dto/2fa-auth.dto'
-import { generateRecoveryCode, checkRateLimit } from 'src/common/utils'
+import { generateRecoveryCode, checkRateLimit } from '../common/utils'
 
 @ApiTags('2fa')
 @Controller('2fa')

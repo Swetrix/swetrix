@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import * as isbot from 'isbot'
-import { IS_BOT_DETECTION_ENABLED } from 'src/common/decorators/bot-detection.decorator'
+import { IS_BOT_DETECTION_ENABLED } from '../../common/decorators/bot-detection.decorator'
 
 @Injectable()
 export class BotDetectionGuard implements CanActivate {

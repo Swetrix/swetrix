@@ -39,7 +39,7 @@ import {
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
-import { RolesGuard } from 'src/common/guards/roles.guard'
+import { RolesGuard } from '../common/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
@@ -55,8 +55,8 @@ import {
   REDIS_PAGEVIEWS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
-import { BotDetection } from 'src/common/decorators/bot-detection.decorator'
-import { BotDetectionGuard } from 'src/common/guards/bot-detection.guard'
+import { BotDetection } from '../common/decorators/bot-detection.decorator'
+import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)

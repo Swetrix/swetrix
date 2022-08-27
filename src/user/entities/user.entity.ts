@@ -5,9 +5,9 @@ import {
   OneToMany,
   BeforeUpdate,
 } from 'typeorm'
-import { ActionToken } from 'src/action-tokens/action-token.entity'
-import { Project } from 'src/project/entity/project.entity'
-import { ProjectShare } from 'src/project/entity/project-share.entity'
+import { ActionToken } from '../../action-tokens/action-token.entity'
+import { Project } from '../../project/entity/project.entity'
+import { ProjectShare } from '../../project/entity/project-share.entity'
 
 export enum PlanCode {
   free = 'free',
