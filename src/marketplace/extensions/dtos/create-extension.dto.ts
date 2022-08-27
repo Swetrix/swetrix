@@ -47,4 +47,15 @@ export class CreateExtension {
   @Matches(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/)
   @MaxLength(255)
   readonly version!: string
+
+  @ApiProperty({
+    default: [],
+    description: 'Extension categories ids',
+    example: [1, 2, 3],
+    isArray: true,
+    required: false,
+    type: Array<number>,
+  })
+  @IsOptional()
+  readonly categoriesIds?: number[]
 }

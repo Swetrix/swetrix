@@ -24,6 +24,8 @@ import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
 import { UpdateExtension } from './dtos/update-extension.dto'
 import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
+import { Category } from '../categories/category.entity'
+import { CategoriesService } from '../categories/categories.service'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -36,7 +38,10 @@ import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 )
 @Controller('extensions')
 export class ExtensionsController {
-  constructor(private readonly extensionsService: ExtensionsService) {}
+  constructor(
+    private readonly extensionsService: ExtensionsService,
+    private readonly categoriesService: CategoriesService,
+  ) {}
 
   @ApiQuery({
     description: 'Extension offset',
@@ -127,7 +132,29 @@ export class ExtensionsController {
   async createExtension(
     @Body() body: CreateExtension,
   ): Promise<ISaveExtension & Extension> {
-    const extensionInstance = this.extensionsService.create(body)
+    const categories: Category[] = []
+
+    if (body.categoriesIds) {
+      await Promise.all(
+        body.categoriesIds.map(async categoryId => {
+          const category = await this.categoriesService.findById(categoryId)
+
+          if (!category) {
+            throw new NotFoundException('Category not found.')
+          }
+
+          categories.push(category)
+        }),
+      )
+    }
+
+    const extensionInstance = this.extensionsService.create({
+      name: body.name,
+      description: body.description,
+      version: body.version,
+      categories,
+    })
+
     return await this.extensionsService.save(extensionInstance)
   }
 
