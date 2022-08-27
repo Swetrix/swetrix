@@ -17,10 +17,6 @@ export class CategoriesService {
     return await this.categoryRepository.findOne({ ...options })
   }
 
-  async findTitle(title: string): Promise<Category> {
-    return await this.findOne({ where: { title }, select: ['title'] })
-  }
-
   create(category: ICreateCategory): Category {
     return this.categoryRepository.create(category)
   }

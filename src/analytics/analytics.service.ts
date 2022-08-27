@@ -34,7 +34,10 @@ import {
   isSelfhosted,
   REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
-import { getProjectsClickhouse, calculateRelativePercentage } from '../common/utils'
+import {
+  getProjectsClickhouse,
+  calculateRelativePercentage,
+} from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -464,7 +467,10 @@ export class AnalyticsService {
           thisWeekUnique,
           lastWeekUnique,
           percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
-          percChangeUnique: calculateRelativePercentage(lastWeekUnique, thisWeekUnique),
+          percChangeUnique: calculateRelativePercentage(
+            lastWeekUnique,
+            thisWeekUnique,
+          ),
         }
       } catch {
         throw new InternalServerErrorException(

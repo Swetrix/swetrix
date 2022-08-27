@@ -1,4 +1,3 @@
 export interface ICreateCategory {
-  title: string
-  description?: string | null
+  name: string
 }
