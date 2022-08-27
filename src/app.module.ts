@@ -23,12 +23,10 @@ import { MarketplaceModule } from './marketplace/marketplace.module'
 import { Category } from './marketplace/categories/category.entity'
 import { Extension } from './marketplace/extensions/extension.entity'
 
-let entities = []
+const entities = [User, ActionToken, Project, ProjectShare, Category]
 
 if (process.env.ACTIVATE_MARKETPLACE) {
-  entities = [User, ActionToken, Project, ProjectShare, Extension, Category]
-} else {
-  entities = [User, ActionToken, Project, ProjectShare]
+  entities.push(Extension)
 }
 
 const modules = [
