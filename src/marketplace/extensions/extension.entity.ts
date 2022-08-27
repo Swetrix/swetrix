@@ -31,6 +31,9 @@ export class Extension {
   })
   status: string
 
+  @Column({ type: 'int', default: 0 })
+  price: number
+
   @CreateDateColumn()
   createdAt: Date
 
