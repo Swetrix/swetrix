@@ -1,6 +1,5 @@
 import {
   Body,
-  ConflictException,
   Controller,
   Delete,
   Get,
@@ -71,12 +70,18 @@ export class CategoriesController {
   @ApiParam({
     name: 'categoryId',
     description: 'Category ID',
-    example: '1',
-    type: String,
+    example: 1,
+    type: Number,
   })
+  // TODO: add pagination for extensions
   @Get(':categoryId')
   async getCategory(@Param() params: GetCategoryParams): Promise<Category> {
-    const category = await this.categoriesService.findById(params.categoryId)
+    const category = await this.categoriesService.findOne({
+      where: {
+        id: params.categoryId,
+      },
+      relations: ['extensions'],
+    })
 
     if (!category) {
       throw new NotFoundException('Category not found.')
@@ -91,22 +96,15 @@ export class CategoriesController {
   async createCategory(
     @Body() body: CreateCategory,
   ): Promise<ISaveCategory & Category> {
-    const title = await this.categoriesService.findTitle(body.title)
-
-    if (title) {
-      throw new ConflictException('The category already exists.')
-    }
-
     const categoryInstance = this.categoriesService.create(body)
-
     return await this.categoriesService.save(categoryInstance)
   }
 
   @ApiParam({
     name: 'categoryId',
     description: 'Category ID',
-    example: '1',
-    type: String,
+    example: 1,
+    type: Number,
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
@@ -129,8 +127,8 @@ export class CategoriesController {
   @ApiParam({
     name: 'categoryId',
     description: 'Category ID',
-    example: '1',
-    type: String,
+    example: 1,
+    type: Number,
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)

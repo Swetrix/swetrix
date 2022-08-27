@@ -1,6 +1,5 @@
 import {
   Body,
-  ConflictException,
   Controller,
   Delete,
   Get,
@@ -14,8 +13,8 @@ import {
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { Like } from 'typeorm'
-import { AddExtension } from './dtos/add-extension.dto'
-import { RemoveExtensionParams } from './dtos/remove-extension-params.dto'
+import { CreateExtension } from './dtos/create-extension.dto'
+import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 import { Extension } from './extension.entity'
@@ -67,9 +66,9 @@ export class ExtensionsController {
   }
 
   @ApiQuery({
-    description: 'Extension query',
+    description: 'Extension term',
     example: '',
-    name: 'query',
+    name: 'term',
     type: String,
   })
   @ApiQuery({
@@ -93,7 +92,7 @@ export class ExtensionsController {
   }> {
     const [extensions, count] = await this.extensionsService.findAndCount({
       where: {
-        title: Like(`%${queries.query}%`),
+        name: Like(`%${queries.term}%`),
       },
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
@@ -105,12 +104,17 @@ export class ExtensionsController {
   @ApiParam({
     name: 'extensionId',
     description: 'Extension ID',
-    example: '1',
+    example: 'de025965-3221-4d09-ba35-a09da59793a6',
     type: String,
   })
   @Get(':extensionId')
   async getExtension(@Param() params: GetExtensionParams): Promise<Extension> {
-    const extension = await this.extensionsService.findById(params.extensionId)
+    const extension = await this.extensionsService.findOne({
+      where: {
+        id: params.extensionId,
+      },
+      relations: ['categories'],
+    })
 
     if (!extension) {
       throw new NotFoundException('Extension not found.')
@@ -120,24 +124,17 @@ export class ExtensionsController {
   }
 
   @Post()
-  async addExtension(
-    @Body() body: AddExtension,
+  async createExtension(
+    @Body() body: CreateExtension,
   ): Promise<ISaveExtension & Extension> {
-    const title = await this.extensionsService.findTitle(body.title)
-
-    if (title) {
-      throw new ConflictException('The extension already exists.')
-    }
-
     const extensionInstance = this.extensionsService.create(body)
-
     return await this.extensionsService.save(extensionInstance)
   }
 
   @ApiParam({
     name: 'extensionId',
     description: 'Extension ID',
-    example: '1',
+    example: 'de025965-3221-4d09-ba35-a09da59793a6',
     type: String,
   })
   @Patch(':extensionId')
@@ -159,11 +156,11 @@ export class ExtensionsController {
   @ApiParam({
     name: 'extensionId',
     description: 'Extension ID',
-    example: '1',
+    example: 'de025965-3221-4d09-ba35-a09da59793a6',
     type: String,
   })
   @Delete(':extensionId')
-  async removeExtension(@Param() params: RemoveExtensionParams): Promise<void> {
+  async deleteExtension(@Param() params: DeleteExtensionParams): Promise<void> {
     const extension = await this.extensionsService.findById(params.extensionId)
 
     if (!extension) {

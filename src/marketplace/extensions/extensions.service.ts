@@ -17,10 +17,6 @@ export class ExtensionsService {
     return await this.extensionRepository.findOne({ ...options })
   }
 
-  async findTitle(title: string): Promise<Extension> {
-    return await this.findOne({ where: { title }, select: ['title'] })
-  }
-
   create(extension: ICreateExtension): Extension {
     return this.extensionRepository.create(extension)
   }
@@ -29,15 +25,15 @@ export class ExtensionsService {
     return await this.extensionRepository.save(extension)
   }
 
-  async findById(id: number): Promise<Extension> {
+  async findById(id: string): Promise<Extension> {
     return await this.findOne({ where: { id } })
   }
 
-  async update(id: number, extension: IUpdateExtension) {
+  async update(id: string, extension: IUpdateExtension) {
     await this.extensionRepository.update({ id }, extension)
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.extensionRepository.delete({ id })
   }
 

@@ -1,5 +1,5 @@
 export interface IUpdateExtension {
-  title?: string
+  name?: string
   description?: string | null
   version?: string
 }

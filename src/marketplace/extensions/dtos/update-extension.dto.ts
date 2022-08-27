@@ -9,7 +9,7 @@ import {
 
 export class UpdateExtension {
   @ApiProperty({
-    description: 'Extension title',
+    description: 'Extension name',
     example: '', // TODO: Add example
     maxLength: 255,
     minLength: 1,
@@ -19,7 +19,7 @@ export class UpdateExtension {
   @IsOptional()
   @MinLength(1)
   @MaxLength(255)
-  readonly title!: string
+  readonly name!: string
 
   @ApiProperty({
     default: null,

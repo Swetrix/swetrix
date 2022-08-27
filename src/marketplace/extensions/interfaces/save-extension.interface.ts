@@ -1,5 +1,5 @@
 export interface ISaveExtension {
-  title: string
+  name: string
   description?: string | null
   version: string
 }

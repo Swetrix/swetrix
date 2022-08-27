@@ -1,5 +1,5 @@
 export interface ICreateExtension {
-  title: string
+  name: string
   description?: string | null
   version: string
 }

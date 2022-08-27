@@ -2,7 +2,7 @@ import { IsNumberString, IsOptional, IsString } from 'class-validator'
 
 export class SearchExtensionQueries {
   @IsString()
-  readonly query!: string
+  readonly term!: string
 
   @IsNumberString()
   @IsOptional()
