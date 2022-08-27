@@ -47,6 +47,7 @@ const modules = [
   WebhookModule,
   PingModule,
   TGModule,
+  MarketplaceModule,
 ]
 
 if (process.env.TG_BOT_TOKEN) {
