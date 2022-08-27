@@ -16,7 +16,7 @@ import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
 import { redis } from './constants'
 import { clickhouse } from './constants'
-import { Project } from 'src/project/entity/project.entity'
+import { Project } from '../project/entity/project.entity'
 
 dayjs.extend(utc)
 

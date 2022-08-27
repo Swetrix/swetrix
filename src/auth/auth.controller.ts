@@ -22,7 +22,7 @@ import { MailerService } from '../mailer/mailer.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { User, UserType } from '../user/entities/user.entity'
-import { ProjectService } from 'src/project/project.service'
+import { ProjectService } from '../project/project.service'
 import { PasswordChangeDTO } from './dto/password-change.dto'
 import { RequestPasswordChangeDTO } from './dto/request-pass-change.dto'
 import { RolesGuard } from '../common/guards/roles.guard'
@@ -37,7 +37,7 @@ import {
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,
   SELFHOSTED_UUID,
-} from 'src/common/constants'
+} from '../common/constants'
 import * as _pick from 'lodash/pick'
 
 // TODO: Add logout endpoint to invalidate the token

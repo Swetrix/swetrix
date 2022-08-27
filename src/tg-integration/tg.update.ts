@@ -1,7 +1,7 @@
 import { Command, Ctx, Hears, Start, Update, Sender } from 'nestjs-telegraf'
 import { UpdateType as TelegrafUpdateType } from 'telegraf/typings/telegram-types'
-import { Context } from 'src/common/interfaces/context.interface'
-import { UpdateType } from 'src/common/decorators/update-type.decorator'
+import { Context } from '../common/interfaces/context.interface'
+import { UpdateType } from '../common/decorators/update-type.decorator'
 
 const HELLO_SCENE_ID = 'HELLO_SCENE_ID'
 
