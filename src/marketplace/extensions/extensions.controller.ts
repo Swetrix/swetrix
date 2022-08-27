@@ -26,6 +26,7 @@ import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { Category } from '../categories/category.entity'
 import { CategoriesService } from '../categories/categories.service'
+import { SortByExtension } from './enums/sort-by-extension.enum'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -80,6 +81,14 @@ export class ExtensionsController {
     description: 'Extension category',
     example: '',
     name: 'category',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension sortBy',
+    example: 'createdAt',
+    name: 'sortBy',
+    required: false,
     type: String,
   })
   @ApiQuery({
@@ -112,6 +121,32 @@ export class ExtensionsController {
         .getManyAndCount()
 
       return { extensions, count }
+    }
+
+    if (queries.sortBy) {
+      if (queries.sortBy === SortByExtension.CREATED_AT) {
+        const [extensions, count] = await getRepository(Extension)
+          .createQueryBuilder('extension')
+          .where('extension.name LIKE :term', { term: `%${queries.term}%` })
+          .orderBy('extension.createdAt', 'DESC')
+          .skip(queries.offset || 0)
+          .take(queries.limit > 100 ? 25 : queries.limit || 25)
+          .getManyAndCount()
+
+        return { extensions, count }
+      }
+
+      if (queries.sortBy === SortByExtension.UPDATED_AT) {
+        const [extensions, count] = await getRepository(Extension)
+          .createQueryBuilder('extension')
+          .where('extension.name LIKE :term', { term: `%${queries.term}%` })
+          .orderBy('extension.updatedAt', 'DESC')
+          .skip(queries.offset || 0)
+          .take(queries.limit > 100 ? 25 : queries.limit || 25)
+          .getManyAndCount()
+
+        return { extensions, count }
+      }
     }
 
     const [extensions, count] = await this.extensionsService.findAndCount({
