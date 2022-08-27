@@ -67,9 +67,9 @@ export class ExtensionsController {
   }
 
   @ApiQuery({
-    description: 'Extension query',
+    description: 'Extension title',
     example: '',
-    name: 'query',
+    name: 'title',
     type: String,
   })
   @ApiQuery({
@@ -93,7 +93,7 @@ export class ExtensionsController {
   }> {
     const [extensions, count] = await this.extensionsService.findAndCount({
       where: {
-        title: Like(`%${queries.query}%`),
+        title: Like(`%${queries.title}%`),
       },
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
