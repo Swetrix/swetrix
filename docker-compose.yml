@@ -1,0 +1,22 @@
+version: ${DOCKER_VERSION}
+services:
+  mysql:
+    image: mysql:${MYSQL_VERSION}
+    container_name: swetrix-api-mysql
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - ${MYSQL_PORT}:3306
+  redis:
+    image: redis:${REDIS_VERSION}
+    container_name: swetrix-api-redis
+    ports:
+      - ${REDIS_PORT}:6379
+  clickhouse:
+    image: clickhouse/clickhouse-server:${CLICKHOUSE_VERSION}
+    container_name: swetrix-api-clickhouse
+    ports:
+      - ${CLICKHOUSE_PORT}:8123
+networks:
+  default:
+    name: swetrix-api
