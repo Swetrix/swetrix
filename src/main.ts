@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
 import * as cookieParser from 'cookie-parser'
 import * as bodyParser from 'body-parser'
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import { isNewRelicEnabled } from './common/constants'
 import { AppModule } from './app.module'
@@ -11,6 +12,16 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe())
+
+  if (process.env.NODE_ENV === 'development') {
+    const config = new DocumentBuilder()
+      .setTitle('Swetrix API')
+      .setDescription('Swetrix Analytics & Marketplace API')
+      .setVersion(process.env.npm_package_version)
+      .build()
+    const document = SwaggerModule.createDocument(app, config)
+    SwaggerModule.setup('api', app, document)
+  }
 
   if (isNewRelicEnabled && process.env.NODE_ENV !== 'development') {
     app.useGlobalInterceptors(new NewrelicInterceptor())
