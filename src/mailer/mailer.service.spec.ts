@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
+import { AppLoggerService } from 'src/logger/logger.service'
 import { MailerService } from './mailer.service'
 
 describe('MailerService', () => {
@@ -6,13 +7,14 @@ describe('MailerService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MailerService],
+      providers: [MailerService, AppLoggerService],
     }).compile()
 
     service = module.get<MailerService>(MailerService)
   })
-
-  it('should be defined', () => {
-    expect(service).toBeDefined()
+  describe('root', () => {
+    it('should be defined', () => {
+      expect(service).toBeDefined()
+    })
   })
 })
