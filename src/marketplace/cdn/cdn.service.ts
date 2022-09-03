@@ -1,6 +1,10 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { createReadStream } from 'fs'
+import { unlink, writeFile } from 'fs/promises'
+import { join } from 'path'
+import * as FormData from 'form-data'
 
 @Injectable()
 export class CdnService {
@@ -9,9 +13,31 @@ export class CdnService {
     private readonly configService: ConfigService,
   ) {}
 
-  deleteFile(filename: string): void {
-    this.httpService.delete('file', {
-      data: { token: this.configService.get('CDN_ACCESS_TOKEN'), filename },
+  async uploadFile(file: Express.Multer.File): Promise<{ filename: string }> {
+    const filePath = `${join(__dirname, '..', '..', '..', 'tmp')}/${
+      file.originalname
+    }`
+
+    await writeFile(filePath, file.buffer)
+
+    const form = new FormData()
+    form.append('token', this.configService.get('CDN_ACCESS_TOKEN'))
+    form.append('file', createReadStream(filePath))
+
+    const { data } = await this.httpService.axiosRef.post('file', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    await unlink(filePath)
+
+    return data
+  }
+
+  async deleteFile(filename: string): Promise<void> {
+    await this.httpService.axiosRef.delete(`file/${filename}`, {
+      data: { token: this.configService.get('CDN_ACCESS_TOKEN') },
     })
   }
 }
