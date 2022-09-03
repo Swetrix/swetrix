@@ -24,7 +24,7 @@ import { Category } from './marketplace/categories/category.entity'
 import { Extension } from './marketplace/extensions/extension.entity'
 
 const modules = [
-  ConfigModule.forRoot({ envFilePath: '.env' }),
+  ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
   TypeOrmModule.forRoot({
     type: 'mysql',
     host: process.env.MYSQL_HOST,
