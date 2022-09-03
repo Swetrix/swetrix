@@ -206,6 +206,7 @@ export class ExtensionsController {
       name: body.name,
       description: body.description,
       version: body.version,
+      price: body.price,
       categories,
     })
 
