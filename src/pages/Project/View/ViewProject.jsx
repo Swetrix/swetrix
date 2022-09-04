@@ -24,6 +24,7 @@ import _find from 'lodash/find'
 import _size from 'lodash/size'
 import _filter from 'lodash/filter'
 import _truncate from 'lodash/truncate'
+import _startsWith from 'lodash/startsWith'
 import PropTypes from 'prop-types'
 
 import Title from 'components/Title'
@@ -213,6 +214,8 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
   }
 }
 
+const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt']
+
 const typeNameMapping = (t) => ({
   cc: t('project.mapping.cc'),
   pg: t('project.mapping.pg'),
@@ -333,6 +336,7 @@ const ViewProject = ({
   const history = useHistory()
   const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
+  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
@@ -441,15 +445,41 @@ const ViewProject = ({
     // temporarily apply only 1 filter per data type
     if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
       // selected filter is already included into the filters array -> removing it
+      // removing filter from the state
       newFilters = _filter(filters, (f) => f.column !== column)
       setFilters(newFilters)
+
+      // removing filter from the page URL
+      const url = new URL(window.location)
+      url.searchParams.delete(column)
+      const { pathname, search } = url
+      history.push({
+        pathname,
+        search,
+        state: {
+          scrollToTopDisable: true,
+        },
+      })
     } else {
       // selected filter is not present in the filters array -> applying it
+      // sroting filter in the state
       newFilters = [
         ...filters,
         { column, filter, isExclusive },
       ]
       setFilters(newFilters)
+
+      // storing filter in the page URL
+      const url = new URL(window.location)
+      url.searchParams.append(column, filter)
+      const { pathname, search } = url
+      history.push({
+        pathname,
+        search,
+        state: {
+          scrollToTopDisable: true,
+        },
+      })
     }
 
     loadAnalytics(true, newFilters)
@@ -470,6 +500,23 @@ const ViewProject = ({
 
     setFilters(newFilters)
     loadAnalytics(true, newFilters)
+
+    // storing exclusive filter in the page URL
+    const url = new URL(window.location)
+    url.searchParams.delete(column)
+    if (isExclusive) {
+      url.searchParams.append(column, `!${filter}`)
+    } else {
+      url.searchParams.append(column, filter)
+    }
+    const { pathname, search } = url
+    history.push({
+      pathname,
+      search,
+      state: {
+        scrollToTopDisable: true,
+      },
+    })
   }
 
   useEffect(() => {
@@ -491,9 +538,39 @@ const ViewProject = ({
     setPeriodPairs(tbPeriodPairs(t))
   }, [t])
 
+  // Parsing initial filters from the address bar
   useEffect(() => {
-    loadAnalytics()
-  }, [project, period, timeBucket, periodPairs, t]) // eslint-disable-line
+    // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
+    try {
+      const url = new URL(window.location)
+      const { searchParams } = url
+
+      const initialFilters = []
+      // eslint-disable-next-line lodash/prefer-lodash-method
+      searchParams.forEach((value, key) => {
+        if (!_includes(validFilters, key)) {
+          return
+        }
+
+        const isExclusive = _startsWith(value, '!')
+        initialFilters.push({
+          column: key,
+          filter: isExclusive ? value.substring(1) : value,
+          isExclusive,
+        })
+      })
+
+      setFilters(initialFilters)
+    } finally {
+      setAreFiltersParsed(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (areFiltersParsed) {
+      loadAnalytics()
+    }
+  }, [project, period, timeBucket, periodPairs, areFiltersParsed, t]) // eslint-disable-line
 
   useEffect(() => {
     if (rangeDate) {
