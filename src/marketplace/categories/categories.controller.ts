@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -73,7 +74,6 @@ export class CategoriesController {
     example: 1,
     type: Number,
   })
-  // TODO: add pagination for extensions
   @Get(':categoryId')
   async getCategory(@Param() params: GetCategoryParams): Promise<Category> {
     const category = await this.categoriesService.findOne({
@@ -96,7 +96,14 @@ export class CategoriesController {
   async createCategory(
     @Body() body: CreateCategory,
   ): Promise<ISaveCategory & Category> {
+    const categoryName = await this.categoriesService.findByName(body.name)
+
+    if (categoryName) {
+      throw new ConflictException('A category with that name already exists.')
+    }
+
     const categoryInstance = this.categoriesService.create(body)
+
     return await this.categoriesService.save(categoryInstance)
   }
 
@@ -117,6 +124,14 @@ export class CategoriesController {
 
     if (!category) {
       throw new NotFoundException('Category not found.')
+    }
+
+    if (body.name) {
+      const categoryName = await this.categoriesService.findByName(body.name)
+
+      if (categoryName) {
+        throw new ConflictException('A category with that name already exists.')
+      }
     }
 
     await this.categoriesService.update(category.id, body)
