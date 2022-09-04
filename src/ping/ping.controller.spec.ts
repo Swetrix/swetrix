@@ -12,7 +12,14 @@ describe('PingController', () => {
     controller = module.get<PingController>(PingController)
   })
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined()
+  describe('root', () => {
+    it('should be defined controller', () => {
+      expect(controller).toBeDefined()
+    })
+  })
+  describe('ping.controller definding', () => {
+    it('should be defined with get()', () => {
+      expect(controller.get).toBeDefined()
+    })
   })
 })
