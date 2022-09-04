@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import {
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -49,4 +50,15 @@ export class UpdateExtension {
   @Matches(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/)
   @MaxLength(255)
   readonly version!: string
+
+  @ApiProperty({
+    default: 0,
+    description: 'Extension price',
+    example: 100,
+    required: false,
+    type: Number,
+  })
+  @IsNumber()
+  @IsOptional()
+  readonly price?: number
 }

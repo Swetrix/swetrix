@@ -6,29 +6,20 @@ import { UserService } from 'src/user/user.service'
 import { WebhookController } from './webhook.controller'
 import { WebhookService } from './webhook.service'
 
-describe('WebhookController', () => {
-  let controller: WebhookController
+describe('WebhookService', () => {
+  let service: WebhookService
   const USER_REPOSITORY_TOKEN = getRepositoryToken(User)
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [WebhookController],
-      providers: [
-        AppLoggerService,
-        UserService,
-        {
-          provide: USER_REPOSITORY_TOKEN,
-          useValue: { create: jest.fn(), save: jest.fn(), findOne: jest.fn() },
-        },
-        WebhookService,
-      ],
+      providers: [WebhookService, AppLoggerService],
     }).compile()
 
-    controller = module.get<WebhookController>(WebhookController)
+    service = module.get<WebhookService>(WebhookService)
   })
 
   describe('root', () => {
     it('should be defined', () => {
-      expect(controller).toBeDefined()
+      expect(service).toBeDefined()
     })
   })
 })

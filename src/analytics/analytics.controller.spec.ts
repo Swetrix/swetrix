@@ -56,7 +56,6 @@ describe('AnalyticsController', () => {
         },
       ],
     }).compile()
-
     controller = module.get<AnalyticsController>(AnalyticsController)
     userRepository = module.get<Repository<User>>(USER_REPOSITORY_TOKEN)
     actionTokenRepository = module.get<Repository<ActionToken>>(ACTION_TOKEN_REPOSITORY_TOKEN)

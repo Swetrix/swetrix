@@ -6,7 +6,6 @@ import { ActionTokensService } from './action-tokens.service'
 
 describe('ActionTokensService', () => {
   let service: ActionTokensService
-
   let repository: Repository<ActionToken>
   const ACTIONTOKEN_REPOSITORY = getRepositoryToken(ActionToken)
   beforeEach(async () => {

@@ -42,4 +42,8 @@ export class CategoriesService {
   ): Promise<[Category[], number]> {
     return await this.categoryRepository.findAndCount({ ...options })
   }
+
+  async findByName(name: string): Promise<Category> {
+    return await this.findOne({ where: { name }, select: ['name'] })
+  }
 }

@@ -30,7 +30,12 @@ describe('AnalyticsService', () => {
         }
       ],
     }).compile()
-
+    projectsRepository = module.get<Repository<Project>>(
+      PROJECT_REPOSITORY_TOKEN,
+    )
+    projectShareRepository = module.get<Repository<ProjectShare>>(
+      PROJECTSHARE_REPOSITORY_TOKEN,
+    )
     service = module.get<AnalyticsService>(AnalyticsService)
     projectShareRepository = module.get<Repository<ProjectShare>>(PROJECT_SHARE_REPOSITORY_TOKEN)
     projectsRepository = module.get<Repository<Project>>(PROJECT_REPOSITORY_TOKEN)
