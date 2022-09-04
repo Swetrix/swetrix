@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
+import { User } from 'src/user/entities/user.entity'
 import { Repository } from 'typeorm'
-import { ActionToken } from './action-token.entity'
+import { ActionToken, ActionTokenType } from './action-token.entity'
 import { ActionTokensService } from './action-tokens.service'
 
 describe('ActionTokensService', () => {
