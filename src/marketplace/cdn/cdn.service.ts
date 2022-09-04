@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { createReadStream } from 'fs'
 import { unlink, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { tmpdir } from 'os'
 import * as FormData from 'form-data'
 
 @Injectable()
@@ -14,30 +14,36 @@ export class CdnService {
   ) {}
 
   async uploadFile(file: Express.Multer.File): Promise<{ filename: string }> {
-    const filePath = `${join(__dirname, '..', '..', '..', 'tmp')}/${
-      file.originalname
-    }`
+    try {
+      const filePath = `${tmpdir()}/${file.originalname}`
 
-    await writeFile(filePath, file.buffer)
+      await writeFile(filePath, file.buffer)
 
-    const form = new FormData()
-    form.append('token', this.configService.get('CDN_ACCESS_TOKEN'))
-    form.append('file', createReadStream(filePath))
+      const form = new FormData()
+      form.append('token', this.configService.get('CDN_ACCESS_TOKEN'))
+      form.append('file', createReadStream(filePath))
 
-    const { data } = await this.httpService.axiosRef.post('file', form, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+      const { data } = await this.httpService.axiosRef.post('file', form, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
 
-    await unlink(filePath)
+      await unlink(filePath)
 
-    return data
+      return data
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   async deleteFile(filename: string): Promise<void> {
-    await this.httpService.axiosRef.delete(`file/${filename}`, {
-      data: { token: this.configService.get('CDN_ACCESS_TOKEN') },
-    })
+    try {
+      await this.httpService.axiosRef.delete(`file/${filename}`, {
+        data: { token: this.configService.get('CDN_ACCESS_TOKEN') },
+      })
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
