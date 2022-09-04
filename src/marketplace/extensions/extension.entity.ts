@@ -34,6 +34,12 @@ export class Extension {
   @Column({ type: 'int', default: 0 })
   price: number
 
+  @Column({ type: 'varchar', nullable: true, default: null })
+  mainImage: string | null
+
+  @Column('simple-array')
+  additionalImages: string[] | []
+
   @CreateDateColumn()
   createdAt: Date
 
@@ -42,5 +48,5 @@ export class Extension {
 
   @ManyToMany(() => Category, category => category.extensions)
   @JoinTable()
-  categories!: Category[]
+  categories: Category[] | []
 }

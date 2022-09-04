@@ -10,5 +10,5 @@ export class Category {
   name!: string
 
   @ManyToMany(() => Extension, extension => extension.categories)
-  extensions!: Extension[]
+  extensions!: Extension[] | []
 }

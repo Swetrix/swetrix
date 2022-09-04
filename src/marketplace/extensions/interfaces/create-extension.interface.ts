@@ -5,5 +5,7 @@ export interface ICreateExtension {
   description?: string | null
   version: string
   price?: number
+  mainImage?: string | null
+  additionalImages?: string[] | []
   categories?: Category[]
 }
