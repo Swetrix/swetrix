@@ -519,6 +519,12 @@ const ViewProject = ({
     })
   }
 
+  const refreshStats = () => {
+    if (!isLoading && !dataLoading) {
+      loadAnalytics(true)
+    }
+  }
+
   useEffect(() => {
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
@@ -704,8 +710,10 @@ const ViewProject = ({
               <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
                 <button
                   type='button'
-                  onClick={loadAnalytics}
-                  className='relative shadow-sm rounded-md px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                  onClick={refreshStats}
+                  className={cx('relative shadow-sm rounded-md px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                    'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                  })}
                 >
                   <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                 </button>
