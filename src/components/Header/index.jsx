@@ -8,9 +8,9 @@ import Flag from 'react-flagkit'
 import i18next from 'i18next'
 import { Popover, Transition } from '@headlessui/react'
 import {
-  MenuIcon, XIcon, DocumentTextIcon, CreditCardIcon, CollectionIcon, RssIcon,
-} from '@heroicons/react/outline'
-import { MoonIcon, SunIcon } from '@heroicons/react/solid'
+  Bars3Icon, XMarkIcon, DocumentTextIcon, CreditCardIcon, CircleStackIcon, RssIcon,
+} from '@heroicons/react/24/outline'
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 
 import routes from 'routes'
 import { authActions } from 'redux/actions/auth'
@@ -61,7 +61,7 @@ const Header = ({ authenticated, theme }) => {
                   ) : (
                     <>
                       <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
-                        <CollectionIcon className='w-5 h-5 mr-1' />
+                        <CircleStackIcon className='w-5 h-5 mr-1' />
                         {t('common.features')}
                       </NavLink>
                       <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
@@ -146,7 +146,7 @@ const Header = ({ authenticated, theme }) => {
                 <span className='sr-only'>
                   {t('common.openMenu')}
                 </span>
-                <MenuIcon className='h-6 w-6' aria-hidden='true' />
+                <Bars3Icon className='h-6 w-6' aria-hidden='true' />
               </Popover.Button>
             </div>
           </div>
@@ -167,7 +167,7 @@ const Header = ({ authenticated, theme }) => {
                   {t('common.pricing')}
                 </HashLink>
                 <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
-                  <CollectionIcon className='w-5 h-5 mr-1' />
+                  <CircleStackIcon className='w-5 h-5 mr-1' />
                   {t('common.features')}
                 </NavLink>
               </>
@@ -205,7 +205,7 @@ const Header = ({ authenticated, theme }) => {
                   <span className='sr-only'>
                     {t('common.closeMenu')}
                   </span>
-                  <XIcon className='h-6 w-6' aria-hidden='true' />
+                  <XMarkIcon className='h-6 w-6' aria-hidden='true' />
                 </Popover.Button>
               </div>
             </div>

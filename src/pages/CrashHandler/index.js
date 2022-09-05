@@ -1,6 +1,6 @@
 import React from 'react'
 import _toString from 'lodash/toString'
-import { ExclamationIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline'
+import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { CONTACT_EMAIL } from 'redux/constants'
 
 class CrashHandler extends React.Component {
@@ -40,7 +40,7 @@ class CrashHandler extends React.Component {
         <div style={{ minHeight: '100vh' }} className='pt-16 pb-12 flex flex-col bg-gray-50 dark:bg-gray-800'>
           <div className='flex-grow flex flex-col justify-center max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8'>
             <div className='flex-shrink-0 flex justify-center'>
-              <ExclamationIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
+              <ExclamationTriangleIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
             </div>
             <div className='py-8'>
               <div className='text-center'>

@@ -2,7 +2,7 @@
 import React, { memo, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { CheckIcon } from '@heroicons/react/solid'
+import { CheckIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 import _isNil from 'lodash/isNil'
 import _findIndex from 'lodash/findIndex'

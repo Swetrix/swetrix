@@ -2,7 +2,7 @@ import React, { memo } from 'react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
-import { ExclamationCircleIcon } from '@heroicons/react/solid'
+import { ExclamationCircleIcon } from '@heroicons/react/24/solid'
 import Beta from 'ui/Beta'
 
 const Input = ({

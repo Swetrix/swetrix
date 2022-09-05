@@ -15,8 +15,8 @@ import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _ceil from 'lodash/ceil'
 import { useTranslation } from 'react-i18next'
-import { EyeIcon, CalendarIcon, FolderAddIcon } from '@heroicons/react/outline'
-import { ArrowSmUpIcon, ArrowSmDownIcon, XCircleIcon } from '@heroicons/react/solid'
+import { EyeIcon, CalendarIcon, FolderPlusIcon } from '@heroicons/react/24/outline'
+import { ArrowSmallUpIcon, ArrowSmallDownIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 import Modal from 'ui/Modal'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -103,14 +103,14 @@ const ProjectCart = ({
                     >
                       {statsDidGrowUp ? (
                         <>
-                          <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                          <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                           <span className='sr-only'>
                             {t('dashboard.inc')}
                           </span>
                         </>
                       ) : (
                         <>
-                          <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                          <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                           <span className='sr-only'>
                             {t('dashboard.dec')}
                           </span>
@@ -242,7 +242,7 @@ const Dashboard = ({
                 {t('titles.dashboard')}
               </h2>
               <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm'>
-                <FolderAddIcon className='w-5 h-5 mr-1' />
+                <FolderPlusIcon className='w-5 h-5 mr-1' />
                 {t('dashboard.newProject')}
               </span>
             </div>

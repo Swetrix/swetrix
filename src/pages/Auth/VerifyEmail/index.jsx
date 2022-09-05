@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/solid'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _split from 'lodash/split'
 
 import Title from 'components/Title'

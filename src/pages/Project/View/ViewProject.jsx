@@ -8,8 +8,8 @@ import { saveAs } from 'file-saver'
 import bb, { area } from 'billboard.js'
 import Flag from 'react-flagkit'
 import {
-  GlobeIcon, TranslateIcon, DocumentTextIcon, DeviceMobileIcon, ArrowCircleRightIcon, SearchIcon, ServerIcon, DownloadIcon, CogIcon,
-} from '@heroicons/react/outline'
+  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DevicePhoneMobileIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, CogIcon,
+} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
@@ -232,12 +232,12 @@ const typeNameMapping = (t) => ({
 
 export const iconClassName = 'w-6 h-6'
 const panelIconMapping = {
-  cc: <GlobeIcon className={iconClassName} />,
+  cc: <GlobeEuropeAfricaIcon className={iconClassName} />,
   pg: <DocumentTextIcon className={iconClassName} />,
-  lc: <TranslateIcon className={iconClassName} />,
-  ref: <ArrowCircleRightIcon className={iconClassName} />,
-  dv: <DeviceMobileIcon className={iconClassName} />,
-  br: <SearchIcon className={iconClassName} />,
+  lc: <LanguageIcon className={iconClassName} />,
+  ref: <ArrowRightCircleIcon className={iconClassName} />,
+  dv: <DevicePhoneMobileIcon className={iconClassName} />,
+  br: <MagnifyingGlassIcon className={iconClassName} />,
   os: <ServerIcon className={iconClassName} />,
 }
 
@@ -755,7 +755,7 @@ const ViewProject = ({
             <Dropdown
               items={exportTypes}
               title={[
-                <DownloadIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
                 <Fragment key='export-data'>
                   {t('project.exportData')}
                 </Fragment>,

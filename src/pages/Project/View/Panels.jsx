@@ -1,10 +1,10 @@
 import React, {
   memo, useState, useEffect, useMemo, Fragment,
 } from 'react'
-import { ArrowSmUpIcon, ArrowSmDownIcon } from '@heroicons/react/solid'
+import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
 import {
-  FilterIcon, MapIcon, ViewListIcon, ArrowsExpandIcon, ChartPieIcon,
-} from '@heroicons/react/outline'
+  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon,
+} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import { pie } from 'billboard.js'
@@ -52,7 +52,7 @@ const PanelContainer = ({
       {/* if it is a Country tab  */}
       {type === 'cc' && (
         <div className='flex'>
-          <ViewListIcon
+          <Bars4Icon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-blue-500': activeFragment === 0,
               'text-gray-900 dark:text-gray-50': activeFragment === 1,
@@ -66,7 +66,7 @@ const PanelContainer = ({
             })}
             onClick={() => setActiveFragment(1)}
           />
-          <ArrowsExpandIcon
+          <ArrowsPointingOutIcon
             className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
               hidden: activeFragment === 0,
             })}
@@ -77,7 +77,7 @@ const PanelContainer = ({
       {/* if this tab using Circle showing stats panel */}
       {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
         <div className='flex'>
-          <ViewListIcon
+          <Bars4Icon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-blue-500': activeFragment === 0,
               'text-gray-900 dark:text-gray-50': activeFragment === 1,
@@ -206,14 +206,14 @@ const Overview = ({
           >
             {pageviewsDidGrowUp ? (
               <>
-                <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                 <span className='sr-only'>
                   {t('dashboard.inc')}
                 </span>
               </>
             ) : (
               <>
-                <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                 <span className='sr-only'>
                   {t('dashboard.dec')}
                 </span>
@@ -241,14 +241,14 @@ const Overview = ({
           >
             {uniqueDidGrowUp ? (
               <>
-                <ArrowSmUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                 <span className='sr-only'>
                   {t('dashboard.inc')}
                 </span>
               </>
             ) : (
               <>
-                <ArrowSmDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                 <span className='sr-only'>
                   {t('dashboard.dec')}
                 </span>
@@ -541,14 +541,14 @@ const Panel = ({
                 >
                   {rowData}
                   {!hideFilters && (
-                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                    <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
                   )}
                 </a>
               ) : (
                 <span className={cx('flex items-center label', { capitalize })}>
                   {rowData}
                   {!hideFilters && (
-                    <FilterIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                    <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
                   )}
                 </span>
               )}

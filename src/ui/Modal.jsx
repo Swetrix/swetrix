@@ -3,8 +3,8 @@ import PropTypes from 'prop-types'
 import cx from 'clsx'
 import { Dialog, Transition } from '@headlessui/react'
 import {
-  CheckIcon, ExclamationIcon, InformationCircleIcon, UserGroupIcon,
-} from '@heroicons/react/outline'
+  CheckIcon, ExclamationTriangleIcon, InformationCircleIcon, UserGroupIcon,
+} from '@heroicons/react/24/outline'
 
 const Modal = ({
   className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size,
@@ -58,7 +58,7 @@ const Modal = ({
               )}
               {type === 'error' && (
                 <div className='sm:mr-3 mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:h-10 sm:w-10'>
-                  <ExclamationIcon className='h-6 w-6 text-red-600' aria-hidden='true' />
+                  <ExclamationTriangleIcon className='h-6 w-6 text-red-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'info' && (
@@ -68,7 +68,7 @@ const Modal = ({
               )}
               {type === 'warning' && (
                 <div className='sm:mr-3 mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:h-10 sm:w-10'>
-                  <ExclamationIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
+                  <ExclamationTriangleIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'confirmed' && (

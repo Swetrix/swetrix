@@ -3,8 +3,8 @@ import React, { memo } from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import {
-  CheckCircleIcon, InformationCircleIcon, XCircleIcon, XIcon,
-} from '@heroicons/react/solid'
+  CheckCircleIcon, InformationCircleIcon, XCircleIcon, XMarkIcon,
+} from '@heroicons/react/24/solid'
 
 const AlertTemplate = ({
   message, options, className, close,
@@ -46,7 +46,7 @@ const AlertTemplate = ({
         })}
       >
         <span className='sr-only'>Dismiss</span>
-        <XIcon className='h-5 w-5' />
+        <XMarkIcon className='h-5 w-5' />
       </button>
     </div>
   )

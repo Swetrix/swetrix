@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 import PropTypes from 'prop-types'
-import { QuestionMarkCircleIcon } from '@heroicons/react/solid'
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 
 const Tooltip = ({
