@@ -388,6 +388,7 @@
     "import": "Als nächstes sollten Sie das Modul in das Stammverzeichnis Ihres Projekts importieren, zum Beispiel",
     "track": "Danach können Sie alles tracken, was Sie wollen.\nLesen Sie die ausführliche Dokumentation zu Tracking-Parametern weiter unten.",
     "integrations": "Wir unterstützen die folgenden Integrationen (klicken Sie auf den Titel für Details)",
+    "3rdPartyInt": "There are also integrations made by the community",
     "pv": "Das Swetrix.js-Tracking-Script bietet die Möglichkeit, ein Aufrufereignis zu erfassen, sobald die Seite geladen ist.\nDies kann durch den Aufruf der <link>trackViews()</link> Funktion erreicht werden:",
     "ce": "Zusätzlich zur Verfolgung der Seitenaufrufe bieten wir die Möglichkeit, benutzerdefinierte Tracking-Events zu erfassen.\nWenn Sie zum Beispiel ein Ereignis wie \"Anmeldung\" oder \"Newsletter-Abonnement\" verfolgen möchten, wäre diese Funktion sehr nützlich.\nIm Hintergrund ist das Prinzip dieser Funktion ähnlich zu trackViews.",
     "init": "Diese Funktion wird zur Initialisierung der Analyse verwendet.\nIm Grunde genommen teilen Sie dem Script mit, für welches Projekt Sie es verwenden möchten, und geben bei Bedarf Ihre eigenen Parameter an.",

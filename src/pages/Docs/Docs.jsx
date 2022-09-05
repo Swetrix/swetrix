@@ -76,6 +76,17 @@ const integrations = [
     name: 'Ghost',
     link: 'https://github.com/Swetrix/integrations/blob/main/ghost/README.md',
   },
+  {
+    name: 'SvelteKit',
+    link: 'https://github.com/Swetrix/integrations/blob/main/sveltekit/README.md',
+  },
+]
+
+const thirdPartyIntegrations = [
+  {
+    name: 'Java SDK',
+    link: 'https://github.com/Casterlabs/swetrix-java',
+  },
 ]
 
 const Contents = ({ t }) => {
@@ -164,6 +175,19 @@ const Docs = () => {
             </p>
             <ul className='ml-5 text-lg list-disc marker:text-gray-900 dark:marker:text-gray-50'>
               {_map(integrations, ({ name, link }) => (
+                <li key={name}>
+                  <a href={link} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer'>
+                    {name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className='text-lg mt-5 text-gray-900 dark:text-gray-50 tracking-tight'>
+              {t('docs.3rdPartyInt')}
+              :
+            </p>
+            <ul className='ml-5 text-lg list-disc marker:text-gray-900 dark:marker:text-gray-50'>
+              {_map(thirdPartyIntegrations, ({ name, link }) => (
                 <li key={name}>
                   <a href={link} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer'>
                     {name}
