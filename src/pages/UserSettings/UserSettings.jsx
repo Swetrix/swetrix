@@ -10,7 +10,7 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import _isString from 'lodash/isString'
-import { MailIcon, ExclamationIcon, DownloadIcon } from '@heroicons/react/outline'
+import { EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import QRCode from 'react-qr-code'
 import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
@@ -636,7 +636,7 @@ const UserSettings = ({
           <hr className='mt-5' />
           {!user.isActive && (
             <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
-              <MailIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
+              <EnvelopeIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
               {t('profileSettings.noLink')}
             </div>
           )}
@@ -646,7 +646,7 @@ const UserSettings = ({
               semiSmall
               primary
             >
-              <DownloadIcon className='w-5 h-5 mr-1' />
+              <ArrowDownTrayIcon className='w-5 h-5 mr-1' />
               {t('profileSettings.requestExport')}
             </Button>
             <Button
@@ -655,7 +655,7 @@ const UserSettings = ({
               semiSmall
               danger
             >
-              <ExclamationIcon className='w-5 h-5 mr-1' />
+              <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
               {t('profileSettings.delete')}
             </Button>
           </div>

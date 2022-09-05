@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { ArrowNarrowLeftIcon, ArrowNarrowRightIcon } from '@heroicons/react/solid'
+import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +22,7 @@ const Pagination = ({
               onClick={() => setPage(page - 1)}
               className='pt-4 pr-1 inline-flex items-center text-sm font-medium dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500'
             >
-              <ArrowNarrowLeftIcon className='mr-3 h-5 w-5 dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500 transition-none' aria-hidden='true' />
+              <ArrowLongLeftIcon className='mr-3 h-5 w-5 dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500 transition-none' aria-hidden='true' />
               { t('project.prev') }
             </button>
           )
@@ -64,7 +64,7 @@ const Pagination = ({
               className='pt-4 pl-1 inline-flex items-center text-sm font-medium dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500'
             >
               { t('project.next') }
-              <ArrowNarrowRightIcon className='ml-3 h-5 w-5 dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500 transition-none' aria-hidden='true' />
+              <ArrowLongRightIcon className='ml-3 h-5 w-5 dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500 transition-none' aria-hidden='true' />
             </button>
           )
           }

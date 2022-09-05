@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react'
-import { ExclamationIcon, XIcon } from '@heroicons/react/outline'
+import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 
@@ -28,7 +28,7 @@ const EventsRunningOutBanner = () => {
           <div className='flex items-center justify-between flex-wrap'>
             <div className='w-0 flex-1 flex items-center'>
               <span className='flex p-2 rounded-lg bg-yellow-600'>
-                <ExclamationIcon className='h-6 w-6 text-white' aria-hidden='true' />
+                <ExclamationTriangleIcon className='h-6 w-6 text-white' aria-hidden='true' />
               </span>
               <p className='ml-3 font-medium text-black truncate'>
                 <span className='md:hidden'>
@@ -58,7 +58,7 @@ const EventsRunningOutBanner = () => {
                 <span className='sr-only'>
                   {t('common.close')}
                 </span>
-                <XIcon className='h-6 w-6 text-black' aria-hidden='true' />
+                <XMarkIcon className='h-6 w-6 text-black' aria-hidden='true' />
               </button>
             </div>
           </div>

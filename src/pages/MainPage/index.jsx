@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
-import { ExternalLinkIcon, ArrowSmRightIcon, CheckCircleIcon } from '@heroicons/react/solid'
-// import { CheckCircleIcon as CheckCircleIconOutline, CogIcon, ClockIcon } from '@heroicons/react/outline'
+import { ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon } from '@heroicons/react/24/solid'
+// import { CheckCircleIcon as CheckCircleIconOutline, Cog8ToothIcon, ClockIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 
 import routes from 'routes'
@@ -47,7 +47,7 @@ const Main = () => {
         <a href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi' target='_blank' rel='noreferrer noopener' className='text-white border-gray-900 border-b-2 hover:border-white text-center'>
           {t('main.ukrSupport')}
         </a>
-        <ExternalLinkIcon className='h-4 w-4 text-white ml-1 hidden md:block' />
+        <ArrowTopRightOnSquareIcon className='h-4 w-4 text-white ml-1 hidden md:block' />
       </div>
       <div className='overflow-hidden'>
         <div className='bg-gray-800 dark:bg-gray-900'>
@@ -85,7 +85,7 @@ const Main = () => {
                         <span className='text-base font-semibold mr-1'>
                           {t('main.start')}
                         </span>
-                        <ArrowSmRightIcon className='h-4 w-5 mt-[1px]' />
+                        <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
                       </Link>
                       <a href={LIVE_DEMO_URL} className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-gray-200 border w-full sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-gray-800' target='_blank' rel='noopener noreferrer'>
                         <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
@@ -95,14 +95,14 @@ const Main = () => {
                   <div className='max-w-md xl:max-w-lg hidden lg:block'>
                     <picture>
                       <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
-                      <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} fetchpriority='high' className='rounded-xl' style={{ height: '100%', minWidth: '880px' }} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                      <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} className='rounded-xl' style={{ height: '100%', minWidth: '880px' }} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                     </picture>
                   </div>
                 </div>
                 <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
                   <picture>
                     <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
-                    <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} fetchpriority='high' className='rounded-xl shadow-colored-2xl w-full' width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                    <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} className='rounded-xl shadow-colored-2xl w-full' width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </picture>
                 </div>
               </div>
@@ -113,7 +113,7 @@ const Main = () => {
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <picture>
                   <source srcSet='/assets/CoreFeaturesLight.webp' type='image/webp' />
-                  <img src='/assets/CoreFeaturesLight.png' fetchpriority='high' className='md:max-w-md md:mr-3 mt-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />
+                  <img src='/assets/CoreFeaturesLight.png' className='md:max-w-md md:mr-3 mt-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />
                 </picture>
                 <div className='max-w-lg'>
                   <h1 className='font-extrabold text-4xl dark:text-white text-gray-800'>
@@ -124,7 +124,7 @@ const Main = () => {
                   </p>
                   <a href={LIVE_DEMO_URL} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center' target='_blank' rel='noopener noreferrer'>
                     {t('common.liveDemo')}
-                    <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
+                    <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </a>
                 </div>
               </section>
@@ -143,7 +143,7 @@ const Main = () => {
                   </p>
                   <Link to='#!' className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'>
                     {t('main.visitAddons')}
-                    <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
+                    <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </Link>
                 </div>
                 <img className='md:max-w-[450px] lg:max-w-lg md:ml-5 mt-8 md:mt-0' src='/assets/teardown.svg' alt='Marketplace' />
@@ -170,7 +170,7 @@ const Main = () => {
                   ))}
                   <Link to={routes.privacy} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'>
                     {t('main.dataProtection')}
-                    <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
+                    <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </Link>
                 </div>
               </section>
@@ -362,7 +362,7 @@ const Main = () => {
                     </p>
                     <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
                       <span className='text-base font-semibold mr-1'>{t('main.start')}</span>
-                      <ArrowSmRightIcon className='w-5 h-4 mt-[1px]' />
+                      <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                     </Link>
                   </div>
                   <div className='max-w-md xl:max-w-lg block h-[450px] md:shadow-[8px_8px_10px_3px] md:rounded-md '>
@@ -434,41 +434,41 @@ const Main = () => {
                 >
                   <div className='flex items-center justify-between pl-11 pr-6 bg-purple-400 py-4'>
                     <h2 className='text-xl text-white font-semibold'>In progress</h2>
-                    <CogIcon alt='Swetrix settings icon' className='w-7 h-7 text-white' />
+                    <Cog8ToothIcon alt='Swetrix settings icon' className='w-7 h-7 text-white' />
                   </div>
                   <div className='mt-14 px-11 pb-12'>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Up to 5,000 visits per month.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Add up to 10 websites.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Unlimited data exports.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       100% data ownership.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       No cookie banners required.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Shared & Public Dashboards.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Email reports.
                     </p>

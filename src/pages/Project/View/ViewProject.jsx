@@ -8,8 +8,8 @@ import { saveAs } from 'file-saver'
 import bb, { area } from 'billboard.js'
 import Flag from 'react-flagkit'
 import {
-  GlobeIcon, TranslateIcon, DocumentTextIcon, DeviceMobileIcon, ArrowCircleRightIcon, SearchIcon, ServerIcon, DownloadIcon, CogIcon,
-} from '@heroicons/react/outline'
+  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, Cog8ToothIcon,
+} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
@@ -232,12 +232,12 @@ const typeNameMapping = (t) => ({
 
 export const iconClassName = 'w-6 h-6'
 const panelIconMapping = {
-  cc: <GlobeIcon className={iconClassName} />,
+  cc: <GlobeEuropeAfricaIcon className={iconClassName} />,
   pg: <DocumentTextIcon className={iconClassName} />,
-  lc: <TranslateIcon className={iconClassName} />,
-  ref: <ArrowCircleRightIcon className={iconClassName} />,
-  dv: <DeviceMobileIcon className={iconClassName} />,
-  br: <SearchIcon className={iconClassName} />,
+  lc: <LanguageIcon className={iconClassName} />,
+  ref: <ArrowRightCircleIcon className={iconClassName} />,
+  dv: <DeviceTabletIcon className={iconClassName} />,
+  br: <MagnifyingGlassIcon className={iconClassName} />,
   os: <ServerIcon className={iconClassName} />,
 }
 
@@ -755,7 +755,7 @@ const ViewProject = ({
             <Dropdown
               items={exportTypes}
               title={[
-                <DownloadIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
                 <Fragment key='export-data'>
                   {t('project.exportData')}
                 </Fragment>,
@@ -771,7 +771,7 @@ const ViewProject = ({
                 className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
                 secondary
               >
-                <CogIcon className='w-5 h-5 mr-1' />
+                <Cog8ToothIcon className='w-5 h-5 mr-1' />
                 {t('common.settings')}
               </Button>
             )}

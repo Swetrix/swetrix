@@ -2,7 +2,7 @@ import { Fragment, memo } from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import { Listbox, Transition } from '@headlessui/react'
-import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 
 const Select = ({
@@ -16,7 +16,7 @@ const Select = ({
           <Listbox.Button className='relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
             <span className='block truncate capitalize'>{title}</span>
             <span className='absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none'>
-              <SelectorIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
+              <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
             </span>
           </Listbox.Button>
 
