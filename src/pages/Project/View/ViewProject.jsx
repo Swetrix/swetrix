@@ -8,7 +8,7 @@ import { saveAs } from 'file-saver'
 import bb, { area } from 'billboard.js'
 import Flag from 'react-flagkit'
 import {
-  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DevicePhoneMobileIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, CogIcon,
+  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DevicePhoneMobileIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, Cog8ToothIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
@@ -771,7 +771,7 @@ const ViewProject = ({
                 className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
                 secondary
               >
-                <CogIcon className='w-5 h-5 mr-1' />
+                <Cog8ToothIcon className='w-5 h-5 mr-1' />
                 {t('common.settings')}
               </Button>
             )}

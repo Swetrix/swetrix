@@ -4,7 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
 import { ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon } from '@heroicons/react/24/solid'
-// import { CheckCircleIcon as CheckCircleIconOutline, CogIcon, ClockIcon } from '@heroicons/react/24/outline'
+// import { CheckCircleIcon as CheckCircleIconOutline, Cog8ToothIcon, ClockIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 
 import routes from 'routes'
@@ -434,41 +434,41 @@ const Main = () => {
                 >
                   <div className='flex items-center justify-between pl-11 pr-6 bg-purple-400 py-4'>
                     <h2 className='text-xl text-white font-semibold'>In progress</h2>
-                    <CogIcon alt='Swetrix settings icon' className='w-7 h-7 text-white' />
+                    <Cog8ToothIcon alt='Swetrix settings icon' className='w-7 h-7 text-white' />
                   </div>
                   <div className='mt-14 px-11 pb-12'>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Up to 5,000 visits per month.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Add up to 10 websites.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Unlimited data exports.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       100% data ownership.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       No cookie banners required.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Shared & Public Dashboards.
                     </p>
                     <p className='text-gray-500 dark:text-white text-xs flex items-center'>
-                      <CogIcon className='h-5 w-5 text-purple-400 mr-2' />
+                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
                       {' '}
                       Email reports.
                     </p>
