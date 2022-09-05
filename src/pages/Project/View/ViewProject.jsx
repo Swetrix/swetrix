@@ -87,7 +87,7 @@ const RefRow = memo(({ rowName, showIcons }) => {
           className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'
           href={rowName}
           target='_blank'
-          rel='noopener noreferrer'
+          rel='noopener noreferrer nofollow'
           onClick={(e) => e.stopPropagation()}
         >
           {rowName}

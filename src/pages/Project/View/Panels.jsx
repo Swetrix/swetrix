@@ -537,7 +537,7 @@ const Panel = ({
                   className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', { capitalize })}
                   href={rowData}
                   target='_blank'
-                  rel='noopener noreferrer'
+                  rel='noopener noreferrer nofollow'
                 >
                   {rowData}
                   {!hideFilters && (
