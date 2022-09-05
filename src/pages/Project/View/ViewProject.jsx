@@ -8,7 +8,7 @@ import { saveAs } from 'file-saver'
 import bb, { area } from 'billboard.js'
 import Flag from 'react-flagkit'
 import {
-  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, Cog8ToothIcon,
+  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
@@ -519,6 +519,12 @@ const ViewProject = ({
     })
   }
 
+  const refreshStats = () => {
+    if (!isLoading && !dataLoading) {
+      loadAnalytics(true)
+    }
+  }
+
   useEffect(() => {
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       if (showTotal) {
@@ -701,6 +707,17 @@ const ViewProject = ({
               {name}
             </h2>
             <div className='flex mt-3 md:mt-0'>
+              <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
+                <button
+                  type='button'
+                  onClick={refreshStats}
+                  className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                    'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                  })}
+                >
+                  <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                </button>
+              </div>
               <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
                 <span className='relative z-0 inline-flex shadow-sm rounded-md'>
                   {_map(activePeriod.tbs, (tb, index, { length }) => (
