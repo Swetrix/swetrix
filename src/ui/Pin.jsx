@@ -12,7 +12,7 @@ const defaultProps = {
 }
 
 const ActivePin = ({ label, className }) => (
-  <p className={cx('px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-green-100 text-green-800 dark:bg-green-300 dark:text-green-900', className)}>
+  <p className={cx('px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-green-100 text-green-800 dark:bg-emerald-400 dark:text-green-900', className)}>
     {label}
   </p>
 )
