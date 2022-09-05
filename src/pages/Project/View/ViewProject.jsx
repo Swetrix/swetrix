@@ -8,7 +8,7 @@ import { saveAs } from 'file-saver'
 import bb, { area } from 'billboard.js'
 import Flag from 'react-flagkit'
 import {
-  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DevicePhoneMobileIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, Cog8ToothIcon,
+  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, Cog8ToothIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
@@ -236,7 +236,7 @@ const panelIconMapping = {
   pg: <DocumentTextIcon className={iconClassName} />,
   lc: <LanguageIcon className={iconClassName} />,
   ref: <ArrowRightCircleIcon className={iconClassName} />,
-  dv: <DevicePhoneMobileIcon className={iconClassName} />,
+  dv: <DeviceTabletIcon className={iconClassName} />,
   br: <MagnifyingGlassIcon className={iconClassName} />,
   os: <ServerIcon className={iconClassName} />,
 }
