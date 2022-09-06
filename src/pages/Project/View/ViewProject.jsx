@@ -214,6 +214,8 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
   }
 }
 
+const validTimeBacket = ['hour', 'day', 'week', 'month']
+const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt']
 
 const typeNameMapping = (t) => ({
@@ -337,6 +339,7 @@ const ViewProject = ({
   const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
+  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
@@ -550,7 +553,6 @@ const ViewProject = ({
     try {
       const url = new URL(window.location)
       const { searchParams } = url
-
       const initialFilters = []
       // eslint-disable-next-line lodash/prefer-lodash-method
       searchParams.forEach((value, key) => {
@@ -573,10 +575,26 @@ const ViewProject = ({
   }, [])
 
   useEffect(() => {
-    if (areFiltersParsed) {
+    try {
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const intialTimeBucket = searchParams.get('timeBucket')
+      // eslint-disable-next-line lodash/prefer-lodash-method
+      if (!_includes(validTimeBacket, intialTimeBucket)) {
+        return
+      }
+
+      setTimebucket(intialTimeBucket)
+    } finally {
+      setAreTimeBucketParsed(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (areFiltersParsed && areTimeBucketParsed) {
       loadAnalytics()
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, t]) // eslint-disable-line
+  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, t]) // eslint-disable-line
 
   useEffect(() => {
     if (rangeDate) {
@@ -586,7 +604,20 @@ const ViewProject = ({
       // eslint-disable-next-line no-restricted-syntax
       for (const index in timeBucketToDays) {
         if (timeBucketToDays[index].lt >= days) {
-          setTimebucket(timeBucketToDays[index].tb[0])
+          if (areTimeBucketParsed) {
+            const url = new URL(window.location)
+            url.searchParams.delete('timeBucket')
+            url.searchParams.append('timeBucket', timeBucketToDays[index].tb[0])
+            const { pathname, search } = url
+            history.push({
+              pathname,
+              search,
+              state: {
+                scrollToTopDisable: true,
+              },
+            })
+            setTimebucket(timeBucketToDays[index].tb[0])
+          }
           setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
           setPeriod('custom')
           setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], rangeDate)
@@ -652,6 +683,17 @@ const ViewProject = ({
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
       tb = _last(newPeriodFull.tbs)
+      const url = new URL(window.location)
+      url.searchParams.delete('timeBucket')
+      url.searchParams.append('timeBucket', tb)
+      const { pathname, search } = url
+      history.push({
+        pathname,
+        search,
+        state: {
+          scrollToTopDisable: true,
+        },
+      })
       setTimebucket(tb)
     }
 
@@ -662,6 +704,17 @@ const ViewProject = ({
   }
 
   const updateTimebucket = (newTimebucket) => {
+    const url = new URL(window.location)
+    url.searchParams.delete('timeBucket')
+    url.searchParams.append('timeBucket', newTimebucket)
+    const { pathname, search } = url
+    history.push({
+      pathname,
+      search,
+      state: {
+        scrollToTopDisable: true,
+      },
+    })
     setTimebucket(newTimebucket)
     setProjectViewPrefs(id, period, newTimebucket, rangeDate)
   }
