@@ -90,7 +90,7 @@ const thirdPartyIntegrations = [
   {
     name: 'Vue',
     link: 'https://github.com/ansidev/swetrix-vue',
-  }
+  },
 ]
 
 const Contents = ({ t }) => {
@@ -264,9 +264,9 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4' />
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <i>Last updated: August 6, 2022.</i><br />
+              <i>Last updated: September 6, 2022.</i><br />
               <div>
-                - Added Wordpress, Wix, Webflow, Django and Ghost&nbsp;
+                - Added Vue, Java SDK and SvelteKit&nbsp;
                 <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-int'>integration instructions.</a>
               </div>
             </div>
