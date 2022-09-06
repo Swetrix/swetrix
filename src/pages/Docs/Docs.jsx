@@ -87,6 +87,10 @@ const thirdPartyIntegrations = [
     name: 'Java SDK',
     link: 'https://github.com/Casterlabs/swetrix-java',
   },
+  {
+    name: 'Vue',
+    link: 'https://github.com/ansidev/swetrix-vue',
+  }
 ]
 
 const Contents = ({ t }) => {
