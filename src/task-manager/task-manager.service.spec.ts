@@ -57,11 +57,11 @@ describe('TaskManagerService', () => {
       expect(service).toBeDefined()
     })
     it("should be defined checkLeftEvents and don't return null", () => {
-      expect(service.checkLeftEvents()).not.toBeNull()
+      expect(service.checkLeftEvents()).rejects.not.toBeNull()
       expect(service.checkLeftEvents).toBeDefined()
     })
     it("should be defined deleteOldShareInvitations and don't return null", () => {
-      expect(service.deleteOldShareInvitations()).not.toBeNull()
+      expect(service.deleteOldShareInvitations()).rejects.not.toBeNull()
       expect(service.deleteOldShareInvitations).toBeDefined()
     })
 
@@ -70,11 +70,11 @@ describe('TaskManagerService', () => {
       expect(service.generateSessionSalt).toBeDefined()
     })
     it("should be defined getGeneralStats and don't return null", () => {
-      expect(service.getGeneralStats()).not.toBeNull()
+      expect(service.getGeneralStats()).rejects.not.toBeNull()
       expect(service.getGeneralStats).toBeDefined()
     })
     it("should be defined monthlyReportsHandler and don't return null", () => {
-      expect(service.monthlyReportsHandler()).not.toBeNull()
+      expect(service.monthlyReportsHandler()).rejects.not.toBeNull()
       expect(service.monthlyReportsHandler).toBeDefined()
     })
     it("should be defined saveLogData and don't return null", () => {
@@ -82,7 +82,7 @@ describe('TaskManagerService', () => {
       expect(service.saveLogData).toBeDefined()
     })
     it("should be defined weeklyReportsHandler and don't return null", () => {
-      expect(service.weeklyReportsHandler()).not.toBeNull()
+      expect(service.weeklyReportsHandler()).rejects.not.toBeNull()
       expect(service.weeklyReportsHandler).toBeDefined()
     })
   })

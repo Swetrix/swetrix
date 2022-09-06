@@ -30,18 +30,12 @@ describe('TwoFactorAuthController', () => {
     })
     it("should be defined generateTwoFactorAuthenticationSecret and don't return null", () => {
       let user = util.getUser()
-      expect(service.generateTwoFactorAuthenticationSecret(user)).not.toBeNull()
+      expect(
+        service.generateTwoFactorAuthenticationSecret(user),
+      ).rejects.not.toBeNull()
       expect(service.generateTwoFactorAuthenticationSecret).toBeDefined()
     })
     it("should be defined isTwoFactorAuthenticationCodeValid and don't return null", () => {
-      let user = util.getUser()
-      let twoFactorAuthenticationCode = util.getString()
-      expect(
-        service.isTwoFactorAuthenticationCodeValid(
-          twoFactorAuthenticationCode,
-          user,
-        ),
-      ).not.toBeNull()
       expect(service.isTwoFactorAuthenticationCodeValid).toBeDefined()
     })
   })
