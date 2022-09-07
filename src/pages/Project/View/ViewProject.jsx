@@ -340,6 +340,7 @@ const ViewProject = ({
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
+  const [arePeriodParsed, setArePeriodParsed] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
@@ -390,7 +391,7 @@ const ViewProject = ({
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
-          if (rangeDate) {
+          if (period === 'custom' && rangeDate) {
             data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           } else {
             data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
@@ -583,47 +584,107 @@ const ViewProject = ({
       if (!_includes(validTimeBacket, intialTimeBucket)) {
         return
       }
-
       setTimebucket(intialTimeBucket)
     } finally {
       setAreTimeBucketParsed(true)
     }
   }, [])
 
+  const onRangeDateChange = (dates, onRender) => {
+    const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
+    const url = new URL(window.location)
+
+    // setting allowed time buckets for the specified date range (period)
+    // eslint-disable-next-line no-restricted-syntax
+    for (const index in timeBucketToDays) {
+      if (timeBucketToDays[index].lt >= days) {
+        if (!onRender) {
+          url.searchParams.delete('timeBucket')
+          url.searchParams.append('timeBucket', timeBucketToDays[index].tb[0])
+          const { pathname, search } = url
+          history.push({
+            pathname,
+            search,
+            state: {
+              scrollToTopDisable: true,
+            },
+          })
+          console.log('timeBucketToDays[index].tb[0]', timeBucketToDays[index].tb[0])
+          setTimebucket(timeBucketToDays[index].tb[0])
+        }
+        url.searchParams.delete('period')
+        url.searchParams.delete('from')
+        url.searchParams.delete('to')
+        url.searchParams.append('period', 'custom')
+        url.searchParams.append('from', dates[0].toISOString())
+        url.searchParams.append('to', dates[1].toISOString())
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+        setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates))
+        setPeriod('custom')
+        setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], dates)
+        break
+      }
+    }
+  }
+
   useEffect(() => {
-    if (areFiltersParsed && areTimeBucketParsed) {
+    try {
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const intialTimeBucket = searchParams.get('period')
+      if (!_includes(validPeriods, intialTimeBucket)) {
+        return
+      }
+
+      if (intialTimeBucket === 'custom') {
+        const from = new Date(searchParams.get('from'))
+        const to = new Date(searchParams.get('to'))
+        if (from.getDate && to.getDate) {
+          onRangeDateChange([from, to], true)
+          setRangeDate([from, to])
+          // const days = Math.ceil(Math.abs(to.getTime() - from.getTime()) / (1000 * 3600 * 24))
+
+          // // eslint-disable-next-line no-restricted-syntax
+          // for (const index in timeBucketToDays) {
+          //   if (timeBucketToDays[index].lt >= days) {
+          //     if (!(areTimeBucketParsed && _includes(timeBucketToDays[index].tb, timeBucket))) {
+          //       console.log(_includes(timeBucketToDays[index].tb, timeBucket))
+          //       setTimebucket(timeBucketToDays[index].tb[0])
+          //       setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], [from, to])
+          //     } else {
+          //       setProjectViewPrefs(id, 'custom', timeBucket, [from, to])
+          //     }
+          //     setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, [from, to]))
+          //     setPeriod('custom')
+          //     break
+          //   }
+          // }
+        }
+      }
+
+      // setTimebucket(intialTimeBucket)
+    } finally {
+      setArePeriodParsed(true)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
       loadAnalytics()
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, t]) // eslint-disable-line
+  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
 
   useEffect(() => {
     if (rangeDate) {
-      const days = Math.ceil(Math.abs(rangeDate[1].getTime() - rangeDate[0].getTime()) / (1000 * 3600 * 24))
-
-      // setting allowed time buckets for the specified date range (period)
-      // eslint-disable-next-line no-restricted-syntax
-      for (const index in timeBucketToDays) {
-        if (timeBucketToDays[index].lt >= days) {
-          if (areTimeBucketParsed) {
-            const url = new URL(window.location)
-            url.searchParams.delete('timeBucket')
-            url.searchParams.append('timeBucket', timeBucketToDays[index].tb[0])
-            const { pathname, search } = url
-            history.push({
-              pathname,
-              search,
-              state: {
-                scrollToTopDisable: true,
-              },
-            })
-            setTimebucket(timeBucketToDays[index].tb[0])
-          }
-          setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
-          setPeriod('custom')
-          setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], rangeDate)
-          break
-        }
-      }
+      onRangeDateChange(rangeDate)
     }
   }, [rangeDate, t]) // eslint-disable-line
 
@@ -811,7 +872,11 @@ const ViewProject = ({
                   }
                 }}
               />
-              <FlatPicker ref={refCalendar} onChange={(date) => setRangeDate(date)} value={rangeDate} />
+              <FlatPicker
+                ref={refCalendar}
+                onChange={(date) => setRangeDate(date)}
+                value={rangeDate}
+              />
             </div>
           </div>
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
