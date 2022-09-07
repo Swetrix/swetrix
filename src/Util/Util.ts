@@ -15,6 +15,7 @@ export class Util {
     let user = new User()
     return user
   }
+
   getLetterTemplate(): LetterTemplate {
     let letterTemplate = LetterTemplate.ConfirmPasswordChange
     return letterTemplate
