@@ -30,33 +30,28 @@ describe('UserService', () => {
       expect(service.count()).rejects.not.toBeNull()
       expect(service.count).toBeDefined()
     })
-    it("should be defined create and don't return null", () => {
-      let userDTO = util.getUser()
-
-      expect(service.create(userDTO)).resolves.not.toBeNull()
+    it('should be defined create', () => {
       expect(service.create).toBeDefined()
     })
-    it("should be defined delete and don't return null", () => {
-      let id = util.getString()
-      expect(service.delete(id)).rejects.not.toBeNull()
+    it('should be defined delete', () => {
       expect(service.delete).toBeDefined()
     })
-    it("should be defined find and don't return null", () => {
+    it('should be defined find', () => {
       expect(service.find).toBeDefined()
     })
-    it("should be defined findOne and don't return null", () => {
+    it('should be defined findOne', () => {
       expect(service.findOne).toBeDefined()
     })
-    it("should be defined findOneWhere and don't return null", () => {
+    it('should be defined findOneWhere', () => {
       expect(service.findOneWhere).toBeDefined()
     })
-    it("should be defined findOneWithRelations and don't return null", () => {
+    it('should be defined findOneWithRelations', () => {
       expect(service.findOneWithRelations).toBeDefined()
     })
-    it("should be defined findWhere and don't return null", () => {
+    it('should be defined findWhere', () => {
       expect(service.findWhere).toBeDefined()
     })
-    it("should be defined findWhereWithRelations and don't return null", () => {
+    it('should be defined findWhereWithRelations', () => {
       expect(service.findWhereWithRelations).toBeDefined()
     })
     it("should be defined omitSensitiveData and don't return null", () => {
@@ -69,7 +64,7 @@ describe('UserService', () => {
       expect(service.paginate(options)).rejects.not.toBeNull()
       expect(service.paginate).toBeDefined()
     })
-    it("should be defined search and don't return null", () => {
+    it('should be defined search', () => {
       expect(service.search).toBeDefined()
     })
     it("should be defined update and don't return null", () => {

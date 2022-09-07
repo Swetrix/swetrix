@@ -8,8 +8,7 @@ import { AnalyticsService } from './analytics.service'
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService
-  let projectsRepository: Repository<Project>
-  let projectShareRepository: Repository<ProjectShare>
+
   const PROJECT_REPOSITORY_TOKEN = getRepositoryToken(Project)
   const PROJECTSHARE_REPOSITORY_TOKEN = getRepositoryToken(ProjectShare)
   beforeEach(async () => {
@@ -27,12 +26,7 @@ describe('AnalyticsService', () => {
         },
       ],
     }).compile()
-    projectsRepository = module.get<Repository<Project>>(
-      PROJECT_REPOSITORY_TOKEN,
-    )
-    projectShareRepository = module.get<Repository<ProjectShare>>(
-      PROJECTSHARE_REPOSITORY_TOKEN,
-    )
+
     service = module.get<AnalyticsService>(AnalyticsService)
   })
 

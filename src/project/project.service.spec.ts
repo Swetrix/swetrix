@@ -48,49 +48,36 @@ describe('ProjectService', () => {
       spy.mockRestore()
       expect(service.checkIfIDUnique).toBeDefined()
     })
-    it("should be defined checkIfIDUniqueClickhouse and don't return null", () => {
+    it('should be defined checkIfIDUniqueClickhouse ', () => {
       expect(service.checkIfIDUniqueClickhouse).toBeDefined()
     })
-    it("should be defined count and don't return null", () => {
+    it('should be defined count ', () => {
       expect(service.count()).rejects.not.toBeNull()
       expect(service.count).toBeDefined()
     })
-    it("should be defined create and don't return null", () => {
-      let project = util.getProject()
-      expect(service.create(project)).not.toBeNull()
+    it('should be defined create ', () => {
       expect(service.create).toBeDefined()
     })
 
-    it("should be defined createShare and don't return null", () => {
-      let projectShare = util.getProjectShare()
-      expect(service.createShare(projectShare)).not.toBeNull()
+    it('should be defined createShare ', () => {
       expect(service.createShare).toBeDefined()
     })
-    it("should be defined delete and don't return null", () => {
-      let id = util.getString()
-      expect(service.delete(id)).rejects.not.toBeNull()
+    it('should be defined delete ', () => {
       expect(service.delete).toBeDefined()
     })
-    it("should be defined deleteMultiple and don't return null", () => {
-      let array = util.getStringArray()
-
-      expect(service.deleteMultiple(array)).rejects.not.toBeNull()
+    it('should be defined deleteMultiple ', () => {
       expect(service.deleteMultiple).toBeDefined()
     })
-    it("should be defined deleteMultipleShare and don't return null", () => {
-      let where = util.getString()
-      expect(service.deleteMultipleShare(where)).rejects.not.toBeNull()
+    it('should be defined deleteMultipleShare ', () => {
       expect(service.deleteMultipleShare).toBeDefined()
     })
-    it("should be defined deleteShare and don't return null", () => {
-      let id = util.getString()
-      expect(service.deleteShare(id)).rejects.not.toBeNull()
+    it('should be defined deleteShare ', () => {
       expect(service.deleteShare).toBeDefined()
     })
-    it("should be defined find and don't return null", () => {
+    it('should be defined find ', () => {
       expect(service.find).toBeDefined()
     })
-    it("should be defined findOne and don't return null", () => {
+    it('should be defined findOne ', () => {
       let params = util.getObject()
       let id = util.getString()
       expect(service.findOne(id, params)).not.toBeNull()
@@ -115,11 +102,11 @@ describe('ProjectService', () => {
       expect(service.findOneWithRelations(id)).not.toBeNull()
       expect(service.findOneWithRelations).toBeDefined()
     })
-    it("should be defined findShare and don't return null", () => {
+    it('should be defined findShare ', () => {
       expect(service.findShare).toBeDefined()
     })
 
-    it("should be defined findWhere and don't return null", () => {
+    it('should be defined findWhere ', () => {
       expect(service.findWhere).toBeDefined()
     })
 
@@ -136,19 +123,19 @@ describe('ProjectService', () => {
       expect(service.getRedisCount).toBeDefined()
     })
 
-    it("should be defined paginate and don't return null", () => {
+    it('should be defined paginate', () => {
       expect(service.paginate).toBeDefined()
     })
 
-    it("should be defined paginateShared and don't return null", () => {
+    it('should be defined paginateShared', () => {
       expect(service.paginateShared).toBeDefined()
     })
 
-    it("should be defined update and don't return null", () => {
+    it('should be defined update', () => {
       expect(service.update).toBeDefined()
     })
 
-    it("should be defined updateShare and don't return null", () => {
+    it('should be defined updateShare', () => {
       expect(service.updateShare).toBeDefined()
     })
   })

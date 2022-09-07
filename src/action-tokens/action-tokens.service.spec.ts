@@ -7,7 +7,7 @@ import { ActionTokensService } from './action-tokens.service'
 
 describe('ActionTokensService', () => {
   let service: ActionTokensService
-  let repository: Repository<ActionToken>
+
   const ACTIONTOKEN_REPOSITORY = getRepositoryToken(ActionToken)
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,7 +19,7 @@ describe('ActionTokensService', () => {
         },
       ],
     }).compile()
-    repository = module.get<Repository<ActionToken>>(ACTIONTOKEN_REPOSITORY)
+
     service = module.get<ActionTokensService>(ActionTokensService)
   })
 
