@@ -776,7 +776,7 @@ const ViewProject = ({
       if (intialPeriod === 'custom') {
         const from = new Date(searchParams.get('from'))
         const to = new Date(searchParams.get('to'))
-        if (from.getDate && to.getDate) {
+        if (from.getDate() && to.getDate()) {
           onRangeDateChange([from, to], true)
           setRangeDate([from, to])
         }
