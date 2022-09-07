@@ -598,7 +598,8 @@ const ViewProject = ({
     // eslint-disable-next-line no-restricted-syntax
     for (const index in timeBucketToDays) {
       if (timeBucketToDays[index].lt >= days) {
-        if (!onRender) {
+        console.log('onrender', onRender)
+        if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
           url.searchParams.delete('timeBucket')
           url.searchParams.append('timeBucket', timeBucketToDays[index].tb[0])
           const { pathname, search } = url
@@ -609,7 +610,6 @@ const ViewProject = ({
               scrollToTopDisable: true,
             },
           })
-          console.log('timeBucketToDays[index].tb[0]', timeBucketToDays[index].tb[0])
           setTimebucket(timeBucketToDays[index].tb[0])
         }
         url.searchParams.delete('period')
@@ -635,58 +635,16 @@ const ViewProject = ({
   }
 
   useEffect(() => {
-    try {
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const intialTimeBucket = searchParams.get('period')
-      if (!_includes(validPeriods, intialTimeBucket)) {
-        return
-      }
-
-      if (intialTimeBucket === 'custom') {
-        const from = new Date(searchParams.get('from'))
-        const to = new Date(searchParams.get('to'))
-        if (from.getDate && to.getDate) {
-          onRangeDateChange([from, to], true)
-          setRangeDate([from, to])
-          // const days = Math.ceil(Math.abs(to.getTime() - from.getTime()) / (1000 * 3600 * 24))
-
-          // // eslint-disable-next-line no-restricted-syntax
-          // for (const index in timeBucketToDays) {
-          //   if (timeBucketToDays[index].lt >= days) {
-          //     if (!(areTimeBucketParsed && _includes(timeBucketToDays[index].tb, timeBucket))) {
-          //       console.log(_includes(timeBucketToDays[index].tb, timeBucket))
-          //       setTimebucket(timeBucketToDays[index].tb[0])
-          //       setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], [from, to])
-          //     } else {
-          //       setProjectViewPrefs(id, 'custom', timeBucket, [from, to])
-          //     }
-          //     setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, [from, to]))
-          //     setPeriod('custom')
-          //     break
-          //   }
-          // }
-        }
-      }
-
-      // setTimebucket(intialTimeBucket)
-    } finally {
-      setArePeriodParsed(true)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
       loadAnalytics()
     }
   }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
 
   useEffect(() => {
-    if (rangeDate) {
+    if (rangeDate && arePeriodParsed) {
       onRangeDateChange(rangeDate)
     }
-  }, [rangeDate, t]) // eslint-disable-line
+  }, [rangeDate, t, arePeriodParsed]) // eslint-disable-line
 
   useEffect(() => {
     const updateLiveVisitors = async () => {
@@ -740,28 +698,32 @@ const ViewProject = ({
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb = timeBucket
+    const url = new URL(window.location)
     if (_isEmpty(newPeriodFull)) return
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
       tb = _last(newPeriodFull.tbs)
-      const url = new URL(window.location)
       url.searchParams.delete('timeBucket')
       url.searchParams.append('timeBucket', tb)
-      const { pathname, search } = url
-      history.push({
-        pathname,
-        search,
-        state: {
-          scrollToTopDisable: true,
-        },
-      })
       setTimebucket(tb)
     }
 
     if (newPeriod.period !== 'custom') {
+      url.searchParams.delete('period')
+      url.searchParams.delete('from')
+      url.searchParams.delete('to')
+      url.searchParams.append('period', newPeriod.period)
       setProjectViewPrefs(id, newPeriod.period, tb)
       setPeriod(newPeriod.period)
     }
+    const { pathname, search } = url
+    history.push({
+      pathname,
+      search,
+      state: {
+        scrollToTopDisable: true,
+      },
+    })
   }
 
   const updateTimebucket = (newTimebucket) => {
@@ -796,6 +758,34 @@ const ViewProject = ({
       setShowIcons(true)
     }
   }
+
+  useEffect(() => {
+    try {
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const intialPeriod = searchParams.get('period')
+      if (!_includes(validPeriods, intialPeriod)) {
+        return
+      }
+
+      if (intialPeriod === 'custom') {
+        const from = new Date(searchParams.get('from'))
+        const to = new Date(searchParams.get('to'))
+        if (from.getDate && to.getDate) {
+          onRangeDateChange([from, to], true)
+          setRangeDate([from, to])
+        }
+        return
+      }
+
+      setPeriodPairs(tbPeriodPairs(t))
+      setRangeDate(null)
+      updatePeriod({ period: intialPeriod })
+    } finally {
+      setArePeriodParsed(true)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const exportTypes = [
     { label: t('project.asImage'), onClick: exportAsImageHandler },
