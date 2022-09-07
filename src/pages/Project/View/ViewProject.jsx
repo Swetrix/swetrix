@@ -604,7 +604,6 @@ const ViewProject = ({
     // eslint-disable-next-line no-restricted-syntax
     for (const index in timeBucketToDays) {
       if (timeBucketToDays[index].lt >= days) {
-        console.log('onrender', onRender)
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
           url.searchParams.delete('timeBucket')
           url.searchParams.append('timeBucket', timeBucketToDays[index].tb[0])
