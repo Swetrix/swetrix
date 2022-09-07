@@ -214,6 +214,8 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
   }
 }
 
+const validTimeBacket = ['hour', 'day', 'week', 'month']
+const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt']
 
 const typeNameMapping = (t) => ({
@@ -337,6 +339,8 @@ const ViewProject = ({
   const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
+  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
+  const [arePeriodParsed, setArePeriodParsed] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
@@ -387,7 +391,7 @@ const ViewProject = ({
         if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
           data = cache[id][key]
         } else {
-          if (rangeDate) {
+          if (period === 'custom' && rangeDate) {
             data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           } else {
             data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
@@ -550,7 +554,6 @@ const ViewProject = ({
     try {
       const url = new URL(window.location)
       const { searchParams } = url
-
       const initialFilters = []
       // eslint-disable-next-line lodash/prefer-lodash-method
       searchParams.forEach((value, key) => {
@@ -573,28 +576,80 @@ const ViewProject = ({
   }, [])
 
   useEffect(() => {
-    if (areFiltersParsed) {
-      loadAnalytics()
-    }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, t]) // eslint-disable-line
-
-  useEffect(() => {
-    if (rangeDate) {
-      const days = Math.ceil(Math.abs(rangeDate[1].getTime() - rangeDate[0].getTime()) / (1000 * 3600 * 24))
-
-      // setting allowed time buckets for the specified date range (period)
-      // eslint-disable-next-line no-restricted-syntax
-      for (const index in timeBucketToDays) {
-        if (timeBucketToDays[index].lt >= days) {
-          setTimebucket(timeBucketToDays[index].tb[0])
-          setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, rangeDate))
-          setPeriod('custom')
-          setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], rangeDate)
-          break
+    if (arePeriodParsed) {
+      try {
+        const url = new URL(window.location)
+        const { searchParams } = url
+        const intialTimeBucket = searchParams.get('timeBucket')
+        // eslint-disable-next-line lodash/prefer-lodash-method
+        if (!_includes(validTimeBacket, intialTimeBucket)) {
+          return
         }
+        const newPeriodFull = _find(periodPairs, (el) => el.period === period)
+        if (!_includes(newPeriodFull.tbs, intialTimeBucket)) {
+          return
+        }
+        setTimebucket(intialTimeBucket)
+      } finally {
+        setAreTimeBucketParsed(true)
       }
     }
-  }, [rangeDate, t]) // eslint-disable-line
+  }, [arePeriodParsed])
+
+  const onRangeDateChange = (dates, onRender) => {
+    const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
+    const url = new URL(window.location)
+
+    // setting allowed time buckets for the specified date range (period)
+    // eslint-disable-next-line no-restricted-syntax
+    for (const index in timeBucketToDays) {
+      if (timeBucketToDays[index].lt >= days) {
+        if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
+          url.searchParams.delete('timeBucket')
+          url.searchParams.append('timeBucket', timeBucketToDays[index].tb[0])
+          const { pathname, search } = url
+          history.push({
+            pathname,
+            search,
+            state: {
+              scrollToTopDisable: true,
+            },
+          })
+          setTimebucket(timeBucketToDays[index].tb[0])
+        }
+        url.searchParams.delete('period')
+        url.searchParams.delete('from')
+        url.searchParams.delete('to')
+        url.searchParams.append('period', 'custom')
+        url.searchParams.append('from', dates[0].toISOString())
+        url.searchParams.append('to', dates[1].toISOString())
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+        setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates))
+        setPeriod('custom')
+        setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], dates)
+        break
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
+      loadAnalytics()
+    }
+  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
+
+  useEffect(() => {
+    if (rangeDate && arePeriodParsed) {
+      onRangeDateChange(rangeDate)
+    }
+  }, [rangeDate, t, arePeriodParsed]) // eslint-disable-line
 
   useEffect(() => {
     const updateLiveVisitors = async () => {
@@ -648,20 +703,46 @@ const ViewProject = ({
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb = timeBucket
+    const url = new URL(window.location)
     if (_isEmpty(newPeriodFull)) return
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
       tb = _last(newPeriodFull.tbs)
+      url.searchParams.delete('timeBucket')
+      url.searchParams.append('timeBucket', tb)
       setTimebucket(tb)
     }
 
     if (newPeriod.period !== 'custom') {
+      url.searchParams.delete('period')
+      url.searchParams.delete('from')
+      url.searchParams.delete('to')
+      url.searchParams.append('period', newPeriod.period)
       setProjectViewPrefs(id, newPeriod.period, tb)
       setPeriod(newPeriod.period)
     }
+    const { pathname, search } = url
+    history.push({
+      pathname,
+      search,
+      state: {
+        scrollToTopDisable: true,
+      },
+    })
   }
 
   const updateTimebucket = (newTimebucket) => {
+    const url = new URL(window.location)
+    url.searchParams.delete('timeBucket')
+    url.searchParams.append('timeBucket', newTimebucket)
+    const { pathname, search } = url
+    history.push({
+      pathname,
+      search,
+      state: {
+        scrollToTopDisable: true,
+      },
+    })
     setTimebucket(newTimebucket)
     setProjectViewPrefs(id, period, newTimebucket, rangeDate)
   }
@@ -682,6 +763,34 @@ const ViewProject = ({
       setShowIcons(true)
     }
   }
+
+  useEffect(() => {
+    try {
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const intialPeriod = searchParams.get('period')
+      if (!_includes(validPeriods, intialPeriod)) {
+        return
+      }
+
+      if (intialPeriod === 'custom') {
+        const from = new Date(searchParams.get('from'))
+        const to = new Date(searchParams.get('to'))
+        if (from.getDate() && to.getDate()) {
+          onRangeDateChange([from, to], true)
+          setRangeDate([from, to])
+        }
+        return
+      }
+
+      setPeriodPairs(tbPeriodPairs(t))
+      setRangeDate(null)
+      updatePeriod({ period: intialPeriod })
+    } finally {
+      setArePeriodParsed(true)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const exportTypes = [
     { label: t('project.asImage'), onClick: exportAsImageHandler },
@@ -758,7 +867,11 @@ const ViewProject = ({
                   }
                 }}
               />
-              <FlatPicker ref={refCalendar} onChange={(date) => setRangeDate(date)} value={rangeDate} />
+              <FlatPicker
+                ref={refCalendar}
+                onChange={(date) => setRangeDate(date)}
+                value={rangeDate}
+              />
             </div>
           </div>
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
