@@ -576,19 +576,25 @@ const ViewProject = ({
   }, [])
 
   useEffect(() => {
-    try {
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const intialTimeBucket = searchParams.get('timeBucket')
-      // eslint-disable-next-line lodash/prefer-lodash-method
-      if (!_includes(validTimeBacket, intialTimeBucket)) {
-        return
+    if (arePeriodParsed) {
+      try {
+        const url = new URL(window.location)
+        const { searchParams } = url
+        const intialTimeBucket = searchParams.get('timeBucket')
+        // eslint-disable-next-line lodash/prefer-lodash-method
+        if (!_includes(validTimeBacket, intialTimeBucket)) {
+          return
+        }
+        const newPeriodFull = _find(periodPairs, (el) => el.period === period)
+        if (!_includes(newPeriodFull.tbs, intialTimeBucket)) {
+          return
+        }
+        setTimebucket(intialTimeBucket)
+      } finally {
+        setAreTimeBucketParsed(true)
       }
-      setTimebucket(intialTimeBucket)
-    } finally {
-      setAreTimeBucketParsed(true)
     }
-  }, [])
+  }, [arePeriodParsed])
 
   const onRangeDateChange = (dates, onRender) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
