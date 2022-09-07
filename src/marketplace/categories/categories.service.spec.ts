@@ -25,7 +25,33 @@ describe('CategoriesService', () => {
     repository = module.get<Repository<Category>>(CATEGORY_REPOSITORY_TOKEN)
   })
 
-  it('should be defined', () => {
-    expect(service).toBeDefined()
+  describe('root', () => {
+    it('should be defined', () => {
+      expect(service).toBeDefined()
+    })
+    it('create should be defined', () => {
+      expect(service.create).toBeDefined()
+    })
+    it('delete create should be defined', () => {
+      expect(service.delete).toBeDefined()
+    })
+    it('findAndCount delete create should be defined', () => {
+      expect(service.findAndCount).toBeDefined()
+    })
+    it('findById delete create should be defined', () => {
+      expect(service.findById).toBeDefined()
+    })
+    it('findByName delete create should be defined', () => {
+      expect(service.findByName).toBeDefined()
+    })
+    it('findOne delete create should be defined', () => {
+      expect(service.findOne).toBeDefined()
+    })
+    it('save delete create should be defined', () => {
+      expect(service.save).toBeDefined()
+    })
+    it('update delete create should be defined', () => {
+      expect(service.update).toBeDefined()
+    })
   })
 })
