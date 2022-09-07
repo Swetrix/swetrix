@@ -59,7 +59,7 @@ const Features = () => {
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('billing.desc')}
           </p>
-          <hr className='mt-3 mb-2' />
+          <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
           {nextBillDate && (
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <span className='font-bold'>

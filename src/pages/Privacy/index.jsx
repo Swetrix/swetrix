@@ -328,7 +328,7 @@ const Features = () => {
             .
           </p>
 
-          <hr className='mt-10 mb-4' />
+          <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             <i>Last updated: August 14, 2022.</i>
           </p>

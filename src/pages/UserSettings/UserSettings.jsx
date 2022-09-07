@@ -503,7 +503,7 @@ const UserSettings = ({
           <Button className='mt-4' type='submit' primary large>
             {t('profileSettings.update')}
           </Button>
-          <hr className='mt-5' />
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.timezone')}
           </h3>
@@ -518,7 +518,7 @@ const UserSettings = ({
           <Button className='mt-4' onClick={handleTimezoneSave} primary large>
             {t('common.save')}
           </Button>
-          <hr className='mt-5' />
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.email')}
           </h3>
@@ -536,7 +536,7 @@ const UserSettings = ({
           <Button className='mt-4' onClick={handleReportSave} primary large>
             {t('common.save')}
           </Button>
-          <hr className='mt-5' />
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.apiKey')}
             <div className='ml-5'>
@@ -575,13 +575,13 @@ const UserSettings = ({
               {t('profileSettings.addApiKeyBtn')}
             </Button>
           )}
-          <hr className='mt-5' />
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.2fa')}
           </h3>
           <TwoFA t={t} user={user} dontRemember={dontRemember} updateUserData={updateUserData} login={login} genericError={genericError} />
 
-          <hr className='mt-5' />
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.shared')}
           </h3>
@@ -633,7 +633,7 @@ const UserSettings = ({
               <NoSharedProjects t={t} />
             )}
           </div>
-          <hr className='mt-5' />
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           {!user.isActive && (
             <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
               <EnvelopeIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />

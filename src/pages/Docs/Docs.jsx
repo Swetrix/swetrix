@@ -125,7 +125,7 @@ const Contents = ({ t }) => {
 const CHeader = ({ id, name, addHr = true }) => (
   <>
     {addHr && (
-      <hr className='mt-10' />
+      <hr className='mt-10 border-gray-200 dark:border-gray-600' />
     )}
     <h2 id={id} className='text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-2 -mb-5'>{name}</h2>
   </>
@@ -262,7 +262,7 @@ const Docs = () => {
             </p>
             <Code text={trackPVReturnAPI} language='javascript' />
 
-            <hr className='mt-10 mb-4' />
+            <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <i>Last updated: September 6, 2022.</i><br />
               <div>

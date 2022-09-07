@@ -315,7 +315,7 @@ const ProjectSettings = ({
                   </div>
                 )}
               </div>
-              <hr className='mt-2 sm:mt-5' />
+              <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
               {
                 !project.shared && (
                   <People project={project} />

@@ -183,7 +183,7 @@ const Overview = ({
               %
             </p>
           </div>
-          <hr className='my-2' />
+          <hr className='my-2 border-gray-200 dark:border-gray-600' />
         </>
       )}
       <p className='text-lg font-semibold dark:text-gray-50'>

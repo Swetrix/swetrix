@@ -125,7 +125,7 @@ const About = () => (
           <Teammate key={el.name} {...el} />
         ))}
 
-        <hr className='mt-10' />
+        <hr className='mt-10 border-gray-200 dark:border-gray-600' />
         <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
           If you have read this far, why not&nbsp;
           <a href={`mailto:${CONTACT_EMAIL}`} className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
