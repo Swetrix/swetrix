@@ -1,5 +1,9 @@
+import { Category } from '../../categories/category.entity'
+
 export interface ICreateExtension {
-  title: string
+  name: string
   description?: string | null
   version: string
+  price?: number
+  categories?: Category[]
 }

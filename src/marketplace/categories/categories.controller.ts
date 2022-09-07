@@ -71,12 +71,17 @@ export class CategoriesController {
   @ApiParam({
     name: 'categoryId',
     description: 'Category ID',
-    example: '1',
-    type: String,
+    example: 1,
+    type: Number,
   })
   @Get(':categoryId')
   async getCategory(@Param() params: GetCategoryParams): Promise<Category> {
-    const category = await this.categoriesService.findById(params.categoryId)
+    const category = await this.categoriesService.findOne({
+      where: {
+        id: params.categoryId,
+      },
+      relations: ['extensions'],
+    })
 
     if (!category) {
       throw new NotFoundException('Category not found.')
@@ -91,10 +96,10 @@ export class CategoriesController {
   async createCategory(
     @Body() body: CreateCategory,
   ): Promise<ISaveCategory & Category> {
-    const title = await this.categoriesService.findTitle(body.title)
+    const categoryName = await this.categoriesService.findByName(body.name)
 
-    if (title) {
-      throw new ConflictException('The category already exists.')
+    if (categoryName) {
+      throw new ConflictException('A category with that name already exists.')
     }
 
     const categoryInstance = this.categoriesService.create(body)
@@ -105,8 +110,8 @@ export class CategoriesController {
   @ApiParam({
     name: 'categoryId',
     description: 'Category ID',
-    example: '1',
-    type: String,
+    example: 1,
+    type: Number,
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
@@ -121,6 +126,14 @@ export class CategoriesController {
       throw new NotFoundException('Category not found.')
     }
 
+    if (body.name) {
+      const categoryName = await this.categoriesService.findByName(body.name)
+
+      if (categoryName) {
+        throw new ConflictException('A category with that name already exists.')
+      }
+    }
+
     await this.categoriesService.update(category.id, body)
 
     return body
@@ -129,8 +142,8 @@ export class CategoriesController {
   @ApiParam({
     name: 'categoryId',
     description: 'Category ID',
-    example: '1',
-    type: String,
+    example: 1,
+    type: Number,
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)

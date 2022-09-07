@@ -1,4 +1,3 @@
 export interface IUpdateCategory {
-  title?: string
-  description?: string | null
+  name?: string
 }

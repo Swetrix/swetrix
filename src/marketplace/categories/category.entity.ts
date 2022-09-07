@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { Extension } from '../extensions/extension.entity'
 
 @Entity()
 export class Category {
@@ -6,8 +7,8 @@ export class Category {
   id!: number
 
   @Column({ type: 'varchar', unique: true })
-  title!: string
+  name!: string
 
-  @Column({ type: 'text', nullable: true, default: null })
-  description!: string | null
+  @ManyToMany(() => Extension, extension => extension.categories)
+  extensions!: Extension[]
 }

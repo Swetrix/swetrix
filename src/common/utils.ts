@@ -16,7 +16,7 @@ import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
 import { redis } from './constants'
 import { clickhouse } from './constants'
-import { Project } from 'src/project/entity/project.entity'
+import { Project } from '../project/entity/project.entity'
 
 dayjs.extend(utc)
 
@@ -117,7 +117,6 @@ const updateProjectClickhouse = async (project: object) => {
   return await clickhouse.query(query).toPromise()
 }
 
-
 /**
  * Calculates in percent, the change between 2 numbers.
  * e.g from 1000 to 500 = 50%
@@ -145,7 +144,11 @@ const getPercentageChange = (oldVal: number, newVal: number, round = 2) => {
  * @param newVal The value that changed
  * @param round Numbers after floating point
  */
-const calculateRelativePercentage = (oldVal: number, newVal: number, round = 2) => {
+const calculateRelativePercentage = (
+  oldVal: number,
+  newVal: number,
+  round = 2,
+) => {
   if (oldVal === newVal) return 0
   if (oldVal === 0) return 100
   if (newVal === 0) return -100

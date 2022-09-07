@@ -4,8 +4,8 @@ import handlebars from 'handlebars'
 import { LetterTemplate } from './letter'
 import fs = require('fs')
 import path = require('path')
-import { AppLoggerService } from 'src/logger/logger.service'
-import { SEND_WARNING_AT_PERC } from 'src/common/constants'
+import { AppLoggerService } from '../logger/logger.service'
+import { SEND_WARNING_AT_PERC } from '../common/constants'
 
 const TEMPLATES_PATH = path.join(__dirname, '..', 'common', 'templates')
 const metaInfoJson = {

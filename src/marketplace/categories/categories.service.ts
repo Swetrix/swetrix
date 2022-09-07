@@ -17,10 +17,6 @@ export class CategoriesService {
     return await this.categoryRepository.findOne({ ...options })
   }
 
-  async findTitle(title: string): Promise<Category> {
-    return await this.findOne({ where: { title }, select: ['title'] })
-  }
-
   create(category: ICreateCategory): Category {
     return this.categoryRepository.create(category)
   }
@@ -45,5 +41,9 @@ export class CategoriesService {
     options: FindManyOptions<Category>,
   ): Promise<[Category[], number]> {
     return await this.categoryRepository.findAndCount({ ...options })
+  }
+
+  async findByName(name: string): Promise<Category> {
+    return await this.findOne({ where: { name }, select: ['name'] })
   }
 }

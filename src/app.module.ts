@@ -23,14 +23,8 @@ import { MarketplaceModule } from './marketplace/marketplace.module'
 import { Category } from './marketplace/categories/category.entity'
 import { Extension } from './marketplace/extensions/extension.entity'
 
-const entities = [User, ActionToken, Project, ProjectShare, Category]
-
-if (process.env.ACTIVATE_MARKETPLACE) {
-  entities.push(Extension)
-}
-
 const modules = [
-  ConfigModule.forRoot({ envFilePath: '.env' }),
+  ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
   TypeOrmModule.forRoot({
     type: 'mysql',
     host: process.env.MYSQL_HOST,
@@ -39,7 +33,7 @@ const modules = [
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
     synchronize: process.env.NODE_ENV === 'development',
-    entities,
+    entities: [User, Project, ProjectShare, ActionToken, Category, Extension],
   }),
   ScheduleModule.forRoot(),
   TaskManagerModule,
@@ -53,6 +47,7 @@ const modules = [
   WebhookModule,
   PingModule,
   TGModule,
+  MarketplaceModule,
 ]
 
 if (process.env.TG_BOT_TOKEN) {
@@ -61,10 +56,6 @@ if (process.env.TG_BOT_TOKEN) {
       token: process.env.TG_BOT_TOKEN,
     }),
   )
-}
-
-if (process.env.ACTIVATE_MARKETPLACE) {
-  modules.push(MarketplaceModule)
 }
 
 @Module({

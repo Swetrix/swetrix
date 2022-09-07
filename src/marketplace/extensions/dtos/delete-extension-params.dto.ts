@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator'
 
-export class UpdateExtensionParams {
+export class DeleteExtensionParams {
   @IsString()
   readonly extensionId!: string
 }
