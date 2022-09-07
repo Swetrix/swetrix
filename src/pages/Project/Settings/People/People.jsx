@@ -77,7 +77,7 @@ const UsersList = ({
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-500 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+              className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-600 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
             >
               {t(`project.settings.roles.${role}.name`)}
               <ChevronDownIcon
@@ -98,13 +98,13 @@ const UsersList = ({
                       </p>
                     </div>
                     {role === itRole && (
-                    <span className='text-indigo-600 group-hover:text-gray-200'>
-                      <CheckIcon className='w-7 h-7 pt-px ml-1' />
-                    </span>
+                      <span className='text-indigo-600 group-hover:text-gray-200'>
+                        <CheckIcon className='w-7 h-7 pt-px ml-1' />
+                      </span>
                     )}
                   </li>
                 ))}
-                <li onClick={() => { setOpen(false); setShowDeleteModal(true) }} className='p-4 hover:bg-gray-300 dark:hover:bg-gray-700 group cursor-pointer flex justify-between items-center'>
+                <li onClick={() => { setOpen(false); setShowDeleteModal(true) }} className='p-4 hover:bg-gray-200 dark:hover:bg-gray-700 group cursor-pointer flex justify-between items-center'>
                   <div>
                     <p className='font-bold text-red-600 dark:text-red-500'>
                       {t('project.settings.removeMember')}
@@ -122,7 +122,7 @@ const UsersList = ({
             />
             <Button
               type='button'
-              className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:bg-gray-600 dark:hover:bg-gray-700'
+              className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
               small
               onClick={() => setShowDeleteModal(true)}
             >
