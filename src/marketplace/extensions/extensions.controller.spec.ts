@@ -33,5 +33,21 @@ describe('ExtensionsController', () => {
     it('should be defined', () => {
       expect(controller).toBeDefined()
     })
+    it('createExtension should be defined', () => {
+      expect(controller.createExtension).toBeDefined()
+    })
+    it('deleteExtension should be defined', () => {
+      expect(controller.deleteExtension).toBeDefined()
+    })
+    it('getAllExtension should be defined', () => {
+      expect(controller.getExtension).toBeDefined()
+    })
+
+    it('getExtension should be defined', () => {
+      expect(controller.getExtension).toBeDefined()
+    })
+    it('updateExtension should be defined', () => {
+      expect(controller.updateExtension).toBeDefined()
+    })
   })
 })
