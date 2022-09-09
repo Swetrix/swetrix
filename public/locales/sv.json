@@ -460,6 +460,7 @@
     "week": "Vecka",
     "month": "Månad",
     "resetFilters": "Reset filters",
+    "exportImgError": "Exporting data as image failed",
     "settings": {
       "verify": "Vänligen verifiera din e-postadress först",
       "updated": "Projektets inställningar var uppdaterats",

@@ -460,6 +460,7 @@
     "week": "周",
     "month": "月",
     "resetFilters": "Reset filters",
+    "exportImgError": "Exporting data as image failed",
     "settings": {
       "verify": "请先验证您的电子邮件地址",
       "updated": "项目的设置已更新",
