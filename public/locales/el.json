@@ -460,6 +460,7 @@
     "week": "Εβδομάδα",
     "month": "Μήνας",
     "resetFilters": "Reset filters",
+    "exportImgError": "Exporting data as image failed",
     "settings": {
       "verify": "Παρακαλώ, επαληθεύστε πρώτα τη διεύθυνση email σας",
       "updated": "Οι ρυθμίσεις του έργου ενημερώθηκαν",

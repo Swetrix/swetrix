@@ -460,6 +460,7 @@
     "week": "Week",
     "month": "Month",
     "resetFilters": "Reset filters",
+    "exportImgError": "Exporting data as image failed",
     "settings": {
       "verify": "Please, verify your email address first",
       "updated": "The project's settings were updated",

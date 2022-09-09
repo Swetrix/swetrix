@@ -770,6 +770,7 @@ const ViewProject = ({
       const blob = await domToImage.toBlob(dashboardRef.current)
       saveAs(blob, `swetrix-${dayjs().format('YYYY-MM-DD-HH-mm-ss')}.png`)
     } catch (e) {
+      showError(t('project.exportImgError'))
       console.error('[ERROR] Error while generating export image.')
       console.error(e)
     } finally {

@@ -460,6 +460,7 @@
     "week": "Woche",
     "month": "Monat",
     "resetFilters": "Reset filters",
+    "exportImgError": "Exporting data as image failed",
     "settings": {
       "verify": "Bitte bestätigen Sie zunächst Ihre E-Mail-Adresse",
       "updated": "Die Projekteinstellungen wurden aktualisiert",
