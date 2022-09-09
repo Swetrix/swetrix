@@ -606,6 +606,7 @@ const ViewProject = ({
         setAreTimeBucketParsed(true)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arePeriodParsed])
 
   const onRangeDateChange = (dates, onRender) => {
