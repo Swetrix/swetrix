@@ -254,7 +254,7 @@ const getFormatDate = (date) => {
 }
 
 // this component is used to display text if the data is not available
-const NoEvents = ({ t }) => (
+const NoEvents = ({ t, filters, resetFilters }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
       <h2 className='text-4xl text-center leading-tight my-3'>
@@ -269,6 +269,18 @@ const NoEvents = ({ t }) => (
           }}
         />
       </h2>
+      {!_isEmpty(filters) && (
+        <div className='!flex !mx-auto'>
+          <Button
+            onClick={resetFilters}
+            className='!flex !mx-auto'
+            primary
+            giant
+          >
+            Reset filters
+          </Button>
+        </div>
+      )}
     </div>
   </div>
 )
@@ -792,6 +804,28 @@ const ViewProject = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const resetFilters = () => {
+    const url = new URL(window.location)
+    const { searchParams } = url
+    // eslint-disable-next-line lodash/prefer-lodash-method
+    searchParams.forEach((value, key) => {
+      if (!_includes(validFilters, key)) {
+        return
+      }
+      searchParams.delete(key)
+    })
+    const { pathname, search } = url
+    history.push({
+      pathname,
+      search,
+      state: {
+        scrollToTopDisable: true,
+      },
+    })
+    setFilters([])
+    loadAnalytics(true, [])
+  }
+
   const exportTypes = [
     { label: t('project.asImage'), onClick: exportAsImageHandler },
     { label: t('project.asCSV'), onClick: () => onCSVExportClick(panelsData, id, tnMapping, language) },
@@ -910,7 +944,7 @@ const ViewProject = ({
             <Loader />
           )}
           {isPanelsDataEmpty && (
-            <NoEvents t={t} />
+            <NoEvents t={t} filters={filters} resetFilters={resetFilters} />
           )}
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
             <div className='h-80' id='dataChart' />
