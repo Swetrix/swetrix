@@ -459,6 +459,7 @@
     "day": "Dag",
     "week": "Vecka",
     "month": "Månad",
+    "resetFilters": "Reset filters",
     "settings": {
       "verify": "Vänligen verifiera din e-postadress först",
       "updated": "Projektets inställningar var uppdaterats",

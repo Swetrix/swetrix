@@ -459,6 +459,7 @@
     "day": "天",
     "week": "周",
     "month": "月",
+    "resetFilters": "Reset filters",
     "settings": {
       "verify": "请先验证您的电子邮件地址",
       "updated": "项目的设置已更新",

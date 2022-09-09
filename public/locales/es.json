@@ -459,6 +459,7 @@
     "day": "Day",
     "week": "Week",
     "month": "Month",
+    "resetFilters": "Reset filters",
     "settings": {
       "verify": "Please, verify your email address first",
       "updated": "The project's settings were updated",

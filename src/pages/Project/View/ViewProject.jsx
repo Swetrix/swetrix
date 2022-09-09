@@ -277,7 +277,7 @@ const NoEvents = ({ t, filters, resetFilters }) => (
             primary
             giant
           >
-            Reset filters
+            {t('project.resetFilters')}
           </Button>
         </div>
       )}
