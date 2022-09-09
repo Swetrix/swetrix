@@ -424,7 +424,7 @@
     "asCSV": "As CSV",
     "noEvTitle": "No events yet",
     "showAll": "Show all views",
-    "noEvContent": "No events have been captured for the specified timeframe.\nIf you haven't tracked any events yet, you can check out our <link>Docs</link> to easily integrate tracking into your app.",
+    "noEvContent": "No events have been captured for the specified timeframe.\nIf you haven't tracked any events yet, you can check out our <url>Docs</url> to easily integrate tracking into your app.",
     "mapping": {
       "cc": "Country",
       "pg": "Page",

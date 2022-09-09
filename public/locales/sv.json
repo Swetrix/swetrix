@@ -424,7 +424,7 @@
     "asCSV": "Som CSV",
     "noEvTitle": "Inga händelser ännu",
     "showAll": "Visa alla händelser",
-    "noEvContent": "Inga händelser har registrerats under den angivna tidsramen.\nOm du inte har spårat några händelser ännu kan du kolla in våra <link>Docs</link> för att enkelt integrera spårning i din app.",
+    "noEvContent": "Inga händelser har registrerats under den angivna tidsramen.\nOm du inte har spårat några händelser ännu kan du kolla in våra <url>Docs</url> för att enkelt integrera spårning i din app.",
     "mapping": {
       "cc": "Land",
       "pg": "Sida",

@@ -1,6 +1,6 @@
 {
   "apiNotifications": {
-    "somethingWentWrong": "Something went wrong, please try again",
+    "somethingWentWrong": "उफ़... कुछ गलत हो गया है, कृपया पुन: प्रयास करें!",
     "emailRegistered": "A user with this email already exists",
     "leakedPassword": "The provided password is leaked, please use another one",
     "rateLimitHit": "Too many requests, please try again later",
@@ -424,7 +424,7 @@
     "asCSV": "As CSV",
     "noEvTitle": "अभी तक कोई इवेंट नहीं",
     "showAll": "Show all views",
-    "noEvContent": "निर्दिष्ट समय सीमा के लिए कोई ईवेंट कैप्चर नहीं किया गया है।\nयदि आपने अभी तक किसी भी ईवेंट को ट्रैक नहीं किया है, तो आप आसानी से अपने ऐप में ट्रैकिंग को एकीकृत करने के लिए हमारे <link>दस्तावेज़</link> देख सकते हैं।",
+    "noEvContent": "निर्दिष्ट समय सीमा के लिए कोई ईवेंट कैप्चर नहीं किया गया है।\nयदि आपने अभी तक किसी भी ईवेंट को ट्रैक नहीं किया है, तो आप आसानी से अपने ऐप में ट्रैकिंग को एकीकृत करने के लिए हमारे <url>दस्तावेज़</url> देख सकते हैं।",
     "mapping": {
       "cc": "देश",
       "pg": "पेज",

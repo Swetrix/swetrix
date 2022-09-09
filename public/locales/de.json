@@ -424,7 +424,7 @@
     "asCSV": "Als CSV",
     "noEvTitle": "Noch keine Tracking-Events",
     "showAll": "Alle Ansichten anzeigen",
-    "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <link>Doku</link> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
+    "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <url>Doku</url> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",
       "pg": "Seite",

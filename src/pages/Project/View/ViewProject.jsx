@@ -265,7 +265,7 @@ const NoEvents = ({ t, filters, resetFilters }) => (
           t={t}
           i18nKey='project.noEvContent'
           components={{
-            link: <Link to={routes.docs} className='hover:underline text-blue-600' />,
+            url: <Link to={routes.docs} className='hover:underline text-blue-600' />,
           }}
         />
       </h2>
