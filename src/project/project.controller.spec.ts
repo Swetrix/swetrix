@@ -52,5 +52,56 @@ describe('ProjectController', () => {
     it('should be defined', () => {
       expect(controller).toBeDefined()
     })
+
+    it('acceptShare should be defined', () => {
+      expect(controller.acceptShare).toBeDefined()
+    })
+    it('create should be defined', () => {
+      expect(controller.create).toBeDefined()
+    })
+    it('createForAdmin should be defined', () => {
+      expect(controller.createForAdmin).toBeDefined()
+    })
+    it('delete should be defined', () => {
+      expect(controller.delete).toBeDefined()
+    })
+    it('deleteShare should be defined', () => {
+      expect(controller.deleteShare).toBeDefined()
+    })
+    it('get should be defined', () => {
+      expect(controller.get).toBeDefined()
+    })
+
+    it('getAllProjects should be defined', () => {
+      expect(controller.getAllProjects).toBeDefined()
+    })
+
+    it('getOne should be defined', () => {
+      expect(controller.getOne).toBeDefined()
+    })
+
+    it('getShared should be defined', () => {
+      expect(controller.getShared).toBeDefined()
+    })
+
+    it('getUserProject should be defined', () => {
+      expect(controller.getUserProject).toBeDefined()
+    })
+
+    it('reset should be defined', () => {
+      expect(controller.reset).toBeDefined()
+    })
+
+    it('share should be defined', () => {
+      expect(controller.share).toBeDefined()
+    })
+
+    it('update should be defined', () => {
+      expect(controller.update).toBeDefined()
+    })
+
+    it('updateShare should be defined', () => {
+      expect(controller.updateShare).toBeDefined()
+    })
   })
 })

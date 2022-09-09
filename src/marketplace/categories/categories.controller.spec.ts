@@ -36,5 +36,22 @@ describe('CategoriesController', () => {
     it('should be defined', () => {
       expect(controller).toBeDefined()
     })
+
+    it('createCategory should be defined', () => {
+      expect(controller.createCategory).toBeDefined()
+    })
+    it('deleteCategory should be defined', () => {
+      expect(controller.deleteCategory).toBeDefined()
+    })
+    it('getAllCategories should be defined', () => {
+      expect(controller.getAllCategories).toBeDefined()
+    })
+
+    it('getCategory should be defined', () => {
+      expect(controller.getCategory).toBeDefined()
+    })
+    it('updateCategory should be defined', () => {
+      expect(controller.updateCategory).toBeDefined()
+    })
   })
 })

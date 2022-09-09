@@ -35,5 +35,21 @@ describe('TwoFactorAuthController', () => {
     it('should be defined', () => {
       expect(controller).toBeDefined()
     })
+
+    it('authenticate should be defined', () => {
+      expect(controller.authenticate).toBeDefined()
+    })
+
+    it('register should be defined', () => {
+      expect(controller.register).toBeDefined()
+    })
+
+    it('turnOffTwoFactorAuthentication should be defined', () => {
+      expect(controller.turnOffTwoFactorAuthentication).toBeDefined()
+    })
+
+    it('turnOnTwoFactorAuthentication should be defined', () => {
+      expect(controller.turnOnTwoFactorAuthentication).toBeDefined()
+    })
   })
 })

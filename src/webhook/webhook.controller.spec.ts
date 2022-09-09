@@ -30,5 +30,9 @@ describe('WebhookController', () => {
     it('should be defined', () => {
       expect(controller).toBeDefined()
     })
+
+    it('paddleWebhook should be defined', () => {
+      expect(controller.paddleWebhook).toBeDefined()
+    })
   })
 })
