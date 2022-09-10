@@ -384,73 +384,78 @@ const ViewProject = ({
 
   // this function is used for requesting the data from the API
   const loadAnalytics = async (forced = false, newFilters = null) => {
-    if (forced || (!isLoading && !_isEmpty(project) && !dataLoading)) {
-      setDataLoading(true)
-      try {
-        let data
-        let key
-        let from
-        let to
+    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
+      return
+    }
 
-        if (rangeDate) {
-          from = getFormatDate(rangeDate[0])
-          to = getFormatDate(rangeDate[1])
-          key = getProjectCacheCustomKey(from, to, timeBucket)
+    setDataLoading(true)
+    try {
+      let data
+      let key
+      let from
+      let to
+
+      if (rangeDate) {
+        from = getFormatDate(rangeDate[0])
+        to = getFormatDate(rangeDate[1])
+        key = getProjectCacheCustomKey(from, to, timeBucket)
+      } else {
+        key = getProjectCacheKey(period, timeBucket)
+      }
+
+      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
+        data = cache[id][key]
+      } else {
+        if (period === 'custom' && rangeDate) {
+          data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
         } else {
-          key = getProjectCacheKey(period, timeBucket)
+          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
         }
 
-        if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
-          data = cache[id][key]
-        } else {
-          if (period === 'custom' && rangeDate) {
-            data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
-          } else {
-            data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
-          }
+        setProjectCache(id, data || {}, key)
+      }
 
-          setProjectCache(id, data || {}, key)
-        }
-
-        if (_isEmpty(data)) {
-          setAnalyticsLoading(false)
-          setDataLoading(false)
-          setIsPanelsDataEmpty(true)
-          return
-        }
-
-        const { chart, params, customs } = data
-
-        if (_isEmpty(params)) {
-          setIsPanelsDataEmpty(true)
-        } else {
-          const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chart, timeBucket, showTotal, applyRegions)
-          setChartData(chart)
-
-          setPanelsData({
-            types: _keys(params),
-            data: params,
-            customs,
-          })
-
-          if (!_isEmpty(mainChart)) {
-            mainChart.destroy()
-          }
-
-          setMainChart(() => {
-            const generete = bb.generate(bbSettings)
-            generete.data.names({ unique: `${t('project.unique')} ` })
-            return generete
-          })
-          setIsPanelsDataEmpty(false)
-        }
-
+      if (_isEmpty(data)) {
         setAnalyticsLoading(false)
         setDataLoading(false)
-      } catch (e) {
-        console.error(e)
+        setIsPanelsDataEmpty(true)
+        return
       }
+
+      const { chart, params, customs } = data
+
+      if (_isEmpty(params)) {
+        setIsPanelsDataEmpty(true)
+      } else {
+        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+        const bbSettings = getSettings(chart, timeBucket, showTotal, applyRegions)
+        setChartData(chart)
+
+        setPanelsData({
+          types: _keys(params),
+          data: params,
+          customs,
+        })
+
+        if (!_isEmpty(mainChart)) {
+          mainChart.destroy()
+        }
+
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names({ unique: `${t('project.unique')} ` })
+          return generete
+        })
+        setIsPanelsDataEmpty(false)
+      }
+
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+    } catch (e) {
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
+      console.error(e)
     }
   }
 
@@ -803,7 +808,7 @@ const ViewProject = ({
     } finally {
       setArePeriodParsed(true)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const resetFilters = () => {
