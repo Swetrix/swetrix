@@ -33,17 +33,20 @@ import {
   clickhouse,
   isSelfhosted,
   REDIS_SESSION_SALT_KEY,
+  CACHE_FOLDER_PATH,
 } from '../common/constants'
 import {
   getProjectsClickhouse,
   calculateRelativePercentage,
+  downloadTheFile,
 } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
-
+import * as validateIP from 'validate-ip-node'
+const fs = require('fs')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
@@ -170,7 +173,14 @@ export class AnalyticsService {
         // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
         project = await this.projectService.findOne(pid, {
           relations: ['admin'],
-          select: ['origins', 'active', 'admin', 'public', 'ipBlacklist'],
+          select: [
+            'origins',
+            'active',
+            'admin',
+            'public',
+            'ipBlacklist',
+            'checkBoxOfSpammersProtection',
+          ],
         })
       }
       if (_isEmpty(project))
@@ -253,6 +263,30 @@ export class AnalyticsService {
       )
   }
 
+  arrayWithSpammers: Array<string> = this.getArrayWithSpammers()
+
+  getArrayWithSpammers(): Array<string> {
+    let nameOfFile = 'spammers.txt'
+    let pathToFile = `${CACHE_FOLDER_PATH}/${nameOfFile}`
+    let arrayWithSpammers: Array<string> = null
+
+    downloadTheFile(false)
+    fs.readFile(pathToFile, 'utf8', (err, data) => {
+      if (err) {
+        throw new BadRequestException('The file is not exist')
+      }
+      arrayWithSpammers = data
+    })
+
+    return arrayWithSpammers
+  }
+
+  validateSpammers(domain: string): void {
+    if (this.arrayWithSpammers.includes(domain)) {
+      throw new BadRequestException('The domain is forbitten!')
+    }
+  }
+
   async validate(
     logDTO: PageviewsDTO | EventsDTO,
     origin: string,
@@ -264,6 +298,12 @@ export class AnalyticsService {
 
     const { pid } = logDTO
     this.validatePID(pid)
+
+    let proj = await this.getRedisProject(pid)
+
+    if (proj && proj.checkBoxOfSpammersProtection) {
+      this.validateSpammers(origin)
+    }
 
     if (type === 'custom') {
       // @ts-ignore

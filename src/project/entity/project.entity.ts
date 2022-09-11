@@ -49,4 +49,10 @@ export class Project {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
+
+  @ApiProperty()
+  @Column({
+    default: false,
+  })
+  checkBoxOfSpammersProtection: boolean
 }

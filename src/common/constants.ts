@@ -2,6 +2,8 @@ import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import { v5 as uuidv5 } from 'uuid'
 import * as _toNumber from 'lodash/toNumber'
+import { downloadTheFile } from './utils'
+import { join } from 'path'
 
 require('dotenv').config()
 
@@ -101,7 +103,8 @@ const initialiseClickhouse = async () => {
   console.log('Initialising Clickhouse: DONE')
   console.log(`Swetrix API version is: ${process.env.npm_package_version}`)
 }
-
+const CACHE_FOLDER_PATH = join(__dirname, '../../', 'cache') // using ../../ to escape dist/common
+downloadTheFile()
 initialiseClickhouse()
 
 const SELFHOSTED_EMAIL = process.env.EMAIL
@@ -185,4 +188,5 @@ export {
   IP_REGEX,
   isNewRelicEnabled,
   ORIGINS_REGEX,
+  CACHE_FOLDER_PATH,
 }

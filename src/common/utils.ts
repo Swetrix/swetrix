@@ -1,4 +1,9 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common'
+
 import { hash } from 'blake3'
 import * as randomstring from 'randomstring'
 import * as _sample from 'lodash/sample'
@@ -14,10 +19,12 @@ import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
-import { redis } from './constants'
+import { CACHE_FOLDER_PATH, redis } from './constants'
 import { clickhouse } from './constants'
 import { Project } from '../project/entity/project.entity'
-
+import axios from 'axios'
+import { writeFile } from 'fs/promises'
+let fs = require('fs')
 dayjs.extend(utc)
 
 const marketingTips = {
@@ -73,6 +80,34 @@ const checkRateLimit = async (
     throw new ForbiddenException('Too many requests, please try again later')
   }
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
+}
+
+const downloadTheFile = async (force: boolean = false): Promise<void> => {
+  let nameOfFile = 'spammers.txt'
+  let pathToFile = `${CACHE_FOLDER_PATH}\\${nameOfFile}`
+
+  let filesUrl = `https://raw.githubusercontent.com/matomo-org/referrer-spam-list/master/${nameOfFile}`
+
+  /*
+  if we want to downloard the file anyway, we set flag "force" to true and don't
+  check the existing of file. On the other hand if we want to check the existing of
+  file we set the flag in false.
+
+ */
+
+  if (!force) {
+    fs.access(nameOfFile, async function (error) {
+      if (!error) {
+        return
+      }
+    })
+  }
+
+  const { data } = await axios.get(filesUrl)
+
+  fs.writeFile(pathToFile, data, err => {
+    if (err) console.log(err)
+  })
 }
 
 const getProjectsClickhouse = async (id = null) => {
@@ -195,4 +230,5 @@ export {
   generateRecoveryCode,
   getPercentageChange,
   calculateRelativePercentage,
+  downloadTheFile,
 }

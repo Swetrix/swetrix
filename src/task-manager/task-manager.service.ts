@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan } from 'typeorm'
 import * as bcrypt from 'bcrypt'
@@ -31,7 +31,9 @@ import {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
 } from '../common/constants'
-import { getRandomTip } from '../common/utils'
+import { downloadTheFile, getRandomTip } from '../common/utils'
+import * as https from 'https'
+import { unlink } from 'fs/promises'
 
 dayjs.extend(utc)
 
@@ -119,6 +121,11 @@ export class TaskManagerService {
         })
       }
     }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async downloadFileWithForbittenDomains(): Promise<void> {
+    downloadTheFile(true)
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)
