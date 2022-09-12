@@ -389,7 +389,7 @@
     "track": "在您可以跟踪任何您想要的内容之后。\n阅读下面关于跟踪参数的详细文档。",
     "integrations": "We support the following integrations (click on the title for details)",
     "3rdPartyInt": "There are also integrations made by the community",
-    "pv": "Swetrix.js 跟踪脚本提供了一种在页面加载后收集页面查看活动的方法。\n这可以通过调用 <link>trackViews()</link> 函数来完成：",
+    "pv": "Swetrix.js 跟踪脚本提供了一种在页面加载后收集页面查看活动的方法。\n这可以通过调用 <url>trackViews()</url> 函数来完成：",
     "ce": "除了跟踪浏览量之外，我们还提供跟踪自定义活动的功能。\n例如，如果您想跟踪诸如“注册”或“新闻通讯订阅”之类的活动，此功能将非常实用。\n下屏幕，这个功能的原理和trackViews类似。",
     "init": "这个函数用于初始化分析。\n基本上您让脚本知道您想用哪个项目使用它，并在需要时指定您的自定义参数。",
     "tr": "使用此功能，您可以跟踪您想要的任何自定义活动。\n您不应将任何可识别数据（如用户 ID、电子邮件、会话 cookie 等）作为活动名称发送。\n总数跟踪通话并保存其转化率。",

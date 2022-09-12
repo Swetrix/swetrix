@@ -207,7 +207,7 @@ const Docs = () => {
                 t={t}
                 i18nKey='docs.pv'
                 components={{
-                  link: <a href='#docs-tv' className='font-bold hover:underline' />,
+                  url: <a href='#docs-tv' className='font-bold hover:underline' />,
                 }}
               />
             </p>
