@@ -389,7 +389,7 @@
     "track": "After you can track anything you want.\nRead the detailed documentation on tracking params below.",
     "integrations": "We support the following integrations (click on the title for details)",
     "3rdPartyInt": "There are also integrations made by the community",
-    "pv": "Swetrix.js tracking script provides a way to collect a page view event once the page has loaded.\nThis can be accomplished via calling the <link>trackViews()</link> function:",
+    "pv": "Swetrix.js tracking script provides a way to collect a page view event once the page has loaded.\nThis can be accomplished via calling the <url>trackViews()</url> function:",
     "ce": "In addition to tracking pageviews we provide an ability to track custom events.\nFor example, if you want to track an event like 'Sign up' or 'Newsletter subscription', this feature would be very useful.\nUnder the screen, the principle of this function is similar to trackViews.",
     "init": "This fuction is used to initialise the analytics.\nBasically you're letting the script know which project do you want to use it with, as well as specifying your custom parameters if needed.",
     "tr": "With this function you are able to track any custom events you want.\nYou should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.\nThe total number of track calls and their conversion rate will be saved.",

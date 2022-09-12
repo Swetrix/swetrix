@@ -46,21 +46,21 @@
     "no": "Όχι",
     "is": "είναι",
     "isNot": "δεν είναι",
-    "invite": "Invite",
-    "pending": "Pending",
-    "accept": "Accept",
-    "reject": "Reject",
-    "delete": "Delete",
-    "quit": "Quit",
-    "enable": "Enable",
-    "disable": "Disable"
+    "invite": "Πρόσκληση",
+    "pending": "Εκκρεμεί",
+    "accept": "Αποδοχή",
+    "reject": "Απόρριψη",
+    "delete": "Διαγραφή",
+    "quit": "Έξοδος",
+    "enable": "Ενεργοποίηση",
+    "disable": "Απενεργοποίηση"
   },
   "main": {
     "ukrSupport": "Υποστηρίξτε τον ουκρανικό στρατό για να πολεμήσει τη ρωσική εισβολή.",
-    "slogan": "<span>Ultimate open-source analytics</span> to satisfy all your needs.",
+    "slogan": "<span>Απόλυτα αναλυτικά στοιχεία ανοικτού κώδικα</span> για να ικανοποιήσετε όλες τις ανάγκες σας.",
     "trackEveryMetric": "Παρακολουθήστε κάθε μετρικό που χρειάζεστε χωρίς να εισβάλετε στην ιδιωτικότητα των χρηστών σας.",
     "description": "Το Swetrix φέρνει μια προηγμένη και προσαρμόσιμη υπηρεσία ανάλυσης για τις εφαρμογές ιστού σας.",
-    "start": "Start for free",
+    "start": "Ξεκινήστε δωρεάν",
     "signup": "Εγγραφείτε, είναι δωρεάν!",
     "signupTerms": "Με την εγγραφή σας, συμφωνείτε με τους <tos>Όρους και Προϋποθέσεις</tos> και την <pp>Πολιτική Προστασίας Προσωπικών Δεδομένων</pp>.",
     "techDetails": "Θέλετε να μάθετε περισσότερες τεχνικές λεπτομέρειες;",
@@ -232,10 +232,10 @@
       "title": "Συνδεθείτε στο λογαριασμό σας",
       "forgot": "Ξεχάσατε τον κωδικό πρόσβασης;",
       "button": "Συνδεθείτε",
-      "2fa": "Two-factor authentication",
-      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
-      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
-      "6digitCode": "6-digit authentication code"
+      "2fa": "Επαλήθευση δύο βημάτων",
+      "2faDesc": "Ανοίξτε την εφαρμογή ελέγχου ταυτότητας δύο παραγόντων στη συσκευή σας για να δείτε τον κωδικό ελέγχου ταυτότητας και να επαληθεύσετε την ταυτότητά σας.\nΜπορείτε επίσης να χρησιμοποιήσετε τον εφεδρικό σας κωδικό.",
+      "2faUnavailable": "Μην έχετε πρόσβαση σε 2FA?\n<ctl>Επικοινωνήστε με την υποστήριξη</ctl>.",
+      "6digitCode": "6ψήφιος κωδικός πιστοποίησης"
     },
     "signup": {
       "button": "Εγγραφή",
@@ -317,29 +317,29 @@
     "confTimeout": "Ένα email έχει ήδη σταλεί, ελέγξτε το γραμματοκιβώτιό σας ή προσπαθήστε ξανά σε λίγα λεπτά",
     "confSent": "Ένας σύνδεσμος επιβεβαίωσης λογαριασμού έχει σταλεί στο email σας",
     "noConfLeft": "Δυστυχώς, έχετε εξαντλήσει τα αιτήματα επιβεβαίωσης μέσω email.\nΠαρακαλούμε βεβαιωθείτε ότι μπορείτε να λαμβάνετε μηνύματα ηλεκτρονικού ταχυδρομείου και ελέγξτε ξανά το φάκελο SPAM για μηνύματα.\nΜπορείτε να προσπαθήσετε να χρησιμοποιήσετε μια διαφορετική διεύθυνση ηλεκτρονικού ταχυδρομείου ή να επικοινωνήσετε με την υπηρεσία υποστήριξης πελατών μας.",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "timezoneDesc": "Αυτή θα είναι η ζώνη ώρας στην οποία εμφανίζονται τα δεδομένα. Χρησιμοποιείται μόνο για την οπτικοποίηση.\nΔεν θα τροποποιηθεί κανένα δεδομένο με βάση αυτή τη ρύθμιση.",
     "quitProject": "Are you sure you want to quit this project?",
     "quitProjectTitle": "Quit {{project}}?",
-    "shared": "Shared projects",
-    "owned": "Owned projects",
+    "shared": "Κοινά έργα",
+    "owned": "Ιδιόκτητα έργα",
     "sharedTable": {
-      "project": "Project",
-      "role": "Role",
+      "project": "Έργο",
+      "role": "Ρόλος",
       "joinedOn": "Joined on"
     },
     "noSharedProjects": "Nobody is sharing a project with you yet.",
-    "2fa": "Two-factor authentication (2FA)",
-    "2faEnable": "Enable 2FA to make your account more secure.",
-    "2faEnableBtn": "Enable 2FA",
-    "2faDisableBtn": "Disable 2FA",
-    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
-    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
-    "enter2faToEnable": "Enter your one-time code to enable 2FA",
-    "enter2faToDisable": "Enter your one-time code or a recovery code",
-    "yourOneTimeCode": "Your one-time code",
-    "invalid2fa": "Invalid 2FA code, please try again",
-    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
-    "2faRecoverySaved": "I have saved this recovery code",
+    "2fa": "Έλεγχος ταυτότητας δύο παραγόντων (2FA)",
+    "2faEnable": "Ενεργοποιήστε το 2FA για να καταστήσετε τον λογαριασμό σας πιο ασφαλή.",
+    "2faEnableBtn": "Ενεργοποίηση 2FA",
+    "2faDisableBtn": "Απενεργοποίηση 2FA",
+    "2faDesc": "Μια εφαρμογή ελέγχου ταυτότητας που υποστηρίζει κωδικούς πρόσβασης μίας χρήσης με βάση το χρόνο (TOTP), όπως το andOTP ή το Google Authenticator, μπορεί να σαρώσει τον παρακάτω κωδικό QR για να ενεργοποιήσει το 2FA στο λογαριασμό σας Swetrix:",
+    "2faQRAlt": "Δεν μπορείτε να σαρώσετε τον κωδικό QR?\nΧρησιμοποιήστε αντ' αυτού αυτό το μυστικό κλειδί: {{key}}",
+    "enter2faToEnable": "Εισάγετε τον κωδικό μιας χρήσης για να ενεργοποιήσετε τον 2FA",
+    "enter2faToDisable": "Εισάγετε τον κωδικό μιας χρήσης ή έναν κωδικό ανάκτησης",
+    "yourOneTimeCode": "Ο κωδικός μιας χρήσης",
+    "invalid2fa": "Μη έγκυρος κωδικός 2FA, δοκιμάστε ξανά",
+    "2faRecoveryNote": "Σημαντικό: Εάν δεν μπορείτε να χρησιμοποιήσετε την εφαρμογή ελέγχου ταυτότητας, επειδή διαγράψατε την εφαρμογή ή χάσατε τη συσκευή σας, θα χρειαστείτε έναν τρόπο για να αποκτήσετε πρόσβαση στο λογαριασμό σας και να απενεργοποιήσετε τη 2FA.\n\nΜπορείτε να χρησιμοποιήσετε αυτόν τον κωδικό ανάκτησης για να απενεργοποιήσετε την 2FA. Σημειώστε τον και αποθηκεύστε τον σε ένα ασφαλές, ασφαλές μέρος.",
+    "2faRecoverySaved": "Έχω αποθηκεύσει αυτόν τον κωδικό ανάκτησης",
     "2faEnabled": "Two-factor authenticated is enabled on your account.",
     "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
     "apiKey": "API Key",
@@ -389,7 +389,7 @@
     "track": "Μετά μπορείτε να παρακολουθείτε ό, τι θέλετε.\nΔιαβάστε τη λεπτομερή τεκμηρίωση σχετικά με τις παραμέτρους παρακολούθησης παρακάτω.",
     "integrations": "We support the following integrations (click on the title for details)",
     "3rdPartyInt": "There are also integrations made by the community",
-    "pv": "Το σενάριο παρακολούθησης Swetrix.js παρέχει έναν τρόπο συλλογής ενός συμβάντος προβολής σελίδας μόλις φορτωθεί η σελίδα.\nΑυτό μπορεί να επιτευχθεί μέσω της κλήσης της συνάρτησης <link>trackViews()</link>:",
+    "pv": "Το σενάριο παρακολούθησης Swetrix.js παρέχει έναν τρόπο συλλογής ενός συμβάντος προβολής σελίδας μόλις φορτωθεί η σελίδα.\nΑυτό μπορεί να επιτευχθεί μέσω της κλήσης της συνάρτησης <url>trackViews()</url>:",
     "ce": "Εκτός από την παρακολούθηση των προβολών σελίδων, παρέχουμε τη δυνατότητα παρακολούθησης προσαρμοσμένων συμβάντων.\nΓια παράδειγμα, αν θέλετε να παρακολουθείτε ένα συμβάν όπως \"Εγγραφή\" ή \"Εγγραφή στο ενημερωτικό δελτίο\", αυτή η λειτουργία θα ήταν πολύ χρήσιμη.\nΚάτω από την οθόνη, η αρχή αυτής της λειτουργίας είναι παρόμοια με την trackViews.",
     "init": "Αυτή η λειτουργία χρησιμοποιείται για την αρχικοποίηση των αναλυτικών στοιχείων.\nΒασικά, ενημερώνετε το σενάριο για το έργο με το οποίο θέλετε να το χρησιμοποιήσετε, καθώς και καθορίζετε τις προσαρμοσμένες παραμέτρους σας, αν χρειάζεται.",
     "tr": "Με αυτή τη λειτουργία μπορείτε να παρακολουθείτε οποιαδήποτε προσαρμοσμένα συμβάντα θέλετε.\nΔεν θα πρέπει ποτέ να στέλνετε οποιαδήποτε αναγνωρίσιμα δεδομένα (όπως αναγνωριστικό χρήστη, email, cookie συνεδρίας κ. λπ.) ως όνομα συμβάντος.\nΟ συνολικός αριθμός των κλήσεων παρακολούθησης και το ποσοστό μετατροπής τους θα αποθηκευτούν.",
@@ -497,21 +497,21 @@
       "inviteTo": "Invite a user to {{project}}",
       "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
       "inviteExpity": "The invitation will expire in {{amount}} hours.",
-      "role": "Role",
+      "role": "Ρόλος",
       "roles": {
         "admin": {
-          "name": "Administrator",
-          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
-          "shortDesc": "Can manage the project"
+          "name": "Διαχειριστής",
+          "desc": "Μπορεί να διαχειριστεί τις ρυθμίσεις του έργου, να προσθέσει/αφαιρέσει μέλη και να προσκαλέσει νέους χρήστες.",
+          "shortDesc": "Μπορεί να διαχειριστεί το έργο"
         },
         "viewer": {
-          "name": "Viewer",
-          "desc": "Has a read-only access to the project.",
-          "shortDesc": "Can only view the project"
+          "name": "Προβολέας",
+          "desc": "Έχει πρόσβαση μόνο για ανάγνωση στο έργο.",
+          "shortDesc": "Μπορεί να δει μόνο το έργο"
         }
       },
-      "errorNoRole": "Please select a role.",
-      "ipBlacklist": "IP's to blacklist",
+      "errorNoRole": "Παρακαλώ επιλέξτε έναν ρόλο.",
+      "ipBlacklist": "IP στη μαύρη λίστα",
       "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
     }
   },
@@ -520,7 +520,7 @@
     "desc": "Είναι δωρεάν να ξεκινήσετε και να χρησιμοποιήσετε τις υπηρεσίες μας.\nΑν χρειαστεί να διαχειριστείτε περισσότερη κίνηση, πιθανότατα θα πρέπει να αναβαθμίσετε το πρόγραμμά σας.\nΠαρακάτω παρατίθεται μια λίστα με τα διαθέσιμα πακέτα. Δεν υπάρχουν κρυφές χρεώσεις ή άλλα BS, όλα είναι ξεκάθαρα και διαφανή!",
     "contact": "Χρειάζεται να παρακολουθείτε περισσότερα από 1 εκατομμύριο συμβάντα ανά μήνα;\nΕπικοινωνήστε μαζί μας στο <mail>{{email}}</mail> για να συζητήσουμε τις ανάγκες σας.",
     "update": "Ενημέρωση στοιχείων πληρωμής",
-    "nextBillDate": "Next bill date:"
+    "nextBillDate": "Επόμενη ημερομηνία λογαριασμού:"
   },
   "pricing": {
     "title": "Προγράμματα Τιμολόγησης",
@@ -529,15 +529,15 @@
     "mostPopular": "Τα πιο δημοφιλή",
     "free": "Δωρεἀν",
     "perMonth": "μήν",
-    "perYear": "yr",
+    "perYear": "έτος",
     "yourPlan": "Το πλάνο σας",
     "downgrade": "Υποβάθμιση",
     "upgrade": "Αναβάθμιση",
     "whatIncl": "Τι περιλαμβάνεται",
-    "monthlyBilling": "Monthly billing",
-    "yearlyBilling": "Yearly billing",
-    "switchToMonthly": "Switch to monthly billing",
-    "switchToYearly": "Switch to yearly billing",
+    "monthlyBilling": "Μηνιαία τιμολόγηση",
+    "yearlyBilling": "Ετήσια τιμολόγηση",
+    "switchToMonthly": "Αλλαγή σε μηνιαία χρέωση",
+    "switchToYearly": "Αλλαγή σε ετήσια χρέωση",
     "tiers": {
       "hobby": "Χόμπυ",
       "freelancer": "Ελεύθερος Επαγγελματίας",
@@ -566,7 +566,7 @@
   },
   "beta": {
     "title": "Βήτα",
-    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
+    "description": "Αυτή η λειτουργία βρίσκεται στη φάση Beta. Χρησιμοποιήστε το με προσοχή, καθώς ενδέχεται να υπάρξουν παρενέργειες."
   },
   "titles": {
     "recovery": "Ανάκτηση λογαριασμού",
@@ -580,7 +580,7 @@
     "docs": "Τεκμηρίωση",
     "billing": "Χρέωση",
     "contact": "Επικοινωνία",
-    "main": "Ultimate open-source analytics to satisfy all your needs"
+    "main": "Απόλυτα analytics ανοιχτού κώδικα για να ικανοποιήσετε όλες τις ανάγκες σας"
   },
   "footer": {
     "slogan": "Οι καλύτερες εφαρμογές χρειάζονται τις καλύτερες υπηρεσίες.",
@@ -597,7 +597,7 @@
     "pp": "Πολιτική απορρήτου",
     "tos": "Όροι Παροχής Υπηρεσιών",
     "blog": "Ιστολόγιο",
-    "utm": "UTM Generator",
+    "utm": "Γεννήτρια UTM",
     "billing": "Χρέωση",
     "pricing": "Τιμολογηση",
     "docs": "Τεκμηρίωση",
@@ -606,6 +606,6 @@
     "terms": "Όροι",
     "status": "Κατάσταση",
     "donate": "Δωρεά",
-    "about": "About us"
+    "about": "Σχετικά με εμάς"
   }
 }
