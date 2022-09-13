@@ -1,4 +1,4 @@
-import { put, call, delay } from 'redux-saga/effects'
+import { put, call } from 'redux-saga/effects'
 import Debug from 'debug'
 
 import { getAccessToken } from 'utils/accessToken'
