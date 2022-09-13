@@ -1,13 +1,15 @@
-import React, { memo, useEffect } from 'react'
+/* eslint-disable react/jsx-no-target-blank */
+import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
 import {
-  ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon, ArrowLongRightIcon,
+  ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon,
 } from '@heroicons/react/24/solid'
 // import { CheckCircleIcon as CheckCircleIconOutline, Cog8ToothIcon, ClockIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
+import _isEmpty from 'lodash/isEmpty'
 
 import routes from 'routes'
 import { nFormatterSeparated } from 'utils/generic'
@@ -28,8 +30,6 @@ import Ghost from 'ui/icons/Ghost'
 import Gatsby from 'ui/icons/Gatsby'
 import Wix from 'ui/icons/Wix'
 
-import { getLastPost } from 'api/blog'
-
 import { withAuthentication, auth } from '../../hoc/protected'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
@@ -41,27 +41,11 @@ const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 const Main = () => {
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
-  const stats = useSelector(state => state.ui.misc.stats)
-  const [lastPost, setLastPost] = React.useState({})
-  const [isLoading, setIsLoading] = React.useState(true)
+  const { stats, lastBlogPost } = useSelector(state => state.ui.misc)
 
   const events = nFormatterSeparated(Number(stats.pageviews), 0)
   const users = nFormatterSeparated(Number(stats.users), 0)
   const websites = nFormatterSeparated(Number(stats.projects), 0)
-
-  useEffect(() => {
-    if (isLoading) {
-      getLastPost()
-        .then(res => {
-          setLastPost(res)
-          setIsLoading(false)
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <Title title={t('titles.main')}>
@@ -97,13 +81,25 @@ const Main = () => {
                         }}
                       />
                     </h1>
-                    <div className='flex items-center overflow-hidden mt-2 mb-2'>
-                      {!isLoading && (
-                        <>
-                          <p className='text-base text-gray-300 sm:text-xl lg:text-lg xl:text-lg'>Blog</p>
-                          <ArrowLongRightIcon className='w-5 h-5 text-white mx-2' />
-                          <a className='text-indigo-600 font-semibold' href={`${process.env.REACT_APP_BLOG_API_URL}/post/${lastPost.url_path}`}>{lastPost.title}</a>
-                        </>
+                    <div
+                      className={cx('flex items-center overflow-hidden mt-2 mb-2 sm:text-xl lg:text-lg xl:text-lg', {
+                        'animate-pulse': _isEmpty(lastBlogPost),
+                      })}
+                    >
+                      <p className='text-base text-gray-50 dark:text-gray-100 bg-indigo-700 dark:bg-indigo-800 px-1 rounded-lg mr-2'>
+                        {t('footer.blog')}
+                      </p>
+                      {_isEmpty(lastBlogPost) ? (
+                        <div className='h-6 bg-slate-700 w-full rounded-md' />
+                      ) : (
+                        <a
+                          className='text-indigo-500 dark:text-indigo-600 hover:underline font-semibold'
+                          href={`${process.env.REACT_APP_BLOG_URL}post/${lastBlogPost.url_path}`}
+                          target='_blank'
+                          rel='noopener'
+                        >
+                          {lastBlogPost.title}
+                        </a>
                       )}
                     </div>
                     <p className='text-base text-gray-300 sm:text-xl lg:text-lg xl:text-lg'>

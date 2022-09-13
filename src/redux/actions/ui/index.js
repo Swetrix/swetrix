@@ -161,6 +161,11 @@ const setDashboardTabs = (tab) => ({
   payload: { tab },
 })
 
+const setLastBlogPost = (lastBlogPost) => ({
+  type: types.SET_LAST_BLOG_POST,
+  payload: { lastBlogPost },
+})
+
 const UIActions = {
   loadProjects,
   loadSharedProjects,
@@ -185,6 +190,7 @@ const UIActions = {
   setProjectsShareData,
   shareVerifyAsync,
   setDashboardTabs,
+  setLastBlogPost,
 }
 
 export default UIActions
