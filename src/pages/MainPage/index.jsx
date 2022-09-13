@@ -1,9 +1,11 @@
-import React, { memo } from 'react'
+import React, { memo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
-import { ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon } from '@heroicons/react/24/solid'
+import {
+  ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon, ArrowLongRightIcon,
+} from '@heroicons/react/24/solid'
 // import { CheckCircleIcon as CheckCircleIconOutline, Cog8ToothIcon, ClockIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 
@@ -25,9 +27,13 @@ import Notion from 'ui/icons/Notion'
 import Ghost from 'ui/icons/Ghost'
 import Gatsby from 'ui/icons/Gatsby'
 import Wix from 'ui/icons/Wix'
+
+import { getLastPost } from 'api/blog'
+
 import { withAuthentication, auth } from '../../hoc/protected'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
+
 import './styles.css'
 
 const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
@@ -36,10 +42,26 @@ const Main = () => {
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
   const stats = useSelector(state => state.ui.misc.stats)
+  const [lastPost, setLastPost] = React.useState({})
+  const [isLoading, setIsLoading] = React.useState(true)
 
   const events = nFormatterSeparated(Number(stats.pageviews), 0)
   const users = nFormatterSeparated(Number(stats.users), 0)
   const websites = nFormatterSeparated(Number(stats.projects), 0)
+
+  useEffect(() => {
+    if (isLoading) {
+      getLastPost()
+        .then(res => {
+          setLastPost(res)
+          setIsLoading(false)
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Title title={t('titles.main')}>
@@ -75,7 +97,16 @@ const Main = () => {
                         }}
                       />
                     </h1>
-                    <p className='mt-3 text-base text-gray-300 sm:mt-6 sm:text-xl lg:text-lg xl:text-lg'>
+                    <div className='flex items-center overflow-hidden mt-2 mb-2'>
+                      {!isLoading && (
+                        <>
+                          <p className='text-base text-gray-300 sm:text-xl lg:text-lg xl:text-lg'>Blog</p>
+                          <ArrowLongRightIcon className='w-5 h-5 text-white mx-2' />
+                          <a className='text-indigo-600 font-semibold' href={`${process.env.REACT_APP_BLOG_API_URL}/post/${lastPost.url_path}`}>{lastPost.title}</a>
+                        </>
+                      )}
+                    </div>
+                    <p className='text-base text-gray-300 sm:text-xl lg:text-lg xl:text-lg'>
                       {t('main.description')}
                       <br />
                       {t('main.trackEveryMetric')}
