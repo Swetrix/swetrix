@@ -522,6 +522,12 @@
     "update": "Update payment details",
     "nextBillDate": "Next bill date:"
   },
+  "modals": {
+    "paidFeature": {
+      "title": "Upgrade your plan to use this feature",
+      "desc": "We are sorry for the inconvenience, but you have to subscribe to a paid plan in order to use this feature.\n\nWe realise that you might not be ready to buy a paid subscription yet, but buying it will not only give you access to this feature, but also many other great perks, such as access to all the other paid features, higher limits on visits per month and number of websites available, and will help you support the growth of small business :)"
+    }
+  },
   "pricing": {
     "title": "Pricing Plans",
     "adv": "Start out for free, no credit card needed.\nWhen your business grows, you can upgrade your plan at any time.",

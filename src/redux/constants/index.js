@@ -76,6 +76,8 @@ export const tbsFormatMapper = {
   month: '%d %B %Y',
 }
 
+export const FREE_TIER_KEY = 'free'
+
 export const reportFrequencies = ['weekly', 'monthly', 'never']
 
 export const GDPR_EXPORT_TIMEFRAME = 14 // days

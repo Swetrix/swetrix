@@ -1,6 +1,7 @@
 import { types } from 'redux/actions/auth/types'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
+import { FREE_TIER_KEY, isSelfhosted } from '../constants'
 
 const initialState = {
   redirectPath: null,
@@ -8,14 +9,24 @@ const initialState = {
   loading: true,
   user: {},
   dontRemember: false,
+  // if the app is selfhosted, we assume that the user is using a paid tier so there won't be any restrictions or advertising of it
+  isPaidTierUsed: isSelfhosted,
 }
 
 // eslint-disable-next-line default-param-last
 const authReducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case types.SIGNUP_UP_SUCCESSFUL:
-    case types.LOGIN_SUCCESSFUL:
-      return { ...state, user: payload.user, authenticated: true }
+    case types.LOGIN_SUCCESSFUL: {
+      const { user } = payload
+
+      return {
+        ...state,
+        user: payload.user,
+        authenticated: true,
+        isPaidTierUsed: isSelfhosted || (user?.planCode && user.planCode !== FREE_TIER_KEY),
+      }
+    }
 
     case types.UPDATE_USER_PROFILE_SUCCESS:
       return { ...state, user: payload.user }
@@ -49,7 +60,14 @@ const authReducer = (state = initialState, { type, payload }) => {
 
     case types.UPDATE_USER_DATA: {
       const { data } = payload
-      return { ...state, user: { ...state.user, ...data } }
+
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          ...data,
+        },
+      }
     }
 
     case types.SET_USER_SHARE_DATA: {
