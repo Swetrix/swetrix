@@ -78,7 +78,9 @@ export const tbsFormatMapper = {
 
 export const FREE_TIER_KEY = 'free'
 
-export const reportFrequencies = ['weekly', 'monthly', 'never']
+// a dedicated variable is needed for paid tier checking
+export const WEEKLY_REPORT_FREQUENCY = 'weekly'
+export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'never']
 
 export const GDPR_EXPORT_TIMEFRAME = 14 // days
 

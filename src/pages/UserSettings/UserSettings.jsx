@@ -10,18 +10,21 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import _isString from 'lodash/isString'
-import { EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import {
+  EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, CurrencyDollarIcon,
+} from '@heroicons/react/24/outline'
 import QRCode from 'react-qr-code'
 import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
 
-import { reportFrequencies, DEFAULT_TIMEZONE } from 'redux/constants'
+import { reportFrequencies, DEFAULT_TIMEZONE, WEEKLY_REPORT_FREQUENCY } from 'redux/constants'
 import Title from 'components/Title'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Beta from 'ui/Beta'
 import Select from 'ui/Select'
+import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
@@ -358,7 +361,7 @@ const UserSettings = ({
   removeProject, removeShareProject, setUserShareData, setProjectsShareData, language,
   userSharedUpdate, sharedProjectError, updateUserData, login, genericError, onApiKeyGenerate, onApiKeyDelete,
 }) => {
-  const { user, dontRemember } = useSelector(state => state.auth)
+  const { user, dontRemember, isPaidTierUsed } = useSelector(state => state.auth)
 
   const [form, setForm] = useState({
     email: user.email || '',
@@ -366,6 +369,7 @@ const UserSettings = ({
     repeat: '',
   })
   const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [timezoneChanged, setTimezoneChanged] = useState(false)
   const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [validated, setValidated] = useState(false)
@@ -454,6 +458,25 @@ const UserSettings = ({
     }
   }
 
+  const _setReportFrequency = (value) => {
+    if (!isPaidTierUsed && value === WEEKLY_REPORT_FREQUENCY) {
+      setIsPaidFeatureOpened(true)
+      return
+    }
+
+    setReportFrequency(value)
+  }
+
+  const reportIconExtractor = (_, index) => {
+    if (!isPaidTierUsed && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY) {
+      return (
+        <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+      )
+    }
+
+    return null
+  }
+
   return (
     <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
@@ -529,7 +552,8 @@ const UserSettings = ({
                 label={t('profileSettings.frequency')}
                 className='w-full'
                 items={translatedFrequencies}
-                onSelect={(f) => setReportFrequency(reportFrequencies[_findIndex(translatedFrequencies, freq => freq === f)])}
+                iconExtractor={reportIconExtractor}
+                onSelect={(f) => _setReportFrequency(reportFrequencies[_findIndex(translatedFrequencies, freq => freq === f)])}
               />
             </div>
           </div>
@@ -661,6 +685,10 @@ const UserSettings = ({
           </div>
         </form>
 
+        <PaidFeature
+          isOpened={isPaidFeatureOpened}
+          onClose={() => setIsPaidFeatureOpened(false)}
+        />
         <Modal
           onClose={() => setShowExportModal(false)}
           onSubmit={() => { setShowExportModal(false); onExport(user.exportedAt) }}
