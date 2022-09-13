@@ -17,7 +17,6 @@ export default function* initialise() {
     }
 
     const lastBlogPost = yield call(getLastPost)
-    yield delay(2000)
     yield put(UIActions.setLastBlogPost(lastBlogPost))
   } catch (e) {
     debug('An error occured whilst initialising: %s', e)
