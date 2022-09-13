@@ -1,0 +1,14 @@
+/login
+  X-Frame-Options: DENY
+
+/signup
+  X-Frame-Options: DENY
+
+/recovery
+  X-Frame-Options: DENY
+
+/password-reset/*
+  X-Frame-Options: DENY
+
+/change-email/*
+  X-Frame-Options: DENY
