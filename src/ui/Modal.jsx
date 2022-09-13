@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 const Modal = ({
-  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size,
+  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons,
 }) => (
   <Transition.Root show={isOpened} as={Fragment}>
     <Dialog
@@ -87,6 +87,7 @@ const Modal = ({
               </div>
             </div>
             <div className='px-4 py-3 sm:px-0 sm:pb-0 sm:flex sm:flex-row-reverse'>
+              {customButtons}
               {submitText && (
                 <button
                   type='button'
@@ -130,6 +131,7 @@ Modal.propTypes = {
   submitText: PropTypes.string,
   submitType: PropTypes.oneOf(['regular', 'danger']),
   size: PropTypes.oneOf(['regular', 'large']),
+  customButtons: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]),
 }
 
 Modal.defaultProps = {
@@ -143,6 +145,7 @@ Modal.defaultProps = {
   size: 'regular',
   type: null,
   title: null,
+  customButtons: null,
 }
 
 export default memo(Modal)

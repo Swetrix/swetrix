@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
-import { TrashIcon, UserPlusIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, UserPlusIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -16,6 +16,7 @@ import Input from 'ui/Input'
 import { WarningPin } from 'ui/Pin'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
+import PaidFeature from 'modals/PaidFeature'
 import {
   roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN,
 } from 'redux/constants'
@@ -166,9 +167,11 @@ UsersList.defaultProps = {
 }
 
 const People = ({
-  project, updateProjectFailed, setProjectShareData, roleUpdatedNotification, inviteUserNotification, removeUserNotification,
+  project, updateProjectFailed, setProjectShareData, roleUpdatedNotification, inviteUserNotification,
+  removeUserNotification, isPaidTierUsed,
 }) => {
   const [showModal, setShowModal] = useState(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const { t, i18n: { language } } = useTranslation('common')
   const [form, setForm] = useState({
     email: '',
@@ -232,6 +235,12 @@ const People = ({
   const handleSubmit = e => {
     e.preventDefault()
     e.stopPropagation()
+
+    if (!isPaidTierUsed) {
+      setIsPaidFeatureOpened(true)
+      return
+    }
+
     setBeenSubmitted(true)
     if (validated) {
       onSubmit()
@@ -327,10 +336,26 @@ const People = ({
           )
         }
       </div>
+      <PaidFeature
+        isOpened={isPaidFeatureOpened}
+        onClose={() => setIsPaidFeatureOpened(false)}
+      />
       <Modal
         onClose={closeModal}
-        onSubmit={handleSubmit}
-        submitText={t('common.invite')}
+        customButtons={(
+          <button
+            type='button'
+            className={cx('w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm bg-indigo-600 hover:bg-indigo-700', {
+              'opacity-80 !px-3': !isPaidTierUsed,
+            })}
+            onClick={handleSubmit}
+          >
+            {!isPaidTierUsed && (
+              <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+            )}
+            {t('common.invite')}
+          </button>
+        )}
         closeText={t('common.cancel')}
         message={(
           <div>

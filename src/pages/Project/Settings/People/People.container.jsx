@@ -5,6 +5,10 @@ import { alertsActions } from 'redux/actions/alerts'
 
 import People from './People'
 
+const mapStateToProps = (state) => ({
+  isPaidTierUsed: state.auth.isPaidTierUsed,
+})
+
 const mapDispatchToProps = (dispatch) => ({
   updateProjectFailed: (message) => {
     dispatch(errorsActions.updateProjectFailed(message))
@@ -23,4 +27,4 @@ const mapDispatchToProps = (dispatch) => ({
   },
 })
 
-export default connect(null, mapDispatchToProps)(People)
+export default connect(mapStateToProps, mapDispatchToProps)(People)
