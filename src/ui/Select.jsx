@@ -6,7 +6,7 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 
 const Select = ({
-  title, label, className, items, labelExtractor, keyExtractor, onSelect,
+  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect,
 }) => (
   <Listbox className={className} value={title} onChange={onSelect}>
     {({ open }) => (
@@ -31,34 +31,44 @@ const Select = ({
               static
               className='absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm'
             >
-              {_map(items, (item) => (
+              {_map(items, (item, index) => (
                 <Listbox.Option
-                  key={keyExtractor ? keyExtractor(item) : item}
+                  key={keyExtractor ? keyExtractor(item, index) : item}
                   className={({ active }) => cx('dark:text-white cursor-default select-none relative py-2 pl-8 pr-4', {
                     'text-white bg-indigo-600': active,
                     'text-gray-900': !active,
                   })}
-                  value={labelExtractor ? labelExtractor(item) : item}
+                  value={labelExtractor ? labelExtractor(item, index) : item}
                 >
                   {({ selected, active }) => (
                     <>
-                      <span className={cx(selected ? 'font-semibold' : 'font-normal', 'block truncate capitalize')}>
-                        {labelExtractor ? labelExtractor(item) : item}
+                      <span
+                        className={cx('block truncate capitalize', {
+                          'font-semibold': selected,
+                          'font-normal': !selected,
+                        })}
+                      >
+                        {labelExtractor ? labelExtractor(item, index) : item}
                       </span>
 
-                      {selected ? (
+                      {iconExtractor && (
                         <span
-                          className={cx(
-                            'absolute inset-y-0 left-0 flex items-center pl-1.5',
-                            {
-                              'text-white': active,
-                              'text-indigo-600': !active,
-                            },
-                          )}
+                          className={cx('absolute inset-y-0 left-0 flex items-center pl-1.5')}
+                        >
+                          {iconExtractor(item, index)}
+                        </span>
+                      )}
+
+                      {selected && (
+                        <span
+                          className={cx('absolute inset-y-0 left-0 flex items-center pl-1.5', {
+                            'text-white': active,
+                            'text-indigo-600': !active,
+                          })}
                         >
                           <CheckIcon className='h-5 w-5' aria-hidden='true' />
                         </span>
-                      ) : null}
+                      )}
                     </>
                   )}
                 </Listbox.Option>
@@ -79,6 +89,7 @@ Select.propTypes = {
   ])),
   className: PropTypes.string,
   labelExtractor: PropTypes.func,
+  iconExtractor: PropTypes.func,
   keyExtractor: PropTypes.func,
   label: PropTypes.string,
 }
@@ -87,6 +98,7 @@ Select.defaultProps = {
   className: '',
   labelExtractor: null,
   keyExtractor: null,
+  iconExtractor: null,
   label: '',
   items: [],
 }

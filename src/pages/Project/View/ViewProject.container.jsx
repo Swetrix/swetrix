@@ -15,6 +15,7 @@ const mapStateToProps = (state) => {
       projectViewPrefs: state.ui.cache.projectViewPrefs,
       authenticated: state.auth.authenticated,
       timezone: state.auth.user.timezone,
+      isPaidTierUsed: state.auth.isPaidTierUsed,
       user: state.auth.user,
     }
   }
@@ -27,6 +28,7 @@ const mapStateToProps = (state) => {
     projectViewPrefs: state.ui.cache.projectViewPrefs,
     authenticated: state.auth.authenticated,
     timezone: state.auth.user.timezone,
+    isPaidTierUsed: state.auth.isPaidTierUsed,
     user: state.auth.user,
   }
 }

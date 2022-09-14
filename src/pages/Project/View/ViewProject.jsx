@@ -8,7 +8,9 @@ import { saveAs } from 'file-saver'
 import bb, { area } from 'billboard.js'
 import Flag from 'react-flagkit'
 import {
-  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon, ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon,
+  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon,
+  ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon,
+  Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import * as d3 from 'd3'
@@ -27,17 +29,19 @@ import _truncate from 'lodash/truncate'
 import _startsWith from 'lodash/startsWith'
 import PropTypes from 'prop-types'
 
+import { SWETRIX_PID } from 'utils/analytics'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import FlatPicker from 'ui/Flatpicker'
+import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors,
@@ -216,6 +220,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
 
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
+const paidPeriods = ['12M', '24M']
 const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt']
 
 const typeNameMapping = (t) => ({
@@ -341,7 +346,7 @@ const Filters = ({
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -349,12 +354,17 @@ const ViewProject = ({
   const { id } = useParams()
   const history = useHistory()
   const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
+  const isSharedProject = useMemo(() => {
+    const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
+    return !_isEmpty(foundProject)
+  }, [id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
   const [arePeriodParsed, setArePeriodParsed] = useState(false)
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
   const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
@@ -788,7 +798,7 @@ const ViewProject = ({
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = searchParams.get('period')
-      if (!_includes(validPeriods, intialPeriod)) {
+      if (!_includes(validPeriods, intialPeriod) || (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
         return
       }
 
@@ -894,9 +904,29 @@ const ViewProject = ({
               <Dropdown
                 items={periodPairs}
                 title={activePeriod.label}
-                labelExtractor={(pair) => pair.dropdownLabel || pair.label}
+                labelExtractor={(pair) => {
+                  const label = pair.dropdownLabel || pair.label
+
+                  // disable limitation for shared projects as project hosts already have a paid plan
+                  // disable limitation for Swetrix public project (for demonstration purposes)
+                  if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                    return (
+                      <span className='flex items-center'>
+                        <CurrencyDollarIcon className='w-4 h-4 mr-1' />
+                        {label}
+                      </span>
+                    )
+                  }
+
+                  return label
+                }}
                 keyExtractor={(pair) => pair.label}
                 onSelect={(pair) => {
+                  if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                    setIsPaidFeatureOpened(true)
+                    return
+                  }
+
                   if (pair.isCustomDate) {
                     setTimeout(() => {
                       refCalendar.current.openCalendar()
@@ -912,6 +942,7 @@ const ViewProject = ({
                 ref={refCalendar}
                 onChange={(date) => setRangeDate(date)}
                 value={rangeDate}
+                maxDateMonths={isPaidTierUsed ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
               />
             </div>
           </div>
@@ -1082,6 +1113,10 @@ const ViewProject = ({
             </div>
           </div>
         )}
+        <PaidFeature
+          isOpened={isPaidFeatureOpened}
+          onClose={() => setIsPaidFeatureOpened(false)}
+        />
       </Title>
     )
   }
@@ -1107,6 +1142,7 @@ ViewProject.propTypes = {
   setPublicProject: PropTypes.func.isRequired,
   setLiveStatsForProject: PropTypes.func.isRequired,
   authenticated: PropTypes.bool.isRequired,
+  isPaidTierUsed: PropTypes.bool.isRequired,
   timezone: PropTypes.string,
 }
 

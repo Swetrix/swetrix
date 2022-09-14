@@ -42,7 +42,7 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   label: t('project.lastXMonths', { amount: 3 }),
   period: '3M',
   tbs: ['week', 'month'],
-  access: 'paid',
+  access: 'free',
 }, {
   label: t('project.lastXMonths', { amount: 12 }),
   period: '12M',
@@ -59,8 +59,12 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   isCustomDate: true,
   period: 'custom',
   tbs: tbs || ['custom'],
-  access: 'paid',
+  access: 'free',
 }]
+
+// the maximum amount of months user can go back when picking a date in flat picker (project view)
+export const MAX_MONTHS_IN_PAST = 24
+export const MAX_MONTHS_IN_PAST_FREE = 3
 
 export const timeBucketToDays = [
   { lt: 7, tb: ['hour', 'day'] }, // 7 days
@@ -76,7 +80,11 @@ export const tbsFormatMapper = {
   month: '%d %B %Y',
 }
 
-export const reportFrequencies = ['weekly', 'monthly', 'never']
+export const FREE_TIER_KEY = 'free'
+
+// a dedicated variable is needed for paid tier checking
+export const WEEKLY_REPORT_FREQUENCY = 'weekly'
+export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'never']
 
 export const GDPR_EXPORT_TIMEFRAME = 14 // days
 

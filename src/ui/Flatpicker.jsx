@@ -5,6 +5,7 @@ import _size from 'lodash/size'
 import PropTypes from 'prop-types'
 
 import { getItem } from 'utils/localstorage'
+import { MAX_MONTHS_IN_PAST } from 'redux/constants'
 import './Flatpicker.css'
 
 if (getItem('colour-theme') === 'light') {
@@ -44,7 +45,7 @@ class FlatPicker extends React.Component {
   }
 
   render() {
-    const { value } = this.props
+    const { value, maxDateMonths } = this.props
 
     return (
       <div className='h-0 flatpicker-custom'>
@@ -54,7 +55,7 @@ class FlatPicker extends React.Component {
           options={{
             mode: 'range',
             maxDate: 'today',
-            minDate: this.removeMonths(new Date(), 24),
+            minDate: this.removeMonths(new Date(), maxDateMonths),
             showMonths: 1,
             static: true,
             animate: true,
@@ -74,11 +75,13 @@ class FlatPicker extends React.Component {
 FlatPicker.propTypes = {
   onChange: PropTypes.func,
   value: PropTypes.arrayOf(PropTypes.instanceOf(Date)),
+  maxDateMonths: PropTypes.number,
 }
 
 FlatPicker.defaultProps = {
   onChange: () => { },
   value: [],
+  maxDateMonths: MAX_MONTHS_IN_PAST,
 }
 
 export default memo(FlatPicker)

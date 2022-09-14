@@ -522,6 +522,12 @@
     "update": "Update payment details",
     "nextBillDate": "Next bill date:"
   },
+  "modals": {
+    "paidFeature": {
+      "title": "Upgrade your plan to use this feature",
+      "desc": "We apologise for the inconvenience, but you must subscribe to a paid plan to use this feature.\n\nWe realise that you might not be ready to buy a paid subscription yet, but buying it will give you not only access to this feature, but also many other great perks, such as access to all the other paid features, higher limits on visits per month and number of websites available, and you will support the growth of a small business :)"
+    }
+  },
   "pricing": {
     "title": "मूल्य निर्धारण प्लान",
     "adv": "फ्री से शुरू करें, क्रेडिट कार्ड की आवश्यकता नहीं है।\nव्यवसाय के बढ़ने के बाद, आप किसी भी समय अपने प्लान को अपग्रेड कर सकते हैं।",

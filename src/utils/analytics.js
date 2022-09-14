@@ -23,5 +23,5 @@ const trackCustom = (ev, unique = false) => {
 }
 
 export {
-  trackViews, trackCustom,
+  trackViews, trackCustom, SWETRIX_PID,
 }
