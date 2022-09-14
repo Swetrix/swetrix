@@ -29,6 +29,7 @@ import _truncate from 'lodash/truncate'
 import _startsWith from 'lodash/startsWith'
 import PropTypes from 'prop-types'
 
+import { SWETRIX_PID } from 'utils/analytics'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
@@ -797,7 +798,7 @@ const ViewProject = ({
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = searchParams.get('period')
-      if (!_includes(validPeriods, intialPeriod) || (!isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
+      if (!_includes(validPeriods, intialPeriod) || (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
         return
       }
 
@@ -907,7 +908,8 @@ const ViewProject = ({
                   const label = pair.dropdownLabel || pair.label
 
                   // disable limitation for shared projects as project hosts already have a paid plan
-                  if (!isSharedProject && !isPaidTierUsed && pair.access === 'paid') {
+                  // disable limitation for Swetrix public project (for demonstration purposes)
+                  if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
                     return (
                       <span className='flex items-center'>
                         <CurrencyDollarIcon className='w-4 h-4 mr-1' />
@@ -920,7 +922,7 @@ const ViewProject = ({
                 }}
                 keyExtractor={(pair) => pair.label}
                 onSelect={(pair) => {
-                  if (!isSharedProject && !isPaidTierUsed && pair.access === 'paid') {
+                  if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
                     setIsPaidFeatureOpened(true)
                     return
                   }
