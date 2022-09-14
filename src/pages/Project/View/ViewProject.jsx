@@ -219,6 +219,7 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
 
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
+const paidPeriods = ['12M', '24M']
 const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt']
 
 const typeNameMapping = (t) => ({
@@ -792,7 +793,7 @@ const ViewProject = ({
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = searchParams.get('period')
-      if (!_includes(validPeriods, intialPeriod)) {
+      if (!_includes(validPeriods, intialPeriod) || (!isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
         return
       }
 
