@@ -353,6 +353,10 @@ const ViewProject = ({
   const { id } = useParams()
   const history = useHistory()
   const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
+  const isSharedProject = useMemo(() => {
+    const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
+    return !_isEmpty(foundProject)
+  }, [id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
@@ -902,7 +906,8 @@ const ViewProject = ({
                 labelExtractor={(pair) => {
                   const label = pair.dropdownLabel || pair.label
 
-                  if (!isPaidTierUsed && pair.access === 'paid') {
+                  // disable limitation for shared projects as project hosts already have a paid plan
+                  if (!isSharedProject && !isPaidTierUsed && pair.access === 'paid') {
                     return (
                       <span className='flex items-center'>
                         <CurrencyDollarIcon className='w-4 h-4 mr-1' />
@@ -915,7 +920,7 @@ const ViewProject = ({
                 }}
                 keyExtractor={(pair) => pair.label}
                 onSelect={(pair) => {
-                  if (!isPaidTierUsed && pair.access === 'paid') {
+                  if (!isSharedProject && !isPaidTierUsed && pair.access === 'paid') {
                     setIsPaidFeatureOpened(true)
                     return
                   }
