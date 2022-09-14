@@ -91,7 +91,7 @@ const Modal = ({
               {submitText && (
                 <button
                   type='button'
-                  className={cx('w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm', {
+                  className={cx('w-full inline-flex justify-center rounded-md shadow-sm px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm', {
                     'bg-indigo-600 hover:bg-indigo-700': submitType === 'regular',
                     'bg-red-600 hover:bg-red-700': submitType === 'danger',
                   })}
@@ -103,7 +103,7 @@ const Modal = ({
               {closeText && (
                 <button
                   type='button'
-                  className='mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
+                  className='mt-3 w-full inline-flex justify-center rounded-md shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
                   onClick={onClose}
                 >
                   {closeText}
