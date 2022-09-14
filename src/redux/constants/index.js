@@ -42,7 +42,7 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   label: t('project.lastXMonths', { amount: 3 }),
   period: '3M',
   tbs: ['week', 'month'],
-  access: 'paid',
+  access: 'free',
 }, {
   label: t('project.lastXMonths', { amount: 12 }),
   period: '12M',
