@@ -942,7 +942,7 @@ const ViewProject = ({
                 ref={refCalendar}
                 onChange={(date) => setRangeDate(date)}
                 value={rangeDate}
-                maxDateMonths={isPaidTierUsed ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
+                maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
               />
             </div>
           </div>
