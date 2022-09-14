@@ -59,8 +59,12 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   isCustomDate: true,
   period: 'custom',
   tbs: tbs || ['custom'],
-  access: 'paid',
+  access: 'free',
 }]
+
+// the maximum amount of months user can go back when picking a date in flat picker (project view)
+export const MAX_MONTHS_IN_PAST = 24
+export const MAX_MONTHS_IN_PAST_FREE = 3
 
 export const timeBucketToDays = [
   { lt: 7, tb: ['hour', 'day'] }, // 7 days
