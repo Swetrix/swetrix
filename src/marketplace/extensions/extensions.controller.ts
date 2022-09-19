@@ -109,6 +109,55 @@ export class ExtensionsController {
     required: false,
     type: String,
   })
+  @Get('published')
+  async getAllPublishedExtensions(
+    @Query() queries: GetAllExtensionsQueries,
+  ): Promise<{
+    extensions: Extension[]
+    count: number
+  }> {
+    const [extensions, count] = await this.extensionsService.findAndCount({
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 25 : queries.limit || 25,
+    })
+
+    return { extensions, count }
+  }
+
+  @ApiQuery({
+    description: 'Extension term',
+    example: '',
+    name: 'term',
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension category',
+    example: '',
+    name: 'category',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension sortBy',
+    example: 'createdAt',
+    name: 'sortBy',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension offset',
+    example: '5',
+    name: 'offset',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension limit',
+    example: '25',
+    name: 'limit',
+    required: false,
+    type: String,
+  })
   @Get('search')
   async searchExtension(@Query() queries: SearchExtensionQueries): Promise<{
     extensions: Extension[]
