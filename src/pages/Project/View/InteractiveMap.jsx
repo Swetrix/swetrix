@@ -34,8 +34,8 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
                 id={index}
                 className={cx({
                   'hover:opacity-90': perc > 0,
-                  'fill-[#cfd1d4] dark:fill-[#374151]': perc === 0,
-                  'fill-[#92b2e7] dark:fill-[#43448c]': perc > 0 && perc < 3,
+                  'fill-[#cfd1d4] dark:fill-slate-800': perc === 0,
+                  'fill-[#92b2e7] dark:fill-[#252869]': perc > 0 && perc < 3,
                   'fill-[#6f9be3] dark:fill-[#4642bf]': perc >= 3 && perc < 10,
                   'fill-[#5689db] dark:fill-[#4a42db]': perc >= 10 && perc < 20,
                   'fill-[#3b82f6] dark:fill-[#4035dc]': perc >= 20,
