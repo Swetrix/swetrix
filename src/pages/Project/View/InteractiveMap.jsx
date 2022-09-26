@@ -34,11 +34,11 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
                 id={index}
                 className={cx({
                   'hover:opacity-90': perc > 0,
-                  'fill-[#cfd1d4] dark:fill-slate-800': perc === 0,
-                  'fill-[#92b2e7] dark:fill-[#252869]': perc > 0 && perc < 3,
-                  'fill-[#6f9be3] dark:fill-[#4642bf]': perc >= 3 && perc < 10,
-                  'fill-[#5689db] dark:fill-[#4a42db]': perc >= 10 && perc < 20,
-                  'fill-[#3b82f6] dark:fill-[#4035dc]': perc >= 20,
+                  'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
+                  'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
+                  'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
+                  'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
+                  'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
                   'cursor-pointer': Boolean(visitors),
                 })}
                 d={item.d}
