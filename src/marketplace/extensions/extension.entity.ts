@@ -49,4 +49,7 @@ export class Extension {
   @ManyToMany(() => Category, category => category.extensions)
   @JoinTable()
   categories: Category[] | []
+
+  @Column({ type: 'int', default: 0 })
+  installs: number
 }

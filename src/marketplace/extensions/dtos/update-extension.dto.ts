@@ -61,4 +61,8 @@ export class UpdateExtension {
   @IsNumber()
   @IsOptional()
   readonly price?: number
+
+  @IsNumber()
+  @IsOptional()
+  readonly installs?: number
 }

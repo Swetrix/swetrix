@@ -3,4 +3,5 @@ export interface IUpdateExtension {
   description?: string | null
   version?: string
   price?: number
+  installs?: number
 }

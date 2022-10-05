@@ -1,4 +1,6 @@
+import { UpdateUserProfileDTO } from './../../user/dto/update-user.dto';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -20,8 +22,10 @@ import { CreateExtension } from './dtos/create-extension.dto'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
+import { InstallExtensionParams } from './dtos/install-extension.dto'
 import { Extension } from './extension.entity'
 import { ExtensionsService } from './extensions.service'
+import { UserService } from '../../user/user.service'
 import { ISaveExtension } from './interfaces/save-extension.interface'
 import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
 import { UpdateExtension } from './dtos/update-extension.dto'
@@ -30,6 +34,9 @@ import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { CategoriesService } from '../categories/categories.service'
 import { SortByExtension } from './enums/sort-by-extension.enum'
 import { CdnService } from '../cdn/cdn.service'
+import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
+
+import * as _forEach from 'lodash/forEach'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -45,6 +52,7 @@ export class ExtensionsController {
   constructor(
     private readonly extensionsService: ExtensionsService,
     private readonly categoriesService: CategoriesService,
+    private readonly userService: UserService,
     private readonly cdnService: CdnService,
   ) {}
 
@@ -255,7 +263,7 @@ export class ExtensionsController {
     if (files.additionalImages) {
       files.additionalImages.map(async additionalImage => {
         additionalImageFilenames.push(
-          (await this.cdnService.uploadFile(additionalImage)).filename,
+          (await this.cdnService.uploadFile(additionalImage))?.filename,
         )
       })
     }
@@ -266,7 +274,7 @@ export class ExtensionsController {
       version: body.version,
       price: body.price,
       mainImage: files.mainImage
-        ? (await this.cdnService.uploadFile(files.mainImage[0])).filename
+        ? (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
         : undefined,
       additionalImages: files.additionalImages ? additionalImageFilenames : [],
       categories: body.categoriesIds
@@ -314,5 +322,41 @@ export class ExtensionsController {
     }
 
     await this.extensionsService.delete(extension.id)
+  }
+  @ApiParam({
+    name: 'extensionId',
+    description: 'Extension ID',
+    example: 'de025965-3221-4d09-ba35-a09da59793a6',
+    type: String,
+  })
+  @Get('install/:extensionId')
+  async installExtension(
+    @Param() params: InstallExtensionParams,
+    @CurrentUserId() userId: string,
+  ): Promise<{ user: UpdateUserProfileDTO; extension: UpdateExtension }> {
+    const extension = await this.extensionsService.findById(params.extensionId)
+
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    const user = await this.userService.findOne(userId)
+
+    _forEach(user.installExtensions, (installExtension: string) => {
+      if (installExtension === extension.id) {
+        throw new BadRequestException('Extension already installed.')
+      }
+    })
+    extension.installs += 1
+    await this.extensionsService.update(extension.id, {
+      installs: extension.installs,
+    })
+
+    user.installExtensions.push(extension.id)
+    await this.userService.update(userId, {
+      installExtensions: user.installExtensions,
+    })
+
+    return { user: user, extension: extension }
   }
 }

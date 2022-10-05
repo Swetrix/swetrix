@@ -1,3 +1,4 @@
+import { UserModule } from 'src/user/user.module'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { CategoriesModule } from '../categories/categories.module'
@@ -7,7 +8,12 @@ import { ExtensionsController } from './extensions.controller'
 import { ExtensionsService } from './extensions.service'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Extension]), CategoriesModule, CdnModule],
+  imports: [
+    TypeOrmModule.forFeature([Extension]),
+    CategoriesModule,
+    CdnModule,
+    UserModule,
+  ],
   controllers: [ExtensionsController],
   providers: [ExtensionsService],
 })
