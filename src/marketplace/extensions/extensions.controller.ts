@@ -1,4 +1,4 @@
-import { UpdateUserProfileDTO } from './../../user/dto/update-user.dto';
+import { UpdateUserProfileDTO } from './../../user/dto/update-user.dto'
 import {
   BadRequestException,
   Body,
@@ -352,7 +352,12 @@ export class ExtensionsController {
       installs: extension.installs,
     })
 
-    user.installExtensions.push(extension.id)
+    user.installExtensions.push({
+      id: extension.id,
+      ...extension,
+      active: true,
+      projects: null,
+    })
     await this.userService.update(userId, {
       installExtensions: user.installExtensions,
     })
