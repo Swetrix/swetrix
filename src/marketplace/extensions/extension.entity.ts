@@ -4,16 +4,21 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
 import { Category } from '../categories/category.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
+import { User } from 'src/user/entities/user.entity'
 
 @Entity()
 export class Extension {
   @PrimaryGeneratedColumn('uuid')
   id!: string
+
+  @ManyToOne(() => User, user => user.ownedExtensions)
+  owner!: User
 
   @Column('varchar')
   name: string
@@ -47,7 +52,6 @@ export class Extension {
   updatedAt: Date
 
   @ManyToMany(() => Category, category => category.extensions)
-  @JoinTable()
   categories: Category[] | []
 
   @Column({ type: 'int', default: 0 })

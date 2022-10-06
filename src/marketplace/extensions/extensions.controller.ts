@@ -24,6 +24,7 @@ import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 import { InstallExtensionParams } from './dtos/install-extension.dto'
 import { Extension } from './extension.entity'
+import { InstallExtension } from './installExtension.entiy'
 import { ExtensionsService } from './extensions.service'
 import { UserService } from '../../user/user.service'
 import { ISaveExtension } from './interfaces/save-extension.interface'
@@ -75,10 +76,13 @@ export class ExtensionsController {
     extensions: Extension[]
     count: number
   }> {
-    const [extensions, count] = await this.extensionsService.findAndCount({
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
-    })
+    const [extensions, count] = await this.extensionsService.findAndCount(
+      {
+        skip: queries.offset || 0,
+        take: queries.limit > 100 ? 25 : queries.limit || 25,
+      },
+      ['owner'],
+    )
 
     return { extensions, count }
   }
@@ -252,6 +256,7 @@ export class ExtensionsController {
   )
   async createExtension(
     @Body() body: CreateExtension,
+    @CurrentUserId() userId: string,
     @UploadedFiles()
     files: {
       mainImage?: Express.Multer.File
@@ -268,11 +273,13 @@ export class ExtensionsController {
       })
     }
 
+    const user = await this.userService.findOne(userId)
     const extensionInstance = this.extensionsService.create({
       name: body.name,
       description: body.description,
       version: body.version,
       price: body.price,
+      owner: user,
       mainImage: files.mainImage
         ? (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
         : undefined,
@@ -342,8 +349,9 @@ export class ExtensionsController {
 
     const user = await this.userService.findOne(userId)
 
-    _forEach(user.installExtensions, (installExtension: string) => {
-      if (installExtension === extension.id) {
+    _forEach(user.installExtensions, ({ id }) => {
+      console.log(id, 'id')
+      if (id === extension.id) {
         throw new BadRequestException('Extension already installed.')
       }
     })
@@ -352,16 +360,30 @@ export class ExtensionsController {
       installs: extension.installs,
     })
 
-    user.installExtensions.push({
-      id: extension.id,
-      ...extension,
-      active: true,
-      projects: null,
-    })
+    const installExtensionDate = new InstallExtension()
+    installExtensionDate.extensionId = extension.id
+    installExtensionDate.userId = userId
+    installExtensionDate.projects = null
+    installExtensionDate.active = true
+
+    const extensionInstallInstance = await this.extensionsService.createInstall(
+      installExtensionDate,
+    )
+
+    const installExtension = await this.extensionsService.saveInstall(
+      extensionInstallInstance,
+    )
+
     await this.userService.update(userId, {
-      installExtensions: user.installExtensions,
+      installExtensions: installExtension.id,
     })
 
-    return { user: user, extension: extension }
+    const test = await this.userService.findOneWithRelations(userId, [
+      'installExtensions',
+      'installExtensions.extensionId',
+      'installExtensions.projects',
+      'installExtensions.userId',
+    ])
+    return { user: test, extension }
   }
 }

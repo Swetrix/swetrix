@@ -1,15 +1,16 @@
-import { installExtensionsInterfaces } from './../../marketplace/extensions/interfaces/install-extensions.interface'
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   OneToMany,
   BeforeUpdate,
+  ManyToOne,
 } from 'typeorm'
 import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
-
+import { Extension } from 'src/marketplace/extensions/extension.entity'
+import { InstallExtension } from 'src/marketplace/extensions/installExtension.entiy'
 export enum PlanCode {
   free = 'free',
   freelancer = 'freelancer',
@@ -89,6 +90,9 @@ export class User {
   })
   planCode: PlanCode
 
+  @Column('varchar', { length: 100 })
+  nickname: string
+
   @Column('varchar', { length: 254, unique: true })
   email: string
 
@@ -156,6 +160,9 @@ export class User {
   @OneToMany(() => ActionToken, actionToken => actionToken.user)
   actionTokens: ActionToken[]
 
+  @OneToMany(() => Extension, extension => extension.owner)
+  ownedExtensions: Extension[]
+
   @Column({
     type: 'enum',
     enum: BillingFrequency,
@@ -175,6 +182,6 @@ export class User {
   })
   apiKey: string | null
 
-  @Column('simple-array')
-  installExtensions: installExtensionsInterfaces[]
+  @ManyToOne(() => InstallExtension, installExtension => installExtension.id)
+  installExtensions: InstallExtension[] | []
 }

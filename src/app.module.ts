@@ -22,6 +22,7 @@ import { TGModule } from './tg-integration/tg.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
 import { Category } from './marketplace/categories/category.entity'
 import { Extension } from './marketplace/extensions/extension.entity'
+import { InstallExtension } from './marketplace/extensions/installExtension.entiy'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
@@ -33,7 +34,15 @@ const modules = [
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
     synchronize: process.env.NODE_ENV === 'development',
-    entities: [User, Project, ProjectShare, ActionToken, Category, Extension],
+    entities: [
+      User,
+      Project,
+      ProjectShare,
+      ActionToken,
+      Category,
+      Extension,
+      InstallExtension,
+    ],
   }),
   ScheduleModule.forRoot(),
   TaskManagerModule,
