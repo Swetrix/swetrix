@@ -5,15 +5,15 @@ import { Extension } from './extension.entity'
 import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
 import { IUpdateExtension } from './interfaces/update-extension.interface'
-import { InstallExtension } from 'src/marketplace/extensions/installExtension.entiy'
+import { ExtensionToProject } from './extension-to-project.entity'
 
 @Injectable()
 export class ExtensionsService {
   constructor(
     @InjectRepository(Extension)
     private readonly extensionRepository: Repository<Extension>,
-    @InjectRepository(InstallExtension)
-    private readonly InstallExtensionRepository: Repository<InstallExtension>,
+    @InjectRepository(ExtensionToProject)
+    private readonly extensionToProjectRepository: Repository<ExtensionToProject>,
   ) {}
 
   async findOne(options: FindOneOptions<Extension>): Promise<Extension> {
@@ -24,37 +24,37 @@ export class ExtensionsService {
     return this.extensionRepository.create(extension)
   }
 
-  async createInstall(
-    installExtension: InstallExtension,
-  ): Promise<InstallExtension> {
-    return this.InstallExtensionRepository.create(installExtension)
-  }
+  // async createInstall(
+  //   installExtension: InstallExtension,
+  // ): Promise<InstallExtension> {
+  //   return this.InstallExtensionRepository.create(installExtension)
+  // }
 
-  async saveInstall(extension: InstallExtension): Promise<InstallExtension> {
-    return await this.InstallExtensionRepository.save(extension)
-  }
+  // async saveInstall(extension: InstallExtension): Promise<InstallExtension> {
+  //   return await this.InstallExtensionRepository.save(extension)
+  // }
 
-  async updateInstall(
-    id: string,
-    installExtension: InstallExtension,
-  ): Promise<any> {
-    return this.InstallExtensionRepository.update(id, installExtension)
-  }
+  // async updateInstall(
+  //   id: string,
+  //   installExtension: InstallExtension,
+  // ): Promise<any> {
+  //   return this.InstallExtensionRepository.update(id, installExtension)
+  // }
 
-  async deleteInstall(id: string): Promise<any> {
-    return this.InstallExtensionRepository.delete(id)
-  }
+  // async deleteInstall(id: string): Promise<any> {
+  //   return this.InstallExtensionRepository.delete(id)
+  // }
 
-  async findInstall(params: object): Promise<InstallExtension[]> {
-    return this.InstallExtensionRepository.find(params)
-  }
+  // async findInstall(params: object): Promise<InstallExtension[]> {
+  //   return this.InstallExtensionRepository.find(params)
+  // }
 
-  async findOneInstall(
-    id: string,
-    params: Object = {},
-  ): Promise<InstallExtension | null> {
-    return this.InstallExtensionRepository.findOne(id, params)
-  }
+  // async findOneInstall(
+  //   id: string,
+  //   params: Object = {},
+  // ): Promise<InstallExtension | null> {
+  //   return this.InstallExtensionRepository.findOne(id, params)
+  // }
 
   async save(extension: ISaveExtension): Promise<ISaveExtension & Extension> {
     return await this.extensionRepository.save(extension)

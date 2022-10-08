@@ -1,3 +1,4 @@
+import { ExtensionToProject } from './../../marketplace/extensions/extension-to-project.entity'
 import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
@@ -49,4 +50,10 @@ export class Project {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
+
+  @OneToMany(
+    () => ExtensionToProject,
+    extensionToProject => extensionToProject.project,
+  )
+  extensionToProjects: ExtensionToProject[]
 }

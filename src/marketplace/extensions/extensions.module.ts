@@ -4,14 +4,13 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { CategoriesModule } from '../categories/categories.module'
 import { CdnModule } from '../cdn/cdn.module'
 import { Extension } from './extension.entity'
-import { InstallExtension } from './installExtension.entiy'
 import { ExtensionsController } from './extensions.controller'
 import { ExtensionsService } from './extensions.service'
+import { ExtensionToProject } from './extension-to-project.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Extension]),
-    TypeOrmModule.forFeature([InstallExtension]),
+    TypeOrmModule.forFeature([Extension, ExtensionToProject]),
     CategoriesModule,
     CdnModule,
     UserModule,

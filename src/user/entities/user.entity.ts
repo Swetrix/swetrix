@@ -4,13 +4,11 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   BeforeUpdate,
-  ManyToOne,
 } from 'typeorm'
 import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
 import { Extension } from 'src/marketplace/extensions/extension.entity'
-import { InstallExtension } from 'src/marketplace/extensions/installExtension.entiy'
 export enum PlanCode {
   free = 'free',
   freelancer = 'freelancer',
@@ -181,7 +179,4 @@ export class User {
     default: null,
   })
   apiKey: string | null
-
-  @ManyToOne(() => InstallExtension, installExtension => installExtension.id)
-  installExtensions: InstallExtension[] | []
 }

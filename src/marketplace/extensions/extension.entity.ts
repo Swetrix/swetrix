@@ -5,12 +5,14 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
 import { Category } from '../categories/category.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { User } from 'src/user/entities/user.entity'
+import { ExtensionToProject } from './extension-to-project.entity'
 
 @Entity()
 export class Extension {
@@ -54,6 +56,15 @@ export class Extension {
   @ManyToMany(() => Category, category => category.extensions)
   categories: Category[] | []
 
-  @Column({ type: 'int', default: 0 })
-  installs: number
+  @OneToMany(
+    () => ExtensionToProject,
+    extensionToProject => extensionToProject.extension,
+  )
+  extensionToProjects: ExtensionToProject[]
+
+  @OneToMany(
+    () => ExtensionToProject,
+    extensionToProject => extensionToProject.project,
+  )
+  projects: ExtensionToProject[]
 }

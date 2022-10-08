@@ -22,9 +22,7 @@ import { CreateExtension } from './dtos/create-extension.dto'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
-import { InstallExtensionParams } from './dtos/install-extension.dto'
 import { Extension } from './extension.entity'
-import { InstallExtension } from './installExtension.entiy'
 import { ExtensionsService } from './extensions.service'
 import { UserService } from '../../user/user.service'
 import { ISaveExtension } from './interfaces/save-extension.interface'
@@ -329,61 +327,5 @@ export class ExtensionsController {
     }
 
     await this.extensionsService.delete(extension.id)
-  }
-  @ApiParam({
-    name: 'extensionId',
-    description: 'Extension ID',
-    example: 'de025965-3221-4d09-ba35-a09da59793a6',
-    type: String,
-  })
-  @Get('install/:extensionId')
-  async installExtension(
-    @Param() params: InstallExtensionParams,
-    @CurrentUserId() userId: string,
-  ): Promise<{ user: UpdateUserProfileDTO; extension: UpdateExtension }> {
-    const extension = await this.extensionsService.findById(params.extensionId)
-
-    if (!extension) {
-      throw new NotFoundException('Extension not found.')
-    }
-
-    const user = await this.userService.findOne(userId)
-
-    _forEach(user.installExtensions, ({ id }) => {
-      console.log(id, 'id')
-      if (id === extension.id) {
-        throw new BadRequestException('Extension already installed.')
-      }
-    })
-    extension.installs += 1
-    await this.extensionsService.update(extension.id, {
-      installs: extension.installs,
-    })
-
-    const installExtensionDate = new InstallExtension()
-    installExtensionDate.extensionId = extension.id
-    installExtensionDate.userId = userId
-    installExtensionDate.projects = null
-    installExtensionDate.active = true
-
-    const extensionInstallInstance = await this.extensionsService.createInstall(
-      installExtensionDate,
-    )
-
-    const installExtension = await this.extensionsService.saveInstall(
-      extensionInstallInstance,
-    )
-
-    await this.userService.update(userId, {
-      installExtensions: installExtension.id,
-    })
-
-    const test = await this.userService.findOneWithRelations(userId, [
-      'installExtensions',
-      'installExtensions.extensionId',
-      'installExtensions.projects',
-      'installExtensions.userId',
-    ])
-    return { user: test, extension }
   }
 }
