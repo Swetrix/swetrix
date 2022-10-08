@@ -21,8 +21,8 @@ import { PingModule } from './ping/ping.module'
 import { TGModule } from './tg-integration/tg.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
 import { Category } from './marketplace/categories/category.entity'
-import { Extension } from './marketplace/extensions/extension.entity'
-import { ExtensionToProject } from './marketplace/extensions/extension-to-project.entity'
+import { Extension } from './marketplace/extensions/entities/extension.entity'
+import { ExtensionToProject } from './marketplace/extensions/entities/extension-to-project.entity'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),

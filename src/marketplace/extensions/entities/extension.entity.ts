@@ -2,22 +2,24 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { Category } from '../categories/category.entity'
-import { ExtensionStatus } from './enums/extension-status.enum'
 import { User } from 'src/user/entities/user.entity'
 import { ExtensionToProject } from './extension-to-project.entity'
+import { ExtensionStatus } from '../enums/extension-status.enum'
+import { Category } from '../../categories/category.entity'
 
 @Entity()
 export class Extension {
   @PrimaryGeneratedColumn('uuid')
   id!: string
+
+  @Column('uuid')
+  ownerId: string
 
   @ManyToOne(() => User, user => user.ownedExtensions)
   owner!: User

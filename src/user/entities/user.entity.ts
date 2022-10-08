@@ -8,7 +8,7 @@ import {
 import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
-import { Extension } from 'src/marketplace/extensions/extension.entity'
+import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
 export enum PlanCode {
   free = 'free',
   freelancer = 'freelancer',

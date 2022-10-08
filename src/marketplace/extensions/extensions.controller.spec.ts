@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { Extension } from './extension.entity'
+import { Extension } from './entities/extension.entity'
 import { ExtensionsController } from './extensions.controller'
 import { ExtensionsService } from './extensions.service'
 

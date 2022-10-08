@@ -1,6 +1,4 @@
-import { UpdateUserProfileDTO } from './../../user/dto/update-user.dto'
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -22,7 +20,6 @@ import { CreateExtension } from './dtos/create-extension.dto'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
-import { Extension } from './extension.entity'
 import { ExtensionsService } from './extensions.service'
 import { UserService } from '../../user/user.service'
 import { ISaveExtension } from './interfaces/save-extension.interface'
@@ -34,8 +31,7 @@ import { CategoriesService } from '../categories/categories.service'
 import { SortByExtension } from './enums/sort-by-extension.enum'
 import { CdnService } from '../cdn/cdn.service'
 import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
-
-import * as _forEach from 'lodash/forEach'
+import { Extension } from './entities/extension.entity'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -119,6 +115,13 @@ export class ExtensionsController {
     required: false,
     type: String,
   })
+  @ApiQuery({
+    description: 'Extension owner id',
+    name: 'ownerId',
+    example: 'ea5a0383-e5ba-4dab-989e-3108d5a2e3bc',
+    required: false,
+    type: String,
+  })
   @Get('published')
   async getAllPublishedExtensions(
     @Query() queries: GetAllExtensionsQueries,
@@ -129,6 +132,9 @@ export class ExtensionsController {
     const [extensions, count] = await this.extensionsService.findAndCount({
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
+      where: {
+        ownerId: queries.ownerId,
+      },
     })
 
     return { extensions, count }

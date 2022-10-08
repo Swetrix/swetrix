@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
-import { Extension } from './extension.entity'
+import { ExtensionToProject } from './entities/extension-to-project.entity'
+import { Extension } from './entities/extension.entity'
 import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
 import { IUpdateExtension } from './interfaces/update-extension.interface'
-import { ExtensionToProject } from './extension-to-project.entity'
 
 @Injectable()
 export class ExtensionsService {
