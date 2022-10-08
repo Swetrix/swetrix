@@ -7,10 +7,11 @@ import { ExtensionsController } from './extensions.controller'
 import { ExtensionsService } from './extensions.service'
 import { Extension } from './entities/extension.entity'
 import { ExtensionToProject } from './entities/extension-to-project.entity'
+import { ExtensionToUser } from './entities/extension-to-user.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Extension, ExtensionToProject]),
+    TypeOrmModule.forFeature([Extension, ExtensionToUser, ExtensionToProject]),
     CategoriesModule,
     CdnModule,
     UserModule,

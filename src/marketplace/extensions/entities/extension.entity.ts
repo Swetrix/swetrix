@@ -2,16 +2,18 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { User } from 'src/user/entities/user.entity'
-import { ExtensionToProject } from './extension-to-project.entity'
+import { User } from '../../../user/entities/user.entity'
 import { ExtensionStatus } from '../enums/extension-status.enum'
 import { Category } from '../../categories/category.entity'
+import { ExtensionToUser } from './extension-to-user.entity'
+import { ExtensionToProject } from './extension-to-project.entity'
 
 @Entity()
 export class Extension {
@@ -59,14 +61,16 @@ export class Extension {
   categories: Category[] | []
 
   @OneToMany(
-    () => ExtensionToProject,
-    extensionToProject => extensionToProject.extension,
+    () => ExtensionToUser,
+    extensionToUser => extensionToUser.extension,
   )
-  extensionToProjects: ExtensionToProject[]
+  @JoinTable()
+  users: ExtensionToUser[]
 
   @OneToMany(
     () => ExtensionToProject,
-    extensionToProject => extensionToProject.project,
+    extensionToProject => extensionToProject.extension,
   )
+  @JoinTable()
   projects: ExtensionToProject[]
 }

@@ -1,4 +1,4 @@
-import { Project } from '../../../project/entity/project.entity'
+import { User } from '../../../user/entities/user.entity'
 import {
   Column,
   Entity,
@@ -9,7 +9,7 @@ import {
 import { Extension } from './extension.entity'
 
 @Entity()
-export class ExtensionToProject {
+export class ExtensionToUser {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
@@ -17,16 +17,16 @@ export class ExtensionToProject {
   extensionId: string
 
   @Column()
-  projectId: string
+  userId: string
 
   @Column('boolean', { default: true })
   isActive: boolean
 
-  @ManyToOne(() => Extension, extension => extension.projects)
+  @ManyToOne(() => Extension, extension => extension.users)
   @JoinColumn()
   extension: Extension
 
-  @ManyToOne(() => Project, project => project.extensions)
+  @ManyToOne(() => User, user => user.extensions)
   @JoinColumn()
-  project: Project
+  user: User
 }

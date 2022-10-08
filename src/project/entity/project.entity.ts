@@ -1,9 +1,16 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from 'typeorm'
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  ManyToOne,
+  OneToMany,
+  JoinTable,
+} from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
-import { ExtensionToProject } from 'src/marketplace/extensions/entities/extension-to-project.entity'
+import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
 
 // In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
 // and to add them to the GDPR data export email template
@@ -55,5 +62,6 @@ export class Project {
     () => ExtensionToProject,
     extensionToProject => extensionToProject.project,
   )
-  extensionToProjects: ExtensionToProject[]
+  @JoinTable()
+  extensions: ExtensionToProject[]
 }

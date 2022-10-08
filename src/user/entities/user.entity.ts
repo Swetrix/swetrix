@@ -4,11 +4,13 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   BeforeUpdate,
+  JoinTable,
 } from 'typeorm'
 import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
-import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
+import { Extension } from '../../marketplace/extensions/entities/extension.entity'
+import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
 export enum PlanCode {
   free = 'free',
   freelancer = 'freelancer',
@@ -179,4 +181,8 @@ export class User {
     default: null,
   })
   apiKey: string | null
+
+  @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
+  @JoinTable()
+  extensions: ExtensionToUser[]
 }
