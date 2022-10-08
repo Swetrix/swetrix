@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -32,6 +33,13 @@ import { SortByExtension } from './enums/sort-by-extension.enum'
 import { CdnService } from '../cdn/cdn.service'
 import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
 import { Extension } from './entities/extension.entity'
+import { GetInstalledExtensionsQueriesDto } from './dtos/queries/get-installed-extensions.dto'
+import { InstallExtensionParamsDto } from './dtos/params/install-extension.dto'
+import { UninstallExtensionParamsDto } from './dtos/params/uninstall-extension.dto'
+import { InstallExtensionQueriesDto } from './dtos/queries/install-extension.dto'
+import { UninstallExtensionQueriesDto } from './dtos/queries/uninstall-extension.dto'
+import { InstallExtensionBodyDto } from './dtos/bodies/install-extension.dto'
+import { UninstallExtensionBodyDto } from './dtos/bodies/uninstall-extension.dto'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -44,12 +52,21 @@ import { Extension } from './entities/extension.entity'
 )
 @Controller('extensions')
 export class ExtensionsController {
+  private readonly logger = new Logger(ExtensionsController.name)
+
   constructor(
     private readonly extensionsService: ExtensionsService,
     private readonly categoriesService: CategoriesService,
     private readonly userService: UserService,
     private readonly cdnService: CdnService,
   ) {}
+
+  @Get('installed')
+  async getInstalledExtensions(
+    @Query() queries: GetInstalledExtensionsQueriesDto,
+  ): Promise<void> {
+    this.logger.debug({ queries })
+  }
 
   @ApiQuery({
     description: 'Extension offset',
@@ -333,5 +350,23 @@ export class ExtensionsController {
     }
 
     await this.extensionsService.delete(extension.id)
+  }
+
+  @Post(':extensionId/install')
+  async installExtension(
+    @Param() params: InstallExtensionParamsDto,
+    @Query() queries: InstallExtensionQueriesDto,
+    @Body() body: InstallExtensionBodyDto,
+  ): Promise<void> {
+    this.logger.debug({ params, queries, body })
+  }
+
+  @Delete(':extensionId/uninstall')
+  async uninstallExtension(
+    @Param() params: UninstallExtensionParamsDto,
+    @Query() queries: UninstallExtensionQueriesDto,
+    @Body() body: UninstallExtensionBodyDto,
+  ): Promise<void> {
+    this.logger.debug({ params, queries, body })
   }
 }
