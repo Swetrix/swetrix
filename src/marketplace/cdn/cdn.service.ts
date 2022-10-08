@@ -1,10 +1,10 @@
-import { HttpService } from '@nestjs/axios'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { createReadStream } from 'fs'
 import { unlink, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import * as FormData from 'form-data'
+import { HttpService } from '@nestjs/axios'
 
 @Injectable()
 export class CdnService {
