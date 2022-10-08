@@ -64,8 +64,21 @@ export class ExtensionsController {
   @Get('installed')
   async getInstalledExtensions(
     @Query() queries: GetInstalledExtensionsQueriesDto,
-  ): Promise<void> {
+  ): Promise<{
+    extensions: Extension[]
+    count: number
+  }> {
     this.logger.debug({ queries })
+
+    const [extensions, count] = await this.extensionsService.findAndCount({
+      where: {
+        ownerId: queries.userId,
+      },
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 25 : queries.limit || 25,
+    })
+
+    return { extensions, count }
   }
 
   @ApiQuery({
