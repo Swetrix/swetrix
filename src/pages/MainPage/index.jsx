@@ -277,18 +277,18 @@ const Main = () => {
                 {t('main.supports')}
               </h1>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-7xl w-full mx-auto justify-between'>
-                <Telegram theme={theme} className='max-w-[150px] max-h-16' />
-                <NuxtJS theme={theme} className='max-w-[150px] max-h-12' />
-                <Webflow theme={theme} className='max-w-[150px] max-h-12' />
-                <NextJS theme={theme} className='max-w-[80px] max-h-12' />
-                <Notion theme={theme} className='max-w-[130px] max-h-12' />
-                <ReactSVG className='max-w-[150px] max-h-16' />
-                <Angular className='max-w-[160px] max-h-20' />
-                <Wordpress theme={theme} className='max-w-[160px] max-h-16' />
-                <Wix theme={theme} className='max-w-[120px] max-h-12' />
-                <Ghost theme={theme} className='max-w-[150px] max-h-20' />
-                <Gatsby theme={theme} className='max-w-[150px] max-h-12' />
-                <Cloudflare theme={theme} className='max-w-[140px] max-h-12' />
+                <Telegram theme={theme} className='max-w-[64px] sm:max-w-[150px] max-h-16' />
+                <NuxtJS theme={theme} className='max-w-[106px] sm:max-w-[150px] max-h-12' />
+                <Webflow theme={theme} className='max-w-[106px] sm:max-w-[150px] max-h-12' />
+                <NextJS theme={theme} className='max-w-[78px] sm:max-w-[80px] max-h-12' />
+                <Notion theme={theme} className='max-w-[106px] sm:max-w-[130px] max-h-12' />
+                <ReactSVG className='max-w-[71px] sm:max-w-[150px] max-h-16' />
+                <Angular className='max-w-[60px] sm:max-w-[160px] max-h-20' />
+                <Wordpress theme={theme} className='max-w-[100px] sm:max-w-[160px] max-h-16' />
+                <Wix theme={theme} className='max-w-[105px] sm:max-w-[120px] max-h-12' />
+                <Ghost theme={theme} className='max-w-[105px] sm:max-w-[150px] max-h-20' />
+                <Gatsby theme={theme} className='max-w-[105px] sm:max-w-[150px] max-h-12' />
+                <Cloudflare theme={theme} className='max-w-[105px] sm:max-w-[140px] max-h-12' />
               </div>
             </section>
             {/* end section supports */}
