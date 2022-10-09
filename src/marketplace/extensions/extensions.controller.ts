@@ -435,5 +435,56 @@ export class ExtensionsController {
     @Body() body: UninstallExtensionBodyDto,
   ): Promise<void> {
     this.logger.debug({ params, queries, body })
+
+    const extension = await this.extensionsService.findOne({
+      where: { id: params.extensionId },
+    })
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    const user = await this.userService.findOne(queries.userId)
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    if (!body.projectId) {
+      const extensionToUser =
+        await this.extensionsService.findOneExtensionToUser({
+          where: {
+            extensionId: extension.id,
+            userId: user.id,
+          },
+        })
+      if (!extensionToUser) {
+        throw new NotFoundException('Extension not installed.')
+      }
+
+      return await this.extensionsService.deleteExtensionToUser(
+        extension.id,
+        user.id,
+      )
+    }
+
+    const project = await this.projectService.findOne(body.projectId)
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const extensionToProject =
+      await this.extensionsService.findOneExtensionToProject({
+        where: {
+          extensionId: extension.id,
+          projectId: project.id,
+        },
+      })
+    if (!extensionToProject) {
+      throw new NotFoundException('Extension not installed.')
+    }
+
+    return await this.extensionsService.deleteExtensionToProject(
+      extension.id,
+      project.id,
+    )
   }
 }

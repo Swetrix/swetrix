@@ -41,6 +41,13 @@ export class ExtensionsService {
     return await this.extensionToProjectRepository.save(extensionToProject)
   }
 
+  async deleteExtensionToProject(
+    extensionId: string,
+    projectId: string,
+  ): Promise<void> {
+    await this.extensionToProjectRepository.delete({ extensionId, projectId })
+  }
+
   async findOneExtensionToUser(
     options: FindOneOptions<ExtensionToUser>,
   ): Promise<ExtensionToUser> {
@@ -53,6 +60,13 @@ export class ExtensionsService {
     Pick<ExtensionToUser, 'extensionId' | 'userId'> & ExtensionToUser
   > {
     return await this.extensionToUserRepository.save(extensionToUser)
+  }
+
+  async deleteExtensionToUser(
+    extensionId: string,
+    userId: string,
+  ): Promise<void> {
+    await this.extensionToUserRepository.delete({ extensionId, userId })
   }
 
   // async createInstall(
