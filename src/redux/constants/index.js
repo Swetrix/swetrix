@@ -67,6 +67,7 @@ export const MAX_MONTHS_IN_PAST = 24
 export const MAX_MONTHS_IN_PAST_FREE = 3
 
 export const timeBucketToDays = [
+  { lt: 1, tb: ['hour'] }, // 1 days
   { lt: 7, tb: ['hour', 'day'] }, // 7 days
   { lt: 28, tb: ['day', 'week'] }, // 4 weeks
   { lt: 366, tb: ['week', 'month'] }, // 12 months
