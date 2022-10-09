@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -40,6 +41,7 @@ import { InstallExtensionQueriesDto } from './dtos/queries/install-extension.dto
 import { UninstallExtensionQueriesDto } from './dtos/queries/uninstall-extension.dto'
 import { InstallExtensionBodyDto } from './dtos/bodies/install-extension.dto'
 import { UninstallExtensionBodyDto } from './dtos/bodies/uninstall-extension.dto'
+import { ProjectService } from '../../project/project.service'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -59,6 +61,7 @@ export class ExtensionsController {
     private readonly categoriesService: CategoriesService,
     private readonly userService: UserService,
     private readonly cdnService: CdnService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @Get('installed')
@@ -370,8 +373,59 @@ export class ExtensionsController {
     @Param() params: InstallExtensionParamsDto,
     @Query() queries: InstallExtensionQueriesDto,
     @Body() body: InstallExtensionBodyDto,
-  ): Promise<void> {
+  ): Promise<any> {
     this.logger.debug({ params, queries, body })
+
+    const extension = await this.extensionsService.findOne({
+      where: { id: params.extensionId },
+    })
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    const user = await this.userService.findOne(queries.userId)
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    if (!body.projectId) {
+      const extensionToUser =
+        await this.extensionsService.findOneExtensionToUser({
+          where: {
+            extensionId: extension.id,
+            userId: user.id,
+          },
+        })
+      if (extensionToUser) {
+        throw new ConflictException('Extension already installed.')
+      }
+
+      return await this.extensionsService.createExtensionToUser({
+        extensionId: extension.id,
+        userId: user.id,
+      })
+    }
+
+    const project = await this.projectService.findOne(body.projectId)
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const extensionToProject =
+      await this.extensionsService.findOneExtensionToProject({
+        where: {
+          extensionId: extension.id,
+          projectId: project.id,
+        },
+      })
+    if (extensionToProject) {
+      throw new ConflictException('Extension already installed.')
+    }
+
+    return await this.extensionsService.createExtensionToProject({
+      extensionId: extension.id,
+      projectId: project.id,
+    })
   }
 
   @Delete(':extensionId/uninstall')

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
 import { ExtensionToProject } from './entities/extension-to-project.entity'
+import { ExtensionToUser } from './entities/extension-to-user.entity'
 import { Extension } from './entities/extension.entity'
 import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
@@ -14,6 +15,8 @@ export class ExtensionsService {
     private readonly extensionRepository: Repository<Extension>,
     @InjectRepository(ExtensionToProject)
     private readonly extensionToProjectRepository: Repository<ExtensionToProject>,
+    @InjectRepository(ExtensionToUser)
+    private readonly extensionToUserRepository: Repository<ExtensionToUser>,
   ) {}
 
   async findOne(options: FindOneOptions<Extension>): Promise<Extension> {
@@ -22,6 +25,34 @@ export class ExtensionsService {
 
   create(extension: ICreateExtension): Extension {
     return this.extensionRepository.create(extension)
+  }
+
+  async findOneExtensionToProject(
+    options: FindOneOptions<ExtensionToProject>,
+  ): Promise<ExtensionToProject> {
+    return await this.extensionToProjectRepository.findOne({ ...options })
+  }
+
+  async createExtensionToProject(
+    extensionToProject: Pick<ExtensionToProject, 'extensionId' | 'projectId'>,
+  ): Promise<
+    Pick<ExtensionToProject, 'extensionId' | 'projectId'> & ExtensionToProject
+  > {
+    return await this.extensionToProjectRepository.save(extensionToProject)
+  }
+
+  async findOneExtensionToUser(
+    options: FindOneOptions<ExtensionToUser>,
+  ): Promise<ExtensionToUser> {
+    return await this.extensionToUserRepository.findOne({ ...options })
+  }
+
+  async createExtensionToUser(
+    extensionToUser: Pick<ExtensionToUser, 'extensionId' | 'userId'>,
+  ): Promise<
+    Pick<ExtensionToUser, 'extensionId' | 'userId'> & ExtensionToUser
+  > {
+    return await this.extensionToUserRepository.save(extensionToUser)
   }
 
   // async createInstall(

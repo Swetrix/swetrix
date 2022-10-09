@@ -8,6 +8,7 @@ import { ExtensionsService } from './extensions.service'
 import { Extension } from './entities/extension.entity'
 import { ExtensionToProject } from './entities/extension-to-project.entity'
 import { ExtensionToUser } from './entities/extension-to-user.entity'
+import { ProjectModule } from '../../project/project.module'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ExtensionToUser } from './entities/extension-to-user.entity'
     CategoriesModule,
     CdnModule,
     UserModule,
+    ProjectModule,
   ],
   controllers: [ExtensionsController],
   providers: [ExtensionsService],
