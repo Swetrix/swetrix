@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm'
-import { Extension } from '../extensions/extension.entity'
+import { Extension } from '../extensions/entities/extension.entity'
 
 @Entity()
 export class Category {
@@ -10,5 +10,5 @@ export class Category {
   name!: string
 
   @ManyToMany(() => Extension, extension => extension.categories)
-  extensions!: Extension[]
+  extensions!: Extension[] | []
 }

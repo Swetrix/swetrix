@@ -30,7 +30,6 @@ export class CdnService {
       })
 
       await unlink(filePath)
-
       return data
     } catch (error) {
       console.error(error)

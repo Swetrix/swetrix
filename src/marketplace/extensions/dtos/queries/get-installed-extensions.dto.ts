@@ -1,6 +1,9 @@
 import { IsNumberString, IsOptional, IsUUID } from 'class-validator'
 
-export class GetAllExtensionsQueries {
+export class GetInstalledExtensionsQueriesDto {
+  @IsUUID()
+  readonly userId: string
+
   @IsNumberString()
   @IsOptional()
   readonly offset?: number
@@ -8,8 +11,4 @@ export class GetAllExtensionsQueries {
   @IsNumberString()
   @IsOptional()
   readonly limit?: number
-
-  @IsUUID()
-  @IsOptional()
-  readonly ownerId?: string
 }

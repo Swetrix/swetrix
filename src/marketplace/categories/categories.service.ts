@@ -46,4 +46,8 @@ export class CategoriesService {
   async findByName(name: string): Promise<Category> {
     return await this.findOne({ where: { name }, select: ['name'] })
   }
+
+  async findByIds(ids: number[]): Promise<Category[]> {
+    return await this.categoryRepository.findByIds(ids)
+  }
 }
