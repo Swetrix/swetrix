@@ -3,7 +3,7 @@ import React, {
 } from 'react'
 import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
 import {
-  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon,
+  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -31,7 +31,7 @@ const ENTRIES_PER_PANEL = 5
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment,
+  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs,
 }) => (
   <div
     className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
@@ -49,50 +49,80 @@ const PanelContainer = ({
         )}
         {name}
       </h3>
-      {/* if it is a Country tab  */}
-      {type === 'cc' && (
-        <div className='flex'>
-          <Bars4Icon
-            className={cx(iconClassName, 'cursor-pointer', {
-              'text-blue-500': activeFragment === 0,
-              'text-gray-900 dark:text-gray-50': activeFragment === 1,
-            })}
-            onClick={() => setActiveFragment(0)}
-          />
-          <MapIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer', {
-              'text-blue-500': activeFragment === 1,
-              'text-gray-900 dark:text-gray-50': activeFragment === 0,
-            })}
-            onClick={() => setActiveFragment(1)}
-          />
-          <ArrowsPointingOutIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
-              hidden: activeFragment === 0,
-            })}
-            onClick={openModal}
-          />
-        </div>
-      )}
-      {/* if this tab using Circle showing stats panel */}
-      {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
-        <div className='flex'>
-          <Bars4Icon
-            className={cx(iconClassName, 'cursor-pointer', {
-              'text-blue-500': activeFragment === 0,
-              'text-gray-900 dark:text-gray-50': activeFragment === 1,
-            })}
-            onClick={() => setActiveFragment(0)}
-          />
-          <ChartPieIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer', {
-              'text-blue-500': activeFragment === 1,
-              'text-gray-900 dark:text-gray-50': activeFragment === 0,
-            })}
-            onClick={() => setActiveFragment(1)}
-          />
-        </div>
-      )}
+      <div className='flex'>
+        {/* if it is a Country tab  */}
+        {type === 'cc' && (
+          <>
+            <Bars4Icon
+              className={cx(iconClassName, 'cursor-pointer', {
+                'text-blue-500': activeFragment === 0,
+                'text-gray-900 dark:text-gray-50': activeFragment === 1,
+              })}
+              onClick={() => setActiveFragment(0)}
+            />
+            <MapIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                'text-blue-500': activeFragment === 1,
+                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+              })}
+              onClick={() => setActiveFragment(1)}
+            />
+            <ArrowsPointingOutIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
+                hidden: activeFragment === 0,
+              })}
+              onClick={openModal}
+            />
+          </>
+        )}
+        {/* if this tab using Circle showing stats panel */}
+        {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
+          <>
+            <Bars4Icon
+              className={cx(iconClassName, 'cursor-pointer', {
+                'text-blue-500': activeFragment === 0,
+                'text-gray-900 dark:text-gray-50': activeFragment === 1,
+              })}
+              onClick={() => setActiveFragment(0)}
+            />
+            <ChartPieIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                'text-blue-500': activeFragment === 1,
+                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+              })}
+              onClick={() => setActiveFragment(1)}
+            />
+          </>
+        )}
+        {!_isEmpty(customTabs) && type === 'pg' && (
+          <>
+            {/* {_map(customTabs, (tab, index) => (
+              <PuzzlePieceIcon
+                key={index}
+                className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                  'text-blue-500': activeFragment === index + 2,
+                  'text-gray-900 dark:text-gray-50': activeFragment !== index + 2,
+                })}
+                onClick={() => setActiveFragment(index + 2)}
+              />
+            ))} */}
+            <Bars4Icon
+              className={cx(iconClassName, 'cursor-pointer', {
+                'text-blue-500': activeFragment === 0,
+                'text-gray-900 dark:text-gray-50': activeFragment !== 0,
+              })}
+              onClick={() => setActiveFragment(0)}
+            />
+            <PuzzlePieceIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                'text-blue-500': activeFragment === 555,
+                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+              })}
+              onClick={() => setActiveFragment(555)}
+            />
+          </>
+        )}
+      </div>
     </div>
     {/* for other tabs */}
     <div className='flex flex-col h-full scroll-auto overflow-auto'>
@@ -389,7 +419,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
+  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -432,6 +462,7 @@ const Panel = ({
         activeFragment={activeFragment}
         setActiveFragment={setActiveFragment}
         openModal={() => setModal(true)}
+        customTabs={customTabs}
       >
         <InteractiveMap
           data={data}
@@ -498,6 +529,7 @@ const Panel = ({
         type={id}
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
+        customTabs={customTabs}
       >
         {_isEmpty(data) ? (
           <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
@@ -514,8 +546,29 @@ const Panel = ({
   }
   // Showing chart of stats a data (end if)
 
+  // Showing custom tabs (Extensions Marketplace)
+  // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
+  if (!_isEmpty(customTabs) && activeFragment === 555 && !_isEmpty(data)) {
+    return (
+      <PanelContainer
+        name={name}
+        icon={icon}
+        type={id}
+        activeFragment={activeFragment}
+        setActiveFragment={setActiveFragment}
+        openModal={() => setModal(true)}
+        customTabs={customTabs}
+      >
+        <p>
+          Custom extension content
+        </p>
+      </PanelContainer>
+    )
+  }
+
+  console.log(id)
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment}>
+    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs}>
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}

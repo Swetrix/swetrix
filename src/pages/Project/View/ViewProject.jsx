@@ -28,6 +28,7 @@ import _filter from 'lodash/filter'
 import _truncate from 'lodash/truncate'
 import _startsWith from 'lodash/startsWith'
 import PropTypes from 'prop-types'
+import SwetrixSDK from 'swetrix-sdk-test/esnext'
 
 import { SWETRIX_PID } from 'utils/analytics'
 import Title from 'components/Title'
@@ -350,6 +351,8 @@ const ViewProject = ({
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
+  const [customExportTypes, setCustomExportTypes] = useState([])
+  const [customPanelTabs, setCustomPanelTabs] = useState([])
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
@@ -570,6 +573,44 @@ const ViewProject = ({
       }
     }
   }, [isLoading, showTotal, chartData, mainChart, t])
+
+  useEffect(() => {
+    const sdk = new SwetrixSDK([{
+      cdnURL: 'http://localhost:3000/assets/test_extension.js',
+    }], {
+      debug: true,
+    }, {
+      onAddExportDataRow: (label, onClick) => {
+        setCustomExportTypes((prev) => [
+          ...prev,
+          {
+            label,
+            onClick,
+          },
+        ])
+      },
+      onRemoveExportDataRow: (label) => {
+        setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
+      },
+      onAddPanelTab: (extensionID, panelID, onClick) => {
+        setCustomPanelTabs((prev) => [
+          ...prev,
+          {
+            extensionID,
+            panelID,
+            onClick,
+          },
+        ])
+      },
+      onRemovePanelTab: (extensionID, panelID) => {
+        setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
+      },
+    })
+
+    return () => {
+      sdk._destroy()
+    }
+  }, [])
 
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t))
@@ -955,7 +996,7 @@ const ViewProject = ({
               onChange={(e) => setShowTotal(e.target.checked)}
             />
             <Dropdown
-              items={exportTypes}
+              items={[...exportTypes, ...customExportTypes]}
               title={[
                 <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
                 <Fragment key='export-data'>
@@ -1015,6 +1056,7 @@ const ViewProject = ({
               {_map(panelsData.types, (type) => {
                 const panelName = tnMapping[type]
                 const panelIcon = panelIconMapping[type]
+                const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 
                 if (type === 'cc') {
                   return (
@@ -1026,6 +1068,7 @@ const ViewProject = ({
                       onFilter={filterHandler}
                       name={panelName}
                       data={panelsData.data[type]}
+                      customTabs={customTabs}
                       rowMapper={(rowName) => (
                         <CCRow rowName={rowName} language={language} />
                       )}
@@ -1043,6 +1086,7 @@ const ViewProject = ({
                       onFilter={filterHandler}
                       name={panelName}
                       data={panelsData.data[type]}
+                      customTabs={customTabs}
                       capitalize
                     />
                   )
@@ -1058,6 +1102,7 @@ const ViewProject = ({
                       onFilter={filterHandler}
                       name={panelName}
                       data={panelsData.data[type]}
+                      customTabs={customTabs}
                       rowMapper={(rowName) => (
                         <RefRow rowName={rowName} showIcons={showIcons} />
                       )}
@@ -1074,6 +1119,7 @@ const ViewProject = ({
                     onFilter={filterHandler}
                     name={panelName}
                     data={panelsData.data[type]}
+                    customTabs={customTabs}
                   />
                 )
               })}
