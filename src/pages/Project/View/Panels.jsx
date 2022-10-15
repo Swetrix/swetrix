@@ -15,7 +15,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _isFunction from 'lodash/isFunction'
 import _reduce from 'lodash/reduce'
 import _round from 'lodash/round'
-import _findIndex from 'lodash/findIndex'
+import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _floor from 'lodash/floor'
 import _size from 'lodash/size'
@@ -37,7 +37,7 @@ const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv']
 const checkCustomTabs = (panelID, customTabs) => {
   if (_isEmpty(customTabs)) return false
 
-  return _findIndex(customTabs, (el) => el.panelID === panelID) !== -1
+  return Boolean(_find(customTabs, (el) => el.panelID === panelID))
 }
 
 const checkIfBarsNeeded = (panelID) => {
@@ -74,8 +74,6 @@ const PanelContainer = ({
               onClick={() => setActiveFragment(0)}
             />
         )}
-
-        {console.log('customTabs', customTabs)}
 
         {/* if it is a Country tab  */}
         {type === 'cc' && (
@@ -548,6 +546,8 @@ const Panel = ({
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
   if (!_isEmpty(customTabs) && typeof activeFragment === 'string' && !_isEmpty(data)) {
+    const content = _find(customTabs, (tab) => tab.extensionID === activeFragment).tabContent
+
     return (
       <PanelContainer
         name={name}
@@ -558,9 +558,7 @@ const Panel = ({
         openModal={() => setModal(true)}
         customTabs={customTabs}
       >
-        <p>
-          Custom extension content
-        </p>
+        <div dangerouslySetInnerHTML={{ __html: content }} />
       </PanelContainer>
     )
   }

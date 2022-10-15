@@ -606,13 +606,14 @@ const ViewProject = ({
       onRemoveExportDataRow: (label) => {
         setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
       },
-      onAddPanelTab: (extensionID, panelID, onClick) => {
+      onAddPanelTab: (extensionID, panelID, tabContent, onOpen) => {
         setCustomPanelTabs((prev) => [
           ...prev,
           {
             extensionID,
             panelID,
-            onClick,
+            tabContent,
+            onOpen,
           },
         ])
       },

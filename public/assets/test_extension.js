@@ -10,7 +10,7 @@
     console.log('test')
   })
 
-  sdk.addPanelTab('pg', () => {})
+  sdk.addPanelTab('pg', 'test', () => {})
 
   // sdk.addEventListener('load', (data) => {
   //   console.log('sdk.addEventListener', data)
