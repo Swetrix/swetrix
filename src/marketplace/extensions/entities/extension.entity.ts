@@ -14,6 +14,7 @@ import { ExtensionStatus } from '../enums/extension-status.enum'
 import { Category } from '../../categories/category.entity'
 import { ExtensionToUser } from './extension-to-user.entity'
 import { ExtensionToProject } from './extension-to-project.entity'
+import { Comment } from '../../comments/entities/comment.entity'
 
 @Entity()
 export class Extension {
@@ -73,4 +74,8 @@ export class Extension {
   )
   @JoinTable()
   projects: ExtensionToProject[]
+
+  @OneToMany(() => Comment, comment => comment.extension)
+  @JoinTable()
+  comments: Comment[]
 }
