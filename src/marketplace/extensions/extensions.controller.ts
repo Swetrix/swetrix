@@ -289,6 +289,7 @@ export class ExtensionsController {
     FileFieldsInterceptor([
       { name: 'mainImage', maxCount: 1 },
       { name: 'additionalImages', maxCount: 5 },
+      { name: 'file', maxCount: 1 },
     ]),
   )
   async createExtension(
@@ -298,6 +299,7 @@ export class ExtensionsController {
     files: {
       mainImage?: Express.Multer.File
       additionalImages?: Express.Multer.File[]
+      file: Express.Multer.File
     },
   ): Promise<ISaveExtension & Extension> {
     const additionalImageFilenames = []
@@ -321,6 +323,7 @@ export class ExtensionsController {
         ? (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
         : undefined,
       additionalImages: files.additionalImages ? additionalImageFilenames : [],
+      fileURL: (await this.cdnService.uploadFile(files.file[0]))?.filename,
       categories: body.categoriesIds
         ? await this.categoriesService.findByIds(body.categoriesIds)
         : undefined,
