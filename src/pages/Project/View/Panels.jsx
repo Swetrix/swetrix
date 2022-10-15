@@ -15,6 +15,8 @@ import _isEmpty from 'lodash/isEmpty'
 import _isFunction from 'lodash/isFunction'
 import _reduce from 'lodash/reduce'
 import _round from 'lodash/round'
+import _findIndex from 'lodash/findIndex'
+import _includes from 'lodash/includes'
 import _floor from 'lodash/floor'
 import _size from 'lodash/size'
 import _slice from 'lodash/slice'
@@ -28,6 +30,19 @@ import InteractiveMap from './InteractiveMap'
 import { iconClassName } from './ViewProject'
 
 const ENTRIES_PER_PANEL = 5
+
+const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv']
+
+// function that checks if there are custom tabs for a specific type
+const checkCustomTabs = (panelID, customTabs) => {
+  if (_isEmpty(customTabs)) return false
+
+  return _findIndex(customTabs, (el) => el.panelID === panelID) !== -1
+}
+
+const checkIfBarsNeeded = (panelID) => {
+  return _includes(panelsWithBars, panelID)
+}
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
@@ -50,9 +65,7 @@ const PanelContainer = ({
         {name}
       </h3>
       <div className='flex'>
-        {/* if it is a Country tab  */}
-        {type === 'cc' && (
-          <>
+        {(checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs)) && (
             <Bars4Icon
               className={cx(iconClassName, 'cursor-pointer', {
                 'text-blue-500': activeFragment === 0,
@@ -60,6 +73,13 @@ const PanelContainer = ({
               })}
               onClick={() => setActiveFragment(0)}
             />
+        )}
+
+        {console.log('customTabs', customTabs)}
+
+        {/* if it is a Country tab  */}
+        {type === 'cc' && (
+          <>
             <MapIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
                 'text-blue-500': activeFragment === 1,
@@ -78,13 +98,6 @@ const PanelContainer = ({
         {/* if this tab using Circle showing stats panel */}
         {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
           <>
-            <Bars4Icon
-              className={cx(iconClassName, 'cursor-pointer', {
-                'text-blue-500': activeFragment === 0,
-                'text-gray-900 dark:text-gray-50': activeFragment === 1,
-              })}
-              onClick={() => setActiveFragment(0)}
-            />
             <ChartPieIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
                 'text-blue-500': activeFragment === 1,
@@ -94,32 +107,18 @@ const PanelContainer = ({
             />
           </>
         )}
-        {!_isEmpty(customTabs) && type === 'pg' && (
+        {checkCustomTabs(type, customTabs) && (
           <>
-            {/* {_map(customTabs, (tab, index) => (
+            {_map(customTabs, ({ extensionID, panelID }) => (
               <PuzzlePieceIcon
-                key={index}
+                key={`${extensionID}-${panelID}`}
                 className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                  'text-blue-500': activeFragment === index + 2,
-                  'text-gray-900 dark:text-gray-50': activeFragment !== index + 2,
+                  'text-blue-500': activeFragment === extensionID,
+                  'text-gray-900 dark:text-gray-50': activeFragment === 0,
                 })}
-                onClick={() => setActiveFragment(index + 2)}
+                onClick={() => setActiveFragment(extensionID)}
               />
-            ))} */}
-            <Bars4Icon
-              className={cx(iconClassName, 'cursor-pointer', {
-                'text-blue-500': activeFragment === 0,
-                'text-gray-900 dark:text-gray-50': activeFragment !== 0,
-              })}
-              onClick={() => setActiveFragment(0)}
-            />
-            <PuzzlePieceIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                'text-blue-500': activeFragment === 555,
-                'text-gray-900 dark:text-gray-50': activeFragment === 0,
-              })}
-              onClick={() => setActiveFragment(555)}
-            />
+            ))}
           </>
         )}
       </div>
@@ -135,7 +134,7 @@ PanelContainer.propTypes = {
   name: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   noSwitch: PropTypes.bool,
-  activeFragment: PropTypes.number,
+  activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   setActiveFragment: PropTypes.func,
   icon: PropTypes.node,
 }
@@ -548,7 +547,7 @@ const Panel = ({
 
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
-  if (!_isEmpty(customTabs) && activeFragment === 555 && !_isEmpty(data)) {
+  if (!_isEmpty(customTabs) && typeof activeFragment === 'string' && !_isEmpty(data)) {
     return (
       <PanelContainer
         name={name}

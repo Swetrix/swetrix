@@ -12,10 +12,10 @@
 
   sdk.addPanelTab('pg', () => {})
 
-  sdk.addEventListener('load', (data) => {
-    console.log('sdk.addEventListener', data)
+  // sdk.addEventListener('load', (data) => {
+  //   console.log('sdk.addEventListener', data)
 
-    for (let i = 0; i < 999999999; i++) {}
-    console.log('end')
-  })
+  //   for (let i = 0; i < 999999999; i++) {}
+  //   console.log('end')
+  // })
 })
