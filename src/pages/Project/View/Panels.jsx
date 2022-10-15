@@ -566,7 +566,6 @@ const Panel = ({
     )
   }
 
-  console.log(id)
   return (
     <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs}>
       {_isEmpty(data) ? (

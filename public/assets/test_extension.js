@@ -1,9 +1,6 @@
-((sdk) => {
-  function main(sdk) {
-    console.log('Main function called!\n', sdk)
-  }
-  
-  main(sdk)
+(async (sdk) => {
+  console.log('test_extension.js', sdk)
+  console.log('--------------------')
 
   sdk.addExportDataRow('As blahblahblah', () => {
     console.log('blahblahblah')
@@ -13,5 +10,12 @@
     console.log('test')
   })
 
-  sdk.addPanelTab('test-extension', 'pg', () => {})
+  sdk.addPanelTab('pg', () => {})
+
+  sdk.addEventListener('load', (data) => {
+    console.log('sdk.addEventListener', data)
+
+    for (let i = 0; i < 999999999; i++) {}
+    console.log('end')
+  })
 })

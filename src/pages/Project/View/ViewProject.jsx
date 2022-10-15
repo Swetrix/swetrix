@@ -353,6 +353,7 @@ const ViewProject = ({
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
   const [customExportTypes, setCustomExportTypes] = useState([])
   const [customPanelTabs, setCustomPanelTabs] = useState([])
+  const [sdkInstance, setSdkInstance] = useState(null)
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
@@ -428,14 +429,26 @@ const ViewProject = ({
         setProjectCache(id, data || {}, key)
       }
 
+      const sdkData = {
+        ...(data || {}),
+        filters: newFilters || filters,
+        timezone,
+        timeBucket,
+        period,
+        from,
+        to,
+      }
+
       if (_isEmpty(data)) {
         setAnalyticsLoading(false)
         setDataLoading(false)
         setIsPanelsDataEmpty(true)
+        sdkInstance._emitEvent('load', sdkData)
         return
       }
 
       const { chart, params, customs } = data
+      sdkInstance._emitEvent('load', sdkData)
 
       if (_isEmpty(params)) {
         setIsPanelsDataEmpty(true)
@@ -577,6 +590,7 @@ const ViewProject = ({
   useEffect(() => {
     const sdk = new SwetrixSDK([{
       cdnURL: 'http://localhost:3000/assets/test_extension.js',
+      id: 'test-extension',
     }], {
       debug: true,
     }, {
@@ -606,6 +620,7 @@ const ViewProject = ({
         setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
       },
     })
+    setSdkInstance(sdk)
 
     return () => {
       sdk._destroy()
