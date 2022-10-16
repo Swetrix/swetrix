@@ -1,6 +1,13 @@
-import { Controller, Get, Query } from '@nestjs/common'
-import { ApiQuery, ApiTags } from '@nestjs/swagger'
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Query,
+} from '@nestjs/common'
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { ComplaintsService } from './complaints.service'
+import { GetComplaintParamDto } from './dtos/params/get-complaint.dto'
 import { GetComplaintsQueryDto } from './dtos/queries/get-complaints.dto'
 import { Complaint } from './entities/complaint.entity'
 
@@ -29,5 +36,22 @@ export class ComplaintsController {
     })
 
     return { complaints, count }
+  }
+
+  // In the future, it will be added to use only for admin.
+  @Get(':complaintId')
+  @ApiParam({ name: 'complaintId', required: true, type: String })
+  async getComplaint(
+    @Param() params: GetComplaintParamDto,
+  ): Promise<Complaint> {
+    const complaint = await this.complaintsService.findOne({
+      where: { id: params.complaintId },
+    })
+
+    if (!complaint) {
+      throw new NotFoundException('Complaint not found.')
+    }
+
+    return complaint
   }
 }
