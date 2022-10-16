@@ -12,6 +12,7 @@ import { ProjectShare } from '../../project/entity/project-share.entity'
 import { Extension } from '../../marketplace/extensions/entities/extension.entity'
 import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
+import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 export enum PlanCode {
   free = 'free',
   freelancer = 'freelancer',
@@ -190,4 +191,8 @@ export class User {
   @OneToMany(() => Comment, comment => comment.user)
   @JoinTable()
   comments: Comment[]
+
+  @OneToMany(() => Complaint, complaint => complaint.user)
+  @JoinTable()
+  complaints: Complaint[]
 }
