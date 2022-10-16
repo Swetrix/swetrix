@@ -1,20 +1,30 @@
 import {
+  Body,
   Controller,
   Get,
   NotFoundException,
   Param,
+  Post,
   Query,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { UserService } from '../../user/user.service'
+import { ExtensionsService } from '../extensions/extensions.service'
 import { ComplaintsService } from './complaints.service'
+import { CreateComplaintBodyDto } from './dtos/bodies/create-complaint.dto'
 import { GetComplaintParamDto } from './dtos/params/get-complaint.dto'
+import { CreateComplaintQueryDto } from './dtos/queries/create-complaint.dto'
 import { GetComplaintsQueryDto } from './dtos/queries/get-complaints.dto'
 import { Complaint } from './entities/complaint.entity'
 
 @ApiTags('complaints')
 @Controller('complaints')
 export class ComplaintsController {
-  constructor(private readonly complaintsService: ComplaintsService) {}
+  constructor(
+    private readonly complaintsService: ComplaintsService,
+    private readonly userService: UserService,
+    private readonly extensionsService: ExtensionsService,
+  ) {}
 
   // In the future, it will be added to use only for admin.
   @Get()
@@ -53,5 +63,32 @@ export class ComplaintsController {
     }
 
     return complaint
+  }
+
+  @Post()
+  @ApiQuery({ name: 'userId', required: true, type: String })
+  async createComplaint(
+    @Query() queries: CreateComplaintQueryDto,
+    @Body() body: CreateComplaintBodyDto,
+  ): Promise<Complaint> {
+    const user = await this.userService.findOne(queries.userId)
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    const extension = await this.extensionsService.findOne({
+      where: { id: body.extensionId },
+    })
+
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    return this.complaintsService.save({
+      ...body,
+      userId: Number(queries.userId),
+      extensionId: Number(body.extensionId),
+    })
   }
 }

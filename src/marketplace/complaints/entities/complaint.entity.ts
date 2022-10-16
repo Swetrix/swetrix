@@ -8,6 +8,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
+import { ComplaintStatus } from '../enums/complaint-status.enum'
 
 @Entity()
 export class Complaint {
@@ -22,6 +23,9 @@ export class Complaint {
 
   @Column('text')
   description: string
+
+  @Column('enum', { enum: ComplaintStatus, default: ComplaintStatus.PENDING })
+  status: ComplaintStatus
 
   @CreateDateColumn()
   sendedAt: Date
