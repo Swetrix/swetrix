@@ -12,7 +12,9 @@ import { UserService } from '../../user/user.service'
 import { ExtensionsService } from '../extensions/extensions.service'
 import { ComplaintsService } from './complaints.service'
 import { CreateComplaintBodyDto } from './dtos/bodies/create-complaint.dto'
+import { ResolveComplaintBodyDto } from './dtos/bodies/resolve-complaint.dto'
 import { GetComplaintParamDto } from './dtos/params/get-complaint.dto'
+import { ResolveComplaintParamDto } from './dtos/params/resolve-complaint.dto'
 import { CreateComplaintQueryDto } from './dtos/queries/create-complaint.dto'
 import { GetComplaintsQueryDto } from './dtos/queries/get-complaints.dto'
 import { Complaint } from './entities/complaint.entity'
@@ -89,6 +91,32 @@ export class ComplaintsController {
       ...body,
       userId: Number(queries.userId),
       extensionId: Number(body.extensionId),
+    })
+  }
+
+  // In the future, it will be added to use only for admin.
+  @Post(':complaintId/resolve')
+  @ApiParam({ name: 'complaintId', required: true, type: String })
+  async resolveComplaint(
+    @Param() params: ResolveComplaintParamDto,
+    @Body() body: ResolveComplaintBodyDto,
+  ) {
+    const complaint = await this.complaintsService.findOne({
+      where: { id: params.complaintId },
+    })
+
+    if (!complaint) {
+      throw new NotFoundException('Complaint not found.')
+    }
+
+    if (complaint.isResolved) {
+      throw new NotFoundException('Complaint is already resolved.')
+    }
+
+    await this.complaintsService.update(Number(params.complaintId), {
+      extensionId: Number(params.complaintId),
+      ...body,
+      isResolved: true,
     })
   }
 }

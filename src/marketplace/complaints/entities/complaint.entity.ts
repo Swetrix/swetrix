@@ -24,8 +24,14 @@ export class Complaint {
   @Column('text')
   description: string
 
+  @Column('text', { nullable: true, default: null })
+  reply: string | null
+
   @Column('enum', { enum: ComplaintStatus, default: ComplaintStatus.PENDING })
   status: ComplaintStatus
+
+  @Column('boolean', { default: false })
+  isResolved: boolean
 
   @CreateDateColumn()
   sendedAt: Date

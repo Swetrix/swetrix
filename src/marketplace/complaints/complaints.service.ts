@@ -20,12 +20,11 @@ export class ComplaintsService {
     return await this.complaintsRepository.findOne({ ...options })
   }
 
-  async save(
-    complaint: Omit<
-      Complaint,
-      'id' | 'status' | 'sendedAt' | 'extension' | 'user'
-    >,
-  ): Promise<Complaint> {
+  async save(complaint: Partial<Complaint>): Promise<Complaint> {
     return await this.complaintsRepository.save(complaint)
+  }
+
+  async update(id: number, complaint: Partial<Complaint>): Promise<void> {
+    await this.complaintsRepository.update({ id }, complaint)
   }
 }
