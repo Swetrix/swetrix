@@ -21,10 +21,10 @@ export class Comment {
   userId: number
 
   @Column('text', { nullable: true, default: null })
-  text: string
+  text: string | null
 
   @Column('int', { nullable: true, default: null })
-  rating: number
+  rating: number | null
 
   @CreateDateColumn()
   addedAt: Date

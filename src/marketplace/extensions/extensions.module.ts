@@ -20,5 +20,6 @@ import { ProjectModule } from '../../project/project.module'
   ],
   controllers: [ExtensionsController],
   providers: [ExtensionsService],
+  exports: [ExtensionsService],
 })
 export class ExtensionsModule {}

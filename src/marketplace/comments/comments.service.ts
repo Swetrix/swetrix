@@ -19,6 +19,12 @@ export class CommentsService {
     return await this.commentsRepository.findOne({ ...options })
   }
 
+  async save(
+    comment: Omit<Comment, 'id' | 'addedAt' | 'extension' | 'user'>,
+  ): Promise<Comment> {
+    return await this.commentsRepository.save(comment)
+  }
+
   async delete(id: string): Promise<void> {
     await this.commentsRepository.delete(id)
   }
