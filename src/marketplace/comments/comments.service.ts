@@ -18,4 +18,8 @@ export class CommentsService {
   async findOne(options: FindOneOptions<Comment>): Promise<Comment> {
     return await this.commentsRepository.findOne({ ...options })
   }
+
+  async delete(id: string): Promise<void> {
+    await this.commentsRepository.delete(id)
+  }
 }

@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -7,6 +8,7 @@ import {
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { CommentsService } from './comments.service'
+import { DeleteCommentParamDto } from './dtos/params/delete-comment.dto'
 import { GetCommentParamDto } from './dtos/params/get-comment.dto'
 import { GetCommentsQueryDto } from './dtos/queries/get-comments.dto'
 import { Comment } from './entities/comment.entity'
@@ -49,5 +51,19 @@ export class CommentsController {
     }
 
     return comment
+  }
+
+  @Delete(':commentId')
+  @ApiParam({ name: 'commentId', required: true, type: String })
+  async deleteComment(@Param() params: DeleteCommentParamDto): Promise<void> {
+    const comment = await this.commentsService.findOne({
+      where: { id: params.commentId },
+    })
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found.')
+    }
+
+    await this.commentsService.delete(params.commentId)
   }
 }
