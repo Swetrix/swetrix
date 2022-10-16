@@ -92,8 +92,8 @@ export class User {
   })
   planCode: PlanCode
 
-  @Column('varchar', { length: 100 })
-  nickname: string
+  @Column('varchar', { length: 100, nullable: true, default: null })
+  nickname: string | null
 
   @Column('varchar', { length: 254, unique: true })
   email: string
