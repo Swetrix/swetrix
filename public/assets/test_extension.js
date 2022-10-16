@@ -12,7 +12,15 @@
 
   sdk.addPanelTab('pg', 'test', () => {})
 
+  // sdk.addEventListener('timeupdate', (data) => {
+  //   console.log('timeupdate', data)
+  // })
+
+  // sdk.addEventListener('filtersupdate', (data) => {
+  //   console.log('filtersupdate', data)
+  // })
+
   // sdk.addEventListener('load', (data) => {
-  //   console.log('sdk.addEventListener', data)
+  //   console.log('load', data)
   // })
 })

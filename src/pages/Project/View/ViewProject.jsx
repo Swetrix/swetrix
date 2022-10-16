@@ -384,8 +384,8 @@ const ViewProject = ({
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
-  const localstorageRangeDate = projectViewPrefs[id]?.rangeDate
-  const [rangeDate, setRangeDate] = useState(localstorageRangeDate ? [new Date(localstorageRangeDate[0]), new Date(localstorageRangeDate[1])] : null)
+  const localStorageDateRange = projectViewPrefs[id]?.rangeDate
+  const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
 
   const { name } = project
 
@@ -409,9 +409,9 @@ const ViewProject = ({
       let from
       let to
 
-      if (rangeDate) {
-        from = getFormatDate(rangeDate[0])
-        to = getFormatDate(rangeDate[1])
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
         key = getProjectCacheCustomKey(from, to, timeBucket)
       } else {
         key = getProjectCacheKey(period, timeBucket)
@@ -420,7 +420,7 @@ const ViewProject = ({
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
         data = cache[id][key]
       } else {
-        if (period === 'custom' && rangeDate) {
+        if (period === 'custom' && dateRange) {
           data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
         } else {
           data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
@@ -443,12 +443,12 @@ const ViewProject = ({
         setAnalyticsLoading(false)
         setDataLoading(false)
         setIsPanelsDataEmpty(true)
-        sdkInstance._emitEvent('load', sdkData)
+        sdkInstance?._emitEvent('load', sdkData)
         return
       }
 
       const { chart, params, customs } = data
-      sdkInstance._emitEvent('load', sdkData)
+      sdkInstance?._emitEvent('load', sdkData)
 
       if (_isEmpty(params)) {
         setIsPanelsDataEmpty(true)
@@ -529,6 +529,7 @@ const ViewProject = ({
       })
     }
 
+    sdkInstance?._emitEvent('filtersupdate', newFilters)
     loadAnalytics(true, newFilters)
   }
 
@@ -564,6 +565,7 @@ const ViewProject = ({
         scrollToTopDisable: true,
       },
     })
+    sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
 
   const refreshStats = () => {
@@ -689,9 +691,13 @@ const ViewProject = ({
     // eslint-disable-next-line no-restricted-syntax
     for (const index in timeBucketToDays) {
       if (timeBucketToDays[index].lt >= days) {
+        let eventEmitTimeBucket = timeBucket
+
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
+          // eslint-disable-next-line prefer-destructuring
+          eventEmitTimeBucket = timeBucketToDays[index].tb[0]
           url.searchParams.delete('timeBucket')
-          url.searchParams.append('timeBucket', timeBucketToDays[index].tb[0])
+          url.searchParams.append('timeBucket', eventEmitTimeBucket)
           const { pathname, search } = url
           history.push({
             pathname,
@@ -700,14 +706,16 @@ const ViewProject = ({
               scrollToTopDisable: true,
             },
           })
-          setTimebucket(timeBucketToDays[index].tb[0])
+          setTimebucket(eventEmitTimeBucket)
         }
+
         url.searchParams.delete('period')
         url.searchParams.delete('from')
         url.searchParams.delete('to')
         url.searchParams.append('period', 'custom')
         url.searchParams.append('from', dates[0].toISOString())
         url.searchParams.append('to', dates[1].toISOString())
+
         const { pathname, search } = url
         history.push({
           pathname,
@@ -716,9 +724,17 @@ const ViewProject = ({
             scrollToTopDisable: true,
           },
         })
+
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates))
         setPeriod('custom')
         setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], dates)
+
+        sdkInstance?._emitEvent('timeupdate', {
+          period: 'custom',
+          timeBucket: eventEmitTimeBucket,
+          dateRange: dates,
+        })
+
         break
       }
     }
@@ -731,10 +747,10 @@ const ViewProject = ({
   }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
 
   useEffect(() => {
-    if (rangeDate && arePeriodParsed) {
-      onRangeDateChange(rangeDate)
+    if (dateRange && arePeriodParsed) {
+      onRangeDateChange(dateRange)
     }
-  }, [rangeDate, t, arePeriodParsed]) // eslint-disable-line
+  }, [dateRange, t, arePeriodParsed]) // eslint-disable-line
 
   useEffect(() => {
     const updateLiveVisitors = async () => {
@@ -805,6 +821,7 @@ const ViewProject = ({
       url.searchParams.append('period', newPeriod.period)
       setProjectViewPrefs(id, newPeriod.period, tb)
       setPeriod(newPeriod.period)
+      setDateRange(null)
     }
     const { pathname, search } = url
     history.push({
@@ -813,6 +830,11 @@ const ViewProject = ({
       state: {
         scrollToTopDisable: true,
       },
+    })
+    sdkInstance?._emitEvent('timeupdate', {
+      period: newPeriod.period,
+      timeBucket: tb,
+      dateRange: newPeriod.period === 'custom' ? dateRange : null,
     })
   }
 
@@ -829,7 +851,12 @@ const ViewProject = ({
       },
     })
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket, rangeDate)
+    setProjectViewPrefs(id, period, newTimebucket, dateRange)
+    sdkInstance?._emitEvent('timeupdate', {
+      period,
+      timeBucket: newTimebucket,
+      dateRange,
+    })
   }
 
   const openSettingsHandler = () => {
@@ -864,13 +891,13 @@ const ViewProject = ({
         const to = new Date(searchParams.get('to'))
         if (from.getDate() && to.getDate()) {
           onRangeDateChange([from, to], true)
-          setRangeDate([from, to])
+          setDateRange([from, to])
         }
         return
       }
 
       setPeriodPairs(tbPeriodPairs(t))
-      setRangeDate(null)
+      setDateRange(null)
       updatePeriod({ period: intialPeriod })
     } finally {
       setArePeriodParsed(true)
@@ -990,15 +1017,15 @@ const ViewProject = ({
                     }, 100)
                   } else {
                     setPeriodPairs(tbPeriodPairs(t))
-                    setRangeDate(null)
+                    setDateRange(null)
                     updatePeriod(pair)
                   }
                 }}
               />
               <FlatPicker
                 ref={refCalendar}
-                onChange={(date) => setRangeDate(date)}
-                value={rangeDate}
+                onChange={(date) => setDateRange(date)}
+                value={dateRange}
                 maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
               />
             </div>
