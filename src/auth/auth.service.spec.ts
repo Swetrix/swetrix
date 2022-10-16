@@ -34,97 +34,97 @@ describe('AuthService', () => {
     it('should be defined service', () => {
       expect(service).toBeDefined()
     }),
-    it('should be defined repository', () => {
-      expect(repository).toBeDefined()
-    })
+      it('should be defined repository', () => {
+        expect(repository).toBeDefined()
+      })
   }),
-  describe('auth.service definding', () => {
-    it('should be defined checkIfPasswordLeaked()', () => {
-      expect(service.checkIfPasswordLeaked).toBeDefined()
-    }),
-    it('should be defined checkPassword()', () => {
-      expect(service.checkPassword).toBeDefined()
-    }),
-    it('should be defined get()', () => {
-      expect(service.get).toBeDefined()
-    }),
-    it('should be defined hashPassword()', () => {
-      expect(service.hashPassword).toBeDefined()
-    }),
-    it('should be defined login()', () => {
-      expect(service.login).toBeDefined()
-    }),
-    it('should be defined postLoginProcess()', () => {
-      expect(service.postLoginProcess).toBeDefined()
-    }),
-    it('should be defined processUser()', () => {
-      expect(service.processUser).toBeDefined()
-    }),
-    it('should be defined sha1hash()', () => {
-      expect(service.sha1hash).toBeDefined()
-    }),
-    it('should be defined validateUser()', () => {
-      expect(service.validateUser).toBeDefined()
-    })
+    describe('auth.service definding', () => {
+      it('should be defined checkIfPasswordLeaked()', () => {
+        expect(service.checkIfPasswordLeaked).toBeDefined()
+      }),
+        it('should be defined checkPassword()', () => {
+          expect(service.checkPassword).toBeDefined()
+        }),
+        it('should be defined get()', () => {
+          expect(service.get).toBeDefined()
+        }),
+        it('should be defined hashPassword()', () => {
+          expect(service.hashPassword).toBeDefined()
+        }),
+        it('should be defined login()', () => {
+          expect(service.login).toBeDefined()
+        }),
+        it('should be defined postLoginProcess()', () => {
+          expect(service.postLoginProcess).toBeDefined()
+        }),
+        it('should be defined processUser()', () => {
+          expect(service.processUser).toBeDefined()
+        }),
+        it('should be defined sha1hash()', () => {
+          expect(service.sha1hash).toBeDefined()
+        }),
+        it('should be defined validateUser()', () => {
+          expect(service.validateUser).toBeDefined()
+        })
 
-    it('should be defined', () => {
-      expect(repository).toBeDefined()
-    })
+      it('should be defined', () => {
+        expect(repository).toBeDefined()
+      })
 
-    it('should be hashPassword function not null and tobedefined', () => {
-      let pass = util.getString()
-      expect(service.hashPassword(pass)).resolves.not.toBeNull()
-      expect(service.hashPassword).toBeDefined()
-    })
+      it('should be hashPassword function not null and tobedefined', () => {
+        let pass = util.getString()
+        expect(service.hashPassword(pass)).resolves.not.toBeNull()
+        expect(service.hashPassword).toBeDefined()
+      })
 
-    it('should be get function not null and tobedefined', () => {
-      let hash = util.getString()
-      expect(service.get(hash)).resolves.not.toBeNull()
-      expect(service.get).toBeDefined()
-    })
+      it('should be get function not null and tobedefined', () => {
+        let hash = util.getString()
+        expect(service.get(hash)).resolves.not.toBeNull()
+        expect(service.get).toBeDefined()
+      })
 
-    it('should be sha1hash function not null and tobedefined', () => {
-      let string = util.getString()
-      expect(service.sha1hash(string)).resolves.not.toBeNull()
-      expect(service.sha1hash).toBeDefined()
-    })
-    it('should be checkIfPasswordLeaked function not null and tobedefined', () => {
-      let pass = util.getString()
-      expect(service.checkIfPasswordLeaked(pass)).resolves.not.toBeNull()
-      expect(service.checkIfPasswordLeaked).toBeDefined()
-    })
-    it('should be checkPassword function not null and tobedefined', () => {
-      let passToCheck = util.getString()
-      let hashedPass = util.getString()
-      expect(service.checkPassword(passToCheck, hashedPass)).not.toBeNull()
-      expect(service.checkPassword).toBeDefined()
-    })
+      it('should be sha1hash function not null and tobedefined', () => {
+        let string = util.getString()
+        expect(service.sha1hash(string)).resolves.not.toBeNull()
+        expect(service.sha1hash).toBeDefined()
+      })
+      it('should be checkIfPasswordLeaked function not null and tobedefined', () => {
+        let pass = util.getString()
+        expect(service.checkIfPasswordLeaked(pass)).resolves.not.toBeNull()
+        expect(service.checkIfPasswordLeaked).toBeDefined()
+      })
+      it('should be checkPassword function not null and tobedefined', () => {
+        let passToCheck = util.getString()
+        let hashedPass = util.getString()
+        expect(service.checkPassword(passToCheck, hashedPass)).not.toBeNull()
+        expect(service.checkPassword).toBeDefined()
+      })
 
-    it('should be validateUser function not null and tobedefined', () => {
-      let email = util.getString()
-      let pass = util.getString()
-      expect(service.validateUser(email, pass)).rejects.toThrow()
-      expect(service.validateUser).toBeDefined()
-    })
+      it('should be validateUser function not null and tobedefined', () => {
+        let email = util.getString()
+        let pass = util.getString()
+        expect(service.validateUser(email, pass)).rejects.toThrow()
+        expect(service.validateUser).toBeDefined()
+      })
 
-    it('should be processUser function not null and tobedefined', () => {
-      let user = util.getUser()
-      expect(service.processUser(user)).not.toBeNull()
-      expect(service.processUser).toBeDefined()
-    })
+      it('should be processUser function not null and tobedefined', () => {
+        let user = util.getUser()
+        expect(service.processUser(user)).not.toBeNull()
+        expect(service.processUser).toBeDefined()
+      })
 
-    it('should be postLoginProcess function not null and tobedefined', () => {
-      let user = util.getUser()
-      expect(service.postLoginProcess(user)).not.toBeNull()
-      expect(service.postLoginProcess).toBeDefined()
-    })
+      it('should be postLoginProcess function not null and tobedefined', () => {
+        let user = util.getUser()
+        expect(service.postLoginProcess(user)).not.toBeNull()
+        expect(service.postLoginProcess).toBeDefined()
+      })
 
-    it('should be login function not null and tobedefined', () => {
-      let user = util.getUser()
-      expect(service.login(user)).not.toBeNull()
-      expect(service.login).toBeDefined()
+      it('should be login function not null and tobedefined', () => {
+        let user = util.getUser()
+        expect(service.login(user)).not.toBeNull()
+        expect(service.login).toBeDefined()
+      })
     })
-  })
   // describe('auth.service testing', () => {
   //   it('should return correct hashPassword()', async () => {
   //     const password = 'test'
