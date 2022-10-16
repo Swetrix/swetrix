@@ -52,6 +52,9 @@ export class Extension {
   @Column('simple-array')
   additionalImages: string[] | []
 
+  @Column('varchar')
+  fileURL: string
+
   @CreateDateColumn()
   createdAt: Date
 
