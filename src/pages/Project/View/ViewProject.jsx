@@ -589,10 +589,14 @@ const ViewProject = ({
     }
   }, [isLoading, showTotal, chartData, mainChart, t])
 
+  // Initialising Swetrix SDK instance
   useEffect(() => {
     const sdk = new SwetrixSDK([{
       cdnURL: 'http://localhost:3000/assets/test_extension.js',
       id: 'test-extension',
+    }, {
+      cdnURL: 'http://localhost:3000/assets/export_as_json.js',
+      id: 'export-as-json',
     }], {
       debug: true,
     }, {
@@ -629,6 +633,30 @@ const ViewProject = ({
       sdk._destroy()
     }
   }, [])
+
+  // Supplying 'timeupdate' event to the SDK after loading
+  useEffect(() => {
+    sdkInstance?._emitEvent('timeupdate', {
+      period,
+      timeBucket,
+      dateRange: period === 'custom' ? dateRange : null,
+    })
+  }, [sdkInstance])
+
+  // Supplying 'projectinfo' event to the SDK after loading
+  useEffect(() => {
+    if (_isEmpty(project)) {
+      return
+    }
+
+    const {
+      active: isActive, created, public: isPublic,
+    } = project
+
+    sdkInstance?._emitEvent('projectinfo', {
+      id, name, isActive, created, isPublic,
+    })
+  }, [sdkInstance, name])
 
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t))
