@@ -1,16 +1,16 @@
 (async (sdk) => {
-  console.log('test_extension.js', sdk)
-  console.log('--------------------')
+  // console.log('test_extension.js', sdk)
+  // console.log('--------------------')
 
-  sdk.addExportDataRow('As blahblahblah', () => {
-    console.log('blahblahblah')
-  })
+  // sdk.addExportDataRow('As blahblahblah', () => {
+  //   console.log('blahblahblah')
+  // })
 
-  sdk.addExportDataRow('As test', () => {
-    console.log('test')
-  })
+  // sdk.addExportDataRow('As test', () => {
+  //   console.log('test')
+  // })
 
-  sdk.addPanelTab('pg', 'test', () => {})
+  // sdk.addPanelTab('pg', 'test', () => {})
 
   // sdk.addEventListener('timeupdate', (data) => {
   //   console.log('timeupdate', data)
