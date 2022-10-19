@@ -75,7 +75,7 @@ export class ExtensionsController {
 
     const [extensions, count] = await this.extensionsService.findAndCount({
       where: {
-        ownerId: queries.userId,
+        owner: queries.userId,
       },
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
@@ -166,7 +166,7 @@ export class ExtensionsController {
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
       where: {
-        ownerId: queries.ownerId,
+        owner: queries.ownerId,
       },
     })
 
