@@ -22,8 +22,8 @@ export class Extension {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column('uuid')
-  ownerId: string
+  // @Column('uuid')
+  // ownerId: string
 
   @ManyToOne(() => User, user => user.ownedExtensions)
   owner!: User
