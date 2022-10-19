@@ -53,8 +53,8 @@ export class Extension {
   @Column('simple-array')
   additionalImages: string[] | []
 
-  @Column('varchar')
-  fileURL: string
+  @Column({ type: 'varchar', nullable: true, default: null })
+  fileURL: string | null
 
   @CreateDateColumn()
   createdAt: Date

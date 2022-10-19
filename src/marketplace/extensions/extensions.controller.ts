@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   Param,
@@ -312,6 +313,21 @@ export class ExtensionsController {
       })
     }
 
+    let fileURL
+    let mainImageURL
+
+    try {
+      fileURL = files.file && (await this.cdnService.uploadFile(files.file[0]))?.filename
+    } catch (e) {
+      throw new InternalServerErrorException('Failed to upload extension to the CDN.')
+    }
+
+    try {
+      mainImageURL = files.mainImage && (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
+    } catch (e) {
+      throw new InternalServerErrorException('Failed to upload main image to the CDN.')
+    }
+
     const user = await this.userService.findOne(userId)
     const extensionInstance = this.extensionsService.create({
       name: body.name,
@@ -319,11 +335,9 @@ export class ExtensionsController {
       version: body.version,
       price: body.price,
       owner: user,
-      mainImage: files.mainImage
-        ? (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
-        : undefined,
-      additionalImages: files.additionalImages ? additionalImageFilenames : [],
-      fileURL: (await this.cdnService.uploadFile(files.file[0]))?.filename,
+      mainImage: mainImageURL,
+      additionalImages: additionalImageFilenames,
+      fileURL,
       categories: body.categoriesIds
         ? await this.categoriesService.findByIds(body.categoriesIds)
         : undefined,
