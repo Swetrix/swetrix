@@ -23,6 +23,7 @@ module.exports = {
       },
       animation: {
         'ping-slow': 'ping-op 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+				'copy-icon': 'copy-icon 0.5s cubic-bezier(0, 0, 0.2, 1) 2'
       },
       keyframes: {
         'ping-op': {
@@ -34,6 +35,20 @@ module.exports = {
             opacity: 0,
           },
         },
+				'effect-dylan': {
+					'50%': {
+						transform: 'scale(1.5, 1.5)',
+						opacity: 0,
+					},
+					'99%': {
+						transform: 'scale(0.001, 0.001)',
+						opacity: 0,
+					},
+					'100%': {
+						transform: 'scale(0.001, 0.001)',
+						opacity: 1,
+					}
+				}
       },
     },
     minHeight: {
