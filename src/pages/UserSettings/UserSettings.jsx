@@ -394,6 +394,7 @@ const UserSettings = ({
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState(null)
+  const [copied, setCopied] = useState(false)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
 
   const validate = () => {
@@ -492,6 +493,7 @@ const UserSettings = ({
 
   const setToClickboard = (value) => {
     navigator.clipboard.writeText(value)
+    setCopied(true)
   }
 
   return (
@@ -602,19 +604,22 @@ const UserSettings = ({
                     onChange={handleInput}
                     disabled
                   />
-                  <div className='group'>
-                    <Button
-                      type='button'
-                      onClick={() => setToClickboard(user.apiKey)}
-                      className='group hover:opacity-1 sm:top-3 hidden absolute right-2 top-3 group-hover:block'
-                      noBorder
-                    >
-                      <ClipboardDocumentIcon className='w-6 h-6' />
-                    </Button>
-                    <div className='opacity-1 bg-black dark:bg-gray-700 rounded p-1 absolute bottom-0 right-8 text-xs hidden group-focus:block'>Copied</div>
+                  <div className='absolute right-2 top-3'>
+                    <div className='group relative'>
+                      <Button
+                        type='button'
+                        onClick={() => setToClickboard(user.apiKey)}
+                        className='hidden group opacity-70 hover:opacity-100 group-hover:block'
+                        noBorder
+                      >
+                        <ClipboardDocumentIcon className='w-6 h-6' />
+                        {copied && <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 pl-2 absolute sm:top-0 top-0.5 right-8 text-xs hidden group-focus:block'>Copied</div>}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
           ) : (
             <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
