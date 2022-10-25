@@ -614,6 +614,7 @@ const UserSettings = ({
                       >
                         <ClipboardDocumentIcon className='w-6 h-6' />
                         {copied && <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 pl-2 absolute sm:top-0 top-0.5 right-8 text-xs hidden group-focus:block'>Copied</div>}
+
                       </Button>
                     </div>
                   </div>
