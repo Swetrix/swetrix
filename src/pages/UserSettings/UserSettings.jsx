@@ -9,11 +9,7 @@ import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import _isString from 'lodash/isString'
 import {
-  EnvelopeIcon,
-  ExclamationTriangleIcon,
-  ArrowDownTrayIcon,
-  CurrencyDollarIcon,
-  ClipboardDocumentIcon,
+  EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, CurrencyDollarIcon, ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline'
 import QRCode from 'react-qr-code'
 import PropTypes from 'prop-types'
@@ -36,15 +32,8 @@ import {
 } from 'api'
 
 const ProjectList = ({
-  item,
-  t,
-  removeShareProject,
-  removeProject,
-  setProjectsShareData,
-  setUserShareData,
-  language,
-  userSharedUpdate,
-  sharedProjectError,
+  item, t, removeShareProject, removeProject, setProjectsShareData, setUserShareData,
+  language, userSharedUpdate, sharedProjectError,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const {
@@ -155,9 +144,7 @@ const TwoFA = ({
   const { isTwoFactorAuthenticationEnabled } = user
 
   const handle2FAInput = (event) => {
-    const {
-      target: { value },
-    } = event
+    const { target: { value } } = event
     setTwoFACode(value)
     setTwoFACodeError(null)
   }
@@ -190,11 +177,7 @@ const TwoFA = ({
       setIsTwoFaLoading(true)
 
       try {
-        const {
-          twoFactorRecoveryCode,
-          access_token: accessToken,
-          user: updatedUser,
-        } = await enable2FA(twoFACode)
+        const { twoFactorRecoveryCode, access_token: accessToken, user: updatedUser } = await enable2FA(twoFACode)
         login(updatedUser)
         setAccessToken(accessToken, dontRemember)
         setTwoFARecovery(twoFactorRecoveryCode)
@@ -357,26 +340,11 @@ const TwoFA = ({
 }
 
 const UserSettings = ({
-  onDelete,
-  onExport,
-  onSubmit,
-  onEmailConfirm,
-  onDeleteProjectCache,
-  t,
-  removeProject,
-  removeShareProject,
-  setUserShareData,
-  setProjectsShareData,
-  language,
-  userSharedUpdate,
-  sharedProjectError,
-  updateUserData,
-  login,
-  genericError,
-  onApiKeyGenerate,
-  onApiKeyDelete,
+  onDelete, onExport, onSubmit, onEmailConfirm, onDeleteProjectCache, t,
+  removeProject, removeShareProject, setUserShareData, setProjectsShareData, language,
+  userSharedUpdate, sharedProjectError, updateUserData, login, genericError, onApiKeyGenerate, onApiKeyDelete,
 }) => {
-  const { user, dontRemember, isPaidTierUsed } = useSelector((state) => state.auth)
+  const { user, dontRemember, isPaidTierUsed } = useSelector(state => state.auth)
 
   const [form, setForm] = useState({
     email: user.email || '',
@@ -420,24 +388,24 @@ const UserSettings = ({
 
   useEffect(() => {
     validate()
-  }, [form]); // eslint-disable-line
+  }, [form]) // eslint-disable-line
 
   const _setTimezone = (value) => {
     setTimezoneChanged(true)
     setTimezone(value)
   }
 
-  const handleInput = (event) => {
+  const handleInput = event => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm((prevForm) => ({
+    setForm(prevForm => ({
       ...prevForm,
       [target.name]: value,
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
@@ -492,8 +460,14 @@ const UserSettings = ({
   }
 
   const setToClickboard = (value) => {
-    navigator.clipboard.writeText(value)
-    setCopied(true)
+    if (copied !== true) {
+      navigator.clipboard.writeText(value)
+      setCopied(true)
+      setTimeout(() => {
+        setCopied(false)
+        console.log('Worked')
+      }, 3000)
+    }
   }
 
   return (
