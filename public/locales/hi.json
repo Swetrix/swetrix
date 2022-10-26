@@ -461,6 +461,7 @@
     "month": "महीना",
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
+    "codeExample": "Or insert the following code into your website to track your events:",
     "settings": {
       "verify": "कृपया, पहले अपना ईमेल पता सत्यापित करें",
       "updated": "प्रोजेक्ट की सेटिंग्स को अपडेट किया गया",

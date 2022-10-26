@@ -461,6 +461,7 @@
     "month": "Μήνας",
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
+    "codeExample": "Or insert the following code into your website to track your events:",
     "settings": {
       "verify": "Παρακαλώ, επαληθεύστε πρώτα τη διεύθυνση email σας",
       "updated": "Οι ρυθμίσεις του έργου ενημερώθηκαν",
