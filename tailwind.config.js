@@ -23,6 +23,7 @@ module.exports = {
       },
       animation: {
         'ping-slow': 'ping-op 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+        'appear': 'appear 0.5s cubic-bezier(0, 0, 0.2, 1) 1'
       },
       keyframes: {
         'ping-op': {
@@ -32,6 +33,16 @@ module.exports = {
           '75%, 100%': {
             transform: 'scale(2)',
             opacity: 0,
+          },
+        },
+        'appear': {
+          '0%': {
+            transform: 'scale(0)',
+            opacity: 0,
+          },
+          '75%, 100%': {
+            transform: 'scale(1)',
+            opacity: 1,
           },
         },
       },

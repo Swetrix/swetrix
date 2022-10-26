@@ -1,5 +1,5 @@
 import React, {
-  useState, useEffect, memo,
+  useState, useEffect, memo, useRef,
 } from 'react'
 import { useSelector } from 'react-redux'
 import cx from 'clsx'
@@ -11,7 +11,7 @@ import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import _isString from 'lodash/isString'
 import {
-  EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, CurrencyDollarIcon,
+  EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, CurrencyDollarIcon, ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline'
 import QRCode from 'react-qr-code'
 import PropTypes from 'prop-types'
@@ -26,9 +26,7 @@ import Beta from 'ui/Beta'
 import Select from 'ui/Select'
 import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
-import {
-  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
-} from 'utils/validator'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
 import { setAccessToken } from 'utils/accessToken'
 
 import {
@@ -147,7 +145,7 @@ const TwoFA = ({
   const [twoFARecovery, setTwoFARecovery] = useState(null)
   const { isTwoFactorAuthenticationEnabled } = user
 
-  const handle2FAInput = event => {
+  const handle2FAInput = (event) => {
     const { target: { value } } = event
     setTwoFACode(value)
     setTwoFACodeError(null)
@@ -234,16 +232,8 @@ const TwoFA = ({
         <p className='text-base text-gray-900 dark:text-gray-50'>
           {t('profileSettings.2faRecoveryNote')}
         </p>
-        <Input
-          type='text'
-          className='mt-4'
-          value={twoFARecovery}
-        />
-        <Button
-          onClick={recoverySaved}
-          primary
-          large
-        >
+        <Input type='text' className='mt-4' value={twoFARecovery} />
+        <Button onClick={recoverySaved} primary large>
           {t('profileSettings.2faRecoverySaved')}
         </Button>
       </div>
@@ -291,12 +281,7 @@ const TwoFA = ({
         <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
           {t('profileSettings.2faEnabled')}
         </p>
-        <Button
-          className='mt-4'
-          onClick={() => setTwoFADisabling(true)}
-          danger
-          large
-        >
+        <Button className='mt-4' onClick={() => setTwoFADisabling(true)} danger large>
           {t('profileSettings.2faDisableBtn')}
         </Button>
       </>
@@ -379,7 +364,10 @@ const UserSettings = ({
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState(null)
+  const [copied, setCopied] = useState(false)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
+
+  const copyTimerRef = useRef(null)
 
   const validate = () => {
     const allErrors = {}
@@ -405,6 +393,12 @@ const UserSettings = ({
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(copyTimerRef.current)
+    }
+  }, [])
 
   const _setTimezone = (value) => {
     setTimezoneChanged(true)
@@ -477,6 +471,16 @@ const UserSettings = ({
     return null
   }
 
+  const setToClipboard = (value) => {
+    if (!copied) {
+      navigator.clipboard.writeText(value)
+      setCopied(true)
+      copyTimerRef.current = setTimeout(() => {
+        setCopied(false)
+      }, 2000)
+    }
+  }
+
   return (
     <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
@@ -532,10 +536,7 @@ const UserSettings = ({
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>
-              <TimezonePicker
-                value={timezone}
-                onChange={_setTimezone}
-              />
+              <TimezonePicker value={timezone} onChange={_setTimezone} />
             </div>
           </div>
           <Button className='mt-4' onClick={handleTimezoneSave} primary large>
@@ -553,7 +554,9 @@ const UserSettings = ({
                 className='w-full'
                 items={translatedFrequencies}
                 iconExtractor={reportIconExtractor}
-                onSelect={(f) => _setReportFrequency(reportFrequencies[_findIndex(translatedFrequencies, freq => freq === f)])}
+                onSelect={(f) => _setReportFrequency(
+                  reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
+                )}
               />
             </div>
           </div>
@@ -572,17 +575,38 @@ const UserSettings = ({
               <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
                 {t('profileSettings.apiKeyWarning')}
               </p>
+              <p className='mt-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.apiKey')}
+              </p>
               <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
-                <Input
-                  name='apiKey'
-                  id='apiKey'
-                  type='text'
-                  label={t('profileSettings.apiKey')}
-                  value={user.apiKey}
-                  className='mt-4'
-                  onChange={handleInput}
-                  disabled
-                />
+                <div className='relative group'>
+                  <Input
+                    name='apiKey'
+                    id='apiKey'
+                    type='text'
+                    className='pr-9'
+                    value={user.apiKey}
+                    onChange={handleInput}
+                    disabled
+                  />
+                  <div className='absolute right-2 top-3'>
+                    <div className='group relative'>
+                      <Button
+                        type='button'
+                        onClick={() => setToClipboard(user.apiKey)}
+                        className='opacity-70 hover:opacity-100'
+                        noBorder
+                      >
+                        <ClipboardDocumentIcon className='w-6 h-6' />
+                        {copied && (
+                          <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 pl-2 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
+                            {t('common.copied')}
+                          </div>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           ) : (
@@ -603,7 +627,14 @@ const UserSettings = ({
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.2fa')}
           </h3>
-          <TwoFA t={t} user={user} dontRemember={dontRemember} updateUserData={updateUserData} login={login} genericError={genericError} />
+          <TwoFA
+            t={t}
+            user={user}
+            dontRemember={dontRemember}
+            updateUserData={updateUserData}
+            login={login}
+            genericError={genericError}
+          />
 
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
@@ -618,35 +649,42 @@ const UserSettings = ({
                       <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                         <thead>
                           <tr className='dark:bg-gray-700'>
-                            <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
+                            <th
+                              scope='col'
+                              className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
+                            >
                               {t('profileSettings.sharedTable.project')}
                             </th>
-                            <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                            <th
+                              scope='col'
+                              className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                            >
                               {t('profileSettings.sharedTable.role')}
                             </th>
-                            <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                            <th
+                              scope='col'
+                              className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                            >
                               {t('profileSettings.sharedTable.joinedOn')}
                             </th>
                             <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
                           </tr>
                         </thead>
                         <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                          {
-                            _map(user.sharedProjects, (item) => (
-                              <ProjectList
-                                key={item.id}
-                                item={item}
-                                language={language}
-                                t={t}
-                                removeProject={removeProject}
-                                removeShareProject={removeShareProject}
-                                setUserShareData={setUserShareData}
-                                setProjectsShareData={setProjectsShareData}
-                                userSharedUpdate={userSharedUpdate}
-                                sharedProjectError={sharedProjectError}
-                              />
-                            ))
-                          }
+                          {_map(user.sharedProjects, (item) => (
+                            <ProjectList
+                              key={item.id}
+                              item={item}
+                              language={language}
+                              t={t}
+                              removeProject={removeProject}
+                              removeShareProject={removeShareProject}
+                              setUserShareData={setUserShareData}
+                              setProjectsShareData={setProjectsShareData}
+                              userSharedUpdate={userSharedUpdate}
+                              sharedProjectError={sharedProjectError}
+                            />
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -659,39 +697,34 @@ const UserSettings = ({
           </div>
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           {!user.isActive && (
-            <div href='#' className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800' onClick={() => onEmailConfirm(setError)}>
+            <div
+              href='#'
+              className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800'
+              onClick={() => onEmailConfirm(setError)}
+            >
               <EnvelopeIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
               {t('profileSettings.noLink')}
             </div>
           )}
           <div className='flex justify-between mt-4'>
-            <Button
-              onClick={() => setShowExportModal(true)}
-              semiSmall
-              primary
-            >
+            <Button onClick={() => setShowExportModal(true)} semiSmall primary>
               <ArrowDownTrayIcon className='w-5 h-5 mr-1' />
               {t('profileSettings.requestExport')}
             </Button>
-            <Button
-              className='ml-3'
-              onClick={() => setShowModal(true)}
-              semiSmall
-              danger
-            >
+            <Button className='ml-3' onClick={() => setShowModal(true)} semiSmall danger>
               <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
               {t('profileSettings.delete')}
             </Button>
           </div>
         </form>
 
-        <PaidFeature
-          isOpened={isPaidFeatureOpened}
-          onClose={() => setIsPaidFeatureOpened(false)}
-        />
+        <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
         <Modal
           onClose={() => setShowExportModal(false)}
-          onSubmit={() => { setShowExportModal(false); onExport(user.exportedAt) }}
+          onSubmit={() => {
+            setShowExportModal(false)
+            onExport(user.exportedAt)
+          }}
           submitText={t('common.continue')}
           closeText={t('common.close')}
           title={t('profileSettings.dataExport')}
@@ -701,7 +734,10 @@ const UserSettings = ({
         />
         <Modal
           onClose={() => setShowModal(false)}
-          onSubmit={() => { setShowModal(false); onDelete() }}
+          onSubmit={() => {
+            setShowModal(false)
+            onDelete()
+          }}
           submitText={t('profileSettings.aDelete')}
           closeText={t('common.close')}
           title={t('profileSettings.qDelete')}
@@ -712,7 +748,10 @@ const UserSettings = ({
         />
         <Modal
           onClose={() => setShowAPIDeleteModal(false)}
-          onSubmit={() => { setShowAPIDeleteModal(false); onApiKeyDelete() }}
+          onSubmit={() => {
+            setShowAPIDeleteModal(false)
+            onApiKeyDelete()
+          }}
           submitText={t('profileSettings.deleteApiKeyBtn')}
           closeText={t('common.close')}
           title={t('profileSettings.apiKeyDelete')}
@@ -722,7 +761,9 @@ const UserSettings = ({
           isOpened={showAPIDeleteModal}
         />
         <Modal
-          onClose={() => { setError('') }}
+          onClose={() => {
+            setError('')
+          }}
           closeText={t('common.gotIt')}
           type='error'
           title={t('common.error')}
