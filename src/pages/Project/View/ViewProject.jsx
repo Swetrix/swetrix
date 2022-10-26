@@ -3,6 +3,7 @@ import React, {
   useState, useEffect, useMemo, memo, useRef, Fragment,
 } from 'react'
 import { useHistory, useParams, Link } from 'react-router-dom'
+import Prism from 'prismjs'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb, { area } from 'billboard.js'
@@ -40,6 +41,7 @@ import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
+import Code from 'ui/Code'
 import FlatPicker from 'ui/Flatpicker'
 import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
@@ -47,6 +49,7 @@ import {
   getProjectData, getProject, getOverallStats, getLiveVisitors,
 } from 'api'
 import countries from 'utils/isoCountries'
+import { getUMDBuildExample } from '../../Docs/examples'
 import {
   Panel, Overview, CustomEvents,
 } from './Panels'
@@ -66,6 +69,7 @@ const CCRow = memo(({ rowName, language }) => (
     {countries.getName(rowName, language)}
   </>
 ))
+
 // component for the Link icon
 const RefRow = memo(({ rowName, showIcons }) => {
   let isUrl = true
@@ -259,36 +263,55 @@ const getFormatDate = (date) => {
 }
 
 // this component is used to display text if the data is not available
-const NoEvents = ({ t, filters, resetFilters }) => (
-  <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
-    <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
-      <h2 className='text-4xl text-center leading-tight my-3'>
-        {t('project.noEvTitle')}
-      </h2>
-      <h2 className='text-2xl mb-8 text-center leading-snug'>
-        <Trans
-          t={t}
-          i18nKey='project.noEvContent'
-          components={{
-            url: <Link to={routes.docs} className='hover:underline text-blue-600' />,
-          }}
-        />
-      </h2>
-      {!_isEmpty(filters) && (
-        <div className='!flex !mx-auto'>
-          <Button
-            onClick={resetFilters}
-            className='!flex !mx-auto'
-            primary
-            giant
-          >
-            {t('project.resetFilters')}
-          </Button>
-        </div>
-      )}
+const NoEvents = ({
+  t, filters, resetFilters, pid,
+}) => {
+  const umdBuildExample = getUMDBuildExample(pid)
+
+  useEffect(() => {
+    Prism.highlightAll()
+  }, [])
+
+  return (
+    <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
+      <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
+        <h2 className='text-4xl text-center leading-tight my-3'>
+          {t('project.noEvTitle')}
+        </h2>
+        <h2 className='text-2xl mb-8 text-center leading-snug'>
+          <Trans
+            t={t}
+            i18nKey='project.noEvContent'
+            components={{
+              url: <Link to={routes.docs} className='hover:underline text-blue-600' />,
+            }}
+          />
+        </h2>
+        {!_isEmpty(filters) && (
+          <div className='!flex !mx-auto'>
+            <Button
+              onClick={resetFilters}
+              className='!flex !mx-auto'
+              primary
+              giant
+            >
+              {t('project.resetFilters')}
+            </Button>
+          </div>
+        )}
+        {_isEmpty(filters) && (
+          <>
+            <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
+            <h2 className='text-2xl mb-2 text-center leading-snug'>
+              {t('project.codeExample')}
+            </h2>
+            <Code text={umdBuildExample} language='html' />
+          </>
+        )}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 // this component is used for showing the filter in panel
 const Filter = ({
@@ -982,7 +1005,7 @@ const ViewProject = ({
             <Loader />
           )}
           {isPanelsDataEmpty && (
-            <NoEvents t={t} filters={filters} resetFilters={resetFilters} />
+            <NoEvents t={t} filters={filters} resetFilters={resetFilters} pid={id} />
           )}
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
             <div className='h-80' id='dataChart' />

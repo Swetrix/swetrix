@@ -461,6 +461,7 @@
     "month": "Månad",
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
+    "codeExample": "Or insert the following code into your website to track your events:",
     "settings": {
       "verify": "Vänligen verifiera din e-postadress först",
       "updated": "Projektets inställningar var uppdaterats",
