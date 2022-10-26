@@ -411,6 +411,10 @@ const Panel = ({
     }
   }, [currentIndex, keys])
 
+  useEffect(() => {
+    setPage(0)
+  }, [data])
+
   const onPrevious = () => {
     if (canGoPrev()) {
       setPage(page - 1)
