@@ -1,4 +1,6 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, {
+  useState, useEffect, memo, useRef,
+} from 'react'
 import { useSelector } from 'react-redux'
 import cx from 'clsx'
 import _size from 'lodash/size'
@@ -365,6 +367,8 @@ const UserSettings = ({
   const [copied, setCopied] = useState(false)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
 
+  const copyTimerRef = useRef(null)
+
   const validate = () => {
     const allErrors = {}
 
@@ -389,6 +393,12 @@ const UserSettings = ({
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(copyTimerRef.current)
+    }
+  }, [])
 
   const _setTimezone = (value) => {
     setTimezoneChanged(true)
@@ -453,17 +463,19 @@ const UserSettings = ({
 
   const reportIconExtractor = (_, index) => {
     if (!isPaidTierUsed && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY) {
-      return <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+      return (
+        <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+      )
     }
 
     return null
   }
 
-  const setToClickboard = (value) => {
-    if (copied !== true) {
+  const setToClipboard = (value) => {
+    if (!copied) {
       navigator.clipboard.writeText(value)
       setCopied(true)
-      setTimeout(() => {
+      copyTimerRef.current = setTimeout(() => {
         setCopied(false)
       }, 2000)
     }
@@ -559,7 +571,7 @@ const UserSettings = ({
             </div>
           </h3>
           {user.apiKey ? (
-            <div>
+            <>
               <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
                 {t('profileSettings.apiKeyWarning')}
               </p>
@@ -581,20 +593,22 @@ const UserSettings = ({
                     <div className='group relative'>
                       <Button
                         type='button'
-                        onClick={() => setToClickboard(user.apiKey)}
+                        onClick={() => setToClipboard(user.apiKey)}
                         className='opacity-70 hover:opacity-100'
                         noBorder
                       >
                         <ClipboardDocumentIcon className='w-6 h-6' />
-                        {copied && <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 pl-2 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>Copied</div>}
-
+                        {copied && (
+                          <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 pl-2 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
+                            {t('common.copied')}
+                          </div>
+                        )}
                       </Button>
                     </div>
                   </div>
                 </div>
               </div>
-
-            </div>
+            </>
           ) : (
             <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
               {t('profileSettings.noApiKey')}
