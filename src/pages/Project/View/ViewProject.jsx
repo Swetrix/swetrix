@@ -28,6 +28,7 @@ import _size from 'lodash/size'
 import _filter from 'lodash/filter'
 import _truncate from 'lodash/truncate'
 import _startsWith from 'lodash/startsWith'
+import _isEqual from 'lodash/isEqual'
 import PropTypes from 'prop-types'
 
 import { SWETRIX_PID } from 'utils/analytics'
@@ -455,7 +456,19 @@ const ViewProject = ({
         return
       }
 
-      const { chart, params, customs } = data
+      const {
+        chart, params, customs, appliedFilters,
+      } = data
+
+      const convertApliedFilters = JSON.parse(appliedFilters)
+
+      if (!_isEmpty(convertApliedFilters)) {
+        if (_isEmpty(filters) || !_isEqual(filters, appliedFilters)) {
+          setFilters(convertApliedFilters)
+        } else {
+          setFilters((filter) => [...filter, ...convertApliedFilters])
+        }
+      }
 
       if (_isEmpty(params)) {
         setIsPanelsDataEmpty(true)
