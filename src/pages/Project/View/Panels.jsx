@@ -24,8 +24,8 @@ import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
 import Chart from 'ui/Chart'
-import InteractiveMap from './InteractiveMap'
-import { iconClassName } from './ViewProject'
+import InteractiveMap from './components/InteractiveMap'
+import { iconClassName } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 5
 
