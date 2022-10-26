@@ -465,8 +465,7 @@ const UserSettings = ({
       setCopied(true)
       setTimeout(() => {
         setCopied(false)
-        console.log('Worked')
-      }, 3000)
+      }, 2000)
     }
   }
 
@@ -583,11 +582,11 @@ const UserSettings = ({
                       <Button
                         type='button'
                         onClick={() => setToClickboard(user.apiKey)}
-                        className='hidden group opacity-70 hover:opacity-100 group-hover:block'
+                        className='opacity-70 hover:opacity-100'
                         noBorder
                       >
                         <ClipboardDocumentIcon className='w-6 h-6' />
-                        {copied && <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 pl-2 absolute sm:top-0 top-0.5 right-8 text-xs hidden group-focus:block'>Copied</div>}
+                        {copied && <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 pl-2 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>Copied</div>}
 
                       </Button>
                     </div>
