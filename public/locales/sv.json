@@ -53,7 +53,8 @@
     "delete": "Radera",
     "quit": "Avsluta",
     "enable": "Aktivera",
-    "disable": "Inaktivera"
+    "disable": "Inaktivera",
+    "copied": "Copied"
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",

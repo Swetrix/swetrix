@@ -53,7 +53,8 @@
     "delete": "Delete",
     "quit": "Quit",
     "enable": "Enable",
-    "disable": "Disable"
+    "disable": "Disable",
+    "copied": "Copied"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
