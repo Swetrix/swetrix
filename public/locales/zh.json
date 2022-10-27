@@ -53,7 +53,8 @@
     "delete": "Delete",
     "quit": "Quit",
     "enable": "Enable",
-    "disable": "Disable"
+    "disable": "Disable",
+    "copied": "Copied"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -461,6 +462,7 @@
     "month": "月",
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
+    "codeExample": "Or insert the following code into your website to track your events:",
     "settings": {
       "verify": "请先验证您的电子邮件地址",
       "updated": "项目的设置已更新",

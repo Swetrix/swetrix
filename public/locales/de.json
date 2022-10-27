@@ -53,7 +53,8 @@
     "delete": "Löschen",
     "quit": "Verlassen",
     "enable": "Aktivieren",
-    "disable": "Deaktivieren"
+    "disable": "Deaktivieren",
+    "copied": "Copied"
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
@@ -461,6 +462,7 @@
     "month": "Monat",
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
+    "codeExample": "Or insert the following code into your website to track your events:",
     "settings": {
       "verify": "Bitte bestätigen Sie zunächst Ihre E-Mail-Adresse",
       "updated": "Die Projekteinstellungen wurden aktualisiert",

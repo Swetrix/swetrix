@@ -89,7 +89,7 @@ const team = [
   },
   {
     name: '🇺🇦 Yevhenii Kulisidi',
-    role: 'Backend Developer.',
+    role: 'Co-Founder; Backend Developer.',
     photo: '/assets/yevhenii.jpg',
     desc: 'Works on Swetrix API and Swetrix Marketplace.',
     socials: {
