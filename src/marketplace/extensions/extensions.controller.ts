@@ -453,6 +453,8 @@ export class ExtensionsController {
       throw new NotFoundException('Project not found.')
     }
 
+    this.projectService.allowedToManage(project, userId, user.roles)
+
     const extensionToProject =
       await this.extensionsService.findOneExtensionToProject({
         where: {
@@ -515,6 +517,8 @@ export class ExtensionsController {
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
 
     const extensionToProject =
       await this.extensionsService.findOneExtensionToProject({
