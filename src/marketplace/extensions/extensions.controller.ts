@@ -19,6 +19,8 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { getRepository, Like } from 'typeorm'
+import * as _map from 'lodash/map'
+import * as _size from 'lodash/size'
 import { CreateExtension } from './dtos/create-extension.dto'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
@@ -104,13 +106,20 @@ export class ExtensionsController {
     extensions: Extension[]
     count: number
   }> {
-    const [extensions, count] = await this.extensionsService.findAndCount(
+    let [extensions, count] = await this.extensionsService.findAndCount(
       {
         skip: queries.offset || 0,
         take: queries.limit > 100 ? 25 : queries.limit || 25,
       },
-      ['owner'],
+      ['owner', 'users'],
     )
+
+    // temporary fix; the usersQuantity should be counted via .count() method of typeorm
+    extensions = _map(extensions, (extension) => {
+      extension.usersQuantity = _size(extension.users)
+      extension.users = undefined
+      return extension
+    })
 
     return { extensions, count }
   }
