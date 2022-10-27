@@ -66,13 +66,13 @@ const PanelContainer = ({
       </h3>
       <div className='flex'>
         {(checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs)) && (
-            <Bars4Icon
-              className={cx(iconClassName, 'cursor-pointer', {
-                'text-blue-500': activeFragment === 0,
-                'text-gray-900 dark:text-gray-50': activeFragment === 1,
-              })}
-              onClick={() => setActiveFragment(0)}
-            />
+          <Bars4Icon
+            className={cx(iconClassName, 'cursor-pointer', {
+              'text-blue-500': activeFragment === 0,
+              'text-gray-900 dark:text-gray-50': activeFragment === 1,
+            })}
+            onClick={() => setActiveFragment(0)}
+          />
         )}
 
         {/* if it is a Country tab  */}
@@ -95,15 +95,13 @@ const PanelContainer = ({
         )}
         {/* if this tab using Circle showing stats panel */}
         {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
-          <>
-            <ChartPieIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                'text-blue-500': activeFragment === 1,
-                'text-gray-900 dark:text-gray-50': activeFragment === 0,
-              })}
-              onClick={() => setActiveFragment(1)}
-            />
-          </>
+          <ChartPieIcon
+            className={cx(iconClassName, 'ml-2 cursor-pointer', {
+              'text-blue-500': activeFragment === 1,
+              'text-gray-900 dark:text-gray-50': activeFragment === 0,
+            })}
+            onClick={() => setActiveFragment(1)}
+          />
         )}
         {checkCustomTabs(type, customTabs) && (
           <>
@@ -562,6 +560,7 @@ const Panel = ({
         openModal={() => setModal(true)}
         customTabs={customTabs}
       >
+        {/* eslint-disable-next-line react/no-danger */}
         <div dangerouslySetInnerHTML={{ __html: content }} />
       </PanelContainer>
     )

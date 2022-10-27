@@ -363,7 +363,7 @@ const ViewProject = ({
       timeBucket,
       dateRange: period === 'custom' ? dateRange : null,
     })
-  }, [sdkInstance])
+  }, [sdkInstance]) // eslint-disable-line
 
   // Supplying 'projectinfo' event to the SDK after loading
   useEffect(() => {
@@ -378,7 +378,7 @@ const ViewProject = ({
     sdkInstance?._emitEvent('projectinfo', {
       id, name, isActive, created, isPublic,
     })
-  }, [sdkInstance, name])
+  }, [sdkInstance, name]) // eslint-disable-line
 
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t))
