@@ -3,20 +3,15 @@ import React, {
   useState, useEffect, useMemo, memo, useRef, Fragment,
 } from 'react'
 import { useHistory, useParams, Link } from 'react-router-dom'
-import Prism from 'prismjs'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
-import bb, { area } from 'billboard.js'
-import Flag from 'react-flagkit'
+import bb from 'billboard.js'
 import {
-  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon,
-  ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon, ArrowDownTrayIcon,
-  Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
-import * as d3 from 'd3'
 import dayjs from 'dayjs'
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
@@ -24,9 +19,7 @@ import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
-import _size from 'lodash/size'
 import _filter from 'lodash/filter'
-import _truncate from 'lodash/truncate'
 import _startsWith from 'lodash/startsWith'
 import _isEqual from 'lodash/isEqual'
 import PropTypes from 'prop-types'
@@ -35,338 +28,31 @@ import { SWETRIX_PID } from 'utils/analytics'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, tbsFormatMapper, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
+  tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
-import Code from 'ui/Code'
 import FlatPicker from 'ui/Flatpicker'
 import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors,
 } from 'api'
-import countries from 'utils/isoCountries'
-import { getUMDBuildExample } from '../../Docs/examples'
 import {
   Panel, Overview, CustomEvents,
 } from './Panels'
+import {
+  onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
+  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns,
+} from './ViewProject.helpers'
+import CCRow from './components/CCRow'
+import RefRow from './components/RefRow'
+import NoEvents from './components/NoEvents'
+import Filters from './components/Filters'
 import './styles.css'
-import { onCSVExportClick } from './ViewProject.helpers'
-
-// component for the Country icon
-const CCRow = memo(({ rowName, language }) => (
-  <>
-    <Flag
-      className='rounded-sm'
-      country={rowName}
-      size={21}
-      alt=''
-    />
-    &nbsp;&nbsp;
-    {countries.getName(rowName, language)}
-  </>
-))
-
-// component for the Link icon
-const RefRow = memo(({ rowName, showIcons }) => {
-  let isUrl = true
-  let url = rowName
-
-  try {
-    url = new URL(rowName)
-  } catch {
-    isUrl = false
-  }
-
-  return (
-    <div>
-      {showIcons && isUrl && !_isEmpty(url.hostname) && (
-        <img
-          className='w-5 h-5 mr-1.5 float-left'
-          src={`https://icons.duckduckgo.com/ip3/${url.hostname}.ico`}
-          alt=''
-        />
-      )}
-      {isUrl ? (
-        <a
-          className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'
-          href={rowName}
-          target='_blank'
-          rel='noopener noreferrer nofollow'
-          onClick={(e) => e.stopPropagation()}
-        >
-          {rowName}
-        </a>
-      ) : (
-        <span className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'>
-          {rowName}
-        </span>
-      )}
-    </div>
-  )
-})
-// function to filtering the data for the chart
-const getColumns = (chart, showTotal) => {
-  if (showTotal) {
-    return [
-      ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-      ['unique', ...chart.uniques],
-      ['total', ...chart.visits],
-    ]
-  }
-
-  return [
-    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-    ['unique', ...chart.uniques],
-  ]
-}
-
-// setting the default values for the time period dropdown
-const noRegionPeriods = ['custom', 'yesterday']
-
-// function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
-  const xAxisSize = _size(chart.x)
-  let regions
-
-  if (applyRegions) {
-    let regionStart
-
-    if (xAxisSize > 1) {
-      regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
-    } else {
-      regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
-    }
-
-    regions = {
-      unique: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      total: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-    }
-  }
-
-  return {
-    data: {
-      x: 'x',
-      columns: getColumns(chart, showTotal),
-      type: area(),
-      colors: {
-        unique: '#2563EB',
-        total: '#D97706',
-      },
-      regions,
-    },
-    axis: {
-      x: {
-        tick: {
-          fit: true,
-        },
-        type: 'timeseries',
-      },
-    },
-    tooltip: {
-      format: {
-        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
-      },
-      contents: {
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
-            <li class='font-semibold'>{=TITLE}</li>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            {{
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
-                </div>
-                <span class='pl-4'>{=VALUE}</span>
-              </li>
-            }}
-          </ul>`,
-      },
-    },
-    point: {
-      focus: {
-        only: xAxisSize > 1,
-      },
-      pattern: [
-        'circle',
-      ],
-      r: 3,
-    },
-    legend: {
-      usePoint: true,
-      item: {
-        tile: {
-          width: 10,
-        },
-      },
-    },
-    bindto: '#dataChart',
-  }
-}
-
-const validTimeBacket = ['hour', 'day', 'week', 'month']
-const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
-const paidPeriods = ['12M', '24M']
-const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt']
-
-const typeNameMapping = (t) => ({
-  cc: t('project.mapping.cc'),
-  pg: t('project.mapping.pg'),
-  lc: t('project.mapping.lc'),
-  ref: t('project.mapping.ref'),
-  dv: t('project.mapping.dv'),
-  br: t('project.mapping.br'),
-  os: t('project.mapping.os'),
-  so: 'utm_source',
-  me: 'utm_medium',
-  ca: 'utm_campaign',
-  lt: t('project.mapping.lt'),
-})
-
-export const iconClassName = 'w-6 h-6'
-const panelIconMapping = {
-  cc: <GlobeEuropeAfricaIcon className={iconClassName} />,
-  pg: <DocumentTextIcon className={iconClassName} />,
-  lc: <LanguageIcon className={iconClassName} />,
-  ref: <ArrowRightCircleIcon className={iconClassName} />,
-  dv: <DeviceTabletIcon className={iconClassName} />,
-  br: <MagnifyingGlassIcon className={iconClassName} />,
-  os: <ServerIcon className={iconClassName} />,
-}
-
-// This function return date using the same format as the backend
-const getFormatDate = (date) => {
-  const yyyy = date.getFullYear()
-  let mm = date.getMonth() + 1
-  let dd = date.getDate()
-  if (dd < 10) dd = `0${dd}`
-  if (mm < 10) mm = `0${mm}`
-  return `${yyyy}-${mm}-${dd}`
-}
-
-// this component is used to display text if the data is not available
-const NoEvents = ({
-  t, filters, resetFilters, pid,
-}) => {
-  const umdBuildExample = getUMDBuildExample(pid)
-
-  useEffect(() => {
-    Prism.highlightAll()
-  }, [])
-
-  return (
-    <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
-      <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
-        <h2 className='text-4xl text-center leading-tight my-3'>
-          {t('project.noEvTitle')}
-        </h2>
-        <h2 className='text-2xl mb-8 text-center leading-snug'>
-          <Trans
-            t={t}
-            i18nKey='project.noEvContent'
-            components={{
-              url: <Link to={routes.docs} className='hover:underline text-blue-600' />,
-            }}
-          />
-        </h2>
-        {!_isEmpty(filters) && (
-          <div className='!flex !mx-auto'>
-            <Button
-              onClick={resetFilters}
-              className='!flex !mx-auto'
-              primary
-              giant
-            >
-              {t('project.resetFilters')}
-            </Button>
-          </div>
-        )}
-        {_isEmpty(filters) && (
-          <>
-            <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
-            <h2 className='text-2xl mb-2 text-center leading-snug'>
-              {t('project.codeExample')}
-            </h2>
-            <Code text={umdBuildExample} language='html' />
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// this component is used for showing the filter in panel
-const Filter = ({
-  column, filter, isExclusive, onRemoveFilter, onChangeExclusive, tnMapping, language, t,
-}) => {
-  const displayColumn = tnMapping[column]
-  let displayFilter = filter
-
-  if (column === 'cc') {
-    displayFilter = countries.getName(filter, language)
-  }
-
-  displayFilter = _truncate(displayFilter)
-
-  return (
-    <span className='inline-flex rounded-md items-center py-0.5 pl-2.5 pr-1 mr-2 mt-2 text-sm font-medium bg-gray-200 text-gray-800 dark:text-gray-50 dark:bg-gray-700'>
-      {displayColumn}
-      &nbsp;
-      <span className='text-blue-400 border-blue-400 border-b-2 border-dotted cursor-pointer' onClick={() => onChangeExclusive(column, filter, !isExclusive)}>
-        {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
-      </span>
-      &nbsp;
-      &quot;
-      {displayFilter}
-      &quot;
-      <button
-        onClick={() => onRemoveFilter(column, filter)}
-        type='button'
-        className='flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-800 hover:text-gray-900 hover:bg-gray-300 focus:bg-gray-300 focus:text-gray-900 dark:text-gray-50 dark:bg-gray-700 dark:hover:text-gray-300 dark:hover:bg-gray-800 dark:focus:bg-gray-800 dark:focus:text-gray-300 focus:outline-none '
-      >
-        <span className='sr-only'>Remove filter</span>
-        <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
-          <path strokeLinecap='round' strokeWidth='1.5' d='M1 1l6 6m0-6L1 7' />
-        </svg>
-      </button>
-    </span>
-  )
-}
-
-// this component is used for rendering the filter panel
-const Filters = ({
-  filters, onRemoveFilter, onChangeExclusive, language, t, tnMapping,
-}) => (
-  <div className='flex justify-center md:justify-start flex-wrap -mt-2'>
-    {_map(filters, (props) => {
-      const { column, filter } = props
-      const key = `${column}${filter}`
-
-      return (
-        <Filter key={key} onRemoveFilter={onRemoveFilter} onChangeExclusive={onChangeExclusive} language={language} t={t} tnMapping={tnMapping} {...props} />
-      )
-    })}
-  </div>
-)
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
@@ -1018,7 +704,7 @@ const ViewProject = ({
             <Loader />
           )}
           {isPanelsDataEmpty && (
-            <NoEvents t={t} filters={filters} resetFilters={resetFilters} pid={id} />
+            <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
           )}
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
             <div className='h-80' id='dataChart' />
@@ -1026,8 +712,6 @@ const ViewProject = ({
               filters={filters}
               onRemoveFilter={filterHandler}
               onChangeExclusive={onChangeExclusive}
-              language={language}
-              t={t}
               tnMapping={tnMapping}
             />
             {dataLoading && (
