@@ -3,6 +3,7 @@ import {
   ConflictException,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   InternalServerErrorException,
   Logger,
@@ -74,6 +75,10 @@ export class ExtensionsController {
     count: number
   }> {
     this.logger.debug({ queries })
+
+    if (!userId) {
+      throw new ForbiddenException('You must be logged in to access this route.')
+    }
 
     const [extensions, count] = await this.extensionsService.findAndCount({
       where: {
@@ -172,6 +177,10 @@ export class ExtensionsController {
     extensions: Extension[]
     count: number
   }> {
+    if (!userId) {
+      throw new ForbiddenException('You must be logged in to access this route.')
+    }
+
     const [extensions, count] = await this.extensionsService.findAndCount({
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
@@ -312,6 +321,10 @@ export class ExtensionsController {
       file: Express.Multer.File
     },
   ): Promise<ISaveExtension & Extension> {
+    if (!userId) {
+      throw new ForbiddenException('You must be logged in to access this route.')
+    }
+
     const additionalImageFilenames = []
 
     if (files.additionalImages) {
@@ -401,6 +414,9 @@ export class ExtensionsController {
     @CurrentUserId() userId: string,
   ): Promise<any> {
     this.logger.debug({ params, body })
+    if (!userId) {
+      throw new ForbiddenException('You must be logged in to access this route.')
+    }
 
     const extension = await this.extensionsService.findOne({
       where: { id: params.extensionId },
@@ -461,6 +477,9 @@ export class ExtensionsController {
     @CurrentUserId() userId: string,
   ): Promise<void> {
     this.logger.debug({ params, body })
+    if (!userId) {
+      throw new ForbiddenException('You must be logged in to access this route.')
+    }
 
     const extension = await this.extensionsService.findOne({
       where: { id: params.extensionId },
