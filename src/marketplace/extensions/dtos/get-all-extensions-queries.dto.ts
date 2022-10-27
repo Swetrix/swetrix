@@ -1,4 +1,4 @@
-import { IsNumberString, IsOptional, IsUUID } from 'class-validator'
+import { IsNumberString, IsOptional } from 'class-validator'
 
 export class GetAllExtensionsQueries {
   @IsNumberString()
@@ -8,8 +8,4 @@ export class GetAllExtensionsQueries {
   @IsNumberString()
   @IsOptional()
   readonly limit?: number
-
-  @IsUUID()
-  @IsOptional()
-  readonly ownerId?: string
 }

@@ -40,8 +40,6 @@ import { Extension } from './entities/extension.entity'
 import { GetInstalledExtensionsQueriesDto } from './dtos/queries/get-installed-extensions.dto'
 import { InstallExtensionParamsDto } from './dtos/params/install-extension.dto'
 import { UninstallExtensionParamsDto } from './dtos/params/uninstall-extension.dto'
-import { InstallExtensionQueriesDto } from './dtos/queries/install-extension.dto'
-import { UninstallExtensionQueriesDto } from './dtos/queries/uninstall-extension.dto'
 import { InstallExtensionBodyDto } from './dtos/bodies/install-extension.dto'
 import { UninstallExtensionBodyDto } from './dtos/bodies/uninstall-extension.dto'
 import { ProjectService } from '../../project/project.service'
@@ -70,6 +68,7 @@ export class ExtensionsController {
   @Get('installed')
   async getInstalledExtensions(
     @Query() queries: GetInstalledExtensionsQueriesDto,
+    @CurrentUserId() userId: string,
   ): Promise<{
     extensions: Extension[]
     count: number
@@ -78,7 +77,7 @@ export class ExtensionsController {
 
     const [extensions, count] = await this.extensionsService.findAndCount({
       where: {
-        owner: queries.userId,
+        owner: userId,
       },
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
@@ -168,6 +167,7 @@ export class ExtensionsController {
   @Get('published')
   async getAllPublishedExtensions(
     @Query() queries: GetAllExtensionsQueries,
+    @CurrentUserId() userId: string,
   ): Promise<{
     extensions: Extension[]
     count: number
@@ -176,7 +176,7 @@ export class ExtensionsController {
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
       where: {
-        owner: queries.ownerId,
+        owner: userId,
       },
     })
 
@@ -397,10 +397,10 @@ export class ExtensionsController {
   @Post(':extensionId/install')
   async installExtension(
     @Param() params: InstallExtensionParamsDto,
-    @Query() queries: InstallExtensionQueriesDto,
     @Body() body: InstallExtensionBodyDto,
+    @CurrentUserId() userId: string,
   ): Promise<any> {
-    this.logger.debug({ params, queries, body })
+    this.logger.debug({ params, body })
 
     const extension = await this.extensionsService.findOne({
       where: { id: params.extensionId },
@@ -409,7 +409,7 @@ export class ExtensionsController {
       throw new NotFoundException('Extension not found.')
     }
 
-    const user = await this.userService.findOne(queries.userId)
+    const user = await this.userService.findOne(userId)
     if (!user) {
       throw new NotFoundException('User not found.')
     }
@@ -457,10 +457,10 @@ export class ExtensionsController {
   @Delete(':extensionId/uninstall')
   async uninstallExtension(
     @Param() params: UninstallExtensionParamsDto,
-    @Query() queries: UninstallExtensionQueriesDto,
     @Body() body: UninstallExtensionBodyDto,
+    @CurrentUserId() userId: string,
   ): Promise<void> {
-    this.logger.debug({ params, queries, body })
+    this.logger.debug({ params, body })
 
     const extension = await this.extensionsService.findOne({
       where: { id: params.extensionId },
@@ -469,7 +469,7 @@ export class ExtensionsController {
       throw new NotFoundException('Extension not found.')
     }
 
-    const user = await this.userService.findOne(queries.userId)
+    const user = await this.userService.findOne(userId)
     if (!user) {
       throw new NotFoundException('User not found.')
     }
