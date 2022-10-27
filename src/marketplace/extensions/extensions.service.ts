@@ -48,6 +48,26 @@ export class ExtensionsService {
     await this.extensionToProjectRepository.delete({ extensionId, projectId })
   }
 
+  async findAndCountExtensionToProject(
+    options: FindManyOptions<ExtensionToProject>,
+    relations: string[] = [],
+  ): Promise<[ExtensionToProject[], number]> {
+    return await this.extensionToProjectRepository.findAndCount({
+      ...options,
+      relations,
+    })
+  }
+
+  async findAndCountExtensionToUser(
+    options: FindManyOptions<ExtensionToUser>,
+    relations: string[] = [],
+  ): Promise<[ExtensionToUser[], number]> {
+    return await this.extensionToUserRepository.findAndCount({
+      ...options,
+      relations,
+    })
+  }
+
   async findOneExtensionToUser(
     options: FindOneOptions<ExtensionToUser>,
   ): Promise<ExtensionToUser> {
@@ -123,7 +143,7 @@ export class ExtensionsService {
   ): Promise<[Extension[], number]> {
     return await this.extensionRepository.findAndCount({
       ...options,
-      relations: relations,
+      relations,
     })
   }
 }

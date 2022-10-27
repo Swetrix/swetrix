@@ -80,14 +80,21 @@ export class ExtensionsController {
       throw new ForbiddenException('You must be logged in to access this route.')
     }
 
-    const [extensions, count] = await this.extensionsService.findAndCount({
+    const [extensionsToUser, count] = await this.extensionsService.findAndCountExtensionToUser({
       where: {
-        owner: userId,
+        userId,
       },
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
+    }, ['extension'])
+
+    const extensions = _map(extensionsToUser, (extensionToUser) => {
+      return extensionToUser.extension
     })
 
+    // todo: also return projectExtensions - via findAndCountExtensionToProject
+
+    // @ts-ignore
     return { extensions, count }
   }
 
