@@ -28,7 +28,7 @@ import _filter from 'lodash/filter'
 import _truncate from 'lodash/truncate'
 import _startsWith from 'lodash/startsWith'
 import PropTypes from 'prop-types'
-import SwetrixSDK from 'swetrix-sdk-test/esnext'
+import * as SwetrixSDK from '@swetrix/sdk'
 
 import { SWETRIX_PID } from 'utils/analytics'
 import Title from 'components/Title'
