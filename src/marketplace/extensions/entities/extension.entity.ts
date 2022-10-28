@@ -29,7 +29,7 @@ export class Extension {
   name: string
 
   @Column({ type: 'text', nullable: true, default: null })
-  description!: string | null
+  description: string | null
 
   @Column('varchar')
   version: string
