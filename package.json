@@ -5,6 +5,7 @@
   "main": "dist/swetrix.cjs.js",
   "module": "dist/swetrix.es5.js",
   "browser": "dist/swetrix.js",
+  "origbrowser": "dist/swetrix.orig.js",
   "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
   "scripts": {
@@ -33,7 +34,8 @@
   },
   "homepage": "https://swetrix.com/docs",
   "dependencies": {
-    "@types/node": "^14.18.0"
+    "@types/node": "^14.18.0",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",

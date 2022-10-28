@@ -11,6 +11,7 @@ export default [
     output: [
       { file: pkg.main, format: 'cjs' },
       { file: pkg.module, format: 'es' },
+      { file: pkg.origbrowser, format: 'umd', name: 'swetrix' },
     ],
     plugins: [
       typescript(), nodeResolve(), commonjs(), sourceMaps(),
