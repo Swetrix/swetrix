@@ -19,7 +19,7 @@ Swetrix is released under the AGPL v3.0 licence, see [LICENSE](LICENSE).
 ## Install Swetrix
 
 See the API installation process at https://github.com/Swetrix/swetrix-api#readme. \
-To selfhost the frontend part of Swetrix, you simply need to set up `.env` variables, install the dependencies (`npm i`), build the code (`npm run build:css` and `npm run build` commands) and host it as a regular React application ([how to host react apps](https://create-react-app.dev/docs/deployment/)).\
+To selfhost the frontend part of Swetrix, you simply need to set up `.env` variables, install the dependencies (`npm i`), build the code (`npm run build`) and host it as a regular React application ([how to host react apps](https://create-react-app.dev/docs/deployment/)).\
 On production, swetrix.com uses Cloudflare Pages to host the frontend part of the application.\
 The minimum supported NodeJS version is v14.
 
@@ -40,8 +40,7 @@ Swetrix is open to pull-requests. Feel free to propose new features or submit bu
 For severe security issues, please contact us at security@swetrix.com
 
 ## Contributions
-Contributions are welcome!\
-You can find and pick any of the roadmap tasks on our [Trello](https://trello.com/b/qzL3qlCM/swetrix-analytics) page (if you do so, please notify about it at the [Issues](https://github.com/swetrix/swetrix-fe/issues) section so others won't pick the same task too).\
+Contributions are welcome! You can find and pick any task on our [public roadmap](https://github.com/orgs/Swetrix/projects/2) page.\
 Feel free to also offer any feature or improvement proposal, all of it is highly appreciated!\
 You can also contribute translations on your [Crowdin](https://crowdin.com/project/swetrix) page.
 
