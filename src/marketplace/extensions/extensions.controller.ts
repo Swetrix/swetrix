@@ -384,15 +384,14 @@ export class ExtensionsController {
   @Patch(':extensionId')
   async updateExtension(
     @Param() params: UpdateExtensionParams,
+    @CurrentUserId() userId: string,
     @Body(new BodyValidationPipe()) body: UpdateExtension,
   ): Promise<UpdateExtension> {
-    const extension = await this.extensionsService.findById(params.extensionId)
+    const { extensionId } = params
 
-    if (!extension) {
-      throw new NotFoundException('Extension not found.')
-    }
+    this.extensionsService.allowedToManage(userId, extensionId)
 
-    await this.extensionsService.update(extension.id, body)
+    await this.extensionsService.update(extensionId, body)
 
     return body
   }
@@ -404,14 +403,15 @@ export class ExtensionsController {
     type: String,
   })
   @Delete(':extensionId')
-  async deleteExtension(@Param() params: DeleteExtensionParams): Promise<void> {
-    const extension = await this.extensionsService.findById(params.extensionId)
+  async deleteExtension(
+    @Param() params: DeleteExtensionParams,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    const { extensionId } = params
 
-    if (!extension) {
-      throw new NotFoundException('Extension not found.')
-    }
+    this.extensionsService.allowedToManage(userId, extensionId)
 
-    await this.extensionsService.delete(extension.id)
+    await this.extensionsService.delete(extensionId)
   }
 
   @Post(':extensionId/install')

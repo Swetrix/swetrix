@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { ForbiddenException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
 import { ExtensionToProject } from './entities/extension-to-project.entity'
@@ -120,6 +120,19 @@ export class ExtensionsService {
   // ): Promise<InstallExtension | null> {
   //   return this.InstallExtensionRepository.findOne(id, params)
   // }
+
+  async allowedToManage(
+    ownerId: string,
+    id: string,
+  ): Promise<any> {
+    const extension = await this.findOne({
+      where: { owner: ownerId, id },
+    })
+
+    if (!extension) {
+      throw new ForbiddenException('You are not allowed to manage this extension')
+    }
+  }
 
   async save(extension: ISaveExtension): Promise<ISaveExtension & Extension> {
     return await this.extensionRepository.save(extension)

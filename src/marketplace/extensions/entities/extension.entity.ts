@@ -20,13 +20,10 @@ import { Complaint } from '../../complaints/entities/complaint.entity'
 @Entity()
 export class Extension {
   @PrimaryGeneratedColumn('uuid')
-  id!: string
-
-  // @Column('uuid')
-  // ownerId: string
+  id: string
 
   @ManyToOne(() => User, user => user.ownedExtensions)
-  owner!: User
+  owner: User
 
   @Column('varchar')
   name: string
