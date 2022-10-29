@@ -9,6 +9,6 @@ export interface ICreateExtension {
   price?: number
   mainImage?: string | null
   additionalImages?: string[] | []
-  fileURL: string
+  fileURL?: string
   categories?: Category[]
 }

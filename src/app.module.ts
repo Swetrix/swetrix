@@ -26,7 +26,7 @@ const modules = [
     username: process.env.MYSQL_USER,
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
-    synchronize: process.env.NODE_ENV === 'development',
+    synchronize: false, // process.env.NODE_ENV === 'development',
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
   }),
   ScheduleModule.forRoot(),

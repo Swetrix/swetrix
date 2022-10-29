@@ -325,7 +325,7 @@ export class ExtensionsController {
     files: {
       mainImage?: Express.Multer.File
       additionalImages?: Express.Multer.File[]
-      file: Express.Multer.File
+      file?: Express.Multer.File
     },
   ): Promise<ISaveExtension & Extension> {
     if (!userId) {
