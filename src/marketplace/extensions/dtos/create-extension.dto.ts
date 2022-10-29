@@ -62,12 +62,11 @@ export class CreateExtension {
 
   @ApiProperty({
     default: [],
-    description: 'Extension categories ids',
-    example: [1, 2, 3],
-    isArray: true,
+    description: 'Extension category ID',
+    example: 1,
     required: false,
     type: Array<number>,
   })
   @IsOptional()
-  readonly categoriesIds?: number[]
+  readonly categoryID?: number
 }

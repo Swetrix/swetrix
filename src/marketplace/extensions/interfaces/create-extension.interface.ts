@@ -10,5 +10,5 @@ export interface ICreateExtension {
   mainImage?: string | null
   additionalImages?: string[] | []
   fileURL?: string
-  categories?: Category[]
+  category?: Category
 }

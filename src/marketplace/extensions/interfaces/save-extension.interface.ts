@@ -7,5 +7,5 @@ export interface ISaveExtension {
   price?: number
   mainImage?: string | null
   additionalImages?: string[] | []
-  categories?: Category[]
+  category?: Category
 }

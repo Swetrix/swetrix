@@ -122,7 +122,7 @@ export class ExtensionsController {
         skip: queries.offset || 0,
         take: queries.limit > 100 ? 25 : queries.limit || 25,
       },
-      ['owner', 'users'],
+      ['owner', 'users', 'category'],
     )
 
     // temporary fix; the usersQuantity should be counted via .count() method of typeorm
@@ -188,13 +188,13 @@ export class ExtensionsController {
       throw new ForbiddenException('You must be logged in to access this route.')
     }
 
-    const [extensions, count] = await this.extensionsService.findAndCount({
+    let [extensions, count] = await this.extensionsService.findAndCount({
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
       where: {
         owner: userId,
       },
-    })
+    }, ['category'])
 
     return { extensions, count }
   }
@@ -241,7 +241,7 @@ export class ExtensionsController {
     if (queries.category) {
       const [extensions, count] = await getRepository(Extension)
         .createQueryBuilder('extension')
-        .leftJoin('extension.categories', 'category')
+        .leftJoin('extension.category', 'category')
         .where('extension.name LIKE :term', { term: `%${queries.term}%` })
         .andWhere('category.name = :category', { category: queries.category })
         .skip(queries.offset || 0)
@@ -300,7 +300,7 @@ export class ExtensionsController {
       where: {
         id: params.extensionId,
       },
-      relations: ['categories'],
+      relations: ['category'],
     })
 
     if (!extension) {
@@ -367,8 +367,8 @@ export class ExtensionsController {
       mainImage: mainImageURL,
       additionalImages: additionalImageFilenames,
       fileURL,
-      categories: body.categoriesIds
-        ? await this.categoriesService.findByIds(body.categoriesIds)
+      category: body.categoryID
+        ? await this.categoriesService.findById(body.categoryID)
         : undefined,
     })
 

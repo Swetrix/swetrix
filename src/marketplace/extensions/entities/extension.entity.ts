@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   Entity,
   JoinTable,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -59,8 +58,8 @@ export class Extension {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToMany(() => Category, category => category.extensions)
-  categories: Category[] | []
+  @ManyToOne(() => Category, category => category.extensions)
+  category: Category
 
   @OneToMany(
     () => ExtensionToUser,
