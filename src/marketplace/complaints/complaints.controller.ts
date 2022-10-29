@@ -5,6 +5,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  UseGuards,
   Query,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
@@ -18,6 +19,9 @@ import { ResolveComplaintParamDto } from './dtos/params/resolve-complaint.dto'
 import { CreateComplaintQueryDto } from './dtos/queries/create-complaint.dto'
 import { GetComplaintsQueryDto } from './dtos/queries/get-complaints.dto'
 import { Complaint } from './entities/complaint.entity'
+import { UserType } from 'src/user/entities/user.entity'
+import { RolesGuard } from 'src/common/guards/roles.guard'
+import { Roles } from 'src/common/decorators/roles.decorator'
 
 @ApiTags('complaints')
 @Controller('complaints')
@@ -28,12 +32,13 @@ export class ComplaintsController {
     private readonly extensionsService: ExtensionsService,
   ) {}
 
-  // In the future, it will be added to use only for admin.
   @Get()
   @ApiQuery({ name: 'offset', required: false, type: String })
   @ApiQuery({ name: 'limit', required: false, type: String })
   @ApiQuery({ name: 'extensionId', required: false, type: String })
   @ApiQuery({ name: 'userId', required: false, type: String })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
   async getComplaints(@Query() queries: GetComplaintsQueryDto): Promise<{
     complaints: Complaint[]
     count: number
@@ -50,9 +55,10 @@ export class ComplaintsController {
     return { complaints, count }
   }
 
-  // In the future, it will be added to use only for admin.
   @Get(':complaintId')
   @ApiParam({ name: 'complaintId', required: true, type: String })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
   async getComplaint(
     @Param() params: GetComplaintParamDto,
   ): Promise<Complaint> {
@@ -94,9 +100,10 @@ export class ComplaintsController {
     })
   }
 
-  // In the future, it will be added to use only for admin.
   @Post(':complaintId/resolve')
   @ApiParam({ name: 'complaintId', required: true, type: String })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
   async resolveComplaint(
     @Param() params: ResolveComplaintParamDto,
     @Body() body: ResolveComplaintBodyDto,
