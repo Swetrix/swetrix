@@ -14,7 +14,7 @@ import _isEmpty from 'lodash/isEmpty'
 import routes from 'routes'
 import { nFormatterSeparated } from 'utils/generic'
 import Title from 'components/Title'
-import { GITHUB_URL } from 'redux/constants'
+import { GITHUB_URL, MARKETPLACE_URL } from 'redux/constants'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
 import NextJS from 'ui/icons/NextJS'
@@ -168,7 +168,7 @@ const Main = () => {
                   <p className='text-gray-600 dark:text-gray-400 mb-11'>
                     {t('main.marketplace.desc2')}
                   </p>
-                  <Link to='#!' className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'>
+                  <Link to={MARKETPLACE_URL} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'>
                     {t('main.visitAddons')}
                     <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </Link>
