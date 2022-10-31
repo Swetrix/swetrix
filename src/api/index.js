@@ -413,3 +413,14 @@ export const deleteApiKey = () =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const getInstalledExtensions = (limit = 100, offset = 0) =>
+  api
+    .get(`/extensions/installed?limit=${limit}&offset=${offset}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

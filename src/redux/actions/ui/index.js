@@ -18,6 +18,17 @@ const setProjects = (projects, shared) => ({
   },
 })
 
+const setExtensions = (extensions) => ({
+  type: types.SET_EXTENSIONS,
+  payload: {
+    extensions,
+  },
+})
+
+const loadExtensions = () => ({
+  type: types.LOAD_EXTENSIONS,
+})
+
 const setTotalMonthlyEvents = (totalMonthlyEvents) => ({
   type: types.SET_TOTAL_MONTHLY_EVENTS,
   payload: {
@@ -190,6 +201,8 @@ const UIActions = {
   setProjectsShareData,
   shareVerifyAsync,
   setDashboardTabs,
+  setExtensions,
+  loadExtensions,
   setLastBlogPost,
 }
 

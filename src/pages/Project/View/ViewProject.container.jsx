@@ -16,6 +16,7 @@ const mapStateToProps = (state) => {
       authenticated: state.auth.authenticated,
       timezone: state.auth.user.timezone,
       isPaidTierUsed: state.auth.isPaidTierUsed,
+      extensions: state.ui.misc.extensions,
       user: state.auth.user,
     }
   }
@@ -29,6 +30,7 @@ const mapStateToProps = (state) => {
     authenticated: state.auth.authenticated,
     timezone: state.auth.user.timezone,
     isPaidTierUsed: state.auth.isPaidTierUsed,
+    extensions: state.ui.misc.extensions,
     user: state.auth.user,
   }
 }

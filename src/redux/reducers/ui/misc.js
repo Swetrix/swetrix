@@ -14,6 +14,7 @@ const initialState = {
   },
   showNoEventsLeftBanner: false,
   lastBlogPost: {},
+  extensions: [],
 }
 
 // eslint-disable-next-line default-param-last
@@ -51,6 +52,15 @@ const miscReducer = (state = initialState, { type, payload }) => {
       return {
         ...state,
         showNoEventsLeftBanner,
+      }
+    }
+
+    case types.SET_EXTENSIONS: {
+      const { extensions } = payload
+
+      return {
+        ...state,
+        extensions,
       }
     }
 

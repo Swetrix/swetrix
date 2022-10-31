@@ -3,7 +3,7 @@ import React, {
 } from 'react'
 import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
 import {
-  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon,
+  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -15,6 +15,8 @@ import _isEmpty from 'lodash/isEmpty'
 import _isFunction from 'lodash/isFunction'
 import _reduce from 'lodash/reduce'
 import _round from 'lodash/round'
+import _find from 'lodash/find'
+import _includes from 'lodash/includes'
 import _floor from 'lodash/floor'
 import _size from 'lodash/size'
 import _slice from 'lodash/slice'
@@ -29,9 +31,22 @@ import { iconClassName } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 5
 
+const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv']
+
+// function that checks if there are custom tabs for a specific type
+const checkCustomTabs = (panelID, customTabs) => {
+  if (_isEmpty(customTabs)) return false
+
+  return Boolean(_find(customTabs, (el) => el.panelID === panelID))
+}
+
+const checkIfBarsNeeded = (panelID) => {
+  return _includes(panelsWithBars, panelID)
+}
+
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment,
+  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs,
 }) => (
   <div
     className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
@@ -49,9 +64,8 @@ const PanelContainer = ({
         )}
         {name}
       </h3>
-      {/* if it is a Country tab  */}
-      {type === 'cc' && (
-        <div className='flex'>
+      <div className='flex'>
+        {(checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs)) && (
           <Bars4Icon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-blue-500': activeFragment === 0,
@@ -59,31 +73,28 @@ const PanelContainer = ({
             })}
             onClick={() => setActiveFragment(0)}
           />
-          <MapIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer', {
-              'text-blue-500': activeFragment === 1,
-              'text-gray-900 dark:text-gray-50': activeFragment === 0,
-            })}
-            onClick={() => setActiveFragment(1)}
-          />
-          <ArrowsPointingOutIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
-              hidden: activeFragment === 0,
-            })}
-            onClick={openModal}
-          />
-        </div>
-      )}
-      {/* if this tab using Circle showing stats panel */}
-      {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
-        <div className='flex'>
-          <Bars4Icon
-            className={cx(iconClassName, 'cursor-pointer', {
-              'text-blue-500': activeFragment === 0,
-              'text-gray-900 dark:text-gray-50': activeFragment === 1,
-            })}
-            onClick={() => setActiveFragment(0)}
-          />
+        )}
+
+        {/* if it is a Country tab  */}
+        {type === 'cc' && (
+          <>
+            <MapIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                'text-blue-500': activeFragment === 1,
+                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+              })}
+              onClick={() => setActiveFragment(1)}
+            />
+            <ArrowsPointingOutIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
+                hidden: activeFragment === 0,
+              })}
+              onClick={openModal}
+            />
+          </>
+        )}
+        {/* if this tab using Circle showing stats panel */}
+        {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
           <ChartPieIcon
             className={cx(iconClassName, 'ml-2 cursor-pointer', {
               'text-blue-500': activeFragment === 1,
@@ -91,8 +102,22 @@ const PanelContainer = ({
             })}
             onClick={() => setActiveFragment(1)}
           />
-        </div>
-      )}
+        )}
+        {checkCustomTabs(type, customTabs) && (
+          <>
+            {_map(customTabs, ({ extensionID, panelID }) => (
+              <PuzzlePieceIcon
+                key={`${extensionID}-${panelID}`}
+                className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                  'text-blue-500': activeFragment === extensionID,
+                  'text-gray-900 dark:text-gray-50': activeFragment === 0,
+                })}
+                onClick={() => setActiveFragment(extensionID)}
+              />
+            ))}
+          </>
+        )}
+      </div>
     </div>
     {/* for other tabs */}
     <div className='flex flex-col h-full scroll-auto overflow-auto'>
@@ -105,7 +130,7 @@ PanelContainer.propTypes = {
   name: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   noSwitch: PropTypes.bool,
-  activeFragment: PropTypes.number,
+  activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   setActiveFragment: PropTypes.func,
   icon: PropTypes.node,
 }
@@ -389,7 +414,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
+  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -436,6 +461,7 @@ const Panel = ({
         activeFragment={activeFragment}
         setActiveFragment={setActiveFragment}
         openModal={() => setModal(true)}
+        customTabs={customTabs}
       >
         <InteractiveMap
           data={data}
@@ -502,6 +528,7 @@ const Panel = ({
         type={id}
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
+        customTabs={customTabs}
       >
         {_isEmpty(data) ? (
           <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
@@ -518,8 +545,29 @@ const Panel = ({
   }
   // Showing chart of stats a data (end if)
 
+  // Showing custom tabs (Extensions Marketplace)
+  // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
+  if (!_isEmpty(customTabs) && typeof activeFragment === 'string' && !_isEmpty(data)) {
+    const content = _find(customTabs, (tab) => tab.extensionID === activeFragment).tabContent
+
+    return (
+      <PanelContainer
+        name={name}
+        icon={icon}
+        type={id}
+        activeFragment={activeFragment}
+        setActiveFragment={setActiveFragment}
+        openModal={() => setModal(true)}
+        customTabs={customTabs}
+      >
+        {/* eslint-disable-next-line react/no-danger */}
+        <div dangerouslySetInnerHTML={{ __html: content }} />
+      </PanelContainer>
+    )
+  }
+
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment}>
+    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs}>
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}

@@ -14,6 +14,7 @@ export default function* initialise() {
     if (token) {
       yield put(UIActions.loadProjects())
       yield put(UIActions.loadSharedProjects())
+      yield put(UIActions.loadExtensions())
     }
 
     const lastBlogPost = yield call(getLastPost)
