@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common'
+import * as _pick from 'lodash/pick'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
 import { ExtensionToProject } from './entities/extension-to-project.entity'
@@ -6,6 +7,7 @@ import { ExtensionToUser } from './entities/extension-to-user.entity'
 import { Extension } from './entities/extension.entity'
 import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
+import { User } from '../../user/entities/user.entity'
 import { IUpdateExtension } from './interfaces/update-extension.interface'
 
 @Injectable()
@@ -87,6 +89,10 @@ export class ExtensionsService {
     userId: string,
   ): Promise<void> {
     await this.extensionToUserRepository.delete({ extensionId, userId })
+  }
+
+  filterOwner(owner: User): object {
+    return _pick(owner, ['nickname'])
   }
 
   // async createInstall(

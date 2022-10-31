@@ -129,6 +129,7 @@ export class ExtensionsController {
     extensions = _map(extensions, (extension) => {
       extension.usersQuantity = _size(extension.users)
       extension.users = undefined
+      extension.owner = this.extensionsService.filterOwner(extension.owner)
       return extension
     })
 
