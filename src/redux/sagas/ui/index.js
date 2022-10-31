@@ -9,6 +9,7 @@ import generalStats from './worker_general_stats'
 import setProjectViewPrefs from './set_project_view_prefs'
 import isEventsAvailable from './worker_is_events_available'
 import shareVerify from './share_verify'
+import loadExtensions from './load_extensions'
 import logout from './logout'
 import loadSharedProjects from './load_shared_projects'
 
@@ -20,6 +21,7 @@ function* mainUISaga() {
   yield takeEvery(types.SET_PROJECT_VIEW_PREFS, setProjectViewPrefs)
   yield takeEvery(types.LOAD_PROJECTS, loadProjects)
   yield takeEvery(types.LOAD_SHARED_PROJECTS, loadSharedProjects)
+  yield takeEvery(types.LOAD_EXTENSIONS, loadExtensions)
   yield takeEvery(authTypes.LOGOUT, logout)
   yield takeLatest(types.SHARE_VERIFY_ASYNC, shareVerify)
 }

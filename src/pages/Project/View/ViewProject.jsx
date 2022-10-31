@@ -29,7 +29,7 @@ import { SWETRIX_PID } from 'utils/analytics'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE,
+  tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE,
 } from 'redux/constants'
 import Button from 'ui/Button'
@@ -57,7 +57,7 @@ import './styles.css'
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -313,14 +313,20 @@ const ViewProject = ({
 
   // Initialising Swetrix SDK instance
   useEffect(() => {
-    const sdk = new SwetrixSDK([{
-      cdnURL: 'http://localhost:3000/assets/test_extension.js',
-      id: 'test-extension',
-    }, {
-      cdnURL: 'http://localhost:3000/assets/export_as_json.js',
-      id: 'export-as-json',
-    }], {
-      debug: true,
+    if (_isEmpty(extensions)) {
+      return null
+    }
+
+    const processedExtensions = _map(extensions, (ext) => {
+      const { id: extId, fileURL } = ext
+      return {
+        id: extId,
+        cdnURL: `${CDN_URL}file/${fileURL}`,
+      }
+    })
+
+    const sdk = new SwetrixSDK(processedExtensions, {
+      debug: isDevelopment,
     }, {
       onAddExportDataRow: (label, onClick) => {
         setCustomExportTypes((prev) => [
@@ -354,7 +360,7 @@ const ViewProject = ({
     return () => {
       sdk._destroy()
     }
-  }, [])
+  }, [extensions])
 
   // Supplying 'timeupdate' event to the SDK after loading
   useEffect(() => {
@@ -979,6 +985,7 @@ ViewProject.propTypes = {
   setPublicProject: PropTypes.func.isRequired,
   setLiveStatsForProject: PropTypes.func.isRequired,
   authenticated: PropTypes.bool.isRequired,
+  extensions: PropTypes.arrayOf(PropTypes.object).isRequired,
   isPaidTierUsed: PropTypes.bool.isRequired,
   timezone: PropTypes.string,
 }
