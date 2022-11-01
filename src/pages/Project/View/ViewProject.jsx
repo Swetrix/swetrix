@@ -313,7 +313,7 @@ const ViewProject = ({
 
   // Initialising Swetrix SDK instance
   useEffect(() => {
-    let sdk
+    let sdk = null
     if (!_isEmpty(extensions)) {
       const processedExtensions = _map(extensions, (ext) => {
         const { id: extId, fileURL } = ext
@@ -357,8 +357,8 @@ const ViewProject = ({
     }
 
     return () => {
-      if (!_isEmpty(sdk)) {
-        sdk.destroy()
+      if (sdk) {
+        sdk._destroy()
       }
     }
   }, [extensions])
