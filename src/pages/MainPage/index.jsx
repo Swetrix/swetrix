@@ -168,10 +168,10 @@ const Main = () => {
                   <p className='text-gray-600 dark:text-gray-400 mb-11'>
                     {t('main.marketplace.desc2')}
                   </p>
-                  <Link to={MARKETPLACE_URL} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'>
+                  <a href={MARKETPLACE_URL} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center' target='_blank' rel='noopener noreferrer'>
                     {t('main.visitAddons')}
                     <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
-                  </Link>
+                  </a>
                 </div>
                 <img className='md:max-w-[450px] lg:max-w-lg md:ml-5 mt-8 md:mt-0' src='/assets/teardown.svg' alt='Marketplace' />
               </section>
