@@ -91,7 +91,7 @@ export class CategoriesController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(UserType.ADMIN || UserType.CUSTOMER)
+  @Roles(UserType.ADMIN)
   @Post()
   async createCategory(
     @Body() body: CreateCategory,
@@ -145,8 +145,8 @@ export class CategoriesController {
     example: 1,
     type: Number,
   })
-  // @UseGuards(RolesGuard)
-  // @Roles(UserType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
   @Delete(':categoryId')
   async deleteCategory(@Param() params: DeleteCategoryParams): Promise<void> {
     const category = await this.categoriesService.findById(params.categoryId)
