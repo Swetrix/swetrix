@@ -410,12 +410,12 @@ export class ExtensionsController {
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
-  @Patch(':extensionId/approve')
+  @Post(':extensionId/approve')
   async approveExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
     const { extensionId } = params
 
     const extension = await this.extensionsService.findOne({
-      where: { id: params.extensionId },
+      where: { id: extensionId },
     })
 
     if (!extension) {
@@ -435,12 +435,12 @@ export class ExtensionsController {
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
-  @Patch(':extensionId/reject')
+  @Post(':extensionId/reject')
   async rejectExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
     const { extensionId } = params
 
     const extension = await this.extensionsService.findOne({
-      where: { id: params.extensionId },
+      where: { id: extensionId },
     })
 
     if (!extension) {
