@@ -410,7 +410,7 @@ export class ExtensionsController {
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
-  @Post(':extensionId/approve')
+  @Patch(':extensionId/approve')
   async approveExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
     const { extensionId } = params
 
@@ -435,7 +435,7 @@ export class ExtensionsController {
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.ADMIN)
-  @Post(':extensionId/reject')
+  @Patch(':extensionId/reject')
   async rejectExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
     const { extensionId } = params
 
