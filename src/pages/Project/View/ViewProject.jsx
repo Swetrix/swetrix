@@ -313,52 +313,53 @@ const ViewProject = ({
 
   // Initialising Swetrix SDK instance
   useEffect(() => {
-    if (_isEmpty(extensions)) {
-      return null
+    let sdk = null
+    if (!_isEmpty(extensions)) {
+      const processedExtensions = _map(extensions, (ext) => {
+        const { id: extId, fileURL } = ext
+        return {
+          id: extId,
+          cdnURL: `${CDN_URL}file/${fileURL}`,
+        }
+      })
+
+      sdk = new SwetrixSDK(processedExtensions, {
+        debug: isDevelopment,
+      }, {
+        onAddExportDataRow: (label, onClick) => {
+          setCustomExportTypes((prev) => [
+            ...prev,
+            {
+              label,
+              onClick,
+            },
+          ])
+        },
+        onRemoveExportDataRow: (label) => {
+          setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
+        },
+        onAddPanelTab: (extensionID, panelID, tabContent, onOpen) => {
+          setCustomPanelTabs((prev) => [
+            ...prev,
+            {
+              extensionID,
+              panelID,
+              tabContent,
+              onOpen,
+            },
+          ])
+        },
+        onRemovePanelTab: (extensionID, panelID) => {
+          setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
+        },
+      })
+      setSdkInstance(sdk)
     }
 
-    const processedExtensions = _map(extensions, (ext) => {
-      const { id: extId, fileURL } = ext
-      return {
-        id: extId,
-        cdnURL: `${CDN_URL}file/${fileURL}`,
-      }
-    })
-
-    const sdk = new SwetrixSDK(processedExtensions, {
-      debug: isDevelopment,
-    }, {
-      onAddExportDataRow: (label, onClick) => {
-        setCustomExportTypes((prev) => [
-          ...prev,
-          {
-            label,
-            onClick,
-          },
-        ])
-      },
-      onRemoveExportDataRow: (label) => {
-        setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
-      },
-      onAddPanelTab: (extensionID, panelID, tabContent, onOpen) => {
-        setCustomPanelTabs((prev) => [
-          ...prev,
-          {
-            extensionID,
-            panelID,
-            tabContent,
-            onOpen,
-          },
-        ])
-      },
-      onRemovePanelTab: (extensionID, panelID) => {
-        setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
-      },
-    })
-    setSdkInstance(sdk)
-
     return () => {
-      sdk._destroy()
+      if (sdk) {
+        sdk._destroy()
+      }
     }
   }, [extensions])
 
