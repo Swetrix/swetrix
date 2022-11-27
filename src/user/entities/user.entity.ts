@@ -150,8 +150,7 @@ export class User {
   @Column('varchar', { length: 30, nullable: true })
   twoFactorRecoveryCode: string
 
-  // column for theme christmas and classic
-  @Column('varchar', { length: 50, default: Theme.classic })
+  @Column('varchar', { length: 50, default: Theme.christmas })
   theme: Theme
 
   @Column({ default: false })

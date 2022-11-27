@@ -85,15 +85,15 @@ export class UserController {
   }
 
   // set theme
-  @Put('/:id/theme')
+  @Put('/theme')
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async setTheme(
-    @Param('id') id: string,
+    @CurrentUserId() userId: string,
     @Body('theme') theme: Theme,
   ): Promise<User> {
-    return await this.userService.update(id, { theme })
+    return await this.userService.update(userId, { theme })
   }
 
   @Get('/search')
