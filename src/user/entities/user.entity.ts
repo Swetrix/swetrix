@@ -69,6 +69,11 @@ export enum BillingFrequency {
   Yearly = 'yearly',
 }
 
+export enum Theme {
+  classic = 'classic',
+  christmas = 'christmas',
+}
+
 export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 additional ones
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
@@ -144,6 +149,10 @@ export class User {
 
   @Column('varchar', { length: 30, nullable: true })
   twoFactorRecoveryCode: string
+
+  // column for theme christmas and classic
+  @Column('varchar', { length: 50, default: Theme.classic })
+  theme: Theme
 
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean

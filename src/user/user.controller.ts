@@ -36,6 +36,7 @@ import {
   UserType,
   MAX_EMAIL_REQUESTS,
   PlanCode,
+  Theme,
 } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -81,6 +82,18 @@ export class UserController {
   ): Promise<Pagination<User> | User[]> {
     this.logger.log({ take, skip }, 'GET /user')
     return await this.userService.paginate({ take, skip })
+  }
+
+  // set theme
+  @Put('/:id/theme')
+  @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async setTheme(
+    @Param('id') id: string,
+    @Body('theme') theme: Theme,
+  ): Promise<User> {
+    return await this.userService.update(id, { theme })
   }
 
   @Get('/search')
