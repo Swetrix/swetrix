@@ -39,13 +39,30 @@ const Header = ({ authenticated, theme }) => {
 
   return (
     <Popover className='relative bg-white'>
-      <header className='bg-indigo-600 dark:bg-gray-750'>
+      <header className='bg-indigo-600 dark:bg-gray-750 relative overflow-hidden'>
+        <div className='santa-claus group'>
+          <div className='group-hover:cursor-pointer group-hover:translate-y-[-130px] transition-all ease-linear delay-300 duration-500'>
+            <div className='sc-head'>
+              <div className='sc-hat'>
+                <div className='hat-tip' />
+              </div>
+              <div className='eyes' />
+              <div className='nose' />
+              <div className='beard' />
+              <div className='ears'>
+                <div className='ear left' />
+                <div className='ear right' />
+              </div>
+            </div>
+          </div>
+          <div className='sc-body' />
+        </div>
         <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
           <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-gray-300 lg:border-none'>
             <div className='flex items-center'>
               <Link to={routes.main}>
                 <span className='sr-only'>Swetrix</span>
-                <img className='h-10' src='/assets/logo_white.svg' alt='' />
+                <img className='h-10' src='/assets/logo_white_christmas.png' alt='' />
               </Link>
               <div className='hidden ml-10 space-x-1 lg:flex'>
                 <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
@@ -196,7 +213,7 @@ const Header = ({ authenticated, theme }) => {
                 <Link to={routes.main}>
                   <span className='sr-only'>Swetrix</span>
                   {theme === 'dark' ? (
-                    <img className='h-10' src='/assets/logo_white.svg' alt='' />
+                    <img className='h-10' src='/assets/logo_white_christmas.png' alt='' />
                   ) : (
                     <img className='h-10' src='/assets/logo_blue.svg' alt='' />
                   )}
