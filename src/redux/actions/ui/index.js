@@ -177,6 +177,11 @@ const setLastBlogPost = (lastBlogPost) => ({
   payload: { lastBlogPost },
 })
 
+const setThemeType = (theme) => ({
+  type: types.SET_THEME_TYPE,
+  payload: { theme },
+})
+
 const UIActions = {
   loadProjects,
   loadSharedProjects,
@@ -204,6 +209,7 @@ const UIActions = {
   setExtensions,
   loadExtensions,
   setLastBlogPost,
+  setThemeType,
 }
 
 export default UIActions

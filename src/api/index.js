@@ -424,3 +424,14 @@ export const getInstalledExtensions = (limit = 100, offset = 0) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const setTheme = (theme) =>
+  api
+    .put('user/theme', { theme })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

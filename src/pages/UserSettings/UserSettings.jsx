@@ -19,7 +19,7 @@ import utc from 'dayjs/plugin/utc'
 
 import {
   reportFrequencies, DEFAULT_TIMEZONE, WEEKLY_REPORT_FREQUENCY, CONFIRMATION_TIMEOUT,
-  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME,
+  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, THEME_TYPE,
 } from 'redux/constants'
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -28,6 +28,8 @@ import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Beta from 'ui/Beta'
 import Select from 'ui/Select'
+import Tooltip from 'ui/Tooltip'
+import { ActivePin } from 'ui/Pin'
 import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
@@ -35,7 +37,7 @@ import routes from 'routes'
 import { trackCustom } from 'utils/analytics'
 import { getCookie, setCookie } from 'utils/cookie'
 import {
-  confirmEmail, exportUserData, generateApiKey, deleteApiKey,
+  confirmEmail, exportUserData, generateApiKey, deleteApiKey, setTheme,
 } from 'api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
@@ -47,7 +49,7 @@ const UserSettings = ({
   onDelete, onDeleteProjectCache, removeProject, removeShareProject, setUserShareData,
   setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData, login,
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
-  accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed,
+  accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, setThemeType, themeType,
 }) => {
   const history = useHistory()
   const { t, i18n: { language } } = useTranslation('common')
@@ -257,6 +259,15 @@ const UserSettings = ({
     }
   }
 
+  const setAsyncThemeType = async (theme) => {
+    try {
+      await setTheme(theme)
+      setThemeType(theme)
+    } catch (e) {
+      updateProfileFailed(e)
+    }
+  }
+
   return (
     <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
@@ -306,6 +317,24 @@ const UserSettings = ({
           <Button className='mt-4' type='submit' primary large>
             {t('profileSettings.update')}
           </Button>
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            Theme
+            <div className='ml-3'>
+              <ActivePin label='New' />
+            </div>
+          </h3>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-2 mb-4'>
+            <div>
+              <Select
+                title={themeType}
+                label='Select theme'
+                className='w-full'
+                items={[THEME_TYPE.classic, THEME_TYPE.christmas]}
+                onSelect={(f) => setAsyncThemeType(f)}
+              />
+            </div>
+          </div>
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.timezone')}

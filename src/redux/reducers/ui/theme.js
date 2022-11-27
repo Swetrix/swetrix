@@ -1,6 +1,6 @@
 import _includes from 'lodash/includes'
 import { types } from 'redux/actions/ui/types'
-import { LS_THEME_SETTING, SUPPORTED_THEMES } from 'redux/constants'
+import { LS_THEME_SETTING, SUPPORTED_THEMES, THEME_TYPE } from 'redux/constants'
 
 const setThemeToDOM = (theme) => {
   const root = window.document.documentElement
@@ -38,6 +38,7 @@ const getInitialTheme = () => {
 const getInitialState = () => {
   return {
     theme: getInitialTheme(),
+    type: THEME_TYPE.christmas,
   }
 }
 
@@ -51,6 +52,15 @@ const themeReducer = (state = getInitialState(), { type, payload }) => {
       return {
         ...state,
         theme,
+      }
+    }
+
+    case types.SET_THEME_TYPE: {
+      const { theme } = payload
+
+      return {
+        ...state,
+        type: theme,
       }
     }
 
