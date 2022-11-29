@@ -13,6 +13,7 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -44,6 +45,10 @@ import { UninstallExtensionParamsDto } from './dtos/params/uninstall-extension.d
 import { InstallExtensionBodyDto } from './dtos/bodies/install-extension.dto'
 import { UninstallExtensionBodyDto } from './dtos/bodies/uninstall-extension.dto'
 import { ProjectService } from '../../project/project.service'
+import { Roles } from '../../common/decorators/roles.decorator'
+import { RolesGuard } from '../../common/guards/roles.guard'
+import { UserType } from '../../user/entities/user.entity'
+import { ExtensionStatus } from './enums/extension-status.enum'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -395,6 +400,56 @@ export class ExtensionsController {
     await this.extensionsService.update(extensionId, body)
 
     return body
+  }
+
+  @ApiParam({
+    name: 'extensionId',
+    description: 'Extension ID',
+    example: 'de025965-3221-4d09-ba35-a09da59793a6',
+    type: String,
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
+  @Patch(':extensionId/approve')
+  async approveExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
+    const { extensionId } = params
+
+    const extension = await this.extensionsService.findOne({
+      where: { id: extensionId },
+    })
+
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    extension.status = ExtensionStatus.ACCEPTED
+
+    return await this.extensionsService.save(extension)
+  }
+
+  @ApiParam({
+    name: 'extensionId',
+    description: 'Extension ID',
+    example: 'de025965-3221-4d09-ba35-a09da59793a6',
+    type: String,
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN)
+  @Patch(':extensionId/reject')
+  async rejectExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
+    const { extensionId } = params
+
+    const extension = await this.extensionsService.findOne({
+      where: { id: extensionId },
+    })
+
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    extension.status = ExtensionStatus.REJECTED
+
+    return await this.extensionsService.save(extension)
   }
 
   @ApiParam({
