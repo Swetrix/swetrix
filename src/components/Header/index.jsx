@@ -39,10 +39,10 @@ const Header = ({ authenticated, theme, themeType }) => {
 
   return (
     <Popover className='relative bg-white'>
-      <header className='bg-indigo-600 dark:bg-gray-750 relative overflow-hidden'>
+      <header className='bg-indigo-600 dark:bg-gray-750 relative overflow-x-clip'>
         {themeType === THEME_TYPE.christmas && (
           <div className='santa-claus group'>
-            <div className='group-hover:cursor-pointer group-hover:translate-y-[-130px] transition-all ease-linear delay-300 duration-500'>
+            <div className='group-hover:cursor-pointer group-hover:translate-y-[-100px] transition-all ease-linear delay-100 duration-500'>
               <div className='sc-head'>
                 <div className='sc-hat'>
                   <div className='hat-tip' />
