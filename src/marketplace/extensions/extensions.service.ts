@@ -22,7 +22,6 @@ export class ExtensionsService {
   ) {}
 
   async findOne(options: FindOneOptions<Extension>): Promise<Extension> {
-    console.log('findOne', options)
     return await this.extensionRepository.findOne({ ...options })
   }
 
