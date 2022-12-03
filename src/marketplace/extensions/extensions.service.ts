@@ -22,6 +22,7 @@ export class ExtensionsService {
   ) {}
 
   async findOne(options: FindOneOptions<Extension>): Promise<Extension> {
+    console.log('findOne', options)
     return await this.extensionRepository.findOne({ ...options })
   }
 
@@ -127,16 +128,15 @@ export class ExtensionsService {
   //   return this.InstallExtensionRepository.findOne(id, params)
   // }
 
-  async allowedToManage(
-    ownerId: string,
-    id: string,
-  ): Promise<any> {
+  async allowedToManage(ownerId: string, id: string): Promise<any> {
     const extension = await this.findOne({
       where: { owner: ownerId, id },
     })
 
     if (!extension) {
-      throw new ForbiddenException('You are not allowed to manage this extension')
+      throw new ForbiddenException(
+        'You are not allowed to manage this extension',
+      )
     }
   }
 
@@ -148,8 +148,8 @@ export class ExtensionsService {
     return await this.findOne({ where: { id } })
   }
 
-  async update(id: string, extension: IUpdateExtension) {
-    await this.extensionRepository.update({ id }, extension)
+  async update(id: string, extension: IUpdateExtension): Promise<any> {
+    return this.extensionRepository.update(id, extension)
   }
 
   async delete(id: string): Promise<void> {

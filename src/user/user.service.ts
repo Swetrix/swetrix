@@ -6,7 +6,7 @@ import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { User } from './entities/user.entity'
+import { User, UserType } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 
 @Injectable()
@@ -37,6 +37,15 @@ export class UserService {
   async update(id: string, update: Record<string, unknown>): Promise<any> {
     return this.usersRepository.update({ id }, update)
   }
+
+  // // add function isAdmin
+  // isAdmin(id: string): boolean {
+  //   const user: Promise<User> = this.findOne(id)
+  //   if (user.roles.includes(UserType.ADMIN)) {
+  //     return true
+  //   }
+  //   return false
+  // }
 
   async updateByEmail(
     email: string,

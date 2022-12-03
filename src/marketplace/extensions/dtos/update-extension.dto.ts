@@ -65,4 +65,14 @@ export class UpdateExtension {
   @IsNumber()
   @IsOptional()
   readonly installs?: number
+
+  @ApiProperty({
+    default: [],
+    description: 'Extension category ID',
+    example: 1,
+    required: false,
+    type: Array<number>,
+  })
+  @IsOptional()
+  readonly categoryID?: number
 }
