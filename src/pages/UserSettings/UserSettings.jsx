@@ -28,7 +28,6 @@ import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Beta from 'ui/Beta'
 import Select from 'ui/Select'
-import Tooltip from 'ui/Tooltip'
 import { ActivePin } from 'ui/Pin'
 import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
@@ -319,16 +318,16 @@ const UserSettings = ({
           </Button>
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-            Theme
+            {t('profileSettings.theme')}
             <div className='ml-3'>
-              <ActivePin label='New' />
+              <ActivePin label={t('common.new')} />
             </div>
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-2 mb-4'>
             <div>
               <Select
                 title={themeType}
-                label='Select theme'
+                label={t('profileSettings.selectTheme')}
                 className='w-full'
                 items={[THEME_TYPE.classic, THEME_TYPE.christmas]}
                 onSelect={(f) => setAsyncThemeType(f)}

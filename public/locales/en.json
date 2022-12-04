@@ -54,7 +54,8 @@
     "quit": "Quit",
     "enable": "Enable",
     "disable": "Disable",
-    "copied": "Copied"
+    "copied": "Copied",
+    "new": "New"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -349,7 +350,9 @@
     "addApiKeyBtn": "Generate API Key",
     "deleteApiKeyBtn": "Delete API Key",
     "apiKeyDelete": "Delete your API Key?",
-    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled."
+    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
+    "theme": "Theme",
+    "selectTheme": "Select theme"
   },
   "dashboard": {
     "newProject": "New project",
