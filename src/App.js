@@ -2,9 +2,9 @@ import React, {
   useEffect, lazy, Suspense, useState,
 } from 'react'
 import { Switch, Route, useLocation } from 'react-router-dom'
-import routes from 'routes'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from '@blaumaus/react-alert'
+import Snowfall from 'react-snowfall'
 import cx from 'clsx'
 import _some from 'lodash/some'
 import _includes from 'lodash/includes'
@@ -17,12 +17,13 @@ import Loader from 'ui/Loader'
 
 import ScrollToTop from 'hoc/ScrollToTop'
 import Selfhosted from 'hoc/Selfhosted'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted, THEME_TYPE } from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import UIActions from 'redux/actions/ui'
+import routes from 'routes'
 import { authMe } from './api'
 
 const MainPage = lazy(() => import('pages/MainPage'))
@@ -160,6 +161,12 @@ const App = () => {
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
         <Header authenticated={authenticated} theme={theme} themeType={themeType} />
+        {location.pathname === routes.main && (
+          <Snowfall />
+        )}
+        {location.pathname !== routes.main && themeType === THEME_TYPE.christmas && (
+          <Snowfall snowflakeCount={10} />
+        )}
         <ScrollToTop>
           <Selfhosted>
             <Suspense fallback={<Fallback theme={theme} isMinimalFooter={isMinimalFooter} />}>
