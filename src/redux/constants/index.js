@@ -196,3 +196,8 @@ export const tabsForDashboard = [
 
 export const INVITATION_EXPIRES_IN = 48 // hours
 export const ENTRIES_PER_PAGE_DASHBOARD = 10
+
+export const THEME_TYPE = {
+  classic: 'classic',
+  christmas: 'christmas',
+}

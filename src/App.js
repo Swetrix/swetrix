@@ -83,6 +83,7 @@ const App = () => {
   const { theme } = useSelector(state => state.ui.theme)
   const { error } = useSelector(state => state.errors)
   const { message, type } = useSelector(state => state.alerts)
+  const themeType = useSelector(state => state.ui.theme.type)
   const accessToken = getAccessToken()
 
   useEffect(() => {
@@ -121,7 +122,7 @@ const App = () => {
       if (accessToken && !authenticated) {
         try {
           const me = await authMe()
-
+          dispatch(UIActions.setThemeType(me.theme))
           dispatch(authActions.loginSuccess(me))
           dispatch(authActions.finishLoading())
         } catch (e) {
@@ -158,7 +159,7 @@ const App = () => {
     (!accessToken || !loading) && (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
-        <Header authenticated={authenticated} theme={theme} />
+        <Header authenticated={authenticated} theme={theme} themeType={themeType} />
         <ScrollToTop>
           <Selfhosted>
             <Suspense fallback={<Fallback theme={theme} isMinimalFooter={isMinimalFooter} />}>

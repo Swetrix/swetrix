@@ -9,6 +9,138 @@ html {
   scroll-behavior: smooth;
 }
 
+
+.santa-claus {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 20;
+  /* rotateZ(195deg) */
+  transform: rotateZ(195deg) translateY(140px) translateX(15px);
+  /* move to top 100px after render */
+}
+
+.sc-head {
+  width: 80px;
+  height: 80px;
+  border-radius: 40%;
+  background: #f7caaf;
+  position: relative;
+}
+.sc-head .eyes {
+  position: absolute;
+  left: 2px;
+  top: 20px;
+  display: table;
+  margin: 0 auto;
+}
+.sc-head .eyes::before, .sc-head .eyes::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #000;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 15px;
+}
+.sc-head .nose {
+  width: 20px;
+  height: 13px;
+  border-radius: 50%;
+  background: #d48c7e;
+  top: 32px;
+  position: relative;
+}
+.sc-head .beard {
+  position: absolute;
+  bottom: -45px;
+  left: -10px;
+  background: #fff;
+  width: calc(100% + 20px);
+  height: 80px;
+  border-radius: 20% 20% 60% 60%;
+}
+.sc-head .beard::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  background: #000;
+  border-radius: 0 0 50% 50%;
+  margin-top: 6px;
+}
+.sc-head .ears {
+  width: calc(100% + 17px);
+  position: absolute;
+  top: 25px;
+  left: -8px;
+}
+.sc-head .ears .ear {
+  width: 10px;
+  height: 20px;
+  background: #d48c7e;
+  border-radius: 50% 0 0 50%;
+}
+.sc-head .ears .ear.left {
+  float: left;
+}
+.sc-head .ears .ear.right {
+  float: right;
+  transform: rotateZ(180deg);
+}
+
+.sc-hat {
+  position: absolute;
+  top: -37px;
+  left: -6px;
+  width: calc(100% + 10px);
+  height: 55px;
+  background: #de3939;
+  border-radius: 60px 80px 0 0;
+}
+.sc-hat::before {
+  content: "";
+  width: inherit;
+  height: 20px;
+  background: #fff;
+  display: block;
+  border-radius: 6px;
+  position: absolute;
+  bottom: -5px;
+  left: -4px;
+}
+.sc-hat .hat-tip {
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 69px solid #de3939;
+  position: absolute;
+  top: -37px;
+  animation: 2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  left: 8px;
+}
+.sc-hat .hat-tip::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  display: block;
+  position: absolute;
+  left: -13px;
+  top: -10px;
+}
+
+.sc-body {
+  position: absolute;
+  left: -70px;
+  width: 200px;
+  height: 200px;
+  background: #de3939;
+  border-radius: 30%;
+}
+
+
 /* Temporary solution: this WILL override all the other colour - background colour transitions */
 /* Do not use animations for people with vestibular motion disorders */
 * {
