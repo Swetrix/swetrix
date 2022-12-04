@@ -23,6 +23,7 @@ export default function* singinWorker({ payload: { credentials, callback } }) {
 
     yield put(authActions.loginSuccess(user))
     yield call(setAccessToken, accessToken, dontRemember)
+    yield put(UIActions.setThemeType(user.theme))
     yield put(UIActions.loadProjects())
     yield put(UIActions.loadSharedProjects())
     callback(true, false)
