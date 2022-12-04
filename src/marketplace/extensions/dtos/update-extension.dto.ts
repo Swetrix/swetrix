@@ -62,10 +62,6 @@ export class UpdateExtension {
   @IsOptional()
   readonly price?: number
 
-  @IsNumber()
-  @IsOptional()
-  readonly installs?: number
-
   @ApiProperty({
     default: [],
     description: 'Extension category ID',
