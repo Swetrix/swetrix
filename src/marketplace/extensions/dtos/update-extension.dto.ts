@@ -71,4 +71,17 @@ export class UpdateExtension {
   })
   @IsOptional()
   readonly categoryID?: number
+
+  @ApiProperty({
+    default: [],
+    description: 'Extension additional images',
+    example: [
+      'https://example.com/image1.png',
+      'https://example.com/image2.png',
+    ],
+    required: false,
+    type: Array<string>,
+  })
+  @IsOptional()
+  readonly additionalImagesCdn?: string[]
 }

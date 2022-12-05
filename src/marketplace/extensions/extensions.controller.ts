@@ -24,6 +24,7 @@ import { getRepository, Like } from 'typeorm'
 import * as _map from 'lodash/map'
 import * as _size from 'lodash/size'
 import * as _isString from 'lodash/isString'
+import * as _isEmpty from 'lodash/isEmpty'
 import { CreateExtension } from './dtos/create-extension.dto'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
@@ -354,11 +355,13 @@ export class ExtensionsController {
     const additionalImageFilenames = []
 
     if (files.additionalImages) {
-      files.additionalImages.map(async additionalImage => {
-        additionalImageFilenames.push(
-          (await this.cdnService.uploadFile(additionalImage))?.filename,
-        )
-      })
+      Promise.all(
+        files.additionalImages.map(async additionalImage => {
+          additionalImageFilenames.push(
+            (await this.cdnService.uploadFile(additionalImage))?.filename,
+          )
+        }),
+      )
     }
 
     let fileURL
@@ -408,7 +411,7 @@ export class ExtensionsController {
     ]),
   )
   @UseGuards(RolesGuard)
-  @Roles(UserType.ADMIN || UserType.CUSTOMER)
+  @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @Patch(':extensionId')
   async updateExtension(
     @Param() params: UpdateExtensionParams,
@@ -421,6 +424,7 @@ export class ExtensionsController {
       file?: Express.Multer.File
     },
   ): Promise<ISaveExtension & Extension> {
+    this.extensionsService.allowedToManage(userId, params.extensionId)
     const extension = await this.extensionsService.findOne({
       where: {
         id: params.extensionId,
@@ -432,31 +436,40 @@ export class ExtensionsController {
       throw new NotFoundException('Extension not found.')
     }
 
+    const additionalImagesConcat = [
+      ...(files.additionalImages || []),
+      ...(body.additionalImagesCdn || []),
+    ]
+
     const additionalImageFilenames = []
 
-    if (files.additionalImages) {
-      files.additionalImages.map(async additionalImage => {
-        if (_isString(additionalImage)) {
-          additionalImageFilenames.push(additionalImage)
-        } else {
-          additionalImageFilenames.push(
-            (await this.cdnService.uploadFile(additionalImage))?.filename,
-          )
-        }
-      })
+    try {
+      if (additionalImagesConcat) {
+        await Promise.all(
+          additionalImagesConcat.map(async additionalImage => {
+            if (typeof additionalImage === 'string') {
+              additionalImageFilenames.push(additionalImage)
+            } else {
+              additionalImageFilenames.push(
+                (await this.cdnService.uploadFile(additionalImage))?.filename,
+              )
+            }
+          }),
+        )
+      }
+    } catch (e) {
+      throw new InternalServerErrorException(
+        'Failed to upload additional images to the CDN.',
+      )
     }
 
     let fileURL
     let mainImageURL
 
     try {
-      if (_isString(files.file)) {
-        fileURL = files.file
-      } else {
-        fileURL =
-          files.file &&
-          (await this.cdnService.uploadFile(files.file[0]))?.filename
-      }
+      fileURL =
+        files.file &&
+        (await this.cdnService.uploadFile(files.file[0]))?.filename
     } catch (e) {
       throw new InternalServerErrorException(
         'Failed to upload extension to the CDN.',
@@ -464,33 +477,30 @@ export class ExtensionsController {
     }
 
     try {
-      if (_isString(files.mainImage)) {
-        mainImageURL = files.mainImage
-      } else {
-        mainImageURL =
-          files.mainImage &&
-          (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
-      }
+      mainImageURL =
+        files.mainImage &&
+        (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
     } catch (e) {
       throw new InternalServerErrorException(
         'Failed to upload main image to the CDN.',
       )
     }
 
-    const extensionInstance = {
+    const extensionInstance = this.extensionsService.create({
       ...extension,
-      id: params.extensionId,
       name: body.name || extension.name,
       description: body.description || extension.description,
       version: body.version || extension.version,
       price: body.price || extension.price,
       mainImage: mainImageURL || extension.mainImage,
-      additionalImages: additionalImageFilenames || extension.additionalImages,
+      additionalImages: _isEmpty(additionalImageFilenames)
+        ? extension.additionalImages
+        : additionalImageFilenames,
       fileURL: fileURL || extension.fileURL,
       category: body.categoryID
         ? await this.categoriesService.findById(body.categoryID)
         : extension.category,
-    }
+    })
 
     return await this.extensionsService.save(extensionInstance)
   }
