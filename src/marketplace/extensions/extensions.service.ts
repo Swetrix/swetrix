@@ -127,16 +127,15 @@ export class ExtensionsService {
   //   return this.InstallExtensionRepository.findOne(id, params)
   // }
 
-  async allowedToManage(
-    ownerId: string,
-    id: string,
-  ): Promise<any> {
+  async allowedToManage(ownerId: string, id: string): Promise<any> {
     const extension = await this.findOne({
       where: { owner: ownerId, id },
     })
 
     if (!extension) {
-      throw new ForbiddenException('You are not allowed to manage this extension')
+      throw new ForbiddenException(
+        'You are not allowed to manage this extension',
+      )
     }
   }
 
