@@ -147,8 +147,8 @@ export class ExtensionsService {
     return await this.findOne({ where: { id } })
   }
 
-  async update(id: string, extension: IUpdateExtension): Promise<any> {
-    return this.extensionRepository.update(id, extension)
+  async update(id: string, extension: IUpdateExtension) {
+    await this.extensionRepository.update({ id }, extension)
   }
 
   async delete(id: string): Promise<void> {
