@@ -465,7 +465,8 @@
     "month": "Month",
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
-    "codeExample": "Or insert the following code into your website to track your events:", 
+    "codeExample": "Or insert the following code into your website to track your events:",
+    "metricVis": "Metrics visualisation",
     "settings": {
       "verify": "Please, verify your email address first",
       "updated": "The project's settings were updated",

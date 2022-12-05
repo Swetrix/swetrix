@@ -78,27 +78,39 @@ const onCSVExportClick = (data, pid, tnMapping, language) => {
   })
 }
 
-// function to filter the data for the chart
-const getColumns = (chart, showTotal) => {
-  if (showTotal) {
-    return [
-      ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-      ['unique', ...chart.uniques],
-      ['total', ...chart.visits],
-    ]
-  }
+const CHART_METRICS_MAPPING = {
+  views: 'views',
+  bounce: 'bounce',
+}
 
-  return [
+// function to filter the data for the chart
+const getColumns = (chart, activeChartMetrics) => {
+  const { views, bounce } = activeChartMetrics
+
+  const columns = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
     ['unique', ...chart.uniques],
   ]
+
+  if (views) {
+    columns.push(['total', ...chart.visits])
+  }
+
+  if (bounce) {
+    const bounceArray = _map(chart.uniques, (el, i) => {
+      return _round((el * 100) / chart.visits[i], 1)
+    })
+    columns.push(['bounce', ...bounceArray])
+  }
+
+  return columns
 }
 
 // setting the default values for the time period dropdown
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
+const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
   const xAxisSize = _size(chart.x)
   let regions
 
@@ -128,17 +140,26 @@ const getSettings = (chart, timeBucket, showTotal, applyRegions) => {
           },
         },
       ],
+      bounce: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
     }
   }
 
   return {
     data: {
       x: 'x',
-      columns: getColumns(chart, showTotal),
+      columns: getColumns(chart, activeChartMetrics),
       type: area(),
       colors: {
         unique: '#2563EB',
         total: '#D97706',
+        bounce: '#2AC4B3',
       },
       regions,
     },
@@ -233,5 +254,5 @@ const getFormatDate = (date) => {
 }
 
 export {
-  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getExportFilename, getColumns, onCSVExportClick,
+  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
 }
