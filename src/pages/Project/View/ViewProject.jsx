@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
 import React, {
-  useState, useEffect, useMemo, memo, useRef, Fragment,
+  useState, useEffect, useMemo, memo, useRef, Fragment, useCallback,
 } from 'react'
 import { useHistory, useParams, Link } from 'react-router-dom'
 import domToImage from 'dom-to-image'
@@ -22,6 +22,7 @@ import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _startsWith from 'lodash/startsWith'
 import _isEqual from 'lodash/isEqual'
+import _debounce from 'lodash/debounce'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
@@ -47,7 +48,7 @@ import {
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns,
+  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -83,10 +84,13 @@ const ViewProject = ({
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
   const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
   const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period, periodPairs])
-  const [showTotal, setShowTotal] = useState(false)
   const [chartData, setChartData] = useState({})
   const [mainChart, setMainChart] = useState(null)
   const [dataLoading, setDataLoading] = useState(false)
+  const [activeChartMetrics, setActiveChartMetrics] = useState({
+    [CHART_METRICS_MAPPING.views]: false,
+    [CHART_METRICS_MAPPING.bounce]: false,
+  })
   const [filters, setFilters] = useState([])
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
@@ -100,6 +104,26 @@ const ViewProject = ({
   const { name } = project
 
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
+
+  const chartMetrics = useMemo(() => {
+    return [
+      {
+        id: CHART_METRICS_MAPPING.views,
+        label: t('project.showAll'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.views],
+      },
+      {
+        id: CHART_METRICS_MAPPING.bounce,
+        label: t('dashboard.bounceRate'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.bounce],
+      },
+    ]
+  }, [t, activeChartMetrics])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const switchActiveChartMetric = useCallback(_debounce((pairID) => {
+    setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
+  }, 0), [])
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
@@ -176,7 +200,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, showTotal, applyRegions)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions)
         setChartData(chart)
 
         setPanelsData({
@@ -298,18 +322,27 @@ const ViewProject = ({
 
   useEffect(() => {
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
-      if (showTotal) {
+      mainChart.data.names({ unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)` })
+
+      if (activeChartMetrics.views || activeChartMetrics.bounce) {
         mainChart.load({
-          columns: getColumns(chartData, true),
+          columns: getColumns(chartData, activeChartMetrics),
         })
-        mainChart.data.names({ unique: t('project.unique'), total: t('project.total') })
-      } else {
+      }
+
+      if (!activeChartMetrics.views) {
         mainChart.unload({
           ids: 'total',
         })
       }
+
+      if (!activeChartMetrics.bounce) {
+        mainChart.unload({
+          ids: 'bounce',
+        })
+      }
     }
-  }, [isLoading, showTotal, chartData, mainChart, t])
+  }, [isLoading, activeChartMetrics, chartData, mainChart, t])
 
   // Initialising Swetrix SDK instance
   useEffect(() => {
@@ -788,12 +821,25 @@ const ViewProject = ({
             </div>
           </div>
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-            <Checkbox
-              className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-              label={t('project.showAll')}
-              id='views'
-              checked={showTotal}
-              onChange={(e) => setShowTotal(e.target.checked)}
+            <Dropdown
+              items={chartMetrics}
+              title={t('project.metricVis')}
+              labelExtractor={(pair) => {
+                const { label, id: pairID, active } = pair
+
+                return (
+                  <Checkbox
+                    className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                    label={label}
+                    id={pairID}
+                    checked={active}
+                  />
+                )
+              }}
+              keyExtractor={(pair) => pair.id}
+              onSelect={({ id: pairID }) => {
+                switchActiveChartMetric(pairID)
+              }}
             />
             <Dropdown
               items={[...exportTypes, ...customExportTypes]}
