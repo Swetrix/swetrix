@@ -38,18 +38,6 @@ export class CreateExtension {
   readonly description?: string | null
 
   @ApiProperty({
-    description: 'Extension version',
-    example: '1.0.0',
-    maxLength: 255,
-    minLength: 5,
-    type: String,
-  })
-  @IsString()
-  @Matches(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/)
-  @MaxLength(255)
-  readonly version!: string
-
-  @ApiProperty({
     default: 0,
     description: 'Extension price',
     example: 100,

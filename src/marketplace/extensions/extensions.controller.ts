@@ -382,7 +382,7 @@ export class ExtensionsController {
     const extensionInstance = this.extensionsService.create({
       name: body.name,
       description: body.description,
-      version: body.version,
+      version: '0.0.1',
       price: body.price,
       owner: user,
       mainImage: mainImageURL,
@@ -485,11 +485,34 @@ export class ExtensionsController {
       )
     }
 
+    let updateVersion
+
+    if (body.version && fileURL) {
+      switch (body.version) {
+        case 'major':
+          updateVersion = extension.version.split('.')
+          updateVersion[0] = (parseInt(updateVersion[0]) + 1).toString()
+          updateVersion[1] = '0'
+          updateVersion[2] = '0'
+          break
+        case 'minor':
+          updateVersion = extension.version.split('.')
+          updateVersion[1] = (parseInt(updateVersion[1]) + 1).toString()
+          updateVersion[2] = '0'
+          break
+        case 'patch':
+          updateVersion = extension.version.split('.')
+          updateVersion[2] = (parseInt(updateVersion[2]) + 1).toString()
+          break
+      }
+      updateVersion = updateVersion.join('.')
+    }
+
     const extensionInstance = this.extensionsService.create({
       ...extension,
       name: body.name || extension.name,
       description: body.description || extension.description,
-      version: body.version || extension.version,
+      version: updateVersion || extension.version,
       price: body.price || extension.price,
       mainImage: mainImageURL || extension.mainImage,
       additionalImages: _isEmpty(additionalImageFilenames)
