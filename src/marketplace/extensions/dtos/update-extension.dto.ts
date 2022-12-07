@@ -39,17 +39,17 @@ export class UpdateExtension {
   readonly description?: string | null
 
   @ApiProperty({
+    default: 'patch',
     description: 'Extension version',
-    example: '1.0.0',
-    maxLength: 255,
-    minLength: 5,
+    example: 'major',
+    enum: ['major', 'minor', 'patch', ''],
+    required: false,
     type: String,
   })
   @IsString()
   @IsOptional()
-  @Matches(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/)
-  @MaxLength(255)
-  readonly version!: string
+  @Matches(/^(major|minor|patch|)$/)
+  readonly version?: string
 
   @ApiProperty({
     default: 0,
