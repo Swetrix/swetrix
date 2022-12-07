@@ -79,6 +79,7 @@ const onCSVExportClick = (data, pid, tnMapping, language) => {
 }
 
 const CHART_METRICS_MAPPING = {
+  unique: 'unique',
   views: 'views',
   bounce: 'bounce',
 }
