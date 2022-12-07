@@ -42,13 +42,13 @@ export class UpdateExtension {
     default: 'patch',
     description: 'Extension version',
     example: 'major',
-    enum: ['major', 'minor', 'patch'],
+    enum: ['major', 'minor', 'patch', ''],
     required: false,
     type: String,
   })
   @IsString()
   @IsOptional()
-  @Matches(/^(major|minor|patch)$/)
+  @Matches(/^(major|minor|patch|)$/)
   readonly version?: string
 
   @ApiProperty({
