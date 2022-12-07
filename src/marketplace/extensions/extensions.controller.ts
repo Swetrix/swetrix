@@ -365,6 +365,7 @@ export class ExtensionsController {
 
     let fileURL
     let mainImageURL
+    let statusInfo
 
     try {
       fileURL = files.file && (await this.cdnService.uploadFile(files.file[0]))?.filename
@@ -378,6 +379,12 @@ export class ExtensionsController {
       throw new InternalServerErrorException('Failed to upload main image to the CDN.')
     }
 
+    if (fileURL) {
+      statusInfo = ExtensionStatus.PENDING
+    } else {
+      statusInfo = ExtensionStatus.NO_EXTENSION_UPLOADED
+    }
+
     const user = await this.userService.findOne(userId)
     const extensionInstance = this.extensionsService.create({
       name: body.name,
@@ -386,6 +393,7 @@ export class ExtensionsController {
       price: body.price,
       owner: user,
       mainImage: mainImageURL,
+      status: statusInfo,
       additionalImages: additionalImageFilenames,
       fileURL,
       category: body.categoryID
@@ -464,6 +472,7 @@ export class ExtensionsController {
 
     let fileURL
     let mainImageURL
+    let statusInfo
 
     try {
       fileURL =
@@ -485,12 +494,19 @@ export class ExtensionsController {
       )
     }
 
+    if (fileURL) {
+      statusInfo = ExtensionStatus.PENDING
+    } else {
+      statusInfo = ExtensionStatus.NO_EXTENSION_UPLOADED
+    }
+
     const extensionInstance = this.extensionsService.create({
       ...extension,
       name: body.name || extension.name,
       description: body.description || extension.description,
       version: body.version || extension.version,
       price: body.price || extension.price,
+      status: statusInfo,
       mainImage: mainImageURL || extension.mainImage,
       additionalImages: _isEmpty(additionalImageFilenames)
         ? extension.additionalImages
