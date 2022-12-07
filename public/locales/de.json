@@ -54,7 +54,8 @@
     "quit": "Verlassen",
     "enable": "Aktivieren",
     "disable": "Deaktivieren",
-    "copied": "Copied"
+    "copied": "Copied",
+    "new": "New"
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
@@ -77,7 +78,7 @@
       "desc1": "Benötigen Sie zusätzliche Funktionen? Verwenden Sie Erweiterungen oder programmieren Sie Ihre eigenen! Ab jetzt brauchen Sie nicht mehr viele Datenquellen aus verschiedenen Systemen zu nutzen - erweitern und ergänzen Sie alles in einem!",
       "desc2": "Installieren Sie Erweiterungen und verkaufen Sie Ihre eigenen. Sie haben eine tolle Erweiterung für Ihr Unternehmen entwickelt? Großartig! Veröffentlichen Sie es auf dem Markt und teilen Sie Ihre Einblicke mit der ganzen Community."
     },
-    "visitAddons": "Swetrix-Erweiterungen aufrufen",
+    "visitAddons": "Visit Swetrix Marketplace",
     "privacy": {
       "title": "Datenschutzkonform",
       "list": [
@@ -349,7 +350,9 @@
     "addApiKeyBtn": "API-Schlüssel generieren",
     "deleteApiKeyBtn": "API-Schlüssel löschen",
     "apiKeyDelete": "API-Schlüssel löschen?",
-    "apiKeyDeleteConf": "Sind Sie sicher, dass Sie Ihren API-Schlüssel löschen möchten?\nAlle API-Zugriffe über diesen Schlüssel werden deaktiviert."
+    "apiKeyDeleteConf": "Sind Sie sicher, dass Sie Ihren API-Schlüssel löschen möchten?\nAlle API-Zugriffe über diesen Schlüssel werden deaktiviert.",
+    "theme": "Theme",
+    "selectTheme": "Select theme"
   },
   "dashboard": {
     "newProject": "Neues Projekt",
@@ -463,6 +466,7 @@
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
     "codeExample": "Or insert the following code into your website to track your events:",
+    "metricVis": "Metrics visualisation",
     "settings": {
       "verify": "Bitte bestätigen Sie zunächst Ihre E-Mail-Adresse",
       "updated": "Die Projekteinstellungen wurden aktualisiert",

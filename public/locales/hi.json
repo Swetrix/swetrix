@@ -54,7 +54,8 @@
     "quit": "Quit",
     "enable": "Enable",
     "disable": "Disable",
-    "copied": "Copied"
+    "copied": "Copied",
+    "new": "New"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -77,7 +78,7 @@
       "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
       "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
     },
-    "visitAddons": "Visit Swetrix extensions",
+    "visitAddons": "Visit Swetrix Marketplace",
     "privacy": {
       "title": "Privacy compliance",
       "list": [
@@ -349,7 +350,9 @@
     "addApiKeyBtn": "Generate API Key",
     "deleteApiKeyBtn": "Delete API Key",
     "apiKeyDelete": "Delete your API Key?",
-    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled."
+    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
+    "theme": "Theme",
+    "selectTheme": "Select theme"
   },
   "dashboard": {
     "newProject": "नया प्रोजेक्ट",
@@ -463,6 +466,7 @@
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
     "codeExample": "Or insert the following code into your website to track your events:",
+    "metricVis": "Metrics visualisation",
     "settings": {
       "verify": "कृपया, पहले अपना ईमेल पता सत्यापित करें",
       "updated": "प्रोजेक्ट की सेटिंग्स को अपडेट किया गया",
