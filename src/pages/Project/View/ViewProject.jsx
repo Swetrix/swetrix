@@ -88,6 +88,7 @@ const ViewProject = ({
   const [mainChart, setMainChart] = useState(null)
   const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState({
+    [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.bounce]: false,
   })
@@ -107,6 +108,11 @@ const ViewProject = ({
 
   const chartMetrics = useMemo(() => {
     return [
+      {
+        id: CHART_METRICS_MAPPING.unique,
+        label: t('dashboard.unique'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.unique],
+      },
       {
         id: CHART_METRICS_MAPPING.views,
         label: t('project.showAll'),
@@ -324,7 +330,7 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       mainChart.data.names({ unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)` })
 
-      if (activeChartMetrics.views || activeChartMetrics.bounce) {
+      if (activeChartMetrics.views || activeChartMetrics.bounce || activeChartMetrics.unique) {
         mainChart.load({
           columns: getColumns(chartData, activeChartMetrics),
         })
@@ -339,6 +345,12 @@ const ViewProject = ({
       if (!activeChartMetrics.bounce) {
         mainChart.unload({
           ids: 'bounce',
+        })
+      }
+
+      if (!activeChartMetrics.unique) {
+        mainChart.unload({
+          ids: 'unique',
         })
       }
     }
