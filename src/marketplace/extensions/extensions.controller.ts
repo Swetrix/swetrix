@@ -353,20 +353,6 @@ export class ExtensionsController {
     type: String,
   })
   @ApiQuery({
-    description: 'Extension category',
-    example: '',
-    name: 'category',
-    required: false,
-    type: String,
-  })
-  @ApiQuery({
-    description: 'Extension sortBy',
-    example: 'createdAt',
-    name: 'sortBy',
-    required: false,
-    type: String,
-  })
-  @ApiQuery({
     description: 'Extension offset',
     example: '5',
     name: 'offset',
