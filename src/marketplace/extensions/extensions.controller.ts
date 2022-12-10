@@ -145,6 +145,45 @@ export class ExtensionsController {
   }
 
   @ApiQuery({
+    description: 'Extension offset',
+    example: '5',
+    name: 'offset',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension limit',
+    example: '25',
+    name: 'limit',
+    required: false,
+    type: String,
+  })
+  @Roles(UserType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Get('admin')
+  async getAllExtensionsAdmin(@Query() queries: GetAllExtensionsQueries): Promise<{
+    extensions: Extension[]
+    count: number
+  }> {
+    let [extensions, count] = await this.extensionsService.findAndCount(
+      {
+        skip: queries.offset || 0,
+        take: queries.limit > 100 ? 25 : queries.limit || 25,
+      },
+      ['owner', 'users', 'category'],
+    )
+
+    extensions = _map(extensions, extension => {
+      extension.usersQuantity = _size(extension.users)
+      extension.users = undefined
+      extension.owner = this.extensionsService.filterOwner(extension.owner)
+      return extension
+    })
+
+    return { extensions, count }
+  }
+
+  @ApiQuery({
     description: 'Extension term',
     example: '',
     name: 'term',
@@ -299,6 +338,44 @@ export class ExtensionsController {
       where: {
         name: Like(`%${queries.term}%`),
         status: ExtensionStatus.ACCEPTED,
+      },
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 25 : queries.limit || 25,
+    })
+
+    return { extensions, count }
+  }
+
+  @ApiQuery({
+    description: 'Extension term',
+    example: '',
+    name: 'term',
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension offset',
+    example: '5',
+    name: 'offset',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    description: 'Extension limit',
+    example: '25',
+    name: 'limit',
+    required: false,
+    type: String,
+  })
+  @Roles(UserType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Get('admin/search')
+  async searchExtensionAdmin(@Query() queries: SearchExtensionQueries): Promise<{
+    extensions: Extension[]
+    count: number
+  }> {
+    const [extensions, count] = await this.extensionsService.findAndCount({
+      where: {
+        name: Like(`%${queries.term}%`),
       },
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 25 : queries.limit || 25,
