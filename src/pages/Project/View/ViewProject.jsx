@@ -23,6 +23,7 @@ import _filter from 'lodash/filter'
 import _startsWith from 'lodash/startsWith'
 import _isEqual from 'lodash/isEqual'
 import _debounce from 'lodash/debounce'
+import _some from 'lodash/some'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
@@ -92,6 +93,7 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.bounce]: false,
   })
+  const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
@@ -884,7 +886,13 @@ const ViewProject = ({
             <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
           )}
           <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-            <div className='h-80' id='dataChart' />
+            <div
+              className={cx('h-80', {
+                hidden: checkIfAllMetricsAreDisabled,
+              })}
+            >
+              <div className='h-80' id='dataChart' />
+            </div>
             <Filters
               filters={filters}
               onRemoveFilter={filterHandler}
