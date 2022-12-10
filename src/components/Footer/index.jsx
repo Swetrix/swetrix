@@ -17,10 +17,10 @@ const navigation = {
     (authenticated) => (authenticated ? { key: 'billing', href: routes.billing } : { key: 'pricing', href: `${routes.main}#pricing` }),
     () => ({ key: 'docs', href: routes.docs }),
     () => ({ key: 'guides', href: `${routes.docs}#docs-ht` }),
+    () => ({ key: 'contact', href: routes.contact, internal: true }),
   ],
   company: [
     { key: 'about', href: routes.about, internal: true },
-    { key: 'contact', href: routes.contact, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'donate', href: DONATE_URL },
     { key: 'blog', href: BLOG_URL },
