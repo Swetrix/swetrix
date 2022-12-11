@@ -594,7 +594,7 @@ export class ExtensionsController {
       updateVersion = updateVersion.join('.')
     }
 
-    if (fileURL) {
+    if (fileURL || extension.fileURL) {
       statusInfo = ExtensionStatus.PENDING
     } else {
       statusInfo = ExtensionStatus.NO_EXTENSION_UPLOADED
