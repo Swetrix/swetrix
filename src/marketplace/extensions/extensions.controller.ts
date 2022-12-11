@@ -590,14 +590,15 @@ export class ExtensionsController {
           updateVersion = extension.version.split('.')
           updateVersion[2] = (parseInt(updateVersion[2]) + 1).toString()
           break
+        default:
+          updateVersion = extension.version.split('.')
+          updateVersion[2] = (parseInt(updateVersion[2]) + 1).toString()
       }
       updateVersion = updateVersion.join('.')
     }
 
     if (fileURL) {
       statusInfo = ExtensionStatus.PENDING
-    } else {
-      statusInfo = ExtensionStatus.NO_EXTENSION_UPLOADED
     }
 
     const extensionInstance = this.extensionsService.create({
