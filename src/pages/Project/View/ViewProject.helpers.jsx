@@ -5,7 +5,7 @@ import {
 } from '@heroicons/react/24/outline'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
-import { area } from 'billboard.js'
+import { area, spline } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
 import _split from 'lodash/split'
@@ -82,16 +82,22 @@ const CHART_METRICS_MAPPING = {
   unique: 'unique',
   views: 'views',
   bounce: 'bounce',
+  viewsPerUnique: 'viewsPerUnique',
 }
 
 // function to filter the data for the chart
 const getColumns = (chart, activeChartMetrics) => {
-  const { views, bounce } = activeChartMetrics
+  const {
+    views, bounce, viewsPerUnique, unique,
+  } = activeChartMetrics
 
   const columns = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-    ['unique', ...chart.uniques],
   ]
+
+  if (unique) {
+    columns.push(['unique', ...chart.uniques])
+  }
 
   if (views) {
     columns.push(['total', ...chart.visits])
@@ -101,7 +107,19 @@ const getColumns = (chart, activeChartMetrics) => {
     const bounceArray = _map(chart.uniques, (el, i) => {
       return _round((el * 100) / chart.visits[i], 1)
     })
-    columns.push(['bounce', ...bounceArray])
+    columns.push(
+      ['bounce', ...bounceArray],
+    )
+  }
+
+  if (viewsPerUnique) {
+    const viewsPerUniqueArray = _map(chart.visits, (el, i) => {
+      if (chart.uniques[i] === 0 || chart.uniques[i] === undefined) {
+        return 0
+      }
+      return _round(el / chart.uniques[i], 1)
+    })
+    columns.push(['viewsPerUnique', ...viewsPerUniqueArray])
   }
 
   return columns
@@ -149,6 +167,14 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
           },
         },
       ],
+      viewsPerUnique: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
     }
   }
 
@@ -156,13 +182,22 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
     data: {
       x: 'x',
       columns: getColumns(chart, activeChartMetrics),
-      type: area(),
+      types: {
+        unique: area(),
+        total: area(),
+        bounce: spline(),
+        viewsPerUnique: spline(),
+      },
       colors: {
         unique: '#2563EB',
         total: '#D97706',
         bounce: '#2AC4B3',
+        viewsPerUnique: '#F87171',
       },
       regions,
+      axes: {
+        bounce: 'y2',
+      },
     },
     axis: {
       x: {
@@ -170,6 +205,15 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
           fit: true,
         },
         type: 'timeseries',
+      },
+      y2: {
+        show: activeChartMetrics.bounce,
+        tick: {
+          format: (d) => `${d}%`,
+        },
+        min: 10,
+        max: 90,
+        default: [0, 100],
       },
     },
     tooltip: {
