@@ -134,6 +134,12 @@ const ViewProject = ({
     ]
   }, [t, activeChartMetrics])
 
+  const dataNames = useMemo(() => {
+    return {
+      unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)`, viewsPerUnique: `${t('dashboard.viewsPerUnique')} (%)`,
+    }
+  }, [t])
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const switchActiveChartMetric = useCallback(_debounce((pairID) => {
     setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
@@ -229,7 +235,7 @@ const ViewProject = ({
 
         setMainChart(() => {
           const generete = bb.generate(bbSettings)
-          generete.data.names({ unique: `${t('project.unique')} ` })
+          generete.data.names(dataNames)
           return generete
         })
         setIsPanelsDataEmpty(false)
@@ -336,9 +342,7 @@ const ViewProject = ({
 
   useEffect(() => {
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
-      mainChart.data.names({
-        unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)`, viewsPerUnique: `${t('dashboard.viewsPerUnique')} (%)`,
-      })
+      mainChart.data.names(dataNames)
 
       if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique) {
         mainChart.load({
@@ -356,7 +360,7 @@ const ViewProject = ({
 
         setMainChart(() => {
           const generete = bb.generate(bbSettings)
-          generete.data.names({ unique: `${t('project.unique')} ` })
+          generete.data.names(dataNames)
           return generete
         })
       }
@@ -371,7 +375,7 @@ const ViewProject = ({
 
         setMainChart(() => {
           const generete = bb.generate(bbSettings)
-          generete.data.names({ unique: `${t('project.unique')} ` })
+          generete.data.names(dataNames)
           return generete
         })
       }
@@ -394,7 +398,7 @@ const ViewProject = ({
         })
       }
     }
-  }, [isLoading, activeChartMetrics, chartData])
+  }, [isLoading, activeChartMetrics, chartData]) // eslint-disable-line
 
   // Initialising Swetrix SDK instance
   useEffect(() => {
