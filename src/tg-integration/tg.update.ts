@@ -5,11 +5,16 @@ import { UpdateType } from '../common/decorators/update-type.decorator'
 
 const HELLO_SCENE_ID = 'HELLO_SCENE_ID'
 
+const SWETRIX_SETTINGS_URL = 'https://swetrix.com/settings'
+
 @Update()
 export class SwetrixUpdate {
   @Start()
-  onStart(): string {
-    return 'Say hello to me'
+  onStart(
+    @Sender('id') chatId: number,
+    @Sender('first_name') firstName: string,
+  ): string {
+    return `Hello ${firstName}!\nYour Chat ID is ${chatId}\n\nUse this Chat ID to connect your Telegram account to your Swetrix account on ${SWETRIX_SETTINGS_URL}.`
   }
 
   @Hears(['hi', 'hello', 'hey', 'qq'])
