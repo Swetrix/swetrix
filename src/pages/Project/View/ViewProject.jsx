@@ -92,6 +92,7 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.bounce]: false,
+    [CHART_METRICS_MAPPING.viewsPerUnique]: false,
   })
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
@@ -124,6 +125,11 @@ const ViewProject = ({
         id: CHART_METRICS_MAPPING.bounce,
         label: t('dashboard.bounceRate'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.bounce],
+      },
+      {
+        id: CHART_METRICS_MAPPING.viewsPerUnique,
+        label: t('dashboard.viewsPerUnique'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.viewsPerUnique],
       },
     ]
   }, [t, activeChartMetrics])
@@ -330,11 +336,43 @@ const ViewProject = ({
 
   useEffect(() => {
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
-      mainChart.data.names({ unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)` })
+      mainChart.data.names({
+        unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)`, viewsPerUnique: `${t('dashboard.viewsPerUnique')} (%)`,
+      })
 
-      if (activeChartMetrics.views || activeChartMetrics.bounce || activeChartMetrics.unique) {
+      if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique) {
         mainChart.load({
           columns: getColumns(chartData, activeChartMetrics),
+        })
+      }
+
+      if (activeChartMetrics.bounce) {
+        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
+
+        if (!_isEmpty(mainChart)) {
+          mainChart.destroy()
+        }
+
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names({ unique: `${t('project.unique')} ` })
+          return generete
+        })
+      }
+
+      if (!activeChartMetrics.bounce) {
+        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
+
+        if (!_isEmpty(mainChart)) {
+          mainChart.destroy()
+        }
+
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names({ unique: `${t('project.unique')} ` })
+          return generete
         })
       }
 
@@ -344,19 +382,19 @@ const ViewProject = ({
         })
       }
 
-      if (!activeChartMetrics.bounce) {
-        mainChart.unload({
-          ids: 'bounce',
-        })
-      }
-
       if (!activeChartMetrics.unique) {
         mainChart.unload({
           ids: 'unique',
         })
       }
+
+      if (!activeChartMetrics.viewsPerUnique) {
+        mainChart.unload({
+          ids: 'viewsPerUnique',
+        })
+      }
     }
-  }, [isLoading, activeChartMetrics, chartData, mainChart, t])
+  }, [isLoading, activeChartMetrics, chartData])
 
   // Initialising Swetrix SDK instance
   useEffect(() => {

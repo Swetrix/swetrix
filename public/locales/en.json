@@ -374,6 +374,7 @@
     "dec": "Descreased by",
     "liveVisitors": "Live visitors",
     "bounceRate": "Bounce rate",
+    "viewsPerUnique": "Views per session",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
