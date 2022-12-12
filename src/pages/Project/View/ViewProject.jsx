@@ -877,26 +877,28 @@ const ViewProject = ({
             </div>
           </div>
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-            <Dropdown
-              items={chartMetrics}
-              title={t('project.metricVis')}
-              labelExtractor={(pair) => {
-                const { label, id: pairID, active } = pair
+            {!isPanelsDataEmpty && (
+              <Dropdown
+                items={chartMetrics}
+                title={t('project.metricVis')}
+                labelExtractor={(pair) => {
+                  const { label, id: pairID, active } = pair
 
-                return (
-                  <Checkbox
-                    className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                    label={label}
-                    id={pairID}
-                    checked={active}
-                  />
-                )
-              }}
-              keyExtractor={(pair) => pair.id}
-              onSelect={({ id: pairID }) => {
-                switchActiveChartMetric(pairID)
-              }}
-            />
+                  return (
+                    <Checkbox
+                      className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                      label={label}
+                      id={pairID}
+                      checked={active}
+                    />
+                  )
+                }}
+                keyExtractor={(pair) => pair.id}
+                onSelect={({ id: pairID }) => {
+                  switchActiveChartMetric(pairID)
+                }}
+              />
+            )}
             <Dropdown
               items={[...exportTypes, ...customExportTypes]}
               title={[
