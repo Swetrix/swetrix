@@ -105,7 +105,7 @@ const getColumns = (chart, activeChartMetrics) => {
 
   if (bounce) {
     const bounceArray = _map(chart.uniques, (el, i) => {
-      return _round((el * 100) / chart.visits[i], 1)
+      return _round((el * 100) / chart.visits[i], 1) || 0
     })
     columns.push(
       ['bounce', ...bounceArray],
