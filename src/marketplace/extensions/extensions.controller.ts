@@ -745,7 +745,7 @@ export class ExtensionsController {
         },
       })
     if (extensionToProject) {
-      throw new ConflictException('Extension already installed.')
+      await this.extensionsService.deleteExtensionToUser(extension.id, user.id)
     }
 
     return await this.extensionsService.createExtensionToProject({

@@ -1,3 +1,3 @@
 export class InstallExtensionBodyDto {
-  readonly extensionId: string | null
+  readonly projectId: string | null
 }
