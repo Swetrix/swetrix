@@ -136,7 +136,7 @@ const ViewProject = ({
 
   const dataNames = useMemo(() => {
     return {
-      unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)`, viewsPerUnique: `${t('dashboard.viewsPerUnique')} (%)`,
+      unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)`, viewsPerUnique: t('dashboard.viewsPerUnique'),
     }
   }, [t])
 
