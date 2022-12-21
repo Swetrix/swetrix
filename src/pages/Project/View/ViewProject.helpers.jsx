@@ -14,11 +14,57 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import _round from 'lodash/round'
+import _reduce from 'lodash/reduce'
 import JSZip from 'jszip'
 
 import { tbsFormatMapper } from 'redux/constants'
 
 import countries from 'utils/isoCountries'
+
+const getAvg = (arr) => {
+  const total = _reduce(arr, (acc, c) => acc + c, 0)
+  return total / arr.length
+}
+
+const getSum = (arr) => {
+  return _reduce(arr, (acc, c) => acc + c, 0)
+}
+
+const trendline = (data) => {
+  const xData = new Array(data.length).fill(0).map((_, i) => i + 1)
+  const yData = data
+
+  const xMean = getAvg(xData)
+  const yMean = getAvg(yData)
+
+  const xMinusxMean = _map(xData, (val) => val - xMean)
+  const yMinusyMean = _map(yData, (val) => val - yMean)
+
+  const xMinusxMeanSq = _map(xMinusxMean, (val) => val ** 2)
+
+  const xy = []
+  for (let x = 0; x < data.length; x++) {
+    xy.push(xMinusxMean[x] * yMinusyMean[x])
+  }
+
+  const xySum = getSum(xy)
+
+  const b1 = xySum / getSum(xMinusxMeanSq)
+
+  const b0 = yMean - b1 * xMean
+
+  const trendData = []
+  for (let x = 0; x < data.length; x++) {
+    const y = _round(b0 + b1 * x, 2)
+    if (y < 0) {
+      trendData.push(0)
+    } else {
+      trendData.push(y)
+    }
+  }
+
+  return trendData
+}
 
 const getExportFilename = (prefix) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
@@ -83,12 +129,13 @@ const CHART_METRICS_MAPPING = {
   views: 'views',
   bounce: 'bounce',
   viewsPerUnique: 'viewsPerUnique',
+  trendlines: 'trendlines',
 }
 
 // function to filter the data for the chart
 const getColumns = (chart, activeChartMetrics) => {
   const {
-    views, bounce, viewsPerUnique, unique,
+    views, bounce, viewsPerUnique, unique, trendlines,
   } = activeChartMetrics
 
   const columns = [
@@ -97,10 +144,16 @@ const getColumns = (chart, activeChartMetrics) => {
 
   if (unique) {
     columns.push(['unique', ...chart.uniques])
+    if (trendlines) {
+      columns.push(['trendlineUnique', ...trendline(chart.uniques)])
+    }
   }
 
   if (views) {
     columns.push(['total', ...chart.visits])
+    if (trendlines) {
+      columns.push(['trendlineTotal', ...trendline(chart.visits)])
+    }
   }
 
   if (bounce) {
@@ -187,12 +240,16 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
         total: area(),
         bounce: spline(),
         viewsPerUnique: spline(),
+        trendlineUnique: spline(),
+        trendlineTotal: spline(),
       },
       colors: {
         unique: '#2563EB',
         total: '#D97706',
         bounce: '#2AC4B3',
         viewsPerUnique: '#F87171',
+        trendlineUnique: '#436abf',
+        trendlineTotal: '#eba14b',
       },
       regions,
       axes: {

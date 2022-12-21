@@ -93,6 +93,7 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.bounce]: false,
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
+    [CHART_METRICS_MAPPING.trendlines]: false,
   })
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
@@ -131,12 +132,17 @@ const ViewProject = ({
         label: t('dashboard.viewsPerUnique'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.viewsPerUnique],
       },
+      {
+        id: CHART_METRICS_MAPPING.trendlines,
+        label: t('dashboard.trendlines'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.trendlines],
+      },
     ]
   }, [t, activeChartMetrics])
 
   const dataNames = useMemo(() => {
     return {
-      unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)`, viewsPerUnique: t('dashboard.viewsPerUnique'),
+      unique: t('project.unique'), total: t('project.total'), bounce: `${t('dashboard.bounceRate')} (%)`, viewsPerUnique: t('dashboard.viewsPerUnique'), trendlineTotal: t('project.trendlineTotal'), trendlineUnique: t('project.trendlineUnique'),
     }
   }, [t])
 
@@ -344,7 +350,7 @@ const ViewProject = ({
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
       mainChart.data.names(dataNames)
 
-      if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique) {
+      if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique || activeChartMetrics.trendlines) {
         mainChart.load({
           columns: getColumns(chartData, activeChartMetrics),
         })
