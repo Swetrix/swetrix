@@ -446,7 +446,9 @@ export class AnalyticsController {
       userAgent,
       ip,
     )
+
     await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME)
+    this.analyticsService.processInteractionSD(sessionID)
     return
   }
 
@@ -469,6 +471,7 @@ export class AnalyticsController {
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
+    this.analyticsService.processInteractionSD(sessionHash)
     let dto: Array<string | number>
 
     if (unique) {
@@ -560,6 +563,7 @@ export class AnalyticsController {
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
+    this.analyticsService.processInteractionSD(sessionHash)
 
     let dto: Array<string | number>
 
