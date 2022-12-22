@@ -19,6 +19,7 @@ import JSZip from 'jszip'
 import { tbsFormatMapper } from 'redux/constants'
 
 import countries from 'utils/isoCountries'
+import Cloudflare from 'ui/icons/Cloudflare'
 
 const getExportFilename = (prefix) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
@@ -253,6 +254,9 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
           width: 10,
         },
       },
+    },
+    area: {
+      linearGradient: true,
     },
     bindto: '#dataChart',
   }
