@@ -7,6 +7,7 @@ import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
+import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -33,6 +34,7 @@ import {
   clickhouse,
   isSelfhosted,
   REDIS_SESSION_SALT_KEY,
+  HEARTBEAT_SID_LIFE_TIME,
 } from '../common/constants'
 import {
   getProjectsClickhouse,
@@ -49,6 +51,8 @@ dayjs.extend(timezone)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
+
+export const getSessionDurationKey = (hash: string) => `sd:${hash}`
 
 export const cols = [
   'cc',
@@ -348,6 +352,25 @@ export class AnalyticsService {
       throw new ForbiddenException('The Heartbeat session does not exist')
 
     return sessionHash
+  }
+
+  async isSessionDurationOpen(sdKey: string): Promise<Array<string | boolean>> {
+    const sd = await redis.get(sdKey)
+    return [sd, Boolean(sd)]
+  }
+
+  // Processes interaction for session duration
+  async processInteractionSD(sessionHash: string): Promise<void> {
+    const sdKey = getSessionDurationKey(sessionHash)
+    const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
+
+    // the value is START_UNIX_TIMESTAMP:END_UNIX_TIMESTAMP
+    if (isOpened) {
+      const [start] = _split(sd, ':')
+      await redis.set(sdKey, `${start}:${_now()}`, 'EX', HEARTBEAT_SID_LIFE_TIME)
+    } else {
+      await redis.set(sdKey, `${_now()}:`, 'EX', HEARTBEAT_SID_LIFE_TIME)
+    }
   }
 
   validatePeriod(period: string): void {
