@@ -1,5 +1,6 @@
 const { ClickHouse } = require('clickhouse')
 const _ = require('lodash')
+const chalk = require('chalk')
 require('dotenv').config()
 
 const clickhouse = new ClickHouse({
@@ -22,14 +23,20 @@ const clickhouse = new ClickHouse({
 })
 
 const queriesRunner = async (queries) => {
+  let failed = false
   for (const query of queries) {
+    if (failed) {
+      return
+    }
+
     if (query) {
       try {
         await clickhouse.query(query).toPromise()
-        console.log(`Query OK: ${query}`)
+        console.log(chalk.green('Query OK: '), query)
       } catch (error) {
-        console.error(`Query ERROR: ${query}`)
+        console.error(chalk.red('Query ERROR: '), query)
         console.error(error)
+        failed = true
       }
     }
   }
