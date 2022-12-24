@@ -275,7 +275,6 @@ export class TaskManagerService {
     const toSave = []
     const now = _now()
 
-
     for (let i = 0; i < _size(keys); ++i) {
       const [start, last] = (await redis.get(keys[i])).split(':')
       const duration = now - Number(last)
