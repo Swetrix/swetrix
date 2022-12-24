@@ -70,6 +70,7 @@ const getSessionKeyCustom = (
 ) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`
 
 const analyticsDTO = (
+  sid: string,
   pid: string,
   pg: string,
   dv: string,
@@ -85,7 +86,7 @@ const analyticsDTO = (
   unique: number,
 ): Array<string | number> => {
   return [
-    uuidv4(),
+    sid,
     pid,
     pg,
     dv,
@@ -98,6 +99,7 @@ const analyticsDTO = (
     ca,
     lt,
     cc,
+    'NULL',
     unique,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
@@ -484,6 +486,7 @@ export class AnalyticsController {
         ct.getCountryForTimezone(logDTO.tz)?.id ||
         (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
       dto = analyticsDTO(
+        sessionHash,
         logDTO.pid,
         logDTO.pg,
         dv,
@@ -500,6 +503,7 @@ export class AnalyticsController {
       )
     } else if (!logDTO.unique) {
       dto = analyticsDTO(
+        'NULL',
         logDTO.pid,
         logDTO.pg,
         'NULL',
@@ -576,6 +580,7 @@ export class AnalyticsController {
       const cc =
         headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
       dto = analyticsDTO(
+        sessionHash,
         logDTO.pid,
         'NULL',
         dv,
@@ -592,6 +597,7 @@ export class AnalyticsController {
       )
     } else {
       dto = analyticsDTO(
+        'NULL',
         logDTO.pid,
         'NULL',
         'NULL',
