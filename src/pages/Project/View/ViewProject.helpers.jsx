@@ -254,6 +254,9 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
         },
       },
     },
+    area: {
+      linearGradient: true,
+    },
     bindto: '#dataChart',
   }
 }
