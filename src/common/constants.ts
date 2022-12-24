@@ -45,7 +45,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   'CREATE DATABASE IF NOT EXISTS analytics',
   `CREATE TABLE IF NOT EXISTS analytics.analytics
   (
-    sId Nullable(String),
+    sid Nullable(String),
     pid FixedString(12),
     pg Nullable(String),
     dv Nullable(String),

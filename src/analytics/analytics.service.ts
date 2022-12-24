@@ -34,7 +34,6 @@ import {
   clickhouse,
   isSelfhosted,
   REDIS_SESSION_SALT_KEY,
-  HEARTBEAT_SID_LIFE_TIME,
 } from '../common/constants'
 import {
   getProjectsClickhouse,
@@ -363,13 +362,14 @@ export class AnalyticsService {
   async processInteractionSD(sessionHash: string): Promise<void> {
     const sdKey = getSessionDurationKey(sessionHash)
     const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
+    const now = _now()
 
-    // the value is START_UNIX_TIMESTAMP:END_UNIX_TIMESTAMP
+    // the value is START_UNIX_TIMESTAMP:LAST_INTERACTION_UNIX_TIMESTAMP
     if (isOpened) {
       const [start] = _split(sd, ':')
-      await redis.set(sdKey, `${start}:${_now()}`, 'EX', HEARTBEAT_SID_LIFE_TIME)
+      await redis.set(sdKey, `${start}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
     } else {
-      await redis.set(sdKey, `${_now()}:`, 'EX', HEARTBEAT_SID_LIFE_TIME)
+      await redis.set(sdKey, `${now}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
     }
   }
 

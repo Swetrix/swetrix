@@ -83,6 +83,7 @@ const analyticsDTO = (
   ca: string,
   lt: number | string,
   cc: string,
+  sdur: number | string,
   unique: number,
 ): Array<string | number> => {
   return [
@@ -99,7 +100,7 @@ const analyticsDTO = (
     ca,
     lt,
     cc,
-    'NULL',
+    sdur,
     unique,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
@@ -499,6 +500,7 @@ export class AnalyticsController {
         logDTO.ca,
         'NULL' /* logDTO.lt */,
         cc,
+        0,
         1,
       )
     } else if (!logDTO.unique) {
@@ -506,6 +508,7 @@ export class AnalyticsController {
         'NULL',
         logDTO.pid,
         logDTO.pg,
+        'NULL',
         'NULL',
         'NULL',
         'NULL',
@@ -593,12 +596,14 @@ export class AnalyticsController {
         'NULL',
         'NULL',
         cc,
+        0,
         1,
       )
     } else {
       dto = analyticsDTO(
         'NULL',
         logDTO.pid,
+        'NULL',
         'NULL',
         'NULL',
         'NULL',
