@@ -374,6 +374,8 @@
     "dec": "Μειώθηκε κατά",
     "liveVisitors": "Ζωντανοί επισκέπτες",
     "bounceRate": "Ρυθμός αναπήδησης",
+    "viewsPerUnique": "Views per session",
+    "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
@@ -428,6 +430,8 @@
     "asCSV": "Ως CSV",
     "noEvTitle": "Δεν υπάρχουν συμβάντα ακόμα",
     "showAll": "Εμφάνιση όλων των προβολών",
+    "trendlineUnique": "Unique visitors trendline",
+    "trendlineTotal": "Pageviews trendline",
     "noEvContent": "Δεν έχουν καταγραφεί συμβάντα για το καθορισμένο χρονικό διάστημα.\nΑν δεν έχετε ακόμη παρακολουθήσει συμβάντα, μπορείτε να δείτε τα <url>Docs</url> για να ενσωματώσετε εύκολα την παρακολούθηση στην εφαρμογή σας.",
     "mapping": {
       "cc": "Χώρα",

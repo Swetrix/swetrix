@@ -374,6 +374,8 @@
     "dec": "Minskat med",
     "liveVisitors": "Live-besökare",
     "bounceRate": "Studsfrekvens",
+    "viewsPerUnique": "Views per session",
+    "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
@@ -428,6 +430,8 @@
     "asCSV": "Som CSV",
     "noEvTitle": "Inga händelser ännu",
     "showAll": "Visa alla händelser",
+    "trendlineUnique": "Unique visitors trendline",
+    "trendlineTotal": "Pageviews trendline",
     "noEvContent": "Inga händelser har registrerats under den angivna tidsramen.\nOm du inte har spårat några händelser ännu kan du kolla in våra <url>Docs</url> för att enkelt integrera spårning i din app.",
     "mapping": {
       "cc": "Land",

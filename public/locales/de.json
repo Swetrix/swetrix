@@ -374,6 +374,8 @@
     "dec": "Gesunken um",
     "liveVisitors": "Live-Besucher",
     "bounceRate": "Absprungrate",
+    "viewsPerUnique": "Views per session",
+    "trendlines": "Trend lines",
     "invitationFor": "Einladung zu {{project}}",
     "invitationDesc": "Sie wurden eingeladen, dem Projekt {{project}} beizutreten.\nSie können die Einladung entweder annehmen oder in Ihren Kontoeinstellungen ablehnen."
   },
@@ -428,6 +430,8 @@
     "asCSV": "Als CSV",
     "noEvTitle": "Noch keine Tracking-Events",
     "showAll": "Alle Ansichten anzeigen",
+    "trendlineUnique": "Unique visitors trendline",
+    "trendlineTotal": "Pageviews trendline",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <url>Doku</url> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",

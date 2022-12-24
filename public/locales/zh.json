@@ -374,6 +374,8 @@
     "dec": "减少了",
     "liveVisitors": "实时访客",
     "bounceRate": "Bounce rate",
+    "viewsPerUnique": "Views per session",
+    "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
   },
@@ -428,6 +430,8 @@
     "asCSV": "作为CSV",
     "noEvTitle": "尚无活动",
     "showAll": "Show all views",
+    "trendlineUnique": "Unique visitors trendline",
+    "trendlineTotal": "Pageviews trendline",
     "noEvContent": "在指定的时间范围内没有捕获任何活动。\n如果您还没有跟踪任何活动，您可以查看我们的<url>文档</url>以轻松地将跟踪集成到您的应用中。",
     "mapping": {
       "cc": "国家",
