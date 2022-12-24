@@ -14,6 +14,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import _round from 'lodash/round'
+import _fill from 'lodash/fill'
 import _reduce from 'lodash/reduce'
 import JSZip from 'jszip'
 
@@ -23,7 +24,7 @@ import countries from 'utils/isoCountries'
 
 const getAvg = (arr) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
-  return total / arr.length
+  return total / _size(arr)
 }
 
 const getSum = (arr) => {
@@ -31,7 +32,7 @@ const getSum = (arr) => {
 }
 
 const trendline = (data) => {
-  const xData = new Array(data.length).fill(0).map((_, i) => i + 1)
+  const xData = _map(_fill(new Array(_size(data)), 0), (_, i) => i + 1)
   const yData = data
 
   const xMean = getAvg(xData)
@@ -43,7 +44,7 @@ const trendline = (data) => {
   const xMinusxMeanSq = _map(xMinusxMean, (val) => val ** 2)
 
   const xy = []
-  for (let x = 0; x < data.length; x++) {
+  for (let x = 0; x < _size(data); ++x) {
     xy.push(xMinusxMean[x] * yMinusyMean[x])
   }
 
@@ -54,7 +55,7 @@ const trendline = (data) => {
   const b0 = yMean - b1 * xMean
 
   const trendData = []
-  for (let x = 0; x < data.length; x++) {
+  for (let x = 0; x < _size(data); ++x) {
     const y = _round(b0 + b1 * x, 2)
     if (y < 0) {
       trendData.push(0)
