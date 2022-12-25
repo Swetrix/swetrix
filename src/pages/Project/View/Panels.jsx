@@ -144,7 +144,7 @@ PanelContainer.defaultProps = {
 
 // First tab with stats
 const Overview = ({
-  overall, chartData, activePeriod, t, live,
+  overall, chartData, activePeriod, t, live, sessionDurationAVG,
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
@@ -206,6 +206,16 @@ const Overview = ({
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {bounceRate}
               %
+            </p>
+          </div>
+          <div className='flex justify-between'>
+            <p className='text-lg dark:text-gray-50'>
+              {t('dashboard.sessionDuration')}
+              :
+            </p>
+            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
+              {sessionDurationAVG}
+              sec
             </p>
           </div>
           <hr className='my-2 border-gray-200 dark:border-gray-600' />

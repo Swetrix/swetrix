@@ -131,13 +131,15 @@ const CHART_METRICS_MAPPING = {
   bounce: 'bounce',
   viewsPerUnique: 'viewsPerUnique',
   trendlines: 'trendlines',
+  sessionDuration: 'sessionDuration',
 }
 
 // function to filter the data for the chart
 const getColumns = (chart, activeChartMetrics) => {
   const {
-    views, bounce, viewsPerUnique, unique, trendlines,
+    views, bounce, viewsPerUnique, unique, trendlines, sessionDuration,
   } = activeChartMetrics
+  console.log(chart)
 
   const columns = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
@@ -174,6 +176,10 @@ const getColumns = (chart, activeChartMetrics) => {
       return _round(el / chart.uniques[i], 1)
     })
     columns.push(['viewsPerUnique', ...viewsPerUniqueArray])
+  }
+
+  if (sessionDuration) {
+    columns.push(['sessionDuration', ...chart.sdur])
   }
 
   return columns
@@ -243,6 +249,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
         viewsPerUnique: spline(),
         trendlineUnique: spline(),
         trendlineTotal: spline(),
+        sessionDuration: spline(),
       },
       colors: {
         unique: '#2563EB',
@@ -251,10 +258,12 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
         viewsPerUnique: '#F87171',
         trendlineUnique: '#436abf',
         trendlineTotal: '#eba14b',
+        sessionDuration: '#34306b',
       },
       regions,
       axes: {
         bounce: 'y2',
+        sessionDuration: 'y2',
       },
     },
     axis: {
@@ -265,13 +274,13 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
         type: 'timeseries',
       },
       y2: {
-        show: activeChartMetrics.bounce,
+        show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration,
         tick: {
-          format: (d) => `${d}%`,
+          format: activeChartMetrics.bounce ? (d) => `${d}%` : (d) => `${d} sec`,
         },
-        min: 10,
-        max: 90,
-        default: [0, 100],
+        min: activeChartMetrics.bounce ? 10 : null,
+        max: activeChartMetrics.bounce ? 100 : null,
+        default: activeChartMetrics.bounce ? [10, 100] : null,
       },
     },
     tooltip: {

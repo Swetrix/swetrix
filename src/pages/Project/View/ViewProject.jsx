@@ -59,7 +59,7 @@ import './styles.css'
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -91,10 +91,12 @@ const ViewProject = ({
   const [activeChartMetrics, setActiveChartMetrics] = useState({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
+    [CHART_METRICS_MAPPING.sessionDuration]: false,
     [CHART_METRICS_MAPPING.bounce]: false,
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
   })
+  const [sessionDurationAVG, setSessionDurationAVG] = useState(0)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
   // That is needed when using 'Export as image' feature
@@ -123,9 +125,16 @@ const ViewProject = ({
         active: activeChartMetrics[CHART_METRICS_MAPPING.views],
       },
       {
+        id: CHART_METRICS_MAPPING.sessionDuration,
+        label: t('dashboard.sessionDuration'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
+        conflicts: [CHART_METRICS_MAPPING.bounce],
+      },
+      {
         id: CHART_METRICS_MAPPING.bounce,
         label: t('dashboard.bounceRate'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.bounce],
+        conflicts: [CHART_METRICS_MAPPING.sessionDuration],
       },
       {
         id: CHART_METRICS_MAPPING.viewsPerUnique,
@@ -208,10 +217,10 @@ const ViewProject = ({
       }
 
       const {
-        chart, params, customs, appliedFilters,
+        chart, params, customs, appliedFilters, avgSdur,
       } = data
       sdkInstance?._emitEvent('load', sdkData)
-
+      setSessionDurationAVG(avgSdur)
       const convertApliedFilters = JSON.parse(appliedFilters)
 
       if (!_isEmpty(convertApliedFilters)) {
@@ -356,7 +365,7 @@ const ViewProject = ({
         })
       }
 
-      if (activeChartMetrics.bounce) {
+      if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration) {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
         const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
 
@@ -371,7 +380,7 @@ const ViewProject = ({
         })
       }
 
-      if (!activeChartMetrics.bounce) {
+      if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
         const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
 
@@ -757,6 +766,14 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const isConflicted = (conflicts) => {
+    const conflicted = conflicts && _some(conflicts, (conflict) => {
+      const conflictPair = _find(chartMetrics, (metric) => metric.id === conflict)
+      return conflictPair && conflictPair.active
+    })
+    return conflicted
+  }
+
   const resetFilters = () => {
     const url = new URL(window.location)
     const { searchParams } = url
@@ -888,19 +905,28 @@ const ViewProject = ({
                 items={chartMetrics}
                 title={t('project.metricVis')}
                 labelExtractor={(pair) => {
-                  const { label, id: pairID, active } = pair
+                  const {
+                    label, id: pairID, active, conflicts,
+                  } = pair
+
+                  const conflicted = isConflicted(conflicts)
 
                   return (
                     <Checkbox
                       className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
                       label={label}
+                      disabled={conflicted}
                       id={pairID}
                       checked={active}
                     />
                   )
                 }}
                 keyExtractor={(pair) => pair.id}
-                onSelect={({ id: pairID }) => {
+                onSelect={({ id: pairID, conflicts }) => {
+                  if (isConflicted(conflicts)) {
+                    generateAlert(t('project.conflictMetric'), 'error')
+                    return
+                  }
                   switchActiveChartMetric(pairID)
                 }}
               />
@@ -964,6 +990,7 @@ const ViewProject = ({
                   overall={project.overall}
                   chartData={chartData}
                   activePeriod={activePeriod}
+                  sessionDurationAVG={sessionDurationAVG}
                   live={project.live}
                 />
               )}

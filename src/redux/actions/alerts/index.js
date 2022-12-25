@@ -64,6 +64,13 @@ export const alertsActions = {
     }
   },
 
+  generateAlerts(message, type = 'success') {
+    return {
+      type: types.GENERATE_ALERTS,
+      payload: { message, type },
+    }
+  },
+
   clearAlerts() {
     return {
       type: types.CLEAR_ALERTS,

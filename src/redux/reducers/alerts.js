@@ -17,6 +17,7 @@ const alertsReducer = (state = initialState, { type, payload }) => {
     case types.INVITE_USER:
     case types.REMOVE_USER:
     case types.USER_SHARED_UPDATE:
+    case types.GENERATE_ALERTS:
       return { ...state, message: payload.message, type: payload.type }
 
     case types.CLEAR_ALERTS:
