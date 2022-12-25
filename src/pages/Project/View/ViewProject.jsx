@@ -28,6 +28,7 @@ import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
 import { SWETRIX_PID } from 'utils/analytics'
+import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
@@ -96,7 +97,7 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
   })
-  const [sessionDurationAVG, setSessionDurationAVG] = useState(0)
+  const [sessionDurationAVG, setSessionDurationAVG] = useState(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
   // That is needed when using 'Export as image' feature
@@ -220,7 +221,10 @@ const ViewProject = ({
         chart, params, customs, appliedFilters, avgSdur,
       } = data
       sdkInstance?._emitEvent('load', sdkData)
-      setSessionDurationAVG(avgSdur)
+      const processedSdur = getTimeFromSeconds(avgSdur)
+
+      setSessionDurationAVG(getStringFromTime(processedSdur))
+
       const convertApliedFilters = JSON.parse(appliedFilters)
 
       if (!_isEmpty(convertApliedFilters)) {

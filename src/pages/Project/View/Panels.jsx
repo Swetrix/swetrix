@@ -215,7 +215,6 @@ const Overview = ({
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {sessionDurationAVG}
-              sec
             </p>
           </div>
           <hr className='my-2 border-gray-200 dark:border-gray-600' />
