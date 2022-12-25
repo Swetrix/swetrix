@@ -9,6 +9,7 @@ import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
+import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
@@ -537,7 +538,7 @@ export class AnalyticsService {
     // Average session duration calculation
     const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
     let avgSdur = await clickhouse.query(avgSdurQuery, paramsData).toPromise()
-    avgSdur = avgSdur[0]['avg(sdur)']
+    avgSdur = _round(avgSdur[0]['avg(sdur)'])
 
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
@@ -596,11 +597,11 @@ export class AnalyticsService {
     while (idx < resSize) {
       const index = result[idx].index
       const v = result[idx]['count()']
-      const s = result[idx]['avg(sdur)']
-      sdur[index] = Number(s)
 
       if (index === result[1 + idx]?.index) {
         const u = result[1 + idx]['count()']
+        const s = result[1 + idx]['avg(sdur)']
+        sdur[index] = _round(s)
         visits[index] = v + u
         uniques[index] = u
         idx += 2
