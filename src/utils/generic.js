@@ -50,5 +50,9 @@ export const getTimeFromSeconds = (seconds) => {
 export const getStringFromTime = (time) => {
   const { h, m, s } = time
 
+  if (h === 0 && m === 0 && s === 0) {
+    return '0s'
+  }
+
   return `${h ? `${h}h ` : ''}${m ? `${m}m ` : ''}${s ? `${s}s` : ''}`
 }

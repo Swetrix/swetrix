@@ -19,7 +19,7 @@ import _reduce from 'lodash/reduce'
 import JSZip from 'jszip'
 
 import { tbsFormatMapper } from 'redux/constants'
-
+import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import countries from 'utils/isoCountries'
 
 const getAvg = (arr) => {
@@ -275,7 +275,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
       y2: {
         show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration,
         tick: {
-          format: activeChartMetrics.bounce ? (d) => `${d}%` : (d) => `${d} sec`,
+          format: activeChartMetrics.bounce ? (d) => `${d}%` : (d) => getStringFromTime(getTimeFromSeconds(d)),
         },
         min: activeChartMetrics.bounce ? 10 : null,
         max: activeChartMetrics.bounce ? 100 : null,
