@@ -37,3 +37,22 @@ export const secondsTillNextMonth = () => {
 
   return 0 | (date - now) / 1000
 }
+
+// Returns an object like { h: 0, m: 0, s: 0 } based on the seconds parameter provided
+export const getTimeFromSeconds = (seconds) => {
+  const h = 0 | seconds / 3600
+  const m = 0 | (seconds % 3600) / 60
+  const s = 0 | seconds % 60
+
+  return { h, m, s }
+}
+
+export const getStringFromTime = (time) => {
+  const { h, m, s } = time
+
+  if (h === 0 && m === 0 && s === 0) {
+    return '0s'
+  }
+
+  return `${h ? `${h}h ` : ''}${m ? `${m}m ` : ''}${s ? `${s}s` : ''}`
+}
