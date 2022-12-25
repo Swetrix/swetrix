@@ -257,7 +257,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
         viewsPerUnique: '#F87171',
         trendlineUnique: '#436abf',
         trendlineTotal: '#eba14b',
-        sessionDuration: '#34306b',
+        sessionDuration: '#c945ed',
       },
       regions,
       axes: {
