@@ -575,7 +575,7 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count() from analytics where pid = {pid:FixedString(12)} and created between '${
+      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
         xM[i]
       }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
@@ -588,6 +588,7 @@ export class AnalyticsService {
       .sort((a, b) => a.index - b.index)
     const visits = []
     const uniques = []
+    let sdur = []
 
     let idx = 0
     const resSize = _size(result)
@@ -595,6 +596,8 @@ export class AnalyticsService {
     while (idx < resSize) {
       const index = result[idx].index
       const v = result[idx]['count()']
+      const s = result[idx]['avg(sdur)']
+      sdur[index] = Number(s)
 
       if (index === result[1 + idx]?.index) {
         const u = result[1 + idx]['count()']
@@ -629,12 +632,16 @@ export class AnalyticsService {
       )
     }
 
+    // to replace nulls with zeros
+    sdur = _map(sdur, el => el || 0)
+
     return Promise.resolve({
       params,
       chart: {
         x,
         visits,
         uniques,
+        sdur,
       },
       avgSdur,
     })
