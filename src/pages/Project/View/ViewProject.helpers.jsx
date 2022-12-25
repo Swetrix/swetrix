@@ -139,7 +139,6 @@ const getColumns = (chart, activeChartMetrics) => {
   const {
     views, bounce, viewsPerUnique, unique, trendlines, sessionDuration,
   } = activeChartMetrics
-  console.log(chart)
 
   const columns = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
