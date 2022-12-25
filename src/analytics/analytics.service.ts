@@ -534,6 +534,11 @@ export class AnalyticsService {
       return Promise.resolve()
     }
 
+    // Average session duration calculation
+    const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
+    let avgSdur = await clickhouse.query(avgSdurQuery, paramsData).toPromise()
+    avgSdur = avgSdur[0]['avg(sdur)']
+
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
@@ -631,6 +636,7 @@ export class AnalyticsService {
         visits,
         uniques,
       },
+      avgSdur,
     })
   }
 
