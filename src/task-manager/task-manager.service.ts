@@ -9,6 +9,7 @@ import * as _isNull from 'lodash/isNull'
 import * as _join from 'lodash/join'
 import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
+import * as _now from 'lodash/now'
 
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
@@ -141,6 +142,16 @@ export class TaskManagerService {
     await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async cleanUpSessions(): Promise<void> {
+    const delSidQuery = `ALTER TABLE analytics UPDATE sid = NULL WHERE created < '${dayjs
+      .utc()
+      .subtract(20, 'm')
+      .format('YYYY-MM-DD HH:mm:ss')}'`
+
+    await clickhouse.query(delSidQuery).toPromise()
+  }
+
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')
   async weeklyReportsHandler(): Promise<void> {
@@ -255,6 +266,37 @@ export class TaskManagerService {
       users,
       projects,
       pageviews,
+    }
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async processSessionDuration(): Promise<void> {
+    const keys = await redis.keys('sd:*')
+    const toSave = []
+    const now = _now()
+
+    for (let i = 0; i < _size(keys); ++i) {
+      const [start, last] = (await redis.get(keys[i])).split(':')
+      const duration = now - Number(last)
+
+      // storing to the DB if last interaction was more than 1 minute ago
+      if (duration > 60000) {
+        toSave.push([keys[i], Number(last) - Number(start)])
+      }
+    }
+
+    if (_size(toSave) > 0) {
+      await redis.del(..._map(toSave, ([key]) => key))
+
+      const setSdurQuery = `ALTER TABLE analytics UPDATE sdur = sdur + CASE ${_map(
+        toSave,
+        ([key, duration]) => `WHEN sid = '${key.split(':')[1]}' THEN ${duration / 1000}`, // converting to seconds
+      ).join(' ')} END WHERE sid IN (${_map(
+        toSave,
+        ([key]) => `'${key.split(':')[1]}'`,
+      ).join(',')})`
+
+      await clickhouse.query(setSdurQuery).toPromise()
     }
   }
 }

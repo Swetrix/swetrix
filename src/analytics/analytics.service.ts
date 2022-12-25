@@ -7,7 +7,9 @@ import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
+import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
+import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
@@ -49,6 +51,8 @@ dayjs.extend(timezone)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
+
+export const getSessionDurationKey = (hash: string) => `sd:${hash}`
 
 export const cols = [
   'cc',
@@ -350,6 +354,26 @@ export class AnalyticsService {
     return sessionHash
   }
 
+  async isSessionDurationOpen(sdKey: string): Promise<Array<string | boolean>> {
+    const sd = await redis.get(sdKey)
+    return [sd, Boolean(sd)]
+  }
+
+  // Processes interaction for session duration
+  async processInteractionSD(sessionHash: string): Promise<void> {
+    const sdKey = getSessionDurationKey(sessionHash)
+    const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
+    const now = _now()
+
+    // the value is START_UNIX_TIMESTAMP:LAST_INTERACTION_UNIX_TIMESTAMP
+    if (isOpened) {
+      const [start] = _split(sd, ':')
+      await redis.set(sdKey, `${start}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    } else {
+      await redis.set(sdKey, `${now}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    }
+  }
+
   validatePeriod(period: string): void {
     if (!_includes(validPeriods, period)) {
       throw new UnprocessableEntityException('The provided period is incorrect')
@@ -511,6 +535,11 @@ export class AnalyticsService {
       return Promise.resolve()
     }
 
+    // Average session duration calculation
+    const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
+    let avgSdur = await clickhouse.query(avgSdurQuery, paramsData).toPromise()
+    avgSdur = _round(avgSdur[0]['avg(sdur)'])
+
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
@@ -547,7 +576,7 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count() from analytics where pid = {pid:FixedString(12)} and created between '${
+      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
         xM[i]
       }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
@@ -560,6 +589,7 @@ export class AnalyticsService {
       .sort((a, b) => a.index - b.index)
     const visits = []
     const uniques = []
+    let sdur = []
 
     let idx = 0
     const resSize = _size(result)
@@ -570,6 +600,8 @@ export class AnalyticsService {
 
       if (index === result[1 + idx]?.index) {
         const u = result[1 + idx]['count()']
+        const s = result[1 + idx]['avg(sdur)']
+        sdur[index] = _round(s)
         visits[index] = v + u
         uniques[index] = u
         idx += 2
@@ -601,13 +633,18 @@ export class AnalyticsService {
       )
     }
 
+    // to replace nulls with zeros
+    sdur = _map(sdur, el => el || 0)
+
     return Promise.resolve({
       params,
       chart: {
         x,
         visits,
         uniques,
+        sdur,
       },
+      avgSdur,
     })
   }
 

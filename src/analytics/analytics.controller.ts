@@ -70,6 +70,7 @@ const getSessionKeyCustom = (
 ) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`
 
 const analyticsDTO = (
+  sid: string,
   pid: string,
   pg: string,
   dv: string,
@@ -82,10 +83,11 @@ const analyticsDTO = (
   ca: string,
   lt: number | string,
   cc: string,
+  sdur: number | string,
   unique: number,
 ): Array<string | number> => {
   return [
-    uuidv4(),
+    sid,
     pid,
     pg,
     dv,
@@ -98,6 +100,7 @@ const analyticsDTO = (
     ca,
     lt,
     cc,
+    sdur,
     unique,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
@@ -446,7 +449,9 @@ export class AnalyticsController {
       userAgent,
       ip,
     )
+
     await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME)
+    this.analyticsService.processInteractionSD(sessionID)
     return
   }
 
@@ -469,6 +474,7 @@ export class AnalyticsController {
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
+    this.analyticsService.processInteractionSD(sessionHash)
     let dto: Array<string | number>
 
     if (unique) {
@@ -481,6 +487,7 @@ export class AnalyticsController {
         ct.getCountryForTimezone(logDTO.tz)?.id ||
         (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
       dto = analyticsDTO(
+        sessionHash,
         logDTO.pid,
         logDTO.pg,
         dv,
@@ -493,12 +500,15 @@ export class AnalyticsController {
         logDTO.ca,
         'NULL' /* logDTO.lt */,
         cc,
+        0,
         1,
       )
     } else if (!logDTO.unique) {
       dto = analyticsDTO(
+        'NULL',
         logDTO.pid,
         logDTO.pg,
+        'NULL',
         'NULL',
         'NULL',
         'NULL',
@@ -560,6 +570,7 @@ export class AnalyticsController {
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
+    this.analyticsService.processInteractionSD(sessionHash)
 
     let dto: Array<string | number>
 
@@ -572,6 +583,7 @@ export class AnalyticsController {
       const cc =
         headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
       dto = analyticsDTO(
+        sessionHash,
         logDTO.pid,
         'NULL',
         dv,
@@ -584,11 +596,14 @@ export class AnalyticsController {
         'NULL',
         'NULL',
         cc,
+        0,
         1,
       )
     } else {
       dto = analyticsDTO(
+        'NULL',
         logDTO.pid,
+        'NULL',
         'NULL',
         'NULL',
         'NULL',

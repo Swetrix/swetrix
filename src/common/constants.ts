@@ -45,7 +45,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   'CREATE DATABASE IF NOT EXISTS analytics',
   `CREATE TABLE IF NOT EXISTS analytics.analytics
   (
-    id UUID,
+    sid Nullable(String),
     pid FixedString(12),
     pg Nullable(String),
     dv Nullable(String),
@@ -58,12 +58,13 @@ const CLICKHOUSE_INIT_QUERIES = [
     ca Nullable(String),
     lt Nullable(UInt16),
     cc Nullable(FixedString(2)),
+    sdur Nullable(UInt32), 
     unique UInt8,
     created DateTime
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
-  ORDER BY (id, created, pid);`,
+  ORDER BY (pid, created);`,
   `CREATE TABLE IF NOT EXISTS analytics.customEV
   (
       id UUID,
