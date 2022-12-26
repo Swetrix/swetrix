@@ -613,9 +613,12 @@ export class AnalyticsService {
       if (unique) {
         visits[index] = v
         uniques[index] = v
+        const s = result[idx]['avg(sdur)']
+        sdur[index] = _round(s)
       } else {
         visits[index] = v
         uniques[index] = 0
+        sdur[index] = 0
       }
       idx++
     }
