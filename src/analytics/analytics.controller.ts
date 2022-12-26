@@ -3,6 +3,8 @@ import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _size from 'lodash/size'
 import * as _last from 'lodash/last'
+import * as _pick from 'lodash/pick'
+import * as _map from 'lodash/map'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
@@ -54,6 +56,7 @@ import {
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_PAGEVIEWS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
+  clickhouse,
 } from '../common/constants'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
@@ -386,6 +389,31 @@ export class AnalyticsController {
     return result
   }
 
+  @Get('/liveVisitors')
+  async getLiveVisitors(
+    @Query() data,
+    @CurrentUserId() uid: string,
+  ): Promise<object> {
+    const { pid } = data
+
+    this.analyticsService.validatePID(pid)
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    const keys = await redis.keys(`sd:*:${pid}`)
+
+    if (_isEmpty(keys)) {
+      return []
+    }
+
+    const sids = _map(keys, (key) => key.split(':')[1])
+
+    const query = `SELECT * FROM analytics WHERE sid IN (${sids.map(el => `'${el}'`).join(',')})`
+    const result = await clickhouse.query(query).toPromise()
+    const processed = _map(result, (el) => _pick(el, ['dv', 'br', 'os', 'lc', 'ref', 'so', 'me', 'ca', 'cc']))
+
+    return processed
+  }
+
   // Log custom event
   @Post('/custom')
   @UseGuards(BotDetectionGuard)
@@ -451,7 +479,7 @@ export class AnalyticsController {
     )
 
     await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME)
-    this.analyticsService.processInteractionSD(sessionID)
+    this.analyticsService.processInteractionSD(sessionID, pid)
     return
   }
 
@@ -474,7 +502,7 @@ export class AnalyticsController {
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
-    this.analyticsService.processInteractionSD(sessionHash)
+    this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
     let dto: Array<string | number>
 
     if (unique) {
@@ -570,7 +598,7 @@ export class AnalyticsController {
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
-    this.analyticsService.processInteractionSD(sessionHash)
+    this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
     let dto: Array<string | number>
 

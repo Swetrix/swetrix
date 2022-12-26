@@ -52,7 +52,7 @@ dayjs.extend(timezone)
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
-export const getSessionDurationKey = (hash: string) => `sd:${hash}`
+export const getSessionDurationKey = (hash: string, pid: string) => `sd:${hash}:${pid}`
 
 export const cols = [
   'cc',
@@ -360,8 +360,8 @@ export class AnalyticsService {
   }
 
   // Processes interaction for session duration
-  async processInteractionSD(sessionHash: string): Promise<void> {
-    const sdKey = getSessionDurationKey(sessionHash)
+  async processInteractionSD(sessionHash: string, pid: string): Promise<void> {
+    const sdKey = getSessionDurationKey(sessionHash, pid)
     const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
     const now = _now()
 
