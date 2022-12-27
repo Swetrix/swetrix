@@ -409,9 +409,9 @@ export class AnalyticsController {
 
     const sids = _map(keys, (key) => key.split(':')[1])
 
-    const query = `SELECT * FROM analytics WHERE sid IN (${sids.map(el => `'${el}'`).join(',')})`
+    const query = `SELECT sid, dv, br, os, cc FROM analytics WHERE sid IN (${sids.map(el => `'${el}'`).join(',')})`
     const result = await clickhouse.query(query).toPromise()
-    const processed = _map(_uniqBy(result, 'sid'), (el) => _pick(el, ['dv', 'br', 'os', 'lc', 'ref', 'so', 'me', 'ca', 'cc']))
+    const processed = _map(_uniqBy(result, 'sid'), (el) => _pick(el, ['dv', 'br', 'os', 'cc']))
 
     return processed
   }
