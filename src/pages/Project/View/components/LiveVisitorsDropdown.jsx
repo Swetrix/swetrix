@@ -54,15 +54,15 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
               }) => (
                 <div className='flex flex-row items-center justify-between w-full p-2 mt-2 text-sm text-gray-900 bg-gray-100 rounded-md dark:text-gray-50 dark:bg-gray-700'>
                   <div className='flex flex-row items-center'>
-                    <p className='mr-2'>{dv}</p>
-                    <p className='mr-2'>{br}</p>
-                    <p className='mr-2'>{os}</p>
                     <Flag
                       className='rounded-sm mr-2'
                       country={cc}
                       size={21}
                       alt=''
                     />
+                    <p className='mr-2'>{os}</p>
+                    <p className='mr-2'>{br}</p>
+                    <p className='mr-2 capitalize'>{dv}</p>
                   </div>
                   <p className='text-xs font-semibold text-green-500'>Live</p>
                 </div>
