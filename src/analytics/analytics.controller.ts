@@ -5,6 +5,7 @@ import * as _size from 'lodash/size'
 import * as _last from 'lodash/last'
 import * as _pick from 'lodash/pick'
 import * as _map from 'lodash/map'
+import * as _uniqBy from 'lodash/uniqBy'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
@@ -410,7 +411,7 @@ export class AnalyticsController {
 
     const query = `SELECT * FROM analytics WHERE sid IN (${sids.map(el => `'${el}'`).join(',')})`
     const result = await clickhouse.query(query).toPromise()
-    const processed = _map(result, (el) => _pick(el, ['dv', 'br', 'os', 'lc', 'ref', 'so', 'me', 'ca', 'cc']))
+    const processed = _map(_uniqBy(result, 'sid'), (el) => _pick(el, ['dv', 'br', 'os', 'lc', 'ref', 'so', 'me', 'ca', 'cc']))
 
     return processed
   }
