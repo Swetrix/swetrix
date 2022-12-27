@@ -26,6 +26,7 @@ import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
 import Chart from 'ui/Chart'
+import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
 import { iconClassName } from './ViewProject.helpers'
 
@@ -144,7 +145,7 @@ PanelContainer.defaultProps = {
 
 // First tab with stats
 const Overview = ({
-  overall, chartData, activePeriod, t, live, sessionDurationAVG,
+  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId,
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
@@ -164,9 +165,7 @@ const Overview = ({
           {t('dashboard.liveVisitors')}
           :
         </div>
-        <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-          {live}
-        </p>
+        <LiveVisitorsDropdown projectId={projectId} live={live} />
       </div>
       {!_isEmpty(chartData) && (
         <>

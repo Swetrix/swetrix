@@ -1002,6 +1002,7 @@ const ViewProject = ({
                   activePeriod={activePeriod}
                   sessionDurationAVG={sessionDurationAVG}
                   live={project.live}
+                  projectId={id}
                 />
               )}
               {_map(panelsData.types, (type) => {

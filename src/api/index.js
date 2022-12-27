@@ -435,3 +435,14 @@ export const setTheme = (theme) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const getLiveVisitorsInfo = (pid) =>
+  api
+    .get(`log/liveVisitors?pid=${pid}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
