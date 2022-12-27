@@ -55,7 +55,8 @@
     "enable": "Enable",
     "disable": "Disable",
     "copied": "Copied",
-    "new": "New"
+    "new": "New",
+    "loading": "Loading.."
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
