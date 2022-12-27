@@ -374,6 +374,7 @@
     "inc": "Increased by",
     "dec": "Descreased by",
     "liveVisitors": "Live visitors",
+    "live": "Live",
     "bounceRate": "Bounce rate",
     "viewsPerUnique": "Views per session",
     "trendlines": "Trend lines",

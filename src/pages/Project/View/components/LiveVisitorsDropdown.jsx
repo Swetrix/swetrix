@@ -69,7 +69,9 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
                     <p className='mr-2'>{br}</p>
                     <p className='mr-2 capitalize'>{dv}</p>
                   </div>
-                  <p className='text-xs font-semibold text-green-500'>Live</p>
+                  <p className='text-xs font-semibold text-green-500'>
+                    {t('dashboard.live')}
+                  </p>
                 </div>
               ))
             )}
