@@ -28,6 +28,7 @@ import {
   Response,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
+// @ts-ignore
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 

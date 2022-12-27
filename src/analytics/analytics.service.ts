@@ -14,7 +14,7 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
 import * as ipRangeCheck from 'ip-range-check'
-import { isLocale } from 'validator'
+import validator from 'validator'
 import { hash } from 'blake3'
 import {
   Injectable,
@@ -290,7 +290,7 @@ export class AnalyticsService {
 
       // validate locale ('lc' param)
       if (!_isEmpty(lc)) {
-        if (isLocale(lc)) {
+        if (validator.isLocale(lc)) {
           // uppercase the locale after '-' char, so for example both 'en-gb' and 'en-GB' in result will be 'en-GB'
           const lcParted = _split(lc, '-')
 
