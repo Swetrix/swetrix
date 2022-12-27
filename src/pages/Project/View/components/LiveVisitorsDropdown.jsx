@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
+import OutsideClickHandler from 'react-outside-click-handler'
 import {
   ChevronDownIcon, ChevronUpIcon, XMarkIcon,
 } from '@heroicons/react/24/outline'
@@ -34,7 +35,9 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
   }, [show]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <>
+    <OutsideClickHandler
+      onOutsideClick={() => setShow(false)}
+    >
       <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl cursor-pointer' onClick={() => setShow(!show)}>
         {live}
         {' '}
@@ -74,7 +77,7 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
           <XMarkIcon className='absolute top-2 right-2 w-5 h-5 text-gray-900 cursor-pointer dark:text-gray-50' onClick={() => setShow(!show)} />
         </div>
       )}
-    </>
+    </OutsideClickHandler>
   )
 }
 
