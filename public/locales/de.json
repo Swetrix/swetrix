@@ -377,7 +377,8 @@
     "viewsPerUnique": "Views per session",
     "trendlines": "Trend lines",
     "invitationFor": "Einladung zu {{project}}",
-    "invitationDesc": "Sie wurden eingeladen, dem Projekt {{project}} beizutreten.\nSie können die Einladung entweder annehmen oder in Ihren Kontoeinstellungen ablehnen."
+    "invitationDesc": "Sie wurden eingeladen, dem Projekt {{project}} beizutreten.\nSie können die Einladung entweder annehmen oder in Ihren Kontoeinstellungen ablehnen.",
+    "sessionDuration": "Session duration"
   },
   "docs": {
     "titles": {
@@ -452,6 +453,7 @@
     "ratio": "Verhältnis",
     "customEv": "benutzerdefinierte Tracking-Events",
     "noParamData": "Noch keine Daten für diesen Parameter vorhanden.",
+    "conflictMetric": "The metric you selected conflicts with an already selected one",
     "prev": "Zurück",
     "next": "Weitere",
     "unique": "Einzigartige Besucher",

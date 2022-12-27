@@ -377,7 +377,8 @@
     "viewsPerUnique": "Views per session",
     "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
-    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
+    "sessionDuration": "Session duration"
   },
   "docs": {
     "titles": {
@@ -452,6 +453,7 @@
     "ratio": "Ratio",
     "customEv": "कस्टम ईवेंट",
     "noParamData": "इस पैरामीटर के लिए अभी तक कोई डेटा नहीं",
+    "conflictMetric": "The metric you selected conflicts with an already selected one",
     "prev": "पिछला",
     "next": "अगला",
     "unique": "विशिष्ट आगंतुक",

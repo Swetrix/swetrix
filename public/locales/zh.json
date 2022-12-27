@@ -377,7 +377,8 @@
     "viewsPerUnique": "Views per session",
     "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
-    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings."
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
+    "sessionDuration": "Session duration"
   },
   "docs": {
     "titles": {
@@ -452,6 +453,7 @@
     "ratio": "比率",
     "customEv": "自定义获得",
     "noParamData": "此参数尚无数据",
+    "conflictMetric": "The metric you selected conflicts with an already selected one",
     "prev": "上一个",
     "next": "下一个",
     "unique": "独特访客",
