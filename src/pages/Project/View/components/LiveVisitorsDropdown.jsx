@@ -29,7 +29,7 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
 
   useEffect(() => {
     getLiveVisitors()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
