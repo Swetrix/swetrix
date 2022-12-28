@@ -12,6 +12,8 @@ import {
 } from 'redux/constants'
 import routes from 'routes'
 
+const SWETRIX_VS_GOOGLE = 'https://blog.swetrix.com/post/vs-google-analytics/'
+
 const navigation = {
   support: [
     (authenticated) => (authenticated ? { key: 'billing', href: routes.billing } : { key: 'pricing', href: `${routes.main}#pricing` }),
@@ -29,6 +31,9 @@ const navigation = {
   legal: [
     { key: 'privacy', href: routes.privacy },
     { key: 'terms', href: routes.terms },
+  ],
+  comparisons: [
+    { value: 'Google Analytics', href: SWETRIX_VS_GOOGLE },
   ],
   social: [
     {
@@ -168,7 +173,24 @@ const Footer = ({ minimal, authenticated }) => {
           </div>
           <div className='mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2'>
             <div className='md:grid md:grid-cols-2 md:gap-8'>
-              <div />
+              <div>
+                <h3 className='text-sm font-semibold text-white tracking-wider uppercase'>
+                  {t('footer.comparisons')}
+                </h3>
+                <ul className='mt-4 space-y-4'>
+                  {_map(navigation.comparisons, (data) => {
+                    const { value, href } = data
+
+                    return (
+                      <li key={value}>
+                        <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer'>
+                          {value}
+                        </a>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
               <div className='mt-12 md:mt-0'>
                 <h3 className='text-sm font-semibold text-white tracking-wider uppercase'>
                   {t('footer.support')}
