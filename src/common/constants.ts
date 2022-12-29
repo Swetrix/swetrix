@@ -56,7 +56,6 @@ const CLICKHOUSE_INIT_QUERIES = [
     so Nullable(String),
     me Nullable(String),
     ca Nullable(String),
-    lt Nullable(UInt16),
     cc Nullable(FixedString(2)),
     sdur Nullable(UInt32), 
     unique UInt8,
