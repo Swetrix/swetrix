@@ -51,6 +51,34 @@ export class Lib {
         this.trackPage(path, options?.unique);
         return this.pageData.actions;
     }
+    getPerformanceStats() {
+        if (!this.canTrack() || !window.performance?.getEntriesByType) {
+            return {};
+        }
+        const perf = window.performance.getEntriesByType('navigation')[0];
+        if (!perf) {
+            return {};
+        }
+        return {
+            // Network
+            // @ts-ignore
+            dns: perf.domainLookupEnd - perf.domainLookupStart,
+            ssl: perf.connectEnd - perf.secureConnectionStart,
+            conn: perf.connectEnd - perf.connectStart,
+            resp: perf.responseEnd - perf.responseStart,
+            // Frontend
+            // @ts-ignore
+            render: perf.domComplete - perf.domContentLoadedEventEnd,
+            dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
+            // Backend
+            // @ts-ignore
+            ttfb: perf.responseStart - perf.requestStart,
+            // fpt: perf.responseEnd - perf.requestStart,
+            // tti: perf.domInteractive - perf.requestStart,
+            // ttfcp: perf.domContentLoadedEventEnd - perf.requestStart,
+            // ttdl: perf.domComplete - perf.requestStart,
+        };
+    }
     heartbeat() {
         if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
             return;
@@ -89,6 +117,8 @@ export class Lib {
         this.pageData.path = pg;
         if (this.checkIgnore(pg))
             return;
+        const perf = this.getPerformanceStats();
+        console.log(perf);
         const data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -99,6 +129,7 @@ export class Lib {
             ca: getUTMCampaign(),
             unique,
             pg,
+            perf,
         };
         this.sendRequest('', data);
     }

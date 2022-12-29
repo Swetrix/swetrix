@@ -58,6 +58,7 @@ export declare class Lib {
     constructor(projectID: string, options?: LibOptions | undefined);
     track(event: TrackEventOptions): void;
     trackPageViews(options?: PageViewsOptions): PageActions;
+    getPerformanceStats(): object;
     private heartbeat;
     private checkIgnore;
     private trackPathChange;

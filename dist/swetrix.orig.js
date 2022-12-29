@@ -117,6 +117,35 @@
             this.trackPage(path, options === null || options === void 0 ? void 0 : options.unique);
             return this.pageData.actions;
         };
+        Lib.prototype.getPerformanceStats = function () {
+            var _a;
+            if (!this.canTrack() || !((_a = window.performance) === null || _a === void 0 ? void 0 : _a.getEntriesByType)) {
+                return {};
+            }
+            var perf = window.performance.getEntriesByType('navigation')[0];
+            if (!perf) {
+                return {};
+            }
+            return {
+                // Network
+                // @ts-ignore
+                dns: perf.domainLookupEnd - perf.domainLookupStart,
+                ssl: perf.connectEnd - perf.secureConnectionStart,
+                conn: perf.connectEnd - perf.connectStart,
+                resp: perf.responseEnd - perf.responseStart,
+                // Frontend
+                // @ts-ignore
+                render: perf.domComplete - perf.domContentLoadedEventEnd,
+                dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
+                // Backend
+                // @ts-ignore
+                ttfb: perf.responseStart - perf.requestStart,
+                // fpt: perf.responseEnd - perf.requestStart,
+                // tti: perf.domInteractive - perf.requestStart,
+                // ttfcp: perf.domContentLoadedEventEnd - perf.requestStart,
+                // ttdl: perf.domComplete - perf.requestStart,
+            };
+        };
         Lib.prototype.heartbeat = function () {
             var _a;
             if (!((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.heartbeatOnBackground) && document.visibilityState === 'hidden') {
@@ -158,6 +187,8 @@
             this.pageData.path = pg;
             if (this.checkIgnore(pg))
                 return;
+            var perf = this.getPerformanceStats();
+            console.log(perf);
             var data = {
                 pid: this.projectID,
                 lc: getLocale(),
@@ -168,6 +199,7 @@
                 ca: getUTMCampaign(),
                 unique: unique,
                 pg: pg,
+                perf: perf,
             };
             this.sendRequest('', data);
         };
