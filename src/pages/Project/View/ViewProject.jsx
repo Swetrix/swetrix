@@ -853,7 +853,10 @@ const ViewProject = ({
                 items={tabs}
                 keyExtractor={(item) => item.id}
                 labelExtractor={(item) => item.label}
-                onSelect={console.log}
+                onSelect={(label) => {
+                  const selected = _find(tabs, (tab) => tab.label === label)
+                  setActiveTab(selected.id)
+                }}
                 title={activeTabLabel}
               />
             </div>
@@ -866,6 +869,7 @@ const ViewProject = ({
                     return (
                       <div
                         key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
                         className={cx(
                           isCurrent
                             ? 'border-indigo-700 text-indigo-700 dark:text-indigo-500 dark:border-indigo-500'
