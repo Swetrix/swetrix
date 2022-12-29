@@ -128,6 +128,8 @@ const ViewProject = ({
     ]
   }, [t])
 
+  const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
+
   const { name } = project
 
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
@@ -852,6 +854,7 @@ const ViewProject = ({
                 keyExtractor={(item) => item.id}
                 labelExtractor={(item) => item.label}
                 onSelect={console.log}
+                title={activeTabLabel}
               />
             </div>
             <div className='hidden sm:block'>
