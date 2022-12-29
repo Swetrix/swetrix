@@ -1,7 +1,7 @@
 const { queriesRunner, dbName } = require('./setup')
 
 const queries = [
-  `DROP COLUMN analytics.lt`,
+  `ALTER TABLE ${dbName}.analytics DROP COLUMN lt`,
   `CREATE TABLE IF NOT EXISTS ${dbName}.performance
   (
     pid FixedString(12),
