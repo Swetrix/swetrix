@@ -128,6 +128,41 @@ export class Lib {
     return this.pageData.actions
   }
 
+  getPerformanceStats(): object {
+    if (!this.canTrack() || !window.performance?.getEntriesByType) {
+      return {}
+    }
+
+    const perf = window.performance.getEntriesByType('navigation')[0]
+
+    if (!perf) {
+      return {}
+    }
+
+    return {
+      // Network
+      // @ts-ignore
+      dns: perf.domainLookupEnd - perf.domainLookupStart, // @ts-ignore
+      ssl: perf.connectEnd - perf.secureConnectionStart, // @ts-ignore
+      conn: perf.connectEnd - perf.connectStart, // @ts-ignore
+      resp: perf.responseEnd - perf.responseStart,
+
+      // Frontend
+      // @ts-ignore
+      render: perf.domComplete - perf.domContentLoadedEventEnd, // @ts-ignore
+      dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
+
+      // Backend
+      // @ts-ignore
+      ttfb: perf.responseStart - perf.requestStart,
+      // fpt: perf.responseEnd - perf.requestStart,
+      // tti: perf.domInteractive - perf.requestStart,
+      // ttfcp: perf.domContentLoadedEventEnd - perf.requestStart,
+      // ttdl: perf.domComplete - perf.requestStart,
+    }
+  }
+
+
   private heartbeat(): void {
     if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
       return
@@ -170,6 +205,9 @@ export class Lib {
 
     if (this.checkIgnore(pg)) return
 
+    const perf = this.getPerformanceStats()
+    console.log(perf)
+
     const data = {
       pid: this.projectID,
       lc: getLocale(),
@@ -180,6 +218,7 @@ export class Lib {
       ca: getUTMCampaign(),
       unique,
       pg,
+      perf,
     }
 
     this.sendRequest('', data)
