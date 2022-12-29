@@ -6,6 +6,7 @@ import * as _last from 'lodash/last'
 import * as _pick from 'lodash/pick'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
+import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
@@ -129,14 +130,14 @@ const performanceDTO = (
     pg,
     dv,
     br,
-    dns,
-    tls,
-    conn,
-    response,
-    render,
-    domLoad,
-    pageLoad,
-    ttfb,
+    _round(dns),
+    _round(tls),
+    _round(conn),
+    _round(response),
+    _round(render),
+    _round(domLoad),
+    _round(pageLoad),
+    _round(ttfb),
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
@@ -203,7 +204,7 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly taskManagerService: TaskManagerService,
-  ) {}
+  ) { }
 
   @Get('/')
   async getData(
