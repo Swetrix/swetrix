@@ -7,7 +7,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -39,6 +39,7 @@ import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
+import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
 import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
@@ -57,6 +58,8 @@ import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import './styles.css'
+
+const DEFAULT_TAB = 'traffic'
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
@@ -108,6 +111,22 @@ const ViewProject = ({
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs[id]?.rangeDate
   const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
+  const [activeTab, setActiveTab] = useState(DEFAULT_TAB)
+
+  const tabs = useMemo(() => {
+    return [
+      {
+        id: 'traffic',
+        label: t('dashboard.traffic'),
+        icon: ChartBarIcon,
+      },
+      {
+        id: 'performance',
+        label: t('dashboard.performance'),
+        icon: BoltIcon,
+      },
+    ]
+  }, [t])
 
   const { name } = project
 
@@ -825,6 +844,51 @@ const ViewProject = ({
           )}
           ref={dashboardRef}
         >
+          {/* Tabs selector */}
+          <div>
+            <div className='sm:hidden'>
+              <Select
+                items={tabs}
+                keyExtractor={(item) => item.id}
+                labelExtractor={(item) => item.label}
+                onSelect={console.log}
+              />
+            </div>
+            <div className='hidden sm:block'>
+              <div>
+                <nav className='-mb-px flex space-x-4' aria-label='Tabs'>
+                  {_map(tabs, tab => {
+                    const isCurrent = tab.id === activeTab
+
+                    return (
+                      <div
+                        key={tab.id}
+                        className={cx(
+                          isCurrent
+                            ? 'border-indigo-500 text-indigo-700'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                          'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
+                        )}
+                        aria-current={isCurrent ? 'page' : undefined}
+                      >
+                        <tab.icon
+                          className={cx(
+                            isCurrent ? 'text-indigo-700' : 'text-gray-400 group-hover:text-gray-500',
+                            '-ml-0.5 mr-2 h-5 w-5',
+                          )}
+                          aria-hidden='true'
+                        />
+                        <span>
+                          {tab.label}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </nav>
+              </div>
+            </div>
+          </div>
+
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
             <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
               {name}

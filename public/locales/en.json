@@ -380,7 +380,9 @@
     "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
-    "sessionDuration": "Session duration"
+    "sessionDuration": "Session duration",
+    "traffic": "Traffic",
+    "performance": "Performance"
   },
   "docs": {
     "titles": {
