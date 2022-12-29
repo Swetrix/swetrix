@@ -59,10 +59,27 @@ export class PageviewsDTO {
   })
   unique?: boolean
 
-  // Performance metrics
   @ApiProperty({
-    example: 261,
-    description: 'Page load time (in milliseconds)',
+    example: {
+      conn:0.5,
+      dns: 0,
+      dom_load: 975.4000000059605,
+      page_load: 1515.8999999761581,
+      render: 531.1999999880791,
+      response: 0.5999999940395355,
+      tls: 0,
+      ttfb: 1.800000011920929,
+    },
+    description: 'Performance metrics',
   })
-  lt?: number
+  perf?: {
+    dns: number,
+    tls: number,
+    conn: number,
+    response: number,
+    render: number,
+    dom_load: number,
+    page_load: number,
+    ttfb: number,
+  }
 }

@@ -51,6 +51,7 @@ import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   REDIS_LOG_DATA_CACHE_KEY,
+  REDIS_LOG_PERF_CACHE_KEY,
   redis,
   REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME,
@@ -105,6 +106,37 @@ const analyticsDTO = (
     cc,
     sdur,
     unique,
+    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+  ]
+}
+
+const performanceDTO = (
+  pid: string,
+  pg: string,
+  dv: string,
+  br: string,
+  dns: number,
+  tls: number,
+  conn: number,
+  response: number,
+  render: number,
+  domLoad: number,
+  pageLoad: number,
+  ttfb: number,
+): Array<string | number> => {
+  return [
+    pid,
+    pg,
+    dv,
+    br,
+    dns,
+    tls,
+    conn,
+    response,
+    render,
+    domLoad,
+    pageLoad,
+    ttfb,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
@@ -504,9 +536,11 @@ export class AnalyticsController {
     const unique = await this.analyticsService.isUnique(sessionHash)
     this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
     let dto: Array<string | number>
+    let perfDTO: Array<string | number> = []
+    let ua: UAParser.IResult
 
     if (unique) {
-      const ua = UAParser(userAgent)
+      ua = UAParser(userAgent)
       const dv = ua.device.type || 'desktop'
       const br = ua.browser.name
       const os = ua.os.name
@@ -553,10 +587,43 @@ export class AnalyticsController {
       )
     }
 
+    if (!_isEmpty(logDTO.perf)) {
+      if (!ua) {
+        ua = UAParser(userAgent)
+      }
+      const dv = ua.device.type || 'desktop'
+      const br = ua.browser.name
+
+      const {
+        dns, tls, conn, response, render, dom_load, page_load, ttfb,
+      } = logDTO.perf
+
+      perfDTO = performanceDTO(
+        logDTO.pid,
+        logDTO.pg,
+        dv,
+        br,
+        dns,
+        tls,
+        conn,
+        response,
+        render,
+        dom_load,
+        page_load,
+        ttfb,
+      )
+    }
+
     // todo: fix: may be vulnerable to sql injection attack
     const values = `(${dto.map(getElValue).join(',')})`
+    const perfValues = `(${perfDTO.map(getElValue).join(',')})`
     try {
       await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
+
+      if (!_isEmpty(perfDTO)) {
+        await redis.rpush(REDIS_LOG_PERF_CACHE_KEY, perfValues)
+      }
+
       return
     } catch (e) {
       this.logger.error(e)
