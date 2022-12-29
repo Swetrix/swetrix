@@ -150,7 +150,8 @@ export class Lib {
       // Frontend
       // @ts-ignore
       render: perf.domComplete - perf.domContentLoadedEventEnd, // @ts-ignore
-      dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
+      dom_load: perf.domContentLoadedEventEnd - perf.responseEnd, // @ts-ignore
+      page_load: perf.loadEventStart,
 
       // Backend
       // @ts-ignore
