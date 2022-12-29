@@ -122,7 +122,6 @@ export class Lib {
         if (this.checkIgnore(pg))
             return;
         const perf = this.getPerformanceStats();
-        console.log(perf);
         const data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -133,7 +132,7 @@ export class Lib {
             ca: getUTMCampaign(),
             unique,
             pg,
-            // perf,
+            perf,
         };
         this.sendRequest('', data);
     }

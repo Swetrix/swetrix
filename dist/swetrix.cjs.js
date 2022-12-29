@@ -190,7 +190,6 @@ var Lib = /** @class */ (function () {
         if (this.checkIgnore(pg))
             return;
         var perf = this.getPerformanceStats();
-        console.log(perf);
         var data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -201,7 +200,7 @@ var Lib = /** @class */ (function () {
             ca: getUTMCampaign(),
             unique: unique,
             pg: pg,
-            // perf,
+            perf: perf,
         };
         this.sendRequest('', data);
     };
