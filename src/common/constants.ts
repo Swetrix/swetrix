@@ -77,10 +77,13 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS analytics.performance
   (
     pid FixedString(12),
+    pg Nullable(String),
+    dv Nullable(String),
+    br Nullable(String),
     dns Nullable(UInt32),
-    ssl Nullable(UInt32),
+    tls Nullable(UInt32),
     conn Nullable(UInt32),
-    resp Nullable(UInt32),
+    response Nullable(UInt32),
     render Nullable(UInt32),
     domLoad Nullable(UInt32),
     pageLoad Nullable(UInt32),
