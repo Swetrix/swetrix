@@ -147,9 +147,9 @@ export class Lib {
       // @ts-ignore
       dns: perf.domainLookupEnd - perf.domainLookupStart, // DNS Resolution
       // @ts-ignore
-      tls: perf.requestStart - perf.secureConnectionStart, // TLS Setup
+      tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0, // TLS Setup; checking if secureConnectionStart is not 0 (it's 0 for non-https websites)
       // @ts-ignore
-      conn: perf.secureConnectionStart - perf.connectStart, // Connection time
+      conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart, // Connection time
       // @ts-ignore
       response: perf.responseEnd - perf.responseStart, // Response Time (Download)
 

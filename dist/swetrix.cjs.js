@@ -131,9 +131,9 @@ var Lib = /** @class */ (function () {
             // @ts-ignore
             dns: perf.domainLookupEnd - perf.domainLookupStart,
             // @ts-ignore
-            tls: perf.requestStart - perf.secureConnectionStart,
+            tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0,
             // @ts-ignore
-            conn: perf.secureConnectionStart - perf.connectStart,
+            conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart,
             // @ts-ignore
             response: perf.responseEnd - perf.responseStart,
             // Frontend
@@ -280,9 +280,22 @@ function track(event) {
  * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
  */
 function trackViews(options) {
-    if (!exports.LIB_INSTANCE)
-        return defaultPageActions;
-    return exports.LIB_INSTANCE.trackPageViews(options);
+    return new Promise(function (resolve) {
+        if (!exports.LIB_INSTANCE) {
+            resolve(defaultPageActions);
+            return;
+        }
+        // We need to verify that document.readyState is complete for the performance stats to be collected correctly.
+        if (document.readyState === 'complete') {
+            resolve(exports.LIB_INSTANCE.trackPageViews(options));
+        }
+        else {
+            window.addEventListener('load', function () {
+                // @ts-ignore
+                resolve(exports.LIB_INSTANCE.trackPageViews(options));
+            });
+        }
+    });
 }
 
 exports.init = init;

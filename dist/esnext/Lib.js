@@ -66,9 +66,9 @@ export class Lib {
             // @ts-ignore
             dns: perf.domainLookupEnd - perf.domainLookupStart,
             // @ts-ignore
-            tls: perf.requestStart - perf.secureConnectionStart,
+            tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0,
             // @ts-ignore
-            conn: perf.secureConnectionStart - perf.connectStart,
+            conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart,
             // @ts-ignore
             response: perf.responseEnd - perf.responseStart,
             // Frontend
