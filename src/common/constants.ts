@@ -66,14 +66,30 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, created);`,
   `CREATE TABLE IF NOT EXISTS analytics.customEV
   (
-      id UUID,
-      pid FixedString(12),
-      ev String,
-      created DateTime
+    id UUID,
+    pid FixedString(12),
+    ev String,
+    created DateTime
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (id, created, pid);`,
+  `CREATE TABLE IF NOT EXISTS analytics.performance
+  (
+    pid FixedString(12),
+    dns Nullable(UInt32),
+    ssl Nullable(UInt32),
+    conn Nullable(UInt32),
+    resp Nullable(UInt32),
+    render Nullable(UInt32),
+    domLoad Nullable(UInt32),
+    pageLoad Nullable(UInt32),
+    ttfb Nullable(UInt32),
+    created DateTime
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (pid, created);`,
   isSelfhosted &&
     `CREATE TABLE IF NOT EXISTS analytics.project
   (
