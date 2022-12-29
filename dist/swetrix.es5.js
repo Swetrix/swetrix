@@ -72,6 +72,7 @@ var Lib = /** @class */ (function () {
         this.options = options;
         this.pageData = null;
         this.pageViewsOptions = null;
+        this.perfStatsCollected = false;
         this.trackPathChange = this.trackPathChange.bind(this);
         this.heartbeat = this.heartbeat.bind(this);
     }
@@ -113,31 +114,34 @@ var Lib = /** @class */ (function () {
     };
     Lib.prototype.getPerformanceStats = function () {
         var _a;
-        if (!this.canTrack() || !((_a = window.performance) === null || _a === void 0 ? void 0 : _a.getEntriesByType)) {
+        if (!this.canTrack() || this.perfStatsCollected || !((_a = window.performance) === null || _a === void 0 ? void 0 : _a.getEntriesByType)) {
             return {};
         }
         var perf = window.performance.getEntriesByType('navigation')[0];
         if (!perf) {
             return {};
         }
+        this.perfStatsCollected = true;
         return {
             // Network
             // @ts-ignore
             dns: perf.domainLookupEnd - perf.domainLookupStart,
-            ssl: perf.connectEnd - perf.secureConnectionStart,
-            conn: perf.connectEnd - perf.connectStart,
-            resp: perf.responseEnd - perf.responseStart,
+            // @ts-ignore
+            tls: perf.requestStart - perf.secureConnectionStart,
+            // @ts-ignore
+            conn: perf.secureConnectionStart - perf.connectStart,
+            // @ts-ignore
+            response: perf.responseEnd - perf.responseStart,
             // Frontend
             // @ts-ignore
             render: perf.domComplete - perf.domContentLoadedEventEnd,
+            // @ts-ignore
             dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
+            // @ts-ignore
+            page_load: perf.loadEventStart,
             // Backend
             // @ts-ignore
             ttfb: perf.responseStart - perf.requestStart,
-            // fpt: perf.responseEnd - perf.requestStart,
-            // tti: perf.domInteractive - perf.requestStart,
-            // ttfcp: perf.domContentLoadedEventEnd - perf.requestStart,
-            // ttdl: perf.domComplete - perf.requestStart,
         };
     };
     Lib.prototype.heartbeat = function () {
@@ -193,7 +197,7 @@ var Lib = /** @class */ (function () {
             ca: getUTMCampaign(),
             unique: unique,
             pg: pg,
-            perf: perf,
+            // perf,
         };
         this.sendRequest('', data);
     };

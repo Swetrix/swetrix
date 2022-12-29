@@ -74,6 +74,7 @@ const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 export class Lib {
   private pageData: PageData | null = null
   private pageViewsOptions: PageViewsOptions | null | undefined = null
+  private perfStatsCollected: Boolean = false
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
@@ -129,7 +130,7 @@ export class Lib {
   }
 
   getPerformanceStats(): object {
-    if (!this.canTrack() || !window.performance?.getEntriesByType) {
+    if (!this.canTrack() || this.perfStatsCollected || !window.performance?.getEntriesByType) {
       return {}
     }
 
@@ -139,27 +140,30 @@ export class Lib {
       return {}
     }
 
+    this.perfStatsCollected = true
+
     return {
       // Network
       // @ts-ignore
-      dns: perf.domainLookupEnd - perf.domainLookupStart, // @ts-ignore
-      ssl: perf.connectEnd - perf.secureConnectionStart, // @ts-ignore
-      conn: perf.connectEnd - perf.connectStart, // @ts-ignore
-      resp: perf.responseEnd - perf.responseStart,
+      dns: perf.domainLookupEnd - perf.domainLookupStart, // DNS Resolution
+      // @ts-ignore
+      tls: perf.requestStart - perf.secureConnectionStart, // TLS Setup
+      // @ts-ignore
+      conn: perf.secureConnectionStart - perf.connectStart, // Connection time
+      // @ts-ignore
+      response: perf.responseEnd - perf.responseStart, // Response Time (Download)
 
       // Frontend
       // @ts-ignore
-      render: perf.domComplete - perf.domContentLoadedEventEnd, // @ts-ignore
-      dom_load: perf.domContentLoadedEventEnd - perf.responseEnd, // @ts-ignore
-      page_load: perf.loadEventStart,
+      render: perf.domComplete - perf.domContentLoadedEventEnd, // Browser rendering the HTML time
+      // @ts-ignore
+      dom_load: perf.domContentLoadedEventEnd - perf.responseEnd, // DOM loading timing
+      // @ts-ignore
+      page_load: perf.loadEventStart, // Page load time
 
       // Backend
       // @ts-ignore
       ttfb: perf.responseStart - perf.requestStart,
-      // fpt: perf.responseEnd - perf.requestStart,
-      // tti: perf.domInteractive - perf.requestStart,
-      // ttfcp: perf.domContentLoadedEventEnd - perf.requestStart,
-      // ttdl: perf.domComplete - perf.requestStart,
     }
   }
 
@@ -219,7 +223,7 @@ export class Lib {
       ca: getUTMCampaign(),
       unique,
       pg,
-      perf,
+      // perf,
     }
 
     this.sendRequest('', data)

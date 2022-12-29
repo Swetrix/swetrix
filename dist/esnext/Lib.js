@@ -9,6 +9,7 @@ export class Lib {
         this.options = options;
         this.pageData = null;
         this.pageViewsOptions = null;
+        this.perfStatsCollected = false;
         this.trackPathChange = this.trackPathChange.bind(this);
         this.heartbeat = this.heartbeat.bind(this);
     }
@@ -52,31 +53,34 @@ export class Lib {
         return this.pageData.actions;
     }
     getPerformanceStats() {
-        if (!this.canTrack() || !window.performance?.getEntriesByType) {
+        if (!this.canTrack() || this.perfStatsCollected || !window.performance?.getEntriesByType) {
             return {};
         }
         const perf = window.performance.getEntriesByType('navigation')[0];
         if (!perf) {
             return {};
         }
+        this.perfStatsCollected = true;
         return {
             // Network
             // @ts-ignore
             dns: perf.domainLookupEnd - perf.domainLookupStart,
-            ssl: perf.connectEnd - perf.secureConnectionStart,
-            conn: perf.connectEnd - perf.connectStart,
-            resp: perf.responseEnd - perf.responseStart,
+            // @ts-ignore
+            tls: perf.requestStart - perf.secureConnectionStart,
+            // @ts-ignore
+            conn: perf.secureConnectionStart - perf.connectStart,
+            // @ts-ignore
+            response: perf.responseEnd - perf.responseStart,
             // Frontend
             // @ts-ignore
             render: perf.domComplete - perf.domContentLoadedEventEnd,
+            // @ts-ignore
             dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
+            // @ts-ignore
+            page_load: perf.loadEventStart,
             // Backend
             // @ts-ignore
             ttfb: perf.responseStart - perf.requestStart,
-            // fpt: perf.responseEnd - perf.requestStart,
-            // tti: perf.domInteractive - perf.requestStart,
-            // ttfcp: perf.domContentLoadedEventEnd - perf.requestStart,
-            // ttdl: perf.domComplete - perf.requestStart,
         };
     }
     heartbeat() {
@@ -129,7 +133,7 @@ export class Lib {
             ca: getUTMCampaign(),
             unique,
             pg,
-            perf,
+            // perf,
         };
         this.sendRequest('', data);
     }
