@@ -600,6 +600,7 @@
     "docs": "Documentation",
     "billing": "Billing",
     "contact": "Contact",
+    "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs"
   },
   "footer": {
@@ -626,6 +627,7 @@
     "terms": "Terms",
     "status": "Status",
     "donate": "Donate",
+    "changelog": "Changelog",
     "about": "About us",
     "comparisons": "Comparisons"
   }
