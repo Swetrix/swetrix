@@ -670,7 +670,8 @@ export class AnalyticsService {
     const params = {}
 
     for (const i of perfCols) {
-      const query1 = `SELECT ${i}, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(pageLoad), avg(ttfb) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      // const query1 = `SELECT ${i}, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(pageLoad), avg(ttfb) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const query1 = `SELECT ${i}, avg(pageLoad) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
       params[i] = {}
@@ -678,16 +679,17 @@ export class AnalyticsService {
       const size = _size(res)
       for (let j = 0; j < size; ++j) {
         const key = res[j][i]
-        params[i][key] = {
-          dns: res[j]['avg(dns)'],
-          tls: res[j]['avg(tls)'],
-          conn: res[j]['avg(conn)'],
-          response: res[j]['avg(response)'],
-          render: res[j]['avg(render)'],
-          domLoad: res[j]['avg(domLoad)'],
-          pageLoad: res[j]['avg(pageLoad)'],
-          ttfb: res[j]['avg(ttfb)'],
-        }
+        // params[i][key] = {
+        //   dns: res[j]['avg(dns)'],
+        //   tls: res[j]['avg(tls)'],
+        //   conn: res[j]['avg(conn)'],
+        //   response: res[j]['avg(response)'],
+        //   render: res[j]['avg(render)'],
+        //   domLoad: res[j]['avg(domLoad)'],
+        //   pageLoad: res[j]['avg(pageLoad)'],
+        //   ttfb: res[j]['avg(ttfb)'],
+        // }
+        params[i][key] = res[j]['avg(pageLoad)']
       }
     }
 
