@@ -44,6 +44,7 @@ const Privacy = lazy(() => import('pages/Privacy'))
 const ConfirmShare = lazy(() => import('pages/Project/ConfirmShare'))
 const Terms = lazy(() => import('pages/Terms'))
 const NotFound = lazy(() => import('pages/NotFound'))
+const Changelog = lazy(() => import('pages/Changelog'))
 const About = lazy(() => import('pages/About'))
 
 const minimalFooterPages = [
@@ -190,6 +191,7 @@ const App = () => {
                 <Route path={routes.privacy} component={Privacy} exact />
                 <Route path={routes.terms} component={Terms} exact />
                 <Route path={routes.confirm_share} component={ConfirmShare} exact />
+                <Route path={routes.changelog} component={Changelog} exact />
                 <Route path={routes.about} component={About} exact />
                 <Route path='*' component={NotFound} />
               </Switch>

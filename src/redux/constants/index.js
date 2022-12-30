@@ -111,6 +111,8 @@ export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
 export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
 export const CDN_URL = process.env.REACT_APP_CDN_URL
 
+export const SWETRIX_VS_GOOGLE = 'https://blog.swetrix.com/post/vs-google-analytics/'
+
 export const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
 
 export const SUPPORTED_THEMES = ['light', 'dark']
