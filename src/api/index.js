@@ -260,6 +260,27 @@ export const getProjectData = (
         : error.response.data.message
     })
 
+export const getPerfData = (
+  pid,
+  tb = 'hour',
+  period = '3d',
+  filters = [],
+  from = '',
+  to = '',
+  timezone = '',
+) =>
+  api
+    .get(
+      `log/performance?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const getOverallStats = (pids) =>
   api
     .get(`log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)

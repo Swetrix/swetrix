@@ -44,7 +44,7 @@ import FlatPicker from 'ui/Flatpicker'
 import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
 import {
-  getProjectData, getProject, getOverallStats, getLiveVisitors,
+  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData,
 } from 'api'
 import {
   Panel, Overview, CustomEvents,
@@ -112,6 +112,8 @@ const ViewProject = ({
   const localStorageDateRange = projectViewPrefs[id]?.rangeDate
   const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
   const [activeTab, setActiveTab] = useState(DEFAULT_TAB)
+
+  const [perfData, setPerfData] = useState({})
 
   const tabs = useMemo(() => {
     return [
@@ -296,6 +298,45 @@ const ViewProject = ({
       console.error(e)
     }
   }
+
+  // temp solution just to see if it works
+  useEffect(() => {
+    if (activeTab !== 'performance') {
+      setPerfData({})
+      return
+    }
+
+    const loadPerfData = async () => {
+      try {
+        let data
+        let key
+        let from
+        let to
+
+        if (dateRange) {
+          from = getFormatDate(dateRange[0])
+          to = getFormatDate(dateRange[1])
+          key = getProjectCacheCustomKey(from, to, timeBucket)
+        } else {
+          key = getProjectCacheKey(period, timeBucket)
+        }
+
+        if (period === 'custom' && dateRange) {
+          data = await getPerfData(id, timeBucket, '', filters, from, to, timezone)
+        } else {
+          data = await getPerfData(id, timeBucket, period, filters, '', '', timezone)
+        }
+        setPerfData(data)
+      } catch (e) {
+        console.error('[ERROR](loadPerfData) Loading performance data failed')
+        console.error(e)
+      }
+    }
+
+    loadPerfData()
+  }, [activeTab, id, period, timeBucket, timezone, dateRange, filters])
+
+  console.log(perfData)
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column, filter, isExclusive = false) => {
@@ -1042,119 +1083,236 @@ const ViewProject = ({
           {isPanelsDataEmpty && (
             <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
           )}
-          <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-            <div
-              className={cx('h-80', {
-                hidden: checkIfAllMetricsAreDisabled,
-              })}
-            >
-              <div className='h-80' id='dataChart' />
-            </div>
-            <Filters
-              filters={filters}
-              onRemoveFilter={filterHandler}
-              onChangeExclusive={onChangeExclusive}
-              tnMapping={tnMapping}
-            />
-            {dataLoading && (
-              <div className='loader bg-transparent static mt-4' id='loader'>
-                <div className='loader-head'>
-                  <div className='first' />
-                  <div className='second' />
-                </div>
+          {activeTab === 'traffic' && (
+            <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+              <div
+                className={cx('h-80', {
+                  hidden: checkIfAllMetricsAreDisabled,
+                })}
+              >
+                <div className='h-80' id='dataChart' />
               </div>
-            )}
-            <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-              {!_isEmpty(project.overall) && (
-                <Overview
-                  t={t}
-                  overall={project.overall}
-                  chartData={chartData}
-                  activePeriod={activePeriod}
-                  sessionDurationAVG={sessionDurationAVG}
-                  live={project.live}
-                  projectId={id}
-                />
+              <Filters
+                filters={filters}
+                onRemoveFilter={filterHandler}
+                onChangeExclusive={onChangeExclusive}
+                tnMapping={tnMapping}
+              />
+              {dataLoading && (
+                <div className='loader bg-transparent static mt-4' id='loader'>
+                  <div className='loader-head'>
+                    <div className='first' />
+                    <div className='second' />
+                  </div>
+                </div>
               )}
-              {_map(panelsData.types, (type) => {
-                const panelName = tnMapping[type]
-                const panelIcon = panelIconMapping[type]
-                const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
-
-                if (type === 'cc') {
-                  return (
-                    <Panel
-                      t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      customTabs={customTabs}
-                      rowMapper={(rowName) => (
-                        <CCRow rowName={rowName} language={language} />
-                      )}
-                    />
-                  )
-                }
-
-                if (type === 'dv') {
-                  return (
-                    <Panel
-                      t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      customTabs={customTabs}
-                      capitalize
-                    />
-                  )
-                }
-
-                if (type === 'ref') {
-                  return (
-                    <Panel
-                      t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      customTabs={customTabs}
-                      rowMapper={(rowName) => (
-                        <RefRow rowName={rowName} showIcons={showIcons} />
-                      )}
-                    />
-                  )
-                }
-
-                return (
-                  <Panel
+              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                {!_isEmpty(project.overall) && (
+                  <Overview
                     t={t}
-                    key={type}
-                    icon={panelIcon}
-                    id={type}
-                    onFilter={filterHandler}
-                    name={panelName}
-                    data={panelsData.data[type]}
-                    customTabs={customTabs}
+                    overall={project.overall}
+                    chartData={chartData}
+                    activePeriod={activePeriod}
+                    sessionDurationAVG={sessionDurationAVG}
+                    live={project.live}
+                    projectId={id}
                   />
-                )
-              })}
-              {!_isEmpty(panelsData.customs) && (
-                <CustomEvents
-                  t={t}
-                  customs={panelsData.customs}
-                  chartData={chartData}
-                />
-              )}
+                )}
+                {_map(panelsData.types, (type) => {
+                  const panelName = tnMapping[type]
+                  const panelIcon = panelIconMapping[type]
+                  const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
+
+                  if (type === 'cc') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        rowMapper={(rowName) => (
+                          <CCRow rowName={rowName} language={language} />
+                        )}
+                      />
+                    )
+                  }
+
+                  if (type === 'dv') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        capitalize
+                      />
+                    )
+                  }
+
+                  if (type === 'ref') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        rowMapper={(rowName) => (
+                          <RefRow rowName={rowName} showIcons={showIcons} />
+                        )}
+                      />
+                    )
+                  }
+
+                  return (
+                    <Panel
+                      t={t}
+                      key={type}
+                      icon={panelIcon}
+                      id={type}
+                      onFilter={filterHandler}
+                      name={panelName}
+                      data={panelsData.data[type]}
+                      customTabs={customTabs}
+                    />
+                  )
+                })}
+                {!_isEmpty(panelsData.customs) && (
+                  <CustomEvents
+                    t={t}
+                    customs={panelsData.customs}
+                    chartData={chartData}
+                  />
+                )}
+              </div>
             </div>
-          </div>
+          )}
+          {activeTab === 'performance' && (
+            <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+              <div
+                className={cx('h-80', {
+                  hidden: checkIfAllMetricsAreDisabled,
+                })}
+              >
+                <div className='h-80' id='dataChart' />
+              </div>
+              <Filters
+                filters={filters}
+                onRemoveFilter={filterHandler}
+                onChangeExclusive={onChangeExclusive}
+                tnMapping={tnMapping}
+              />
+              {dataLoading && (
+                <div className='loader bg-transparent static mt-4' id='loader'>
+                  <div className='loader-head'>
+                    <div className='first' />
+                    <div className='second' />
+                  </div>
+                </div>
+              )}
+              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                {!_isEmpty(project.overall) && (
+                  <Overview
+                    t={t}
+                    overall={project.overall}
+                    chartData={chartData}
+                    activePeriod={activePeriod}
+                    sessionDurationAVG={sessionDurationAVG}
+                    live={project.live}
+                    projectId={id}
+                  />
+                )}
+                {_map(panelsData.types, (type) => {
+                  const panelName = tnMapping[type]
+                  const panelIcon = panelIconMapping[type]
+                  const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
+
+                  if (type === 'cc') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        rowMapper={(rowName) => (
+                          <CCRow rowName={rowName} language={language} />
+                        )}
+                      />
+                    )
+                  }
+
+                  if (type === 'dv') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        capitalize
+                      />
+                    )
+                  }
+
+                  if (type === 'ref') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        rowMapper={(rowName) => (
+                          <RefRow rowName={rowName} showIcons={showIcons} />
+                        )}
+                      />
+                    )
+                  }
+
+                  return (
+                    <Panel
+                      t={t}
+                      key={type}
+                      icon={panelIcon}
+                      id={type}
+                      onFilter={filterHandler}
+                      name={panelName}
+                      data={panelsData.data[type]}
+                      customTabs={customTabs}
+                    />
+                  )
+                })}
+                {!_isEmpty(panelsData.customs) && (
+                  <CustomEvents
+                    t={t}
+                    customs={panelsData.customs}
+                    chartData={chartData}
+                  />
+                )}
+              </div>
+            </div>
+          )}
         </div>
         {!authenticated && (
           <div className='bg-indigo-600'>
