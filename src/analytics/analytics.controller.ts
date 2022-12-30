@@ -116,6 +116,7 @@ const performanceDTO = (
   pg: string,
   dv: string,
   br: string,
+  cc: string,
   dns: number,
   tls: number,
   conn: number,
@@ -130,6 +131,7 @@ const performanceDTO = (
     pg,
     dv,
     br,
+    cc,
     _round(dns),
     _round(tls),
     _round(conn),
@@ -355,6 +357,150 @@ export class AnalyticsController {
     }
   }
 
+  @Get('/performance')
+  async getPerfData(
+    @Query() data: AnalyticsGET_DTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+    // const [filtersQuery, filtersParams] =
+    //   this.analyticsService.getFiltersQuery(filters)
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    let groupFrom = from,
+      groupTo = to
+
+    // const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: null,
+        groupTo: null,
+        // ...filtersParams,
+      },
+    }
+
+    if (!_isEmpty(from) && !_isEmpty(to)) {
+      if (!isValidDate(from)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter is invalid",
+        )
+      }
+
+      if (!isValidDate(to)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'to' parameter is invalid",
+        )
+      }
+
+      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter cannot be greater than 'to'",
+        )
+      }
+
+      checkIfTBAllowed(timeBucket, from, to)
+
+      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+
+      if (from === to) {
+        groupTo = dayjs
+          .tz(to, timezone)
+          .add(1, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+      } else {
+        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
+      }
+    } else if (!_isEmpty(period)) {
+      if (period === 'today') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
+          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else if (period === 'yesterday') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .subtract(1, 'day')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs
+            .utc()
+            .startOf('d')
+            .subtract(1, 'day')
+            .format('YYYY-MM-DD')
+          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else {
+        groupFrom = dayjs
+          .utc()
+          .subtract(parseInt(period), _last(period))
+          .format('YYYY-MM-DD')
+        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+
+        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
+      }
+    } else {
+      throw new BadRequestException(
+        'The timeframe (either from/to pair or period) has to be provided',
+      )
+    }
+
+    paramsData.params = {
+      ...paramsData.params,
+      groupFrom,
+      groupTo,
+    }
+
+    const result = await this.analyticsService.groupPerfByTimeBucket(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      subQuery,
+      '',
+      paramsData,
+      timezone,
+    )
+
+    console.log(result)
+
+    return {
+      ...result,
+      appliedFilters: filters,
+    }
+  }
+
   @Get('/birdseye')
   // returns overall short statistics per project
   async getOverallStats(
@@ -539,6 +685,7 @@ export class AnalyticsController {
     let dto: Array<string | number>
     let perfDTO: Array<string | number> = []
     let ua: UAParser.IResult
+    let cc
 
     if (unique) {
       ua = UAParser(userAgent)
@@ -546,7 +693,7 @@ export class AnalyticsController {
       const br = ua.browser.name
       const os = ua.os.name
       // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
-      const cc =
+      cc =
         ct.getCountryForTimezone(logDTO.tz)?.id ||
         (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
       dto = analyticsDTO(
@@ -592,6 +739,9 @@ export class AnalyticsController {
       if (!ua) {
         ua = UAParser(userAgent)
       }
+      if (!cc) {
+        cc = ct.getCountryForTimezone(logDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+      }
       const dv = ua.device.type || 'desktop'
       const br = ua.browser.name
 
@@ -604,6 +754,7 @@ export class AnalyticsController {
         logDTO.pg,
         dv,
         br,
+        cc,
         dns,
         tls,
         conn,

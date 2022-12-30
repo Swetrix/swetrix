@@ -67,6 +67,13 @@ export const cols = [
   'ca',
 ]
 
+export const perfCols = [
+  'cc',
+  'pg',
+  'dv',
+  'br',
+]
+
 interface chartCHResponse {
   index: number
   unique: number
@@ -648,6 +655,152 @@ export class AnalyticsService {
         sdur,
       },
       avgSdur,
+    })
+  }
+
+  async groupPerfByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    timezone: string,
+  ): Promise<object | void> {
+    const params = {}
+
+    for (const i of perfCols) {
+      const query1 = `SELECT ${i}, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(pageLoad), avg(ttfb) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const res = await clickhouse.query(query1, paramsData).toPromise()
+
+      params[i] = {}
+
+      const size = _size(res)
+      for (let j = 0; j < size; ++j) {
+        const key = res[j][i]
+        params[i][key] = {
+          dns: res[j]['avg(dns)'],
+          tls: res[j]['avg(tls)'],
+          conn: res[j]['avg(conn)'],
+          response: res[j]['avg(response)'],
+          render: res[j]['avg(render)'],
+          domLoad: res[j]['avg(domLoad)'],
+          pageLoad: res[j]['avg(pageLoad)'],
+          ttfb: res[j]['avg(ttfb)'],
+        }
+      }
+    }
+
+    if (!_some(_values(params), val => !_isEmpty(val))) {
+      return Promise.resolve()
+    }
+
+    let groupDateIterator
+    const now = dayjs.utc().endOf(timeBucket)
+    const djsTo = dayjs.utc(to).endOf(timeBucket)
+    const iterateTo = djsTo > now ? now : djsTo
+
+    switch (timeBucket) {
+      case TimeBucketType.HOUR:
+        groupDateIterator = dayjs.utc(from).startOf('hour')
+        break
+
+      case TimeBucketType.DAY:
+      case TimeBucketType.WEEK:
+      case TimeBucketType.MONTH:
+        groupDateIterator = dayjs.utc(from).startOf('day')
+        break
+
+      default:
+        return Promise.reject()
+    }
+
+    let x = []
+
+    while (groupDateIterator < iterateTo) {
+      const nextIteration = groupDateIterator.add(1, timeBucket)
+      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
+      groupDateIterator = nextIteration
+    }
+
+    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(pageLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
+    }
+
+    // @ts-ignore
+    const result: Array<chartCHResponse> = (
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+      // @ts-ignore
+      .sort((a, b) => a.index - b.index)
+
+    const dns = []
+    const tls = []
+    const conn = []
+    const response = []
+    const render = []
+    const domLoad = []
+    const pageLoad = []
+    const ttfb = []
+
+    let idx = 0
+    const resSize = _size(result)
+
+    while (idx < resSize) {
+      const res = result[idx]
+      const index = res.index
+
+      dns[index] = res['avg(dns)']
+      tls[index] = res['avg(tls)']
+      conn[index] = res['avg(conn)']
+      response[index] = res['avg(response)']
+      render[index] = res['avg(render)']
+      domLoad[index] = res['avg(domLoad)']
+      pageLoad[index] = res['avg(pageLoad)']
+      ttfb[index] = res['avg(ttfb)']
+
+      idx++
+    }
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (!dns[i]) dns[i] = 0
+      if (!tls[i]) tls[i] = 0
+      if (!conn[i]) conn[i] = 0
+      if (!response[i]) response[i] = 0
+      if (!render[i]) render[i] = 0
+      if (!domLoad[i]) domLoad[i] = 0
+      if (!pageLoad[i]) pageLoad[i] = 0
+      if (!ttfb[i]) ttfb[i] = 0
+    }
+
+    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+      x = _map(x, el =>
+        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+      )
+    }
+
+    return Promise.resolve({
+      params,
+      chart: {
+        x,
+        dns,
+        tls,
+        conn,
+        response,
+        render,
+        domLoad,
+        pageLoad,
+        ttfb,
+      },
     })
   }
 

@@ -8,6 +8,7 @@ const queries = [
     pg Nullable(String),
     dv Nullable(String),
     br Nullable(String),
+    cc Nullable(FixedString(2)),
     dns Nullable(UInt32),
     tls Nullable(UInt32),
     conn Nullable(UInt32),
