@@ -134,6 +134,21 @@ const CHART_METRICS_MAPPING = {
   sessionDuration: 'sessionDuration',
 }
 
+const CHART_METRICS_MAPPING_PERF = {
+  full: 'full',
+  network: 'network',
+  frontend: 'frontend',
+  backend: 'backend',
+  dns: 'dns',
+  tls: 'tls',
+  conn: 'conn',
+  response: 'response',
+  render: 'render',
+  dom_load: 'dom_load',
+  page_load: 'page_load',
+  ttfb: 'ttfb',
+}
+
 // function to filter the data for the chart
 const getColumns = (chart, activeChartMetrics) => {
   const {
@@ -179,6 +194,97 @@ const getColumns = (chart, activeChartMetrics) => {
 
   if (sessionDuration) {
     columns.push(['sessionDuration', ...chart.sdur])
+  }
+
+  return columns
+}
+// // Network
+// // @ts-ignore
+// dns: perf.domainLookupEnd - perf.domainLookupStart, // DNS Resolution
+// // @ts-ignore
+// tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0, // TLS Setup; checking if secureConnectionStart is not 0 (it's 0 for non-https websites)
+// // @ts-ignore
+// conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart, // Connection time
+// // @ts-ignore
+// response: perf.responseEnd - perf.responseStart, // Response Time (Download)
+
+// // Frontend
+// // @ts-ignore
+// render: perf.domComplete - perf.domContentLoadedEventEnd, // Browser rendering the HTML time
+// // @ts-ignore
+// dom_load: perf.domContentLoadedEventEnd - perf.responseEnd, // DOM loading timing
+// // @ts-ignore
+// page_load: perf.loadEventStart, // Page load time
+
+// // Backend
+// // @ts-ignore
+// ttfb: perf.responseStart - perf.requestStart,
+
+const getColumnsPerf = (chart, activeChartMetrics) => {
+  const columns = [
+    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
+  ]
+  console.log(activeChartMetrics)
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.full) {
+    columns.push(['dns', ...chart.dns])
+    columns.push(['tls', ...chart.tls])
+    columns.push(['conn', ...chart.conn])
+    columns.push(['response', ...chart.response])
+    columns.push(['render', ...chart.render])
+    columns.push(['dom_load', ...chart.domLoad])
+    columns.push(['page_load', ...chart.pageLoad])
+    columns.push(['ttfb', ...chart.ttfb])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.network) {
+    columns.push(['dns', ...chart.dns])
+    columns.push(['tls', ...chart.tls])
+    columns.push(['conn', ...chart.conn])
+    columns.push(['response', ...chart.response])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend) {
+    columns.push(['render', ...chart.render])
+    columns.push(['dom_load', ...chart.domLoad])
+    columns.push(['page_load', ...chart.pageLoad])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.backend) {
+    columns.push(['ttfb', ...chart.ttfb])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.dns) {
+    columns.push(['dns', ...chart.dns])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.tls) {
+    columns.push(['tls', ...chart.tls])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.conn) {
+    columns.push(['conn', ...chart.conn])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.response) {
+    columns.push(['response', ...chart.response])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.render) {
+    columns.push(['render', ...chart.render])
+  }
+
+  // eslint-disable-next-line camelcase
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.dom_load) {
+    columns.push(['dom_load', ...chart.domLoad])
+  }
+
+  // eslint-disable-next-line camelcase
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.page_load) {
+    columns.push(['page_load', ...chart.pageLoad])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.ttfb) {
+    columns.push(['ttfb', ...chart.ttfb])
   }
 
   return columns
@@ -327,6 +433,183 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
   }
 }
 
+const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) => {
+  const xAxisSize = _size(chart.x)
+
+  let regions
+
+  if (applyRegions) {
+    let regionStart
+
+    if (xAxisSize > 1) {
+      regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+    } else {
+      regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+    }
+
+    regions = {
+      dns: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      tls: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      conn: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      response: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      render: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      dom_load: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      page_load: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      ttfb: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+    }
+  }
+
+  return {
+    data: {
+      x: 'x',
+      xFormat: tbsFormatMapper[timeBucket],
+      columns: getColumnsPerf(chart, activeChartMetrics),
+      types: {
+        dns: area(),
+        tls: area(),
+        conn: area(),
+        response: area(),
+        render: area(),
+        dom_load: area(),
+        page_load: area(),
+        ttfb: area(),
+      },
+      colors: {
+        dns: '#F56565',
+        tls: '#ED8936',
+        conn: '#ECC94B',
+        response: '#48BB78',
+        render: '#4299E1',
+        dom_load: '#667EEA',
+        page_load: '#9F7AEA',
+        ttfb: '#ED64A6',
+      },
+      // names: {
+      //   dns: 'DNS',
+      //   tls: 'TLS',
+      //   conn: 'Conn',
+      //   response: 'Response',
+      //   render: 'Render',
+      //   dom_load: 'DOM Load',
+      //   page_load: 'Page Load',
+      //   ttfb: 'TTFB',
+      // },
+      regions,
+    },
+    axis: {
+      x: {
+        type: 'timeseries',
+        tick: {
+          format: tbsFormatMapper[timeBucket],
+        },
+      },
+      y: {
+        tick: {
+          format: (d) => `${d} ms`,
+        },
+      },
+    },
+    tooltip: {
+      format: {
+        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+      },
+      contents: {
+        template: `
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+            <li class='font-semibold'>{=TITLE}</li>
+            <hr class='border-gray-200 dark:border-gray-600' />
+            {{
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <span>{=NAME}</span>
+                </div>
+                <span class='pl-4'>{=VALUE}</span>
+              </li>
+            }}
+          </ul>`,
+      },
+    },
+    point: {
+      focus: {
+        only: xAxisSize > 1,
+      },
+      pattern: [
+        'circle',
+      ],
+      r: 3,
+    },
+    legend: {
+      usePoint: true,
+      item: {
+        tile: {
+          width: 10,
+        },
+      },
+    },
+    area: {
+      linearGradient: true,
+    },
+    bindto: '#dataChart',
+  }
+}
+
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const paidPeriods = ['12M', '24M']
@@ -368,5 +651,5 @@ const getFormatDate = (date) => {
 }
 
 export {
-  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
+  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf,
 }

@@ -25,6 +25,8 @@ const getInitialState = () => {
     // example: { 'FSMaC9V4HFLA': { '4wday': { }, '7dhour': { } } }
     analytics: {},
 
+    analyticsPerf: {},
+
     // { pid: { period: '7d', timeBucket: 'day' }, ... }
     projectViewPrefs: getInitialViewPrefs(),
   }
@@ -89,6 +91,48 @@ const cacheReducer = (state = getInitialState(), { type, payload }) => {
           } : {
             period, timeBucket,
           },
+        },
+      }
+    }
+
+    case types.SET_PROJECT_CACHE_PERF: {
+      const { pid, data, key } = payload
+
+      return {
+        ...state,
+        analyticsPerf: {
+          ...state.analyticsPerf,
+          [pid]: {
+            ...state.analyticsPerf[pid],
+            [key]: data,
+          },
+        },
+      }
+    }
+
+    case types.DELETE_PROJECT_CACHE_PERF: {
+      const { pid, period, timeBucket } = payload
+      const key = getProjectCacheKey(period, timeBucket)
+
+      if (_isEmpty(period) || _isEmpty(timeBucket)) {
+        if (_isEmpty(pid)) {
+          return {
+            ...state,
+            analyticsPerf: {},
+          }
+        }
+
+        return {
+          ...state,
+          analyticsPerf: _filter(state.analyticsPerf, (project) => project !== pid),
+        }
+      }
+
+      return {
+        ...state,
+        analyticsPerf: {
+          ...state.analyticsPerf,
+          [pid]: _filter(state.analyticsPerf[pid], (ckey) => ckey !== key),
         },
       }
     }
