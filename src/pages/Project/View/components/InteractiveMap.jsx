@@ -4,14 +4,18 @@ import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
+import { projectTabs } from 'redux/constants'
 
 import countriesList from 'utils/countries'
+import { useSelector } from 'react-redux'
 
 const InteractiveMap = ({ data, onClickCountry, total }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [hoverShow, setHoverShow] = useState(false)
   const [dataHover, setDataHover] = useState(null)
   const [cursorPosition, setCursorPosition] = useState(null)
+
+  const projectTab = useSelector((state) => state.ui.projects.projectTab)
 
   const onMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -32,15 +36,24 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
               <path
                 key={index}
                 id={index}
-                className={cx({
-                  'hover:opacity-90': perc > 0,
-                  'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
-                  'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
-                  'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
-                  'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
-                  'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
-                  'cursor-pointer': Boolean(visitors),
-                })}
+                className={projectTabs.traffic === projectTab
+                  ? cx({
+                    'hover:opacity-90': perc > 0,
+                    'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
+                    'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
+                    'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
+                    'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
+                    'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
+                    'cursor-pointer': Boolean(visitors),
+                  }) : cx({
+                    'hover:opacity-90': perc > 0,
+                    'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
+                    'fill-[#f7a8a8]': perc > 0 && perc < 3,
+                    'fill-[#f78a8a]': perc >= 3 && perc < 10,
+                    'fill-[#f76b6b]': perc >= 10 && perc < 20,
+                    'fill-[#f74b4b]': perc >= 20,
+                    'cursor-pointer': Boolean(visitors),
+                  })}
                 d={item.d}
                 onClick={() => perc !== 0 && onClickCountry(index)}
                 onMouseEnter={() => {

@@ -196,6 +196,11 @@ const setThemeType = (theme) => ({
   payload: { theme },
 })
 
+const setProjectTab = (tab) => ({
+  type: types.SET_PROJECT_TAB,
+  payload: { tab },
+})
+
 const UIActions = {
   loadProjects,
   loadSharedProjects,
@@ -226,6 +231,7 @@ const UIActions = {
   setThemeType,
   setProjectCachePerf,
   deleteProjectCachePerf,
+  setProjectTab,
 }
 
 export default UIActions

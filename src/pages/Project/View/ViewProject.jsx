@@ -59,11 +59,10 @@ import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import './styles.css'
 
-const DEFAULT_TAB = 'traffic'
-
 const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
+  projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
+  projectTab, setProjectTab,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -112,11 +111,10 @@ const ViewProject = ({
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs[id]?.rangeDate
   const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
-  const [activeTab, setActiveTab] = useState(DEFAULT_TAB)
+  const [activeTab, setActiveTab] = useState(projectTab)
 
   const [chartDataPerf, setChartDataPerf] = useState({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
-  const [perfData, setPerfData] = useState({})
   const [panelsDataPerf, setPanelsDataPerf] = useState({})
 
   const tabs = useMemo(() => {
@@ -309,6 +307,9 @@ const ViewProject = ({
 
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
         data = cache[id][key]
+        if (!_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
+          dataPerf = cachePerf[id][key]
+        }
       } else {
         if (period === 'custom' && dateRange) {
           data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
@@ -393,7 +394,6 @@ const ViewProject = ({
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
         const bbSettings = getSettings(chartPerf, timeBucket, activeChartMetricsPerf, applyRegions)
         setChartDataPerf(chartPerf)
-        setPerfData(dataPerf)
 
         setPanelsDataPerf({
           types: _keys(dataPerf.params),
@@ -1021,6 +1021,7 @@ const ViewProject = ({
                 onSelect={(label) => {
                   const selected = _find(tabs, (tab) => tab.label === label)
                   setActiveTab(selected.id)
+                  setProjectTab(selected.id)
                 }}
                 title={activeTabLabel}
               />
@@ -1034,7 +1035,10 @@ const ViewProject = ({
                     return (
                       <div
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => {
+                          setProjectTab(tab.id)
+                          setActiveTab(tab.id)
+                        }}
                         className={cx(
                           isCurrent
                             ? 'border-indigo-700 text-indigo-700 dark:text-indigo-500 dark:border-indigo-500'
@@ -1146,16 +1150,16 @@ const ViewProject = ({
             </div>
           </div>
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-            {!isPanelsDataEmpty && (
-              <Dropdown
-                items={activeTab === tabs[0].id ? chartMetrics : chartMetricsPerf}
-                title={t('project.metricVis')}
-                labelExtractor={(pair) => {
-                  const {
-                    label, id: pairID, active, conflicts,
-                  } = pair
+            {activeTab === tabs[0].id ? (
+              !isPanelsDataEmpty && (
+                <Dropdown
+                  items={chartMetrics}
+                  title={t('project.metricVis')}
+                  labelExtractor={(pair) => {
+                    const {
+                      label, id: pairID, active, conflicts,
+                    } = pair
 
-                  if (activeTab === tabs[0].id) {
                     const conflicted = isConflicted(conflicts)
 
                     return (
@@ -1167,18 +1171,34 @@ const ViewProject = ({
                         checked={active}
                       />
                     )
-                  }
+                  }}
+                  keyExtractor={(pair) => pair.id}
+                  onSelect={({ id: pairID, conflicts }) => {
+                    if (isConflicted(conflicts)) {
+                      generateAlert(t('project.conflictMetric'), 'error')
+                      return
+                    }
+                    switchActiveChartMetric(pairID)
+                  }}
+                />
+              )) : (
+              !isPanelsDataEmptyPerf && (
+              <Dropdown
+                items={chartMetricsPerf}
+                title={t('project.metricVis')}
+                labelExtractor={(pair) => {
+                  const {
+                    label,
+                  } = pair
+
                   return label
                 }}
                 keyExtractor={(pair) => pair.id}
-                onSelect={({ id: pairID, conflicts }) => {
-                  if (isConflicted(conflicts)) {
-                    generateAlert(t('project.conflictMetric'), 'error')
-                    return
-                  }
+                onSelect={({ id: pairID }) => {
                   switchActiveChartMetric(pairID)
                 }}
               />
+              )
             )}
             <Dropdown
               items={[...exportTypes, ...customExportTypes]}
@@ -1325,7 +1345,7 @@ const ViewProject = ({
               </div>
             </div>
           )}
-          {activeTab === 'performance' && (
+          {activeTab === tabs[1].id && (
             <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <div
                 className={cx('h-80', {
@@ -1349,22 +1369,11 @@ const ViewProject = ({
                 </div>
               )}
               <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                {!_isEmpty(project.overall) && (
-                  <Overview
-                    t={t}
-                    overall={project.overall}
-                    chartData={chartData}
-                    activePeriod={activePeriod}
-                    sessionDurationAVG={sessionDurationAVG}
-                    live={project.live}
-                    projectId={id}
-                  />
-                )}
-                {_map(panelsData.types, (type) => {
+                {_map(panelsDataPerf.types, (type) => {
                   const panelName = tnMapping[type]
                   const panelIcon = panelIconMapping[type]
                   const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
-
+                  console.log(panelsDataPerf)
                   if (type === 'cc') {
                     return (
                       <Panel
@@ -1374,7 +1383,7 @@ const ViewProject = ({
                         id={type}
                         onFilter={filterHandler}
                         name={panelName}
-                        data={panelsData.data[type]}
+                        data={panelsDataPerf.data[type]}
                         customTabs={customTabs}
                         rowMapper={(rowName) => (
                           <CCRow rowName={rowName} language={language} />
@@ -1392,9 +1401,8 @@ const ViewProject = ({
                         id={type}
                         onFilter={filterHandler}
                         name={panelName}
-                        data={panelsData.data[type]}
+                        data={panelsDataPerf.data[type]}
                         customTabs={customTabs}
-                        capitalize
                       />
                     )
                   }
@@ -1408,7 +1416,7 @@ const ViewProject = ({
                         id={type}
                         onFilter={filterHandler}
                         name={panelName}
-                        data={panelsData.data[type]}
+                        data={panelsDataPerf.data[type]}
                         customTabs={customTabs}
                         rowMapper={(rowName) => (
                           <RefRow rowName={rowName} showIcons={showIcons} />
@@ -1425,18 +1433,11 @@ const ViewProject = ({
                       id={type}
                       onFilter={filterHandler}
                       name={panelName}
-                      data={panelsData.data[type]}
+                      data={panelsDataPerf.data[type]}
                       customTabs={customTabs}
                     />
                   )
                 })}
-                {!_isEmpty(panelsData.customs) && (
-                  <CustomEvents
-                    t={t}
-                    customs={panelsData.customs}
-                    chartData={chartData}
-                  />
-                )}
               </div>
             </div>
           )}
