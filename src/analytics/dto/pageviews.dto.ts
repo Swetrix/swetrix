@@ -61,14 +61,14 @@ export class PageviewsDTO {
 
   @ApiProperty({
     example: {
-      conn:0.5,
-      dns: 0,
-      dom_load: 975.4000000059605,
-      page_load: 1515.8999999761581,
-      render: 531.1999999880791,
-      response: 0.5999999940395355,
+      conn: 120,
+      dns: 170,
+      dom_load: 975.5,
+      page_load: 1515,
+      render: 532.25,
+      response: 170,
       tls: 0,
-      ttfb: 1.800000011920929,
+      ttfb: 78.3,
     },
     description: 'Performance metrics',
   })

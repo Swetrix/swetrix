@@ -378,8 +378,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    // const [filtersQuery, filtersParams] =
-    //   this.analyticsService.getFiltersQuery(filters)
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let groupFrom = from,
@@ -393,7 +392,7 @@ export class AnalyticsController {
         pid,
         groupFrom: null,
         groupTo: null,
-        // ...filtersParams,
+        ...filtersParams,
       },
     }
 
@@ -488,12 +487,10 @@ export class AnalyticsController {
       groupFrom,
       groupTo,
       subQuery,
-      '',
+      filtersQuery,
       paramsData,
       timezone,
     )
-
-    console.log(result)
 
     return {
       ...result,
