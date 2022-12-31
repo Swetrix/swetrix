@@ -29,8 +29,8 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
       <svg id='map' viewBox='0 0 1050 650' className='w-full h-full' onMouseMove={onMouseMove}>
         <g>
           {_map(countriesList, (item, index) => {
-            const visitors = data[index] || 0
-            const perc = ((visitors / total) * 100) || 0
+            const ccData = data[index] || 0
+            const perc = ((ccData / total) * 100) || 0
 
             return (
               <path
@@ -44,24 +44,27 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
                     'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
                     'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
                     'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
-                    'cursor-pointer': Boolean(visitors),
+                    'cursor-pointer': Boolean(ccData),
                   }) : cx({
-                    'hover:opacity-90': perc > 0,
-                    'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
-                    'fill-[#f7a8a8]': perc > 0 && perc < 3,
-                    'fill-[#f78a8a]': perc >= 3 && perc < 10,
-                    'fill-[#f76b6b]': perc >= 10 && perc < 20,
-                    'fill-[#f74b4b]': perc >= 20,
-                    'cursor-pointer': Boolean(visitors),
+                    'hover:opacity-90': ccData > 0,
+                    'fill-[#cfd1d4] dark:fill-[#465d7e46]': ccData === 0,
+                    'fill-[#92b2e7] dark:fill-[#292d77]': ccData > 0 && ccData < 1,
+                    'fill-[#6f9be3] dark:fill-[#363391]': ccData >= 1 && ccData < 2,
+                    'fill-[#5689db] dark:fill-[#4842be]': ccData >= 2 && ccData < 3,
+                    'fill-[#3b82f6] dark:fill-[#6357ff]': ccData >= 3 && ccData < 5,
+                    'fill-[#f78a8a]': ccData >= 5 && ccData < 7,
+                    'fill-[#f76b6b]': ccData >= 7 && ccData < 10,
+                    'fill-[#f74b4b]': ccData >= 10,
+                    'cursor-pointer': Boolean(ccData),
                   })}
                 d={item.d}
                 onClick={() => perc !== 0 && onClickCountry(index)}
                 onMouseEnter={() => {
-                  if (visitors) {
+                  if (ccData) {
                     setHoverShow(true)
                     setDataHover({
                       countries: countries.getName(index, language),
-                      data: visitors,
+                      data: ccData,
                     })
                   }
                 }}
