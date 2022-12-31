@@ -734,7 +734,7 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(pageLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
+      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
         xM[i]
       }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
     }
@@ -752,7 +752,6 @@ export class AnalyticsService {
     const response = []
     const render = []
     const domLoad = []
-    const pageLoad = []
     const ttfb = []
 
     let idx = 0
@@ -768,7 +767,6 @@ export class AnalyticsService {
       response[index] = _round(millisecondsToSeconds(res['avg(response)']), 2)
       render[index] = _round(millisecondsToSeconds(res['avg(render)']), 2)
       domLoad[index] = _round(millisecondsToSeconds(res['avg(domLoad)']), 2)
-      pageLoad[index] = _round(millisecondsToSeconds(res['avg(pageLoad)']), 2)
       ttfb[index] = _round(millisecondsToSeconds(res['avg(ttfb)']), 2)
 
       idx++
@@ -781,7 +779,6 @@ export class AnalyticsService {
       if (!response[i]) response[i] = 0
       if (!render[i]) render[i] = 0
       if (!domLoad[i]) domLoad[i] = 0
-      if (!pageLoad[i]) pageLoad[i] = 0
       if (!ttfb[i]) ttfb[i] = 0
     }
 
@@ -801,7 +798,6 @@ export class AnalyticsService {
         response,
         render,
         domLoad,
-        pageLoad,
         ttfb,
       },
     })
