@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
 import { PROJECT_TABS } from 'redux/constants'
+import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 
 import countriesList from 'utils/countries'
 import { useSelector } from 'react-redux'
@@ -16,6 +17,7 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
   const [cursorPosition, setCursorPosition] = useState(null)
 
   const projectTab = useSelector((state) => state.ui.projects.projectTab)
+  const isTrafficTab = projectTab === PROJECT_TABS.traffic
 
   const onMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -36,7 +38,7 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
               <path
                 key={index}
                 id={index}
-                className={PROJECT_TABS.traffic === projectTab
+                className={isTrafficTab
                   ? cx({
                     'hover:opacity-90': perc > 0,
                     'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
@@ -87,11 +89,11 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
           >
             <strong>{dataHover.countries}</strong>
             <br />
-            {t('project.unique')}
+            {isTrafficTab ? t('project.unique') : t('dashboard.pageLoad')}
             :
             &nbsp;
             <strong className='dark:text-indigo-400'>
-              {dataHover.data}
+              {isTrafficTab ? dataHover.data : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
             </strong>
           </div>
         )}
