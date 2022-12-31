@@ -99,7 +99,7 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
   })
-  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.full)
+  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.timing)
   const [sessionDurationAVG, setSessionDurationAVG] = useState(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
@@ -179,8 +179,13 @@ const ViewProject = ({
     return [
       {
         id: CHART_METRICS_MAPPING_PERF.full,
-        label: t('dashboard.timing'),
+        label: t('dashboard.timingFull'),
         active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.full),
+      },
+      {
+        id: CHART_METRICS_MAPPING_PERF.timing,
+        label: t('dashboard.timing'),
+        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.timing),
       },
       {
         id: CHART_METRICS_MAPPING_PERF.network,
@@ -196,46 +201,6 @@ const ViewProject = ({
         id: CHART_METRICS_MAPPING_PERF.backend,
         label: t('dashboard.backend'),
         active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.backend),
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.dns,
-        label: t('dashboard.dns'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.dns),
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.tls,
-        label: t('dashboard.tls'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.tls),
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.conn,
-        label: t('dashboard.conn'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.conn),
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.response,
-        label: t('dashboard.response'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.response),
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.render,
-        label: t('dashboard.render'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.render),
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.dom_load,
-        label: t('dashboard.domLoad'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.dom_load),
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.page_load,
-        label: t('dashboard.pageLoad'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.page_load),
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.ttfb,
-        label: t('dashboard.ttfb'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.ttfb),
       },
     ]
   }, [t, activeChartMetricsPerf])
@@ -264,7 +229,6 @@ const ViewProject = ({
       response: t('dashboard.response'),
       render: t('dashboard.render'),
       dom_load: t('dashboard.domLoad'),
-      page_load: t('dashboard.pageLoad'),
       ttfb: t('dashboard.ttfb'),
     }
   }, [t])

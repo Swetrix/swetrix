@@ -19,7 +19,7 @@ import _reduce from 'lodash/reduce'
 import JSZip from 'jszip'
 
 import { tbsFormatMapper } from 'redux/constants'
-import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
 
 const getAvg = (arr) => {
@@ -136,17 +136,10 @@ const CHART_METRICS_MAPPING = {
 
 const CHART_METRICS_MAPPING_PERF = {
   full: 'full',
+  timing: 'timing',
   network: 'network',
   frontend: 'frontend',
   backend: 'backend',
-  dns: 'dns',
-  tls: 'tls',
-  conn: 'conn',
-  response: 'response',
-  render: 'render',
-  dom_load: 'dom_load',
-  page_load: 'page_load',
-  ttfb: 'ttfb',
 }
 
 // function to filter the data for the chart
@@ -203,7 +196,7 @@ const getColumnsPerf = (chart, activeChartMetrics) => {
   const columns = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
-  console.log(activeChartMetrics)
+
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.full) {
     columns.push(['dns', ...chart.dns])
     columns.push(['tls', ...chart.tls])
@@ -211,8 +204,13 @@ const getColumnsPerf = (chart, activeChartMetrics) => {
     columns.push(['response', ...chart.response])
     columns.push(['render', ...chart.render])
     columns.push(['dom_load', ...chart.domLoad])
-    columns.push(['page_load', ...chart.pageLoad])
     columns.push(['ttfb', ...chart.ttfb])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.timing) {
+    columns.push(['frontend', ...sumArrays(chart.render, chart.domLoad)])
+    columns.push(['network', ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response)])
+    columns.push(['backend', ...chart.ttfb])
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.network) {
@@ -225,44 +223,9 @@ const getColumnsPerf = (chart, activeChartMetrics) => {
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend) {
     columns.push(['render', ...chart.render])
     columns.push(['dom_load', ...chart.domLoad])
-    columns.push(['page_load', ...chart.pageLoad])
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.backend) {
-    columns.push(['ttfb', ...chart.ttfb])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.dns) {
-    columns.push(['dns', ...chart.dns])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.tls) {
-    columns.push(['tls', ...chart.tls])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.conn) {
-    columns.push(['conn', ...chart.conn])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.response) {
-    columns.push(['response', ...chart.response])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.render) {
-    columns.push(['render', ...chart.render])
-  }
-
-  // eslint-disable-next-line camelcase
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.dom_load) {
-    columns.push(['dom_load', ...chart.domLoad])
-  }
-
-  // eslint-disable-next-line camelcase
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.page_load) {
-    columns.push(['page_load', ...chart.pageLoad])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.ttfb) {
     columns.push(['ttfb', ...chart.ttfb])
   }
 
@@ -540,7 +503,7 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
       },
       y: {
         tick: {
-          format: (d) => `${d} ms`,
+          format: (d) => getStringFromTime(getTimeFromSeconds(d), true),
         },
       },
     },
