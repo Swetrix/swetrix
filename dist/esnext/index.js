@@ -34,8 +34,21 @@ export function track(event) {
  * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
  */
 export function trackViews(options) {
-    if (!LIB_INSTANCE)
-        return defaultPageActions;
-    return LIB_INSTANCE.trackPageViews(options);
+    return new Promise((resolve) => {
+        if (!LIB_INSTANCE) {
+            resolve(defaultPageActions);
+            return;
+        }
+        // We need to verify that document.readyState is complete for the performance stats to be collected correctly.
+        if (document.readyState === 'complete') {
+            resolve(LIB_INSTANCE.trackPageViews(options));
+        }
+        else {
+            window.addEventListener('load', () => {
+                // @ts-ignore
+                resolve(LIB_INSTANCE.trackPageViews(options));
+            });
+        }
+    });
 }
 //# sourceMappingURL=index.js.map

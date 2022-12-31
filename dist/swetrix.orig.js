@@ -78,6 +78,7 @@
             this.options = options;
             this.pageData = null;
             this.pageViewsOptions = null;
+            this.perfStatsCollected = false;
             this.trackPathChange = this.trackPathChange.bind(this);
             this.heartbeat = this.heartbeat.bind(this);
         }
@@ -116,6 +117,38 @@
             };
             this.trackPage(path, options === null || options === void 0 ? void 0 : options.unique);
             return this.pageData.actions;
+        };
+        Lib.prototype.getPerformanceStats = function () {
+            var _a;
+            if (!this.canTrack() || this.perfStatsCollected || !((_a = window.performance) === null || _a === void 0 ? void 0 : _a.getEntriesByType)) {
+                return {};
+            }
+            var perf = window.performance.getEntriesByType('navigation')[0];
+            if (!perf) {
+                return {};
+            }
+            this.perfStatsCollected = true;
+            return {
+                // Network
+                // @ts-ignore
+                dns: perf.domainLookupEnd - perf.domainLookupStart,
+                // @ts-ignore
+                tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0,
+                // @ts-ignore
+                conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart,
+                // @ts-ignore
+                response: perf.responseEnd - perf.responseStart,
+                // Frontend
+                // @ts-ignore
+                render: perf.domComplete - perf.domContentLoadedEventEnd,
+                // @ts-ignore
+                dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
+                // @ts-ignore
+                page_load: perf.loadEventStart,
+                // Backend
+                // @ts-ignore
+                ttfb: perf.responseStart - perf.requestStart,
+            };
         };
         Lib.prototype.heartbeat = function () {
             var _a;
@@ -158,6 +191,7 @@
             this.pageData.path = pg;
             if (this.checkIgnore(pg))
                 return;
+            var perf = this.getPerformanceStats();
             var data = {
                 pid: this.projectID,
                 lc: getLocale(),
@@ -168,6 +202,7 @@
                 ca: getUTMCampaign(),
                 unique: unique,
                 pg: pg,
+                perf: perf,
             };
             this.sendRequest('', data);
         };
@@ -246,9 +281,22 @@
      * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
      */
     function trackViews(options) {
-        if (!exports.LIB_INSTANCE)
-            return defaultPageActions;
-        return exports.LIB_INSTANCE.trackPageViews(options);
+        return new Promise(function (resolve) {
+            if (!exports.LIB_INSTANCE) {
+                resolve(defaultPageActions);
+                return;
+            }
+            // We need to verify that document.readyState is complete for the performance stats to be collected correctly.
+            if (document.readyState === 'complete') {
+                resolve(exports.LIB_INSTANCE.trackPageViews(options));
+            }
+            else {
+                window.addEventListener('load', function () {
+                    // @ts-ignore
+                    resolve(exports.LIB_INSTANCE.trackPageViews(options));
+                });
+            }
+        });
     }
 
     exports.init = init;

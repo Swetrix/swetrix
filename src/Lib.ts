@@ -74,6 +74,7 @@ const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 export class Lib {
   private pageData: PageData | null = null
   private pageViewsOptions: PageViewsOptions | null | undefined = null
+  private perfStatsCollected: Boolean = false
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
@@ -128,6 +129,45 @@ export class Lib {
     return this.pageData.actions
   }
 
+  getPerformanceStats(): object {
+    if (!this.canTrack() || this.perfStatsCollected || !window.performance?.getEntriesByType) {
+      return {}
+    }
+
+    const perf = window.performance.getEntriesByType('navigation')[0]
+
+    if (!perf) {
+      return {}
+    }
+
+    this.perfStatsCollected = true
+
+    return {
+      // Network
+      // @ts-ignore
+      dns: perf.domainLookupEnd - perf.domainLookupStart, // DNS Resolution
+      // @ts-ignore
+      tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0, // TLS Setup; checking if secureConnectionStart is not 0 (it's 0 for non-https websites)
+      // @ts-ignore
+      conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart, // Connection time
+      // @ts-ignore
+      response: perf.responseEnd - perf.responseStart, // Response Time (Download)
+
+      // Frontend
+      // @ts-ignore
+      render: perf.domComplete - perf.domContentLoadedEventEnd, // Browser rendering the HTML time
+      // @ts-ignore
+      dom_load: perf.domContentLoadedEventEnd - perf.responseEnd, // DOM loading timing
+      // @ts-ignore
+      page_load: perf.loadEventStart, // Page load time
+
+      // Backend
+      // @ts-ignore
+      ttfb: perf.responseStart - perf.requestStart,
+    }
+  }
+
+
   private heartbeat(): void {
     if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
       return
@@ -170,6 +210,8 @@ export class Lib {
 
     if (this.checkIgnore(pg)) return
 
+    const perf = this.getPerformanceStats()
+
     const data = {
       pid: this.projectID,
       lc: getLocale(),
@@ -180,6 +222,7 @@ export class Lib {
       ca: getUTMCampaign(),
       unique,
       pg,
+      perf,
     }
 
     this.sendRequest('', data)

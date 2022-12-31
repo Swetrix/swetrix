@@ -24,4 +24,4 @@ export declare function track(event: TrackEventOptions): void;
  * @param {PageViewsOptions} options The options related to the custom event.
  * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
  */
-export declare function trackViews(options?: PageViewsOptions): PageActions;
+export declare function trackViews(options?: PageViewsOptions): Promise<PageActions>;

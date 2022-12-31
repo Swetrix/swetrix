@@ -9,6 +9,7 @@ export class Lib {
         this.options = options;
         this.pageData = null;
         this.pageViewsOptions = null;
+        this.perfStatsCollected = false;
         this.trackPathChange = this.trackPathChange.bind(this);
         this.heartbeat = this.heartbeat.bind(this);
     }
@@ -51,6 +52,37 @@ export class Lib {
         this.trackPage(path, options?.unique);
         return this.pageData.actions;
     }
+    getPerformanceStats() {
+        if (!this.canTrack() || this.perfStatsCollected || !window.performance?.getEntriesByType) {
+            return {};
+        }
+        const perf = window.performance.getEntriesByType('navigation')[0];
+        if (!perf) {
+            return {};
+        }
+        this.perfStatsCollected = true;
+        return {
+            // Network
+            // @ts-ignore
+            dns: perf.domainLookupEnd - perf.domainLookupStart,
+            // @ts-ignore
+            tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0,
+            // @ts-ignore
+            conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart,
+            // @ts-ignore
+            response: perf.responseEnd - perf.responseStart,
+            // Frontend
+            // @ts-ignore
+            render: perf.domComplete - perf.domContentLoadedEventEnd,
+            // @ts-ignore
+            dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
+            // @ts-ignore
+            page_load: perf.loadEventStart,
+            // Backend
+            // @ts-ignore
+            ttfb: perf.responseStart - perf.requestStart,
+        };
+    }
     heartbeat() {
         if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
             return;
@@ -89,6 +121,7 @@ export class Lib {
         this.pageData.path = pg;
         if (this.checkIgnore(pg))
             return;
+        const perf = this.getPerformanceStats();
         const data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -99,6 +132,7 @@ export class Lib {
             ca: getUTMCampaign(),
             unique,
             pg,
+            perf,
         };
         this.sendRequest('', data);
     }
