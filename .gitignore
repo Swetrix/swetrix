@@ -105,3 +105,4 @@ typings/
 package-lock.json
 
 .DS_Store
+pnpm-lock.yaml
