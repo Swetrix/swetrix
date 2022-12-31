@@ -29,6 +29,7 @@ import {
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_PAGEVIEWS_COUNT_KEY,
+  REDIS_LOG_PERF_CACHE_KEY,
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
 } from '../common/constants'
@@ -50,6 +51,7 @@ export class TaskManagerService {
   async saveLogData(): Promise<void> {
     const data = await redis.lrange(REDIS_LOG_DATA_CACHE_KEY, 0, -1)
     const customData = await redis.lrange(REDIS_LOG_CUSTOM_CACHE_KEY, 0, -1)
+    const perfData = await redis.lrange(REDIS_LOG_PERF_CACHE_KEY, 0, -1)
 
     if (!_isEmpty(data)) {
       await redis.del(REDIS_LOG_DATA_CACHE_KEY)
@@ -69,7 +71,19 @@ export class TaskManagerService {
         const query = `INSERT INTO customEV (id, pid, ev, created)`
         await clickhouse.query(query, parsed).toPromise()
       } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
+        console.error(`[CRON WORKER] Error whilst saving custom events data: ${e}`)
+      }
+    }
+
+    if (!_isEmpty(perfData)) {
+      await redis.del(REDIS_LOG_PERF_CACHE_KEY)
+
+      const query = `INSERT INTO performance (*) VALUES ${_join(perfData, ',')}`
+
+      try {
+        await clickhouse.query(query).toPromise()
+      } catch (e) {
+        console.error(`[CRON WORKER] Error whilst saving performance data: ${e}`)
       }
     }
   }

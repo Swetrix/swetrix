@@ -39,6 +39,7 @@ import {
 import {
   getProjectsClickhouse,
   calculateRelativePercentage,
+  millisecondsToSeconds,
 } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -65,6 +66,13 @@ export const cols = [
   'so',
   'me',
   'ca',
+]
+
+export const perfCols = [
+  'cc',
+  'pg',
+  'dv',
+  'br',
 ]
 
 interface chartCHResponse {
@@ -648,6 +656,150 @@ export class AnalyticsService {
         sdur,
       },
       avgSdur,
+    })
+  }
+
+  async groupPerfByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    timezone: string,
+  ): Promise<object | void> {
+    const params = {}
+
+    for (const i of perfCols) {
+      // const query1 = `SELECT ${i}, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(pageLoad), avg(ttfb) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const query1 = `SELECT ${i}, avg(pageLoad) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const res = await clickhouse.query(query1, paramsData).toPromise()
+
+      params[i] = {}
+
+      const size = _size(res)
+      for (let j = 0; j < size; ++j) {
+        const key = res[j][i]
+        // params[i][key] = {
+        //   dns: res[j]['avg(dns)'],
+        //   tls: res[j]['avg(tls)'],
+        //   conn: res[j]['avg(conn)'],
+        //   response: res[j]['avg(response)'],
+        //   render: res[j]['avg(render)'],
+        //   domLoad: res[j]['avg(domLoad)'],
+        //   pageLoad: res[j]['avg(pageLoad)'],
+        //   ttfb: res[j]['avg(ttfb)'],
+        // }
+        params[i][key] = _round(millisecondsToSeconds(res[j]['avg(pageLoad)']), 2)
+      }
+    }
+
+    if (!_some(_values(params), val => !_isEmpty(val))) {
+      return Promise.resolve()
+    }
+
+    let groupDateIterator
+    const now = dayjs.utc().endOf(timeBucket)
+    const djsTo = dayjs.utc(to).endOf(timeBucket)
+    const iterateTo = djsTo > now ? now : djsTo
+
+    switch (timeBucket) {
+      case TimeBucketType.HOUR:
+        groupDateIterator = dayjs.utc(from).startOf('hour')
+        break
+
+      case TimeBucketType.DAY:
+      case TimeBucketType.WEEK:
+      case TimeBucketType.MONTH:
+        groupDateIterator = dayjs.utc(from).startOf('day')
+        break
+
+      default:
+        return Promise.reject()
+    }
+
+    let x = []
+
+    while (groupDateIterator < iterateTo) {
+      const nextIteration = groupDateIterator.add(1, timeBucket)
+      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
+      groupDateIterator = nextIteration
+    }
+
+    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
+    }
+
+    // @ts-ignore
+    const result: Array<chartCHResponse> = (
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+      // @ts-ignore
+      .sort((a, b) => a.index - b.index)
+
+    const dns = []
+    const tls = []
+    const conn = []
+    const response = []
+    const render = []
+    const domLoad = []
+    const ttfb = []
+
+    let idx = 0
+    const resSize = _size(result)
+
+    while (idx < resSize) {
+      const res = result[idx]
+      const index = res.index
+
+      dns[index] = _round(millisecondsToSeconds(res['avg(dns)']), 2)
+      tls[index] = _round(millisecondsToSeconds(res['avg(tls)']), 2)
+      conn[index] = _round(millisecondsToSeconds(res['avg(conn)']), 2)
+      response[index] = _round(millisecondsToSeconds(res['avg(response)']), 2)
+      render[index] = _round(millisecondsToSeconds(res['avg(render)']), 2)
+      domLoad[index] = _round(millisecondsToSeconds(res['avg(domLoad)']), 2)
+      ttfb[index] = _round(millisecondsToSeconds(res['avg(ttfb)']), 2)
+
+      idx++
+    }
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (!dns[i]) dns[i] = 0
+      if (!tls[i]) tls[i] = 0
+      if (!conn[i]) conn[i] = 0
+      if (!response[i]) response[i] = 0
+      if (!render[i]) render[i] = 0
+      if (!domLoad[i]) domLoad[i] = 0
+      if (!ttfb[i]) ttfb[i] = 0
+    }
+
+    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+      x = _map(x, el =>
+        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+      )
+    }
+
+    return Promise.resolve({
+      params,
+      chart: {
+        x,
+        dns,
+        tls,
+        conn,
+        response,
+        render,
+        domLoad,
+        ttfb,
+      },
     })
   }
 

@@ -184,6 +184,8 @@ const generateRecoveryCode = () =>
     capitalization: 'uppercase',
   })
 
+const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
+
 export {
   getRandomTip,
   checkRateLimit,
@@ -195,4 +197,5 @@ export {
   generateRecoveryCode,
   getPercentageChange,
   calculateRelativePercentage,
+  millisecondsToSeconds,
 }

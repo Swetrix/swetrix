@@ -6,6 +6,7 @@ import * as _last from 'lodash/last'
 import * as _pick from 'lodash/pick'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
+import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
@@ -51,6 +52,7 @@ import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   REDIS_LOG_DATA_CACHE_KEY,
+  REDIS_LOG_PERF_CACHE_KEY,
   redis,
   REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME,
@@ -86,7 +88,6 @@ const analyticsDTO = (
   so: string,
   me: string,
   ca: string,
-  lt: number | string,
   cc: string,
   sdur: number | string,
   unique: number,
@@ -103,10 +104,42 @@ const analyticsDTO = (
     so,
     me,
     ca,
-    lt,
     cc,
     sdur,
     unique,
+    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+  ]
+}
+
+const performanceDTO = (
+  pid: string,
+  pg: string,
+  dv: string,
+  br: string,
+  cc: string,
+  dns: number,
+  tls: number,
+  conn: number,
+  response: number,
+  render: number,
+  domLoad: number,
+  pageLoad: number,
+  ttfb: number,
+): Array<string | number> => {
+  return [
+    pid,
+    pg,
+    dv,
+    br,
+    cc,
+    _round(dns),
+    _round(tls),
+    _round(conn),
+    _round(response),
+    _round(render),
+    _round(domLoad),
+    _round(pageLoad),
+    _round(ttfb),
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
@@ -173,7 +206,7 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly taskManagerService: TaskManagerService,
-  ) {}
+  ) { }
 
   @Get('/')
   async getData(
@@ -320,6 +353,147 @@ export class AnalyticsController {
     return {
       ...result,
       customs,
+      appliedFilters: filters,
+    }
+  }
+
+  @Get('/performance')
+  async getPerfData(
+    @Query() data: AnalyticsGET_DTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(filters)
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    let groupFrom = from,
+      groupTo = to
+
+    // const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: null,
+        groupTo: null,
+        ...filtersParams,
+      },
+    }
+
+    if (!_isEmpty(from) && !_isEmpty(to)) {
+      if (!isValidDate(from)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter is invalid",
+        )
+      }
+
+      if (!isValidDate(to)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'to' parameter is invalid",
+        )
+      }
+
+      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter cannot be greater than 'to'",
+        )
+      }
+
+      checkIfTBAllowed(timeBucket, from, to)
+
+      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+
+      if (from === to) {
+        groupTo = dayjs
+          .tz(to, timezone)
+          .add(1, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+      } else {
+        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
+      }
+    } else if (!_isEmpty(period)) {
+      if (period === 'today') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
+          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else if (period === 'yesterday') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .subtract(1, 'day')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs
+            .utc()
+            .startOf('d')
+            .subtract(1, 'day')
+            .format('YYYY-MM-DD')
+          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else {
+        groupFrom = dayjs
+          .utc()
+          .subtract(parseInt(period), _last(period))
+          .format('YYYY-MM-DD')
+        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+
+        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
+      }
+    } else {
+      throw new BadRequestException(
+        'The timeframe (either from/to pair or period) has to be provided',
+      )
+    }
+
+    paramsData.params = {
+      ...paramsData.params,
+      groupFrom,
+      groupTo,
+    }
+
+    const result = await this.analyticsService.groupPerfByTimeBucket(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      subQuery,
+      filtersQuery,
+      paramsData,
+      timezone,
+    )
+
+    return {
+      ...result,
       appliedFilters: filters,
     }
   }
@@ -506,14 +680,17 @@ export class AnalyticsController {
     const unique = await this.analyticsService.isUnique(sessionHash)
     this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
     let dto: Array<string | number>
+    let perfDTO: Array<string | number> = []
+    let ua: UAParser.IResult
+    let cc
 
     if (unique) {
-      const ua = UAParser(userAgent)
+      ua = UAParser(userAgent)
       const dv = ua.device.type || 'desktop'
       const br = ua.browser.name
       const os = ua.os.name
       // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
-      const cc =
+      cc =
         ct.getCountryForTimezone(logDTO.tz)?.id ||
         (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
       dto = analyticsDTO(
@@ -528,7 +705,6 @@ export class AnalyticsController {
         logDTO.so,
         logDTO.me,
         logDTO.ca,
-        'NULL' /* logDTO.lt */,
         cc,
         0,
         1,
@@ -548,7 +724,6 @@ export class AnalyticsController {
         'NULL',
         'NULL',
         'NULL',
-        'NULL',
         0,
       )
     } else {
@@ -557,10 +732,47 @@ export class AnalyticsController {
       )
     }
 
+    if (!_isEmpty(logDTO.perf)) {
+      if (!ua) {
+        ua = UAParser(userAgent)
+      }
+      if (!cc) {
+        cc = ct.getCountryForTimezone(logDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+      }
+      const dv = ua.device.type || 'desktop'
+      const br = ua.browser.name
+
+      const {
+        dns, tls, conn, response, render, dom_load, page_load, ttfb,
+      } = logDTO.perf
+
+      perfDTO = performanceDTO(
+        logDTO.pid,
+        logDTO.pg,
+        dv,
+        br,
+        cc,
+        dns,
+        tls,
+        conn,
+        response,
+        render,
+        dom_load,
+        page_load,
+        ttfb,
+      )
+    }
+
     // todo: fix: may be vulnerable to sql injection attack
     const values = `(${dto.map(getElValue).join(',')})`
+    const perfValues = `(${perfDTO.map(getElValue).join(',')})`
     try {
       await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
+
+      if (!_isEmpty(perfDTO)) {
+        await redis.rpush(REDIS_LOG_PERF_CACHE_KEY, perfValues)
+      }
+
       return
     } catch (e) {
       this.logger.error(e)
@@ -624,7 +836,6 @@ export class AnalyticsController {
         'NULL',
         'NULL',
         'NULL',
-        'NULL',
         cc,
         0,
         1,
@@ -633,7 +844,6 @@ export class AnalyticsController {
       dto = analyticsDTO(
         'NULL',
         logDTO.pid,
-        'NULL',
         'NULL',
         'NULL',
         'NULL',

@@ -56,7 +56,6 @@ const CLICKHOUSE_INIT_QUERIES = [
     so Nullable(String),
     me Nullable(String),
     ca Nullable(String),
-    lt Nullable(UInt16),
     cc Nullable(FixedString(2)),
     sdur Nullable(UInt32), 
     unique UInt8,
@@ -67,14 +66,34 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, created);`,
   `CREATE TABLE IF NOT EXISTS analytics.customEV
   (
-      id UUID,
-      pid FixedString(12),
-      ev String,
-      created DateTime
+    id UUID,
+    pid FixedString(12),
+    ev String,
+    created DateTime
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (id, created, pid);`,
+  `CREATE TABLE IF NOT EXISTS analytics.performance
+  (
+    pid FixedString(12),
+    pg Nullable(String),
+    dv Nullable(String),
+    br Nullable(String),
+    cc Nullable(FixedString(2)),
+    dns Nullable(UInt32),
+    tls Nullable(UInt32),
+    conn Nullable(UInt32),
+    response Nullable(UInt32),
+    render Nullable(UInt32),
+    domLoad Nullable(UInt32),
+    pageLoad Nullable(UInt32),
+    ttfb Nullable(UInt32),
+    created DateTime
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (pid, created);`,
   isSelfhosted &&
     `CREATE TABLE IF NOT EXISTS analytics.project
   (
@@ -129,6 +148,7 @@ const getRedisProjectKey = (pid: string) => `pid_${pid}`
 const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
+const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
 const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
@@ -186,4 +206,5 @@ export {
   IP_REGEX,
   isNewRelicEnabled,
   ORIGINS_REGEX,
+  REDIS_LOG_PERF_CACHE_KEY,
 }
