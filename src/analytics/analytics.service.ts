@@ -39,6 +39,7 @@ import {
 import {
   getProjectsClickhouse,
   calculateRelativePercentage,
+  millisecondsToSeconds,
 } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -689,7 +690,7 @@ export class AnalyticsService {
         //   pageLoad: res[j]['avg(pageLoad)'],
         //   ttfb: res[j]['avg(ttfb)'],
         // }
-        params[i][key] = res[j]['avg(pageLoad)']
+        params[i][key] = _round(millisecondsToSeconds(res[j]['avg(pageLoad)']), 2)
       }
     }
 
@@ -761,14 +762,14 @@ export class AnalyticsService {
       const res = result[idx]
       const index = res.index
 
-      dns[index] = res['avg(dns)']
-      tls[index] = res['avg(tls)']
-      conn[index] = res['avg(conn)']
-      response[index] = res['avg(response)']
-      render[index] = res['avg(render)']
-      domLoad[index] = res['avg(domLoad)']
-      pageLoad[index] = res['avg(pageLoad)']
-      ttfb[index] = res['avg(ttfb)']
+      dns[index] = _round(millisecondsToSeconds(res['avg(dns)']), 2)
+      tls[index] = _round(millisecondsToSeconds(res['avg(tls)']), 2)
+      conn[index] = _round(millisecondsToSeconds(res['avg(conn)']), 2)
+      response[index] = _round(millisecondsToSeconds(res['avg(response)']), 2)
+      render[index] = _round(millisecondsToSeconds(res['avg(render)']), 2)
+      domLoad[index] = _round(millisecondsToSeconds(res['avg(domLoad)']), 2)
+      pageLoad[index] = _round(millisecondsToSeconds(res['avg(pageLoad)']), 2)
+      ttfb[index] = _round(millisecondsToSeconds(res['avg(ttfb)']), 2)
 
       idx++
     }
