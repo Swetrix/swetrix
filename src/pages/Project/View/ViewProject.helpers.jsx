@@ -438,14 +438,6 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
           },
         },
       ],
-      page_load: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
       ttfb: [
         {
           start: regionStart,
@@ -469,7 +461,6 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
         response: area(),
         render: area(),
         dom_load: area(),
-        page_load: area(),
         ttfb: area(),
       },
       colors: {
@@ -479,7 +470,6 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
         response: '#48BB78',
         render: '#4299E1',
         dom_load: '#667EEA',
-        page_load: '#9F7AEA',
         ttfb: '#ED64A6',
       },
       // names: {
@@ -489,7 +479,6 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
       //   response: 'Response',
       //   render: 'Render',
       //   dom_load: 'DOM Load',
-      //   page_load: 'Page Load',
       //   ttfb: 'TTFB',
       // },
       regions,
