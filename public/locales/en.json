@@ -382,7 +382,20 @@
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
     "sessionDuration": "Session duration",
     "traffic": "Traffic",
-    "performance": "Performance"
+    "performance": "Performance",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Network",
+    "timing": "Timing breakdown",
+    "timingFull": "Timing breakdown (full)",
+    "dns": "DNS",
+    "conn": "Connection",
+    "tls": "TLS Setup",
+    "ttfb": "Time to first byte (TTFB)",
+    "domLoad": "DOM Content Load",
+    "pageLoad": "Page load time",
+    "render": "Browser render",
+    "response": "Response Time"
   },
   "docs": {
     "titles": {

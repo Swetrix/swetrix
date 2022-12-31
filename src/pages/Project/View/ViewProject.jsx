@@ -179,7 +179,7 @@ const ViewProject = ({
     return [
       {
         id: CHART_METRICS_MAPPING_PERF.full,
-        label: t('dashboard.fullPageLoad'),
+        label: t('dashboard.timing'),
         active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.full),
       },
       {
@@ -254,7 +254,7 @@ const ViewProject = ({
 
   const dataNamesPerf = useMemo(() => {
     return {
-      full: t('dashboard.fullPageLoad'),
+      full: t('dashboard.timing'),
       network: t('dashboard.network'),
       frontend: t('dashboard.frontend'),
       backend: t('dashboard.backend'),
