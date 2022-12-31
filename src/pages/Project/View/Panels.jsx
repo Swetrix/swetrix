@@ -422,7 +422,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs,
+  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -583,6 +583,7 @@ const Panel = ({
       ) : _map(keysToDisplay, key => {
         const perc = _round((data[key] / total) * 100, 2)
         const rowData = _isFunction(rowMapper) ? rowMapper(key) : key
+        const valueData = _isFunction(valueMapper) ? valueMapper(data[key]) : data[key]
 
         return (
           <Fragment key={key}>
@@ -613,7 +614,7 @@ const Panel = ({
                 </span>
               )}
               <span className='ml-3 dark:text-gray-50'>
-                {data[key]}
+                {valueData}
                 &nbsp;
                 <span className='text-gray-500 dark:text-gray-200 font-light'>
                   (
@@ -668,6 +669,7 @@ Panel.propTypes = {
   data: PropTypes.objectOf(PropTypes.number).isRequired,
   id: PropTypes.string,
   rowMapper: PropTypes.func,
+  valueMapper: PropTypes.func,
   onFilter: PropTypes.func,
   capitalize: PropTypes.bool,
   linkContent: PropTypes.bool,
@@ -678,6 +680,7 @@ Panel.propTypes = {
 Panel.defaultProps = {
   id: null,
   rowMapper: null,
+  valueMapper: null,
   capitalize: false,
   linkContent: false,
   onFilter: () => { },

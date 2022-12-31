@@ -1358,6 +1358,7 @@ const ViewProject = ({
                         rowMapper={(rowName) => (
                           <CCRow rowName={rowName} language={language} />
                         )}
+                        valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                       />
                     )
                   }
@@ -1373,24 +1374,7 @@ const ViewProject = ({
                         name={panelName}
                         data={panelsDataPerf.data[type]}
                         customTabs={customTabs}
-                      />
-                    )
-                  }
-
-                  if (type === 'ref') {
-                    return (
-                      <Panel
-                        t={t}
-                        key={type}
-                        icon={panelIcon}
-                        id={type}
-                        onFilter={filterHandler}
-                        name={panelName}
-                        data={panelsDataPerf.data[type]}
-                        customTabs={customTabs}
-                        rowMapper={(rowName) => (
-                          <RefRow rowName={rowName} showIcons={showIcons} />
-                        )}
+                        valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                       />
                     )
                   }
@@ -1405,6 +1389,7 @@ const ViewProject = ({
                       name={panelName}
                       data={panelsDataPerf.data[type]}
                       customTabs={customTabs}
+                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                     />
                   )
                 })}
