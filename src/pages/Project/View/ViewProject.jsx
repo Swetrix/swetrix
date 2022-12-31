@@ -33,7 +33,7 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -271,12 +271,13 @@ const ViewProject = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const switchActiveChartMetric = useCallback(_debounce((pairID) => {
-    if (activeTab === tabs[1].id) {
+    if (activeTab === PROJECT_TABS.performance) {
       setActiveChartMetricsPerf(pairID)
+      console.log(pairID)
     } else {
       setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
     }
-  }, 0), [])
+  }, 0), [activeTab])
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
@@ -372,7 +373,7 @@ const ViewProject = ({
           customs,
         })
 
-        if (activeTab === tabs[0].id) {
+        if (activeTab === PROJECT_TABS.traffic) {
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
           }
@@ -400,7 +401,7 @@ const ViewProject = ({
           data: dataPerf.params,
         })
 
-        if (activeTab === tabs[1].id) {
+        if (activeTab === PROJECT_TABS.performance) {
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
           }
@@ -427,10 +428,8 @@ const ViewProject = ({
 
   // temp solution just to see if it works
   useEffect(() => {
-    if (activeTab === tabs[1].id) {
-      console.log(chartDataPerf)
+    if (activeTab === PROJECT_TABS.performance) {
       if (!_isEmpty(chartDataPerf)) {
-        console.log('asd1')
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
         const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, applyRegions)
         setMainChart(() => {
@@ -440,7 +439,6 @@ const ViewProject = ({
         })
       }
     } else if (!_isEmpty(chartData)) {
-      console.log('asd2')
       const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
       const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
       setMainChart(() => {
@@ -542,7 +540,7 @@ const ViewProject = ({
   }
 
   useEffect(() => {
-    if (activeTab === tabs[0].id) {
+    if (activeTab === PROJECT_TABS.traffic) {
       if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
         mainChart.data.names(dataNames)
 
@@ -994,7 +992,15 @@ const ViewProject = ({
 
   const exportTypes = [
     { label: t('project.asImage'), onClick: exportAsImageHandler },
-    { label: t('project.asCSV'), onClick: () => onCSVExportClick(panelsData, id, tnMapping, language) },
+    {
+      label: t('project.asCSV'),
+      onClick: () => {
+        if (activeTab === PROJECT_TABS.performance) {
+          return onCSVExportClick(panelsDataPerf, id, tnMapping, language)
+        }
+        return onCSVExportClick(panelsData, id, tnMapping, language)
+      },
+    },
   ]
 
   if (!isLoading) {
@@ -1020,8 +1026,8 @@ const ViewProject = ({
                 labelExtractor={(item) => item.label}
                 onSelect={(label) => {
                   const selected = _find(tabs, (tab) => tab.label === label)
-                  setActiveTab(selected.id)
                   setProjectTab(selected.id)
+                  setActiveTab(selected.id)
                 }}
                 title={activeTabLabel}
               />
@@ -1150,7 +1156,7 @@ const ViewProject = ({
             </div>
           </div>
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-            {activeTab === tabs[0].id ? (
+            {activeTab === PROJECT_TABS.traffic ? (
               !isPanelsDataEmpty && (
                 <Dropdown
                   items={chartMetrics}
@@ -1345,7 +1351,7 @@ const ViewProject = ({
               </div>
             </div>
           )}
-          {activeTab === tabs[1].id && (
+          {activeTab === PROJECT_TABS.performance && (
             <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <div
                 className={cx('h-80', {
@@ -1373,7 +1379,7 @@ const ViewProject = ({
                   const panelName = tnMapping[type]
                   const panelIcon = panelIconMapping[type]
                   const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
-                  console.log(panelsDataPerf)
+
                   if (type === 'cc') {
                     return (
                       <Panel

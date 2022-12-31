@@ -2,7 +2,7 @@ import { types } from 'redux/actions/ui/types'
 import _filter from 'lodash/filter'
 import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
-import { tabForOwnedProject, projectTabs } from 'redux/constants'
+import { tabForOwnedProject, PROJECT_TABS } from 'redux/constants'
 import { setItem, getItem } from 'utils/localstorage'
 
 const getInitialState = () => {
@@ -18,7 +18,7 @@ const getInitialState = () => {
     dashboardPaginationPage: 1,
     dashboardPaginationPageShared: 1,
     dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
-    projectTab: projectTabs.traffic,
+    projectTab: PROJECT_TABS.traffic,
   }
 }
 

@@ -194,7 +194,7 @@ export const tabsForDashboard = [
   },
 ]
 
-export const projectTabs = {
+export const PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
 }

@@ -4,7 +4,7 @@ import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
-import { projectTabs } from 'redux/constants'
+import { PROJECT_TABS } from 'redux/constants'
 
 import countriesList from 'utils/countries'
 import { useSelector } from 'react-redux'
@@ -36,7 +36,7 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
               <path
                 key={index}
                 id={index}
-                className={projectTabs.traffic === projectTab
+                className={PROJECT_TABS.traffic === projectTab
                   ? cx({
                     'hover:opacity-90': perc > 0,
                     'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
