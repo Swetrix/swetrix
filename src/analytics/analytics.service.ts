@@ -167,7 +167,7 @@ export const checkIfTBAllowed = (
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(private readonly projectService: ProjectService) { }
 
   async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
@@ -424,9 +424,8 @@ export class AnalyticsService {
         ...params,
         [colFilter]: filter,
       }
-      query += ` ${
-        isExclusive ? 'AND NOT' : 'AND'
-      } ${column}={${colFilter}:String}`
+      query += ` ${isExclusive ? 'AND NOT' : 'AND'
+        } ${column}={${colFilter}:String}`
     }
 
     return [query, params]
@@ -671,25 +670,14 @@ export class AnalyticsService {
     const params = {}
 
     for (const i of perfCols) {
-      // const query1 = `SELECT ${i}, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(pageLoad), avg(ttfb) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
-      const query1 = `SELECT ${i}, avg(pageLoad) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
-      const res = await clickhouse.query(query1, paramsData).toPromise()
+      const query = `SELECT ${i}, avg(pageLoad) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const res = await clickhouse.query(query, paramsData).toPromise()
 
       params[i] = {}
 
       const size = _size(res)
       for (let j = 0; j < size; ++j) {
         const key = res[j][i]
-        // params[i][key] = {
-        //   dns: res[j]['avg(dns)'],
-        //   tls: res[j]['avg(tls)'],
-        //   conn: res[j]['avg(conn)'],
-        //   response: res[j]['avg(response)'],
-        //   render: res[j]['avg(render)'],
-        //   domLoad: res[j]['avg(domLoad)'],
-        //   pageLoad: res[j]['avg(pageLoad)'],
-        //   ttfb: res[j]['avg(ttfb)'],
-        // }
         params[i][key] = _round(millisecondsToSeconds(res[j]['avg(pageLoad)']), 2)
       }
     }
