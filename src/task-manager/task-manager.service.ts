@@ -71,7 +71,9 @@ export class TaskManagerService {
         const query = `INSERT INTO customEV (id, pid, ev, created)`
         await clickhouse.query(query, parsed).toPromise()
       } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving custom events data: ${e}`)
+        console.error(
+          `[CRON WORKER] Error whilst saving custom events data: ${e}`,
+        )
       }
     }
 
@@ -83,7 +85,9 @@ export class TaskManagerService {
       try {
         await clickhouse.query(query).toPromise()
       } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving performance data: ${e}`)
+        console.error(
+          `[CRON WORKER] Error whilst saving performance data: ${e}`,
+        )
       }
     }
   }
@@ -304,13 +308,30 @@ export class TaskManagerService {
 
       const setSdurQuery = `ALTER TABLE analytics UPDATE sdur = sdur + CASE ${_map(
         toSave,
-        ([key, duration]) => `WHEN sid = '${key.split(':')[1]}' THEN ${duration / 1000}`, // converting to seconds
+        ([key, duration]) =>
+          `WHEN sid = '${key.split(':')[1]}' THEN ${duration / 1000}`, // converting to seconds
       ).join(' ')} END WHERE sid IN (${_map(
         toSave,
         ([key]) => `'${key.split(':')[1]}'`,
       ).join(',')})`
 
       await clickhouse.query(setSdurQuery).toPromise()
+    }
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async checkIsTelegramChatIdConfirmed(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        isTelegramChatIdConfirmed: false,
+      },
+      select: ['id', 'telegramChatId'],
+    })
+
+    for (let i = 0; i < _size(users); ++i) {
+      await this.userService.update(users[i].id, {
+        telegramChatId: null,
+      })
     }
   }
 }

@@ -192,6 +192,20 @@ export class User {
   })
   apiKey: string | null
 
+  @Column({
+    type: 'varchar',
+    unique: true,
+    nullable: true,
+    default: null,
+  })
+  telegramChatId: string | null
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  isTelegramChatIdConfirmed: boolean
+
   @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
   @JoinTable()
   extensions: ExtensionToUser[]

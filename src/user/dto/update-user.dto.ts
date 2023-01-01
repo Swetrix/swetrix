@@ -14,4 +14,7 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ example: 'Europe/Kiev' })
   timezone: string
+
+  @ApiProperty({ example: '1234567890' })
+  telegramChatId: string | null
 }
