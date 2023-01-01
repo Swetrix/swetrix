@@ -357,7 +357,7 @@ const ViewProject = ({
       } else {
         const { chart: chartPerf } = dataPerf
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chartPerf, timeBucket, activeChartMetricsPerf, applyRegions)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, applyRegions)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -372,7 +372,7 @@ const ViewProject = ({
 
           setMainChart(() => {
             const generete = bb.generate(bbSettings)
-            generete.data.names(dataNames)
+            generete.data.names(dataNamesPerf)
             return generete
           })
         }
@@ -1155,7 +1155,11 @@ const ViewProject = ({
               !isPanelsDataEmptyPerf && (
               <Dropdown
                 items={chartMetricsPerf}
-                title={t('project.metricVis')}
+                title={(
+                  <p>
+                    {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                  </p>
+                )}
                 labelExtractor={(pair) => {
                   const {
                     label,

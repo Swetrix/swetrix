@@ -5,7 +5,7 @@ import {
 } from '@heroicons/react/24/outline'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
-import { area, spline } from 'billboard.js'
+import { area, areaSpline, spline } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
 import _split from 'lodash/split'
@@ -455,13 +455,16 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
       xFormat: tbsFormatMapper[timeBucket],
       columns: getColumnsPerf(chart, activeChartMetrics),
       types: {
-        dns: area(),
-        tls: area(),
-        conn: area(),
-        response: area(),
-        render: area(),
-        dom_load: area(),
-        ttfb: area(),
+        dns: areaSpline(),
+        tls: areaSpline(),
+        conn: areaSpline(),
+        response: areaSpline(),
+        render: areaSpline(),
+        dom_load: areaSpline(),
+        ttfb: areaSpline(),
+        frontend: areaSpline(),
+        network: areaSpline(),
+        backend: areaSpline(),
       },
       colors: {
         dns: '#EC4319',
@@ -475,16 +478,10 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
         network: '#F79D65',
         backend: '#00A8E8',
       },
-      // names: {
-      //   dns: 'DNS',
-      //   tls: 'TLS',
-      //   conn: 'Conn',
-      //   response: 'Response',
-      //   render: 'Render',
-      //   dom_load: 'DOM Load',
-      //   ttfb: 'TTFB',
-      // },
-      regions,
+      groups: [
+        ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
+      ],
+      // regions,
     },
     axis: {
       x: {
