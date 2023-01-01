@@ -1,27 +1,24 @@
-import { Command, Ctx, Hears, Start, Update, Sender } from 'nestjs-telegraf'
-import { UpdateType as TelegrafUpdateType } from 'telegraf/typings/telegram-types'
-import { Context } from '../common/interfaces/context.interface'
-import { UpdateType } from '../common/decorators/update-type.decorator'
-
-const HELLO_SCENE_ID = 'HELLO_SCENE_ID'
+import { Ctx, Sender, Start, Update } from 'nestjs-telegraf'
+import { SWETRIX_SETTINGS_URL } from 'src/tg-integration/constants'
+import { Context } from 'telegraf'
 
 @Update()
 export class SwetrixUpdate {
   @Start()
-  onStart(): string {
-    return 'Say hello to me'
-  }
-
-  @Hears(['hi', 'hello', 'hey', 'qq'])
-  onGreetings(
-    @UpdateType() updateType: TelegrafUpdateType,
+  async start(
+    @Ctx() ctx: Context,
     @Sender('first_name') firstName: string,
-  ): string {
-    return `Hey ${firstName}`
-  }
-
-  @Command('scene')
-  async onSceneCommand(@Ctx() ctx: Context): Promise<void> {
-    await ctx.scene.enter(HELLO_SCENE_ID)
+    @Sender('id') chatId: string,
+  ): Promise<void> {
+    const text =
+      `Hello, *${firstName}*!` +
+      '\n' +
+      `Your chat ID is \`${chatId}\`` +
+      '\n\n' +
+      `Use this chat ID to connect your Telegram account to your Swetrix account on ${SWETRIX_SETTINGS_URL}.`
+    await ctx.reply(text, {
+      parse_mode: 'Markdown',
+      disable_web_page_preview: true,
+    })
   }
 }
