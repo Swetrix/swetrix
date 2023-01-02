@@ -6,6 +6,8 @@ import { Context } from 'telegraf'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
+import { AnalyticsService } from 'src/analytics/analytics.service'
+import { getPIDsArray } from 'src/analytics/analytics.controller'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -15,6 +17,7 @@ export class SwetrixUpdate {
   constructor(
     private readonly userService: UserService,
     private readonly projectService: ProjectService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   @Start()
@@ -99,6 +102,12 @@ export class SwetrixUpdate {
         return
       }
 
+      const onlineUserCount = await this.analyticsService.getOnlineUserCount(
+        project.id,
+      )
+
+      const stats = await this.analyticsService.getSummary([project.id], 'w')
+
       const text =
         `📊 *${project.name}*` +
         '\n\n' +
@@ -115,10 +124,18 @@ export class SwetrixUpdate {
           .tz(user.timezone)
           .format('YYYY-MM-DD HH:mm:ss')}\`` +
         '\n\n' +
+        '*Analytics (last 7 days)*' +
+        '\n' +
+        `Online users: \`${onlineUserCount.length}\`` +
+        '\n' +
+        `Page views: \`${stats[project.id].thisWeek}\`` +
+        '\n' +
+        `Unique page views: \`${stats[project.id].thisWeekUnique}\`` +
+        '\n\n' +
         '*Alerts*' +
         '\n' +
         `Online users: \`${
-          project.alertIfOnlineUsersExceeds ? 'set' : 'not set'
+          project.alertIfOnlineUsersExceeds ? 'seted' : 'not seted'
         }\``
       await ctx.editMessageText(text, {
         parse_mode: 'Markdown',
