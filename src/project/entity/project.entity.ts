@@ -64,4 +64,20 @@ export class Project {
   )
   @JoinTable()
   extensions: ExtensionToProject[]
+
+  @ApiProperty()
+  @Column({
+    type: 'int',
+    nullable: true,
+    default: null,
+  })
+  alertIfOnlineUsersExceeds: number | null
+
+  @ApiProperty()
+  @Column({
+    type: 'date',
+    nullable: true,
+    default: null,
+  })
+  lastSendedAlert: Date | null
 }

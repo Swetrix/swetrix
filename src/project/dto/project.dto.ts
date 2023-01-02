@@ -45,4 +45,11 @@ export class ProjectDTO {
       "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
   })
   public: boolean
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Alert if the number of online users exceeds the specified number.',
+  })
+  alertIfOnlineUsersExceeds: number | null
 }

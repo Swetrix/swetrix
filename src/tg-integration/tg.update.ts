@@ -50,7 +50,6 @@ export class SwetrixUpdate {
     const [action, entityId] = ctx.callbackQuery?.['data'].split(':')
 
     if (action === 'confirmTelegramChatId') {
-      // delete the message with the button
       await ctx.telegram.deleteMessage(
         ctx.chat.id,
         ctx.callbackQuery?.['message'].message_id,
@@ -100,12 +99,27 @@ export class SwetrixUpdate {
         return
       }
 
-      const text = `*${project.name}*\nID: \`${project.id}\`\nActive: \`${
-        project.active ? 'yes' : 'no'
-      }\`\nPublic: \`${project.public ? 'yes' : 'no'}\n\`Created: \`${dayjs
-        .utc(project.created)
-        .tz(user.timezone)
-        .format('YYYY-MM-DD HH:mm:ss')}\``
+      const text =
+        `📊 *${project.name}*` +
+        '\n\n' +
+        '*Information*' +
+        '\n' +
+        `ID: \`${project.id}\`` +
+        '\n' +
+        `Active: \`${project.active ? 'yes' : 'no'}\`` +
+        '\n' +
+        `Public: \`${project.public ? 'yes' : 'no'}\`` +
+        '\n' +
+        `Created: \`${dayjs
+          .utc(project.created)
+          .tz(user.timezone)
+          .format('YYYY-MM-DD HH:mm:ss')}\`` +
+        '\n\n' +
+        '*Alerts*' +
+        '\n' +
+        `Online users: \`${
+          project.alertIfOnlineUsersExceeds ? 'set' : 'not set'
+        }\``
       await ctx.editMessageText(text, {
         parse_mode: 'Markdown',
         reply_markup: {

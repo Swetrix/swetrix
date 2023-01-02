@@ -122,7 +122,10 @@ export class ProjectService {
     return this.projectsRepository.save(project)
   }
 
-  async update(id: string, projectDTO: ProjectDTO): Promise<any> {
+  async update(
+    id: string,
+    projectDTO: { ProjectDTO?: ProjectDTO; lastSendedAlert?: Date | null },
+  ): Promise<any> {
     return this.projectsRepository.update(id, projectDTO)
   }
 
@@ -180,8 +183,11 @@ export class ProjectService {
     return this.projectsRepository.findOne(id, params)
   }
 
-  findWhere(where: Record<string, unknown>): Promise<Project[]> {
-    return this.projectsRepository.find({ where })
+  findWhere(
+    where: Record<string, unknown>,
+    relations?: string[],
+  ): Promise<Project[]> {
+    return this.projectsRepository.find({ where, relations })
   }
 
   find(params: object): Promise<Project[]> {

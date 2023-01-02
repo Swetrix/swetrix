@@ -460,6 +460,7 @@ export class ProjectController {
       project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
       project.name = projectDTO.name
       project.public = projectDTO.public
+      project.alertIfOnlineUsersExceeds = projectDTO.alertIfOnlineUsersExceeds
 
       await updateProjectClickhouse(
         this.projectService.formatToClickhouse(project),
@@ -481,6 +482,7 @@ export class ProjectController {
       project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
       project.name = projectDTO.name
       project.public = projectDTO.public
+      project.alertIfOnlineUsersExceeds = projectDTO.alertIfOnlineUsersExceeds
 
       await this.projectService.update(id, _omit(project, ['share', 'admin']))
     }

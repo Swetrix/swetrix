@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan } from 'typeorm'
+import { IsNull, LessThan, Not } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -34,6 +34,9 @@ import {
   PROJECT_INVITE_EXPIRE,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
+import { InjectBot } from 'nestjs-telegraf'
+import { TelegrafContext } from 'src/user/user.controller'
+import { Telegraf } from 'telegraf'
 
 dayjs.extend(utc)
 
@@ -45,6 +48,7 @@ export class TaskManagerService {
     private readonly analyticsService: AnalyticsService,
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
+    @InjectBot() private bot: Telegraf<TelegrafContext>,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -332,6 +336,63 @@ export class TaskManagerService {
       await this.userService.update(users[i].id, {
         telegramChatId: null,
       })
+    }
+  }
+
+  // every 5 minutes
+  @Cron('*/5 * * * *')
+  // // every 5 seconds
+  // @Cron('*/5 * * * * *')
+  async checkUserOnline(): Promise<void> {
+    const projects = await this.projectService.findWhere(
+      {
+        alertIfOnlineUsersExceeds: Not(IsNull()),
+        admin: {
+          isTelegramChatIdConfirmed: true,
+        },
+      },
+      ['admin'],
+    )
+
+    for (let i = 0; i < _size(projects); ++i) {
+      const project = await this.projectService.findOneWithRelations(
+        projects[i].id,
+      )
+
+      if (project.lastSendedAlert !== null) {
+        const lastSendedAlert = new Date(project.lastSendedAlert)
+        const now = new Date()
+
+        if (now.getTime() - lastSendedAlert.getTime() < 24 * 60 * 60 * 1000) {
+          return
+        }
+      }
+
+      const online = await this.analyticsService.getOnlineUserCount(
+        projects[i].id,
+      )
+
+      const onlineCount = online.length
+
+      // console.log(onlineCount, project.admin.telegramChatId)
+
+      if (onlineCount >= projects[i].alertIfOnlineUsersExceeds) {
+        if (!project.admin.isTelegramChatIdConfirmed) {
+          return
+        }
+
+        await this.projectService.update(projects[i].id, {
+          lastSendedAlert: new Date(),
+        })
+
+        this.bot.telegram.sendMessage(
+          project.admin.telegramChatId,
+          `🔔 Your project *${projects[i].name}* has *${onlineCount}* online users right now!`,
+          {
+            parse_mode: 'Markdown',
+          },
+        )
+      }
     }
   }
 }
