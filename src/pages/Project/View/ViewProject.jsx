@@ -257,7 +257,6 @@ const ViewProject = ({
     setDataLoading(true)
     try {
       let data
-      let dataPerf
       let key
       let from
       let to
@@ -272,19 +271,13 @@ const ViewProject = ({
 
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
         data = cache[id][key]
-        if (!_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
-          dataPerf = cachePerf[id][key]
-        }
       } else {
         if (period === 'custom' && dateRange) {
           data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
-          dataPerf = await getPerfData(id, timeBucket, '', filters, from, to, timezone)
         } else {
           data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
-          dataPerf = await getPerfData(id, timeBucket, period, filters, '', '', timezone)
         }
 
-        setProjectCachePerf(id, dataPerf || {}, key)
         setProjectCache(id, data || {}, key)
       }
 
@@ -352,6 +345,62 @@ const ViewProject = ({
         setIsPanelsDataEmpty(false)
       }
 
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+    } catch (e) {
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
+      console.error(e)
+    }
+  }
+
+  const loadAnalyticsPerf = async (forced = false, newFilters = null) => {
+    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
+      return
+    }
+
+    setDataLoading(true)
+    try {
+      let dataPerf
+      let key
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+        key = getProjectCacheCustomKey(from, to, timeBucket)
+      } else {
+        key = getProjectCacheKey(period, timeBucket)
+      }
+
+      if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
+        dataPerf = cachePerf[id][key]
+      } else {
+        if (period === 'custom' && dateRange) {
+          dataPerf = await getPerfData(id, timeBucket, '', newFilters, from, to, timezone)
+        } else {
+          dataPerf = await getPerfData(id, timeBucket, period, newFilters, '', '', timezone)
+        }
+
+        setProjectCachePerf(id, dataPerf || {}, key)
+      }
+
+      const {
+        appliedFilters,
+      } = dataPerf
+
+      const convertApliedFilters = JSON.parse(appliedFilters)
+
+      if (!_isEmpty(convertApliedFilters)) {
+        if (_isEmpty(filters) || !_isEqual(filters, appliedFilters)) {
+          setFilters(convertApliedFilters)
+        } else {
+          setFilters((filter) => [...filter, ...convertApliedFilters])
+        }
+      }
+
       if (_isEmpty(dataPerf)) {
         setIsPanelsDataEmptyPerf(true)
       } else {
@@ -389,30 +438,6 @@ const ViewProject = ({
       console.error(e)
     }
   }
-
-  // temp solution just to see if it works
-  useEffect(() => {
-    if (activeTab === PROJECT_TABS.performance) {
-      if (!_isEmpty(chartDataPerf)) {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, applyRegions)
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNamesPerf)
-          return generete
-        })
-      }
-    } else if (!_isEmpty(chartData)) {
-      const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-      const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
-      setMainChart(() => {
-        const generete = bb.generate(bbSettings)
-        generete.data.names(dataNames)
-        return generete
-      })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, chartData, chartDataPerf, activeChartMetrics, activeChartMetricsPerf, timeBucket])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column, filter, isExclusive = false) => {
@@ -459,7 +484,11 @@ const ViewProject = ({
     }
 
     sdkInstance?._emitEvent('filtersupdate', newFilters)
-    loadAnalytics(true, newFilters)
+    if (activeTab === PROJECT_TABS.performance) {
+      loadAnalyticsPerf(true, newFilters)
+    } else {
+      loadAnalytics(true, newFilters)
+    }
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
@@ -476,7 +505,12 @@ const ViewProject = ({
     })
 
     setFilters(newFilters)
-    loadAnalytics(true, newFilters)
+
+    if (activeTab === PROJECT_TABS.performance) {
+      loadAnalyticsPerf(true, newFilters)
+    } else {
+      loadAnalytics(true, newFilters)
+    }
 
     // storing exclusive filter in the page URL
     const url = new URL(window.location)
@@ -499,7 +533,11 @@ const ViewProject = ({
 
   const refreshStats = () => {
     if (!isLoading && !dataLoading) {
-      loadAnalytics(true)
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf(true)
+      } else {
+        loadAnalytics(true)
+      }
     }
   }
 
@@ -761,9 +799,13 @@ const ViewProject = ({
 
   useEffect(() => {
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      loadAnalytics()
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf()
+      } else {
+        loadAnalytics()
+      }
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
+  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab]) // eslint-disable-line
 
   useEffect(() => {
     if (dateRange && arePeriodParsed) {
@@ -951,7 +993,11 @@ const ViewProject = ({
       },
     })
     setFilters([])
-    loadAnalytics(true, [])
+    if (activeTab === PROJECT_TABS.performance) {
+      loadAnalyticsPerf(true, [])
+    } else {
+      loadAnalytics(true, [])
+    }
   }
 
   const exportTypes = [
