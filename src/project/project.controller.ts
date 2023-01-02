@@ -461,6 +461,20 @@ export class ProjectController {
       project.name = projectDTO.name
       project.public = projectDTO.public
       project.alertIfOnlineUsersExceeds = projectDTO.alertIfOnlineUsersExceeds
+      project.additionalAlertQueryMetric = projectDTO.additionalAlertQueryMetric
+      project.additionalAlertQueryCondition =
+        projectDTO.additionalAlertQueryCondition
+      project.additionalAlertQueryValue = projectDTO.additionalAlertQueryValue
+      project.additionalAlertQueryTime = projectDTO.additionalAlertQueryTime
+
+      if (
+        projectDTO.additionalAlertQueryMetric &&
+        projectDTO.additionalAlertQueryCondition &&
+        projectDTO.additionalAlertQueryValue &&
+        projectDTO.additionalAlertQueryTime
+      ) {
+        project.isAdditionalAlertEnabled = true
+      }
 
       await updateProjectClickhouse(
         this.projectService.formatToClickhouse(project),
@@ -483,6 +497,20 @@ export class ProjectController {
       project.name = projectDTO.name
       project.public = projectDTO.public
       project.alertIfOnlineUsersExceeds = projectDTO.alertIfOnlineUsersExceeds
+      project.additionalAlertQueryMetric = projectDTO.additionalAlertQueryMetric
+      project.additionalAlertQueryCondition =
+        projectDTO.additionalAlertQueryCondition
+      project.additionalAlertQueryValue = projectDTO.additionalAlertQueryValue
+      project.additionalAlertQueryTime = projectDTO.additionalAlertQueryTime
+
+      if (
+        projectDTO.additionalAlertQueryMetric &&
+        projectDTO.additionalAlertQueryCondition &&
+        projectDTO.additionalAlertQueryValue &&
+        projectDTO.additionalAlertQueryTime
+      ) {
+        project.isAdditionalAlertEnabled = true
+      }
 
       await this.projectService.update(id, _omit(project, ['share', 'admin']))
     }

@@ -136,6 +136,10 @@ export class SwetrixUpdate {
         '\n' +
         `Online users: \`${
           project.alertIfOnlineUsersExceeds ? 'seted' : 'not seted'
+        }\`` +
+        '\n' +
+        `Additional: \`${
+          project.isAdditionalAlertEnabled ? 'seted' : 'not seted'
         }\``
       await ctx.editMessageText(text, {
         parse_mode: 'Markdown',

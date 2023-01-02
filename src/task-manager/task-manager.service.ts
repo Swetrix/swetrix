@@ -37,6 +37,11 @@ import { getRandomTip } from '../common/utils'
 import { InjectBot } from 'nestjs-telegraf'
 import { TelegrafContext } from 'src/user/user.controller'
 import { Telegraf } from 'telegraf'
+import {
+  QueryCondition,
+  QueryMetric,
+  QueryTime,
+} from 'src/project/dto/project.dto'
 
 dayjs.extend(utc)
 
@@ -392,6 +397,108 @@ export class TaskManagerService {
             parse_mode: 'Markdown',
           },
         )
+      }
+    }
+  }
+
+  // every 5 minutes
+  @Cron('*/5 * * * *')
+  // every 5 seconds
+  @Cron('*/5 * * * * *')
+  async checkAdditionalAlerts(): Promise<void> {
+    const projects = await this.projectService.findWhere(
+      {
+        isAdditionalAlertEnabled: true,
+        admin: {
+          isTelegramChatIdConfirmed: true,
+        },
+      },
+      ['admin'],
+    )
+
+    for (let i = 0; i < _size(projects); ++i) {
+      const project = await this.projectService.findOneWithRelations(
+        projects[i].id,
+      )
+
+      if (project.lastSendedAlert !== null) {
+        const lastSendedAlert = new Date(project.lastSendedAlert)
+        const now = new Date()
+
+        if (now.getTime() - lastSendedAlert.getTime() < 24 * 60 * 60 * 1000) {
+          return
+        }
+      }
+
+      const isUnique =
+        projects[i].additionalAlertQueryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          ? 1
+          : 0
+
+      const time =
+        projects[i].additionalAlertQueryTime === QueryTime.LAST_15_MINUTES
+          ? 15 * 60
+          : projects[i].additionalAlertQueryTime === QueryTime.LAST_30_MINUTES
+          ? 30 * 60
+          : projects[i].additionalAlertQueryTime === QueryTime.LAST_1_HOUR
+          ? 60 * 60
+          : projects[i].additionalAlertQueryTime === QueryTime.LAST_4_HOURS
+          ? 4 * 60 * 60
+          : projects[i].additionalAlertQueryTime === QueryTime.LAST_24_HOURS
+          ? 24 * 60 * 60
+          : projects[i].additionalAlertQueryTime === QueryTime.LAST_48_HOURS
+          ? 48 * 60 * 60
+          : 0
+
+      const isLess =
+        projects[i].additionalAlertQueryCondition === QueryCondition.LESS_THAN
+          ? '<'
+          : '>'
+
+      const query = `SELECT count() FROM analytics WHERE pid = '${
+        projects[i].id
+      }' AND unique = '${isUnique}' AND created ${isLess.replace(
+        '<',
+        '>',
+      )} now() - ${time}`
+      const queryResult = await clickhouse.query(query).toPromise()
+
+      const count = Number(queryResult[0]['count()'])
+
+      console.log(count)
+
+      if (count >= projects[i].additionalAlertQueryValue) {
+        if (!project.admin.isTelegramChatIdConfirmed) {
+          return
+        }
+
+        await this.projectService.update(projects[i].id, {
+          lastSendedAlert: new Date(),
+        })
+
+        const text2 = `🔔 Your project *${projects[i].name}* has *${count}* ${
+          projects[i].additionalAlertQueryMetric ===
+          QueryMetric.UNIQUE_PAGE_VIEWS
+            ? 'unique page views'
+            : 'page views'
+        } in the last ${
+          projects[i].additionalAlertQueryTime === QueryTime.LAST_15_MINUTES
+            ? '15 minutes'
+            : projects[i].additionalAlertQueryTime === QueryTime.LAST_30_MINUTES
+            ? '30 minutes'
+            : projects[i].additionalAlertQueryTime === QueryTime.LAST_1_HOUR
+            ? '1 hour'
+            : projects[i].additionalAlertQueryTime === QueryTime.LAST_4_HOURS
+            ? '4 hours'
+            : projects[i].additionalAlertQueryTime === QueryTime.LAST_24_HOURS
+            ? '24 hours'
+            : projects[i].additionalAlertQueryTime === QueryTime.LAST_48_HOURS
+            ? '48 hours'
+            : '0'
+        }!`
+        this.bot.telegram.sendMessage(project.admin.telegramChatId, text2, {
+          parse_mode: 'Markdown',
+        })
       }
     }
   }

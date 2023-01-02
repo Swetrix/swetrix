@@ -1,6 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty } from 'class-validator'
 
+export enum QueryMetric {
+  PAGE_VIEWS = 'page_views',
+  UNIQUE_PAGE_VIEWS = 'unique_page_views',
+}
+
+export enum QueryCondition {
+  GREATER_THAN = 'greater_than',
+  LESS_THAN = 'less_than',
+}
+
+export enum QueryTime {
+  LAST_15_MINUTES = 'last_15_minutes',
+  LAST_30_MINUTES = 'last_30_minutes',
+  LAST_1_HOUR = 'last_1_hour',
+  LAST_4_HOURS = 'last_4_hours',
+  LAST_24_HOURS = 'last_24_hours',
+  LAST_48_HOURS = 'last_48_hours',
+}
+
 export class ProjectDTO {
   @ApiProperty({
     example: 'Your awesome project',
@@ -52,4 +71,16 @@ export class ProjectDTO {
       'Alert if the number of online users exceeds the specified number.',
   })
   alertIfOnlineUsersExceeds: number | null
+
+  @ApiProperty()
+  additionalAlertQueryMetric: QueryMetric | null
+
+  @ApiProperty()
+  additionalAlertQueryCondition: QueryCondition | null
+
+  @ApiProperty()
+  additionalAlertQueryValue: number | null
+
+  @ApiProperty()
+  additionalAlertQueryTime: QueryTime | null
 }
