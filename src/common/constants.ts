@@ -154,6 +154,7 @@ const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
+const REDIS_PERFORMANCE_COUNT_KEY = 'stats:performance'
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -207,4 +208,5 @@ export {
   isNewRelicEnabled,
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
+  REDIS_PERFORMANCE_COUNT_KEY,
 }

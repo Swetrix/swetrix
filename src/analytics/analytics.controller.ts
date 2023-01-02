@@ -60,6 +60,7 @@ import {
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_PAGEVIEWS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
+  REDIS_PERFORMANCE_COUNT_KEY,
   clickhouse,
 } from '../common/constants'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
@@ -522,17 +523,20 @@ export class AnalyticsController {
       REDIS_USERS_COUNT_KEY,
       REDIS_PROJECTS_COUNT_KEY,
       REDIS_PAGEVIEWS_COUNT_KEY,
+      REDIS_PERFORMANCE_COUNT_KEY,
     )
 
     if (exists) {
       const users = _toNumber(await redis.get(REDIS_USERS_COUNT_KEY))
       const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
       const pageviews = _toNumber(await redis.get(REDIS_PAGEVIEWS_COUNT_KEY))
+      const performance = _toNumber(await redis.get(REDIS_PERFORMANCE_COUNT_KEY))
 
       return {
         users,
         projects,
         pageviews,
+        performance,
       }
     }
 
