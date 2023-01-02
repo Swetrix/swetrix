@@ -33,7 +33,7 @@ export class SwetrixUpdate {
     await ctx.reply(text, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
-      ...(user.telegramChatId && {
+      ...(user && {
         reply_markup: {
           keyboard: [[{ text: 'Projects' }]],
           resize_keyboard: true,
