@@ -131,17 +131,17 @@ export class AuthController {
 
       user.sharedProjects = sharedProjects
 
-      const ua = UAParser(userAgent)
-      const br = ua.browser.name || 'unknown'
-      const dv = ua.device.type || 'desktop'
-      const os = ua.os.name || 'unknown'
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
-      const cc =
-        ct.getCountryForTimezone(tz)?.id ||
-        (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
-      const country = ct.getCountry(cc)?.name || 'unknown'
-
       if (user.isTelegramChatIdConfirmed) {
+        const ua = UAParser(userAgent)
+        const br = ua.browser.name || 'unknown'
+        const dv = ua.device.type || 'desktop'
+        const os = ua.os.name || 'unknown'
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+        const cc =
+          ct.getCountryForTimezone(tz)?.id ||
+          (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+        const country = ct.getCountry(cc)?.name || 'unknown'
+
         this.bot.telegram.sendMessage(
           user.telegramChatId,
           `🚨 *Someone has logged into your account!*` +
