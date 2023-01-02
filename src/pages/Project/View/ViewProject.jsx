@@ -1430,6 +1430,7 @@ const ViewProject = ({
                         data={panelsDataPerf.data[type]}
                         customTabs={customTabs}
                         valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                        capitalize
                       />
                     )
                   }

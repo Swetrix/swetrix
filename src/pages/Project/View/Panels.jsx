@@ -359,6 +359,7 @@ const CustomEvents = ({
       })
     }
   }, [chartData, customs, t]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // for showing chart circle of stats a data
   if (activeFragment === 1 && !_isEmpty(chartData)) {
     return (
@@ -496,6 +497,7 @@ const Panel = ({
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')
     const tRatio = t('project.ratio')
+    const mappedData = _map(data, valueMapper)
 
     const options = {
       data: {
@@ -505,7 +507,7 @@ const Panel = ({
       tooltip: {
         contents: {
           text: {
-            QUANTITY: _values(data),
+            QUANTITY: _values(mappedData),
           },
           template: `
             <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
