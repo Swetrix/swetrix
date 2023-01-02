@@ -359,6 +359,7 @@ const CustomEvents = ({
       })
     }
   }, [chartData, customs, t]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // for showing chart circle of stats a data
   if (activeFragment === 1 && !_isEmpty(chartData)) {
     return (
