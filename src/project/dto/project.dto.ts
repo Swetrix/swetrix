@@ -8,7 +8,9 @@ export enum QueryMetric {
 
 export enum QueryCondition {
   GREATER_THAN = 'greater_than',
+  GREATER_EQUAL_THAN = 'greater_equal_than',
   LESS_THAN = 'less_than',
+  LESS_EQUAL_THAN = 'less_equal_than',
 }
 
 export enum QueryTime {

@@ -402,9 +402,9 @@ export class TaskManagerService {
   }
 
   // every 5 minutes
-  @Cron('*/5 * * * *')
-  // every 5 seconds
-  // @Cron('*/5 * * * * *')
+  // @Cron('*/5 * * * *')
+  //every 5 seconds
+  @Cron('*/5 * * * * *')
   async checkAdditionalAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
@@ -453,14 +453,18 @@ export class TaskManagerService {
       const isLess =
         projects[i].additionalAlertQueryCondition === QueryCondition.LESS_THAN
           ? '<'
-          : '>'
+          : projects[i].additionalAlertQueryCondition ===
+            QueryCondition.LESS_EQUAL_THAN
+          ? '<='
+          : projects[i].additionalAlertQueryCondition ===
+            QueryCondition.GREATER_THAN
+          ? '>'
+          : projects[i].additionalAlertQueryCondition ===
+            QueryCondition.GREATER_EQUAL_THAN
+          ? '>='
+          : ''
 
-      const query = `SELECT count() FROM analytics WHERE pid = '${
-        projects[i].id
-      }' AND unique = '${isUnique}' AND created ${isLess.replace(
-        '<',
-        '>',
-      )} now() - ${time}`
+      const query = `SELECT count() FROM analytics WHERE pid = '${projects[i].id}' AND unique = '${isUnique}' AND created ${isLess} now() - ${time}`
       const queryResult = await clickhouse.query(query).toPromise()
 
       const count = Number(queryResult[0]['count()'])
