@@ -51,7 +51,7 @@ import {
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf,
+  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getSettingsPerf,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -79,6 +79,7 @@ const ViewProject = ({
   }, [id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
+  const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
   const [arePeriodParsed, setArePeriodParsed] = useState(false)
   const [panelsData, setPanelsData] = useState({})
@@ -103,6 +104,7 @@ const ViewProject = ({
   const [sessionDurationAVG, setSessionDurationAVG] = useState(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
+  const [filtersPerf, setFiltersPerf] = useState([])
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
@@ -111,7 +113,12 @@ const ViewProject = ({
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs[id]?.rangeDate
   const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
-  const [activeTab, setActiveTab] = useState(projectTab)
+  const [activeTab, setActiveTab] = useState(() => {
+    const url = new URL(window.location)
+    const { searchParams } = url
+    const tab = searchParams.get('tab')
+    return tab || projectTab || 'traffic'
+  })
 
   const [chartDataPerf, setChartDataPerf] = useState({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
@@ -237,7 +244,6 @@ const ViewProject = ({
   const switchActiveChartMetric = useCallback(_debounce((pairID) => {
     if (activeTab === PROJECT_TABS.performance) {
       setActiveChartMetricsPerf(pairID)
-      console.log(pairID)
     } else {
       setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
     }
@@ -379,9 +385,9 @@ const ViewProject = ({
         dataPerf = cachePerf[id][key]
       } else {
         if (period === 'custom' && dateRange) {
-          dataPerf = await getPerfData(id, timeBucket, '', newFilters, from, to, timezone)
+          dataPerf = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, from, to, timezone)
         } else {
-          dataPerf = await getPerfData(id, timeBucket, period, newFilters, '', '', timezone)
+          dataPerf = await getPerfData(id, timeBucket, period, newFilters || filtersPerf, '', '', timezone)
         }
 
         setProjectCachePerf(id, dataPerf || {}, key)
@@ -394,10 +400,10 @@ const ViewProject = ({
       const convertApliedFilters = JSON.parse(appliedFilters)
 
       if (!_isEmpty(convertApliedFilters)) {
-        if (_isEmpty(filters) || !_isEqual(filters, appliedFilters)) {
-          setFilters(convertApliedFilters)
+        if (_isEmpty(filtersPerf) || !_isEqual(filtersPerf, appliedFilters)) {
+          setFiltersPerf(convertApliedFilters)
         } else {
-          setFilters((filter) => [...filter, ...convertApliedFilters])
+          setFiltersPerf((filter) => [...filter, ...convertApliedFilters])
         }
       }
 
@@ -442,50 +448,87 @@ const ViewProject = ({
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column, filter, isExclusive = false) => {
     let newFilters
+    let newFiltersPerf
+    const columnPerf = `${column}_perf`
 
-    // temporarily apply only 1 filter per data type
-    if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
-      // selected filter is already included into the filters array -> removing it
-      // removing filter from the state
-      newFilters = _filter(filters, (f) => f.column !== column)
-      setFilters(newFilters)
+    if (activeTab === PROJECT_TABS.performance) {
+      if (_find(filtersPerf, (f) => f.column === column)) {
+        newFiltersPerf = _filter(filtersPerf, (f) => f.column !== column)
 
-      // removing filter from the page URL
-      const url = new URL(window.location)
-      url.searchParams.delete(column)
-      const { pathname, search } = url
-      history.push({
-        pathname,
-        search,
-        state: {
-          scrollToTopDisable: true,
-        },
-      })
+        const url = new URL(window.location)
+        url.searchParams.delete(columnPerf)
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+        setFiltersPerf(newFiltersPerf)
+      } else {
+        newFiltersPerf = [
+          ...filtersPerf,
+          { column, filter, isExclusive },
+        ]
+
+        const url = new URL(window.location)
+        url.searchParams.append(columnPerf, filter)
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+        setFiltersPerf(newFiltersPerf)
+      }
     } else {
-      // selected filter is not present in the filters array -> applying it
-      // sroting filter in the state
-      newFilters = [
-        ...filters,
-        { column, filter, isExclusive },
-      ]
-      setFilters(newFilters)
+      // eslint-disable-next-line no-lonely-if
+      if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
+        // selected filter is already included into the filters array -> removing it
+        // removing filter from the state
+        newFilters = _filter(filters, (f) => f.column !== column)
+        setFilters(newFilters)
 
-      // storing filter in the page URL
-      const url = new URL(window.location)
-      url.searchParams.append(column, filter)
-      const { pathname, search } = url
-      history.push({
-        pathname,
-        search,
-        state: {
-          scrollToTopDisable: true,
-        },
-      })
+        // removing filter from the page URL
+        const url = new URL(window.location)
+        url.searchParams.delete(column)
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+      } else {
+        // selected filter is not present in the filters array -> applying it
+        // sroting filter in the state
+        newFilters = [
+          ...filters,
+          { column, filter, isExclusive },
+        ]
+        setFilters(newFilters)
+
+        // storing filter in the page URL
+        const url = new URL(window.location)
+        url.searchParams.append(column, filter)
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+      }
     }
 
     sdkInstance?._emitEvent('filtersupdate', newFilters)
     if (activeTab === PROJECT_TABS.performance) {
-      loadAnalyticsPerf(true, newFilters)
+      loadAnalyticsPerf(true, newFiltersPerf)
     } else {
       loadAnalytics(true, newFilters)
     }
@@ -493,33 +536,47 @@ const ViewProject = ({
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
   const onChangeExclusive = (column, filter, isExclusive) => {
-    const newFilters = _map(filters, (f) => {
-      if (f.column === column && f.filter === filter) {
-        return {
-          ...f,
-          isExclusive,
-        }
-      }
-
-      return f
-    })
-
-    setFilters(newFilters)
-
+    let newFilters
     if (activeTab === PROJECT_TABS.performance) {
+      newFilters = _map(filtersPerf, (f) => {
+        if (f.column === column && f.filter === filter) {
+          return {
+            ...f,
+            isExclusive,
+          }
+        }
+
+        return f
+      })
+      setFiltersPerf(newFilters)
       loadAnalyticsPerf(true, newFilters)
     } else {
+      newFilters = _map(filters, (f) => {
+        if (f.column === column && f.filter === filter) {
+          return {
+            ...f,
+            isExclusive,
+          }
+        }
+
+        return f
+      })
+      setFilters(newFilters)
       loadAnalytics(true, newFilters)
     }
 
     // storing exclusive filter in the page URL
     const url = new URL(window.location)
-    url.searchParams.delete(column)
-    if (isExclusive) {
-      url.searchParams.append(column, `!${filter}`)
+
+    if (activeTab === PROJECT_TABS.performance) {
+      const columnPerf = `${column}_perf`
+      url.searchParams.delete(columnPerf)
+      url.searchParams.append(columnPerf, filter)
     } else {
+      url.searchParams.delete(column)
       url.searchParams.append(column, filter)
     }
+
     const { pathname, search } = url
     history.push({
       pathname,
@@ -540,6 +597,26 @@ const ViewProject = ({
       }
     }
   }
+
+  useEffect(() => {
+    const url = new URL(window.location)
+    url.searchParams.delete('tab')
+
+    if (activeTab === PROJECT_TABS.performance) {
+      url.searchParams.append('tab', PROJECT_TABS.performance)
+    } else {
+      url.searchParams.append('tab', PROJECT_TABS.traffic)
+    }
+    const { pathname, search } = url
+    history.push({
+      pathname,
+      search,
+      state: {
+        scrollToTopDisable: true,
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
 
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
@@ -699,29 +776,60 @@ const ViewProject = ({
   // Parsing initial filters from the address bar
   useEffect(() => {
     // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
-    try {
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const initialFilters = []
-      // eslint-disable-next-line lodash/prefer-lodash-method
-      searchParams.forEach((value, key) => {
-        if (!_includes(validFilters, key)) {
-          return
-        }
+    if (activeTab === PROJECT_TABS.performance) {
+      try {
+        const url = new URL(window.location)
+        const { searchParams } = url
+        const initialFilters = []
+        // eslint-disable-next-line lodash/prefer-lodash-method
+        searchParams.forEach((value, key) => {
+          if (!_includes(key, '_perf')) {
+            return
+          }
 
-        const isExclusive = _startsWith(value, '!')
-        initialFilters.push({
-          column: key,
-          filter: isExclusive ? value.substring(1) : value,
-          isExclusive,
+          const keyPerf = _replace(key, '_perf', '')
+
+          if (!_includes(validFilters, keyPerf)) {
+            return
+          }
+
+          const isExclusive = _startsWith(value, '!')
+          initialFilters.push({
+            column: keyPerf,
+            filter: isExclusive ? value.substring(1) : value,
+            isExclusive,
+          })
         })
-      })
 
-      setFilters(initialFilters)
-    } finally {
-      setAreFiltersParsed(true)
+        setFiltersPerf(initialFilters)
+      } finally {
+        setAreFiltersPerfParsed(true)
+      }
+    } else {
+      try {
+        const url = new URL(window.location)
+        const { searchParams } = url
+        const initialFilters = []
+        // eslint-disable-next-line lodash/prefer-lodash-method
+        searchParams.forEach((value, key) => {
+          if (!_includes(validFilters, key)) {
+            return
+          }
+
+          const isExclusive = _startsWith(value, '!')
+          initialFilters.push({
+            column: key,
+            filter: isExclusive ? value.substring(1) : value,
+            isExclusive,
+          })
+        })
+
+        setFilters(initialFilters)
+      } finally {
+        setAreFiltersParsed(true)
+      }
     }
-  }, [])
+  }, [activeTab])
 
   useEffect(() => {
     if (arePeriodParsed) {
@@ -804,13 +912,16 @@ const ViewProject = ({
 
   useEffect(() => {
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      if (activeTab === PROJECT_TABS.performance) {
-        loadAnalyticsPerf()
-      } else {
+      if (activeTab === PROJECT_TABS.traffic) {
         loadAnalytics()
       }
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab]) // eslint-disable-line
+    if (areFiltersPerfParsed) {
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf()
+      }
+    }
+  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
   useEffect(() => {
     if (dateRange && arePeriodParsed) {
@@ -998,6 +1109,7 @@ const ViewProject = ({
       },
     })
     setFilters([])
+    setFiltersPerf([])
     if (activeTab === PROJECT_TABS.performance) {
       loadAnalyticsPerf(true, [])
     } else {
@@ -1204,25 +1316,25 @@ const ViewProject = ({
                 />
               )) : (
               !isPanelsDataEmptyPerf && (
-              <Dropdown
-                items={chartMetricsPerf}
-                title={(
-                  <p>
-                    {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
-                  </p>
-                )}
-                labelExtractor={(pair) => {
-                  const {
-                    label,
-                  } = pair
+                <Dropdown
+                  items={chartMetricsPerf}
+                  title={(
+                    <p>
+                      {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                    </p>
+                  )}
+                  labelExtractor={(pair) => {
+                    const {
+                      label,
+                    } = pair
 
-                  return label
-                }}
-                keyExtractor={(pair) => pair.id}
-                onSelect={({ id: pairID }) => {
-                  switchActiveChartMetric(pairID)
-                }}
-              />
+                    return label
+                  }}
+                  keyExtractor={(pair) => pair.id}
+                  onSelect={({ id: pairID }) => {
+                    switchActiveChartMetric(pairID)
+                  }}
+                />
               )
             )}
             <Dropdown
@@ -1380,7 +1492,7 @@ const ViewProject = ({
                 <div className='h-80' id='dataChart' />
               </div>
               <Filters
-                filters={filters}
+                filters={filtersPerf}
                 onRemoveFilter={filterHandler}
                 onChangeExclusive={onChangeExclusive}
                 tnMapping={tnMapping}
@@ -1430,6 +1542,7 @@ const ViewProject = ({
                         data={panelsDataPerf.data[type]}
                         customTabs={customTabs}
                         valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                        capitalize
                       />
                     )
                   }
