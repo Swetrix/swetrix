@@ -274,7 +274,7 @@ export class TaskManagerService {
     const pageviews =
       (await clickhouse.query(PVquery).toPromise())[0]['count()'] +
       (await clickhouse.query(CEquery).toPromise())[0]['count()']
-    const performance = await clickhouse.query(PFquery).toPromise()[0]['count()']
+    const performance = (await clickhouse.query(PFquery).toPromise())[0]['count()']
 
     await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
     await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
