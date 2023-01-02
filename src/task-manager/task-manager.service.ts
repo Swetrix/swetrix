@@ -404,7 +404,7 @@ export class TaskManagerService {
   // every 5 minutes
   @Cron('*/5 * * * *')
   // every 5 seconds
-  @Cron('*/5 * * * * *')
+  // @Cron('*/5 * * * * *')
   async checkAdditionalAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
