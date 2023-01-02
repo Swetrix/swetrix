@@ -601,13 +601,18 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      mainChart.data.names(dataNames)
+      const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, applyRegions)
 
-      if (activeChartMetricsPerf) {
-        mainChart.load({
-          columns: getColumnsPerf(chartDataPerf, activeChartMetricsPerf),
-        })
+      if (!_isEmpty(mainChart)) {
+        mainChart.destroy()
       }
+
+      setMainChart(() => {
+        const generete = bb.generate(bbSettings)
+        generete.data.names(dataNamesPerf)
+        return generete
+      })
     }
   }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf]) // eslint-disable-line
 
