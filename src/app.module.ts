@@ -16,6 +16,7 @@ import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
 import { TGModule } from './tg-integration/tg.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
+import { AlertModule } from './alert/alert.module'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
@@ -42,6 +43,7 @@ const modules = [
   PingModule,
   TGModule,
   MarketplaceModule,
+  AlertModule,
 ]
 
 if (process.env.TG_BOT_TOKEN) {

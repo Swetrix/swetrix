@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, Not } from 'typeorm'
+import { IsNull, LessThan, Not, In } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -10,11 +10,13 @@ import * as _join from 'lodash/join'
 import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
+import * as _find from 'lodash/find'
 
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
+import { AlertService } from 'src/alert/alert.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
@@ -41,7 +43,7 @@ import {
   QueryCondition,
   QueryMetric,
   QueryTime,
-} from 'src/project/dto/project.dto'
+} from 'src/alert/dto/alert.dto'
 
 dayjs.extend(utc)
 
@@ -53,6 +55,7 @@ export class TaskManagerService {
     private readonly analyticsService: AnalyticsService,
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
+    private readonly alertService: AlertService,
     @InjectBot() private bot: Telegraf<TelegrafContext>,
   ) {}
 
@@ -343,11 +346,9 @@ export class TaskManagerService {
       })
     }
   }
-
-  // every 5 minutes
-  @Cron('*/5 * * * *')
-  // // every 5 seconds
-  // @Cron('*/5 * * * * *')
+  
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkUserOnline(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
@@ -359,35 +360,33 @@ export class TaskManagerService {
       ['admin'],
     )
 
-    for (let i = 0; i < _size(projects); ++i) {
-      const project = await this.projectService.findOneWithRelations(
-        projects[i].id,
-      )
+    const alerts = await this.alertService.findWhere({
+      project: In(_map(projects, 'id')),
+      active: true,
+    })
 
-      if (project.lastSendedAlert !== null) {
-        const lastSendedAlert = new Date(project.lastSendedAlert)
+    for (let i = 0; i < _size(projects); ++i) {
+      const alert = alerts[i]
+      const project = _find(projects, { id: alert.project.id })
+
+      if (alert.lastTriggered !== null) {
+        const lastTriggered = new Date(alert.lastTriggered)
         const now = new Date()
 
-        if (now.getTime() - lastSendedAlert.getTime() < 24 * 60 * 60 * 1000) {
+        if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
           return
         }
       }
 
       const online = await this.analyticsService.getOnlineUserCount(
-        projects[i].id,
+        alert.project.id,
       )
 
       const onlineCount = online.length
 
-      // console.log(onlineCount, project.admin.telegramChatId)
-
-      if (onlineCount >= projects[i].alertIfOnlineUsersExceeds) {
-        if (!project.admin.isTelegramChatIdConfirmed) {
-          return
-        }
-
-        await this.projectService.update(projects[i].id, {
-          lastSendedAlert: new Date(),
+      if (onlineCount >= alert.queryValue) {
+        await this.alertService.update(alert.id, {
+          lastTriggered: new Date(),
         })
 
         this.bot.telegram.sendMessage(
@@ -401,14 +400,11 @@ export class TaskManagerService {
     }
   }
 
-  // every 5 minutes
-  // @Cron('*/5 * * * *')
-  //every 5 seconds
-  @Cron('*/5 * * * * *')
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkAdditionalAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
-        isAdditionalAlertEnabled: true,
         admin: {
           isTelegramChatIdConfirmed: true,
         },
@@ -416,90 +412,88 @@ export class TaskManagerService {
       ['admin'],
     )
 
-    for (let i = 0; i < _size(projects); ++i) {
-      const project = await this.projectService.findOneWithRelations(
-        projects[i].id,
-      )
+    const alerts = await this.alertService.findWhere({
+      project: In(_map(projects, 'id')),
+      active: true,
+    })
 
-      if (project.lastSendedAlert !== null) {
-        const lastSendedAlert = new Date(project.lastSendedAlert)
+    console.log(alerts)
+
+    for (let i = 0; i < _size(alerts); ++i) {
+      const alert = alerts[i]
+      const project = _find(projects, { id: alert.project.id })
+
+      if (alert.lastTriggered !== null) {
+        const lastTriggered = new Date(alert.lastTriggered)
         const now = new Date()
 
-        if (now.getTime() - lastSendedAlert.getTime() < 24 * 60 * 60 * 1000) {
+        if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
           return
         }
       }
 
-      const isUnique =
-        projects[i].additionalAlertQueryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
-          ? 1
-          : 0
+      const isUnique = Number(alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS)
 
       const time =
-        projects[i].additionalAlertQueryTime === QueryTime.LAST_15_MINUTES
+      alert.queryTime === QueryTime.LAST_15_MINUTES
           ? 15 * 60
-          : projects[i].additionalAlertQueryTime === QueryTime.LAST_30_MINUTES
+          : alert.queryTime === QueryTime.LAST_30_MINUTES
           ? 30 * 60
-          : projects[i].additionalAlertQueryTime === QueryTime.LAST_1_HOUR
+          : alert.queryTime === QueryTime.LAST_1_HOUR
           ? 60 * 60
-          : projects[i].additionalAlertQueryTime === QueryTime.LAST_4_HOURS
+          : alert.queryTime === QueryTime.LAST_4_HOURS
           ? 4 * 60 * 60
-          : projects[i].additionalAlertQueryTime === QueryTime.LAST_24_HOURS
+          : alert.queryTime === QueryTime.LAST_24_HOURS
           ? 24 * 60 * 60
-          : projects[i].additionalAlertQueryTime === QueryTime.LAST_48_HOURS
+          : alert.queryTime === QueryTime.LAST_48_HOURS
           ? 48 * 60 * 60
           : 0
 
       const isLess =
-        projects[i].additionalAlertQueryCondition === QueryCondition.LESS_THAN
+        alert.queryCondition === QueryCondition.LESS_THAN
           ? '<'
-          : projects[i].additionalAlertQueryCondition ===
+          : alert.queryCondition ===
             QueryCondition.LESS_EQUAL_THAN
           ? '<='
-          : projects[i].additionalAlertQueryCondition ===
+          : alert.queryCondition ===
             QueryCondition.GREATER_THAN
           ? '>'
-          : projects[i].additionalAlertQueryCondition ===
+          : alert.queryCondition ===
             QueryCondition.GREATER_EQUAL_THAN
           ? '>='
           : ''
 
-      const query = `SELECT count() FROM analytics WHERE pid = '${projects[i].id}' AND unique = '${isUnique}' AND created ${isLess} now() - ${time}`
+      const query = `SELECT count() FROM analytics WHERE pid = '${alert.id}' AND unique = '${isUnique}' AND created ${isLess} now() - ${time}`
       const queryResult = await clickhouse.query(query).toPromise()
 
       const count = Number(queryResult[0]['count()'])
 
-      console.log(count)
-
-      if (count >= projects[i].additionalAlertQueryValue) {
-        if (!project.admin.isTelegramChatIdConfirmed) {
-          return
-        }
-
-        await this.projectService.update(projects[i].id, {
-          lastSendedAlert: new Date(),
+      if (count >= alert.queryValue) {
+        await this.alertService.update(alert.id, {
+          lastTriggered: new Date(),
         })
 
-        const text2 = `🔔 Your project *${projects[i].name}* has *${count}* ${
-          projects[i].additionalAlertQueryMetric ===
+        const text2 = `🔔 Your project *${alert.name}* has *${count}* ${
+          alert.queryMetric ===
           QueryMetric.UNIQUE_PAGE_VIEWS
             ? 'unique page views'
             : 'page views'
         } in the last ${
-          projects[i].additionalAlertQueryTime === QueryTime.LAST_15_MINUTES
+          alert.queryTime === QueryTime.LAST_15_MINUTES
             ? '15 minutes'
-            : projects[i].additionalAlertQueryTime === QueryTime.LAST_30_MINUTES
+            : alert.queryTime === QueryTime.LAST_30_MINUTES
             ? '30 minutes'
-            : projects[i].additionalAlertQueryTime === QueryTime.LAST_1_HOUR
+            : alert.queryTime === QueryTime.LAST_1_HOUR
             ? '1 hour'
-            : projects[i].additionalAlertQueryTime === QueryTime.LAST_4_HOURS
+            : alert.queryTime === QueryTime.LAST_4_HOURS
             ? '4 hours'
-            : projects[i].additionalAlertQueryTime === QueryTime.LAST_24_HOURS
+            : alert.queryTime === QueryTime.LAST_24_HOURS
             ? '24 hours'
-            : projects[i].additionalAlertQueryTime === QueryTime.LAST_48_HOURS
+            : alert.queryTime === QueryTime.LAST_48_HOURS
             ? '48 hours'
             : '0'
         }!`
+
         this.bot.telegram.sendMessage(project.admin.telegramChatId, text2, {
           parse_mode: 'Markdown',
         })

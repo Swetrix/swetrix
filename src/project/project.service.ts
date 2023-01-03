@@ -124,7 +124,7 @@ export class ProjectService {
 
   async update(
     id: string,
-    projectDTO: { ProjectDTO?: ProjectDTO; lastSendedAlert?: Date | null },
+    projectDTO: ProjectDTO,
   ): Promise<any> {
     return this.projectsRepository.update(id, projectDTO)
   }
@@ -193,6 +193,7 @@ export class ProjectService {
   find(params: object): Promise<Project[]> {
     return this.projectsRepository.find(params)
   }
+
   findOneWhere(
     where: Record<string, unknown>,
     params: object = {},

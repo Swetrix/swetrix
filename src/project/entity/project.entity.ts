@@ -10,12 +10,8 @@ import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
+import { Alert } from 'src/alert/entity/alert.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
-import {
-  QueryCondition,
-  QueryMetric,
-  QueryTime,
-} from 'src/project/dto/project.dto'
 
 // In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
 // and to add them to the GDPR data export email template
@@ -60,6 +56,10 @@ export class Project {
   @OneToMany(() => ProjectShare, share => share.project)
   share: ProjectShare[]
 
+  @ApiProperty({ type: () => Alert })
+  @OneToMany(() => Alert, alert => alert.project)
+  alerts: Alert[]
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
 
@@ -69,62 +69,4 @@ export class Project {
   )
   @JoinTable()
   extensions: ExtensionToProject[]
-
-  @ApiProperty()
-  @Column({
-    type: 'int',
-    nullable: true,
-    default: null,
-  })
-  alertIfOnlineUsersExceeds: number | null
-
-  @ApiProperty()
-  @Column({
-    type: 'date',
-    nullable: true,
-    default: null,
-  })
-  lastSendedAlert: Date | null
-
-  @ApiProperty()
-  @Column({
-    type: 'boolean',
-    default: false,
-  })
-  isAdditionalAlertEnabled: boolean
-
-  @ApiProperty()
-  @Column({
-    type: 'enum',
-    enum: QueryMetric,
-    nullable: true,
-    default: null,
-  })
-  additionalAlertQueryMetric: QueryMetric | null
-
-  @ApiProperty()
-  @Column({
-    type: 'enum',
-    enum: QueryCondition,
-    nullable: true,
-    default: null,
-  })
-  additionalAlertQueryCondition: QueryCondition | null
-
-  @ApiProperty()
-  @Column({
-    type: 'int',
-    nullable: true,
-    default: null,
-  })
-  additionalAlertQueryValue: number | null
-
-  @ApiProperty()
-  @Column({
-    type: 'enum',
-    enum: QueryTime,
-    nullable: true,
-    default: null,
-  })
-  additionalAlertQueryTime: QueryTime | null
 }
