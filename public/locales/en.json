@@ -18,7 +18,8 @@
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
     "subscriptionUpdated": "Your subscription has been updated",
-    "generate2FAError": "Error occurred while generating 2FA code"
+    "generate2FAError": "Error occurred while generating 2FA code",
+    "integrationRemovalError": "Error occurred while removing the integration"
   },
   "common": {
     "features": "Features",
@@ -48,6 +49,9 @@
     "isNot": "is not",
     "invite": "Invite",
     "pending": "Pending",
+    "notConnected": "Not connected",
+    "connected": "Connected",
+    "goBack": "Go back",
     "accept": "Accept",
     "reject": "Reject",
     "delete": "Delete",
@@ -353,7 +357,16 @@
     "apiKeyDelete": "Delete your API Key?",
     "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
     "theme": "Theme",
-    "selectTheme": "Select theme"
+    "selectTheme": "Select theme",
+    "integrations": "Integrations",
+    "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
+    "integrationsList": {
+      "telegram": "Receive notifications directly into a Telegram bot.",
+      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
+    },
+    "addIntegration": "Add integration",
+    "removeIntegration": "Remove integration",
+    "chatID": "Chat ID"
   },
   "dashboard": {
     "newProject": "New project",

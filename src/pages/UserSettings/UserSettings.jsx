@@ -40,6 +40,7 @@ import {
 } from 'api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
+import Integrations from './components/Integrations'
 import NoSharedProjects from './components/NoSharedProjects'
 
 dayjs.extend(utc)
@@ -95,7 +96,7 @@ const UserSettings = ({
     setValidated(valid)
   }
 
-  const onSubmit = (data) => {
+  const onSubmit = (data, callback = () => { }) => {
     delete data.repeat
     // eslint-disable-next-line no-restricted-syntax
     for (const key in data) {
@@ -104,7 +105,7 @@ const UserSettings = ({
       }
     }
 
-    updateUserProfileAsync(data, t('profileSettings.updated'))
+    updateUserProfileAsync(data, t('profileSettings.updated'), callback)
   }
 
   useEffect(() => {
@@ -155,6 +156,17 @@ const UserSettings = ({
         ...form,
         timezone,
       })
+    }
+  }
+
+  const handleIntegrationSave = (data, callback = () => {}) => {
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit({
+        ...form,
+        ...data,
+      }, callback)
     }
   }
 
@@ -368,6 +380,22 @@ const UserSettings = ({
             {t('common.save')}
           </Button>
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.integrations')}
+            <div className='ml-5'>
+              <Beta />
+            </div>
+          </h3>
+          <Integrations
+            user={user}
+            updateUserData={updateUserData}
+            handleIntegrationSave={handleIntegrationSave}
+            genericError={genericError}
+          />
+
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.apiKey')}
             <div className='ml-5'>
@@ -432,7 +460,6 @@ const UserSettings = ({
             {t('profileSettings.2fa')}
           </h3>
           <TwoFA
-            t={t}
             user={user}
             dontRemember={dontRemember}
             updateUserData={updateUserData}

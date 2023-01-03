@@ -108,10 +108,10 @@ export const authActions = {
     }
   },
 
-  updateUserProfileAsync(data, successfulCallback = () => { }) {
+  updateUserProfileAsync(data, callback = () => { }) {
     return {
       type: types.UPDATE_USER_PROFILE_ASYNC,
-      payload: { data, successfulCallback },
+      payload: { data, callback },
     }
   },
 
