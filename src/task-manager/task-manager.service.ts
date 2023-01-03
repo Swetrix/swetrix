@@ -379,7 +379,7 @@ export class TaskManagerService {
       }
 
       const online = await this.analyticsService.getOnlineUserCount(
-        alert.project.id,
+        project.id,
       )
 
       const onlineCount = online.length
@@ -463,7 +463,7 @@ export class TaskManagerService {
           ? '>='
           : ''
 
-      const query = `SELECT count() FROM analytics WHERE pid = '${alert.id}' AND unique = '${isUnique}' AND created ${isLess} now() - ${time}`
+      const query = `SELECT count() FROM analytics WHERE pid = '${project.id}' AND unique = '${isUnique}' AND created ${isLess} now() - ${time}`
       const queryResult = await clickhouse.query(query).toPromise()
 
       const count = Number(queryResult[0]['count()'])
