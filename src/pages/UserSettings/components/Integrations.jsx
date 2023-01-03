@@ -159,12 +159,12 @@ const Integrations = ({
 
               return (
                 <li key={key}>
-                  <div className='flex items-center px-4 py-4 sm:px-6'>
+                  <div className='sm:flex items-center px-1 py-4 sm:px-6'>
                     <div className='flex min-w-0 flex-1 items-center'>
-                      <div className='flex-shrink-0'>
+                      <div className='flex-shrink-0 hidden sm:block'>
                         <Icon className='max-h-12 max-w-12 h-12 w-12 rounded-full' />
                       </div>
-                      <div className='min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4'>
+                      <div className='min-w-0 flex-1 px-2 sm:px-4 md:grid md:grid-cols-2 md:gap-4'>
                         <div>
                           <p className='text-md font-medium text-gray-800 dark:text-gray-50'>{name}</p>
                           <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
@@ -187,7 +187,7 @@ const Integrations = ({
                         </div>
                       </div>
                     </div>
-                    <div>
+                    <div className='flex justify-center mt-2 sm:block sm:mt-0'>
                       {connected ? (
                         <Button onClick={() => removeIntegration(key)} small danger>
                           {t('profileSettings.removeIntegration')}
