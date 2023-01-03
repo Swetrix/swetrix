@@ -49,7 +49,7 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryMetric: QueryMetric | null
+  queryMetric: QueryMetric
 
   @ApiProperty()
   @Column({
@@ -58,7 +58,7 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryCondition: QueryCondition | null
+  queryCondition: QueryCondition
 
   @ApiProperty()
   @Column({
@@ -66,7 +66,7 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryValue: number | null
+  queryValue: number
 
   @ApiProperty()
   @Column({
@@ -75,5 +75,5 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryTime: QueryTime | null
+  queryTime: QueryTime
 }

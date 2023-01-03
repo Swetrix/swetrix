@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, Not, In } from 'typeorm'
+import { IsNull, LessThan, In, Not } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -390,6 +390,7 @@ export class TaskManagerService {
     const alerts = await this.alertService.findWhere({
       project: In(_map(projects, 'id')),
       active: true,
+      queryMetric: QueryMetric.ONLINE_USERS,
     })
 
     for (let i = 0; i < _size(alerts); ++i) {
@@ -441,6 +442,7 @@ export class TaskManagerService {
     const alerts = await this.alertService.findWhere({
       project: In(_map(projects, 'id')),
       active: true,
+      queryMetric: Not(QueryMetric.ONLINE_USERS),
     })
 
     for (let i = 0; i < _size(alerts); ++i) {
