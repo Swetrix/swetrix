@@ -10,6 +10,12 @@ import Title from 'components/Title'
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-01-03',
+    changes: [
+      'Added new tab in Dashboard: Performance. By switching to it you\'ll be able to see the performance of your website, page loading by country, some detailed statistics like TTFB, DOM Content Load, DNS response time and so on.\nTo collect the performance data you need to upgrade swetrix.js tracking script to v2.0.0 or higher.\nIf you\'re using the UMD build - the latest version is pulled automatically.\nIf you\'re using the NPM package - make sure to update it manually.',
+    ],
+  },
+  {
     date: '2022-12-30',
     changes: [
       'Added an ability to see live visitors on your website. Now you\'re able to not only see how many visitors you have, but actually see some information about them.',
@@ -67,7 +73,7 @@ const Changelog = () => {
                     <div className='relative'>
                       <ul className='list-disc text-gray-900 dark:text-gray-50 relative top-7 lg:top-0 lg:block text-base mt-2 mb-4 prose prose-slate prose-a:relative prose-a:z-10 dark:prose-dark line-clamp-2'>
                         {_map(item.changes, (change) => (
-                          <li key={change}>{change}</li>
+                          <li key={change} className='whitespace-pre-line'>{change}</li>
                         ))}
                       </ul>
                       <dl className='absolute left-1.5 top-0 lg:left-auto lg:right-full lg:mr-[calc(5rem+1px)]'>
