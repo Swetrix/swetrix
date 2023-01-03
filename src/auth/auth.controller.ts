@@ -131,7 +131,7 @@ export class AuthController {
 
       user.sharedProjects = sharedProjects
 
-      if (user.isTelegramChatIdConfirmed) {
+      if (user.isTelegramChatIdConfirmed && process.env.TG_BOT_TOKEN) {
         const ua = UAParser(userAgent)
         const br = ua.browser.name || 'unknown'
         const dv = ua.device.type || 'desktop'
