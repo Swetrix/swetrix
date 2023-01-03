@@ -264,10 +264,21 @@ const Docs = () => {
 
             <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <i>Last updated: September 6, 2022.</i><br />
+              <i>Last updated: December 31, 2022.</i><br />
               <div>
-                - Added Vue, Java SDK and SvelteKit&nbsp;
-                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-int'>integration instructions.</a>
+                <br />
+                - The
+                {' '}
+                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-tv'>trackViews</a>
+                {' '}
+                method is now asynchronous and returns a promise. The
+                {' '}
+                <a className='hover:underline text-gray-700 dark:text-gray-300' href='#docs-tv'>trackViews</a>
+                {' '}
+                starts working after the load event fires. It is required for the performance stats to be collected correctly.
+
+                <br />
+                - Now the tracking scripts collects performance stats (like DNS resolution times, TTFB, DOM Loading timing and so on).
               </div>
             </div>
           </div>
