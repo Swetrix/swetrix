@@ -396,6 +396,27 @@ export class UserController {
     }
   }
 
+  @Delete('/tg/:id')
+  @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @HttpCode(204)
+  async deleteTelegramConnection(
+    @Param('id') tgID: string,
+    @CurrentUserId() id: string,
+  ): Promise<any> {
+    this.logger.log({ tgID, id }, 'DELETE /user/tg/:id')
+
+    const user = await this.userService.findOneWhere({ id })
+
+    if (tgID && user.telegramChatId === tgID) {
+      await this.userService.update(id, {
+        telegramChatId: null,
+        isTelegramChatIdConfirmed: false,
+      })
+    }
+  }
+
   @Put('/')
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
@@ -450,9 +471,13 @@ export class UserController {
 
         if (userWithByTelegramChatId) {
           throw new BadRequestException(
-            'User with this telegram chat id already exists',
+            'User with this Telegram chat ID already exists',
           )
         }
+
+        await this.userService.update(id, {
+          isTelegramChatIdConfirmed: false,
+        })
 
         this.bot.telegram.sendMessage(
           userDTO.telegramChatId,
@@ -498,11 +523,9 @@ export class UserController {
         'twoFactorRecoveryCode',
         'twoFactorAuthenticationSecret',
         'isTwoFactorAuthenticationEnabled',
+        'isTelegramChatIdConfirmed',
       ])
-      await this.userService.update(id, {
-        ...userToUpdate,
-        isTelegramChatIdConfirmed: false,
-      })
+      await this.userService.update(id, userToUpdate)
 
       const updatedUser = await this.userService.findOneWhere({ id })
       return this.userService.omitSensitiveData(updatedUser)
