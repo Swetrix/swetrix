@@ -420,7 +420,7 @@ export class TaskManagerService {
 
         this.bot.telegram.sendMessage(
           project.admin.telegramChatId,
-          `🔔 Your project *${projects[i].name}* has *${onlineCount}* online users right now!`,
+          `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${onlineCount}* online users right now!}`,
           {
             parse_mode: 'Markdown',
           },
@@ -445,8 +445,6 @@ export class TaskManagerService {
       project: In(_map(projects, 'id')),
       active: true,
     })
-
-    console.log(alerts)
 
     for (let i = 0; i < _size(alerts); ++i) {
       const alert = alerts[i]
@@ -475,13 +473,12 @@ export class TaskManagerService {
           lastTriggered: new Date(),
         })
 
-        const text2 = `🔔 Your project *${alert.name}* has *${count}* ${alert.queryMetric ===
-            QueryMetric.UNIQUE_PAGE_VIEWS
-            ? 'unique page views'
-            : 'page views'
-          } in the last ${getQueryTimeString(alert.queryTime)}!`
+        const queryMetric = alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          ? 'unique page views'
+          : 'page views'
+        const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has had *${count}* ${queryMetric} in the last ${getQueryTimeString(alert.queryTime)}!`
 
-        this.bot.telegram.sendMessage(project.admin.telegramChatId, text2, {
+        this.bot.telegram.sendMessage(project.admin.telegramChatId, text, {
           parse_mode: 'Markdown',
         })
       }
