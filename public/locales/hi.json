@@ -55,7 +55,8 @@
     "enable": "Enable",
     "disable": "Disable",
     "copied": "Copied",
-    "new": "New"
+    "new": "New",
+    "loading": "Loading.."
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -373,12 +374,28 @@
     "inc": "की वृद्धि हुई",
     "dec": "से कम हुआ",
     "liveVisitors": "लाइव विज़िटर",
+    "live": "Live",
     "bounceRate": "Bounce rate",
     "viewsPerUnique": "Views per session",
     "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
-    "sessionDuration": "Session duration"
+    "sessionDuration": "Session duration",
+    "traffic": "Traffic",
+    "performance": "Performance",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Network",
+    "timing": "Timing breakdown",
+    "timingFull": "Timing breakdown (full)",
+    "dns": "DNS",
+    "conn": "Connection",
+    "tls": "TLS Setup",
+    "ttfb": "Time to first byte (TTFB)",
+    "domLoad": "DOM Content Load",
+    "pageLoad": "Page load time",
+    "render": "Browser render",
+    "response": "Response Time"
   },
   "docs": {
     "titles": {
@@ -414,7 +431,7 @@
         "pg": "वह पृष्ठ जिसे उपयोगकर्ता वर्तमान में देखता है (उदाहरण /हेलो)."
       }
     },
-    "tvReturn": "The trackViews function returns an object with some methods allowing you to alter the behaviour of page tracking.",
+    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
     "contents": "सामग्री"
   },
   "notFoundPage": {
@@ -598,6 +615,7 @@
     "docs": "दस्तावेज़ीकरण",
     "billing": "बिलिंग",
     "contact": "संपर्क",
+    "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs"
   },
   "footer": {
@@ -624,6 +642,8 @@
     "terms": "शर्तें",
     "status": "स्थिति",
     "donate": "दान करना",
-    "about": "About us"
+    "changelog": "Changelog",
+    "about": "About us",
+    "comparisons": "Comparisons"
   }
 }

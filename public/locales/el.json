@@ -55,7 +55,8 @@
     "enable": "Ενεργοποίηση",
     "disable": "Απενεργοποίηση",
     "copied": "Copied",
-    "new": "New"
+    "new": "New",
+    "loading": "Loading.."
   },
   "main": {
     "ukrSupport": "Υποστηρίξτε τον ουκρανικό στρατό για να πολεμήσει τη ρωσική εισβολή.",
@@ -373,12 +374,28 @@
     "inc": "Αυξήθηκε κατά",
     "dec": "Μειώθηκε κατά",
     "liveVisitors": "Ζωντανοί επισκέπτες",
+    "live": "Live",
     "bounceRate": "Ρυθμός αναπήδησης",
     "viewsPerUnique": "Views per session",
     "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
-    "sessionDuration": "Session duration"
+    "sessionDuration": "Session duration",
+    "traffic": "Traffic",
+    "performance": "Performance",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Network",
+    "timing": "Timing breakdown",
+    "timingFull": "Timing breakdown (full)",
+    "dns": "DNS",
+    "conn": "Connection",
+    "tls": "TLS Setup",
+    "ttfb": "Time to first byte (TTFB)",
+    "domLoad": "DOM Content Load",
+    "pageLoad": "Page load time",
+    "render": "Browser render",
+    "response": "Response Time"
   },
   "docs": {
     "titles": {
@@ -414,7 +431,7 @@
         "pg": "τη σελίδα που βλέπει ο χρήστης αυτή τη στιγμή (π.χ. /hello)."
       }
     },
-    "tvReturn": "The trackViews function returns an object with some methods allowing you to alter the behaviour of page tracking.",
+    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
     "contents": "Περιεχόμενα"
   },
   "notFoundPage": {
@@ -598,6 +615,7 @@
     "docs": "Τεκμηρίωση",
     "billing": "Χρέωση",
     "contact": "Επικοινωνία",
+    "changelog": "Changelog",
     "main": "Απόλυτα analytics ανοιχτού κώδικα για να ικανοποιήσετε όλες τις ανάγκες σας"
   },
   "footer": {
@@ -624,6 +642,8 @@
     "terms": "Όροι",
     "status": "Κατάσταση",
     "donate": "Δωρεά",
-    "about": "Σχετικά με εμάς"
+    "changelog": "Changelog",
+    "about": "Σχετικά με εμάς",
+    "comparisons": "Comparisons"
   }
 }

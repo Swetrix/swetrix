@@ -55,7 +55,8 @@
     "enable": "Aktivieren",
     "disable": "Deaktivieren",
     "copied": "Copied",
-    "new": "New"
+    "new": "New",
+    "loading": "Loading.."
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
@@ -373,12 +374,28 @@
     "inc": "Gestiegen um",
     "dec": "Gesunken um",
     "liveVisitors": "Live-Besucher",
+    "live": "Live",
     "bounceRate": "Absprungrate",
     "viewsPerUnique": "Views per session",
     "trendlines": "Trend lines",
     "invitationFor": "Einladung zu {{project}}",
     "invitationDesc": "Sie wurden eingeladen, dem Projekt {{project}} beizutreten.\nSie können die Einladung entweder annehmen oder in Ihren Kontoeinstellungen ablehnen.",
-    "sessionDuration": "Session duration"
+    "sessionDuration": "Session duration",
+    "traffic": "Traffic",
+    "performance": "Performance",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Network",
+    "timing": "Timing breakdown",
+    "timingFull": "Timing breakdown (full)",
+    "dns": "DNS",
+    "conn": "Connection",
+    "tls": "TLS Setup",
+    "ttfb": "Time to first byte (TTFB)",
+    "domLoad": "DOM Content Load",
+    "pageLoad": "Page load time",
+    "render": "Browser render",
+    "response": "Response Time"
   },
   "docs": {
     "titles": {
@@ -414,7 +431,7 @@
         "pg": "Die Seite, die der Benutzer gerade sieht (z.B. /hello)."
       }
     },
-    "tvReturn": "Die trackViews-Funktion gibt ein Objekt mit einigen Methoden zurück, um das Verhalten der Seitenverfolgung zu ändern.",
+    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
     "contents": "Inhalt"
   },
   "notFoundPage": {
@@ -598,6 +615,7 @@
     "docs": "Dokumentation",
     "billing": "Rechnung",
     "contact": "Kontakt",
+    "changelog": "Changelog",
     "main": "Ultimative Open-Source-Analytics um alle Ihre Wünsche zu befriedigen"
   },
   "footer": {
@@ -624,6 +642,8 @@
     "terms": "AGB",
     "status": "Status",
     "donate": "Unterstützen",
-    "about": "Über uns"
+    "changelog": "Changelog",
+    "about": "Über uns",
+    "comparisons": "Comparisons"
   }
 }

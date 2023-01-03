@@ -55,7 +55,8 @@
     "enable": "Aktivera",
     "disable": "Inaktivera",
     "copied": "Copied",
-    "new": "New"
+    "new": "New",
+    "loading": "Loading.."
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
@@ -373,12 +374,28 @@
     "inc": "Ökad med",
     "dec": "Minskat med",
     "liveVisitors": "Live-besökare",
+    "live": "Live",
     "bounceRate": "Studsfrekvens",
     "viewsPerUnique": "Views per session",
     "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
-    "sessionDuration": "Session duration"
+    "sessionDuration": "Session duration",
+    "traffic": "Traffic",
+    "performance": "Performance",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Network",
+    "timing": "Timing breakdown",
+    "timingFull": "Timing breakdown (full)",
+    "dns": "DNS",
+    "conn": "Connection",
+    "tls": "TLS Setup",
+    "ttfb": "Time to first byte (TTFB)",
+    "domLoad": "DOM Content Load",
+    "pageLoad": "Page load time",
+    "render": "Browser render",
+    "response": "Response Time"
   },
   "docs": {
     "titles": {
@@ -414,7 +431,7 @@
         "pg": "den sida användaren för närvarande visar (t.ex. /hello)."
       }
     },
-    "tvReturn": "Funktionen trackViews returnerar ett objekt med några metoder som gör att du kan ändra sidspårningens beteende.",
+    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
     "contents": "Innehåll"
   },
   "notFoundPage": {
@@ -598,6 +615,7 @@
     "docs": "Dokumentation",
     "billing": "Fakturering",
     "contact": "Kontakt",
+    "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs"
   },
   "footer": {
@@ -624,6 +642,8 @@
     "terms": "Villkor",
     "status": "Status",
     "donate": "Donera",
-    "about": "About us"
+    "changelog": "Changelog",
+    "about": "About us",
+    "comparisons": "Comparisons"
   }
 }
