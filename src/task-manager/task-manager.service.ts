@@ -410,9 +410,7 @@ export class TaskManagerService {
         project.id,
       )
 
-      const onlineCount = online.length
-
-      if (onlineCount >= alert.queryValue) {
+      if (online >= alert.queryValue) {
         // @ts-ignore
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
@@ -420,7 +418,7 @@ export class TaskManagerService {
 
         this.bot.telegram.sendMessage(
           project.admin.telegramChatId,
-          `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${onlineCount}* online users right now!}`,
+          `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!}`,
           {
             parse_mode: 'Markdown',
           },

@@ -109,7 +109,7 @@ export class SwetrixUpdate {
         project: project.id,
       })
 
-      const onlineUserCount = await this.analyticsService.getOnlineUserCount(
+      const online = await this.analyticsService.getOnlineUserCount(
         project.id,
       )
 
@@ -142,7 +142,7 @@ export class SwetrixUpdate {
         '\n\n' +
         '*Analytics (last 7 days)*' +
         '\n' +
-        `Online users: \`${onlineUserCount.length}\`` +
+        `Online users: \`${online}\`` +
         '\n' +
         `Page views: \`${stats[project.id].thisWeek}\`` +
         '\n' +

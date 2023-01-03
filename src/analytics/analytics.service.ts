@@ -810,23 +810,8 @@ export class AnalyticsService {
     return result
   }
 
-  async getOnlineUserCount(pid: string) {
-    const keys = await redis.keys(`sd:*:${pid}`)
-
-    if (_isEmpty(keys)) {
-      return []
-    }
-
-    const sids = _map(keys, key => key.split(':')[1])
-
-    const query = `SELECT sid, dv, br, os, cc FROM analytics WHERE sid IN (${sids
-      .map(el => `'${el}'`)
-      .join(',')})`
-    const result = await clickhouse.query(query).toPromise()
-    const processed = _map(_uniqBy(result, 'sid'), el =>
-      _pick(el, ['dv', 'br', 'os', 'cc']),
-    )
-
-    return processed
+  async getOnlineUserCount(pid: string): Promise<number> {
+    // @ts-ignore
+    return await redis.countKeysByPattern(`hb:${pid}:*`)
   }
 }
