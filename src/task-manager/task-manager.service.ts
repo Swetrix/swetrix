@@ -47,6 +47,34 @@ import {
 
 dayjs.extend(utc)
 
+const getQueryTime = (time: QueryTime): number => {
+  if (time === QueryTime.LAST_15_MINUTES) return 15 * 60
+  if (time === QueryTime.LAST_30_MINUTES) return 30 * 60
+  if (time === QueryTime.LAST_1_HOUR) return 60 * 60
+  if (time === QueryTime.LAST_4_HOURS) return 4 * 60 * 60
+  if (time === QueryTime.LAST_24_HOURS) return 24 * 60 * 60
+  if (time === QueryTime.LAST_48_HOURS) return 48 * 60 * 60
+  return 0
+}
+
+const getQueryTimeString = (time: QueryTime): string => {
+  if (time === QueryTime.LAST_15_MINUTES) return '15 minutes'
+  if (time === QueryTime.LAST_30_MINUTES) return '30 minutes'
+  if (time === QueryTime.LAST_1_HOUR) return '1 hour'
+  if (time === QueryTime.LAST_4_HOURS) return '4 hours'
+  if (time === QueryTime.LAST_24_HOURS) return '24 hours'
+  if (time === QueryTime.LAST_48_HOURS) return '48 hours'
+  return '0'
+}
+
+const getQueryCondition = (condition: QueryCondition): string => {
+  if (condition === QueryCondition.LESS_THAN) return '<'
+  if (condition === QueryCondition.LESS_EQUAL_THAN) return '<='
+  if (condition === QueryCondition.GREATER_THAN) return '>'
+  if (condition === QueryCondition.GREATER_EQUAL_THAN) return '>='
+  return ''
+}
+
 @Injectable()
 export class TaskManagerService {
   constructor(
@@ -57,7 +85,7 @@ export class TaskManagerService {
     private readonly actionTokensService: ActionTokensService,
     private readonly alertService: AlertService,
     @InjectBot() private bot: Telegraf<TelegrafContext>,
-  ) {}
+  ) { }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async saveLogData(): Promise<void> {
@@ -346,7 +374,7 @@ export class TaskManagerService {
       })
     }
   }
-  
+
   @Cron(CronExpression.EVERY_5_MINUTES)
   // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkUserOnline(): Promise<void> {
@@ -433,37 +461,9 @@ export class TaskManagerService {
       }
 
       const isUnique = Number(alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS)
-
-      const time =
-      alert.queryTime === QueryTime.LAST_15_MINUTES
-          ? 15 * 60
-          : alert.queryTime === QueryTime.LAST_30_MINUTES
-          ? 30 * 60
-          : alert.queryTime === QueryTime.LAST_1_HOUR
-          ? 60 * 60
-          : alert.queryTime === QueryTime.LAST_4_HOURS
-          ? 4 * 60 * 60
-          : alert.queryTime === QueryTime.LAST_24_HOURS
-          ? 24 * 60 * 60
-          : alert.queryTime === QueryTime.LAST_48_HOURS
-          ? 48 * 60 * 60
-          : 0
-
-      const isLess =
-        alert.queryCondition === QueryCondition.LESS_THAN
-          ? '<'
-          : alert.queryCondition ===
-            QueryCondition.LESS_EQUAL_THAN
-          ? '<='
-          : alert.queryCondition ===
-            QueryCondition.GREATER_THAN
-          ? '>'
-          : alert.queryCondition ===
-            QueryCondition.GREATER_EQUAL_THAN
-          ? '>='
-          : ''
-
-      const query = `SELECT count() FROM analytics WHERE pid = '${project.id}' AND unique = '${isUnique}' AND created ${isLess} now() - ${time}`
+      const time = getQueryTime(alert.queryTime)
+      const createdCondition = getQueryCondition(alert.queryCondition)
+      const query = `SELECT count() FROM analytics WHERE pid = '${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
       const queryResult = await clickhouse.query(query).toPromise()
 
       const count = Number(queryResult[0]['count()'])
@@ -473,26 +473,11 @@ export class TaskManagerService {
           lastTriggered: new Date(),
         })
 
-        const text2 = `🔔 Your project *${alert.name}* has *${count}* ${
-          alert.queryMetric ===
-          QueryMetric.UNIQUE_PAGE_VIEWS
+        const text2 = `🔔 Your project *${alert.name}* has *${count}* ${alert.queryMetric ===
+            QueryMetric.UNIQUE_PAGE_VIEWS
             ? 'unique page views'
             : 'page views'
-        } in the last ${
-          alert.queryTime === QueryTime.LAST_15_MINUTES
-            ? '15 minutes'
-            : alert.queryTime === QueryTime.LAST_30_MINUTES
-            ? '30 minutes'
-            : alert.queryTime === QueryTime.LAST_1_HOUR
-            ? '1 hour'
-            : alert.queryTime === QueryTime.LAST_4_HOURS
-            ? '4 hours'
-            : alert.queryTime === QueryTime.LAST_24_HOURS
-            ? '24 hours'
-            : alert.queryTime === QueryTime.LAST_48_HOURS
-            ? '48 hours'
-            : '0'
-        }!`
+          } in the last ${getQueryTimeString(alert.queryTime)}!`
 
         this.bot.telegram.sendMessage(project.admin.telegramChatId, text2, {
           parse_mode: 'Markdown',
