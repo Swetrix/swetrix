@@ -359,7 +359,7 @@ export class TaskManagerService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async checkIsTelegramChatIdConfirmed(): Promise<void> {
     const users = await this.userService.find({
       where: {
