@@ -385,8 +385,7 @@ export class AnalyticsController {
     let groupFrom = from,
       groupTo = to
 
-    // const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     const paramsData = {
       params: {
