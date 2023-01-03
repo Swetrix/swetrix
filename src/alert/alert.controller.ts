@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Put, Delete, UseGuards, Query, Param, Body, NotFoundException,
+  Controller, Get, Put, Delete, UseGuards, Query, Param, Body, NotFoundException, Post, ForbiddenException, BadRequestException,
 } from '@nestjs/common'
 import { In } from 'typeorm'
 import { ApiTags, ApiResponse } from '@nestjs/swagger'
@@ -9,6 +9,7 @@ import { RolesGuard } from '../common/guards/roles.guard'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _omit from 'lodash/omit'
+import * as _size from 'lodash/size'
 
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
@@ -17,7 +18,10 @@ import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
 import { Roles } from '../common/decorators/roles.decorator'
 import { UserType } from 'src/user/entities/user.entity'
 import { Alert } from './entity/alert.entity'
-import { AlertDTO } from './dto/alert.dto'
+import { AlertDTO, CreateAlertDTO } from './dto/alert.dto'
+import { ACCOUNT_PLANS, PlanCode } from 'src/user/entities/user.entity'
+
+const ALERTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxAlerts
 
 @ApiTags('Alert')
 @Controller('alert')
@@ -51,6 +55,63 @@ export class AlertController {
 
     return this.alertService.paginate({ take, skip }, { project: In(pids) })
   }
+
+  @Post('/')
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.ADMIN, UserType.CUSTOMER)
+  @ApiResponse({ status: 201, type: Alert })
+  async createAlert(
+    @Body() alertDTO: CreateAlertDTO,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid }, 'POST /alert')
+
+    const user = await this.userService.findOneWithRelations(uid, [
+      'projects',
+    ])
+
+    const maxAlerts = ACCOUNT_PLANS[user.planCode]?.maxAlerts
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    if (_size(user.projects) >= (maxAlerts || ALERTS_MAXIMUM)) {
+      throw new ForbiddenException(
+        `You cannot create more than ${maxAlerts} alerts on your account plan. Please upgrade to be able to create more alerts.`,
+      )
+    }
+
+    const project = await this.projectService.findOneWhere({
+      id: alertDTO.pid,
+    }, {
+      relations: ['alerts'],
+    })
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToManage(project, uid, user.roles, 'You are not allowed to manage this project')
+
+    try {
+      let alert = new Alert()
+      Object.assign(alert, alertDTO)
+      alert = _omit(alert, ['pid'])
+
+      const newAlert = await this.alertService.create(alert)
+
+      project.alerts.push(newAlert)
+
+      await this.projectService.create(project)
+
+      return newAlert
+    } catch (e) {
+      throw new BadRequestException(e)
+    }
+  }
+
 
   @Put('/:id')
   @UseGuards(SelfhostedGuard)

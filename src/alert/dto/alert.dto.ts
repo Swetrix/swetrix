@@ -34,4 +34,27 @@ export class AlertDTO {
 
   @ApiProperty()
   queryTime?: QueryTime | null
+
+  @ApiProperty()
+  active?: boolean
+}
+
+export class CreateAlertDTO {
+  @ApiProperty()
+  pid: string
+
+  @ApiProperty()
+  name: string
+
+  @ApiProperty()
+  queryMetric: QueryMetric | null
+
+  @ApiProperty()
+  queryCondition: QueryCondition | null
+
+  @ApiProperty()
+  queryValue: number | null
+
+  @ApiProperty()
+  queryTime: QueryTime | null
 }
