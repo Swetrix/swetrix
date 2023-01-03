@@ -122,7 +122,10 @@ export class ProjectService {
     return this.projectsRepository.save(project)
   }
 
-  async update(id: string, projectDTO: ProjectDTO): Promise<any> {
+  async update(
+    id: string,
+    projectDTO: ProjectDTO,
+  ): Promise<any> {
     return this.projectsRepository.update(id, projectDTO)
   }
 
@@ -180,13 +183,17 @@ export class ProjectService {
     return this.projectsRepository.findOne(id, params)
   }
 
-  findWhere(where: Record<string, unknown>): Promise<Project[]> {
-    return this.projectsRepository.find({ where })
+  findWhere(
+    where: Record<string, unknown>,
+    relations?: string[],
+  ): Promise<Project[]> {
+    return this.projectsRepository.find({ where, relations })
   }
 
   find(params: object): Promise<Project[]> {
     return this.projectsRepository.find(params)
   }
+
   findOneWhere(
     where: Record<string, unknown>,
     params: object = {},
@@ -210,6 +217,7 @@ export class ProjectService {
     project: Project,
     uid: string,
     roles: Array<UserType> = [],
+    message: string = 'You are not allowed to manage this project'
   ): void {
     if (
       uid === project.admin?.id ||
@@ -221,7 +229,7 @@ export class ProjectService {
     ) {
       return
     } else {
-      throw new ForbiddenException('You are not allowed to manage this project')
+      throw new ForbiddenException(message)
     }
   }
 

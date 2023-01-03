@@ -39,6 +39,11 @@ import {
   SELFHOSTED_UUID,
 } from '../common/constants'
 import * as _pick from 'lodash/pick'
+import { InjectBot } from 'nestjs-telegraf'
+import { TelegrafContext } from 'src/user/user.controller'
+import { Telegraf } from 'telegraf'
+import * as UAParser from 'ua-parser-js'
+import ct from 'countries-and-timezones'
 
 // TODO: Add logout endpoint to invalidate the token
 @ApiTags('Auth')
@@ -51,6 +56,7 @@ export class AuthController {
     private actionTokensService: ActionTokensService,
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
+    @InjectBot() private bot: Telegraf<TelegrafContext>,
   ) {}
 
   @Get('/me')
@@ -92,6 +98,7 @@ export class AuthController {
     const ip =
       headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
     await checkRateLimit(ip, 'login', 10, 1800)
+    const { 'user-agent': userAgent } = headers
     // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
 
     if (isSelfhosted) {
@@ -123,6 +130,40 @@ export class AuthController {
       })
 
       user.sharedProjects = sharedProjects
+
+      if (user.isTelegramChatIdConfirmed) {
+        const ua = UAParser(userAgent)
+        const br = ua.browser.name || 'unknown'
+        const dv = ua.device.type || 'desktop'
+        const os = ua.os.name || 'unknown'
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+        const cc =
+          ct.getCountryForTimezone(tz)?.id ||
+          (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+        const country = ct.getCountry(cc)?.name || 'unknown'
+
+        this.bot.telegram.sendMessage(
+          user.telegramChatId,
+          `🚨 *Someone has logged into your account!*` +
+            '\n\n' +
+            `Browser: \`${br}\`` +
+            '\n' +
+            `Device: \`${dv}\`` +
+            '\n' +
+            `OS: \`${os}\`` +
+            '\n' +
+            `Country: \`${country}\`` +
+            '\n' +
+            `Timezone: \`${tz}\`` +
+            '\n' +
+            `IP: \`${ip}\`` +
+            '\n\n' +
+            `If it was you, ignore this message. If not, please contact customer support immediately.`,
+          {
+            parse_mode: 'Markdown',
+          },
+        )
+      }
 
       return this.authService.login(user)
     }

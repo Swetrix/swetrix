@@ -161,7 +161,7 @@ const getElValue = el => {
   return `'${el}'`
 }
 
-const getPIDsArray = (pids, pid) => {
+export const getPIDsArray = (pids, pid) => {
   const pidsEmpty = _isEmpty(pids)
   const pidEmpty = _isEmpty(pid)
   if (pidsEmpty && pidEmpty)

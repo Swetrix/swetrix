@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan } from 'typeorm'
+import { IsNull, LessThan, In, Not } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -10,11 +10,13 @@ import * as _join from 'lodash/join'
 import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
+import * as _find from 'lodash/find'
 
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
+import { AlertService } from 'src/alert/alert.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
@@ -35,8 +37,44 @@ import {
   REDIS_PERFORMANCE_COUNT_KEY,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
+import { InjectBot } from 'nestjs-telegraf'
+import { TelegrafContext } from 'src/user/user.controller'
+import { Telegraf } from 'telegraf'
+import {
+  QueryCondition,
+  QueryMetric,
+  QueryTime,
+} from 'src/alert/dto/alert.dto'
 
 dayjs.extend(utc)
+
+const getQueryTime = (time: QueryTime): number => {
+  if (time === QueryTime.LAST_15_MINUTES) return 15 * 60
+  if (time === QueryTime.LAST_30_MINUTES) return 30 * 60
+  if (time === QueryTime.LAST_1_HOUR) return 60 * 60
+  if (time === QueryTime.LAST_4_HOURS) return 4 * 60 * 60
+  if (time === QueryTime.LAST_24_HOURS) return 24 * 60 * 60
+  if (time === QueryTime.LAST_48_HOURS) return 48 * 60 * 60
+  return 0
+}
+
+const getQueryTimeString = (time: QueryTime): string => {
+  if (time === QueryTime.LAST_15_MINUTES) return '15 minutes'
+  if (time === QueryTime.LAST_30_MINUTES) return '30 minutes'
+  if (time === QueryTime.LAST_1_HOUR) return '1 hour'
+  if (time === QueryTime.LAST_4_HOURS) return '4 hours'
+  if (time === QueryTime.LAST_24_HOURS) return '24 hours'
+  if (time === QueryTime.LAST_48_HOURS) return '48 hours'
+  return '0'
+}
+
+const getQueryCondition = (condition: QueryCondition): string => {
+  if (condition === QueryCondition.LESS_THAN) return '<'
+  if (condition === QueryCondition.LESS_EQUAL_THAN) return '<='
+  if (condition === QueryCondition.GREATER_THAN) return '>'
+  if (condition === QueryCondition.GREATER_EQUAL_THAN) return '>='
+  return ''
+}
 
 @Injectable()
 export class TaskManagerService {
@@ -46,7 +84,9 @@ export class TaskManagerService {
     private readonly analyticsService: AnalyticsService,
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
-  ) {}
+    private readonly alertService: AlertService,
+    @InjectBot() private bot: Telegraf<TelegrafContext>,
+  ) { }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async saveLogData(): Promise<void> {
@@ -72,7 +112,9 @@ export class TaskManagerService {
         const query = `INSERT INTO customEV (id, pid, ev, created)`
         await clickhouse.query(query, parsed).toPromise()
       } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving custom events data: ${e}`)
+        console.error(
+          `[CRON WORKER] Error whilst saving custom events data: ${e}`,
+        )
       }
     }
 
@@ -84,7 +126,9 @@ export class TaskManagerService {
       try {
         await clickhouse.query(query).toPromise()
       } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving performance data: ${e}`)
+        console.error(
+          `[CRON WORKER] Error whilst saving performance data: ${e}`,
+        )
       }
     }
   }
@@ -310,13 +354,139 @@ export class TaskManagerService {
 
       const setSdurQuery = `ALTER TABLE analytics UPDATE sdur = sdur + CASE ${_map(
         toSave,
-        ([key, duration]) => `WHEN sid = '${key.split(':')[1]}' THEN ${duration / 1000}`, // converting to seconds
+        ([key, duration]) =>
+          `WHEN sid = '${key.split(':')[1]}' THEN ${duration / 1000}`, // converting to seconds
       ).join(' ')} END WHERE sid IN (${_map(
         toSave,
         ([key]) => `'${key.split(':')[1]}'`,
       ).join(',')})`
 
       await clickhouse.query(setSdurQuery).toPromise()
+    }
+  }
+
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async checkIsTelegramChatIdConfirmed(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        isTelegramChatIdConfirmed: false,
+      },
+      select: ['id', 'telegramChatId'],
+    })
+
+    for (let i = 0; i < _size(users); ++i) {
+      await this.userService.update(users[i].id, {
+        telegramChatId: null,
+      })
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
+  async checkUserOnline(): Promise<void> {
+    const projects = await this.projectService.findWhere(
+      {
+        admin: {
+          isTelegramChatIdConfirmed: true,
+        },
+      },
+      ['admin'],
+    )
+
+    const alerts = await this.alertService.findWhere({
+      project: In(_map(projects, 'id')),
+      active: true,
+      queryMetric: QueryMetric.ONLINE_USERS,
+    })
+
+    for (let i = 0; i < _size(alerts); ++i) {
+      const alert = alerts[i]
+      const project = _find(projects, { id: alert.project.id })
+
+      if (alert.lastTriggered !== null) {
+        const lastTriggered = new Date(alert.lastTriggered)
+        const now = new Date()
+
+        if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
+          return
+        }
+      }
+
+      const online = await this.analyticsService.getOnlineUserCount(
+        project.id,
+      )
+
+      if (online >= alert.queryValue) {
+        // @ts-ignore
+        await this.alertService.update(alert.id, {
+          lastTriggered: new Date(),
+        })
+
+        this.bot.telegram.sendMessage(
+          project.admin.telegramChatId,
+          `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!}`,
+          {
+            parse_mode: 'Markdown',
+          },
+        )
+      }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
+  async checkAdditionalAlerts(): Promise<void> {
+    const projects = await this.projectService.findWhere(
+      {
+        admin: {
+          isTelegramChatIdConfirmed: true,
+        },
+      },
+      ['admin'],
+    )
+
+    const alerts = await this.alertService.findWhere({
+      project: In(_map(projects, 'id')),
+      active: true,
+      queryMetric: Not(QueryMetric.ONLINE_USERS),
+    })
+
+    for (let i = 0; i < _size(alerts); ++i) {
+      const alert = alerts[i]
+      const project = _find(projects, { id: alert.project.id })
+
+      if (alert.lastTriggered !== null) {
+        const lastTriggered = new Date(alert.lastTriggered)
+        const now = new Date()
+
+        if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
+          return
+        }
+      }
+
+      const isUnique = Number(alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS)
+      const time = getQueryTime(alert.queryTime)
+      const createdCondition = getQueryCondition(alert.queryCondition)
+      const query = `SELECT count() FROM analytics WHERE pid = '${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
+      const queryResult = await clickhouse.query(query).toPromise()
+
+      const count = Number(queryResult[0]['count()'])
+
+      if (count >= alert.queryValue) {
+        // @ts-ignore
+        await this.alertService.update(alert.id, {
+          lastTriggered: new Date(),
+        })
+
+        const queryMetric = alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          ? 'unique page views'
+          : 'page views'
+        const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has had *${count}* ${queryMetric} in the last ${getQueryTimeString(alert.queryTime)}!`
+
+        this.bot.telegram.sendMessage(project.admin.telegramChatId, text, {
+          parse_mode: 'Markdown',
+        })
+      }
     }
   }
 }

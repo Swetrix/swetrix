@@ -26,6 +26,7 @@ export const ACCOUNT_PLANS = {
     displayName: 'Free plan',
     monthlyUsageLimit: 5000,
     maxProjects: 10,
+    maxAlerts: 1,
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
@@ -34,6 +35,7 @@ export const ACCOUNT_PLANS = {
     maxProjects: 20,
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
+    maxAlerts: 10,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
@@ -42,6 +44,7 @@ export const ACCOUNT_PLANS = {
     maxProjects: 20,
     pid: '752317',
     ypid: '776470',
+    maxAlerts: 50,
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
@@ -50,6 +53,7 @@ export const ACCOUNT_PLANS = {
     maxProjects: 30,
     pid: '752318',
     ypid: '776471',
+    maxAlerts: 100,
   },
 }
 
@@ -191,6 +195,20 @@ export class User {
     default: null,
   })
   apiKey: string | null
+
+  @Column({
+    type: 'varchar',
+    unique: true,
+    nullable: true,
+    default: null,
+  })
+  telegramChatId: string | null
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  isTelegramChatIdConfirmed: boolean
 
   @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
   @JoinTable()

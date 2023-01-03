@@ -54,8 +54,12 @@ import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
 import { checkRateLimit } from '../common/utils'
+import { InjectBot } from 'nestjs-telegraf'
+import { Scenes, Telegraf } from 'telegraf'
 
 dayjs.extend(utc)
+
+export type TelegrafContext = Scenes.SceneContext
 
 @ApiTags('User')
 @Controller('user')
@@ -68,6 +72,7 @@ export class UserController {
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly logger: AppLoggerService,
+    @InjectBot() private bot: Telegraf<TelegrafContext>,
   ) {}
 
   @Get('/')
@@ -434,6 +439,43 @@ export class UserController {
           { url },
         )
       }
+
+      if (
+        userDTO.telegramChatId &&
+        user.telegramChatId !== userDTO.telegramChatId
+      ) {
+        const userWithByTelegramChatId = await this.userService.findOneWhere({
+          telegramChatId: userDTO.telegramChatId,
+        })
+
+        if (userWithByTelegramChatId) {
+          throw new BadRequestException(
+            'User with this telegram chat id already exists',
+          )
+        }
+
+        this.bot.telegram.sendMessage(
+          userDTO.telegramChatId,
+          'Confirm the connection between your Telegram account and your Swetrix account.',
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: '✅ Confirm',
+                    callback_data: `confirmTelegramChatId:${user.id}`,
+                  },
+                  {
+                    text: '❌ Cancel',
+                    callback_data: `cancelTelegramChatId:${user.id}`,
+                  },
+                ],
+              ],
+            },
+          },
+        )
+      }
+
       // delete internal properties from userDTO before updating it
       // todo: use _pick instead of _omit
       const userToUpdate = _omit(userDTO, [
@@ -457,7 +499,10 @@ export class UserController {
         'twoFactorAuthenticationSecret',
         'isTwoFactorAuthenticationEnabled',
       ])
-      await this.userService.update(id, userToUpdate)
+      await this.userService.update(id, {
+        ...userToUpdate,
+        isTelegramChatIdConfirmed: false,
+      })
 
       const updatedUser = await this.userService.findOneWhere({ id })
       return this.userService.omitSensitiveData(updatedUser)

@@ -10,6 +10,8 @@ import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
+import * as _pick from 'lodash/pick'
+import * as _uniqBy from 'lodash/uniqBy'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
@@ -53,7 +55,8 @@ dayjs.extend(timezone)
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
-export const getSessionDurationKey = (hash: string, pid: string) => `sd:${hash}:${pid}`
+export const getSessionDurationKey = (hash: string, pid: string) =>
+  `sd:${hash}:${pid}`
 
 export const cols = [
   'cc',
@@ -68,12 +71,7 @@ export const cols = [
   'ca',
 ]
 
-export const perfCols = [
-  'cc',
-  'pg',
-  'dv',
-  'br',
-]
+export const perfCols = ['cc', 'pg', 'dv', 'br']
 
 interface chartCHResponse {
   index: number
@@ -167,7 +165,7 @@ export const checkIfTBAllowed = (
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) { }
+  constructor(private readonly projectService: ProjectService) {}
 
   async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
@@ -424,8 +422,9 @@ export class AnalyticsService {
         ...params,
         [colFilter]: filter,
       }
-      query += ` ${isExclusive ? 'AND NOT' : 'AND'
-        } ${column}={${colFilter}:String}`
+      query += ` ${
+        isExclusive ? 'AND NOT' : 'AND'
+      } ${column}={${colFilter}:String}`
     }
 
     return [query, params]
@@ -678,7 +677,10 @@ export class AnalyticsService {
       const size = _size(res)
       for (let j = 0; j < size; ++j) {
         const key = res[j][i]
-        params[i][key] = _round(millisecondsToSeconds(res[j]['avg(pageLoad)']), 2)
+        params[i][key] = _round(
+          millisecondsToSeconds(res[j]['avg(pageLoad)']),
+          2,
+        )
       }
     }
 
@@ -806,5 +808,10 @@ export class AnalyticsService {
     }
 
     return result
+  }
+
+  async getOnlineUserCount(pid: string): Promise<number> {
+    // @ts-ignore
+    return await redis.countKeysByPattern(`hb:${pid}:*`)
   }
 }

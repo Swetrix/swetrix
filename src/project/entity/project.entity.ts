@@ -10,6 +10,7 @@ import { ApiProperty } from '@nestjs/swagger'
 
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
+import { Alert } from 'src/alert/entity/alert.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
 
 // In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
@@ -54,6 +55,10 @@ export class Project {
   @ApiProperty({ type: () => ProjectShare })
   @OneToMany(() => ProjectShare, share => share.project)
   share: ProjectShare[]
+
+  @ApiProperty({ type: () => Alert })
+  @OneToMany(() => Alert, alert => alert.project)
+  alerts: Alert[]
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date

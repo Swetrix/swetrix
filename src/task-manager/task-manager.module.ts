@@ -5,6 +5,7 @@ import { UserModule } from '../user/user.module'
 import { ProjectModule } from '../project/project.module'
 import { AnalyticsModule } from '../analytics/analytics.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
+import { AlertModule } from 'src/alert/alert.module'
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ActionTokensModule } from '../action-tokens/action-tokens.module'
     MailerModule,
     UserModule,
     ActionTokensModule,
+    AlertModule,
     forwardRef(() => AnalyticsModule),
   ],
   providers: [TaskManagerService],
