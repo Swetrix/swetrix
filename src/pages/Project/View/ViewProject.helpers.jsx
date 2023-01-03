@@ -5,7 +5,7 @@ import {
 } from '@heroicons/react/24/outline'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
-import { area, spline } from 'billboard.js'
+import { area, areaSpline, spline } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
 import _split from 'lodash/split'
@@ -19,7 +19,7 @@ import _reduce from 'lodash/reduce'
 import JSZip from 'jszip'
 
 import { tbsFormatMapper } from 'redux/constants'
-import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
 
 const getAvg = (arr) => {
@@ -134,6 +134,14 @@ const CHART_METRICS_MAPPING = {
   sessionDuration: 'sessionDuration',
 }
 
+const CHART_METRICS_MAPPING_PERF = {
+  full: 'full',
+  timing: 'timing',
+  network: 'network',
+  frontend: 'frontend',
+  backend: 'backend',
+}
+
 // function to filter the data for the chart
 const getColumns = (chart, activeChartMetrics) => {
   const {
@@ -179,6 +187,46 @@ const getColumns = (chart, activeChartMetrics) => {
 
   if (sessionDuration) {
     columns.push(['sessionDuration', ...chart.sdur])
+  }
+
+  return columns
+}
+
+const getColumnsPerf = (chart, activeChartMetrics) => {
+  const columns = [
+    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
+  ]
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.full) {
+    columns.push(['dns', ...chart.dns])
+    columns.push(['tls', ...chart.tls])
+    columns.push(['conn', ...chart.conn])
+    columns.push(['response', ...chart.response])
+    columns.push(['render', ...chart.render])
+    columns.push(['dom_load', ...chart.domLoad])
+    columns.push(['ttfb', ...chart.ttfb])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.timing) {
+    columns.push(['frontend', ...sumArrays(chart.render, chart.domLoad)])
+    columns.push(['network', ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response)])
+    columns.push(['backend', ...chart.ttfb])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.network) {
+    columns.push(['dns', ...chart.dns])
+    columns.push(['tls', ...chart.tls])
+    columns.push(['conn', ...chart.conn])
+    columns.push(['response', ...chart.response])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend) {
+    columns.push(['render', ...chart.render])
+    columns.push(['dom_load', ...chart.domLoad])
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.backend) {
+    columns.push(['ttfb', ...chart.ttfb])
   }
 
   return columns
@@ -327,6 +375,172 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
   }
 }
 
+const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) => {
+  const xAxisSize = _size(chart.x)
+
+  let regions
+
+  if (applyRegions) {
+    let regionStart
+
+    if (xAxisSize > 1) {
+      regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+    } else {
+      regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+    }
+
+    regions = {
+      dns: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      tls: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      conn: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      response: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      render: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      dom_load: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+      ttfb: [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+    }
+  }
+
+  return {
+    data: {
+      x: 'x',
+      xFormat: tbsFormatMapper[timeBucket],
+      columns: getColumnsPerf(chart, activeChartMetrics),
+      types: {
+        dns: areaSpline(),
+        tls: areaSpline(),
+        conn: areaSpline(),
+        response: areaSpline(),
+        render: areaSpline(),
+        dom_load: areaSpline(),
+        ttfb: areaSpline(),
+        frontend: areaSpline(),
+        network: areaSpline(),
+        backend: areaSpline(),
+      },
+      colors: {
+        dns: '#EC4319',
+        tls: '#F27059',
+        conn: '#F7A265',
+        response: '#F5D376',
+        render: '#709775',
+        dom_load: '#A5E6AB',
+        ttfb: '#00A8E8',
+        frontend: '#709775',
+        network: '#F7A265',
+        backend: '#00A8E8',
+      },
+      groups: [
+        ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
+      ],
+      // regions,
+    },
+    axis: {
+      x: {
+        type: 'timeseries',
+        tick: {
+          format: tbsFormatMapper[timeBucket],
+        },
+      },
+      y: {
+        tick: {
+          format: (d) => getStringFromTime(getTimeFromSeconds(d), true),
+        },
+      },
+    },
+    tooltip: {
+      format: {
+        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+      },
+      contents: {
+        template: `
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+            <li class='font-semibold'>{=TITLE}</li>
+            <hr class='border-gray-200 dark:border-gray-600' />
+            {{
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <span>{=NAME}</span>
+                </div>
+                <span class='pl-4'>{=VALUE}</span>
+              </li>
+            }}
+          </ul>`,
+      },
+    },
+    point: {
+      focus: {
+        only: xAxisSize > 1,
+      },
+      pattern: [
+        'circle',
+      ],
+      r: 3,
+    },
+    legend: {
+      usePoint: true,
+      item: {
+        tile: {
+          width: 10,
+        },
+      },
+    },
+    area: {
+      linearGradient: true,
+    },
+    bindto: '#dataChart',
+  }
+}
+
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const paidPeriods = ['12M', '24M']
@@ -368,5 +582,5 @@ const getFormatDate = (date) => {
 }
 
 export {
-  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
+  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf,
 }

@@ -1,5 +1,8 @@
 import _find from 'lodash/find'
 import _replace from 'lodash/replace'
+import _round from 'lodash/round'
+import _map from 'lodash/map'
+import _reduce from 'lodash/reduce'
 
 const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
 
@@ -38,21 +41,36 @@ export const secondsTillNextMonth = () => {
   return 0 | (date - now) / 1000
 }
 
+export const convertMsToSeconds = (ms) => {
+  return ms / 1000
+}
+
 // Returns an object like { h: 0, m: 0, s: 0 } based on the seconds parameter provided
 export const getTimeFromSeconds = (seconds) => {
   const h = 0 | seconds / 3600
   const m = 0 | (seconds % 3600) / 60
   const s = 0 | seconds % 60
+  const ms = 0 | (seconds % 1) * 1000
 
-  return { h, m, s }
+  return {
+    h, m, s, ms,
+  }
 }
 
-export const getStringFromTime = (time) => {
-  const { h, m, s } = time
+export const getStringFromTime = (time, showMS) => {
+  const {
+    h, m, s, ms,
+  } = time
 
-  if (h === 0 && m === 0 && s === 0) {
+  if (h === 0 && m === 0 && s === 0 && (!showMS || ms === 0)) {
     return '0s'
   }
 
-  return `${h ? `${h}h ` : ''}${m ? `${m}m ` : ''}${s ? `${s}s` : ''}`
+  return `${h ? `${h}h ` : ''}${m ? `${m}m ` : ''}${s || (showMS && ms > 0) ? `${showMS ? _round(s + ms / 1000, 2) : s}s` : ''}`
+}
+
+export const sumArrays = (...arrays) => {
+  return _map(arrays[0], (_, index) => {
+    return _reduce(arrays, (sum, array) => sum + array[index], 0)
+  })
 }

@@ -198,6 +198,11 @@ export const tabsForDashboard = [
   },
 ]
 
+export const PROJECT_TABS = {
+  traffic: 'traffic',
+  performance: 'performance',
+}
+
 export const INVITATION_EXPIRES_IN = 48 // hours
 export const ENTRIES_PER_PAGE_DASHBOARD = 10
 

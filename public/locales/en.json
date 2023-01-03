@@ -380,7 +380,22 @@
     "trendlines": "Trend lines",
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
-    "sessionDuration": "Session duration"
+    "sessionDuration": "Session duration",
+    "traffic": "Traffic",
+    "performance": "Performance",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Network",
+    "timing": "Timing breakdown",
+    "timingFull": "Timing breakdown (full)",
+    "dns": "DNS",
+    "conn": "Connection",
+    "tls": "TLS Setup",
+    "ttfb": "Time to first byte (TTFB)",
+    "domLoad": "DOM Content Load",
+    "pageLoad": "Page load time",
+    "render": "Browser render",
+    "response": "Response Time"
   },
   "docs": {
     "titles": {
@@ -416,7 +431,7 @@
         "pg": "the page user currently views (e.g. /hello)."
       }
     },
-    "tvReturn": "The trackViews function returns an object with some methods allowing you to alter the behaviour of page tracking.",
+    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
     "contents": "Contents"
   },
   "notFoundPage": {

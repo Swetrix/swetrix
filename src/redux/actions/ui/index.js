@@ -118,8 +118,22 @@ const setProjectCache = (pid, data, key) => ({
   },
 })
 
+const setProjectCachePerf = (pid, data, key) => ({
+  type: types.SET_PROJECT_CACHE_PERF,
+  payload: {
+    pid, data, key,
+  },
+})
+
 const deleteProjectCache = (pid, period, timeBucket) => ({
   type: types.DELETE_PROJECT_CACHE,
+  payload: {
+    pid, period, timeBucket,
+  },
+})
+
+const deleteProjectCachePerf = (pid, period, timeBucket) => ({
+  type: types.DELETE_PROJECT_CACHE_PERF,
   payload: {
     pid, period, timeBucket,
   },
@@ -182,6 +196,11 @@ const setThemeType = (theme) => ({
   payload: { theme },
 })
 
+const setProjectTab = (tab) => ({
+  type: types.SET_PROJECT_TAB,
+  payload: { tab },
+})
+
 const UIActions = {
   loadProjects,
   loadSharedProjects,
@@ -210,6 +229,9 @@ const UIActions = {
   loadExtensions,
   setLastBlogPost,
   setThemeType,
+  setProjectCachePerf,
+  deleteProjectCachePerf,
+  setProjectTab,
 }
 
 export default UIActions

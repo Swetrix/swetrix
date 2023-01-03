@@ -4,14 +4,20 @@ import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
+import { PROJECT_TABS } from 'redux/constants'
+import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 
 import countriesList from 'utils/countries'
+import { useSelector } from 'react-redux'
 
 const InteractiveMap = ({ data, onClickCountry, total }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [hoverShow, setHoverShow] = useState(false)
   const [dataHover, setDataHover] = useState(null)
   const [cursorPosition, setCursorPosition] = useState(null)
+
+  const projectTab = useSelector((state) => state.ui.projects.projectTab)
+  const isTrafficTab = projectTab === PROJECT_TABS.traffic
 
   const onMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -25,30 +31,42 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
       <svg id='map' viewBox='0 0 1050 650' className='w-full h-full' onMouseMove={onMouseMove}>
         <g>
           {_map(countriesList, (item, index) => {
-            const visitors = data[index] || 0
-            const perc = ((visitors / total) * 100) || 0
+            const ccData = data[index] || 0
+            const perc = ((ccData / total) * 100) || 0
 
             return (
               <path
                 key={index}
                 id={index}
-                className={cx({
-                  'hover:opacity-90': perc > 0,
-                  'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
-                  'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
-                  'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
-                  'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
-                  'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
-                  'cursor-pointer': Boolean(visitors),
-                })}
+                className={isTrafficTab
+                  ? cx({
+                    'hover:opacity-90': perc > 0,
+                    'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
+                    'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
+                    'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
+                    'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
+                    'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
+                    'cursor-pointer': Boolean(ccData),
+                  }) : cx({
+                    'hover:opacity-90': ccData > 0,
+                    'fill-[#cfd1d4] dark:fill-[#465d7e46]': ccData === 0,
+                    'fill-[#92b2e7] dark:fill-[#292d77]': ccData > 0 && ccData < 1,
+                    'fill-[#6f9be3] dark:fill-[#363391]': ccData >= 1 && ccData < 2,
+                    'fill-[#5689db] dark:fill-[#4842be]': ccData >= 2 && ccData < 3,
+                    'fill-[#3b82f6] dark:fill-[#6357ff]': ccData >= 3 && ccData < 5,
+                    'fill-[#f78a8a]': ccData >= 5 && ccData < 7,
+                    'fill-[#f76b6b]': ccData >= 7 && ccData < 10,
+                    'fill-[#f74b4b]': ccData >= 10,
+                    'cursor-pointer': Boolean(ccData),
+                  })}
                 d={item.d}
                 onClick={() => perc !== 0 && onClickCountry(index)}
                 onMouseEnter={() => {
-                  if (visitors) {
+                  if (ccData) {
                     setHoverShow(true)
                     setDataHover({
                       countries: countries.getName(index, language),
-                      data: visitors,
+                      data: ccData,
                     })
                   }
                 }}
@@ -71,11 +89,11 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
           >
             <strong>{dataHover.countries}</strong>
             <br />
-            {t('project.unique')}
+            {isTrafficTab ? t('project.unique') : t('dashboard.pageLoad')}
             :
             &nbsp;
             <strong className='dark:text-indigo-400'>
-              {dataHover.data}
+              {isTrafficTab ? dataHover.data : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
             </strong>
           </div>
         )}

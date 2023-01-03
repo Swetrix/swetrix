@@ -7,7 +7,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -33,24 +33,25 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
+import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
 import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
 import {
-  getProjectData, getProject, getOverallStats, getLiveVisitors,
+  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData,
 } from 'api'
 import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
+  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getSettingsPerf,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -59,8 +60,9 @@ import Filters from './components/Filters'
 import './styles.css'
 
 const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert,
+  projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
+  projectTab, setProjectTab,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -77,6 +79,7 @@ const ViewProject = ({
   }, [id, sharedProjects])
   const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
+  const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
   const [arePeriodParsed, setArePeriodParsed] = useState(false)
   const [panelsData, setPanelsData] = useState({})
@@ -97,9 +100,11 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
   })
+  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.timing)
   const [sessionDurationAVG, setSessionDurationAVG] = useState(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
+  const [filtersPerf, setFiltersPerf] = useState([])
   // That is needed when using 'Export as image' feature
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
@@ -108,6 +113,33 @@ const ViewProject = ({
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs[id]?.rangeDate
   const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
+  const [activeTab, setActiveTab] = useState(() => {
+    const url = new URL(window.location)
+    const { searchParams } = url
+    const tab = searchParams.get('tab')
+    return tab || projectTab || 'traffic'
+  })
+
+  const [chartDataPerf, setChartDataPerf] = useState({})
+  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
+  const [panelsDataPerf, setPanelsDataPerf] = useState({})
+
+  const tabs = useMemo(() => {
+    return [
+      {
+        id: 'traffic',
+        label: t('dashboard.traffic'),
+        icon: ChartBarIcon,
+      },
+      {
+        id: 'performance',
+        label: t('dashboard.performance'),
+        icon: BoltIcon,
+      },
+    ]
+  }, [t])
+
+  const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
 
   const { name } = project
 
@@ -150,6 +182,36 @@ const ViewProject = ({
     ]
   }, [t, activeChartMetrics])
 
+  const chartMetricsPerf = useMemo(() => {
+    return [
+      {
+        id: CHART_METRICS_MAPPING_PERF.full,
+        label: t('dashboard.timingFull'),
+        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.full),
+      },
+      {
+        id: CHART_METRICS_MAPPING_PERF.timing,
+        label: t('dashboard.timing'),
+        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.timing),
+      },
+      {
+        id: CHART_METRICS_MAPPING_PERF.network,
+        label: t('dashboard.network'),
+        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.network),
+      },
+      {
+        id: CHART_METRICS_MAPPING_PERF.frontend,
+        label: t('dashboard.frontend'),
+        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.frontend),
+      },
+      {
+        id: CHART_METRICS_MAPPING_PERF.backend,
+        label: t('dashboard.backend'),
+        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.backend),
+      },
+    ]
+  }, [t, activeChartMetricsPerf])
+
   const dataNames = useMemo(() => {
     return {
       unique: t('project.unique'),
@@ -162,10 +224,30 @@ const ViewProject = ({
     }
   }, [t])
 
+  const dataNamesPerf = useMemo(() => {
+    return {
+      full: t('dashboard.timing'),
+      network: t('dashboard.network'),
+      frontend: t('dashboard.frontend'),
+      backend: t('dashboard.backend'),
+      dns: t('dashboard.dns'),
+      tls: t('dashboard.tls'),
+      conn: t('dashboard.conn'),
+      response: t('dashboard.response'),
+      render: t('dashboard.render'),
+      dom_load: t('dashboard.domLoad'),
+      ttfb: t('dashboard.ttfb'),
+    }
+  }, [t])
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const switchActiveChartMetric = useCallback(_debounce((pairID) => {
-    setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
-  }, 0), [])
+    if (activeTab === PROJECT_TABS.performance) {
+      setActiveChartMetricsPerf(pairID)
+    } else {
+      setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
+    }
+  }, 0), [activeTab])
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
@@ -254,16 +336,103 @@ const ViewProject = ({
           customs,
         })
 
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
+        if (activeTab === PROJECT_TABS.traffic) {
+          if (!_isEmpty(mainChart)) {
+            mainChart.destroy()
+          }
+
+          setMainChart(() => {
+            const generete = bb.generate(bbSettings)
+            generete.data.names(dataNames)
+            return generete
+          })
         }
 
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
         setIsPanelsDataEmpty(false)
+      }
+
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+    } catch (e) {
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
+      console.error(e)
+    }
+  }
+
+  const loadAnalyticsPerf = async (forced = false, newFilters = null) => {
+    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
+      return
+    }
+
+    setDataLoading(true)
+    try {
+      let dataPerf
+      let key
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+        key = getProjectCacheCustomKey(from, to, timeBucket)
+      } else {
+        key = getProjectCacheKey(period, timeBucket)
+      }
+
+      if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
+        dataPerf = cachePerf[id][key]
+      } else {
+        if (period === 'custom' && dateRange) {
+          dataPerf = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, from, to, timezone)
+        } else {
+          dataPerf = await getPerfData(id, timeBucket, period, newFilters || filtersPerf, '', '', timezone)
+        }
+
+        setProjectCachePerf(id, dataPerf || {}, key)
+      }
+
+      const {
+        appliedFilters,
+      } = dataPerf
+
+      const convertApliedFilters = JSON.parse(appliedFilters)
+
+      if (!_isEmpty(convertApliedFilters)) {
+        if (_isEmpty(filtersPerf) || !_isEqual(filtersPerf, appliedFilters)) {
+          setFiltersPerf(convertApliedFilters)
+        } else {
+          setFiltersPerf((filter) => [...filter, ...convertApliedFilters])
+        }
+      }
+
+      if (_isEmpty(dataPerf)) {
+        setIsPanelsDataEmptyPerf(true)
+      } else {
+        const { chart: chartPerf } = dataPerf
+        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, applyRegions)
+        setChartDataPerf(chartPerf)
+
+        setPanelsDataPerf({
+          types: _keys(dataPerf.params),
+          data: dataPerf.params,
+        })
+
+        if (activeTab === PROJECT_TABS.performance) {
+          if (!_isEmpty(mainChart)) {
+            mainChart.destroy()
+          }
+
+          setMainChart(() => {
+            const generete = bb.generate(bbSettings)
+            generete.data.names(dataNamesPerf)
+            return generete
+          })
+        }
+
+        setIsPanelsDataEmptyPerf(false)
       }
 
       setAnalyticsLoading(false)
@@ -279,75 +448,135 @@ const ViewProject = ({
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column, filter, isExclusive = false) => {
     let newFilters
+    let newFiltersPerf
+    const columnPerf = `${column}_perf`
 
-    // temporarily apply only 1 filter per data type
-    if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
-      // selected filter is already included into the filters array -> removing it
-      // removing filter from the state
-      newFilters = _filter(filters, (f) => f.column !== column)
-      setFilters(newFilters)
+    if (activeTab === PROJECT_TABS.performance) {
+      if (_find(filtersPerf, (f) => f.column === column)) {
+        newFiltersPerf = _filter(filtersPerf, (f) => f.column !== column)
 
-      // removing filter from the page URL
-      const url = new URL(window.location)
-      url.searchParams.delete(column)
-      const { pathname, search } = url
-      history.push({
-        pathname,
-        search,
-        state: {
-          scrollToTopDisable: true,
-        },
-      })
+        const url = new URL(window.location)
+        url.searchParams.delete(columnPerf)
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+        setFiltersPerf(newFiltersPerf)
+      } else {
+        newFiltersPerf = [
+          ...filtersPerf,
+          { column, filter, isExclusive },
+        ]
+
+        const url = new URL(window.location)
+        url.searchParams.append(columnPerf, filter)
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+        setFiltersPerf(newFiltersPerf)
+      }
     } else {
-      // selected filter is not present in the filters array -> applying it
-      // sroting filter in the state
-      newFilters = [
-        ...filters,
-        { column, filter, isExclusive },
-      ]
-      setFilters(newFilters)
+      // eslint-disable-next-line no-lonely-if
+      if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
+        // selected filter is already included into the filters array -> removing it
+        // removing filter from the state
+        newFilters = _filter(filters, (f) => f.column !== column)
+        setFilters(newFilters)
 
-      // storing filter in the page URL
-      const url = new URL(window.location)
-      url.searchParams.append(column, filter)
-      const { pathname, search } = url
-      history.push({
-        pathname,
-        search,
-        state: {
-          scrollToTopDisable: true,
-        },
-      })
+        // removing filter from the page URL
+        const url = new URL(window.location)
+        url.searchParams.delete(column)
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+      } else {
+        // selected filter is not present in the filters array -> applying it
+        // sroting filter in the state
+        newFilters = [
+          ...filters,
+          { column, filter, isExclusive },
+        ]
+        setFilters(newFilters)
+
+        // storing filter in the page URL
+        const url = new URL(window.location)
+        url.searchParams.append(column, filter)
+        const { pathname, search } = url
+        history.push({
+          pathname,
+          search,
+          state: {
+            scrollToTopDisable: true,
+          },
+        })
+      }
     }
 
     sdkInstance?._emitEvent('filtersupdate', newFilters)
-    loadAnalytics(true, newFilters)
+    if (activeTab === PROJECT_TABS.performance) {
+      loadAnalyticsPerf(true, newFiltersPerf)
+    } else {
+      loadAnalytics(true, newFilters)
+    }
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
   const onChangeExclusive = (column, filter, isExclusive) => {
-    const newFilters = _map(filters, (f) => {
-      if (f.column === column && f.filter === filter) {
-        return {
-          ...f,
-          isExclusive,
+    let newFilters
+    if (activeTab === PROJECT_TABS.performance) {
+      newFilters = _map(filtersPerf, (f) => {
+        if (f.column === column && f.filter === filter) {
+          return {
+            ...f,
+            isExclusive,
+          }
         }
-      }
 
-      return f
-    })
+        return f
+      })
+      setFiltersPerf(newFilters)
+      loadAnalyticsPerf(true, newFilters)
+    } else {
+      newFilters = _map(filters, (f) => {
+        if (f.column === column && f.filter === filter) {
+          return {
+            ...f,
+            isExclusive,
+          }
+        }
 
-    setFilters(newFilters)
-    loadAnalytics(true, newFilters)
+        return f
+      })
+      setFilters(newFilters)
+      loadAnalytics(true, newFilters)
+    }
 
     // storing exclusive filter in the page URL
     const url = new URL(window.location)
-    url.searchParams.delete(column)
-    if (isExclusive) {
-      url.searchParams.append(column, `!${filter}`)
+
+    if (activeTab === PROJECT_TABS.performance) {
+      const columnPerf = `${column}_perf`
+      url.searchParams.delete(columnPerf)
+      url.searchParams.append(columnPerf, filter)
     } else {
+      url.searchParams.delete(column)
       url.searchParams.append(column, filter)
     }
+
     const { pathname, search } = url
     history.push({
       pathname,
@@ -361,69 +590,108 @@ const ViewProject = ({
 
   const refreshStats = () => {
     if (!isLoading && !dataLoading) {
-      loadAnalytics(true)
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf(true)
+      } else {
+        loadAnalytics(true)
+      }
     }
   }
 
   useEffect(() => {
-    if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
-      mainChart.data.names(dataNames)
+    const url = new URL(window.location)
+    url.searchParams.delete('tab')
 
-      if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique || activeChartMetrics.trendlines) {
-        mainChart.load({
-          columns: getColumns(chartData, activeChartMetrics),
-        })
-      }
-
-      if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration) {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
-
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
-      }
-
-      if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
-
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
-      }
-
-      if (!activeChartMetrics.views) {
-        mainChart.unload({
-          ids: 'total',
-        })
-      }
-
-      if (!activeChartMetrics.unique) {
-        mainChart.unload({
-          ids: 'unique',
-        })
-      }
-
-      if (!activeChartMetrics.viewsPerUnique) {
-        mainChart.unload({
-          ids: 'viewsPerUnique',
-        })
-      }
+    if (activeTab === PROJECT_TABS.performance) {
+      url.searchParams.append('tab', PROJECT_TABS.performance)
+    } else {
+      url.searchParams.append('tab', PROJECT_TABS.traffic)
     }
-  }, [isLoading, activeChartMetrics, chartData]) // eslint-disable-line
+    const { pathname, search } = url
+    history.push({
+      pathname,
+      search,
+      state: {
+        scrollToTopDisable: true,
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
+
+  useEffect(() => {
+    if (activeTab === PROJECT_TABS.traffic) {
+      if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
+        mainChart.data.names(dataNames)
+
+        if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique || activeChartMetrics.trendlines) {
+          mainChart.load({
+            columns: getColumns(chartData, activeChartMetrics),
+          })
+        }
+
+        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration) {
+          const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
+
+          if (!_isEmpty(mainChart)) {
+            mainChart.destroy()
+          }
+
+          setMainChart(() => {
+            const generete = bb.generate(bbSettings)
+            generete.data.names(dataNames)
+            return generete
+          })
+        }
+
+        if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
+          const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions)
+
+          if (!_isEmpty(mainChart)) {
+            mainChart.destroy()
+          }
+
+          setMainChart(() => {
+            const generete = bb.generate(bbSettings)
+            generete.data.names(dataNames)
+            return generete
+          })
+        }
+
+        if (!activeChartMetrics.views) {
+          mainChart.unload({
+            ids: 'total',
+          })
+        }
+
+        if (!activeChartMetrics.unique) {
+          mainChart.unload({
+            ids: 'unique',
+          })
+        }
+
+        if (!activeChartMetrics.viewsPerUnique) {
+          mainChart.unload({
+            ids: 'viewsPerUnique',
+          })
+        }
+      }
+    } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
+      const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, applyRegions)
+
+      if (!_isEmpty(mainChart)) {
+        mainChart.destroy()
+      }
+
+      setMainChart(() => {
+        const generete = bb.generate(bbSettings)
+        generete.data.names(dataNamesPerf)
+        return generete
+      })
+    }
+  }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf]) // eslint-disable-line
 
   // Initialising Swetrix SDK instance
   useEffect(() => {
@@ -508,29 +776,60 @@ const ViewProject = ({
   // Parsing initial filters from the address bar
   useEffect(() => {
     // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
-    try {
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const initialFilters = []
-      // eslint-disable-next-line lodash/prefer-lodash-method
-      searchParams.forEach((value, key) => {
-        if (!_includes(validFilters, key)) {
-          return
-        }
+    if (activeTab === PROJECT_TABS.performance) {
+      try {
+        const url = new URL(window.location)
+        const { searchParams } = url
+        const initialFilters = []
+        // eslint-disable-next-line lodash/prefer-lodash-method
+        searchParams.forEach((value, key) => {
+          if (!_includes(key, '_perf')) {
+            return
+          }
 
-        const isExclusive = _startsWith(value, '!')
-        initialFilters.push({
-          column: key,
-          filter: isExclusive ? value.substring(1) : value,
-          isExclusive,
+          const keyPerf = _replace(key, '_perf', '')
+
+          if (!_includes(validFilters, keyPerf)) {
+            return
+          }
+
+          const isExclusive = _startsWith(value, '!')
+          initialFilters.push({
+            column: keyPerf,
+            filter: isExclusive ? value.substring(1) : value,
+            isExclusive,
+          })
         })
-      })
 
-      setFilters(initialFilters)
-    } finally {
-      setAreFiltersParsed(true)
+        setFiltersPerf(initialFilters)
+      } finally {
+        setAreFiltersPerfParsed(true)
+      }
+    } else {
+      try {
+        const url = new URL(window.location)
+        const { searchParams } = url
+        const initialFilters = []
+        // eslint-disable-next-line lodash/prefer-lodash-method
+        searchParams.forEach((value, key) => {
+          if (!_includes(validFilters, key)) {
+            return
+          }
+
+          const isExclusive = _startsWith(value, '!')
+          initialFilters.push({
+            column: key,
+            filter: isExclusive ? value.substring(1) : value,
+            isExclusive,
+          })
+        })
+
+        setFilters(initialFilters)
+      } finally {
+        setAreFiltersParsed(true)
+      }
     }
-  }, [])
+  }, [activeTab])
 
   useEffect(() => {
     if (arePeriodParsed) {
@@ -613,9 +912,16 @@ const ViewProject = ({
 
   useEffect(() => {
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      loadAnalytics()
+      if (activeTab === PROJECT_TABS.traffic) {
+        loadAnalytics()
+      }
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
+    if (areFiltersPerfParsed) {
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf()
+      }
+    }
+  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
   useEffect(() => {
     if (dateRange && arePeriodParsed) {
@@ -803,12 +1109,25 @@ const ViewProject = ({
       },
     })
     setFilters([])
-    loadAnalytics(true, [])
+    setFiltersPerf([])
+    if (activeTab === PROJECT_TABS.performance) {
+      loadAnalyticsPerf(true, [])
+    } else {
+      loadAnalytics(true, [])
+    }
   }
 
   const exportTypes = [
     { label: t('project.asImage'), onClick: exportAsImageHandler },
-    { label: t('project.asCSV'), onClick: () => onCSVExportClick(panelsData, id, tnMapping, language) },
+    {
+      label: t('project.asCSV'),
+      onClick: () => {
+        if (activeTab === PROJECT_TABS.performance) {
+          return onCSVExportClick(panelsDataPerf, id, tnMapping, language)
+        }
+        return onCSVExportClick(panelsData, id, tnMapping, language)
+      },
+    },
   ]
 
   if (!isLoading) {
@@ -825,6 +1144,60 @@ const ViewProject = ({
           )}
           ref={dashboardRef}
         >
+          {/* Tabs selector */}
+          <div>
+            <div className='sm:hidden'>
+              <Select
+                items={tabs}
+                keyExtractor={(item) => item.id}
+                labelExtractor={(item) => item.label}
+                onSelect={(label) => {
+                  const selected = _find(tabs, (tab) => tab.label === label)
+                  setProjectTab(selected.id)
+                  setActiveTab(selected.id)
+                }}
+                title={activeTabLabel}
+              />
+            </div>
+            <div className='hidden sm:block'>
+              <div>
+                <nav className='-mb-px flex space-x-4' aria-label='Tabs'>
+                  {_map(tabs, tab => {
+                    const isCurrent = tab.id === activeTab
+
+                    return (
+                      <div
+                        key={tab.id}
+                        onClick={() => {
+                          setProjectTab(tab.id)
+                          setActiveTab(tab.id)
+                        }}
+                        className={cx(
+                          isCurrent
+                            ? 'border-indigo-700 text-indigo-700 dark:text-indigo-500 dark:border-indigo-500'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300',
+                          'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
+                        )}
+                        aria-current={isCurrent ? 'page' : undefined}
+                      >
+                        <tab.icon
+                          className={cx(
+                            isCurrent ? 'text-indigo-700 dark:text-indigo-500' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
+                            '-ml-0.5 mr-2 h-5 w-5',
+                          )}
+                          aria-hidden='true'
+                        />
+                        <span>
+                          {tab.label}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </nav>
+              </div>
+            </div>
+          </div>
+
           <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
             <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
               {name}
@@ -910,36 +1283,59 @@ const ViewProject = ({
             </div>
           </div>
           <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-            {!isPanelsDataEmpty && (
-              <Dropdown
-                items={chartMetrics}
-                title={t('project.metricVis')}
-                labelExtractor={(pair) => {
-                  const {
-                    label, id: pairID, active, conflicts,
-                  } = pair
+            {activeTab === PROJECT_TABS.traffic ? (
+              !isPanelsDataEmpty && (
+                <Dropdown
+                  items={chartMetrics}
+                  title={t('project.metricVis')}
+                  labelExtractor={(pair) => {
+                    const {
+                      label, id: pairID, active, conflicts,
+                    } = pair
 
-                  const conflicted = isConflicted(conflicts)
+                    const conflicted = isConflicted(conflicts)
 
-                  return (
-                    <Checkbox
-                      className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                      label={label}
-                      disabled={conflicted}
-                      id={pairID}
-                      checked={active}
-                    />
-                  )
-                }}
-                keyExtractor={(pair) => pair.id}
-                onSelect={({ id: pairID, conflicts }) => {
-                  if (isConflicted(conflicts)) {
-                    generateAlert(t('project.conflictMetric'), 'error')
-                    return
-                  }
-                  switchActiveChartMetric(pairID)
-                }}
-              />
+                    return (
+                      <Checkbox
+                        className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                        label={label}
+                        disabled={conflicted}
+                        id={pairID}
+                        checked={active}
+                      />
+                    )
+                  }}
+                  keyExtractor={(pair) => pair.id}
+                  onSelect={({ id: pairID, conflicts }) => {
+                    if (isConflicted(conflicts)) {
+                      generateAlert(t('project.conflictMetric'), 'error')
+                      return
+                    }
+                    switchActiveChartMetric(pairID)
+                  }}
+                />
+              )) : (
+              !isPanelsDataEmptyPerf && (
+                <Dropdown
+                  items={chartMetricsPerf}
+                  title={(
+                    <p>
+                      {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                    </p>
+                  )}
+                  labelExtractor={(pair) => {
+                    const {
+                      label,
+                    } = pair
+
+                    return label
+                  }}
+                  keyExtractor={(pair) => pair.id}
+                  onSelect={({ id: pairID }) => {
+                    switchActiveChartMetric(pairID)
+                  }}
+                />
+              )
             )}
             <Dropdown
               items={[...exportTypes, ...customExportTypes]}
@@ -971,119 +1367,203 @@ const ViewProject = ({
           {isPanelsDataEmpty && (
             <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
           )}
-          <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-            <div
-              className={cx('h-80', {
-                hidden: checkIfAllMetricsAreDisabled,
-              })}
-            >
-              <div className='h-80' id='dataChart' />
-            </div>
-            <Filters
-              filters={filters}
-              onRemoveFilter={filterHandler}
-              onChangeExclusive={onChangeExclusive}
-              tnMapping={tnMapping}
-            />
-            {dataLoading && (
-              <div className='loader bg-transparent static mt-4' id='loader'>
-                <div className='loader-head'>
-                  <div className='first' />
-                  <div className='second' />
-                </div>
+          {activeTab === 'traffic' && (
+            <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+              <div
+                className={cx('h-80', {
+                  hidden: checkIfAllMetricsAreDisabled,
+                })}
+              >
+                <div className='h-80' id='dataChart' />
               </div>
-            )}
-            <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-              {!_isEmpty(project.overall) && (
-                <Overview
-                  t={t}
-                  overall={project.overall}
-                  chartData={chartData}
-                  activePeriod={activePeriod}
-                  sessionDurationAVG={sessionDurationAVG}
-                  live={project.live}
-                  projectId={id}
-                />
+              <Filters
+                filters={filters}
+                onRemoveFilter={filterHandler}
+                onChangeExclusive={onChangeExclusive}
+                tnMapping={tnMapping}
+              />
+              {dataLoading && (
+                <div className='loader bg-transparent static mt-4' id='loader'>
+                  <div className='loader-head'>
+                    <div className='first' />
+                    <div className='second' />
+                  </div>
+                </div>
               )}
-              {_map(panelsData.types, (type) => {
-                const panelName = tnMapping[type]
-                const panelIcon = panelIconMapping[type]
-                const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
-
-                if (type === 'cc') {
-                  return (
-                    <Panel
-                      t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      customTabs={customTabs}
-                      rowMapper={(rowName) => (
-                        <CCRow rowName={rowName} language={language} />
-                      )}
-                    />
-                  )
-                }
-
-                if (type === 'dv') {
-                  return (
-                    <Panel
-                      t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      customTabs={customTabs}
-                      capitalize
-                    />
-                  )
-                }
-
-                if (type === 'ref') {
-                  return (
-                    <Panel
-                      t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      customTabs={customTabs}
-                      rowMapper={(rowName) => (
-                        <RefRow rowName={rowName} showIcons={showIcons} />
-                      )}
-                    />
-                  )
-                }
-
-                return (
-                  <Panel
+              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                {!_isEmpty(project.overall) && (
+                  <Overview
                     t={t}
-                    key={type}
-                    icon={panelIcon}
-                    id={type}
-                    onFilter={filterHandler}
-                    name={panelName}
-                    data={panelsData.data[type]}
-                    customTabs={customTabs}
+                    overall={project.overall}
+                    chartData={chartData}
+                    activePeriod={activePeriod}
+                    sessionDurationAVG={sessionDurationAVG}
+                    live={project.live}
+                    projectId={id}
                   />
-                )
-              })}
-              {!_isEmpty(panelsData.customs) && (
-                <CustomEvents
-                  t={t}
-                  customs={panelsData.customs}
-                  chartData={chartData}
-                />
-              )}
+                )}
+                {_map(panelsData.types, (type) => {
+                  const panelName = tnMapping[type]
+                  const panelIcon = panelIconMapping[type]
+                  const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
+
+                  if (type === 'cc') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        rowMapper={(rowName) => (
+                          <CCRow rowName={rowName} language={language} />
+                        )}
+                      />
+                    )
+                  }
+
+                  if (type === 'dv') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        capitalize
+                      />
+                    )
+                  }
+
+                  if (type === 'ref') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                        rowMapper={(rowName) => (
+                          <RefRow rowName={rowName} showIcons={showIcons} />
+                        )}
+                      />
+                    )
+                  }
+
+                  return (
+                    <Panel
+                      t={t}
+                      key={type}
+                      icon={panelIcon}
+                      id={type}
+                      onFilter={filterHandler}
+                      name={panelName}
+                      data={panelsData.data[type]}
+                      customTabs={customTabs}
+                    />
+                  )
+                })}
+                {!_isEmpty(panelsData.customs) && (
+                  <CustomEvents
+                    t={t}
+                    customs={panelsData.customs}
+                    chartData={chartData}
+                  />
+                )}
+              </div>
             </div>
-          </div>
+          )}
+          {activeTab === PROJECT_TABS.performance && (
+            <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+              <div
+                className={cx('h-80', {
+                  hidden: checkIfAllMetricsAreDisabled,
+                })}
+              >
+                <div className='h-80' id='dataChart' />
+              </div>
+              <Filters
+                filters={filtersPerf}
+                onRemoveFilter={filterHandler}
+                onChangeExclusive={onChangeExclusive}
+                tnMapping={tnMapping}
+              />
+              {dataLoading && (
+                <div className='loader bg-transparent static mt-4' id='loader'>
+                  <div className='loader-head'>
+                    <div className='first' />
+                    <div className='second' />
+                  </div>
+                </div>
+              )}
+              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                {_map(panelsDataPerf.types, (type) => {
+                  const panelName = tnMapping[type]
+                  const panelIcon = panelIconMapping[type]
+                  const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
+
+                  if (type === 'cc') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsDataPerf.data[type]}
+                        customTabs={customTabs}
+                        rowMapper={(rowName) => (
+                          <CCRow rowName={rowName} language={language} />
+                        )}
+                        valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      />
+                    )
+                  }
+
+                  if (type === 'dv') {
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsDataPerf.data[type]}
+                        customTabs={customTabs}
+                        valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                        capitalize
+                      />
+                    )
+                  }
+
+                  return (
+                    <Panel
+                      t={t}
+                      key={type}
+                      icon={panelIcon}
+                      id={type}
+                      onFilter={filterHandler}
+                      name={panelName}
+                      data={panelsDataPerf.data[type]}
+                      customTabs={customTabs}
+                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
         {!authenticated && (
           <div className='bg-indigo-600'>
