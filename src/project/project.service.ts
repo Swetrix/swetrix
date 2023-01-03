@@ -217,6 +217,7 @@ export class ProjectService {
     project: Project,
     uid: string,
     roles: Array<UserType> = [],
+    message: string = 'You are not allowed to manage this project'
   ): void {
     if (
       uid === project.admin?.id ||
@@ -228,7 +229,7 @@ export class ProjectService {
     ) {
       return
     } else {
-      throw new ForbiddenException('You are not allowed to manage this project')
+      throw new ForbiddenException(message)
     }
   }
 

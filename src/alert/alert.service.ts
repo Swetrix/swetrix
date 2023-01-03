@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO } from './dto/alert.dto'
+import { Pagination, PaginationOptionsInterface } from 'src/common/pagination'
 
 @Injectable()
 export class AlertService {
@@ -12,6 +13,27 @@ export class AlertService {
     @InjectRepository(Alert)
     private alertsReporsitory: Repository<Alert>,
   ) {}
+
+  async paginate(
+    options: PaginationOptionsInterface,
+    where: Record<string, unknown> | undefined,
+    relations?: Array<string>,
+  ): Promise<Pagination<Alert>> {
+    const [results, total] = await this.alertsReporsitory.findAndCount({
+      take: options.take || 100,
+      skip: options.skip || 0,
+      where,
+      order: {
+        name: 'ASC',
+      },
+      relations,
+    })
+
+    return new Pagination<Alert>({
+      results,
+      total,
+    })
+  }
 
   findOneWithRelations(id: string): Promise<Alert | null> {
     return this.alertsReporsitory.findOne(id, { relations: ['project'] })
