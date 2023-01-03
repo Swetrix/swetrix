@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { IsNotEmpty, IsOptional } from 'class-validator'
 
 export enum QueryMetric {
   PAGE_VIEWS = 'page_views',
@@ -24,37 +25,48 @@ export enum QueryTime {
 
 export class AlertDTO {
   @ApiProperty()
-  queryMetric?: QueryMetric | null
+  @IsOptional()
+  queryMetric?: QueryMetric
 
   @ApiProperty()
-  queryCondition?: QueryCondition | null
+  @IsOptional()
+  queryCondition?: QueryCondition
 
   @ApiProperty()
-  queryValue?: number | null
+  @IsOptional()
+  queryValue?: number
 
   @ApiProperty()
-  queryTime?: QueryTime | null
+  @IsOptional()
+  queryTime?: QueryTime
 
   @ApiProperty()
+  @IsOptional()
   active?: boolean
 }
 
 export class CreateAlertDTO {
   @ApiProperty()
+  @IsNotEmpty()
   pid: string
 
   @ApiProperty()
+  @IsNotEmpty()
   name: string
 
   @ApiProperty()
-  queryMetric: QueryMetric | null
+  @IsOptional()
+  queryMetric?: QueryMetric
 
   @ApiProperty()
-  queryCondition: QueryCondition | null
+  @IsOptional()
+  queryCondition?: QueryCondition
 
   @ApiProperty()
-  queryValue: number | null
+  @IsOptional()
+  queryValue?: number
 
   @ApiProperty()
-  queryTime: QueryTime | null
+  @IsOptional()
+  queryTime?: QueryTime
 }

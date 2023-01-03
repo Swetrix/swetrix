@@ -392,7 +392,7 @@ export class TaskManagerService {
       active: true,
     })
 
-    for (let i = 0; i < _size(projects); ++i) {
+    for (let i = 0; i < _size(alerts); ++i) {
       const alert = alerts[i]
       const project = _find(projects, { id: alert.project.id })
 
