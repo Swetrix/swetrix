@@ -469,13 +469,13 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
       colors: {
         dns: '#EC4319',
         tls: '#F27059',
-        conn: '#F79D65',
-        response: '#F7B267',
+        conn: '#F7A265',
+        response: '#F5D376',
         render: '#709775',
-        dom_load: '#A1CCA5',
+        dom_load: '#A5E6AB',
         ttfb: '#00A8E8',
         frontend: '#709775',
-        network: '#F79D65',
+        network: '#F7A265',
         backend: '#00A8E8',
       },
       groups: [
