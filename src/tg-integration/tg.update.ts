@@ -177,12 +177,12 @@ export class SwetrixUpdate {
 
       const projects = await this.projectService.findWhere({ admin: user.id })
 
-      if (projects.length === 0) {
+      if (_isEmpty(projects)) {
         await ctx.reply('You have no projects yet.')
         return
       }
 
-      const keyboard = projects.map(project => [
+      const keyboard = _map(projects, project => [
         {
           text: project.name,
           callback_data: `project:${project.id}`,
@@ -210,12 +210,12 @@ export class SwetrixUpdate {
 
     const projects = await this.projectService.findWhere({ admin: user.id })
 
-    if (projects.length === 0) {
+    if (_isEmpty(projects)) {
       await ctx.reply('You have no projects yet.')
       return
     }
 
-    const keyboard = projects.map(project => [
+    const keyboard = _map(projects, project => [
       {
         text: project.name,
         callback_data: `project:${project.id}`,
