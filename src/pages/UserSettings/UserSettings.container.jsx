@@ -71,13 +71,18 @@ const mapDispatchToProps = (dispatch) => ({
   accountUpdated: (message) => {
     dispatch(alertsActions.accountUpdated(message))
   },
-  updateUserProfileAsync: (data, successMessage) => {
+  updateUserProfileAsync: (data, successMessage, callback = () => {}) => {
     dispatch(
       authActions.updateUserProfileAsync(
         data,
-        () => dispatch(
-          alertsActions.accountUpdated(successMessage),
-        ),
+        (res) => {
+          if (res) {
+            dispatch(
+              alertsActions.accountUpdated(successMessage),
+            )
+          }
+          callback(res)
+        },
       ),
     )
   },

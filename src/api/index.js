@@ -467,3 +467,14 @@ export const getLiveVisitorsInfo = (pid) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const removeTgIntegration = (tgID) =>
+  api
+    .delete(`user/tg/${tgID}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
