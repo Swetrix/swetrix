@@ -413,6 +413,7 @@ export class TaskManagerService {
       const onlineCount = online.length
 
       if (onlineCount >= alert.queryValue) {
+        // @ts-ignore
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
         })
@@ -469,6 +470,7 @@ export class TaskManagerService {
       const count = Number(queryResult[0]['count()'])
 
       if (count >= alert.queryValue) {
+        // @ts-ignore
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
         })

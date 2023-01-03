@@ -3,11 +3,13 @@ import { ProjectService } from 'src/project/project.service'
 import { SWETRIX_SETTINGS_URL } from 'src/tg-integration/constants'
 import { UserService } from 'src/user/user.service'
 import { Context } from 'telegraf'
+import * as _map from 'lodash/map'
+import * as _isEmpty from 'lodash/isEmpty'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
 import { AnalyticsService } from 'src/analytics/analytics.service'
-import { getPIDsArray } from 'src/analytics/analytics.controller'
+import { AlertService } from 'src/alert/alert.service'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -18,6 +20,7 @@ export class SwetrixUpdate {
     private readonly userService: UserService,
     private readonly projectService: ProjectService,
     private readonly analyticsService: AnalyticsService,
+    private readonly alertService: AlertService,
   ) {}
 
   @Start()
@@ -102,11 +105,24 @@ export class SwetrixUpdate {
         return
       }
 
+      const alerts = await this.alertService.findWhere({
+        project: project.id,
+      })
+
       const onlineUserCount = await this.analyticsService.getOnlineUserCount(
         project.id,
       )
 
       const stats = await this.analyticsService.getSummary([project.id], 'w')
+      let alertsString = ''
+
+      if (_isEmpty(alerts)) {
+        alertsString = '❌ Not set'
+      } else {
+        alertsString = _map(alerts, (alert) => {
+          return `*${alert.name}*: ${alert.type} -> ${alert.value}`
+        }).join('\n')
+      }
 
       const text =
         `📊 *${project.name}*` +
@@ -134,13 +150,7 @@ export class SwetrixUpdate {
         '\n\n' +
         '*Alerts*' +
         '\n' +
-        `Online users: \`${
-          project.alertIfOnlineUsersExceeds ? 'set' : 'not set'
-        }\`` +
-        '\n' +
-        `Additional: \`${
-          project.isAdditionalAlertEnabled ? 'set' : 'not set'
-        }\``
+        alertsString
       await ctx.editMessageText(text, {
         parse_mode: 'Markdown',
         reply_markup: {

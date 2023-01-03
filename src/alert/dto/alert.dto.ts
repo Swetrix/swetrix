@@ -33,8 +33,5 @@ export class AlertDTO {
   queryValue?: number | null
 
   @ApiProperty()
-  lastTriggered?: Date | null
-
-  @ApiProperty()
   queryTime?: QueryTime | null
 }
