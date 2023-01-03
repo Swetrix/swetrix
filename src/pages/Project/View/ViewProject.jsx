@@ -1198,7 +1198,7 @@ const ViewProject = ({
             </div>
           </div>
 
-          <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10'>
+          <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mt-2'>
             <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
               {name}
             </h2>
