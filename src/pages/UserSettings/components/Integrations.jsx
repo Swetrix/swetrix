@@ -162,7 +162,7 @@ const Integrations = ({
                   <div className='flex items-center px-4 py-4 sm:px-6'>
                     <div className='flex min-w-0 flex-1 items-center'>
                       <div className='flex-shrink-0'>
-                        <Icon className='max-h-12 max-w-12 rounded-full' />
+                        <Icon className='max-h-12 max-w-12 h-12 w-12 rounded-full' />
                       </div>
                       <div className='min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4'>
                         <div>
