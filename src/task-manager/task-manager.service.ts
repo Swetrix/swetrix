@@ -380,7 +380,6 @@ export class TaskManagerService {
   async checkUserOnline(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
-        alertIfOnlineUsersExceeds: Not(IsNull()),
         admin: {
           isTelegramChatIdConfirmed: true,
         },
