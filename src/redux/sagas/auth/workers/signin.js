@@ -26,6 +26,7 @@ export default function* singinWorker({ payload: { credentials, callback } }) {
     yield put(UIActions.setThemeType(user.theme))
     yield put(UIActions.loadProjects())
     yield put(UIActions.loadSharedProjects())
+    yield put(UIActions.loadProjectAlerts())
     callback(true, false)
   } catch (error) {
     const err = _isObject(error) ? error.message : error

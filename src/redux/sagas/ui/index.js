@@ -12,6 +12,7 @@ import shareVerify from './share_verify'
 import loadExtensions from './load_extensions'
 import logout from './logout'
 import loadSharedProjects from './load_shared_projects'
+import loadProjectAlerts from './load_alerts'
 
 function* mainUISaga() {
   yield fork(initialise)
@@ -24,6 +25,7 @@ function* mainUISaga() {
   yield takeEvery(types.LOAD_EXTENSIONS, loadExtensions)
   yield takeEvery(authTypes.LOGOUT, logout)
   yield takeLatest(types.SHARE_VERIFY_ASYNC, shareVerify)
+  yield takeLatest(types.LOAD_PROJECT_ALERTS, loadProjectAlerts)
 }
 
 export default mainUISaga

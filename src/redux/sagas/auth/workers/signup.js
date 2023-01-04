@@ -18,6 +18,7 @@ export default function* signupWorder({ payload: { data: rawData, callback, t } 
     yield put(UIActions.setThemeType(response.theme))
     yield put(UIActions.loadProjects())
     yield put(UIActions.loadSharedProjects())
+    yield put(UIActions.loadProjectAlerts())
     callback(true)
   } catch (error) {
     const message = error.message || (typeof error === 'string' ? error : error[0])

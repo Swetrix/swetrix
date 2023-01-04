@@ -15,6 +15,7 @@ export default function* initialise() {
       yield put(UIActions.loadProjects())
       yield put(UIActions.loadSharedProjects())
       yield put(UIActions.loadExtensions())
+      yield put(UIActions.loadProjectAlerts())
     }
 
     const lastBlogPost = yield call(getLastPost)
