@@ -1,7 +1,10 @@
-import React, { memo, useEffect } from 'react'
+import React, {
+  memo, useEffect, useState, useRef,
+} from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import Prism from 'prismjs'
+import { ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
 
@@ -22,10 +25,27 @@ const NoEvents = ({
   filters, resetFilters, pid,
 }) => {
   const { t } = useTranslation('common')
+  const [copied, setCopied] = useState(false)
   const umdBuildExample = getUMDBuildExample(pid)
+
+  const copyTimerRef = useRef(null)
+
+  const setToClipboard = (value) => {
+    if (!copied) {
+      navigator.clipboard.writeText(value)
+      setCopied(true)
+      copyTimerRef.current = setTimeout(() => {
+        setCopied(false)
+      }, 2000)
+    }
+  }
 
   useEffect(() => {
     Prism.highlightAll()
+
+    return () => {
+      clearTimeout(copyTimerRef.current)
+    }
   }, [])
 
   return (
@@ -61,7 +81,24 @@ const NoEvents = ({
             <h2 className='text-2xl mb-2 text-center leading-snug'>
               {t('project.codeExample')}
             </h2>
-            <Code text={umdBuildExample} language='html' />
+            <div className='relative'>
+              <Code text={umdBuildExample} language='html' />
+              <div className='absolute top-3 right-5'>
+                <Button
+                  type='button'
+                  onClick={() => setToClipboard(umdBuildExample)}
+                  className='opacity-80 hover:opacity-100'
+                  noBorder
+                >
+                  <ClipboardDocumentIcon className='w-6 h-6 text-gray-100' />
+                  {copied && (
+                    <div className='animate-appear cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-500'>
+                      {t('common.copied')}
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </div>
           </>
         )}
       </div>
