@@ -9,7 +9,6 @@ import { RolesGuard } from '../common/guards/roles.guard'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _omit from 'lodash/omit'
-import * as _size from 'lodash/size'
 
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
@@ -77,12 +76,6 @@ export class AlertController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    if (_size(user.projects) >= (maxAlerts || ALERTS_MAXIMUM)) {
-      throw new ForbiddenException(
-        `You cannot create more than ${maxAlerts} alerts on your account plan. Please upgrade to be able to create more alerts.`,
-      )
-    }
-
     const project = await this.projectService.findOneWhere({
       id: alertDTO.pid,
     }, {
@@ -94,6 +87,15 @@ export class AlertController {
     }
 
     this.projectService.allowedToManage(project, uid, user.roles, 'You are not allowed to manage this project')
+
+    const pids = _map(user.projects, (project) => project.id)
+    const alertsCount = await this.alertService.count({ project: In(pids) })
+
+    if (alertsCount >= (maxAlerts || ALERTS_MAXIMUM)) {
+      throw new ForbiddenException(
+        `You cannot create more than ${maxAlerts} alerts on your account plan. Please upgrade to be able to create more alerts.`,
+      )
+    }
 
     try {
       let alert = new Alert()
