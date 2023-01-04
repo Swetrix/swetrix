@@ -92,7 +92,12 @@ const InteractiveMap = ({ data, onClickCountry, total }) => {
             {isTrafficTab ? t('project.unique') : t('dashboard.pageLoad')}
             :
             &nbsp;
-            <strong className='dark:text-indigo-400'>
+            <strong
+              className={cx({
+                'dark:text-indigo-400': isTrafficTab || dataHover.data < 5,
+                'dark:text-red-400': !isTrafficTab && dataHover.data >= 5,
+              })}
+            >
               {isTrafficTab ? dataHover.data : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
             </strong>
           </div>
