@@ -18,6 +18,7 @@ import _includes from 'lodash/includes'
 import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
+import _values from 'lodash/values'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _startsWith from 'lodash/startsWith'
@@ -58,6 +59,8 @@ import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import './styles.css'
+
+const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
@@ -117,7 +120,12 @@ const ViewProject = ({
     const url = new URL(window.location)
     const { searchParams } = url
     const tab = searchParams.get('tab')
-    return tab || projectTab || 'traffic'
+
+    if (_includes(PROJECT_TABS_VALUES, tab)) {
+      return tab
+    }
+
+    return projectTab || 'traffic'
   })
 
   const [chartDataPerf, setChartDataPerf] = useState({})
@@ -1059,6 +1067,12 @@ const ViewProject = ({
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = searchParams.get('period')
+      const tab = searchParams.get('tab')
+
+      if (tab === PROJECT_TABS.performance) {
+        setProjectTab(PROJECT_TABS.performance)
+      }
+
       if (!_includes(validPeriods, intialPeriod) || (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
         return
       }
