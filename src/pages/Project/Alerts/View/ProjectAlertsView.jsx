@@ -13,7 +13,9 @@ import _trucate from 'lodash/truncate'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { BellIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import {
+  BellIcon, CurrencyDollarIcon, PencilSquareIcon, FolderPlusIcon,
+} from '@heroicons/react/24/outline'
 
 import routes from 'routes'
 import Button from 'ui/Button'
@@ -69,8 +71,10 @@ const ProjectAlerts = ({
               large
               onClick={handleNewAlert}
             >
-              {isLimitReached && (
+              {isLimitReached ? (
                 <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+              ) : (
+                <FolderPlusIcon className='w-5 h-5 mr-1' />
               )}
               {t('alert.add')}
             </Button>
@@ -98,13 +102,14 @@ const ProjectAlerts = ({
               {t('common.getStarted')}
             </Link> */}
             <Button
-              onClick={() => {
-                history.push(_replace(routes.create_alert, ':pid', projectId))
-              }}
+              onClick={handleNewAlert}
               className='mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'
               secondary
               large
             >
+              {isLimitReached && (
+                <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+              )}
               {t('alert.add')}
             </Button>
           </div>
@@ -148,6 +153,7 @@ const ProjectAlerts = ({
                       secondary
                       large
                     >
+                      <PencilSquareIcon className='w-4 h-4 mr-1' />
                       {t('common.edit')}
                     </Button>
                   </div>
