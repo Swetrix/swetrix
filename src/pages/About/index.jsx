@@ -91,9 +91,9 @@ const team = [
     name: '🇺🇦 Yevhenii Kulisidi',
     role: 'Co-Founder; Backend Developer.',
     photo: '/assets/yevhenii.jpg',
-    desc: 'Works on Swetrix API and Swetrix Marketplace.',
+    desc: 'An amazing backend engineer. Works on Swetrix API, Swetrix Marketplace and integrations.',
     socials: {
-      Github: 'https://github.com/rhaxma',
+      Github: 'https://github.com/yevheniikulisidi',
     },
   },
 ]
