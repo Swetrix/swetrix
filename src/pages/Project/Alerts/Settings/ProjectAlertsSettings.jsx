@@ -34,7 +34,7 @@ import Select from 'ui/Select'
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
 const ProjectAlertsSettings = ({
-  alerts, setProjectAlerts, showError, user,
+  alerts, setProjectAlerts, showError, user, setProjectAlertsTotal, pageTotal, total,
 }) => {
   const history = useHistory()
   const { id, pid } = useParams()
@@ -141,6 +141,7 @@ const ProjectAlertsSettings = ({
         .then((res) => {
           history.push(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setProjectAlerts([...alerts, res])
+          setProjectAlertsTotal(total + 1)
         })
         .catch((err) => {
           showError(err.message || err || 'Something went wrong')
@@ -152,6 +153,7 @@ const ProjectAlertsSettings = ({
     deleteAlert(id)
       .then(() => {
         setProjectAlerts(_filter(alerts, (a) => a.id !== id))
+        setProjectAlertsTotal(total - 1)
         history.push(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
       })
       .catch((err) => {
