@@ -397,6 +397,7 @@
     "sessionDuration": "Session duration",
     "traffic": "Traffic",
     "performance": "Performance",
+    "alerts": "Alerts",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Network",

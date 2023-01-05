@@ -7,7 +7,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -140,7 +140,7 @@ const ViewProject = ({
       {
         id: 'alerts',
         label: t('dashboard.alerts'),
-        icon: BoltIcon,
+        icon: BellIcon,
       },
     ]
   }, [t])
