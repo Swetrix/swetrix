@@ -115,7 +115,10 @@ export class AlertController {
 
       await this.projectService.create(project)
 
-      return newAlert
+      return {
+        ...newAlert,
+        pid: alertDTO.pid,
+      }
     } catch (e) {
       throw new BadRequestException(e)
     }
