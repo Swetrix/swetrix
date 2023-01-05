@@ -7,6 +7,7 @@ import ProjectAlerts from './ProjectAlertsSettings'
 const mapStateToProps = (state) => ({
   alerts: state.ui.alerts.alerts,
   user: state.auth.user,
+  total: state.ui.alerts.total,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -15,6 +16,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   setProjectAlerts: (alerts) => {
     dispatch(UIActions.setProjectAlerts(alerts))
+  },
+  setProjectAlertsTotal: (total) => {
+    dispatch(UIActions.setProjectAlertsTotal(total))
   },
 })
 
