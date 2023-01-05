@@ -1288,56 +1288,56 @@ const ViewProject = ({
               <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
                 {activeTab === PROJECT_TABS.traffic ? (
                   !isPanelsDataEmpty && (
-                  <Dropdown
-                    items={chartMetrics}
-                    title={t('project.metricVis')}
-                    labelExtractor={(pair) => {
-                      const {
-                        label, id: pairID, active, conflicts,
-                      } = pair
+                    <Dropdown
+                      items={chartMetrics}
+                      title={t('project.metricVis')}
+                      labelExtractor={(pair) => {
+                        const {
+                          label, id: pairID, active, conflicts,
+                        } = pair
 
-                      const conflicted = isConflicted(conflicts)
+                        const conflicted = isConflicted(conflicts)
 
-                      return (
-                        <Checkbox
-                          className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                          label={label}
-                          disabled={conflicted}
-                          id={pairID}
-                          checked={active}
-                        />
-                      )
-                    }}
-                    keyExtractor={(pair) => pair.id}
-                    onSelect={({ id: pairID, conflicts }) => {
-                      if (isConflicted(conflicts)) {
-                        generateAlert(t('project.conflictMetric'), 'error')
-                        return
-                      }
-                      switchActiveChartMetric(pairID)
-                    }}
-                  />
+                        return (
+                          <Checkbox
+                            className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                            label={label}
+                            disabled={conflicted}
+                            id={pairID}
+                            checked={active}
+                          />
+                        )
+                      }}
+                      keyExtractor={(pair) => pair.id}
+                      onSelect={({ id: pairID, conflicts }) => {
+                        if (isConflicted(conflicts)) {
+                          generateAlert(t('project.conflictMetric'), 'error')
+                          return
+                        }
+                        switchActiveChartMetric(pairID)
+                      }}
+                    />
                   )) : (
                   !isPanelsDataEmptyPerf && (
-                  <Dropdown
-                    items={chartMetricsPerf}
-                    title={(
-                      <p>
-                        {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
-                      </p>
+                    <Dropdown
+                      items={chartMetricsPerf}
+                      title={(
+                        <p>
+                          {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                        </p>
                       )}
-                    labelExtractor={(pair) => {
-                      const {
-                        label,
-                      } = pair
+                      labelExtractor={(pair) => {
+                        const {
+                          label,
+                        } = pair
 
-                      return label
-                    }}
-                    keyExtractor={(pair) => pair.id}
-                    onSelect={({ id: pairID }) => {
-                      switchActiveChartMetric(pairID)
-                    }}
-                  />
+                        return label
+                      }}
+                      keyExtractor={(pair) => pair.id}
+                      onSelect={({ id: pairID }) => {
+                        switchActiveChartMetric(pairID)
+                      }}
+                    />
                   )
                 )}
                 <Dropdown
@@ -1354,24 +1354,32 @@ const ViewProject = ({
                   className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
                 />
                 {(!isProjectPublic && !(sharedRoles === roleViewer.role)) && (
-                <Button
-                  onClick={openSettingsHandler}
-                  className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                  secondary
-                >
-                  <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                  {t('common.settings')}
-                </Button>
+                  <Button
+                    onClick={openSettingsHandler}
+                    className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                    secondary
+                  >
+                    <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                    {t('common.settings')}
+                  </Button>
                 )}
               </div>
             </>
           )}
           {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project.public)) && (
-            <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mt-2'>
-              <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
-                {name}
-              </h2>
-              <p className='text-white text-3xl font-medium'>ALERTS block if user not login or shared project</p>
+            <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
+              <div className='flex items-center text-gray-50'>
+                <BellIcon className='w-8 h-8 mr-2' />
+                <p className='font-bold text-3xl'>
+                  {t('dashboard.alerts')}
+                </p>
+              </div>
+              <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>
+                {t('dashboard.alertsDesc')}
+              </p>
+              <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'>
+                {t('common.getStarted')}
+              </Link>
             </div>
           )}
           {activeTab === PROJECT_TABS.alerts && !isSharedProject && !project.public && (
