@@ -133,14 +133,18 @@ export class AuthController {
 
       if (user.isTelegramChatIdConfirmed && process.env.TG_BOT_TOKEN) {
         const ua = UAParser(userAgent)
-        const br = ua.browser.name || 'unknown'
-        const dv = ua.device.type || 'desktop'
-        const os = ua.os.name || 'unknown'
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
-        const cc =
-          ct.getCountryForTimezone(tz)?.id ||
-          (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
-        const country = ct.getCountry(cc)?.name || 'unknown'
+        const br = ua.browser.name || 'Unknown'
+        const dv = ua.device.type || 'Desktop'
+        const os = ua.os.name || 'Unknown'
+        let country
+
+        if (headers['cf-ipcountry'] === 'XX') {
+          country = 'Unknown'
+        } else if (headers['cf-ipcountry'] === 'T1') {
+          country = 'Unknown (Tor Browser detected)'
+        } else {
+          ct.getCountry(headers['cf-ipcountry'])?.name || 'Unknown'
+        }
 
         this.bot.telegram.sendMessage(
           user.telegramChatId,
@@ -153,8 +157,6 @@ export class AuthController {
             `OS: \`${os}\`` +
             '\n' +
             `Country: \`${country}\`` +
-            '\n' +
-            `Timezone: \`${tz}\`` +
             '\n' +
             `IP: \`${ip}\`` +
             '\n\n' +
