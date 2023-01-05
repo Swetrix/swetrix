@@ -237,7 +237,9 @@ export class ProjectController {
     if (isSelfhosted) {
       project = await getProjectsClickhouse(id)
     } else {
-      project = await this.projectService.findOne(id)
+      project = await this.projectService.findOne(id, {
+        relations: ['admin'],
+      })
     }
 
     if (_isEmpty(project)) {
@@ -250,7 +252,10 @@ export class ProjectController {
       return this.projectService.formatFromClickhouse(project)
     }
 
-    return project
+    return {
+      ..._omit(project, ['admin']),
+      isOwner: uid === project.admin?.id,
+    }
   }
 
   @Post('/admin/:id')
