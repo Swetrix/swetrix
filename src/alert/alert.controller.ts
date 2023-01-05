@@ -156,7 +156,10 @@ export class AlertController {
 
     await this.alertService.update(id, _omit(alert, ['project', 'lastTriggered']))
 
-    return alert
+    return {
+      ..._omit(alert, ['project']),
+      pid: alert.project.id,
+    }
   }
 
   @Delete('/:id')
