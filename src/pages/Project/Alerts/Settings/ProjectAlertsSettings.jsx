@@ -34,7 +34,7 @@ import Select from 'ui/Select'
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
 const ProjectAlertsSettings = ({
-  alerts, setProjectAlerts, showError, user, setProjectAlertsTotal, pageTotal, total,
+  alerts, setProjectAlerts, showError, user, setProjectAlertsTotal, total,
 }) => {
   const history = useHistory()
   const { id, pid } = useParams()
