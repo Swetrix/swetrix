@@ -52,7 +52,7 @@ export class AlertController {
 
     const pids = _map(projects, (project) => project.id)
 
-    const result = this.alertService.paginate({ take, skip }, { project: In(pids) }, ['project'])
+    const result = await this.alertService.paginate({ take, skip }, { project: In(pids) }, ['project'])
 
     return _map(result, (alert) => ({
       ..._omit(alert, ['project']),
