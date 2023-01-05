@@ -51,7 +51,9 @@ const ProjectAlerts = ({
         )}
         {(!loading && !_isEmpty(alerts)) && (
           <div className='flex flex-col'>
-            {_map(alerts, ({ id, name, queryMetric, lastTriggered }) => (
+            {_map(alerts, ({
+              id, name, queryMetric, lastTriggered,
+            }) => (
               <div key={id} className='flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-4'>
                 <div className='flex justify-between items-center'>
                   <div className='flex flex-col'>

@@ -7,16 +7,12 @@ import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
-import _join from 'lodash/join'
-import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _filter from 'lodash/filter'
-import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import _values from 'lodash/values'
 import _findKey from 'lodash/findKey'
-import _includes from 'lodash/includes'
 import _toNumber from 'lodash/toNumber'
 import { clsx as cx } from 'clsx'
 import Title from 'components/Title'
@@ -56,7 +52,7 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
     const values = _values(QUERY_TIME)
 
     return _reduce(values, (prev, curr) => {
-      const [_, amount, metric] = _split(curr, '_')
+      const [, amount, metric] = _split(curr, '_')
       let translated
 
       if (metric === 'minutes') {

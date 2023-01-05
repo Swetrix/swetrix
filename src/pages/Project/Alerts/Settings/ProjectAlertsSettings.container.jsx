@@ -1,8 +1,6 @@
 import { connect } from 'react-redux'
 import { errorsActions } from 'redux/actions/errors'
 import UIActions from 'redux/actions/ui'
-import { tabForSharedProject } from 'redux/constants'
-import { alertsActions } from 'redux/actions/alerts'
 
 import ProjectAlerts from './ProjectAlertsSettings'
 
