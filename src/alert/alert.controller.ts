@@ -52,7 +52,7 @@ export class AlertController {
 
     const pids = _map(projects, (project) => project.id)
 
-    return this.alertService.paginate({ take, skip }, { project: In(pids) }, ['project', 'project.id'])
+    return this.alertService.paginate({ take, skip }, { project: In(pids) }, ['project'])
   }
 
   @Post('/')
