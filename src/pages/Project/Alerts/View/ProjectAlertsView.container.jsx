@@ -7,6 +7,7 @@ const mapStateToProps = (state) => ({
   loading: state.ui.alerts.loading,
   user: state.auth.user,
   total: state.ui.alerts.total,
+  authenticated: state.auth.authenticated,
 })
 
 export default connect(mapStateToProps)(ProjectAlerts)

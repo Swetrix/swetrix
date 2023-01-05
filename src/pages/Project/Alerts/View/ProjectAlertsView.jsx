@@ -23,14 +23,14 @@ import PaidFeature from 'modals/PaidFeature'
 import { QUERY_METRIC, PLAN_LIMITS } from 'redux/constants'
 
 const ProjectAlerts = ({
-  projectId, alerts, loading, user, total,
+  projectId, alerts, loading, user, total, authenticated,
 }) => {
   const { t, i18n: { language } } = useTranslation()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const history = useHistory()
 
-  const limits = PLAN_LIMITS[user.planCode]
-  const isLimitReached = total >= limits.maxAlerts
+  const limits = PLAN_LIMITS[user?.planCode]
+  const isLimitReached = authenticated && (total >= limits?.maxAlerts)
 
   const projectAlerts = useMemo(() => {
     if (loading) return []
@@ -176,6 +176,7 @@ ProjectAlerts.propTypes = {
   loading: PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
   total: PropTypes.number.isRequired,
+  authenticated: PropTypes.bool.isRequired,
 }
 
 export default memo(ProjectAlerts)
