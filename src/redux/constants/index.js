@@ -234,7 +234,7 @@ export const THEME_TYPE = {
   christmas: 'christmas',
 }
 
-export const DEFAULT_ALERTS_TAKE = 10
+export const DEFAULT_ALERTS_TAKE = 100
 
 // Eventually this should be fetched from the API, e.g. GET /config route
 export const PLAN_LIMITS = {
