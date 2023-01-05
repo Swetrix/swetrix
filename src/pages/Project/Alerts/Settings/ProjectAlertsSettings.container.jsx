@@ -6,6 +6,7 @@ import ProjectAlerts from './ProjectAlertsSettings'
 
 const mapStateToProps = (state) => ({
   alerts: state.ui.alerts.alerts,
+  user: state.auth.user,
 })
 
 const mapDispatchToProps = (dispatch) => ({

@@ -1,7 +1,10 @@
+/* eslint-disable react/forbid-prop-types */
 import React, { useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { HashLink } from 'react-router-hash-link'
+import PropTypes from 'prop-types'
 
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
@@ -28,7 +31,11 @@ import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Select from 'ui/Select'
 
-const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
+const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
+
+const ProjectAlertsSettings = ({
+  alerts, setProjectAlerts, showError, user,
+}) => {
   const history = useHistory()
   const { id, pid } = useParams()
   const { pathname } = useLocation()
@@ -47,6 +54,10 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
+
+  const isIntegrationLinked = useMemo(() => {
+    return !_isEmpty(user) && user.telegramChatId && user.isTelegramChatIdConfirmed
+  }, [user])
 
   const queryTimeTMapping = useMemo(() => {
     const values = _values(QUERY_TIME)
@@ -192,6 +203,18 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {title}
           </h2>
+          {!isIntegrationLinked && (
+            <div className='flex items-center bg-blue-50 dark:text-gray-50 dark:bg-gray-700 rounded px-5 py-3 mt-2 whitespace-pre-wrap text-base'>
+              <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+              <Trans
+                t={t}
+                i18nKey='alert.noIntegration'
+                components={{
+                  url: <HashLink to={INTEGRATIONS_LINK} className='hover:underline text-blue-600 dark:text-blue-500' />,
+                }}
+              />
+            </div>
+          )}
           <Input
             name='name'
             id='name'
@@ -314,6 +337,13 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
       </div>
     </Title>
   )
+}
+
+ProjectAlertsSettings.propTypes = {
+  alerts: PropTypes.array.isRequired,
+  setProjectAlerts: PropTypes.func.isRequired,
+  showError: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
 }
 
 export default withAuthentication(ProjectAlertsSettings, auth.authenticated)

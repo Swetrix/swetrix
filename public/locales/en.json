@@ -416,6 +416,7 @@
     "create": "Create an alert",
     "add": "Add Alert",
     "delete": "Delete alert",
+    "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
     "lastTriggered": "Last Triggered",
     "never": "Never",
     "qDelete": "Delete the alert?",
