@@ -631,6 +631,8 @@
       "xEvMo": "{{amount}} events per month.",
       "upToXVMo": "Up to {{amount}} visits per month.",
       "xVMo": "{{amount}} visits per month.",
+      "xAlertsSingular": "{{amount}} alerting rule",
+      "xAlertsPlural": "{{amount}} alerting rules",
       "upToXProjects": "Create up to {{amount}} projects.",
       "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} months of data retention.",

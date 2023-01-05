@@ -1,5 +1,7 @@
 /* eslint-disable react/forbid-prop-types */
-import React, { useMemo, memo } from 'react'
+import React, {
+  useMemo, memo, useState,
+} from 'react'
 import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
@@ -11,19 +13,23 @@ import _trucate from 'lodash/truncate'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { BellIcon } from '@heroicons/react/24/outline'
+import { BellIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
 
 import routes from 'routes'
 import Button from 'ui/Button'
-import { QUERY_METRIC } from 'redux/constants'
+import PaidFeature from 'modals/PaidFeature'
+import { QUERY_METRIC, PLAN_LIMITS } from 'redux/constants'
 
 const ProjectAlerts = ({
-  projectId, alerts, loading, user,
+  projectId, alerts, loading, user, total,
 }) => {
   const { t, i18n: { language } } = useTranslation()
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const history = useHistory()
 
-  // find in alerts alert with pid === projectId
+  const limits = PLAN_LIMITS[user.planCode]
+  const isLimitReached = total >= limits.maxAlerts
+
   const projectAlerts = useMemo(() => {
     if (loading) return []
     return _filter(alerts, ({ pid }) => pid === projectId)
@@ -42,21 +48,30 @@ const ProjectAlerts = ({
     return !_isEmpty(user) && user.telegramChatId && user.isTelegramChatIdConfirmed
   }, [user])
 
+  const handleNewAlert = () => {
+    if (isLimitReached) {
+      setIsPaidFeatureOpened(true)
+      return
+    }
+
+    history.push(_replace(routes.create_alert, ':pid', projectId))
+  }
+
   return (
     <div>
-      <div className='flex justify-between items-center'>
+      <div className='flex justify-between items-center mt-4'>
         {!loading && !_isEmpty(projectAlerts) && (
           <>
             <h2 className='text-2xl font-bold dark:text-white text-gray-800'>Alerts</h2>
             <Button
-              className='mt-4'
               type='button'
               primary
               large
-              onClick={() => {
-                history.push(_replace(routes.create_alert, ':pid', projectId))
-              }}
+              onClick={handleNewAlert}
             >
+              {isLimitReached && (
+                <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+              )}
               {t('alert.add')}
             </Button>
           </>
@@ -142,6 +157,10 @@ const ProjectAlerts = ({
           </div>
         )}
       </div>
+      <PaidFeature
+        isOpened={isPaidFeatureOpened}
+        onClose={() => setIsPaidFeatureOpened(false)}
+      />
     </div>
   )
 }
@@ -151,6 +170,7 @@ ProjectAlerts.propTypes = {
   alerts: PropTypes.array.isRequired,
   loading: PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
+  total: PropTypes.number.isRequired,
 }
 
 export default memo(ProjectAlerts)

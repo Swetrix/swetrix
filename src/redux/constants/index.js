@@ -235,3 +235,27 @@ export const THEME_TYPE = {
 }
 
 export const DEFAULT_ALERTS_TAKE = 10
+
+// Eventually this should be fetched from the API, e.g. GET /config route
+export const PLAN_LIMITS = {
+  free: {
+    monthlyUsageLimit: 5000,
+    maxProjects: 10,
+    maxAlerts: 1,
+  },
+  freelancer: {
+    monthlyUsageLimit: 100000,
+    maxProjects: 20,
+    maxAlerts: 10,
+  },
+  startup: {
+    monthlyUsageLimit: 1000000,
+    maxProjects: 20,
+    maxAlerts: 50,
+  },
+  enterprise: {
+    monthlyUsageLimit: 5000000,
+    maxProjects: 30,
+    maxAlerts: 100,
+  },
+}
