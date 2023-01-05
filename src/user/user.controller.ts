@@ -542,7 +542,7 @@ export class UserController {
     this.logger.log({ user_id }, 'GET /user/export')
     const user = await this.userService.findOneWhere({ id: user_id })
     const where = Object({ admin: user_id })
-    const projects = await this.projectService.findWhere(where)
+    const projects = await this.projectService.findWhere(where, ['alerts'])
 
     if (
       !_isNull(user.exportedAt) &&
@@ -570,6 +570,8 @@ export class UserController {
         subID: user.subID || '-',
         subUpdateURL: user.subUpdateURL || '-',
         subCancelURL: user.subCancelURL || '-',
+        telegramChatId: user.telegramChatId || '-',
+        nickname: user.nickname || '-',
       },
       projects: _map(projects, project => ({
         ...project,
