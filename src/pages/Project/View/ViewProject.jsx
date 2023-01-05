@@ -78,7 +78,6 @@ const ViewProject = ({
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
   }, [id, sharedProjects])
-  const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
@@ -983,8 +982,6 @@ const ViewProject = ({
                   onErrorLoading()
                 })
             }
-
-            setIsProjectPublic(true)
           } else {
             onErrorLoading()
           }
