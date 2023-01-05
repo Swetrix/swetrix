@@ -1,19 +1,11 @@
 import { connect } from 'react-redux'
-import { errorsActions } from 'redux/actions/errors'
 
 import ProjectAlerts from './ProjectAlertsView'
 
 const mapStateToProps = (state) => ({
   alerts: state.ui.alerts.alerts,
-  totalPage: state.ui.alerts.totalPage,
-  total: state.ui.alerts.total,
   loading: state.ui.alerts.loading,
+  user: state.auth.user,
 })
 
-const mapDispatchToProps = (dispatch) => ({
-  showError: (message) => {
-    dispatch(errorsActions.genericError(message))
-  },
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(ProjectAlerts)
+export default connect(mapStateToProps)(ProjectAlerts)

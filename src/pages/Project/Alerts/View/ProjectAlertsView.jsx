@@ -1,19 +1,21 @@
-import React, { useMemo } from 'react'
+/* eslint-disable react/forbid-prop-types */
+import React, { useMemo, memo } from 'react'
 import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _values from 'lodash/values'
 import _reduce from 'lodash/reduce'
-import routes from 'routes'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 
+import routes from 'routes'
 import Button from 'ui/Button'
 import { QUERY_METRIC } from 'redux/constants'
 
 const ProjectAlerts = ({
-  projectId, alerts, loading,
+  projectId, alerts, loading, user,
 }) => {
   const { t, i18n: { language } } = useTranslation()
   const history = useHistory()
@@ -26,6 +28,12 @@ const ProjectAlerts = ({
       [curr]: t(`alert.metrics.${curr}`),
     }), {})
   }, [t])
+
+  const isIntegrationLinked = useMemo(() => {
+    return !_isEmpty(user) && user.telegramChatId && user.isTelegramChatIdConfirmed
+  }, [user])
+
+  console.log(isIntegrationLinked)
 
   return (
     <div>
@@ -72,16 +80,23 @@ const ProjectAlerts = ({
                         : t('alert.never')}
                     </div>
                   </div>
-                  <Button
-                    onClick={() => {
-                      history.push(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
-                    }}
-                    className='dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
-                    secondary
-                    large
-                  >
-                    {t('common.edit')}
-                  </Button>
+                  <div className='flex items-center'>
+                    {!isIntegrationLinked && (
+                      <p className='text-gray-800 dark:text-gray-200 text-sm mr-3'>
+                        {t('alert.noNotification')}
+                      </p>
+                    )}
+                    <Button
+                      onClick={() => {
+                        history.push(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
+                      }}
+                      className='dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
+                      secondary
+                      large
+                    >
+                      {t('common.edit')}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -92,4 +107,11 @@ const ProjectAlerts = ({
   )
 }
 
-export default ProjectAlerts
+ProjectAlerts.propTypes = {
+  projectId: PropTypes.string.isRequired,
+  alerts: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  user: PropTypes.object.isRequired,
+}
+
+export default memo(ProjectAlerts)
