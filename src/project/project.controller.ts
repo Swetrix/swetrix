@@ -135,6 +135,11 @@ export class ProjectController {
       )
       const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
 
+      paginated.results = _map(paginated.results, p => ({
+        ...p,
+        isOwner: true,
+      }))
+
       return {
         ...paginated,
         totalMonthlyEvents,
