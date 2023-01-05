@@ -64,7 +64,9 @@ const ProjectAlerts = ({
       <div className='flex justify-between items-center mt-4'>
         {!loading && !_isEmpty(projectAlerts) && (
           <>
-            <h2 className='text-2xl font-bold dark:text-white text-gray-800'>Alerts</h2>
+            <h2 className='text-2xl font-bold dark:text-white text-gray-800'>
+              {t('dashboard.alerts')}
+            </h2>
             <Button
               type='button'
               primary
