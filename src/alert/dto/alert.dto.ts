@@ -55,18 +55,22 @@ export class CreateAlertDTO {
   name: string
 
   @ApiProperty()
-  @IsOptional()
-  queryMetric?: QueryMetric
+  @IsNotEmpty()
+  queryMetric: QueryMetric
 
   @ApiProperty()
-  @IsOptional()
-  queryCondition?: QueryCondition
+  @IsNotEmpty()
+  queryCondition: QueryCondition
 
   @ApiProperty()
-  @IsOptional()
-  queryValue?: number
+  @IsNotEmpty()
+  queryValue: number
 
   @ApiProperty()
-  @IsOptional()
-  queryTime?: QueryTime
+  @IsNotEmpty()
+  queryTime: QueryTime
+
+  @ApiProperty()
+  @IsNotEmpty()
+  active: boolean
 }
