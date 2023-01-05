@@ -375,79 +375,8 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
   }
 }
 
-const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) => {
+const getSettingsPerf = (chart, timeBucket, activeChartMetrics) => {
   const xAxisSize = _size(chart.x)
-
-  let regions
-
-  if (applyRegions) {
-    let regionStart
-
-    if (xAxisSize > 1) {
-      regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
-    } else {
-      regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
-    }
-
-    regions = {
-      dns: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      tls: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      conn: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      response: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      render: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      dom_load: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      ttfb: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-    }
-  }
 
   return {
     data: {
@@ -481,7 +410,6 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, applyRegions) =>
       groups: [
         ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
       ],
-      // regions,
     },
     axis: {
       x: {

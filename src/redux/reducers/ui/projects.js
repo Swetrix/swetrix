@@ -19,6 +19,7 @@ const getInitialState = () => {
     dashboardPaginationPageShared: 1,
     dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
     projectTab: PROJECT_TABS.traffic,
+    alerts: [],
   }
 }
 

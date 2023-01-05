@@ -56,6 +56,9 @@ const mapDispatchToProps = (dispatch) => ({
   setPublicProject: (project) => {
     dispatch(UIActions.setPublicProject(project))
   },
+  setProjects: (project, shared) => {
+    dispatch(UIActions.setProjects(project, shared))
+  },
   setLiveStatsForProject: (id, count) => {
     dispatch(UIActions.setLiveStatsForProject(id, count))
   },

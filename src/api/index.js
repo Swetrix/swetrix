@@ -8,7 +8,7 @@ import _isArray from 'lodash/isArray'
 import { authActions } from 'redux/actions/auth'
 
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
-import { isSelfhosted } from 'redux/constants'
+import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
 
 const debug = Debug('swetrix:api')
 
@@ -471,6 +471,50 @@ export const getLiveVisitorsInfo = (pid) =>
 export const removeTgIntegration = (tgID) =>
   api
     .delete(`user/tg/${tgID}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getAlerts = (take = DEFAULT_ALERTS_TAKE, skip = 0) =>
+  api
+    .get(`alert?take=${take}&skip=${skip}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const createAlert = (data) =>
+  api
+    .post('alert', data)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const updateAlert = (id, data) =>
+  api
+    .put(`alert/${id}`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const deleteAlert = (id) =>
+  api
+    .delete(`alert/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

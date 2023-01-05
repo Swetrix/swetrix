@@ -11,7 +11,7 @@ import cx from 'clsx'
 
 import Modal from 'ui/Modal'
 import Spin from 'ui/icons/Spin'
-import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
+import { CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS } from 'redux/constants'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import { authActions } from 'redux/actions/auth'
@@ -25,8 +25,9 @@ const getTiers = (t) => [
     priceMonthly: null,
     includedFeatures: [
       t('pricing.tiers.upToXVMo', { amount: '5,000' }),
-      t('pricing.tiers.upToXWebsites', { amount: 10 }),
+      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.free.maxProjects }),
       // t('pricing.tiers.xMoDataRetention', { amount: 3 }),
+      t('pricing.tiers.xAlertsSingular', { amount: PLAN_LIMITS.free.maxAlerts }),
       t('pricing.tiers.dataExports'),
       t('pricing.tiers.dataOwnership'),
       t('pricing.tiers.noBanners'),
@@ -42,7 +43,8 @@ const getTiers = (t) => [
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
       t('pricing.tiers.xVMo', { amount: '100,000' }),
-      t('pricing.tiers.upToXWebsites', { amount: 20 }),
+      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.freelancer.maxProjects }),
+      t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.freelancer.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
       t('pricing.tiers.smallBusiSupport'),
     ],
@@ -57,6 +59,7 @@ const getTiers = (t) => [
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
       t('pricing.tiers.xVMo', { amount: '1,000,000' }),
+      t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.startup.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
     ],
     pid: 752317,
@@ -71,7 +74,8 @@ const getTiers = (t) => [
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.startup') }),
       t('pricing.tiers.xVMo', { amount: '5,000,000' }),
-      t('pricing.tiers.upToXWebsites', { amount: 30 }),
+      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.enterprise.maxProjects }),
+      t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.enterprise.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 24 }),
     ],
     pid: 752318,

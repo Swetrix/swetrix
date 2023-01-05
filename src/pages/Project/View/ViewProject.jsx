@@ -7,7 +7,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -58,6 +58,7 @@ import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
+import ProjectAlertsView from '../Alerts/View'
 import './styles.css'
 
 const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
@@ -65,7 +66,7 @@ const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab,
+  projectTab, setProjectTab, setProjects,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -80,7 +81,6 @@ const ViewProject = ({
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
   }, [id, sharedProjects])
-  const [isProjectPublic, setIsProjectPublic] = useState(false)
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
@@ -143,6 +143,11 @@ const ViewProject = ({
         id: 'performance',
         label: t('dashboard.performance'),
         icon: BoltIcon,
+      },
+      {
+        id: 'alerts',
+        label: t('dashboard.alerts'),
+        icon: BellIcon,
       },
     ]
   }, [t])
@@ -419,8 +424,7 @@ const ViewProject = ({
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, applyRegions)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -610,11 +614,7 @@ const ViewProject = ({
     const url = new URL(window.location)
     url.searchParams.delete('tab')
 
-    if (activeTab === PROJECT_TABS.performance) {
-      url.searchParams.append('tab', PROJECT_TABS.performance)
-    } else {
-      url.searchParams.append('tab', PROJECT_TABS.traffic)
-    }
+    url.searchParams.append('tab', activeTab)
     const { pathname, search } = url
     history.push({
       pathname,
@@ -686,8 +686,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, applyRegions)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf)
 
       if (!_isEmpty(mainChart)) {
         mainChart.destroy()
@@ -960,21 +959,35 @@ const ViewProject = ({
     if (!isLoading && _isEmpty(project)) {
       getProject(id)
         .then(projectRes => {
-          if (!_isEmpty(projectRes) && projectRes?.public) {
-            getOverallStats([id])
-              .then(res => {
-                setPublicProject({
-                  ...projectRes,
-                  overall: res[id],
-                  live: 'N/A',
+          if (!_isEmpty(projectRes)) {
+            if (projectRes.isPublic && !projectRes.isOwner) {
+              getOverallStats([id])
+                .then(res => {
+                  setPublicProject({
+                    ...projectRes,
+                    overall: res[id],
+                    live: 'N/A',
+                    isPublicVisitors: true,
+                  })
                 })
-              })
-              .catch(e => {
-                console.error(e)
-                onErrorLoading()
-              })
-
-            setIsProjectPublic(true)
+                .catch(e => {
+                  console.error(e)
+                  onErrorLoading()
+                })
+            } else {
+              getOverallStats([id])
+                .then(res => {
+                  setProjects([...projects, {
+                    ...projectRes,
+                    overall: res[id],
+                    live: 'N/A',
+                  }])
+                })
+                .catch(e => {
+                  console.error(e)
+                  onErrorLoading()
+                })
+            }
           } else {
             onErrorLoading()
           }
@@ -1211,177 +1224,199 @@ const ViewProject = ({
               </div>
             </div>
           </div>
-
-          <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mt-2'>
-            <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
-              {name}
-            </h2>
-            <div className='flex mt-3 md:mt-0'>
-              <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
-                <button
-                  type='button'
-                  onClick={refreshStats}
-                  className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                    'cursor-not-allowed opacity-50': isLoading || dataLoading,
-                  })}
-                >
-                  <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
-                </button>
-              </div>
-              <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
-                <span className='relative z-0 inline-flex shadow-sm rounded-md'>
-                  {_map(activePeriod.tbs, (tb, index, { length }) => (
+          {activeTab !== PROJECT_TABS.alerts && (
+            <>
+              <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mt-2'>
+                <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
+                  {name}
+                </h2>
+                <div className='flex mt-3 md:mt-0'>
+                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
                     <button
-                      key={tb}
                       type='button'
-                      onClick={() => updateTimebucket(tb)}
-                      className={cx(
-                        'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
-                        {
-                          '-ml-px': index > 0,
-                          'rounded-l-md': index === 0,
-                          'rounded-r-md': 1 + index === length,
-                          'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
-                          'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
-                        },
-                      )}
+                      onClick={refreshStats}
+                      className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                        'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                      })}
                     >
-                      {t(`project.${tb}`)}
+                      <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                     </button>
-                  ))}
-                </span>
+                  </div>
+                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
+                    <span className='relative z-0 inline-flex shadow-sm rounded-md'>
+                      {_map(activePeriod.tbs, (tb, index, { length }) => (
+                        <button
+                          key={tb}
+                          type='button'
+                          onClick={() => updateTimebucket(tb)}
+                          className={cx(
+                            'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                            {
+                              '-ml-px': index > 0,
+                              'rounded-l-md': index === 0,
+                              'rounded-r-md': 1 + index === length,
+                              'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
+                              'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
+                            },
+                          )}
+                        >
+                          {t(`project.${tb}`)}
+                        </button>
+                      ))}
+                    </span>
+                  </div>
+                  <Dropdown
+                    items={periodPairs}
+                    title={activePeriod.label}
+                    labelExtractor={(pair) => {
+                      const label = pair.dropdownLabel || pair.label
+
+                      // disable limitation for shared projects as project hosts already have a paid plan
+                      // disable limitation for Swetrix public project (for demonstration purposes)
+                      if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                        return (
+                          <span className='flex items-center'>
+                            <CurrencyDollarIcon className='w-4 h-4 mr-1' />
+                            {label}
+                          </span>
+                        )
+                      }
+
+                      return label
+                    }}
+                    keyExtractor={(pair) => pair.label}
+                    onSelect={(pair) => {
+                      if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                        setIsPaidFeatureOpened(true)
+                        return
+                      }
+
+                      if (pair.isCustomDate) {
+                        setTimeout(() => {
+                          refCalendar.current.openCalendar()
+                        }, 100)
+                      } else {
+                        setPeriodPairs(tbPeriodPairs(t))
+                        setDateRange(null)
+                        updatePeriod(pair)
+                      }
+                    }}
+                  />
+                  <FlatPicker
+                    ref={refCalendar}
+                    onChange={(date) => setDateRange(date)}
+                    value={dateRange}
+                    maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
+                  />
+                </div>
               </div>
-              <Dropdown
-                items={periodPairs}
-                title={activePeriod.label}
-                labelExtractor={(pair) => {
-                  const label = pair.dropdownLabel || pair.label
+              <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
+                {activeTab === PROJECT_TABS.traffic ? (
+                  !isPanelsDataEmpty && (
+                    <Dropdown
+                      items={chartMetrics}
+                      title={t('project.metricVis')}
+                      labelExtractor={(pair) => {
+                        const {
+                          label, id: pairID, active, conflicts,
+                        } = pair
 
-                  // disable limitation for shared projects as project hosts already have a paid plan
-                  // disable limitation for Swetrix public project (for demonstration purposes)
-                  if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                    return (
-                      <span className='flex items-center'>
-                        <CurrencyDollarIcon className='w-4 h-4 mr-1' />
-                        {label}
-                      </span>
-                    )
-                  }
+                        const conflicted = isConflicted(conflicts)
 
-                  return label
-                }}
-                keyExtractor={(pair) => pair.label}
-                onSelect={(pair) => {
-                  if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                    setIsPaidFeatureOpened(true)
-                    return
-                  }
+                        return (
+                          <Checkbox
+                            className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                            label={label}
+                            disabled={conflicted}
+                            id={pairID}
+                            checked={active}
+                          />
+                        )
+                      }}
+                      keyExtractor={(pair) => pair.id}
+                      onSelect={({ id: pairID, conflicts }) => {
+                        if (isConflicted(conflicts)) {
+                          generateAlert(t('project.conflictMetric'), 'error')
+                          return
+                        }
+                        switchActiveChartMetric(pairID)
+                      }}
+                    />
+                  )) : (
+                  !isPanelsDataEmptyPerf && (
+                    <Dropdown
+                      items={chartMetricsPerf}
+                      title={(
+                        <p>
+                          {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                        </p>
+                      )}
+                      labelExtractor={(pair) => {
+                        const {
+                          label,
+                        } = pair
 
-                  if (pair.isCustomDate) {
-                    setTimeout(() => {
-                      refCalendar.current.openCalendar()
-                    }, 100)
-                  } else {
-                    setPeriodPairs(tbPeriodPairs(t))
-                    setDateRange(null)
-                    updatePeriod(pair)
-                  }
-                }}
-              />
-              <FlatPicker
-                ref={refCalendar}
-                onChange={(date) => setDateRange(date)}
-                value={dateRange}
-                maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
-              />
+                        return label
+                      }}
+                      keyExtractor={(pair) => pair.id}
+                      onSelect={({ id: pairID }) => {
+                        switchActiveChartMetric(pairID)
+                      }}
+                    />
+                  )
+                )}
+                <Dropdown
+                  items={[...exportTypes, ...customExportTypes]}
+                  title={[
+                    <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                    <Fragment key='export-data'>
+                      {t('project.exportData')}
+                    </Fragment>,
+                  ]}
+                  labelExtractor={item => item.label}
+                  keyExtractor={item => item.label}
+                  onSelect={item => item.onClick(panelsData, t)}
+                  className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                />
+                {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
+                  <Button
+                    onClick={openSettingsHandler}
+                    className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                    secondary
+                  >
+                    <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                    {t('common.settings')}
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+          {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors)) && (
+            <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
+              <div className='flex items-center text-gray-50'>
+                <BellIcon className='w-8 h-8 mr-2' />
+                <p className='font-bold text-3xl'>
+                  {t('dashboard.alerts')}
+                </p>
+              </div>
+              <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>
+                {t('dashboard.alertsDesc')}
+              </p>
+              <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'>
+                {t('common.getStarted')}
+              </Link>
             </div>
-          </div>
-          <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-            {activeTab === PROJECT_TABS.traffic ? (
-              !isPanelsDataEmpty && (
-                <Dropdown
-                  items={chartMetrics}
-                  title={t('project.metricVis')}
-                  labelExtractor={(pair) => {
-                    const {
-                      label, id: pairID, active, conflicts,
-                    } = pair
-
-                    const conflicted = isConflicted(conflicts)
-
-                    return (
-                      <Checkbox
-                        className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                        label={label}
-                        disabled={conflicted}
-                        id={pairID}
-                        checked={active}
-                      />
-                    )
-                  }}
-                  keyExtractor={(pair) => pair.id}
-                  onSelect={({ id: pairID, conflicts }) => {
-                    if (isConflicted(conflicts)) {
-                      generateAlert(t('project.conflictMetric'), 'error')
-                      return
-                    }
-                    switchActiveChartMetric(pairID)
-                  }}
-                />
-              )) : (
-              !isPanelsDataEmptyPerf && (
-                <Dropdown
-                  items={chartMetricsPerf}
-                  title={(
-                    <p>
-                      {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
-                    </p>
-                  )}
-                  labelExtractor={(pair) => {
-                    const {
-                      label,
-                    } = pair
-
-                    return label
-                  }}
-                  keyExtractor={(pair) => pair.id}
-                  onSelect={({ id: pairID }) => {
-                    switchActiveChartMetric(pairID)
-                  }}
-                />
-              )
-            )}
-            <Dropdown
-              items={[...exportTypes, ...customExportTypes]}
-              title={[
-                <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                <Fragment key='export-data'>
-                  {t('project.exportData')}
-                </Fragment>,
-              ]}
-              labelExtractor={item => item.label}
-              keyExtractor={item => item.label}
-              onSelect={item => item.onClick(panelsData, t)}
-              className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-            />
-            {(!isProjectPublic && !(sharedRoles === roleViewer.role)) && (
-              <Button
-                onClick={openSettingsHandler}
-                className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                secondary
-              >
-                <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                {t('common.settings')}
-              </Button>
-            )}
-          </div>
-          {analyticsLoading && (
+          )}
+          {(activeTab === PROJECT_TABS.alerts && !isSharedProject && !project?.isPublicVisitors) && (
+            <ProjectAlertsView projectId={id} />
+          )}
+          {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
             <Loader />
           )}
-          {isPanelsDataEmpty && (
+          {(isPanelsDataEmpty && activeTab !== PROJECT_TABS.alerts) && (
             <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
           )}
-          {activeTab === 'traffic' && (
+          {activeTab === PROJECT_TABS.traffic && (
             <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <div
                 className={cx('h-80', {

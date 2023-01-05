@@ -381,7 +381,7 @@ const UserSettings = ({
           </Button>
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
-          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <h3 id='integrations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.integrations')}
             <div className='ml-5'>
               <Beta />

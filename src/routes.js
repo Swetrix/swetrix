@@ -20,6 +20,8 @@ const routes = Object.freeze({
   contact: '/contact',
   changelog: '/changelog',
   about: '/about',
+  create_alert: '/projects/:pid/alerts/create',
+  alert_settings: '/projects/:pid/alerts/settings/:id',
 })
 
 export default routes

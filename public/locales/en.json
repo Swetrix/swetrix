@@ -60,7 +60,8 @@
     "disable": "Disable",
     "copied": "Copied",
     "new": "New",
-    "loading": "Loading.."
+    "loading": "Loading..",
+    "edit": "Edit"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -396,6 +397,8 @@
     "sessionDuration": "Session duration",
     "traffic": "Traffic",
     "performance": "Performance",
+    "alerts": "Alerts",
+    "alertsDesc": "Automated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Network",
@@ -409,6 +412,39 @@
     "pageLoad": "Page load time",
     "render": "Browser render",
     "response": "Response Time"
+  },
+  "alert": {
+    "create": "Create an alert",
+    "add": "Add Alert",
+    "delete": "Delete alert",
+    "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
+    "noNotification": "No notification channels set",
+    "lastTriggered": "Last Triggered",
+    "never": "Never",
+    "qDelete": "Delete the alert?",
+    "settingsOf": "Settings of {{name}}",
+    "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
+    "name": "Alert name",
+    "metric": "Query metric",
+    "condition": "Trigger when the metric is",
+    "threshold": "Threshold",
+    "time": "During the last",
+    "xMinutes": "{{amount}} minutes",
+    "xHours": "{{amount}} hours",
+    "xHour": "{{amount}} hour",
+    "enabled": "Alert enabled",
+    "enabledHint": "Disabled alerts will not notify you of any events.",
+    "conditions": {
+      "greater_than": "Greater than",
+      "greater_equal_than": "Greater or equal to",
+      "less_than": "Less than",
+      "less_equal_than": "Less or equal to"
+    },
+    "metrics": {
+      "page_views": "Page views",
+      "unique_page_views": "Unique sessions",
+      "online_users": "Online users"
+    }
   },
   "docs": {
     "titles": {
@@ -595,6 +631,8 @@
       "xEvMo": "{{amount}} events per month.",
       "upToXVMo": "Up to {{amount}} visits per month.",
       "xVMo": "{{amount}} visits per month.",
+      "xAlertsSingular": "{{amount}} alerting rule",
+      "xAlertsPlural": "{{amount}} alerting rules",
       "upToXProjects": "Create up to {{amount}} projects.",
       "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} months of data retention.",

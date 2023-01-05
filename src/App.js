@@ -46,6 +46,7 @@ const Terms = lazy(() => import('pages/Terms'))
 const NotFound = lazy(() => import('pages/NotFound'))
 const Changelog = lazy(() => import('pages/Changelog'))
 const About = lazy(() => import('pages/About'))
+const ProjectAlertsSettings = lazy(() => import('pages/Project/Alerts/Settings'))
 
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
@@ -193,6 +194,8 @@ const App = () => {
                 <Route path={routes.confirm_share} component={ConfirmShare} exact />
                 <Route path={routes.changelog} component={Changelog} exact />
                 <Route path={routes.about} component={About} exact />
+                <Route path={routes.alert_settings} component={ProjectAlertsSettings} exact />
+                <Route path={routes.create_alert} component={ProjectAlertsSettings} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>

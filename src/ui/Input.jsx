@@ -60,7 +60,7 @@ const Input = ({
 Input.propTypes = {
   value: PropTypes.oneOfType([
     PropTypes.string, PropTypes.number,
-  ]).isRequired,
+  ]),
   label: PropTypes.string,
   hint: PropTypes.string,
   placeholder: PropTypes.string,
@@ -78,6 +78,7 @@ Input.propTypes = {
 }
 
 Input.defaultProps = {
+  value: null,
   label: '',
   hint: '',
   placeholder: '',

@@ -201,6 +201,26 @@ const setProjectTab = (tab) => ({
   payload: { tab },
 })
 
+const setProjectAlerts = (alerts) => ({
+  type: types.SET_PROJECT_ALERTS,
+  payload: { alerts },
+})
+
+const setProjectAlertsTotal = (total, pageTotal) => ({
+  type: types.SET_PROJECT_ALERTS_TOTAL,
+  payload: { total, pageTotal },
+})
+
+const setProjectAlertsLoading = (loading) => ({
+  type: types.SET_PROJECT_ALERTS_LOADING,
+  payload: { loading },
+})
+
+const loadProjectAlerts = (take, skip) => ({
+  type: types.LOAD_PROJECT_ALERTS,
+  payload: { take, skip },
+})
+
 const UIActions = {
   loadProjects,
   loadSharedProjects,
@@ -232,6 +252,10 @@ const UIActions = {
   setProjectCachePerf,
   deleteProjectCachePerf,
   setProjectTab,
+  setProjectAlerts,
+  setProjectAlertsTotal,
+  setProjectAlertsLoading,
+  loadProjectAlerts,
 }
 
 export default UIActions

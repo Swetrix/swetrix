@@ -3,12 +3,30 @@ import React from 'react'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
+import { HashLink } from 'react-router-hash-link'
 
 import { SWETRIX_VS_GOOGLE } from 'redux/constants'
 import Title from 'components/Title'
+import routes from 'routes'
+
+const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
 // Date format: YYYY-MM-DD
 const changelog = [
+  {
+    date: '2023-01-05',
+    changes: [
+      <>
+        Added notification channels integrations. Now you can connect your Telegram account to our official bot and receive notifications (e.g. when someone logins into your account), set up custom project alerts and much more! You can set up the integration in your
+        {' '}
+        <HashLink to={INTEGRATIONS_LINK} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+          account settings
+        </HashLink>
+        .
+      </>,
+      'Added new tab in Dashboard: Alerts.\nAutomated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.',
+    ],
+  },
   {
     date: '2023-01-03',
     changes: [
