@@ -9,6 +9,7 @@ import { RolesGuard } from '../common/guards/roles.guard'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _omit from 'lodash/omit'
+import * as _pick from 'lodash/pick'
 
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
@@ -150,7 +151,7 @@ export class AlertController {
 
     alert = {
       ...alert,
-      ...alertDTO,
+      ..._pick(alertDTO, ['queryMetric', 'queryCondition', 'queryValue', 'queryTime', 'active', 'name']),
     }
 
     await this.alertService.update(id, _omit(alert, ['project', 'lastTriggered']))

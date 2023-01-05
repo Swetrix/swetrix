@@ -25,6 +25,11 @@ export enum QueryTime {
 
 export class AlertDTO {
   @ApiProperty()
+  @IsNotEmpty()
+  @Length(1, 50)
+  name?: string
+
+  @ApiProperty()
   @IsOptional()
   queryMetric?: QueryMetric
 
