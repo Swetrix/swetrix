@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, Length } from 'class-validator'
 
 export class ProjectDTO {
   @ApiProperty({
@@ -8,6 +8,7 @@ export class ProjectDTO {
     description: 'A display name for your project',
   })
   @IsNotEmpty()
+  @Length(1, 50)
   name: string
 
   @ApiProperty({
