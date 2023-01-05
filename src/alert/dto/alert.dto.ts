@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsOptional } from 'class-validator'
+import { IsNotEmpty, IsOptional, Length } from 'class-validator'
 
 export enum QueryMetric {
   PAGE_VIEWS = 'page_views',
@@ -52,6 +52,7 @@ export class CreateAlertDTO {
 
   @ApiProperty()
   @IsNotEmpty()
+  @Length(1, 50)
   name: string
 
   @ApiProperty()
