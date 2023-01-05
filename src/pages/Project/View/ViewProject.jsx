@@ -1391,7 +1391,7 @@ const ViewProject = ({
               </div>
             </>
           )}
-          {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors)) && (
+          {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors || !authenticated)) && (
             <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
               <div className='flex items-center text-gray-50'>
                 <BellIcon className='w-8 h-8 mr-2' />
@@ -1407,7 +1407,7 @@ const ViewProject = ({
               </Link>
             </div>
           )}
-          {(activeTab === PROJECT_TABS.alerts && !isSharedProject && !project?.isPublicVisitors) && (
+          {(activeTab === PROJECT_TABS.alerts && !isSharedProject && !project?.isPublicVisitors && authenticated) && (
             <ProjectAlertsView projectId={id} />
           )}
           {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
