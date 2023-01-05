@@ -9,6 +9,7 @@ import _reduce from 'lodash/reduce'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
+import { BellIcon } from '@heroicons/react/24/outline'
 
 import routes from 'routes'
 import Button from 'ui/Button'
@@ -38,23 +39,53 @@ const ProjectAlerts = ({
   return (
     <div>
       <div className='flex justify-between items-center'>
-        <h2 className='text-2xl font-bold dark:text-white text-gray-800'>Alerts</h2>
-        <Button
-          className='mt-4'
-          type='button'
-          primary
-          large
-          onClick={() => {
-            history.push(_replace(routes.create_alert, ':pid', projectId))
-          }}
-        >
-          {t('alert.add')}
-        </Button>
+        {!loading && !_isEmpty(alerts) && (
+          <>
+            <h2 className='text-2xl font-bold dark:text-white text-gray-800'>Alerts</h2>
+            <Button
+              className='mt-4'
+              type='button'
+              primary
+              large
+              onClick={() => {
+                history.push(_replace(routes.create_alert, ':pid', projectId))
+              }}
+            >
+              {t('alert.add')}
+            </Button>
+          </>
+        )}
       </div>
       <div className='mt-4'>
         {loading && (
           <div>
             {t('common.loading')}
+          </div>
+        )}
+        {(!loading && _isEmpty(alerts)) && (
+          <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
+            <div className='flex items-center text-gray-50'>
+              <BellIcon className='w-8 h-8 mr-2' />
+              <p className='font-bold text-3xl'>
+                {t('dashboard.alerts')}
+              </p>
+            </div>
+            <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>
+              {t('dashboard.alertsDesc')}
+            </p>
+            {/* <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'>
+              {t('common.getStarted')}
+            </Link> */}
+            <Button
+              onClick={() => {
+                history.push(_replace(routes.create_alert, ':pid', projectId))
+              }}
+              className='mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'
+              secondary
+              large
+            >
+              {t('alert.add')}
+            </Button>
           </div>
         )}
         {(!loading && !_isEmpty(alerts)) && (
