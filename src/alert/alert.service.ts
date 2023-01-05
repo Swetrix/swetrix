@@ -36,7 +36,7 @@ export class AlertService {
   }
 
   findOneWithRelations(id: string): Promise<Alert | null> {
-    return this.alertsReporsitory.findOne(id, { relations: ['project'] })
+    return this.alertsReporsitory.findOne(id, { relations: ['project', 'project.admin'] })
   }
 
   async count(options: object = {}): Promise<number> {

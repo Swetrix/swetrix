@@ -383,7 +383,7 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   // @Cron(CronExpression.EVERY_5_SECONDS)
-  async checkUserOnline(): Promise<void> {
+  async checkOnlineUsersAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
         admin: {
@@ -397,7 +397,7 @@ export class TaskManagerService {
       project: In(_map(projects, 'id')),
       active: true,
       queryMetric: QueryMetric.ONLINE_USERS,
-    })
+    }, ['project'])
 
     for (let i = 0; i < _size(alerts); ++i) {
       const alert = alerts[i]
@@ -424,7 +424,7 @@ export class TaskManagerService {
 
         this.bot.telegram.sendMessage(
           project.admin.telegramChatId,
-          `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!}`,
+          `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`,
           {
             parse_mode: 'Markdown',
           },
@@ -435,7 +435,7 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   // @Cron(CronExpression.EVERY_5_SECONDS)
-  async checkAdditionalAlerts(): Promise<void> {
+  async checkMetricAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
         admin: {
@@ -449,7 +449,7 @@ export class TaskManagerService {
       project: In(_map(projects, 'id')),
       active: true,
       queryMetric: Not(QueryMetric.ONLINE_USERS),
-    })
+    }, ['project'])
 
     for (let i = 0; i < _size(alerts); ++i) {
       const alert = alerts[i]

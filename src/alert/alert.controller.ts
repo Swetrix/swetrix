@@ -87,14 +87,14 @@ export class AlertController {
     const project = await this.projectService.findOneWhere({
       id: alertDTO.pid,
     }, {
-      relations: ['alerts'],
+      relations: ['alerts', 'admin'],
     })
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
     }
 
-    this.projectService.allowedToManage(project, uid, user.roles, 'You are not allowed to manage this project')
+    this.projectService.allowedToManage(project, uid, user.roles, 'You are not allowed to add alerts to this project')
 
     const pids = _map(user.projects, (project) => project.id)
     const alertsCount = await this.alertService.count({ project: In(pids) })
