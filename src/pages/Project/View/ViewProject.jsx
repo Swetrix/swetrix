@@ -63,7 +63,7 @@ import './styles.css'
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab,
+  projectTab, setProjectTab, setProjects,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -954,19 +954,35 @@ const ViewProject = ({
     if (!isLoading && _isEmpty(project)) {
       getProject(id)
         .then(projectRes => {
-          if (!_isEmpty(projectRes) && projectRes?.public) {
-            getOverallStats([id])
-              .then(res => {
-                setPublicProject({
-                  ...projectRes,
-                  overall: res[id],
-                  live: 'N/A',
+          if (!_isEmpty(projectRes)) {
+            if (projectRes.isPublic && !projectRes.isOwner) {
+              getOverallStats([id])
+                .then(res => {
+                  setPublicProject({
+                    ...projectRes,
+                    overall: res[id],
+                    live: 'N/A',
+                    isPublicVisitors: true,
+                  })
                 })
-              })
-              .catch(e => {
-                console.error(e)
-                onErrorLoading()
-              })
+                .catch(e => {
+                  console.error(e)
+                  onErrorLoading()
+                })
+            } else {
+              getOverallStats([id])
+                .then(res => {
+                  setProjects([...projects, {
+                    ...projectRes,
+                    overall: res[id],
+                    live: 'N/A',
+                  }])
+                })
+                .catch(e => {
+                  console.error(e)
+                  onErrorLoading()
+                })
+            }
 
             setIsProjectPublic(true)
           } else {
@@ -1353,7 +1369,7 @@ const ViewProject = ({
                   onSelect={item => item.onClick(panelsData, t)}
                   className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
                 />
-                {(!isProjectPublic && !(sharedRoles === roleViewer.role)) && (
+                {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
                   <Button
                     onClick={openSettingsHandler}
                     className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
@@ -1366,7 +1382,7 @@ const ViewProject = ({
               </div>
             </>
           )}
-          {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project.public)) && (
+          {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors)) && (
             <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
               <div className='flex items-center text-gray-50'>
                 <BellIcon className='w-8 h-8 mr-2' />
@@ -1382,7 +1398,7 @@ const ViewProject = ({
               </Link>
             </div>
           )}
-          {activeTab === PROJECT_TABS.alerts && !isSharedProject && !project.public && (
+          {(activeTab === PROJECT_TABS.alerts && !isSharedProject && !project?.isPublicVisitors) && (
             <ProjectAlertsView projectId={id} />
           )}
           {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (

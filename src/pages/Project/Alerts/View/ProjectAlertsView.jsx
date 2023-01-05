@@ -6,6 +6,8 @@ import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _values from 'lodash/values'
 import _reduce from 'lodash/reduce'
+import _filter from 'lodash/filter'
+import _trucate from 'lodash/truncate'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
@@ -21,6 +23,12 @@ const ProjectAlerts = ({
   const { t, i18n: { language } } = useTranslation()
   const history = useHistory()
 
+  // find in alerts alert with pid === projectId
+  const projectAlerts = useMemo(() => {
+    if (loading) return []
+    return _filter(alerts, ({ pid }) => pid === projectId)
+  }, [projectId, alerts, loading])
+
   const queryMetricTMapping = useMemo(() => {
     const values = _values(QUERY_METRIC)
 
@@ -34,12 +42,10 @@ const ProjectAlerts = ({
     return !_isEmpty(user) && user.telegramChatId && user.isTelegramChatIdConfirmed
   }, [user])
 
-  console.log(isIntegrationLinked)
-
   return (
     <div>
       <div className='flex justify-between items-center'>
-        {!loading && !_isEmpty(alerts) && (
+        {!loading && !_isEmpty(projectAlerts) && (
           <>
             <h2 className='text-2xl font-bold dark:text-white text-gray-800'>Alerts</h2>
             <Button
@@ -62,7 +68,7 @@ const ProjectAlerts = ({
             {t('common.loading')}
           </div>
         )}
-        {(!loading && _isEmpty(alerts)) && (
+        {(!loading && _isEmpty(projectAlerts)) && (
           <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
             <div className='flex items-center text-gray-50'>
               <BellIcon className='w-8 h-8 mr-2' />
@@ -88,15 +94,17 @@ const ProjectAlerts = ({
             </Button>
           </div>
         )}
-        {(!loading && !_isEmpty(alerts)) && (
+        {(!loading && !_isEmpty(projectAlerts)) && (
           <div className='flex flex-col'>
-            {_map(alerts, ({
+            {_map(projectAlerts, ({
               id, name, queryMetric, lastTriggered,
             }) => (
               <div key={id} className='flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-4'>
                 <div className='flex justify-between items-center'>
                   <div className='flex flex-col'>
-                    <div className='text-lg font-bold dark:text-white text-gray-800'>{name}</div>
+                    <div className='text-lg font-bold dark:text-white text-gray-800 hidden md:block'>{name}</div>
+                    <div className='text-lg font-bold dark:text-white text-gray-800 hidden sm:block md:hidden'>{_trucate(name, { length: 20 })}</div>
+                    <div className='text-lg font-bold dark:text-white text-gray-800 sm:hidden'>{_trucate(name, { length: 10 })}</div>
                     <div className='text-sm dark:text-gray-400 text-gray-600'>{queryMetricTMapping[queryMetric]}</div>
                   </div>
                   <div className='flex flex-col'>

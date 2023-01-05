@@ -130,7 +130,6 @@ const ProjectAlertsSettings = ({
     if (isSettings) {
       updateAlert(id, data)
         .then((res) => {
-          console.log(res)
           history.push(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setProjectAlerts([..._filter(alerts, (a) => a.id !== id), res])
         })
