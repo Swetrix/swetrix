@@ -14,6 +14,7 @@ import _keys from 'lodash/keys'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
+import _toNumber from 'lodash/toNumber'
 import { clsx as cx } from 'clsx'
 import Title from 'components/Title'
 import Input from 'ui/Input'
@@ -45,7 +46,6 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
-    console.log('alert', alert, alerts)
     if (!_isEmpty(alert)) {
       setForm(alert)
     }
@@ -56,6 +56,10 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
 
     if (_isEmpty(form.name) || _size(form.name) < 3) {
       allErrors.name = t('profileSettings.nameError')
+    }
+
+    if (Number.isNaN(_toNumber(form.queryValue))) {
+      allErrors.queryValue = t('alertsSettings.queryValueError')
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -187,6 +191,17 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
               }))}
             />
           </div>
+          <Input
+            name='queryValue'
+            id='queryValue'
+            type='text'
+            label={t('project.alerts.queryValue')}
+            value={form.queryValue}
+            placeholder='1-999'
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted ? errors.queryValue : null}
+          />
           <div className='mt-4'>
             <Select
               name='queryTime'
