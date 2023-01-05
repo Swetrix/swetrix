@@ -416,8 +416,7 @@ const ViewProject = ({
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, applyRegions)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -679,8 +678,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, applyRegions)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf)
 
       if (!_isEmpty(mainChart)) {
         mainChart.destroy()
