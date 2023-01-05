@@ -410,6 +410,31 @@
     "render": "Browser render",
     "response": "Response Time"
   },
+  "alert": {
+    "create": "Create an alert",
+    "settingsOf": "Settings of {{name}}",
+    "name": "Alert name",
+    "metric": "Query metric",
+    "condition": "Trigger when the metric is",
+    "threshold": "Threshold",
+    "time": "During the last",
+    "xMinutes": "{{amount}} minutes",
+    "xHours": "{{amount}} hours",
+    "xHour": "{{amount}} hour",
+    "enabled": "Alert enabled",
+    "enabledHint": "Disabled alerts will not notify you of any events.",
+    "conditions": {
+      "greater_than": "Greater than",
+      "greater_equal_than": "Greater or equal to",
+      "less_than": "Less than",
+      "less_equal_than": "Less or equal to"
+    },
+    "metrics": {
+      "page_views": "Page views",
+      "unique_page_views": "Unique sessions",
+      "online_users": "Online users"
+    }
+  },
   "docs": {
     "titles": {
       "start": "Getting Started",

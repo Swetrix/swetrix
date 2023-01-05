@@ -13,6 +13,9 @@ import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
+import _reduce from 'lodash/reduce'
+import _values from 'lodash/values'
+import _findKey from 'lodash/findKey'
 import _includes from 'lodash/includes'
 import _toNumber from 'lodash/toNumber'
 import { clsx as cx } from 'clsx'
@@ -22,7 +25,7 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import {
-  PROJECT_TABS, QueryCondition, QueryMetric, QueryTime,
+  PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME,
 } from 'redux/constants'
 import { createAlert, updateAlert, deleteAlert } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -39,11 +42,59 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
   const [form, setForm] = useState({
     pid,
     name: '',
+    queryTime: QUERY_TIME.LAST_1_HOUR,
+    queryCondition: QUERY_CONDITION.GREATER_THAN,
+    queryMetric: QUERY_METRIC.PAGE_VIEWS,
+    active: true,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
+
+  const queryTimeTMapping = useMemo(() => {
+    const values = _values(QUERY_TIME)
+
+    return _reduce(values, (prev, curr) => {
+      const [_, amount, metric] = _split(curr, '_')
+      let translated
+
+      if (metric === 'minutes') {
+        translated = t('alert.xMinutes', { amount })
+      }
+
+      if (metric === 'hour') {
+        translated = t('alert.xHour', { amount })
+      }
+
+      if (metric === 'hours') {
+        translated = t('alert.xHours', { amount })
+      }
+
+      return {
+        ...prev,
+        [curr]: translated,
+      }
+    }, {})
+  }, [t])
+
+  const queryConditionTMapping = useMemo(() => {
+    const values = _values(QUERY_CONDITION)
+
+    return _reduce(values, (prev, curr) => ({
+      ...prev,
+      [curr]: t(`alert.conditions.${curr}`),
+    }), {})
+  }, [t])
+
+  const queryMetricTMapping = useMemo(() => {
+    const values = _values(QUERY_METRIC)
+
+    return _reduce(values, (prev, curr) => ({
+      ...prev,
+      [curr]: t(`alert.metrics.${curr}`),
+    }), {})
+  }, [t])
 
   useEffect(() => {
     if (!_isEmpty(alert)) {
@@ -130,7 +181,9 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
     }
   }
 
-  const title = isSettings ? `${'Update'} ${form.name}` : t('Create alert')
+  const title = isSettings ? t('alert.settingsOf', {
+    name: form.name,
+  }) : t('alert.create')
 
   return (
     <Title title={title}>
@@ -143,61 +196,67 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {title}
           </h2>
-          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-            {t('profileSettings.general')}
-          </h3>
           <Input
             name='name'
             id='name'
             type='text'
-            label={t('project.settings.name')}
+            label={t('alert.name')}
             value={form.name}
-            placeholder='My awesome project'
+            placeholder='Your alert label'
             className='mt-4'
             onChange={handleInput}
             error={beenSubmitted ? errors.name : null}
+          />
+          <Checkbox
+            checked={Boolean(form.active)}
+            onChange={handleInput}
+            name='active'
+            id='active'
+            className='mt-4'
+            label={t('alert.enabled')}
+            hint={t('alert.enabledHint')}
           />
           <div className='mt-4'>
             <Select
               name='queryMetric'
               id='queryMetric'
-              label={t('alert.settings.queryMetric')}
-              items={_keys(QueryMetric)}
-              keyExtractor={item => item}
-              labelExtractor={item => {
-                return QueryMetric[item]
+              label={t('alert.metric')}
+              items={_values(queryMetricTMapping)}
+              title={queryMetricTMapping[form.queryMetric]}
+              onSelect={(item) => {
+                const key = _findKey(queryMetricTMapping, predicate => predicate === item)
+
+                setForm(prevForm => ({
+                  ...prevForm,
+                  queryMetric: key,
+                }))
               }}
-              title={form.queryMetric || 'Select query metric'}
-              onSelect={(item) => setForm(prevForm => ({
-                ...prevForm,
-                queryMetric: item,
-              }))}
             />
           </div>
           <div className='mt-4'>
             <Select
               name='queryCondition'
               id='queryCondition'
-              label={t('alert.settings.queryCondition')}
-              items={_keys(QueryCondition)}
-              keyExtractor={item => item}
-              labelExtractor={item => {
-                return QueryCondition[item]
+              label={t('alert.condition')}
+              items={_values(queryConditionTMapping)}
+              title={queryConditionTMapping[form.queryCondition]}
+              onSelect={(item) => {
+                const key = _findKey(queryConditionTMapping, predicate => predicate === item)
+
+                setForm(prevForm => ({
+                  ...prevForm,
+                  queryCondition: key,
+                }))
               }}
-              title={form.queryCondition || 'Select query condition'}
-              onSelect={(item) => setForm(prevForm => ({
-                ...prevForm,
-                queryCondition: item,
-              }))}
             />
           </div>
           <Input
             name='queryValue'
             id='queryValue'
             type='text'
-            label={t('project.alerts.queryValue')}
+            label={t('alert.threshold')}
             value={form.queryValue}
-            placeholder='1-999'
+            placeholder='10'
             className='mt-4'
             onChange={handleInput}
             error={beenSubmitted ? errors.queryValue : null}
@@ -206,31 +265,22 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
             <Select
               name='queryTime'
               id='queryTime'
-              label={t('alert.settings.queryTime')}
-              items={_keys(QueryTime)}
-              keyExtractor={item => item}
-              labelExtractor={item => {
-                return QueryTime[item]
+              label={t('alert.time')}
+              items={_values(queryTimeTMapping)}
+              title={queryTimeTMapping[form.queryTime]}
+              onSelect={(item) => {
+                const key = _findKey(queryTimeTMapping, predicate => predicate === item)
+
+                setForm(prevForm => ({
+                  ...prevForm,
+                  queryTime: key,
+                }))
               }}
-              title={form.queryTime || 'Select query time'}
-              onSelect={(item) => setForm(prevForm => ({
-                ...prevForm,
-                queryTime: item,
-              }))}
             />
           </div>
-          {!isSettings ? (
-            <div className='mt-5 flex justify-between items-center'>
-              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
-                {t('common.cancel')}
-              </Button>
-              <Button type='submit' primary regular>
-                {t('common.save')}
-              </Button>
-            </div>
-          ) : (
+          {isSettings ? (
             <div className='flex justify-between items-center mt-5'>
-              <Button className='ml-2' onClick={() => setShowModal(true)} danger semiSmall>
+              <Button onClick={() => setShowModal(true)} danger semiSmall>
                 <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
                 {t('project.settings.delete')}
               </Button>
@@ -242,6 +292,15 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
                   {t('common.save')}
                 </Button>
               </div>
+            </div>
+          ) : (
+            <div className='mt-5 flex justify-between items-center'>
+              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
+                {t('common.cancel')}
+              </Button>
+              <Button type='submit' primary regular>
+                {t('common.save')}
+              </Button>
             </div>
           )}
         </form>

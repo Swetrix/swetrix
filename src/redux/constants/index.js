@@ -204,20 +204,20 @@ export const PROJECT_TABS = {
   alerts: 'alerts',
 }
 
-export const QueryMetric = {
+export const QUERY_METRIC = {
   PAGE_VIEWS: 'page_views',
   UNIQUE_PAGE_VIEWS: 'unique_page_views',
   ONLINE_USERS: 'online_users',
 }
 
-export const QueryCondition = {
+export const QUERY_CONDITION = {
   GREATER_THAN: 'greater_than',
   GREATER_EQUAL_THAN: 'greater_equal_than',
   LESS_THAN: 'less_than',
   LESS_EQUAL_THAN: 'less_equal_than',
 }
 
-export const QueryTime = {
+export const QUERY_TIME = {
   LAST_15_MINUTES: 'last_15_minutes',
   LAST_30_MINUTES: 'last_30_minutes',
   LAST_1_HOUR: 'last_1_hour',
