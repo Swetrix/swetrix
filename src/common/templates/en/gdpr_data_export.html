@@ -73,7 +73,7 @@
                                                    line-height: 23px;
                                                 "
                                              >
-                                                <i>Note: All times are Greenwich Mean Time.</i><br />
+                                                <i>Note: All times are Greenwich Mean Time unless specified otherwise.</i><br />
                                                 Below is the list of your Swetrix account information and settings (including your created projects) that you can request at any time.<br />
                                                 Our <a href="https://swetrix.com/privacy" target="_blank">Privacy Policy</a> has more information about what data we collect and how we use it.
 
@@ -97,9 +97,9 @@
                                                 <b>Paddle: Update subscription URL:</b>&nbsp;{{user.subUpdateURL}}<br />
                                                 <b>Paddle: Cancel subscription URL:</b>&nbsp;{{user.subCancelURL}}<br />
                                                 <b>Is Telegram Chat ID confirmed:</b>&nbsp;{{#if user.isTelegramChatIdConfirmed}} Yes {{else}} No {{/if}}<br />
-                                                <b>Telegram Chat ID</b>&nbsp;{{user.telegramChatId}}<br />
-                                                <b>Theme</b>&nbsp;{{user.theme}}<br />
-                                                <b>Nickname</b>&nbsp;{{user.nickname}}<br />
+                                                <b>Telegram Chat ID:</b>&nbsp;{{user.telegramChatId}}<br />
+                                                <b>Theme:</b>&nbsp;{{user.theme}}<br />
+                                                <b>Nickname:</b>&nbsp;{{user.nickname}}<br />
 
                                                 <div style="height: 10px; line-height: 10px; font-size: 8px;">&nbsp;</div>
                                                 <h3 style="margin-bottom: 5px;">Projects Information:</h3>
@@ -124,7 +124,7 @@
                                                       <b>Alert query time:</b>&nbsp;{{queryTime}}<br />
                                                       <b>Alert created at:</b>&nbsp;{{created}}<br />
                                                    {{else}}
-                                                      None.
+                                                      -
                                                       <br />
                                                    {{/each}}
                                                    <br />
