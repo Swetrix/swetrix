@@ -1,6 +1,5 @@
 import { connect } from 'react-redux'
 import { errorsActions } from 'redux/actions/errors'
-import UIActions from 'redux/actions/ui'
 
 import ProjectAlerts from './ProjectAlertsView'
 

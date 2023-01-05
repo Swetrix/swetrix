@@ -282,7 +282,7 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
             <div className='flex justify-between items-center mt-5'>
               <Button onClick={() => setShowModal(true)} danger semiSmall>
                 <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-                {t('project.settings.delete')}
+                {t('alert.delete')}
               </Button>
               <div className='flex justify-between items-center'>
                 <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
@@ -307,10 +307,10 @@ const ProjectAlertsSettings = ({ alerts, setProjectAlerts, showError }) => {
         <Modal
           onClose={() => setShowModal(false)}
           onSubmit={onDelete}
-          submitText={t('project.alerts.delete')}
+          submitText={t('alert.delete')}
           closeText={t('common.close')}
-          title={t('project.alerts.qDelete')}
-          message={t('project.alerts.deleteHint')}
+          title={t('alert.qDelete')}
+          message={t('alert.deleteHint')}
           submitType='danger'
           type='error'
           isOpened={showModal}

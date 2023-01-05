@@ -60,7 +60,8 @@
     "disable": "Disable",
     "copied": "Copied",
     "new": "New",
-    "loading": "Loading.."
+    "loading": "Loading..",
+    "edit": "Edit"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -412,7 +413,13 @@
   },
   "alert": {
     "create": "Create an alert",
+    "add": "Add Alert",
+    "delete": "Delete alert",
+    "lastTriggered": "Last Triggered",
+    "never": "Never",
+    "qDelete": "Delete the alert?",
     "settingsOf": "Settings of {{name}}",
+    "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
     "name": "Alert name",
     "metric": "Query metric",
     "condition": "Trigger when the metric is",
