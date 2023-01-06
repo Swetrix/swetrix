@@ -17,6 +17,8 @@ import { PingModule } from './ping/ping.module'
 import { TGModule } from './tg-integration/tg.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
+import { I18nModule } from 'nestjs-i18n'
+import { getI18nConfig } from './configs'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
@@ -30,6 +32,7 @@ const modules = [
     synchronize: process.env.NODE_ENV === 'development',
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
   }),
+  I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
   TaskManagerModule,
   OldAuthModule,
