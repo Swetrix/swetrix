@@ -18,7 +18,8 @@
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
     "subscriptionUpdated": "Your subscription has been updated",
-    "generate2FAError": "Error occurred while generating 2FA code"
+    "generate2FAError": "Error occurred while generating 2FA code",
+    "integrationRemovalError": "Error occurred while removing the integration"
   },
   "common": {
     "features": "Χαρακτηριστικά",
@@ -48,6 +49,9 @@
     "isNot": "δεν είναι",
     "invite": "Πρόσκληση",
     "pending": "Εκκρεμεί",
+    "notConnected": "Not connected",
+    "connected": "Connected",
+    "goBack": "Go back",
     "accept": "Αποδοχή",
     "reject": "Απόρριψη",
     "delete": "Διαγραφή",
@@ -56,7 +60,8 @@
     "disable": "Απενεργοποίηση",
     "copied": "Copied",
     "new": "New",
-    "loading": "Loading.."
+    "loading": "Loading..",
+    "edit": "Edit"
   },
   "main": {
     "ukrSupport": "Υποστηρίξτε τον ουκρανικό στρατό για να πολεμήσει τη ρωσική εισβολή.",
@@ -353,7 +358,16 @@
     "apiKeyDelete": "Delete your API Key?",
     "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
     "theme": "Theme",
-    "selectTheme": "Select theme"
+    "selectTheme": "Select theme",
+    "integrations": "Integrations",
+    "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
+    "integrationsList": {
+      "telegram": "Receive notifications directly into a Telegram bot.",
+      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
+    },
+    "addIntegration": "Add integration",
+    "removeIntegration": "Remove integration",
+    "chatID": "Chat ID"
   },
   "dashboard": {
     "newProject": "Νέο έργο",
@@ -383,6 +397,8 @@
     "sessionDuration": "Session duration",
     "traffic": "Traffic",
     "performance": "Performance",
+    "alerts": "Alerts",
+    "alertsDesc": "Automated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Network",
@@ -396,6 +412,39 @@
     "pageLoad": "Page load time",
     "render": "Browser render",
     "response": "Response Time"
+  },
+  "alert": {
+    "create": "Create an alert",
+    "add": "Add Alert",
+    "delete": "Delete alert",
+    "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
+    "noNotification": "No notification channels set",
+    "lastTriggered": "Last Triggered",
+    "never": "Never",
+    "qDelete": "Delete the alert?",
+    "settingsOf": "Settings of {{name}}",
+    "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
+    "name": "Alert name",
+    "metric": "Query metric",
+    "condition": "Trigger when the metric is",
+    "threshold": "Threshold",
+    "time": "During the last",
+    "xMinutes": "{{amount}} minutes",
+    "xHours": "{{amount}} hours",
+    "xHour": "{{amount}} hour",
+    "enabled": "Alert enabled",
+    "enabledHint": "Disabled alerts will not notify you of any events.",
+    "conditions": {
+      "greater_than": "Greater than",
+      "greater_equal_than": "Greater or equal to",
+      "less_than": "Less than",
+      "less_equal_than": "Less or equal to"
+    },
+    "metrics": {
+      "page_views": "Page views",
+      "unique_page_views": "Unique sessions",
+      "online_users": "Online users"
+    }
   },
   "docs": {
     "titles": {
@@ -582,6 +631,8 @@
       "xEvMo": "{{amount}} εκδηλώσεις ανά μήνα.",
       "upToXVMo": "Up to {{amount}} visits per month.",
       "xVMo": "{{amount}} visits per month.",
+      "xAlertsSingular": "{{amount}} alerting rule",
+      "xAlertsPlural": "{{amount}} alerting rules",
       "upToXProjects": "Δημιουργήστε έως και {{amount}} έργα.",
       "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} μήνες διατήρησης δεδομένων.",
@@ -597,7 +648,13 @@
     "downgradeDesc": "Μετά την υποβάθμιση, το πρόγραμμά σας θα περιλαμβάνει λιγότερα έργα και διαθέσιμες εκδηλώσεις ανά μήνα. Σε περίπτωση που ο ιστότοπός σας έχει μεγαλύτερη επισκεψιμότητα από αυτή που περιλαμβάνει το πακέτο στο οποίο θέλετε να υποβαθμίσετε, αυτό θα έχει ως αποτέλεσμα να μην αποθηκεύονται όλα τα συμβάντα στη βάση δεδομένων μας.\nΘα μπορείτε να επιστρέψετε στο τρέχον πακέτο σας ανά πάσα στιγμή.\nΕάν έχετε οποιεσδήποτε ερωτήσεις, μπορείτε πάντα να μας στείλετε email στο {{email}}."
   },
   "contact": {
-    "desc": "Έχετε κάτι να ρωτήσετε;\nΜη διστάσετε να μας στείλετε ένα email στο <mail>{{email}}</mail>"
+    "howTo": "Have something to ask? There are several ways on how to contact us:",
+    "ways": {
+      "email": "You can drop us an email at <mail>{{email}}</mail>",
+      "twitter": "Tweet or message us at <url>{{twitter}}</url>",
+      "discord": "Join our Discord server by following <url>this link</url>",
+      "chat": "Use a chatbox located on the bottom right of this page"
+    }
   },
   "beta": {
     "title": "Βήτα",

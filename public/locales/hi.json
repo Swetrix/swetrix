@@ -18,7 +18,8 @@
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
     "subscriptionUpdated": "Your subscription has been updated",
-    "generate2FAError": "Error occurred while generating 2FA code"
+    "generate2FAError": "Error occurred while generating 2FA code",
+    "integrationRemovalError": "Error occurred while removing the integration"
   },
   "common": {
     "features": "विशेषताएं",
@@ -48,6 +49,9 @@
     "isNot": "is not",
     "invite": "Invite",
     "pending": "Pending",
+    "notConnected": "Not connected",
+    "connected": "Connected",
+    "goBack": "Go back",
     "accept": "Accept",
     "reject": "Reject",
     "delete": "Delete",
@@ -56,7 +60,8 @@
     "disable": "Disable",
     "copied": "Copied",
     "new": "New",
-    "loading": "Loading.."
+    "loading": "Loading..",
+    "edit": "Edit"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -353,7 +358,16 @@
     "apiKeyDelete": "Delete your API Key?",
     "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
     "theme": "Theme",
-    "selectTheme": "Select theme"
+    "selectTheme": "Select theme",
+    "integrations": "Integrations",
+    "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
+    "integrationsList": {
+      "telegram": "Receive notifications directly into a Telegram bot.",
+      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
+    },
+    "addIntegration": "Add integration",
+    "removeIntegration": "Remove integration",
+    "chatID": "Chat ID"
   },
   "dashboard": {
     "newProject": "नया प्रोजेक्ट",
@@ -383,6 +397,8 @@
     "sessionDuration": "Session duration",
     "traffic": "Traffic",
     "performance": "Performance",
+    "alerts": "Alerts",
+    "alertsDesc": "Automated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Network",
@@ -396,6 +412,39 @@
     "pageLoad": "Page load time",
     "render": "Browser render",
     "response": "Response Time"
+  },
+  "alert": {
+    "create": "Create an alert",
+    "add": "Add Alert",
+    "delete": "Delete alert",
+    "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
+    "noNotification": "No notification channels set",
+    "lastTriggered": "Last Triggered",
+    "never": "Never",
+    "qDelete": "Delete the alert?",
+    "settingsOf": "Settings of {{name}}",
+    "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
+    "name": "Alert name",
+    "metric": "Query metric",
+    "condition": "Trigger when the metric is",
+    "threshold": "Threshold",
+    "time": "During the last",
+    "xMinutes": "{{amount}} minutes",
+    "xHours": "{{amount}} hours",
+    "xHour": "{{amount}} hour",
+    "enabled": "Alert enabled",
+    "enabledHint": "Disabled alerts will not notify you of any events.",
+    "conditions": {
+      "greater_than": "Greater than",
+      "greater_equal_than": "Greater or equal to",
+      "less_than": "Less than",
+      "less_equal_than": "Less or equal to"
+    },
+    "metrics": {
+      "page_views": "Page views",
+      "unique_page_views": "Unique sessions",
+      "online_users": "Online users"
+    }
   },
   "docs": {
     "titles": {
@@ -582,6 +631,8 @@
       "xEvMo": "{{amount}} इवेंट प्रति माह।",
       "upToXVMo": "Up to {{amount}} visits per month.",
       "xVMo": "{{amount}} visits per month.",
+      "xAlertsSingular": "{{amount}} alerting rule",
+      "xAlertsPlural": "{{amount}} alerting rules",
       "upToXProjects": "{{amount}} प्रोजेक्ट तक बनाएं।",
       "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} महीने का डेटा प्रतिधारण।",
@@ -597,7 +648,13 @@
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
-    "desc": "कुछ पूछना चाहते हैं?\nहमें बेझिझक <mail>{{email}}</mail> पर एक ईमेल भेजें"
+    "howTo": "Have something to ask? There are several ways on how to contact us:",
+    "ways": {
+      "email": "You can drop us an email at <mail>{{email}}</mail>",
+      "twitter": "Tweet or message us at <url>{{twitter}}</url>",
+      "discord": "Join our Discord server by following <url>this link</url>",
+      "chat": "Use a chatbox located on the bottom right of this page"
+    }
   },
   "beta": {
     "title": "Beta",

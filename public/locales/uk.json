@@ -18,7 +18,8 @@
     "acceptInvitationError": "Помилка під час прийняття запрошення до проєкту",
     "acceptInvitation": "Запрошення до проєкту було прийнято",
     "subscriptionUpdated": "Ваша підписка була оновлена",
-    "generate2FAError": "Сталася помилка під час генерації 2FA-коду"
+    "generate2FAError": "Сталася помилка під час генерації 2FA-коду",
+    "integrationRemovalError": "Error occurred while removing the integration"
   },
   "common": {
     "features": "Функціонал",
@@ -48,6 +49,9 @@
     "isNot": "не є",
     "invite": "Запросити",
     "pending": "Очікування",
+    "notConnected": "Not connected",
+    "connected": "Connected",
+    "goBack": "Go back",
     "accept": "Прийняти",
     "reject": "Відхилити",
     "delete": "Видалити",
@@ -56,7 +60,8 @@
     "disable": "Вимкнути",
     "copied": "Скопійовано",
     "new": "Нове",
-    "loading": "Завантаження.."
+    "loading": "Завантаження..",
+    "edit": "Edit"
   },
   "main": {
     "ukrSupport": "Підтримайте українську армію в боротьбі з російським вторгненням.",
@@ -353,7 +358,16 @@
     "apiKeyDelete": "Видалити ваш API ключ?",
     "apiKeyDeleteConf": "Ви дійсно хочете видалити ваш API ключ?\nВесь доступ до API через цей ключ буде призупинений.",
     "theme": "Оформлення",
-    "selectTheme": "Обрати тему"
+    "selectTheme": "Обрати тему",
+    "integrations": "Integrations",
+    "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
+    "integrationsList": {
+      "telegram": "Receive notifications directly into a Telegram bot.",
+      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
+    },
+    "addIntegration": "Add integration",
+    "removeIntegration": "Remove integration",
+    "chatID": "Chat ID"
   },
   "dashboard": {
     "newProject": "Новий проєкт",
@@ -383,6 +397,8 @@
     "sessionDuration": "Тривалість сесії",
     "traffic": "Трафік",
     "performance": "Продуктивність",
+    "alerts": "Alerts",
+    "alertsDesc": "Automated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "frontend": "Фронтенд",
     "backend": "Бекенд",
     "network": "Мережа",
@@ -396,6 +412,39 @@
     "pageLoad": "Час завантаження сторінки",
     "render": "Візуалізація браузером",
     "response": "Час відгуку"
+  },
+  "alert": {
+    "create": "Create an alert",
+    "add": "Add Alert",
+    "delete": "Delete alert",
+    "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
+    "noNotification": "No notification channels set",
+    "lastTriggered": "Last Triggered",
+    "never": "Never",
+    "qDelete": "Delete the alert?",
+    "settingsOf": "Settings of {{name}}",
+    "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
+    "name": "Alert name",
+    "metric": "Query metric",
+    "condition": "Trigger when the metric is",
+    "threshold": "Threshold",
+    "time": "During the last",
+    "xMinutes": "{{amount}} minutes",
+    "xHours": "{{amount}} hours",
+    "xHour": "{{amount}} hour",
+    "enabled": "Alert enabled",
+    "enabledHint": "Disabled alerts will not notify you of any events.",
+    "conditions": {
+      "greater_than": "Greater than",
+      "greater_equal_than": "Greater or equal to",
+      "less_than": "Less than",
+      "less_equal_than": "Less or equal to"
+    },
+    "metrics": {
+      "page_views": "Page views",
+      "unique_page_views": "Unique sessions",
+      "online_users": "Online users"
+    }
   },
   "docs": {
     "titles": {
@@ -582,6 +631,8 @@
       "xEvMo": "{{amount}} подій в місяць.",
       "upToXVMo": "До {{amount}} відвідувань на місяць.",
       "xVMo": "{{amount}} відвідувань на місяць.",
+      "xAlertsSingular": "{{amount}} alerting rule",
+      "xAlertsPlural": "{{amount}} alerting rules",
       "upToXProjects": "Створюйте до {{amount}} проєктів.",
       "upToXWebsites": "Додавайте до {{amount}} вебсайтів.",
       "xMoDataRetention": "{{amount}} місяців зберігання даних.",
@@ -597,7 +648,13 @@
     "downgradeDesc": "Після зниження вашого тарифного плану, він буде містити менше проектів та доступних подій для відслідковування на місяць. Якщо ваш сайт містить більший трафік, ніж в себе включає тариф, на який ви хочете перейти, це призведе до того, що не всі події, будуть зберігаються в нашій базі даних.\nВи зможете повернутися до поточного тарифного плану в будь-який час.\nЯкщо у вас виникли будь-які запитання, ви завжди можете написати нам на адресу {{email}}."
   },
   "contact": {
-    "desc": "Хочете щось запитати?\nНапишіть нам лист на <mail>{{email}}</mail>"
+    "howTo": "Have something to ask? There are several ways on how to contact us:",
+    "ways": {
+      "email": "You can drop us an email at <mail>{{email}}</mail>",
+      "twitter": "Tweet or message us at <url>{{twitter}}</url>",
+      "discord": "Join our Discord server by following <url>this link</url>",
+      "chat": "Use a chatbox located on the bottom right of this page"
+    }
   },
   "beta": {
     "title": "Бета",

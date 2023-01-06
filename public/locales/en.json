@@ -648,7 +648,6 @@
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
-    "desc": "Have something to ask?\nFeel free to ",
     "howTo": "Have something to ask? There are several ways on how to contact us:",
     "ways": {
       "email": "You can drop us an email at <mail>{{email}}</mail>",
