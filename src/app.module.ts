@@ -19,6 +19,7 @@ import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
 import { I18nModule } from 'nestjs-i18n'
 import { getI18nConfig } from './configs'
+import { AuthModule } from './auth/auth.module'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
