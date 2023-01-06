@@ -48,6 +48,7 @@ const modules = [
   TGModule,
   MarketplaceModule,
   AlertModule,
+  AuthModule,
 ]
 
 if (process.env.TG_BOT_TOKEN) {

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core'
-import { ValidationPipe } from '@nestjs/common'
+import { ValidationPipe, VersioningType } from '@nestjs/common'
 import * as cookieParser from 'cookie-parser'
 import * as bodyParser from 'body-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
@@ -12,6 +12,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe())
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+  })
 
   if (process.env.NODE_ENV === 'development') {
     const config = new DocumentBuilder()

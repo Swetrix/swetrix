@@ -8,7 +8,7 @@ import { ApiTags } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter } from 'nestjs-i18n'
 
 @ApiTags('Auth')
-@Controller('auth')
+@Controller({ path: 'auth', version: '1' })
 @UseFilters(new I18nValidationExceptionFilter())
 @UsePipes(
   new ValidationPipe({
