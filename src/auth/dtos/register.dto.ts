@@ -1,16 +1,16 @@
-import { IsBoolean, IsEmail, IsNotEmpty } from 'class-validator'
+import { IsEmail, IsNotEmpty, IsBoolean } from 'class-validator'
 import { IsPassword } from '../decorators'
 
 export namespace RegisterDto {
   export class Request {
-    @IsEmail()
+    @IsEmail({}, { message: 'validation.isEmail' })
     public readonly email: string
 
-    @IsPassword()
+    @IsPassword({ message: 'validation.isPassword' })
     public readonly password: string
 
-    @IsNotEmpty()
-    @IsBoolean()
+    @IsNotEmpty({ message: 'validation.isNotEmpty' })
+    @IsBoolean({ message: 'validation.isBoolean' })
     public readonly checkIfLeaked: boolean
   }
 
