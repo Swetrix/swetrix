@@ -20,7 +20,7 @@ const Contact = () => {
           <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('contact.howTo')}
 
-            <ol className='list-decimal ml-10'>
+            <ol className='list-decimal ml-5 sm:ml-10'>
               <li className='mt-1'>
                 <Trans
                   t={t}
