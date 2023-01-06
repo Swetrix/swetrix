@@ -14,7 +14,7 @@ import {
 import { Request } from 'express'
 import { ApiTags } from '@nestjs/swagger'
 
-import { AuthService } from './auth.service'
+import { OldAuthService } from './auth.service'
 import { UserLoginDTO } from './dto/user-login.dto'
 import { SignupUserDTO } from './dto/user-signup.dto'
 import { UserService } from '../user/user.service'
@@ -48,9 +48,9 @@ import ct from 'countries-and-timezones'
 // TODO: Add logout endpoint to invalidate the token
 @ApiTags('Auth')
 @Controller('auth')
-export class AuthController {
+export class OldAuthController {
   constructor(
-    private authService: AuthService,
+    private oldAuthService: OldAuthService,
     private userService: UserService,
     private mailerService: MailerService,
     private actionTokensService: ActionTokensService,
@@ -78,7 +78,7 @@ export class AuthController {
         },
         relations: ['project'],
       })
-      user = this.authService.processUser(
+      user = this.oldAuthService.processUser(
         await this.userService.findOneWhere({ id: user_id }),
       )
 
@@ -99,7 +99,7 @@ export class AuthController {
       headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
     await checkRateLimit(ip, 'login', 10, 1800)
     const { 'user-agent': userAgent } = headers
-    // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
+    // await this.oldAuthService.checkCaptcha(userLoginDTO.recaptcha)
 
     if (isSelfhosted) {
       if (
@@ -108,18 +108,18 @@ export class AuthController {
       ) {
         throw new UnprocessableEntityException('Email or password is incorrect')
       }
-      return this.authService.login({
+      return this.oldAuthService.login({
         email: SELFHOSTED_EMAIL,
       })
     } else {
-      const user = await this.authService.validateUser(
+      const user = await this.oldAuthService.validateUser(
         userLoginDTO.email,
         userLoginDTO.password,
       )
 
       if (user.isTwoFactorAuthenticationEnabled) {
-        const processedUser = this.authService.postLoginProcess(user)
-        return this.authService.login(processedUser)
+        const processedUser = this.oldAuthService.postLoginProcess(user)
+        return this.oldAuthService.login(processedUser)
       }
 
       const sharedProjects = await this.projectService.findShare({
@@ -167,7 +167,7 @@ export class AuthController {
         )
       }
 
-      return this.authService.login(user)
+      return this.oldAuthService.login(user)
     }
   }
 
@@ -184,12 +184,12 @@ export class AuthController {
       headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
     if (userDTO.checkIfLeaked) {
-      await this.authService.checkIfPasswordLeaked(userDTO.password)
+      await this.oldAuthService.checkIfPasswordLeaked(userDTO.password)
     }
 
     await checkRateLimit(ip, 'register', 6)
 
-    // await this.authService.checkCaptcha(recaptcha)
+    // await this.oldAuthService.checkCaptcha(recaptcha)
     this.userService.validatePassword(userDTO.password)
 
     const doesEmailExist = await this.userService.findOneWhere({
@@ -200,7 +200,7 @@ export class AuthController {
       throw new BadRequestException('emailRegistered')
     }
 
-    userDTO.password = await this.authService.hashPassword(userDTO.password)
+    userDTO.password = await this.oldAuthService.hashPassword(userDTO.password)
 
     try {
       const userToUpdate = _pick(userDTO, ['email', 'password'])
@@ -215,7 +215,7 @@ export class AuthController {
       })
       user.sharedProjects = []
 
-      return this.authService.login(user)
+      return this.oldAuthService.login(user)
     } catch (e) {
       this.logger.log(
         `[ERROR WHILE CREATING ACCOUNT]: ${e}`,
@@ -326,7 +326,7 @@ export class AuthController {
     }
 
     if (actionToken.action === ActionTokenType.PASSWORD_RESET) {
-      const password = await this.authService.hashPassword(body.password)
+      const password = await this.oldAuthService.hashPassword(body.password)
 
       await this.userService.update(actionToken.user.id, {
         ...actionToken.user,

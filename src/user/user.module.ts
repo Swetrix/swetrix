@@ -6,7 +6,7 @@ import { UserService } from './user.service'
 import { User } from './entities/user.entity'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
-import { AuthModule } from '../auth/auth.module'
+import { OldAuthModule } from '../old-auth/auth.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 
@@ -15,7 +15,7 @@ import { ProjectModule } from '../project/project.module'
     TypeOrmModule.forFeature([User]),
     ActionTokensModule,
     MailerModule,
-    forwardRef(() => AuthModule),
+    forwardRef(() => OldAuthModule),
     AppLoggerModule,
     ProjectModule,
   ],

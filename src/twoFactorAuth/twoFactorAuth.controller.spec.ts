@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { AuthService } from 'src/auth/auth.service'
+import { OldAuthService } from 'src/old-auth/auth.service'
 import { AppLoggerService } from 'src/logger/logger.service'
 import { MailerService } from 'src/mailer/mailer.service'
 import { User } from 'src/user/entities/user.entity'
@@ -22,7 +22,7 @@ describe('TwoFactorAuthController', () => {
           provide: USER_REPOSITORY_TOKEN,
           useValue: { create: jest.fn(), save: jest.fn(), findOne: jest.fn() },
         },
-        AuthService,
+        OldAuthService,
         AppLoggerService,
         MailerService,
       ],

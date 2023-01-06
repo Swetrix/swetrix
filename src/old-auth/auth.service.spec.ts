@@ -5,11 +5,11 @@ import { User } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
 import { Util } from 'src/Util/Util'
 import { Repository } from 'typeorm'
-import { AuthService } from './auth.service'
+import { OldAuthService } from './auth.service'
 import * as bcrypt from 'bcrypt'
 
-describe('AuthService', () => {
-  let service: AuthService
+describe('OldAuthService', () => {
+  let service: OldAuthService
   let repository: Repository<User>
   let util = new Util()
   const USER_REPOSITORY_TOKEN = getRepositoryToken(User)
@@ -17,7 +17,7 @@ describe('AuthService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        AuthService,
+        OldAuthService,
         UserService,
         {
           provide: USER_REPOSITORY_TOKEN,
@@ -28,7 +28,7 @@ describe('AuthService', () => {
     }).compile()
 
     repository = module.get<Repository<User>>(USER_REPOSITORY_TOKEN)
-    service = module.get<AuthService>(AuthService)
+    service = module.get<OldAuthService>(OldAuthService)
   })
   describe('root', () => {
     it('should be defined service', () => {

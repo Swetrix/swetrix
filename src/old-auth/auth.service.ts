@@ -32,7 +32,7 @@ const httpsOptions = {
 }
 
 @Injectable()
-export class AuthService {
+export class OldAuthService {
   constructor(
     private userService: UserService,
     private readonly logger: AppLoggerService,

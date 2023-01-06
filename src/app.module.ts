@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TelegrafModule } from 'nestjs-telegraf'
 
-import { AuthModule } from './auth/auth.module'
+import { OldAuthModule } from './old-auth/auth.module'
 import { UserModule } from './user/user.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { ProjectModule } from './project/project.module'
@@ -32,7 +32,7 @@ const modules = [
   }),
   ScheduleModule.forRoot(),
   TaskManagerModule,
-  AuthModule,
+  OldAuthModule,
   UserModule,
   MailerModule,
   ActionTokensModule,

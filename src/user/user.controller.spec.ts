@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
 import { ActionToken } from 'src/action-tokens/action-token.entity'
 import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
-import { AuthService } from 'src/auth/auth.service'
+import { OldAuthService } from 'src/old-auth/auth.service'
 import { AppLoggerService } from 'src/logger/logger.service'
 import { MailerService } from 'src/mailer/mailer.service'
 import { ProjectShare } from 'src/project/entity/project-share.entity'
@@ -27,7 +27,7 @@ describe('UserController', () => {
           provide: USER_REPOSITORY_TOKEN,
           useValue: { create: jest.fn(), save: jest.fn(), findOne: jest.fn() },
         },
-        AuthService,
+        OldAuthService,
         ProjectService,
         {
           provide: PROJECT_REPOSITORY_TOKEN,

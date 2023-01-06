@@ -1,7 +1,7 @@
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { AuthController } from './auth.controller'
+import { OldAuthController } from './auth.controller'
 import { UserService } from '../user/user.service'
-import { AuthService } from './auth.service'
+import { OldAuthService } from './auth.service'
 import { MailerService } from '../mailer/mailer.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { ProjectService } from '../project/project.service'
@@ -13,8 +13,8 @@ import { Project } from '../project/entity/project.entity'
 import { ProjectShare } from '../project/entity/project-share.entity'
 import { Test, TestingModule } from '@nestjs/testing'
 
-describe('AuthController', () => {
-  let controller: AuthController
+describe('OldAuthController', () => {
+  let controller: OldAuthController
 
   const USER_REPOSITORY_TOKEN = getRepositoryToken(User)
   const ACTION_TOKEN_REPOSITORY_TOKEN = getRepositoryToken(ActionToken)
@@ -23,9 +23,9 @@ describe('AuthController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
+      controllers: [OldAuthController],
       providers: [
-        AuthService,
+        OldAuthService,
         UserService,
         {
           provide: USER_REPOSITORY_TOKEN,
@@ -69,7 +69,7 @@ describe('AuthController', () => {
       ],
     }).compile()
 
-    controller = module.get<AuthController>(AuthController)
+    controller = module.get<OldAuthController>(OldAuthController)
   })
 
   describe('root', () => {
