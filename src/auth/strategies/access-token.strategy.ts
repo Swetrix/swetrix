@@ -17,7 +17,7 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
     })
   }
 
-  validate(payload: IJwtPayload) {
+  public validate(payload: IJwtPayload) {
     return payload
   }
 }

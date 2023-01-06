@@ -138,4 +138,12 @@ export class UserService {
       .limit(5)
       .getMany()
   }
+
+  public async findUser(email: string) {
+    return await this.usersRepository.findOne({ email }, { select: ['id'] })
+  }
+
+  public async createUser(user: Pick<User, 'email' | 'password'>) {
+    return await this.usersRepository.save(user)
+  }
 }
