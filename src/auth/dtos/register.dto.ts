@@ -1,13 +1,12 @@
-import { IsBoolean, IsEmail, IsNotEmpty, Matches } from 'class-validator'
+import { IsBoolean, IsEmail, IsNotEmpty } from 'class-validator'
+import { IsPassword } from '../decorators'
 
 export namespace RegisterDto {
   export class Request {
     @IsEmail()
     public readonly email: string
 
-    @Matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{8,72}$/,
-    )
+    @IsPassword()
     public readonly password: string
 
     @IsNotEmpty()
