@@ -14,7 +14,7 @@ const Select = ({
         <Listbox.Label className='block text-sm whitespace-pre-line font-medium text-gray-700 dark:text-gray-100'>{label}</Listbox.Label>
         <div className='mt-1 relative'>
           <Listbox.Button className='relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
-            <span className='block truncate capitalize'>{title}</span>
+            <span className='block truncate first-letter:capitalize'>{title}</span>
             <span className='absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none'>
               <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
             </span>
@@ -43,7 +43,7 @@ const Select = ({
                   {({ selected, active }) => (
                     <>
                       <span
-                        className={cx('block truncate capitalize', {
+                        className={cx('block truncate first-letter:capitalize', {
                           'font-semibold': selected,
                           'font-normal': !selected,
                         })}
