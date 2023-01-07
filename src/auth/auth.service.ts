@@ -285,4 +285,33 @@ export class AuthService {
 
     return false
   }
+
+  public async checkIfEmailTaken(email: string): Promise<boolean> {
+    const user = await this.userService.findUser(email)
+    return Boolean(user)
+  }
+
+  public async changeEmail(
+    userId: string,
+    email: string,
+    newEmail: string,
+  ): Promise<void> {
+    const actionToken = await this.actionTokensService.createActionToken(
+      userId,
+      ActionTokenType.EMAIL_CHANGE,
+      newEmail,
+    )
+
+    const verificationLink = `${this.configService.get(
+      'CLIENT_URL',
+    )}/change-email/${actionToken.id}`
+
+    await this.mailerService.sendEmail(
+      email,
+      LetterTemplate.MailAddressChangeConfirmation,
+      {
+        url: verificationLink,
+      },
+    )
+  }
 }

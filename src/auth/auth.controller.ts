@@ -37,6 +37,7 @@ import {
   ResetPasswordDto,
   ChangePasswordDto,
 } from './dtos'
+import { ChangeEmailDto } from './dtos/change-email.dto'
 import { JwtAccessTokenGuard } from './guards'
 
 @ApiTags('Auth')
@@ -262,5 +263,39 @@ export class AuthController {
     }
 
     await this.authService.sendVerificationEmail(user.id, user.email)
+  }
+
+  @ApiOperation({ summary: 'Change a user email' })
+  @ApiOkResponse({
+    description: 'User email changed',
+  })
+  @Post('change-email')
+  public async changeEmail(
+    @Body() body: ChangeEmailDto,
+    @CurrentUserId() userId: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isPasswordValid = await this.authService.validateUser(
+      user.email,
+      body.password,
+    )
+
+    if (!isPasswordValid) {
+      throw new ConflictException(i18n.t('auth.invalidPassword'))
+    }
+
+    const isEmailTaken = await this.authService.checkIfEmailTaken(body.newEmail)
+
+    if (isEmailTaken) {
+      throw new ConflictException(i18n.t('auth.emailAlreadyTaken'))
+    }
+
+    await this.authService.changeEmail(user.id, user.email, body.newEmail)
   }
 }
