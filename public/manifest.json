@@ -1,6 +1,6 @@
 {
   "short_name": "Swetrix",
-  "name": "Swetrix Analytics",
+  "name": "Swetrix",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,18 +20,23 @@
   ],
   "screenshots" : [
     {
-      "src": "assets/swe1.png",
-      "sizes": "1866x764",
+      "src": "assets/screenshot_dark.png",
+      "sizes": "2212x1566",
       "type": "image/webp"
     },
     {
       "src": "assets/swe2.png",
-      "sizes": "1363x539",
+      "sizes": "2842x1576",
       "type": "image/webp"
     },
     {
       "src": "assets/swe3.png",
-      "sizes": "1313x496",
+      "sizes": "2838x1576",
+      "type": "image/webp"
+    },
+    {
+      "src": "assets/swe4.png",
+      "sizes": "1511x901",
       "type": "image/webp"
     }
   ],
@@ -40,5 +45,5 @@
   "theme_color": "#818cf8",
   "background_color": "#1f2937",
   "categories": ["business", "analytics", "marketing"],
-  "description": "Swetrix is a fully cookie-less privacy-first web analytics service which provides a huge variety of services"
+  "description": "Ultimate open-source analytics to satisfy all your needs"
 }
