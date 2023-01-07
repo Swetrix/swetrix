@@ -1,18 +1,19 @@
-// FIX: I18nValidationExceptionFilter is not working
-
 import {
   Controller,
   UseFilters,
+  UseGuards,
   UsePipes,
   ValidationPipe,
   Post,
   Body,
   Ip,
   ConflictException,
-  Headers,
   HttpCode,
-  Param,
+  HttpStatus,
   Get,
+  Param,
+  Headers,
+  UnauthorizedException,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -24,6 +25,7 @@ import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import { checkRateLimit } from 'src/common/utils'
 import { UserService } from 'src/user/user.service'
 import { AuthService } from './auth.service'
+import { Public, CurrentUserId } from './decorators'
 import {
   RegisterResponseDto,
   RegisterRequestDto,
@@ -33,11 +35,14 @@ import {
   RequestResetPasswordDto,
   ConfirmResetPasswordDto,
   ResetPasswordDto,
+  ChangePasswordDto,
 } from './dtos'
+import { JwtAccessTokenGuard } from './guards'
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
 @UseFilters(new I18nValidationExceptionFilter())
+@UseGuards(JwtAccessTokenGuard)
 @UsePipes(
   new ValidationPipe({
     forbidNonWhitelisted: true,
@@ -57,6 +62,7 @@ export class AuthController {
     description: 'User registered',
     type: RegisterResponseDto,
   })
+  @Public()
   @Post('register')
   public async register(
     @Body() body: RegisterRequestDto,
@@ -100,8 +106,9 @@ export class AuthController {
     description: 'User logged in',
     type: LoginResponseDto,
   })
+  @Public()
   @Post('login')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   public async login(
     @Body() body: LoginRequestDto,
     @I18n() i18n: I18nContext,
@@ -133,6 +140,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email verified',
   })
+  @Public()
   @Get('verify-email/:token')
   public async verifyEmail(
     @Param() params: VerifyEmailDto,
@@ -153,6 +161,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password reset requested',
   })
+  @Public()
   @Post('reset-password')
   public async requestResetPassword(
     @Body() body: RequestResetPasswordDto,
@@ -179,6 +188,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password reset',
   })
+  @Public()
   @Post('reset-password/confirm/:token')
   @HttpCode(200)
   public async resetPassword(
@@ -195,5 +205,33 @@ export class AuthController {
     }
 
     await this.authService.resetPassword(actionToken, body.newPassword)
+  }
+
+  @ApiOperation({ summary: 'Change a password' })
+  @ApiOkResponse({
+    description: 'Password changed',
+  })
+  @Post('change-password')
+  public async changePassword(
+    @Body() body: ChangePasswordDto,
+    @CurrentUserId() userId: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isPasswordValid = await this.authService.validateUser(
+      user.email,
+      body.oldPassword,
+    )
+
+    if (!isPasswordValid) {
+      throw new ConflictException(i18n.t('auth.invalidPassword'))
+    }
+
+    await this.authService.changePassword(user.id, body.newPassword)
   }
 }

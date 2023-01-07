@@ -258,4 +258,11 @@ export class AuthService {
     })
     await this.actionTokensService.deleteActionToken(actionToken.id)
   }
+
+  public async changePassword(userId: string, password: string): Promise<void> {
+    const hashedPassword = await this.hashPassword(password)
+    await this.userService.updateUser(userId, {
+      password: hashedPassword,
+    })
+  }
 }
