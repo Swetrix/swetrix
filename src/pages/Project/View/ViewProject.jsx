@@ -125,7 +125,7 @@ const ViewProject = ({
       return tab
     }
 
-    return projectTab || 'traffic'
+    return projectTab || PROJECT_TABS.traffic
   })
 
   const [chartDataPerf, setChartDataPerf] = useState({})
@@ -135,17 +135,17 @@ const ViewProject = ({
   const tabs = useMemo(() => {
     return [
       {
-        id: 'traffic',
+        id: PROJECT_TABS.traffic,
         label: t('dashboard.traffic'),
         icon: ChartBarIcon,
       },
       {
-        id: 'performance',
+        id: PROJECT_TABS.performance,
         label: t('dashboard.performance'),
         icon: BoltIcon,
       },
       {
-        id: 'alerts',
+        id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
         icon: BellIcon,
       },
@@ -1171,8 +1171,8 @@ const ViewProject = ({
           className={cx(
             'bg-gray-50 dark:bg-gray-800 py-6 px-4 sm:px-6 lg:px-8',
             {
-              'min-h-min-footer': authenticated,
-              'min-h-min-footer-ad': !authenticated,
+              'min-h-min-footer': authenticated || activeTab === PROJECT_TABS.alerts,
+              'min-h-min-footer-ad': !authenticated && activeTab !== PROJECT_TABS.alerts,
             },
           )}
           ref={dashboardRef}
@@ -1620,7 +1620,7 @@ const ViewProject = ({
             </div>
           )}
         </div>
-        {!authenticated && (
+        {!authenticated && activeTab !== PROJECT_TABS.alerts && (
           <div className='bg-indigo-600'>
             <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
               <h2 className='text-3xl sm:text-4xl font-bold tracking-tight text-gray-900'>
