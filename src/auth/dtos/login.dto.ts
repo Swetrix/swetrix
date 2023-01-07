@@ -7,4 +7,5 @@ export class LoginRequestDto extends OmitType(RegisterRequestDto, [
 
 export class LoginResponseDto extends PickType(RegisterResponseDto, [
   'accessToken',
+  'refreshToken',
 ] as const) {}

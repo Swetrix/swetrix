@@ -9,10 +9,11 @@ import { MailerModule } from '../mailer/mailer.module'
 import { OldAuthModule } from '../old-auth/auth.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
+import { RefreshToken } from './entities/refresh-token.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, RefreshToken]),
     ActionTokensModule,
     MailerModule,
     forwardRef(() => OldAuthModule),

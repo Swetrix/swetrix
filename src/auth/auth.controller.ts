@@ -25,7 +25,7 @@ import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import { checkRateLimit } from 'src/common/utils'
 import { UserService } from 'src/user/user.service'
 import { AuthService } from './auth.service'
-import { Public, CurrentUserId } from './decorators'
+import { Public, CurrentUserId, CurrentUser } from './decorators'
 import {
   RegisterResponseDto,
   RegisterRequestDto,
@@ -39,7 +39,7 @@ import {
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
 } from './dtos'
-import { JwtAccessTokenGuard } from './guards'
+import { JwtAccessTokenGuard, JwtRefreshTokenGuard } from './guards'
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -96,11 +96,12 @@ export class AuthController {
       body.password,
     )
 
-    const accessToken = await this.authService.generateJwtAccessToken(
-      newUser.id,
-    )
+    const jwtTokens = await this.authService.generateJwtTokens(newUser.id)
 
-    return { accessToken }
+    return {
+      accessToken: jwtTokens.accessToken,
+      refreshToken: jwtTokens.refreshToken,
+    }
   }
 
   @ApiOperation({ summary: 'Login a user' })
@@ -130,12 +131,15 @@ export class AuthController {
 
     await this.authService.sendTelegramNotification(user.id, headers, ip)
 
-    const accessToken = await this.authService.generateJwtAccessToken(
+    const jwtTokens = await this.authService.generateJwtTokens(
       user.id,
       user.isTwoFactorAuthenticationEnabled,
     )
 
-    return { accessToken }
+    return {
+      accessToken: jwtTokens.accessToken,
+      refreshToken: jwtTokens.refreshToken,
+    }
   }
 
   @ApiOperation({ summary: 'Verify a user email' })
@@ -319,5 +323,41 @@ export class AuthController {
     }
 
     await this.authService.confirmChangeEmail(actionToken)
+  }
+
+  @ApiOperation({ summary: 'Refresh a token' })
+  @ApiOkResponse({
+    description: 'Token refreshed',
+  })
+  @Public()
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post('refresh-token')
+  @HttpCode(200)
+  public async refreshToken(
+    @CurrentUserId() userId: string,
+    @CurrentUser('refreshToken') refreshToken: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<{ accessToken: string }> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isRefreshTokenValid = await this.authService.checkRefreshToken(
+      user.id,
+      refreshToken,
+    )
+
+    if (!isRefreshTokenValid) {
+      throw new ConflictException(i18n.t('auth.invalidRefreshToken'))
+    }
+
+    const accessToken = await this.authService.generateJwtAccessToken(
+      user.id,
+      user.isTwoFactorAuthenticationEnabled,
+    )
+
+    return { accessToken }
   }
 }

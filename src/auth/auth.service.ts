@@ -337,4 +337,49 @@ export class AuthService {
       LetterTemplate.MailAddressHadChanged,
     )
   }
+
+  private async generateJwtRefreshToken(
+    userId: string,
+    isSecondFactorAuthenticated = false,
+  ) {
+    const refreshToken = await this.jwtService.signAsync(
+      {
+        sub: userId,
+        isSecondFactorAuthenticated,
+      },
+      {
+        algorithm: 'HS256',
+        expiresIn: 60 * 60 * 24 * 30,
+        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+      },
+    )
+
+    await this.userService.saveRefreshToken(userId, refreshToken)
+
+    return refreshToken
+  }
+
+  public async checkRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<boolean> {
+    const token = await this.userService.findRefreshToken(userId, refreshToken)
+    return Boolean(token)
+  }
+
+  public async generateJwtTokens(
+    userId: string,
+    isSecondFactorAuthenticated = false,
+  ) {
+    const accessToken = await this.generateJwtAccessToken(
+      userId,
+      isSecondFactorAuthenticated,
+    )
+    const refreshToken = await this.generateJwtRefreshToken(
+      userId,
+      isSecondFactorAuthenticated,
+    )
+
+    return { accessToken, refreshToken }
+  }
 }

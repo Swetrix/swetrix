@@ -8,12 +8,15 @@ import * as _omit from 'lodash/omit'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { User } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
+import { RefreshToken } from './entities/refresh-token.entity'
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
   async create(userDTO: UserProfileDTO | User): Promise<User> {
@@ -153,5 +156,21 @@ export class UserService {
 
   public async updateUser(id: string, user: Partial<Omit<User, 'id'>>) {
     return await this.usersRepository.update({ id }, user)
+  }
+
+  public async saveRefreshToken(userId: string, refreshToken: string) {
+    return await this.refreshTokenRepository.save({
+      userId,
+      refreshToken,
+    })
+  }
+
+  public async findRefreshToken(userId: string, refreshToken: string) {
+    return await this.refreshTokenRepository.findOne({
+      where: {
+        userId,
+        refreshToken,
+      },
+    })
   }
 }

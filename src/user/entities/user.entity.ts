@@ -13,6 +13,7 @@ import { Extension } from '../../marketplace/extensions/entities/extension.entit
 import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
+import { RefreshToken } from './refresh-token.entity'
 export enum PlanCode {
   free = 'free',
   freelancer = 'freelancer',
@@ -221,4 +222,8 @@ export class User {
   @OneToMany(() => Complaint, complaint => complaint.user)
   @JoinTable()
   complaints: Complaint[]
+
+  @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
+  @JoinTable()
+  refreshTokens: RefreshToken[]
 }

@@ -6,7 +6,7 @@ import { MailerModule } from 'src/mailer/mailer.module'
 import { UserModule } from 'src/user/user.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
-import { JwtAccessTokenStrategy } from './strategies'
+import { JwtAccessTokenStrategy, JwtRefreshTokenStrategy } from './strategies'
 
 @Module({
   imports: [
@@ -18,6 +18,6 @@ import { JwtAccessTokenStrategy } from './strategies'
     ActionTokensModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAccessTokenStrategy],
+  providers: [AuthService, JwtAccessTokenStrategy, JwtRefreshTokenStrategy],
 })
 export class AuthModule {}

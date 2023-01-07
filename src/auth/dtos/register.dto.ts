@@ -35,4 +35,9 @@ export class RegisterResponseDto {
     description: 'Access token (JWT)',
   })
   public readonly accessToken: string
+
+  @ApiProperty({
+    description: 'Refresh token (JWT)',
+  })
+  public readonly refreshToken: string
 }
