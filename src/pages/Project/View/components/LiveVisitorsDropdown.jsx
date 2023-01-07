@@ -34,6 +34,8 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
     }
   }, [show]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  console.log(liveInfo)
+
   return (
     <OutsideClickHandler
       onOutsideClick={() => setShow(false)}
@@ -56,8 +58,8 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
             ) : (
               _map(liveInfo, ({
                 dv, br, os, cc,
-              }) => (
-                <div className='flex flex-row items-center justify-between w-full p-2 mt-2 text-sm text-gray-900 bg-gray-100 rounded-md dark:text-gray-50 dark:bg-gray-700'>
+              }, index) => (
+                <div key={`${dv}${br}${os}${cc}${index}`} className='flex flex-row items-center justify-between w-full p-2 mt-2 text-sm text-gray-900 bg-gray-100 rounded-md dark:text-gray-50 dark:bg-gray-700'>
                   <div className='flex flex-row items-center'>
                     <Flag
                       className='rounded-sm mr-2'
