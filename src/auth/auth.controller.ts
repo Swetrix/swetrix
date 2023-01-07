@@ -12,8 +12,8 @@ import {
   HttpStatus,
   Get,
   Param,
-  Headers,
   UnauthorizedException,
+  Headers,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -36,8 +36,9 @@ import {
   ConfirmResetPasswordDto,
   ResetPasswordDto,
   ChangePasswordDto,
+  ConfirmChangeEmailDto,
+  RequestChangeEmailDto,
 } from './dtos'
-import { ChangeEmailDto } from './dtos/change-email.dto'
 import { JwtAccessTokenGuard } from './guards'
 
 @ApiTags('Auth')
@@ -270,8 +271,8 @@ export class AuthController {
     description: 'User email changed',
   })
   @Post('change-email')
-  public async changeEmail(
-    @Body() body: ChangeEmailDto,
+  public async requestChangeEmail(
+    @Body() body: RequestChangeEmailDto,
     @CurrentUserId() userId: string,
     @I18n() i18n: I18nContext,
   ): Promise<void> {
@@ -297,5 +298,26 @@ export class AuthController {
     }
 
     await this.authService.changeEmail(user.id, user.email, body.newEmail)
+  }
+
+  @ApiOperation({ summary: 'Confirm a user email change' })
+  @ApiOkResponse({
+    description: 'User email confirmed',
+  })
+  @Public()
+  @Get('change-email/confirm/:token')
+  public async confirmChangeEmail(
+    @Param() params: ConfirmChangeEmailDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const actionToken = await this.authService.checkChangeEmailToken(
+      params.token,
+    )
+
+    if (!actionToken) {
+      throw new ConflictException(i18n.t('auth.invalidChangeEmailToken'))
+    }
+
+    await this.authService.confirmChangeEmail(actionToken)
   }
 }

@@ -314,4 +314,27 @@ export class AuthService {
       },
     )
   }
+
+  public async checkChangeEmailToken(
+    token: string,
+  ): Promise<ActionToken | null> {
+    const actionToken = await this.actionTokensService.findActionToken(token)
+
+    if (actionToken && actionToken.action === ActionTokenType.EMAIL_CHANGE) {
+      return actionToken
+    }
+
+    return null
+  }
+
+  public async confirmChangeEmail(actionToken: ActionToken): Promise<void> {
+    await this.userService.updateUser(actionToken.user.id, {
+      email: actionToken.newValue,
+    })
+    await this.actionTokensService.deleteActionToken(actionToken.id)
+    await this.mailerService.sendEmail(
+      actionToken.newValue,
+      LetterTemplate.MailAddressHadChanged,
+    )
+  }
 }

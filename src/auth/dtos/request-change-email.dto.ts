@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail } from 'class-validator'
 import { IsPassword } from '../decorators'
 
-export class ChangeEmailDto {
+export class RequestChangeEmailDto {
   @ApiProperty({
     description: 'User email',
     example: 'yourusername@example.com',
