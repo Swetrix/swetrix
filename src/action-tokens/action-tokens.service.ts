@@ -49,4 +49,14 @@ export class ActionTokensService {
       newValue,
     })
   }
+
+  public async findActionToken(token: string) {
+    return await this.actionTokensRepository.findOne(token, {
+      relations: ['user'],
+    })
+  }
+
+  public async deleteActionToken(token: string) {
+    await this.actionTokensRepository.delete(token)
+  }
 }

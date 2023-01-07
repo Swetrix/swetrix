@@ -15,6 +15,7 @@ import { JwtAccessTokenStrategy } from './strategies'
     UserModule,
     ActionTokensModule,
     MailerModule,
+    ActionTokensModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAccessTokenStrategy],

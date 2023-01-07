@@ -7,7 +7,10 @@ import { getCountry } from 'countries-and-timezones'
 import { createHash } from 'crypto'
 import * as dayjs from 'dayjs'
 import { InjectBot } from 'nestjs-telegraf'
-import { ActionTokenType } from 'src/action-tokens/action-token.entity'
+import {
+  ActionToken,
+  ActionTokenType,
+} from 'src/action-tokens/action-token.entity'
 import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { MailerService } from 'src/mailer/mailer.service'
@@ -189,5 +192,27 @@ export class AuthService {
   public async checkTelegramChatId(chatId: string): Promise<boolean> {
     const chat = (await this.telegramBot.telegram.getChat(chatId)).id
     return Boolean(chat)
+  }
+
+  public async checkVerificationToken(
+    token: string,
+  ): Promise<ActionToken | null> {
+    const actionToken = await this.actionTokensService.findActionToken(token)
+
+    if (
+      actionToken &&
+      actionToken.action === ActionTokenType.EMAIL_VERIFICATION
+    ) {
+      return actionToken
+    }
+
+    return null
+  }
+
+  public async verifyEmail(actionToken: ActionToken): Promise<void> {
+    await this.userService.updateUser(actionToken.user.id, {
+      isActive: true,
+    })
+    await this.actionTokensService.deleteActionToken(actionToken.id)
   }
 }

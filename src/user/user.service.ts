@@ -150,4 +150,8 @@ export class UserService {
   public async findUserById(id: string) {
     return await this.usersRepository.findOne({ id })
   }
+
+  public async updateUser(id: string, user: Partial<Omit<User, 'id'>>) {
+    return await this.usersRepository.update({ id }, user)
+  }
 }

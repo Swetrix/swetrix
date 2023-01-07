@@ -11,8 +11,15 @@ import {
   ConflictException,
   Headers,
   HttpCode,
+  Param,
+  Get,
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiCreatedResponse } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiOperation,
+  ApiCreatedResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import { checkRateLimit } from 'src/common/utils'
 import { UserService } from 'src/user/user.service'
@@ -22,6 +29,7 @@ import {
   RegisterRequestDto,
   LoginResponseDto,
   LoginRequestDto,
+  VerifyEmailDto,
 } from './dtos'
 
 @ApiTags('Auth')
@@ -85,7 +93,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Login a user' })
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     description: 'User logged in',
     type: LoginResponseDto,
   })
@@ -116,5 +124,25 @@ export class AuthController {
     )
 
     return { accessToken }
+  }
+
+  @ApiOperation({ summary: 'Verify a user email' })
+  @ApiOkResponse({
+    description: 'User email verified',
+  })
+  @Get('verify-email/:token')
+  public async verifyEmail(
+    @Param() params: VerifyEmailDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const actionToken = await this.authService.checkVerificationToken(
+      params.token,
+    )
+
+    if (!actionToken) {
+      throw new ConflictException(i18n.t('auth.invalidVerificationToken'))
+    }
+
+    await this.authService.verifyEmail(actionToken)
   }
 }
