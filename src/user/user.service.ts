@@ -140,10 +140,14 @@ export class UserService {
   }
 
   public async findUser(email: string) {
-    return await this.usersRepository.findOne({ email }, { select: ['id'] })
+    return await this.usersRepository.findOne({ email })
   }
 
   public async createUser(user: Pick<User, 'email' | 'password'>) {
     return await this.usersRepository.save(user)
+  }
+
+  public async findUserById(id: string) {
+    return await this.usersRepository.findOne({ id })
   }
 }

@@ -10,13 +10,19 @@ import {
   Ip,
   ConflictException,
   Headers,
+  HttpCode,
 } from '@nestjs/common'
-import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiCreatedResponse } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import { checkRateLimit } from 'src/common/utils'
 import { UserService } from 'src/user/user.service'
 import { AuthService } from './auth.service'
-import { RegisterRequestDto, RegisterResponseDto } from './dtos'
+import {
+  RegisterResponseDto,
+  RegisterRequestDto,
+  LoginResponseDto,
+  LoginRequestDto,
+} from './dtos'
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -73,6 +79,40 @@ export class AuthController {
 
     const accessToken = await this.authService.generateJwtAccessToken(
       newUser.id,
+    )
+
+    return { accessToken }
+  }
+
+  @ApiOperation({ summary: 'Login a user' })
+  @ApiCreatedResponse({
+    description: 'User logged in',
+    type: LoginResponseDto,
+  })
+  @Post('login')
+  @HttpCode(200)
+  public async login(
+    @Body() body: LoginRequestDto,
+    @I18n() i18n: I18nContext,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<LoginResponseDto> {
+    const ip =
+      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
+
+    await checkRateLimit(ip, 'login', 10, 1800)
+
+    const user = await this.authService.validateUser(body.email, body.password)
+
+    if (!user) {
+      throw new ConflictException(i18n.t('auth.invalidCredentials'))
+    }
+
+    await this.authService.sendTelegramNotification(user.id, headers, ip)
+
+    const accessToken = await this.authService.generateJwtAccessToken(
+      user.id,
+      user.isTwoFactorAuthenticationEnabled,
     )
 
     return { accessToken }
