@@ -8,6 +8,6 @@ export class RequestResetPasswordDto {
     maxLength: 254,
     minLength: 6,
   })
-  @IsEmail({}, { message: 'validation.isEmail' })
+  @IsEmail({}, { message: 'Please enter the valid email.' })
   public readonly email: string
 }

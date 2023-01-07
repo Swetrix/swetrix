@@ -31,6 +31,8 @@ import {
   LoginRequestDto,
   VerifyEmailDto,
   RequestResetPasswordDto,
+  ConfirmResetPasswordDto,
+  ResetPasswordDto,
 } from './dtos'
 
 @ApiTags('Auth')
@@ -171,5 +173,27 @@ export class AuthController {
     }
 
     await this.authService.sendResetPasswordEmail(user.id, user.email)
+  }
+
+  @ApiOperation({ summary: 'Reset a password' })
+  @ApiOkResponse({
+    description: 'Password reset',
+  })
+  @Post('reset-password/confirm/:token')
+  @HttpCode(200)
+  public async resetPassword(
+    @Param() params: ConfirmResetPasswordDto,
+    @Body() body: ResetPasswordDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const actionToken = await this.authService.checkResetPasswordToken(
+      params.token,
+    )
+
+    if (!actionToken) {
+      throw new ConflictException(i18n.t('auth.invalidResetPasswordToken'))
+    }
+
+    await this.authService.resetPassword(actionToken, body.newPassword)
   }
 }

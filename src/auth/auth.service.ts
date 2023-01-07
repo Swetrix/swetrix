@@ -234,4 +234,28 @@ export class AuthService {
       },
     )
   }
+
+  public async checkResetPasswordToken(
+    token: string,
+  ): Promise<ActionToken | null> {
+    const actionToken = await this.actionTokensService.findActionToken(token)
+
+    if (actionToken && actionToken.action === ActionTokenType.PASSWORD_RESET) {
+      return actionToken
+    }
+
+    return null
+  }
+
+  public async resetPassword(
+    actionToken: ActionToken,
+    password: string,
+  ): Promise<void> {
+    const hashedPassword = await this.hashPassword(password)
+
+    await this.userService.updateUser(actionToken.user.id, {
+      password: hashedPassword,
+    })
+    await this.actionTokensService.deleteActionToken(actionToken.id)
+  }
 }

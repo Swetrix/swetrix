@@ -9,7 +9,7 @@ export class RegisterRequestDto {
     maxLength: 254,
     minLength: 6,
   })
-  @IsEmail({}, { message: 'validation.isEmail' })
+  @IsEmail({}, { message: 'Please enter the valid email.' })
   public readonly email: string
 
   @ApiProperty({
@@ -18,15 +18,15 @@ export class RegisterRequestDto {
     maxLength: 72,
     minLength: 8,
   })
-  @IsPassword({ message: 'validation.isPassword' })
+  @IsPassword({ message: 'Please enter the valid password.' })
   public readonly password: string
 
   @ApiProperty({
     description: 'Check if password is leaked',
     example: true,
   })
-  @IsNotEmpty({ message: 'validation.isNotEmpty' })
-  @IsBoolean({ message: 'validation.isBoolean' })
+  @IsNotEmpty({ message: 'This field is required.' })
+  @IsBoolean({ message: 'Please enter the valid value (true or false).' })
   public readonly checkIfLeaked: boolean
 }
 
