@@ -234,4 +234,33 @@ export class AuthController {
 
     await this.authService.changePassword(user.id, body.newPassword)
   }
+
+  @ApiOperation({ summary: 'Request a resend of the verification email' })
+  @ApiOkResponse({
+    description: 'Resend of the verification email requested',
+  })
+  @Post('verify-email')
+  public async requestResendVerificationEmail(
+    @CurrentUserId() userId: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isMaxEmailRequestsReached =
+      await this.authService.checkIfMaxEmailRequestsReached(user.id)
+
+    if (isMaxEmailRequestsReached) {
+      throw new ConflictException(i18n.t('auth.maxEmailRequestsReached'))
+    }
+
+    if (user.isActive) {
+      throw new ConflictException(i18n.t('auth.emailAlreadyVerified'))
+    }
+
+    await this.authService.sendVerificationEmail(user.id, user.email)
+  }
 }

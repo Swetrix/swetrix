@@ -14,7 +14,7 @@ import {
 import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { MailerService } from 'src/mailer/mailer.service'
-import { User } from 'src/user/entities/user.entity'
+import { MAX_EMAIL_REQUESTS, User } from 'src/user/entities/user.entity'
 import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { Telegraf } from 'telegraf'
@@ -69,11 +69,19 @@ export class AuthService {
     return await hash(password, salt)
   }
 
-  private async sendVerificationEmail(userId: string, email: string) {
+  public async sendVerificationEmail(userId: string, email: string) {
     const actionToken = await this.actionTokensService.createActionToken(
       userId,
       ActionTokenType.EMAIL_VERIFICATION,
     )
+
+    const user = await this.userService.findUserById(userId)
+
+    if (user && user.emailRequests < MAX_EMAIL_REQUESTS) {
+      await this.userService.updateUser(userId, {
+        emailRequests: user.emailRequests + 1,
+      })
+    }
 
     const verificationLink = `${this.configService.get(
       'CLIENT_URL',
@@ -264,5 +272,17 @@ export class AuthService {
     await this.userService.updateUser(userId, {
       password: hashedPassword,
     })
+  }
+
+  public async checkIfMaxEmailRequestsReached(
+    userId: string,
+  ): Promise<boolean> {
+    const user = await this.userService.findUserById(userId)
+
+    if (user && user.emailRequests >= MAX_EMAIL_REQUESTS) {
+      return true
+    }
+
+    return false
   }
 }
