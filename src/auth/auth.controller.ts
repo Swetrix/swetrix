@@ -14,7 +14,7 @@ import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import { checkRateLimit } from 'src/common/utils'
 import { UserService } from 'src/user/user.service'
 import { AuthService } from './auth.service'
-import { RegisterDto } from './dtos'
+import { RegisterRequestDto, RegisterResponseDto } from './dtos'
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -36,15 +36,15 @@ export class AuthController {
   @ApiOperation({ summary: 'Register a new user' })
   @ApiCreatedResponse({
     description: 'User registered',
-    type: RegisterDto.Response,
+    type: RegisterResponseDto,
   })
   @Post('register')
   public async register(
-    @Body() body: RegisterDto.Request,
+    @Body() body: RegisterRequestDto,
     @I18n() i18n: I18nContext,
     @Headers() headers: unknown,
     @Ip() requestIp: string,
-  ): Promise<RegisterDto.Response> {
+  ): Promise<RegisterResponseDto> {
     const ip =
       headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
 

@@ -1,20 +1,38 @@
+import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail, IsNotEmpty, IsBoolean } from 'class-validator'
 import { IsPassword } from '../decorators'
 
-export namespace RegisterDto {
-  export class Request {
-    @IsEmail({}, { message: 'validation.isEmail' })
-    public readonly email: string
+export class RegisterRequestDto {
+  @ApiProperty({
+    description: 'User email',
+    example: 'yourusername@example.com',
+    maxLength: 254,
+    minLength: 6,
+  })
+  @IsEmail({}, { message: 'validation.isEmail' })
+  public readonly email: string
 
-    @IsPassword({ message: 'validation.isPassword' })
-    public readonly password: string
+  @ApiProperty({
+    description: 'User password',
+    example: '%d7*c4W45p',
+    maxLength: 72,
+    minLength: 8,
+  })
+  @IsPassword({ message: 'validation.isPassword' })
+  public readonly password: string
 
-    @IsNotEmpty({ message: 'validation.isNotEmpty' })
-    @IsBoolean({ message: 'validation.isBoolean' })
-    public readonly checkIfLeaked: boolean
-  }
+  @ApiProperty({
+    description: 'Check if password is leaked',
+    example: true,
+  })
+  @IsNotEmpty({ message: 'validation.isNotEmpty' })
+  @IsBoolean({ message: 'validation.isBoolean' })
+  public readonly checkIfLeaked: boolean
+}
 
-  export class Response {
-    public readonly accessToken: string
-  }
+export class RegisterResponseDto {
+  @ApiProperty({
+    description: 'Access token (JWT)',
+  })
+  public readonly accessToken: string
 }
