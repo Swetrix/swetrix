@@ -983,6 +983,12 @@ const ViewProject = ({
                     live: 'N/A',
                   }])
                 })
+                .then(() => {
+                  return getLiveVisitors([id])
+                })
+                .then(res => {
+                  setLiveStatsForProject(id, res[id])
+                })
                 .catch(e => {
                   console.error(e)
                   onErrorLoading()
