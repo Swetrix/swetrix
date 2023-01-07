@@ -75,9 +75,9 @@ export class AuthService {
       ActionTokenType.EMAIL_VERIFICATION,
     )
 
-    const verificationLink = `${this.configService.get('CLIENT_URL')}/verify/${
-      actionToken.id
-    }`
+    const verificationLink = `${this.configService.get(
+      'CLIENT_URL',
+    )}/verify-email/${actionToken.id}`
 
     await this.mailerService.sendEmail(email, LetterTemplate.SignUp, {
       url: verificationLink,
