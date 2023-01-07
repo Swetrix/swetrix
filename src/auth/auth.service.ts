@@ -215,4 +215,23 @@ export class AuthService {
     })
     await this.actionTokensService.deleteActionToken(actionToken.id)
   }
+
+  public async sendResetPasswordEmail(userId: string, email: string) {
+    const actionToken = await this.actionTokensService.createActionToken(
+      userId,
+      ActionTokenType.PASSWORD_RESET,
+    )
+
+    const verificationLink = `${this.configService.get(
+      'CLIENT_URL',
+    )}/reset-password/${actionToken.id}`
+
+    await this.mailerService.sendEmail(
+      email,
+      LetterTemplate.ConfirmPasswordChange,
+      {
+        url: verificationLink,
+      },
+    )
+  }
 }

@@ -30,6 +30,7 @@ import {
   LoginResponseDto,
   LoginRequestDto,
   VerifyEmailDto,
+  RequestResetPasswordDto,
 } from './dtos'
 
 @ApiTags('Auth')
@@ -144,5 +145,31 @@ export class AuthController {
     }
 
     await this.authService.verifyEmail(actionToken)
+  }
+
+  @ApiOperation({ summary: 'Request a password reset' })
+  @ApiOkResponse({
+    description: 'Password reset requested',
+  })
+  @Post('reset-password')
+  public async requestResetPassword(
+    @Body() body: RequestResetPasswordDto,
+    @I18n() i18n: I18nContext,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<void> {
+    const ip =
+      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
+
+    await checkRateLimit(ip, 'reset-password')
+    await checkRateLimit(body.email, 'reset-password')
+
+    const user = await this.userService.findUser(body.email)
+
+    if (!user) {
+      throw new ConflictException(i18n.t('auth.accountNotExists'))
+    }
+
+    await this.authService.sendResetPasswordEmail(user.id, user.email)
   }
 }
