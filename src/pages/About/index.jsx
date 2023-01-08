@@ -79,7 +79,7 @@ const team = [
     },
   },
   {
-    name: '🇷🇺 Ivan Kolesov',
+    name: '🇺🇦 Ivan Kolesov',
     role: 'Software Engineer; Data Scientist.',
     photo: '/assets/ivan.jpg',
     desc: 'Works on Swetrix Telegram integrations and Analytics logic.',
