@@ -139,6 +139,7 @@ export class AuthController {
     return {
       accessToken: jwtTokens.accessToken,
       refreshToken: jwtTokens.refreshToken,
+      isTwoFactorAuthenticationEnabled: user.isTwoFactorAuthenticationEnabled,
     }
   }
 
