@@ -38,14 +38,14 @@ import {
   PlanCode,
   Theme,
 } from './entities/user.entity'
-import { Roles } from '../common/decorators/roles.decorator'
+import { Roles } from '../auth/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
 import { GDPR_EXPORT_TIMEFRAME, clickhouse } from '../common/constants'
-import { RolesGuard } from '../common/guards/roles.guard'
+import { RolesGuard } from '../auth/guards/roles.guard'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
-import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
+import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'

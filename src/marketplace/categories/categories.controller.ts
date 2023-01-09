@@ -14,8 +14,8 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { Roles } from '../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
+import { Roles } from '../../auth/decorators/roles.decorator'
+import { RolesGuard } from '../../auth/guards/roles.guard'
 import { UserType } from '../../user/entities/user.entity'
 import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'

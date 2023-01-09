@@ -20,8 +20,8 @@ import { CreateComplaintQueryDto } from './dtos/queries/create-complaint.dto'
 import { GetComplaintsQueryDto } from './dtos/queries/get-complaints.dto'
 import { Complaint } from './entities/complaint.entity'
 import { UserType } from 'src/user/entities/user.entity'
-import { RolesGuard } from 'src/common/guards/roles.guard'
-import { Roles } from 'src/common/decorators/roles.decorator'
+import { RolesGuard } from 'src/auth/guards/roles.guard'
+import { Roles } from 'src/auth/decorators/roles.decorator'
 
 @ApiTags('complaints')
 @Controller('complaints')

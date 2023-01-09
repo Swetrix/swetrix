@@ -42,9 +42,9 @@ import {
   checkIfTBAllowed,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
-import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
+import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
-import { RolesGuard } from '../common/guards/roles.guard'
+import { RolesGuard } from '../auth/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
