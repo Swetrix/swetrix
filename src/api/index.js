@@ -43,7 +43,7 @@ api.interceptors.response.use(
 
 export const authMe = () =>
   api
-    .get('/auth/me')
+    .get('v1/auth/me')
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -54,7 +54,7 @@ export const authMe = () =>
 
 export const login = (credentials) =>
   api
-    .post('/auth/login', credentials)
+    .post('v1/auth/login', credentials)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -65,7 +65,7 @@ export const login = (credentials) =>
 
 export const signup = (data) =>
   api
-    .post('/auth/register', data)
+    .post('v1/auth/register', data)
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
@@ -97,7 +97,7 @@ export const changeUserDetails = (data) =>
 
 export const forgotPassword = (email) =>
   api
-    .post('/auth/reset-password', email)
+    .post('v1/auth/reset-password', email)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -130,7 +130,7 @@ export const exportUserData = () =>
 
 export const createNewPassword = (id, password) =>
   api
-    .post(`/auth/password-reset/${id}`, { password })
+    .post(`v1/auth/password-reset/${id}`, { password })
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
@@ -142,7 +142,7 @@ export const createNewPassword = (id, password) =>
 
 export const verifyEmail = ({ path, id }) =>
   api
-    .get(`/auth/${path}/${id}`)
+    .get(`v1/auth/${path}/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
