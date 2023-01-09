@@ -20,6 +20,7 @@ import { UserType } from 'src/user/entities/user.entity'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO, CreateAlertDTO } from './dto/alert.dto'
 import { ACCOUNT_PLANS, PlanCode } from 'src/user/entities/user.entity'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 const ALERTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxAlerts
 
@@ -35,7 +36,7 @@ export class AlertController {
 
   @Get('/')
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 200, type: Alert })
   async getAllAlerts(
@@ -65,7 +66,7 @@ export class AlertController {
 
   @Post('/')
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 201, type: Alert })
   async createAlert(
@@ -129,7 +130,7 @@ export class AlertController {
 
   @Put('/:id')
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 200, type: Alert })
   async updateAlert(
@@ -164,7 +165,7 @@ export class AlertController {
 
   @Delete('/:id')
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteAlert(

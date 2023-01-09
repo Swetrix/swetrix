@@ -22,6 +22,7 @@ import { Complaint } from './entities/complaint.entity'
 import { UserType } from 'src/user/entities/user.entity'
 import { RolesGuard } from 'src/auth/guards/roles.guard'
 import { Roles } from 'src/auth/decorators/roles.decorator'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 @ApiTags('complaints')
 @Controller('complaints')
@@ -37,7 +38,7 @@ export class ComplaintsController {
   @ApiQuery({ name: 'limit', required: false, type: String })
   @ApiQuery({ name: 'extensionId', required: false, type: String })
   @ApiQuery({ name: 'userId', required: false, type: String })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   async getComplaints(@Query() queries: GetComplaintsQueryDto): Promise<{
     complaints: Complaint[]
@@ -57,7 +58,7 @@ export class ComplaintsController {
 
   @Get(':complaintId')
   @ApiParam({ name: 'complaintId', required: true, type: String })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   async getComplaint(
     @Param() params: GetComplaintParamDto,
@@ -102,7 +103,7 @@ export class ComplaintsController {
 
   @Post(':complaintId/resolve')
   @ApiParam({ name: 'complaintId', required: true, type: String })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   async resolveComplaint(
     @Param() params: ResolveComplaintParamDto,

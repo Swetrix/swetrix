@@ -56,6 +56,7 @@ import { UserProfileDTO } from './dto/user.dto'
 import { checkRateLimit } from '../common/utils'
 import { InjectBot } from 'nestjs-telegraf'
 import { Scenes, Telegraf } from 'telegraf'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 dayjs.extend(utc)
 
@@ -63,7 +64,7 @@ export type TelegrafContext = Scenes.SceneContext
 
 @ApiTags('User')
 @Controller('user')
-@UseGuards(RolesGuard)
+@UseGuards(JwtAccessTokenGuard, RolesGuard)
 export class UserController {
   constructor(
     private readonly userService: UserService,
@@ -78,7 +79,7 @@ export class UserController {
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async get(
@@ -91,7 +92,7 @@ export class UserController {
 
   // set theme
   @Put('/theme')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async setTheme(
@@ -103,7 +104,7 @@ export class UserController {
 
   @Get('/search')
   @ApiQuery({ name: 'query', required: false })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async searchUsers(
@@ -114,7 +115,7 @@ export class UserController {
   }
 
   @Post('/')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async create(@Body() userDTO: UserProfileDTO): Promise<User> {
@@ -135,7 +136,7 @@ export class UserController {
   }
 
   @Post('/api-key')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async generateApiKey(
@@ -166,7 +167,7 @@ export class UserController {
   }
 
   @Delete('/api-key')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
@@ -183,7 +184,7 @@ export class UserController {
 
   @Delete('/:id')
   @HttpCode(204)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async delete(
@@ -227,7 +228,7 @@ export class UserController {
 
   @Delete('/')
   @HttpCode(204)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteSelf(@CurrentUserId() id: string): Promise<any> {
@@ -267,7 +268,7 @@ export class UserController {
   @Delete('/share/:shareId')
   @HttpCode(204)
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
@@ -297,7 +298,7 @@ export class UserController {
   @Get('/share/:shareId')
   @HttpCode(204)
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async acceptShare(
@@ -327,7 +328,7 @@ export class UserController {
   }
 
   @Post('/confirm_email')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(
@@ -361,7 +362,7 @@ export class UserController {
   }
 
   @Put('/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async update(
@@ -397,7 +398,7 @@ export class UserController {
   }
 
   @Delete('/tg/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @HttpCode(204)
@@ -418,7 +419,7 @@ export class UserController {
   }
 
   @Put('/')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async updateCurrentUser(
@@ -535,7 +536,7 @@ export class UserController {
   }
 
   @Get('/export')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {

@@ -49,6 +49,7 @@ import { Roles } from '../../auth/decorators/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles.guard'
 import { UserType } from '../../user/entities/user.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -159,7 +160,7 @@ export class ExtensionsController {
     type: String,
   })
   @Roles(UserType.ADMIN)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin')
   async getAllExtensionsAdmin(@Query() queries: GetAllExtensionsQueries): Promise<{
     extensions: Extension[]
@@ -367,7 +368,7 @@ export class ExtensionsController {
     type: String,
   })
   @Roles(UserType.ADMIN)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin/search')
   async searchExtensionAdmin(@Query() queries: SearchExtensionQueries): Promise<{
     extensions: Extension[]
@@ -494,7 +495,7 @@ export class ExtensionsController {
       { name: 'file', maxCount: 1 },
     ]),
   )
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @Patch(':extensionId')
   async updateExtension(
@@ -627,7 +628,7 @@ export class ExtensionsController {
     example: 'de025965-3221-4d09-ba35-a09da59793a6',
     type: String,
   })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':extensionId/approve')
   async approveExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
@@ -652,7 +653,7 @@ export class ExtensionsController {
     example: 'de025965-3221-4d09-ba35-a09da59793a6',
     type: String,
   })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':extensionId/reject')
   async rejectExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {

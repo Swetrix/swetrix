@@ -24,6 +24,7 @@ import { TwoFaNotRequired } from '../auth/decorators/two-fa-not-required.decorat
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { TwoFactorAuthDTO } from './dto/2fa-auth.dto'
 import { generateRecoveryCode, checkRateLimit } from '../common/utils'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 @ApiTags('2fa')
 @Controller('2fa')
@@ -37,7 +38,7 @@ export class TwoFactorAuthController {
   ) {}
 
   @Post('generate')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
@@ -50,7 +51,7 @@ export class TwoFactorAuthController {
   }
 
   @Post('enable')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
@@ -90,7 +91,7 @@ export class TwoFactorAuthController {
 
     user.isTwoFactorAuthenticationEnabled = true
 
-    const authData = this.authService.generateJwtTokens(user.id, true)
+    const authData = await this.authService.generateJwtTokens(user.id, true)
 
     return {
       twoFactorRecoveryCode,
@@ -100,7 +101,7 @@ export class TwoFactorAuthController {
 
   @Post('disable')
   @HttpCode(200)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async turnOffTwoFactorAuthentication(
@@ -140,7 +141,7 @@ export class TwoFactorAuthController {
 
   @Post('authenticate')
   @HttpCode(200)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
@@ -170,6 +171,6 @@ export class TwoFactorAuthController {
       throw new BadRequestException('Wrong authentication code')
     }
 
-    return this.authService.generateJwtTokens(user.id, true)
+    return await this.authService.generateJwtTokens(user.id, true)
   }
 }
