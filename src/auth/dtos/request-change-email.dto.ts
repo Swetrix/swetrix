@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail } from 'class-validator'
-import { IsPassword } from '../decorators'
+import { IsEmail, MaxLength, MinLength } from 'class-validator'
 
 export class RequestChangeEmailDto {
   @ApiProperty({
@@ -18,6 +17,7 @@ export class RequestChangeEmailDto {
     maxLength: 72,
     minLength: 8,
   })
-  @IsPassword({ message: 'Please enter the valid password.' })
+  @MaxLength(50, { message: 'Max length is $constraint1 characters' })
+  @MinLength(8, { message: 'Min length is $constraint1 characters' })
   public readonly password: string
 }

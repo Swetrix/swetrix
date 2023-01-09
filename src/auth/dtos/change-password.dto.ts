@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsPassword } from '../decorators'
+import { MaxLength, MinLength } from 'class-validator'
 
 export class ChangePasswordDto {
   @ApiProperty({
@@ -8,7 +8,8 @@ export class ChangePasswordDto {
     maxLength: 72,
     minLength: 8,
   })
-  @IsPassword({ message: 'Please enter the valid password.' })
+  @MaxLength(50, { message: 'Max length is $constraint1 characters' })
+  @MinLength(8, { message: 'Min length is $constraint1 characters' })
   public readonly oldPassword: string
 
   @ApiProperty({
@@ -17,6 +18,7 @@ export class ChangePasswordDto {
     maxLength: 72,
     minLength: 8,
   })
-  @IsPassword({ message: 'Please enter the valid password.' })
+  @MaxLength(50, { message: 'Max length is $constraint1 characters' })
+  @MinLength(8, { message: 'Min length is $constraint1 characters' })
   public readonly newPassword: string
 }
