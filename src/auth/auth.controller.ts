@@ -23,9 +23,10 @@ import {
 } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import { checkRateLimit } from 'src/common/utils'
+import { UserType } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
 import { AuthService } from './auth.service'
-import { Public, CurrentUserId, CurrentUser } from './decorators'
+import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
 import {
   RegisterResponseDto,
   RegisterRequestDto,
@@ -39,7 +40,7 @@ import {
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
 } from './dtos'
-import { JwtAccessTokenGuard, JwtRefreshTokenGuard } from './guards'
+import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -215,6 +216,8 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password changed',
   })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('change-password')
   public async changePassword(
     @Body() body: ChangePasswordDto,
@@ -243,6 +246,8 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Resend of the verification email requested',
   })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('verify-email')
   public async requestResendVerificationEmail(
     @CurrentUserId() userId: string,
@@ -272,6 +277,8 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email changed',
   })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('change-email')
   public async requestChangeEmail(
     @Body() body: RequestChangeEmailDto,
