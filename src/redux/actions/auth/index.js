@@ -31,12 +31,13 @@ export const authActions = {
     }
   },
 
-  logout() {
+  logout(basedOn401Error) {
     removeAccessToken()
     removeItem(LS_VIEW_PREFS_SETTING)
 
     return {
       type: types.LOGOUT,
+      payload: { basedOn401Error },
     }
   },
 

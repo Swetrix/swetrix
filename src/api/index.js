@@ -35,7 +35,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.data.statusCode === 401) {
       removeAccessToken()
-      store.dispatch(authActions.logout())
+      store.dispatch(authActions.logout(true))
     }
     return Promise.reject(error)
   },
