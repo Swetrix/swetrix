@@ -6,7 +6,7 @@ import { UserService } from './user.service'
 import { User } from './entities/user.entity'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
-import { OldAuthModule } from '../old-auth/auth.module'
+import { AuthModule } from '../auth/auth.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -16,7 +16,7 @@ import { RefreshToken } from './entities/refresh-token.entity'
     TypeOrmModule.forFeature([User, RefreshToken]),
     ActionTokensModule,
     MailerModule,
-    forwardRef(() => OldAuthModule),
+    forwardRef(() => AuthModule),
     AppLoggerModule,
     ProjectModule,
   ],

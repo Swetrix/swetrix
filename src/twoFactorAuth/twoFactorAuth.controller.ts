@@ -12,7 +12,7 @@ import { ApiTags } from '@nestjs/swagger'
 
 import { TwoFactorAuthService } from './twoFactorAuth.service'
 import { UserService } from '../user/user.service'
-import { OldAuthService } from '../old-auth/auth.service'
+import { AuthService } from '../auth/auth.service'
 import { UserType } from '../user/entities/user.entity'
 import { AppLoggerService } from '../logger/logger.service'
 import { MailerService } from '../mailer/mailer.service'
@@ -31,7 +31,7 @@ export class TwoFactorAuthController {
   constructor(
     private twoFactorAuthService: TwoFactorAuthService,
     private userService: UserService,
-    private oldAuthService: OldAuthService,
+    private authService: AuthService,
     private readonly logger: AppLoggerService,
     private readonly mailerService: MailerService,
   ) {}
@@ -90,7 +90,7 @@ export class TwoFactorAuthController {
 
     user.isTwoFactorAuthenticationEnabled = true
 
-    const authData = this.oldAuthService.login(user, true)
+    const authData = this.authService.generateJwtTokens(user.id, true)
 
     return {
       twoFactorRecoveryCode,
@@ -170,6 +170,6 @@ export class TwoFactorAuthController {
       throw new BadRequestException('Wrong authentication code')
     }
 
-    return this.oldAuthService.login(user, true)
+    return this.authService.generateJwtTokens(user.id, true)
   }
 }

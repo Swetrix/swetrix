@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { ActionTokensModule } from 'src/action-tokens/action-tokens.module'
@@ -12,12 +12,13 @@ import { JwtAccessTokenStrategy, JwtRefreshTokenStrategy } from './strategies'
   imports: [
     JwtModule.register({}),
     PassportModule,
-    UserModule,
+    forwardRef(() => UserModule),
     ActionTokensModule,
     MailerModule,
     ActionTokensModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAccessTokenStrategy, JwtRefreshTokenStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

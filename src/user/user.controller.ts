@@ -49,7 +49,7 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
-import { OldAuthService } from '../old-auth/auth.service'
+import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
@@ -67,7 +67,7 @@ export type TelegrafContext = Scenes.SceneContext
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly oldAuthService: OldAuthService,
+    private readonly authService: AuthService,
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
@@ -120,7 +120,7 @@ export class UserController {
   async create(@Body() userDTO: UserProfileDTO): Promise<User> {
     this.logger.log({ userDTO }, 'POST /user')
     this.userService.validatePassword(userDTO.password)
-    userDTO.password = await this.oldAuthService.hashPassword(userDTO.password)
+    userDTO.password = await this.authService.hashPassword(userDTO.password)
 
     try {
       const user = await this.userService.create({ ...userDTO, isActive: true })
@@ -372,7 +372,7 @@ export class UserController {
 
     if (userDTO.password) {
       this.userService.validatePassword(userDTO.password)
-      userDTO.password = await this.oldAuthService.hashPassword(userDTO.password)
+      userDTO.password = await this.authService.hashPassword(userDTO.password)
     }
 
     const user = await this.userService.findOneWhere({ id })
@@ -431,7 +431,7 @@ export class UserController {
 
     if (!_isEmpty(userDTO.password) && _isString(userDTO.password)) {
       this.userService.validatePassword(userDTO.password)
-      userDTO.password = await this.oldAuthService.hashPassword(userDTO.password)
+      userDTO.password = await this.authService.hashPassword(userDTO.password)
       await this.mailerService.sendEmail(
         userDTO.email,
         LetterTemplate.PasswordChanged,

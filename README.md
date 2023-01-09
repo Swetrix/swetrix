@@ -42,9 +42,6 @@ Then fill out the Environment Variables below accordingly.
 
 Below you will find the Environment Variables that are required to run the API. The values next to them are their default values. You can change them to your own values or just not set them if they suit you anyway. (e.g. Ports, Username, etc.)
 
-#### Security
-
-`JWT_SECRET`=SOME_SECRET_TOKEN
 
 #### MySQL Database
 

@@ -7,7 +7,6 @@ RUN npm i -g pnpm && pnpm i && npm run deploy
 #Stage 2
 FROM node:lts-alpine as run
 ENV TZ=UTC \
-    JWT_SECRET=SOME_SECRET_TOKEN \
     MYSQL_HOST=localhost \
     MYSQL_USER=root \
     MYSQL_ROOT_PASSWORD=password \
@@ -24,7 +23,7 @@ ENV TZ=UTC \
     API_ORIGINS=\
     EMAIL=test@test.com \
     PASSWORD=12345678 \
-    SMTP_MOCK=true \ 
+    SMTP_MOCK=true \
     SELFHOSTED=true
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 WORKDIR /app
