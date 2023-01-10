@@ -22,6 +22,8 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
+import * as _pick from 'lodash/pick'
+
 import { checkRateLimit } from 'src/common/utils'
 import { UserType } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
@@ -124,7 +126,7 @@ export class AuthController {
 
     await checkRateLimit(ip, 'login', 10, 1800)
 
-    const user = await this.authService.validateUser(body.email, body.password)
+    let user = await this.authService.validateUser(body.email, body.password)
 
     if (!user) {
       throw new ConflictException(i18n.t('auth.invalidCredentials'))
@@ -134,10 +136,14 @@ export class AuthController {
 
     const jwtTokens = await this.authService.generateJwtTokens(user.id)
 
+    if (user.isTwoFactorAuthenticationEnabled) {
+      user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
+    }
+
     return {
       accessToken: jwtTokens.accessToken,
       refreshToken: jwtTokens.refreshToken,
-      isTwoFactorAuthenticationEnabled: user.isTwoFactorAuthenticationEnabled,
+      user,
     }
   }
 

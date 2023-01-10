@@ -56,6 +56,7 @@ import {
   deleteProjectClickhouse,
 } from '../common/utils'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { Public } from 'src/auth/decorators'
 
 // const updateProjectRedis = async (id: string, project: Project) => {
 //   const key = getRedisProjectKey(id)
@@ -226,6 +227,7 @@ export class ProjectController {
   }
 
   @Get('/:id')
+  @Public()
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,
@@ -776,6 +778,7 @@ export class ProjectController {
   @UseGuards(SelfhostedGuard)
   // @UseGuards(JwtAccessTokenGuard, RolesGuard)
   // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Public()
   @ApiResponse({ status: 204, description: 'Empty body' })
   @Get('/share/:id')
   async acceptShare(@Param('id') id: string): Promise<any> {

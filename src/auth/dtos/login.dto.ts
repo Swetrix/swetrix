@@ -12,10 +12,10 @@ export class LoginRequestDto extends OmitType(RegisterRequestDto, [
 
 class AdditionalInfo {
   @ApiProperty({
-    description: 'Is two factor authentication enabled',
+    description: 'User entity',
     example: false,
   })
-  isTwoFactorAuthenticationEnabled: boolean
+  user: object
 }
 
 export class LoginResponseDto extends IntersectionType(
