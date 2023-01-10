@@ -203,7 +203,6 @@ const TRANSPARENT_GIF_BUFFER = Buffer.from(
 
 @ApiTags('Analytics')
 @UseGuards(JwtAccessTokenGuard, RolesGuard)
-@Public()
 @Controller('log')
 export class AnalyticsController {
   constructor(
@@ -519,6 +518,7 @@ export class AnalyticsController {
   }
 
   @UseGuards(SelfhostedGuard)
+  @Public()
   @Get('/generalStats')
   async getGeneralStats(): Promise<object> {
     const exists = await redis.exists(
@@ -600,6 +600,7 @@ export class AnalyticsController {
   @Post('/custom')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
+  @Public()
   async logCustom(
     @Body() eventsDTO: EventsDTO,
     @Headers() headers,
@@ -644,6 +645,7 @@ export class AnalyticsController {
   }
 
   @Post('/hb')
+  @Public()
   async heartbeat(
     @Body() logDTO: PageviewsDTO,
     @Headers() headers,
@@ -669,6 +671,7 @@ export class AnalyticsController {
   @Post('/')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
+  @Public()
   async log(
     @Body() logDTO: PageviewsDTO,
     @Headers() headers,
@@ -791,6 +794,7 @@ export class AnalyticsController {
   // Fallback for logging pageviews for users with JavaScript disabled
   // Returns 1x1 transparent gif
   @Get('/noscript')
+  @Public()
   async noscript(
     @Query() data,
     @Headers() headers,
