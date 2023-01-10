@@ -382,4 +382,8 @@ export class AuthService {
 
     return { accessToken, refreshToken }
   }
+
+  async logout(userId: string, refreshToken: string) {
+    await this.userService.deleteRefreshToken(userId, refreshToken)
+  }
 }

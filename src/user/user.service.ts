@@ -188,4 +188,11 @@ export class UserService {
       },
     })
   }
+
+  public async deleteRefreshToken(userId: string, refreshToken: string) {
+    await this.refreshTokenRepository.delete({
+      userId,
+      refreshToken,
+    })
+  }
 }

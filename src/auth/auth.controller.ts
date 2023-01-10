@@ -371,4 +371,35 @@ export class AuthController {
 
     return { accessToken }
   }
+
+  @ApiOperation({ summary: 'Logout' })
+  @ApiOkResponse({
+    description: 'Logged out',
+  })
+  @Public()
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post('logout')
+  @HttpCode(200)
+  public async logout(
+    @CurrentUserId() userId: string,
+    @CurrentUser('refreshToken') refreshToken: string,
+    @I18n() i18n: I18nContext,
+  ) {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isRefreshTokenValid = await this.authService.checkRefreshToken(
+      user.id,
+      refreshToken,
+    )
+
+    if (!isRefreshTokenValid) {
+      throw new ConflictException(i18n.t('auth.invalidRefreshToken'))
+    }
+
+    await this.authService.logout(user.id, refreshToken)
+  }
 }
