@@ -11,7 +11,7 @@ export default function* signupWorder({ payload: { data: rawData, callback, t } 
   try {
     const { repeat, ...data } = rawData
     const { dontRemember } = data
-    const response = yield call(signup, _omit(credentials, ['dontRemember']))
+    const response = yield call(signup, _omit(data, ['dontRemember']))
 
     yield put(authActions.signupSuccess(response.user))
     yield call(setAccessToken, response.accessToken, dontRemember)
