@@ -2,6 +2,7 @@ import { call, put } from 'redux-saga/effects'
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import _isObject from 'lodash/isPlainObject'
+import _omit from 'lodash/omit'
 
 import UIActions from 'redux/actions/ui'
 import { setAccessToken } from 'utils/accessToken'
@@ -10,7 +11,7 @@ import { login } from 'api'
 export default function* singinWorker({ payload: { credentials, callback } }) {
   try {
     const { dontRemember } = credentials
-    const { user, access_token: accessToken } = yield call(login, credentials)
+    const { user, accessToken } = yield call(login, _omit(credentials, ['dontRemember']))
 
     yield put(authActions.setDontRemember(dontRemember))
 

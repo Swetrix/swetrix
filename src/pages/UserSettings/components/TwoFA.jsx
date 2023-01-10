@@ -59,7 +59,7 @@ const TwoFA = ({
       setIsTwoFaLoading(true)
 
       try {
-        const { twoFactorRecoveryCode, access_token: accessToken, user: updatedUser } = await enable2FA(twoFACode)
+        const { twoFactorRecoveryCode, accessToken, user: updatedUser } = await enable2FA(twoFACode)
         login(updatedUser)
         setAccessToken(accessToken, dontRemember)
         setTwoFARecovery(twoFactorRecoveryCode)

@@ -81,7 +81,7 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
       setIsLoading(true)
 
       try {
-        const { access_token: accessToken, user } = await submit2FA(twoFACode)
+        const { accessToken, user } = await submit2FA(twoFACode)
         setAccessToken(accessToken, form.dontRemember)
         loginSuccess(user)
       } catch (err) {

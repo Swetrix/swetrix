@@ -13,7 +13,7 @@ export default function* signupWorder({ payload: { data: rawData, callback, t } 
     const response = yield call(signup, data)
 
     yield put(authActions.signupSuccess(response.user))
-    yield call(setAccessToken, response.access_token, dontRemember)
+    yield call(setAccessToken, response.accessToken, dontRemember)
     yield put(authActions.setDontRemember(dontRemember))
     yield put(UIActions.setThemeType(response.theme))
     yield put(UIActions.loadProjects())
