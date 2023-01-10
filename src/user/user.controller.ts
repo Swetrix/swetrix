@@ -40,7 +40,13 @@ import {
 } from './entities/user.entity'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
-import { GDPR_EXPORT_TIMEFRAME, clickhouse } from '../common/constants'
+import {
+  GDPR_EXPORT_TIMEFRAME,
+  clickhouse,
+  isSelfhosted,
+  SELFHOSTED_UUID,
+  SELFHOSTED_EMAIL,
+} from '../common/constants'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
@@ -75,6 +81,35 @@ export class UserController {
     private readonly logger: AppLoggerService,
     @InjectBot() private bot: Telegraf<TelegrafContext>,
   ) {}
+
+  @Get('/me')
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async me(@CurrentUserId() user_id: string): Promise<User> {
+    this.logger.log({ user_id }, 'GET /auth/me')
+    let user
+
+    if (isSelfhosted) {
+      user = {
+        id: SELFHOSTED_UUID,
+        email: SELFHOSTED_EMAIL,
+      }
+    } else {
+      const sharedProjects = await this.projectService.findShare({
+        where: {
+          user: user_id,
+        },
+        relations: ['project'],
+      })
+      user = this.userService.processUser(
+        await this.userService.findOneWhere({ id: user_id }),
+      )
+
+      user.sharedProjects = sharedProjects
+    }
+
+    return this.userService.omitSensitiveData(user)
+  }
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })

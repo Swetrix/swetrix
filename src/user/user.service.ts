@@ -133,6 +133,21 @@ export class UserService {
     }
   }
 
+  processUser(user: User): object {
+    // @ts-ignore
+    const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
+    const userData = {
+      // @ts-ignore
+      ...user,
+      password: undefined,
+      twoFactorRecoveryCode: undefined,
+      twoFactorAuthenticationSecret: undefined,
+      maxEventsCount,
+    }
+
+    return userData
+  }
+
   search(query: string): Promise<User[]> {
     return this.usersRepository
       .createQueryBuilder('user')
