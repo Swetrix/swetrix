@@ -1,6 +1,7 @@
 import { call, put } from 'redux-saga/effects'
 import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
+import _omit from 'lodash/omit'
 
 import UIActions from 'redux/actions/ui'
 import { setAccessToken } from 'utils/accessToken'
@@ -10,7 +11,7 @@ export default function* signupWorder({ payload: { data: rawData, callback, t } 
   try {
     const { repeat, ...data } = rawData
     const { dontRemember } = data
-    const response = yield call(signup, data)
+    const response = yield call(signup, _omit(credentials, ['dontRemember']))
 
     yield put(authActions.signupSuccess(response.user))
     yield call(setAccessToken, response.accessToken, dontRemember)
