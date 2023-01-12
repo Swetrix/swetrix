@@ -65,7 +65,7 @@ import {
 } from '../common/constants'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
 import { Public } from 'src/auth/decorators'
 
 dayjs.extend(utc)
@@ -202,7 +202,7 @@ const TRANSPARENT_GIF_BUFFER = Buffer.from(
 )
 
 @ApiTags('Analytics')
-@UseGuards(JwtAccessTokenGuard, RolesGuard)
+@UseGuards(OptionalJwtAccessTokenGuard, RolesGuard)
 @Controller('log')
 export class AnalyticsController {
   constructor(
