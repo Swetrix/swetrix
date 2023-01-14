@@ -9,6 +9,7 @@
     "@swetrix/sdk": "^1.0.0",
     "@tailwindcss/forms": "^0.5.3",
     "axios": "^1.2.2",
+    "axios-auth-refresh": "^3.3.6",
     "billboard.js": "^3.6.3",
     "clsx": "^1.2.1",
     "d3": "^7.8.0",

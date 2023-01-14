@@ -7,11 +7,14 @@ import _omit from 'lodash/omit'
 import UIActions from 'redux/actions/ui'
 import { setAccessToken } from 'utils/accessToken'
 import { login } from 'api'
+import { setRefreshToken } from 'utils/refreshToken'
 
 export default function* singinWorker({ payload: { credentials, callback } }) {
   try {
     const { dontRemember } = credentials
-    const { user, accessToken } = yield call(login, _omit(credentials, ['dontRemember']))
+    const {
+      user, accessToken, refreshToken,
+    } = yield call(login, _omit(credentials, ['dontRemember']))
 
     yield put(authActions.setDontRemember(dontRemember))
 
@@ -24,6 +27,7 @@ export default function* singinWorker({ payload: { credentials, callback } }) {
 
     yield put(authActions.loginSuccess(user))
     yield call(setAccessToken, accessToken, dontRemember)
+    yield call(setRefreshToken, refreshToken)
     yield put(UIActions.setThemeType(user.theme))
     yield put(UIActions.loadProjects())
     yield put(UIActions.loadSharedProjects())

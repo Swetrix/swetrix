@@ -1,5 +1,6 @@
 /* eslint-disable implicit-arrow-linebreak */
 import axios from 'axios'
+import createAuthRefreshInterceptor from 'axios-auth-refresh'
 import { store } from 'redux/store'
 import Debug from 'debug'
 import _map from 'lodash/map'
@@ -7,14 +8,35 @@ import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
 import { authActions } from 'redux/actions/auth'
 
-import { getAccessToken, removeAccessToken } from 'utils/accessToken'
+import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
+import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
 
 const debug = Debug('swetrix:api')
+const baseURL = isSelfhosted ? window.env.API_URL : process.env.REACT_APP_API_URL
 
 const api = axios.create({
-  baseURL: isSelfhosted ? window.env.API_URL : process.env.REACT_APP_API_URL,
+  baseURL,
 })
+
+// Function that will be called to refresh authorization
+const refreshAuthLogic = (failedRequest) =>
+  axios
+    .post(`${baseURL}/v1/auth/refresh-token`, null, {
+      headers: {
+        Authorization: `Bearer ${getRefreshToken}`,
+      },
+    })
+    .then((tokenRefreshResponse) => {
+      const { accessToken } = tokenRefreshResponse.data
+      setAccessToken(accessToken)
+      // eslint-disable-next-line
+      failedRequest.response.config.headers.Authorization = `Bearer ${accessToken}`
+      return Promise.resolve()
+    })
+
+// Instantiate the interceptor
+createAuthRefreshInterceptor(api, refreshAuthLogic)
 
 api.interceptors.request.use(
   (config) => {
@@ -33,17 +55,29 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.data.statusCode === 401) {
-      removeAccessToken()
-      store.dispatch(authActions.logout())
-    }
+    // if (error.response?.data.statusCode === 401) {
+    //   removeAccessToken()
+    //   removeRefreshToken()
+    //   store.dispatch(authActions.logout())
+    // }
     return Promise.reject(error)
   },
 )
 
 export const authMe = () =>
   api
-    .get('v1/auth/me')
+    .get('user/me')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const refreshToken = () =>
+  api
+    .post('v1/auth/refresh-token')
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

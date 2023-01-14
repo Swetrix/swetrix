@@ -6,17 +6,21 @@ import _omit from 'lodash/omit'
 import UIActions from 'redux/actions/ui'
 import { setAccessToken } from 'utils/accessToken'
 import { signup } from 'api'
+import { setRefreshToken } from 'utils/refreshToken'
 
 export default function* signupWorder({ payload: { data: rawData, callback, t } }) {
   try {
     const { repeat, ...data } = rawData
     const { dontRemember } = data
-    const response = yield call(signup, _omit(data, ['dontRemember']))
+    const {
+      user, accessToken, refreshToken, // theme,
+    } = yield call(signup, _omit(data, ['dontRemember']))
 
-    yield put(authActions.signupSuccess(response.user))
-    yield call(setAccessToken, response.accessToken, dontRemember)
+    yield put(authActions.signupSuccess(user))
+    yield call(setAccessToken, accessToken, dontRemember)
+    yield call(setRefreshToken, refreshToken)
     yield put(authActions.setDontRemember(dontRemember))
-    yield put(UIActions.setThemeType(response.theme))
+    // yield put(UIActions.setThemeType(response.theme))
     yield put(UIActions.loadProjects())
     yield put(UIActions.loadSharedProjects())
     yield put(UIActions.loadProjectAlerts())

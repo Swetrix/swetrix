@@ -138,6 +138,7 @@ export const GDPR_REQUEST = 'gdpr_request'
 export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
 export const LOW_EVENTS_WARNING = 'low_events_warning'
 export const TOKEN = 'access_token'
+export const REFRESH_TOKEN = 'refresh_token'
 
 // List of languages with translations available
 export const whitelist = ['en', 'uk', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
