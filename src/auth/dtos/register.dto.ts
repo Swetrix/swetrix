@@ -46,4 +46,9 @@ export class RegisterResponseDto {
     description: 'Refresh token (JWT)',
   })
   public readonly refreshToken: string
+
+  @ApiProperty({
+    description: 'User entity',
+  })
+  user: object
 }

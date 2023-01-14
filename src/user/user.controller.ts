@@ -86,7 +86,7 @@ export class UserController {
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async me(@CurrentUserId() user_id: string): Promise<User> {
-    this.logger.log({ user_id }, 'GET /auth/me')
+    this.logger.log({ user_id }, 'GET /user/me')
     let user
 
     if (isSelfhosted) {

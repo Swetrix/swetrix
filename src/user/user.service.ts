@@ -6,7 +6,7 @@ import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { User } from './entities/user.entity'
+import { User, ACCOUNT_PLANS } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 

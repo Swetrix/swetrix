@@ -17,6 +17,7 @@ import { MailerService } from 'src/mailer/mailer.service'
 import { MAX_EMAIL_REQUESTS, User } from 'src/user/entities/user.entity'
 import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
+import { ProjectService } from 'src/project/project.service'
 import { Telegraf } from 'telegraf'
 import { UAParser } from 'ua-parser-js'
 
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
+    private readonly projectService: ProjectService,
   ) {}
 
   private async createSha1Hash(password: string): Promise<string> {
@@ -92,7 +94,7 @@ export class AuthService {
     })
   }
 
-  public async createUnverifiedUser(email: string, password: string) {
+  public async createUnverifiedUser(email: string, password: string): Promise<User> {
     const hashedPassword = await this.hashPassword(password)
 
     const user = await this.userService.createUser({
@@ -133,6 +135,19 @@ export class AuthService {
     }
 
     return null
+  }
+
+  public async getSharedProjectsForUser(user: User): Promise<User> {
+    const sharedProjects = await this.projectService.findShare({
+      where: {
+        user: user.id,
+      },
+      relations: ['project'],
+    })
+
+    user.sharedProjects = sharedProjects
+
+    return user
   }
 
   private async comparePassword(

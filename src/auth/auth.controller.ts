@@ -104,6 +104,7 @@ export class AuthController {
     return {
       accessToken: jwtTokens.accessToken,
       refreshToken: jwtTokens.refreshToken,
+      user: this.userService.omitSensitiveData(newUser),
     }
   }
 
@@ -138,12 +139,14 @@ export class AuthController {
 
     if (user.isTwoFactorAuthenticationEnabled) {
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
+    } else {
+      user = await this.authService.getSharedProjectsForUser(user)
     }
 
     return {
       accessToken: jwtTokens.accessToken,
       refreshToken: jwtTokens.refreshToken,
-      user,
+      user: this.userService.omitSensitiveData(user),
     }
   }
 
@@ -384,7 +387,7 @@ export class AuthController {
     @CurrentUserId() userId: string,
     @CurrentUser('refreshToken') refreshToken: string,
     @I18n() i18n: I18nContext,
-  ) {
+  ): Promise<void> {
     const user = await this.userService.findUserById(userId)
 
     if (!user) {
