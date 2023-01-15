@@ -195,4 +195,8 @@ export class UserService {
       refreshToken,
     })
   }
+
+  public async findUserByApiKey(apiKey: string) {
+    return await this.usersRepository.findOne({ where: { apiKey } })
+  }
 }

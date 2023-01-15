@@ -47,8 +47,8 @@ const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
 const allowedToUpdateKeys = ['name', 'origins', 'active', 'public']
 
-const _getRateLimitHash = (ip: string, salt = '') =>
-  `rl:${hash(`${ip}${salt}`).toString('hex')}`
+const _getRateLimitHash = (ipOrApiKey: string, salt = '') =>
+  `rl:${hash(`${ipOrApiKey}${salt}`).toString('hex')}`
 
 const splitAt = (x, index): Array<Array<any> | string> => [
   x.slice(0, index),
@@ -73,6 +73,21 @@ const checkRateLimit = async (
     throw new ForbiddenException('Too many requests, please try again later')
   }
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
+}
+
+const RATE_LIMIT_FOR_API_KEY_TIMEOUT = 60 * 60 // 1 hour
+export const checkRateLimitForApiKey = async (
+  apiKey: string,
+  reqAmount: number,
+): Promise<boolean> => {
+  const rlHash = _getRateLimitHash(apiKey)
+  const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
+
+  if (rlCount >= reqAmount) {
+    throw new ForbiddenException('Too many requests, please try again later')
+  }
+  await redis.set(rlHash, 1 + rlCount, 'EX', RATE_LIMIT_FOR_API_KEY_TIMEOUT)
+  return true
 }
 
 const getProjectsClickhouse = async (id = null) => {

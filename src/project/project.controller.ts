@@ -56,7 +56,7 @@ import {
   deleteProjectClickhouse,
 } from '../common/utils'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
-import { Public } from 'src/auth/decorators'
+import { Auth, Public } from 'src/auth/decorators'
 
 // const updateProjectRedis = async (id: string, project: Project) => {
 //   const key = getRedisProjectKey(id)
@@ -109,8 +109,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
@@ -154,8 +153,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async getShared(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
@@ -227,7 +225,7 @@ export class ProjectController {
   }
 
   @Get('/:id')
-  @Public()
+  @Auth([], true, true)
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,

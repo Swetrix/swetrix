@@ -66,7 +66,7 @@ import {
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
-import { Public } from 'src/auth/decorators'
+import { Auth, Public } from 'src/auth/decorators'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -212,6 +212,7 @@ export class AnalyticsController {
   ) { }
 
   @Get('/')
+  @Auth([], true, true)
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
@@ -361,6 +362,7 @@ export class AnalyticsController {
   }
 
   @Get('/performance')
+  @Auth([], true, true)
   async getPerfData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
@@ -501,6 +503,7 @@ export class AnalyticsController {
   }
 
   @Get('/birdseye')
+  @Auth([], true, true)
   // returns overall short statistics per project
   async getOverallStats(
     @Query() data,
@@ -572,6 +575,7 @@ export class AnalyticsController {
   }
 
   @Get('/liveVisitors')
+  @Auth([], true, true)
   async getLiveVisitors(
     @Query() data,
     @CurrentUserId() uid: string,
@@ -645,7 +649,7 @@ export class AnalyticsController {
   }
 
   @Post('/hb')
-  @Public()
+  @Auth([], true, true)
   async heartbeat(
     @Body() logDTO: PageviewsDTO,
     @Headers() headers,

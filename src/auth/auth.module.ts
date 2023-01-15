@@ -7,7 +7,11 @@ import { UserModule } from 'src/user/user.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { ProjectModule } from 'src/project/project.module'
-import { JwtAccessTokenStrategy, JwtRefreshTokenStrategy } from './strategies'
+import {
+  ApiKeyStrategy,
+  JwtAccessTokenStrategy,
+  JwtRefreshTokenStrategy,
+} from './strategies'
 
 @Module({
   imports: [
@@ -20,7 +24,12 @@ import { JwtAccessTokenStrategy, JwtRefreshTokenStrategy } from './strategies'
     ProjectModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAccessTokenStrategy, JwtRefreshTokenStrategy],
+  providers: [
+    AuthService,
+    JwtAccessTokenStrategy,
+    JwtRefreshTokenStrategy,
+    ApiKeyStrategy,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

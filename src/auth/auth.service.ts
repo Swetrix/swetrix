@@ -94,7 +94,10 @@ export class AuthService {
     })
   }
 
-  public async createUnverifiedUser(email: string, password: string): Promise<User> {
+  public async createUnverifiedUser(
+    email: string,
+    password: string,
+  ): Promise<User> {
     const hashedPassword = await this.hashPassword(password)
 
     const user = await this.userService.createUser({
@@ -400,5 +403,9 @@ export class AuthService {
 
   async logout(userId: string, refreshToken: string) {
     await this.userService.deleteRefreshToken(userId, refreshToken)
+  }
+
+  async validateApiKey(apiKey: string): Promise<User | null> {
+    return await this.userService.findUserByApiKey(apiKey)
   }
 }

@@ -28,6 +28,7 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 5000,
     maxProjects: 10,
     maxAlerts: 1,
+    maxApiKeyRequestsPerHour: 5,
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
@@ -37,6 +38,7 @@ export const ACCOUNT_PLANS = {
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
     maxAlerts: 10,
+    maxApiKeyRequestsPerHour: 600,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
@@ -46,6 +48,7 @@ export const ACCOUNT_PLANS = {
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
+    maxApiKeyRequestsPerHour: 6000, // REVIEW
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
@@ -55,6 +58,7 @@ export const ACCOUNT_PLANS = {
     pid: '752318',
     ypid: '776471',
     maxAlerts: 100,
+    maxApiKeyRequestsPerHour: 60000, // REVIEW
   },
 }
 
