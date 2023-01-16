@@ -113,53 +113,64 @@ const ProjectAlerts = ({
             </Button>
           </div>
         )}
+
         {(!loading && !_isEmpty(projectAlerts)) && (
-          <div className='flex flex-col'>
-            {_map(projectAlerts, ({
-              id, name, queryMetric, lastTriggered,
-            }) => (
-              <div key={id} className='flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-4'>
-                <div className='flex justify-between items-center'>
-                  <div className='flex flex-col'>
-                    <div className='text-lg font-bold dark:text-white text-gray-800 hidden md:block'>{name}</div>
-                    <div className='text-lg font-bold dark:text-white text-gray-800 hidden sm:block md:hidden'>{_trucate(name, { length: 20 })}</div>
-                    <div className='text-lg font-bold dark:text-white text-gray-800 sm:hidden'>{_trucate(name, { length: 10 })}</div>
-                    <div className='text-sm dark:text-gray-400 text-gray-600'>{queryMetricTMapping[queryMetric]}</div>
-                  </div>
-                  <div className='flex flex-col'>
-                    <div className='text-sm dark:text-gray-400 text-gray-600'>
-                      {t('alert.lastTriggered')}
+          <table className='w-full mb-3 border-separate border-spacing-y-4'>
+            <tbody>
+              {_map(projectAlerts, ({
+                id, name, queryMetric, lastTriggered,
+              }) => (
+                <tr key={id} className='bg-white dark:bg-gray-800 rounded-lg shadow-lg'>
+                  <td className='p-4 pr-0 rounded-l-lg justify-start'>
+                    <div className='flex flex-col'>
+                      <div className='text-lg font-bold dark:text-white text-gray-800 hidden lg:block'>{name}</div>
+                      <div className='text-lg font-bold dark:text-white text-gray-800 hidden md:block lg:hidden'>{_trucate(name, { length: 35 })}</div>
+                      <div className='text-lg font-bold dark:text-white text-gray-800 hidden sm:block md:hidden'>{_trucate(name, { length: 20 })}</div>
+                      <div className='text-lg font-bold dark:text-white text-gray-800 sm:hidden'>{_trucate(name, { length: 10 })}</div>
+                      <div className='text-sm dark:text-gray-400 text-gray-600'>{queryMetricTMapping[queryMetric]}</div>
                     </div>
-                    <div className='text-lg font-bold dark:text-white text-gray-800'>
-                      {lastTriggered
-                        ? (language === 'en'
-                          ? dayjs(lastTriggered).locale(language).format('MMMM D, YYYY')
-                          : dayjs(lastTriggered).locale(language).format('D MMMM, YYYY'))
-                        : t('alert.never')}
+
+                  </td>
+                  <td className='py-4'>
+                    <div className='flex flex-col'>
+                      <div className='text-sm dark:text-gray-400 text-gray-600'>
+                        {t('alert.lastTriggered')}
+                      </div>
+                      <div className='text-lg font-bold dark:text-white text-gray-800'>
+                        {lastTriggered
+                          ? (language === 'en'
+                            ? dayjs(lastTriggered).locale(language).format('MMMM D, YYYY')
+                            : dayjs(lastTriggered).locale(language).format('D MMMM, YYYY'))
+                          : t('alert.never')}
+                      </div>
                     </div>
-                  </div>
-                  <div className='flex items-center'>
-                    {!isIntegrationLinked && (
+
+                  </td>
+                  <td className='rounded-r-lg p-4 pl-0'>
+                    <div className='flex items-center justify-end'>
+                      {!isIntegrationLinked && (
                       <p className='text-gray-800 dark:text-gray-200 text-sm mr-3'>
                         {t('alert.noNotification')}
                       </p>
-                    )}
-                    <Button
-                      onClick={() => {
-                        history.push(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
-                      }}
-                      className='dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
-                      secondary
-                      large
-                    >
-                      <PencilSquareIcon className='w-4 h-4 mr-1' />
-                      {t('common.edit')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                      )}
+                      <Button
+                        onClick={() => {
+                          history.push(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
+                        }}
+                        className='dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
+                        secondary
+                        large
+                      >
+                        <PencilSquareIcon className='w-4 h-4 mr-1' />
+                        {t('common.edit')}
+                      </Button>
+                    </div>
+
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
       <PaidFeature
