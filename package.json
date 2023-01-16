@@ -1,5 +1,5 @@
 {
-  "name": "docs",
+  "name": "@swetrix/docs",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -43,6 +43,6 @@
     ]
   },
   "engines": {
-    "node": ">=16.14"
+    "node": ">=16.16"
   }
 }

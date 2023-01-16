@@ -1,48 +1,48 @@
-// @ts-check
-// Note: type annotations allow type checking and IDEs autocompletion
+// const lightCodeTheme = require('prism-react-renderer/themes/github')
+// const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
-
-/** @type {import('@docusaurus/types').Config} */
 module.exports = {
   title: 'Swetrix Docs',
-  tagline:
-    'For the first privacy-preserving protocol built for scalability, privacy and interoperability.',
+  tagline: 'Ultimate open-source analytics to satisfy all your needs',
   url: 'https://docs.swetrix.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
-  favicon: 'img/logo192.png',
-  organizationName: 'swetrix', // github org name.
-  projectName: 'docs', // repo name.
+  favicon: 'img/favicon.ico',
+  organizationName: 'swetrix', // github org name
+  projectName: 'docs', // github repo name
+  trailingSlash: false,
   themeConfig: {
     colorMode: {
       respectPrefersColorScheme: true,
     },
     navbar: {
       logo: {
-        alt: 'Swetrix Logo',
+        alt: 'Swetrix',
         src: 'img/logo_blue.svg',
         srcDark: 'img/logo_white.svg',
-        width: '130px',
-        height: '50px',
+        href: 'https://swetrix.com',
+        target: '_self',
+        // width: '130px',
+        // height: '50px',
       },
       items: [
         {
-          href: 'https://swetrix.com',
-          label: 'Swetrix',
+          href: '/',
+          label: 'Docs',
           position: 'left',
+          target: '_self',
+          activeBasePath: '/',
         },
         {
-          href: 'https://github.com/swetrix',
+          href: 'https://github.com/Swetrix',
           label: 'GitHub',
-          position: 'left',
+          position: 'right',
         },
-        {
-          type: "localeDropdown",
-          position: "left"
-        }
+        // {
+        //   type: "localeDropdown",
+        //   position: "left"
+        // }
       ],
     },
     footer: {
@@ -86,21 +86,22 @@ module.exports = {
       ],
       copyright: `Copyright © 2019-${new Date().getFullYear()} Swetrix. Built with Docusaurus.`,
     },
-    prism: {
-      theme: lightCodeTheme,
-      darkTheme: darkCodeTheme,
-    },
+    // prism: {
+    //   theme: lightCodeTheme,
+    //   darkTheme: darkCodeTheme,
+    // },
   },
   presets: [
     [
       '@docusaurus/preset-classic',
       {
         docs: {
+          routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/swetrix/docs/',
+          editUrl: 'https://github.com/swetrix/docs/edit/main/',
         },
         theme: {
-          customCss: [require.resolve('./src/css/custom.css')],
+          customCss: require.resolve('./src/css/custom.css'),
         },
       },
     ],
@@ -113,41 +114,40 @@ module.exports = {
       crossorigin: 'anonymous',
     },
   ],
-  plugins: [
-    async function myPlugin(context, options) {
-      return {
-        name: "docusaurus-tailwindcss",
-        configurePostCss(postcssOptions) {
-          postcssOptions.plugins.push(require("tailwindcss"));
-          postcssOptions.plugins.push(require("autoprefixer"));
-          return postcssOptions;
-        },
-      };
-    },
-    // [
-    //   require.resolve('@cmfcmf/docusaurus-search-local'),
-    //   {
-    //     indexDocs: true,
-    //     indexPages: false,
-    //     language: ["en", "zh", "ru"],
-    //     maxSearchResults: 10,
-    //   },
-    // ],
-  ],
-  i18n: {
-    defaultLocale: 'en',
-    locales: ['en', 'cn', 'ru'],
-    localeConfigs: {
-      en: {
-        label: 'English',
-      },
-      cn: {
-        label: '中文',
-      },
-      ru: {
-        label: 'Русский',
-      },
-    }
-  },
+  // plugins: [
+  //   async function myPlugin(context, options) {
+  //     return {
+  //       name: "docusaurus-tailwindcss",
+  //       configurePostCss(postcssOptions) {
+  //         postcssOptions.plugins.push(require("tailwindcss"));
+  //         postcssOptions.plugins.push(require("autoprefixer"));
+  //         return postcssOptions;
+  //       },
+  //     };
+  //   },
+  //   // [
+  //   //   require.resolve('@cmfcmf/docusaurus-search-local'),
+  //   //   {
+  //   //     indexDocs: true,
+  //   //     indexPages: false,
+  //   //     language: ["en", "zh", "ru"],
+  //   //     maxSearchResults: 10,
+  //   //   },
+  //   // ],
+  // ],
+  // i18n: {
+  //   defaultLocale: 'en',
+  //   locales: ['en', 'cn', 'ru'],
+  //   localeConfigs: {
+  //     en: {
+  //       label: 'English',
+  //     },
+  //     cn: {
+  //       label: '中文',
+  //     },
+  //     ru: {
+  //       label: 'Русский',
+  //     },
+  //   }
+  // },
 };
-
