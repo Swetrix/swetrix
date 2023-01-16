@@ -1,0 +1,38 @@
+{
+  "link.title.Docs": {
+    "message": "Docs",
+    "description": "The title of the footer links column with title=Docs in the footer"
+  },
+  "link.title.Community": {
+    "message": "Community",
+    "description": "The title of the footer links column with title=Community in the footer"
+  },
+  "link.title.More": {
+    "message": "More",
+    "description": "The title of the footer links column with title=More in the footer"
+  },
+  "link.item.label.Introduction": {
+    "message": "Introduction",
+    "description": "The label of footer link with label=Introduction linking to /docs/intro"
+  },
+  "link.item.label.Twitter": {
+    "message": "Twitter",
+    "description": "The label of footer link with label=Twitter linking to https://twitter.com/swetrix"
+  },
+  "link.item.label.Discord": {
+    "message": "Discord",
+    "description": "The label of footer link with label=Discord linking to https://discord.gg/"
+  },
+  "link.item.label.GitHub": {
+    "message": "GitHub",
+    "description": "The label of footer link with label=GitHub linking to https://github.com/swetrix"
+  },
+  "link.item.label.Email": {
+    "message": "Email",
+    "description": "The label of footer link with label=Email linking to mailto:contact@swetrix.com"
+  },
+  "copyright": {
+    "message": "Copyright © 2019-2023 Swetrix. Built with Docusaurus.",
+    "description": "The footer copyright"
+  }
+}

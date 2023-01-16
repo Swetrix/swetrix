@@ -1,0 +1,10 @@
+{
+  "item.label.Swetrix": {
+    "message": "Swetrix",
+    "description": "Navbar item with label Swetrix"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}

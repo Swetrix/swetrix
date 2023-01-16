@@ -5,52 +5,113 @@ const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
-const config = {
-  title: 'Swetrix',
-  tagline: 'Dinosaurs are cool',
-  url: 'https://swetrix.com',
+module.exports = {
+  title: 'Swetrix Docs',
+  tagline:
+    'For the first privacy-preserving protocol built for scalability, privacy and interoperability.',
+  url: 'https://docs.swetrix.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
-
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'Swetrix', // Usually your GitHub org/user name.
-  projectName: 'Swetrix', // Usually your repo name.
-
-  // Even if you don't use internalization, you can use this field to set useful
-  // metadata like html lang. For example, if your site is Chinese, you may want
-  // to replace "en" with "zh-Hans".
-  i18n: {
-    defaultLocale: 'en',
-    locales: ['en', 'ua'],
+  onBrokenMarkdownLinks: 'throw',
+  favicon: 'img/logo192.png',
+  organizationName: 'swetrix', // github org name.
+  projectName: 'docs', // repo name.
+  themeConfig: {
+    colorMode: {
+      respectPrefersColorScheme: true,
+    },
+    navbar: {
+      logo: {
+        alt: 'Swetrix Logo',
+        src: 'img/logo_blue.svg',
+        srcDark: 'img/logo_white.svg',
+        width: '130px',
+        height: '50px',
+      },
+      items: [
+        {
+          href: 'https://swetrix.com',
+          label: 'Swetrix',
+          position: 'left',
+        },
+        {
+          href: 'https://github.com/swetrix',
+          label: 'GitHub',
+          position: 'left',
+        },
+        {
+          type: "localeDropdown",
+          position: "left"
+        }
+      ],
+    },
+    footer: {
+      style: 'dark',
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            {
+              label: 'Introduction',
+              to: '/docs/intro',
+            },
+          ],
+        },
+        {
+          title: 'Community',
+          items: [
+            {
+              label: 'Twitter',
+              href: 'https://twitter.com/swetrix',
+            },
+            {
+              label: 'Discord',
+              href: 'https://discord.gg/',
+            },
+          ],
+        },
+        {
+          title: 'More',
+          items: [
+            {
+              label: 'GitHub',
+              href: 'https://github.com/swetrix',
+            },
+            {
+              label: 'Email',
+              href: 'mailto:contact@swetrix.com',
+            },
+          ],
+        },
+      ],
+      copyright: `Copyright © 2019-${new Date().getFullYear()} Swetrix. Built with Docusaurus.`,
+    },
+    prism: {
+      theme: lightCodeTheme,
+      darkTheme: darkCodeTheme,
+    },
   },
-
   presets: [
     [
-      'classic',
-      /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
+      '@docusaurus/preset-classic',
+      {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-        },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/swetrix/docs/',
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: [require.resolve('./src/css/custom.css')],
         },
-      }),
+      },
     ],
+  ],
+  stylesheets: [
+    {
+      href: 'https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css',
+      integrity:
+        'sha384-Um5gpz1odJg5Z4HAmzPtgZKdTBHZdw8S29IecapCSB31ligYPhHQZMIlWLYQGVoc',
+      crossorigin: 'anonymous',
+    },
   ],
   plugins: [
     async function myPlugin(context, options) {
@@ -63,82 +124,30 @@ const config = {
         },
       };
     },
+    // [
+    //   require.resolve('@cmfcmf/docusaurus-search-local'),
+    //   {
+    //     indexDocs: true,
+    //     indexPages: false,
+    //     language: ["en", "zh", "ru"],
+    //     maxSearchResults: 10,
+    //   },
+    // ],
   ],
-
-  themeConfig:
-    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
-    ({
-      navbar: {
-        title: 'Swetrix',
-        logo: {
-          alt: 'My Site Logo',
-          src: 'img/logo.svg',
-        },
-        items: [
-          {
-            type: 'doc',
-            docId: 'intro',
-            position: 'left',
-            label: 'Tutorial',
-          },
-          {to: '/blog', label: 'Blog', position: 'left'},
-          {
-            href: 'https://github.com/swetrix',
-            label: 'GitHub',
-            position: 'right',
-          },
-        ],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'cn', 'ru'],
+    localeConfigs: {
+      en: {
+        label: 'English',
       },
-      footer: {
-        style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Tutorial',
-                to: '/docs/intro',
-              },
-            ],
-          },
-          {
-            title: 'Community',
-            items: [
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-              },
-              {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
-              },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
-                label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
-              },
-            ],
-          },
-        ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      cn: {
+        label: '中文',
       },
-      prism: {
-        theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
+      ru: {
+        label: 'Русский',
       },
-    }),
+    }
+  },
 };
 
-module.exports = config;
