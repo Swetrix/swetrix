@@ -1,6 +1,6 @@
 module.exports = {
   docs: {
-    "Get Started": [
+    'Get Started': [
       'introduction',
       'add-script',
       'script-reference',
@@ -10,6 +10,11 @@ module.exports = {
         label: 'Integrations',
         items: ['integrations/wordpress', 'integrations/webflow', 'integrations/wix', 'integrations/ghost', 'integrations/django', 'integrations/sveltekit'],
       }
+    ],
+    'Extensions SDK': [
+      'ext-sdk-introduction',
+      'ext-sdk-faq',
+      'ext-sdk-reference',
     ],
   },
 }
