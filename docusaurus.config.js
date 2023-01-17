@@ -12,6 +12,14 @@ module.exports = {
   organizationName: 'swetrix', // github org name
   projectName: 'docs', // github repo name
   trailingSlash: false,
+  scripts: [
+    {
+      src: 'https://swetrix.org/swetrix.js', defer: true,
+    },
+    {
+      src: 'js/setupswetrix.js', defer: true,
+    }
+  ],
   themeConfig: {
     colorMode: {
       respectPrefersColorScheme: true,
