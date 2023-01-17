@@ -16,6 +16,7 @@
   --ifm-color-primary-lightest: #A5B4FC;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-footer-link-hover-color: var(--ifm-color-primary-lightest);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -28,6 +29,7 @@
   --ifm-color-primary-lighter: #6366F1;
   --ifm-color-primary-lightest: #4F46E5;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-footer-link-hover-color: var(--ifm-color-primary);
 }
 
 .navbar .navbar__logo {
