@@ -1,5 +1,5 @@
 module.exports = {
   docs: {
-    "Get Started": ['introduction', 'signup', 'add-a-website', 'add-script'],
+    "Get Started": ['introduction', 'add-script', 'script-reference'],
   },
 }
