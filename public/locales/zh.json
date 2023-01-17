@@ -446,43 +446,6 @@
       "online_users": "Online users"
     }
   },
-  "docs": {
-    "titles": {
-      "start": "开始",
-      "umd": "UMD 构建",
-      "npm": "NPM 包",
-      "int": "Integrations",
-      "how": "如何...",
-      "pv": "跟踪浏览量",
-      "ce": "跟踪自定义活动",
-      "api": "API"
-    },
-    "install": "您也可以使用 NPM 或 Yarn 安装跟踪脚本",
-    "import": "接下来您应该将模块导入到您的项目根目录中，例如",
-    "track": "在您可以跟踪任何您想要的内容之后。\n阅读下面关于跟踪参数的详细文档。",
-    "integrations": "We support the following integrations (click on the title for details)",
-    "3rdPartyInt": "There are also integrations made by the community",
-    "pv": "Swetrix.js 跟踪脚本提供了一种在页面加载后收集页面查看活动的方法。\n这可以通过调用 <url>trackViews()</url> 函数来完成：",
-    "ce": "除了跟踪浏览量之外，我们还提供跟踪自定义活动的功能。\n例如，如果您想跟踪诸如“注册”或“新闻通讯订阅”之类的活动，此功能将非常实用。\n下屏幕，这个功能的原理和trackViews类似。",
-    "init": "这个函数用于初始化分析。\n基本上您让脚本知道您想用哪个项目使用它，并在需要时指定您的自定义参数。",
-    "tr": "使用此功能，您可以跟踪您想要的任何自定义活动。\n您不应将任何可识别数据（如用户 ID、电子邮件、会话 cookie 等）作为活动名称发送。\n总数跟踪通话并保存其转化率。",
-    "tv": {
-      "call": "调用 trackViews 会将有关用户的数据发送到我们的服务器。\n如果可用，此类数据将包括下一个参数：\n",
-      "gather": "在服务器端，我们还收集用户 IP 地址和用户代理。\n此数据用于检测页面视图是否是唯一的。\n<b>我们不存储 IP 地址和用户代理作为原始字符串</b>，此类数据以加盐哈希形式存储，时间不超过 30 分钟或 12:00 AM UTC，无论先发生什么。\n在此时间范围之后，可识别数据将永远从我们的服务器中删除。",
-      "params": {
-        "pid": "唯一的项目 ID 请求与之相关。",
-        "lc": "用户区域设置（例如 en_US 或 uk_UA）。",
-        "tz": "用户时区（例如欧洲/赫尔辛基）。",
-        "ref": "打开页面的上一个网页的 URL。",
-        "so": "页面源('ref' | 'source' | 'utm_source' GET param).",
-        "me": "UTM 介质('utm_medium' GET param).",
-        "ca": "UTM 广告系列 ('utm_campaign' GET param).",
-        "pg": "用户当前查看的页面（例如 /您好）."
-      }
-    },
-    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
-    "contents": "内容"
-  },
   "notFoundPage": {
     "title": "Page not found",
     "description": "Sorry, we couldn’t find the page you’re looking for.\nPlease check the URL in the address bar and try again.",
