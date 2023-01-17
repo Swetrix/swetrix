@@ -35,7 +35,7 @@ After you have added the code snippet, you also have to add the following code s
 ```
 
 :::caution
-It's very important not to forget to replace `YOUR_PROJECT_ID` with your actual project ID you can find in the Dashboard, otherwise tracking won't work!
+It's very important not to forget to replace `YOUR_PROJECT_ID` with your actual Project ID you can find in the Dashboard, otherwise tracking won't work!
 :::
 
 Done. Now you can start using Swetrix on your website.
