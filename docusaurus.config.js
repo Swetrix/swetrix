@@ -30,7 +30,7 @@ module.exports = {
         src: 'img/logo_blue.svg',
         srcDark: 'img/logo_white.svg',
         href: 'https://swetrix.com',
-        target: '_self',
+        target: '_blank',
         // width: '130px',
         // height: '50px',
       },
