@@ -12,7 +12,6 @@ const routes = Object.freeze({
   new_project: '/projects/new',
   project_settings: '/projects/settings/:id',
   project: '/projects/:id',
-  docs: '/docs',
   features: '/features',
   billing: '/billing',
   privacy: '/privacy',

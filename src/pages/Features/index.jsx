@@ -1,12 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import React, { Fragment } from 'react'
 import { Link } from 'react-router-dom'
-import { HashLink } from 'react-router-hash-link'
 import { useTranslation, Trans } from 'react-i18next'
 import _map from 'lodash/map'
 
 import Title from 'components/Title'
-import { CHROME_EXTENSION_URL, FIREFOX_ADDON_URL } from 'redux/constants'
+import {
+  CHROME_EXTENSION_URL, FIREFOX_ADDON_URL, DOCS_URL,
+} from 'redux/constants'
 import routes from 'routes'
 
 const Features = () => {
@@ -28,7 +29,7 @@ const Features = () => {
               t={t}
               i18nKey='features.feature1Content'
               components={{
-                docs: <HashLink className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' to={`${routes.docs}#docs-tv`} />,
+                docs: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href={`${DOCS_URL}/swetrix-js-reference#trackviews`} target='_blank' rel='noreferrer noopener' />,
                 gh: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href='https://github.com/Swetrix' target='_blank' rel='noopener noreferrer' />,
               }}
             />
