@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import { HashLink } from 'react-router-hash-link'
 
-import { SWETRIX_VS_GOOGLE } from 'redux/constants'
+import { SWETRIX_VS_GOOGLE, DOCS_URL } from 'redux/constants'
 import Title from 'components/Title'
 import routes from 'routes'
 
@@ -13,6 +13,19 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
 // Date format: YYYY-MM-DD
 const changelog = [
+  {
+    date: '2023-01-17',
+    changes: [
+      <>
+        Got rid of our custom documentation page and migrated to Docusaurus insted. Check it out at
+        {' '}
+        <a href={DOCS_URL} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noopener noreferrer'>
+          {DOCS_URL}
+        </a>
+        .
+      </>,
+    ],
+  },
   {
     date: '2023-01-05',
     changes: [
