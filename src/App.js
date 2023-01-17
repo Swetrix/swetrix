@@ -33,7 +33,6 @@ const ForgotPassword = lazy(() => import('pages/Auth/ForgotPassword'))
 const CreateNewPassword = lazy(() => import('pages/Auth/CreateNewPassword'))
 const Dashboard = lazy(() => import('pages/Dashboard'))
 const Contact = lazy(() => import('pages/Contact'))
-const Docs = lazy(() => import('pages/Docs'))
 const Features = lazy(() => import('pages/Features'))
 const UserSettings = lazy(() => import('pages/UserSettings'))
 const VerifyEmail = lazy(() => import('pages/Auth/VerifyEmail'))
@@ -186,7 +185,6 @@ const App = () => {
                 <Route path={routes.project_settings} component={ProjectSettings} exact />
                 <Route path={routes.project} component={ViewProject} exact />
                 <Route path={routes.billing} component={Billing} exact />
-                <Route path={routes.docs} component={Docs} exact />
                 <Route path={routes.contact} component={Contact} exact />
                 <Route path={routes.features} component={Features} exact />
                 <Route path={routes.privacy} component={Privacy} exact />

@@ -16,7 +16,7 @@ import routes from 'routes'
 import { authActions } from 'redux/actions/auth'
 import UIActions from 'redux/actions/ui'
 import {
-  whitelist, languages, languageFlag, isSelfhosted, BLOG_URL, THEME_TYPE,
+  whitelist, languages, languageFlag, isSelfhosted, BLOG_URL, THEME_TYPE, DOCS_URL,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
@@ -94,10 +94,10 @@ const Header = ({ authenticated, theme, themeType }) => {
                     </>
                   )
                 )}
-                <NavLink to={routes.docs} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+                <a href={DOCS_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
                   <DocumentTextIcon className='w-5 h-5 mr-1' />
                   {t('common.docs')}
-                </NavLink>
+                </a>
               </div>
             </div>
             <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
@@ -195,10 +195,10 @@ const Header = ({ authenticated, theme, themeType }) => {
                 </NavLink>
               </>
             )}
-            <NavLink to={routes.docs} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Docs'>
+            <a href={DOCS_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
               <DocumentTextIcon className='w-5 h-5 mr-1' />
               {t('common.docs')}
-            </NavLink>
+            </a>
           </div>
         </nav>
       </header>

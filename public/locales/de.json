@@ -446,43 +446,6 @@
       "online_users": "Online users"
     }
   },
-  "docs": {
-    "titles": {
-      "start": "Erste Schritte",
-      "umd": "UMD-Build",
-      "npm": "NPM Paket",
-      "int": "Integrationen",
-      "how": "Wie Sie...",
-      "pv": "Seitenaufrufe tracken",
-      "ce": "benutzerdefinierte Ereignisse tracken",
-      "api": "API"
-    },
-    "install": "Sie können das Tracking-Script auch mit NPM oder Yarn installieren",
-    "import": "Als nächstes sollten Sie das Modul in das Stammverzeichnis Ihres Projekts importieren, zum Beispiel",
-    "track": "Danach können Sie alles tracken, was Sie wollen.\nLesen Sie die ausführliche Dokumentation zu Tracking-Parametern weiter unten.",
-    "integrations": "Wir unterstützen die folgenden Integrationen (klicken Sie auf den Titel für Details)",
-    "3rdPartyInt": "There are also integrations made by the community",
-    "pv": "Das Swetrix.js-Tracking-Script bietet die Möglichkeit, ein Aufrufereignis zu erfassen, sobald die Seite geladen ist.\nDies kann durch den Aufruf der <url>trackViews()</url> Funktion erreicht werden:",
-    "ce": "Zusätzlich zur Verfolgung der Seitenaufrufe bieten wir die Möglichkeit, benutzerdefinierte Tracking-Events zu erfassen.\nWenn Sie zum Beispiel ein Ereignis wie \"Anmeldung\" oder \"Newsletter-Abonnement\" verfolgen möchten, wäre diese Funktion sehr nützlich.\nIm Hintergrund ist das Prinzip dieser Funktion ähnlich zu trackViews.",
-    "init": "Diese Funktion wird zur Initialisierung der Analyse verwendet.\nIm Grunde genommen teilen Sie dem Script mit, für welches Projekt Sie es verwenden möchten, und geben bei Bedarf Ihre eigenen Parameter an.",
-    "tr": "Mit dieser Funktion können Sie beliebige benutzerdefinierte Tracking-Events erfassen.\nSie sollten niemals personenbezogene Daten (wie User-ID, E-Mail, Session-Cookie usw.) als Event-Namen senden.\nDie Gesamtzahl der Tracking-Aufrufe und ihre Konversionsrate werden gespeichert.",
-    "tv": {
-      "call": "Der Aufruf von trackViews führt dazu, dass die Daten über den Benutzer an unsere Server gesendet werden.\nDiese Daten enthalten die folgenden Parameter, falls vorhanden:\n",
-      "gather": "Auf der Serverseite erfassen wir auch die IP-Adresse und den User Agent des Benutzers.\nDiese Daten werden verwendet, um festzustellen, ob Seitenaufrufe einmalig sind oder nicht.\n<b>Wir speichern weder die IP-Adresse noch den User-Agent als einfache Strings</b>, diese Daten werden als salted hash für nicht länger als 30 Minuten oder 12:00 Uhr UTC gespeichert, je nachdem, was zuerst eintritt.\nNach Ablauf dieses Zeitfensters werden die identifizierbaren Daten für immer von unseren Servern gelöscht.",
-      "params": {
-        "pid": "Die eindeutige Projekt-ID, auf die sich die Anfrage bezieht.",
-        "lc": "Die Browser-Sprache des Nutzers (z.B. en_US oder uk_UA).",
-        "tz": "Die Zeitzone des Nutzers (z.B. Europe/Helsinki).",
-        "ref": "Die URL der vorherigen Webseite, von der aus eine Seite geöffnet wurde.",
-        "so": "Die Quelle der Seite ('ref' | 'source' | 'utm_source' GET param).",
-        "me": "Das UTM Medium ('utm_medium' GET param).",
-        "ca": "Die UTM Kampagne ('utm_campaign' GET param).",
-        "pg": "Die Seite, die der Benutzer gerade sieht (z.B. /hello)."
-      }
-    },
-    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
-    "contents": "Inhalt"
-  },
   "notFoundPage": {
     "title": "Seite nicht gefunden",
     "description": "Leider konnten wir die gesuchte Seite nicht finden.\nBitte überprüfen Sie die URL in der Adressleiste und versuchen Sie es erneut.",
