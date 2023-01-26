@@ -6,6 +6,7 @@ import { ProjectShare } from './entity/project-share.entity'
 import { ProjectService } from './project.service'
 import { ProjectController } from './project.controller'
 import { UserModule } from '../user/user.module'
+import { CdnModule } from 'src/marketplace/cdn/cdn.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { AppLoggerModule } from '../logger/logger.module'
@@ -18,6 +19,7 @@ import { AppLoggerModule } from '../logger/logger.module'
     AppLoggerModule,
     ActionTokensModule,
     MailerModule,
+    CdnModule,
   ],
   providers: [ProjectService],
   exports: [ProjectService],

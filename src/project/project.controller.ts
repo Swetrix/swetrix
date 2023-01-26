@@ -24,6 +24,7 @@ import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
 
 import { ProjectService, processProjectUser } from './project.service'
+import { CdnService } from 'src/marketplace/cdn/cdn.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -55,6 +56,10 @@ import {
   updateProjectClickhouse,
   deleteProjectClickhouse,
 } from '../common/utils'
+
+import * as JSZip from 'jszip'
+import * as dayjs from 'dayjs'
+import * as json2csv from 'json2csv'
 
 // const updateProjectRedis = async (id: string, project: Project) => {
 //   const key = getRedisProjectKey(id)
@@ -100,6 +105,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
+    private readonly cdnService: CdnService,
   ) {}
 
   @Get('/')
@@ -804,5 +810,80 @@ export class ProjectController {
       await this.projectService.updateShare(shareId, share)
       await this.actionTokensService.delete(id)
     }
+  }
+
+  @Get('/export/:pid')
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 200, type: Project })
+  async exportProject(
+    @Param('pid') pid: string,
+    @Query() date: {
+      from: string
+      to: string
+    },
+    @CurrentUserId() uid: string,
+  ): Promise<string> {
+    this.logger.log({ uid, pid }, 'GET /project/export/:pid')
+
+    let project = await this.projectService.findOne(pid, {
+      relations: ['admin', 'share', 'share.user'],
+    })
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${pid} does not exist`)
+    }
+
+    this.projectService.allowedToManage(project, uid, project.admin.roles)
+
+    const fromDateTimestamp = dayjs(date.from).unix()
+    const toDateTimestamp = dayjs(date.to).unix()
+
+    const data = await clickhouse.query(
+      `SELECT * FROM analytics WHERE created >= '${fromDateTimestamp}' AND created <= '${toDateTimestamp}' AND  pid='${pid}' FORMAT CSVWithNames`,
+    ).toPromise() as unknown
+
+    const zip = new JSZip()
+
+    Object.keys(data[0]).forEach((key) => {
+      const csvDate = json2csv.parse(data, {
+        fields: [key],
+      })
+      zip.file(`${key}.csv`, csvDate)
+      console.log(key)
+    })
+
+    const zipData = await zip.generateAsync({ type: 'nodebuffer' })
+
+    const { filename } = await this.cdnService.uploadBuffer(zipData, new Date().toLocaleString())
+
+    // const zip = new JSZip();
+
+    // const _data = zip.folder('data')
+
+    // Object.keys(data[0]).forEach((key) => {
+    //   const csvData = json2csv.parse(data, {
+    //     fields: [key],
+    //   })
+    //   _data.file(`${key}.csv`, csvData)
+    //   console.log(key);
+    // })
+
+    // const zipData = await 
+
+    // const { filename } = await this.cdnService.uploadFile(zipData)
+
+    project = {
+      ...project,
+      exportData: {
+        filename,
+        createdAt: new Date(),
+      }
+    }
+
+    await this.projectService.create(project)
+
+    return filename
   }
 }

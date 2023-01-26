@@ -13,16 +13,22 @@ export class CdnService {
     private readonly configService: ConfigService,
   ) {}
 
-  async uploadFile(file: Express.Multer.File): Promise<{ filename: string }> {
+  async uploadFile(file: Express.Multer.File | Buffer, originalname?: string): Promise<{ filename: string }> {
     try {
-      const filePath = `${tmpdir()}/${file.originalname}`
-
-      await writeFile(filePath, file.buffer)
+      let filePath
+      if (file instanceof Buffer) {
+        filePath = `${tmpdir()}/${originalname}`
+        console.log(filePath)
+        await writeFile(filePath, file)
+      } else {
+        filePath = `${tmpdir()}/${file.originalname}`
+        await writeFile(filePath, file.buffer)
+      }
+      console.log('saved')
 
       const form = new FormData()
       form.append('token', this.configService.get('CDN_ACCESS_TOKEN'))
       form.append('file', createReadStream(filePath))
-
       const { data } = await this.httpService.axiosRef.post('file', form, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -30,6 +36,26 @@ export class CdnService {
       })
 
       await unlink(filePath)
+      return data
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  async uploadBuffer(buffer: Buffer, originalname: string): Promise<{ filename: string }> {
+    try {
+      const filePath = `${tmpdir()}/${originalname}`
+
+      const form = new FormData()
+      form.append('token', this.configService.get('CDN_ACCESS_TOKEN'))
+      form.append('file', buffer, new Date().toISOString() + '.zip')
+
+      const { data } = await this.httpService.axiosRef.post('file', form, {
+        headers: {
+          'Content-Type':  `multipart/form-data; boundary=${form.getBoundary()}`,
+        },
+      })
+
       return data
     } catch (error) {
       console.error(error)
