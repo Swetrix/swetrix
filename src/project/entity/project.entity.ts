@@ -69,7 +69,4 @@ export class Project {
   )
   @JoinTable()
   extensions: ExtensionToProject[]
-
-  @Column('simple-json', { nullable: true, default: null })
-  exportData: any
 }

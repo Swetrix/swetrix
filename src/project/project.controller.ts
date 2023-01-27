@@ -24,7 +24,6 @@ import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
 
 import { ProjectService, processProjectUser } from './project.service'
-import { CdnService } from 'src/marketplace/cdn/cdn.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -56,10 +55,6 @@ import {
   updateProjectClickhouse,
   deleteProjectClickhouse,
 } from '../common/utils'
-
-import * as JSZip from 'jszip'
-import * as dayjs from 'dayjs'
-import * as json2csv from 'json2csv'
 
 // const updateProjectRedis = async (id: string, project: Project) => {
 //   const key = getRedisProjectKey(id)
@@ -105,7 +100,6 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-    private readonly cdnService: CdnService,
   ) {}
 
   @Get('/')
