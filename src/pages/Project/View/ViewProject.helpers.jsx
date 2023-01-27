@@ -18,7 +18,7 @@ import _fill from 'lodash/fill'
 import _reduce from 'lodash/reduce'
 import JSZip from 'jszip'
 
-import { TimeFormat, tbsFormatMapper, tbsFormatMapperXAxis } from 'redux/constants'
+import { TimeFormat, tbsFormatMapper, tbsFormatMapper24h } from 'redux/constants'
 import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
 
@@ -317,7 +317,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
       x: {
         tick: {
           fit: true,
-          format: timeFormat === TimeFormat['24-hour'] ? (x) => d3.timeFormat(tbsFormatMapperXAxis[timeBucket])(x) : null,
+          format: timeFormat === TimeFormat['24-hour'] ? (x) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',

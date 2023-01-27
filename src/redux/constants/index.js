@@ -81,7 +81,7 @@ export const tbsFormatMapper = {
   month: '%d %B %Y',
 }
 
-export const tbsFormatMapperXAxis = {
+export const tbsFormatMapper24h = {
   hour: '%H:%M',
   day: '%d %B',
   week: '%d %B',
