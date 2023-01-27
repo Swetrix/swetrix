@@ -34,8 +34,6 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
     }
   }, [show]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  console.log(liveInfo)
-
   return (
     <OutsideClickHandler
       onOutsideClick={() => setShow(false)}
