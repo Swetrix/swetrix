@@ -36,7 +36,7 @@ import routes from 'routes'
 import { trackCustom } from 'utils/analytics'
 import { getCookie, setCookie } from 'utils/cookie'
 import {
-  confirmEmail, exportUserData, generateApiKey, deleteApiKey, setTheme, setTimeFormat,
+  confirmEmail, exportUserData, generateApiKey, deleteApiKey, setTheme,
 } from 'api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
@@ -58,6 +58,7 @@ const UserSettings = ({
     email: user.email || '',
     password: '',
     repeat: '',
+    timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
   const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -72,7 +73,6 @@ const UserSettings = ({
   const [error, setError] = useState(null)
   const [copied, setCopied] = useState(false)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
-  const [timeFormat, setTimeFormatState] = useState(user.timeFormat || TimeFormat['12-hour'])
 
   const copyTimerRef = useRef(null)
 
@@ -281,14 +281,13 @@ const UserSettings = ({
   }
 
   const setAsyncTimeFormat = async () => {
-    await setTimeFormat(timeFormat)
-      .then((response) => {
-        const { data } = response
-        updateUserData(data)
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit({
+        ...form,
       })
-      .catch((e) => {
-        updateProfileFailed(e)
-      })
+    }
   }
 
   return (
@@ -376,11 +375,11 @@ const UserSettings = ({
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>
               <Select
-                title={timeFormat}
+                title={form.timeFormat}
                 label={t('profileSettings.selectTimeFormat')}
                 className='w-full'
                 items={[TimeFormat['12-hour'], TimeFormat['24-hour']]}
-                onSelect={(f) => setTimeFormatState(f)}
+                onSelect={(f) => setForm({ ...form, timeFormat: f })}
               />
             </div>
           </div>
