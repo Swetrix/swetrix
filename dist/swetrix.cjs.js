@@ -285,7 +285,7 @@ function trackViews(options) {
             return;
         }
         // We need to verify that document.readyState is complete for the performance stats to be collected correctly.
-        if (document.readyState === 'complete') {
+        if (typeof document === 'undefined' || document.readyState === 'complete') {
             resolve(exports.LIB_INSTANCE.trackPageViews(options));
         }
         else {
