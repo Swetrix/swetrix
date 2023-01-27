@@ -81,6 +81,18 @@ export const tbsFormatMapper = {
   month: '%d %B %Y',
 }
 
+export const tbsFormatMapperXAxis = {
+  hour: '%H:%M',
+  day: '%d %B',
+  week: '%d %B',
+  month: '%d %B %Y',
+}
+
+export const TimeFormat = {
+  '12-hour': '12-hour',
+  '24-hour': '24-hour',
+}
+
 export const FREE_TIER_KEY = 'free'
 
 // a dedicated variable is needed for paid tier checking

@@ -19,7 +19,7 @@ import utc from 'dayjs/plugin/utc'
 
 import {
   reportFrequencies, DEFAULT_TIMEZONE, WEEKLY_REPORT_FREQUENCY, CONFIRMATION_TIMEOUT,
-  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, THEME_TYPE,
+  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, THEME_TYPE, TimeFormat,
 } from 'redux/constants'
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -36,7 +36,7 @@ import routes from 'routes'
 import { trackCustom } from 'utils/analytics'
 import { getCookie, setCookie } from 'utils/cookie'
 import {
-  confirmEmail, exportUserData, generateApiKey, deleteApiKey, setTheme,
+  confirmEmail, exportUserData, generateApiKey, deleteApiKey, setTheme, setTimeFormat,
 } from 'api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
@@ -72,6 +72,7 @@ const UserSettings = ({
   const [error, setError] = useState(null)
   const [copied, setCopied] = useState(false)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
+  const [timeFormat, setTimeFormatState] = useState(user.timeFormat || TimeFormat['12-hour'])
 
   const copyTimerRef = useRef(null)
 
@@ -279,6 +280,17 @@ const UserSettings = ({
     }
   }
 
+  const setAsyncTimeFormat = async () => {
+    await setTimeFormat(timeFormat)
+      .then((response) => {
+        const { data } = response
+        updateUserData(data)
+      })
+      .catch((e) => {
+        updateProfileFailed(e)
+      })
+  }
+
   return (
     <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
@@ -356,6 +368,23 @@ const UserSettings = ({
             </div>
           </div>
           <Button className='mt-4' onClick={handleTimezoneSave} primary large>
+            {t('common.save')}
+          </Button>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.timeFormat')}
+          </h3>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+            <div>
+              <Select
+                title={timeFormat}
+                label={t('profileSettings.selectTimeFormat')}
+                className='w-full'
+                items={[TimeFormat['12-hour'], TimeFormat['24-hour']]}
+                onSelect={(f) => setTimeFormatState(f)}
+              />
+            </div>
+          </div>
+          <Button className='mt-4' onClick={setAsyncTimeFormat} primary large>
             {t('common.save')}
           </Button>
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
