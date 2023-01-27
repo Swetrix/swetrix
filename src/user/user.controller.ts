@@ -501,6 +501,12 @@ export class UserController {
         )
       }
 
+      if (userDTO.timeFormat && user.timeFormat !== userDTO.timeFormat) {
+        await this.userService.update(id, {
+          timeFormat: userDTO.timeFormat,
+        })
+      }
+
       // delete internal properties from userDTO before updating it
       // todo: use _pick instead of _omit
       const userToUpdate = _omit(userDTO, [
@@ -591,23 +597,5 @@ export class UserController {
     })
 
     return user
-  }
-
-  @Put('/change-time-format')
-  @UseGuards(RolesGuard)
-  @UseGuards(SelfhostedGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async changeTimeFormat(
-    @CurrentUserId() userId: string,
-    @Body('timeFormat') timeFormat: TimeFormat,
-  ): Promise<User> {
-    this.logger.log({ userId, timeFormat }, 'PUT /user/change-time-format')
-    const user = await this.userService.findOneWhere({ id: userId })
-    if (user.timeFormat === timeFormat) {
-      throw new BadRequestException('Time format is already set to this value')
-    }
-
-    await this.userService.update(userId, { timeFormat })
-    return this.userService.omitSensitiveData(user)
   }
 }

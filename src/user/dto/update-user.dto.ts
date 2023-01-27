@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail } from 'class-validator'
+import { TimeFormat } from '../entities/user.entity'
 
 export class UpdateUserProfileDTO {
   @ApiProperty({ example: 'you@example.com', required: true })
@@ -17,4 +18,7 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ example: '1234567890' })
   telegramChatId: string | null
+
+  @ApiProperty({ example: '24-hour', enum: TimeFormat })
+  timeFormat: string
 }

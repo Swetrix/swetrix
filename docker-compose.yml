@@ -1,37 +1,29 @@
-version: '3'
+version: ${DOCKER_COMPOSE_VERSION}
 services:
-  # clickhouse:
-  #   image: clickhouse/clickhouse-server:${CLICKHOUSE_VERSION}
-  #   container_name: clickhouse
-  #   environment:
-  #     - CLICKHOUSE_USER=${CLICKHOUSE_USER}
-  #     - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
-  #     - CLICKHOUSE_DB=${CLICKHOUSE_DB}
-  #   ports:
-  #     - '8123:8123'
-  #   volumes:
-  #     - clickhouse:/var/lib/clickhouse
   mysql:
     image: mysql:${MYSQL_VERSION}
-    container_name: mysql
+    container_name: swetrix-api-mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
     ports:
-      - '3306:3306'
-    volumes:
-      - mysql:/var/lib/mysql
+      - ${MYSQL_PORT}:3306
   redis:
     image: redis:${REDIS_VERSION}
-    container_name: redis
-    # command: redis-server --requirepass ${REDIS_PASSWORD}
+    container_name: swetrix-api-redis
     ports:
-      - '6379:6379'
-    volumes:
-      - redis:/var/lib/redis
-volumes:
-  # clickhouse:
-  mysql:
-  redis:
+      - ${REDIS_PORT}:6379
+  clickhouse:
+    image: clickhouse/clickhouse-server:${CLICKHOUSE_VERSION}
+    container_name: swetrix-api-clickhouse
+    ports:
+      - ${CLICKHOUSE_PORT}:8123
+  redis-commander:
+    image: rediscommander/redis-commander:${REDIS_COMMANDER_VERSION}
+    container_name: swetrix-api-redis-commander
+    environment:
+      - REDIS_HOSTS=redis
+    ports:
+      - ${REDIS_COMMANDER_PORT}:8081
+networks:
+  default:
+    name: swetrix-api
