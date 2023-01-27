@@ -46,10 +46,4 @@ export class ProjectDTO {
       "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
   })
   public: boolean
-
-  @ApiProperty({
-    required: false,
-    description: 'Export data from the project',
-  })
-  exportData: boolean
 }

@@ -37,6 +37,7 @@ import {
   MAX_EMAIL_REQUESTS,
   PlanCode,
   Theme,
+  TimeFormat,
 } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -89,7 +90,6 @@ export class UserController {
     return await this.userService.paginate({ take, skip })
   }
 
-  // set theme
   @Put('/theme')
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
@@ -591,5 +591,23 @@ export class UserController {
     })
 
     return user
+  }
+
+  @Put('/change-time-format')
+  @UseGuards(RolesGuard)
+  @UseGuards(SelfhostedGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async changeTimeFormat(
+    @CurrentUserId() userId: string,
+    @Body('timeFormat') timeFormat: TimeFormat,
+  ): Promise<User> {
+    this.logger.log({ userId, timeFormat }, 'PUT /user/change-time-format')
+    const user = await this.userService.findOneWhere({ id: userId })
+    if (user.timeFormat === timeFormat) {
+      throw new BadRequestException('Time format is already set to this value')
+    }
+
+    await this.userService.update(userId, { timeFormat })
+    return this.userService.omitSensitiveData(user)
   }
 }

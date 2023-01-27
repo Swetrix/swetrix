@@ -489,28 +489,4 @@ export class TaskManagerService {
       }
     }
   }
-
-  @Cron(CronExpression.EVERY_HOUR)
-  async checkProjects(): Promise<void> {
-    const projects = await this.projectService.findWhere({
-      active: true,
-    })
-
-    for (let i = 0; i < _size(projects); ++i) {
-      const project = projects[i]
-
-      if (project?.exportData?.filename) {
-        const { createdAt } = project.exportData
-        const now = new Date()
-
-        if (now.getTime() - createdAt.getTime() > 24 * 60 * 60 * 1000) {
-          await this.projectService.update(project.id, {
-            ...project,
-            exportData: null,
-          })
-        }
-      }
-    }
-  }
-
 }
