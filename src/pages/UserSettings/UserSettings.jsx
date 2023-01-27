@@ -369,13 +369,14 @@ const UserSettings = ({
           <Button className='mt-4' onClick={handleTimezoneSave} primary large>
             {t('common.save')}
           </Button>
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.timeFormat')}
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>
               <Select
-                title={form.timeFormat}
+                title={t(`profileSettings.${form.timeFormat}`)}
                 label={t('profileSettings.selectTimeFormat')}
                 className='w-full'
                 items={[TimeFormat['12-hour'], TimeFormat['24-hour']]}
