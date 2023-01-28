@@ -45,6 +45,8 @@ import NoSharedProjects from './components/NoSharedProjects'
 
 dayjs.extend(utc)
 
+const timeFormatArray = _map(TimeFormat, (key) => key)
+
 const UserSettings = ({
   onDelete, onDeleteProjectCache, removeProject, removeShareProject, setUserShareData,
   setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData, login,
@@ -73,6 +75,7 @@ const UserSettings = ({
   const [error, setError] = useState(null)
   const [copied, setCopied] = useState(false)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
 
   const copyTimerRef = useRef(null)
 
@@ -379,8 +382,8 @@ const UserSettings = ({
                 title={t(`profileSettings.${form.timeFormat}`)}
                 label={t('profileSettings.selectTimeFormat')}
                 className='w-full'
-                items={[TimeFormat['12-hour'], TimeFormat['24-hour']]}
-                onSelect={(f) => setForm({ ...form, timeFormat: f })}
+                items={translatedTimeFormat}
+                onSelect={(f) => setForm({ ...form, timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)] })}
               />
             </div>
           </div>
