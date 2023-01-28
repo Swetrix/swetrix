@@ -16,13 +16,11 @@ export class CdnService {
   async uploadFile(file: Express.Multer.File): Promise<{ filename: string }> {
     try {
       const filePath = `${tmpdir()}/${file.originalname}`
-
       await writeFile(filePath, file.buffer)
 
       const form = new FormData()
       form.append('token', this.configService.get('CDN_ACCESS_TOKEN'))
       form.append('file', createReadStream(filePath))
-
       const { data } = await this.httpService.axiosRef.post('file', form, {
         headers: {
           'Content-Type': 'multipart/form-data',

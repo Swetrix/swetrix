@@ -83,6 +83,11 @@ export enum Theme {
   christmas = 'christmas',
 }
 
+export enum TimeFormat {
+  '12-hour' = '12-hour',
+  '24-hour' = '24-hour',
+}
+
 export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 additional ones
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
@@ -214,6 +219,13 @@ export class User {
     default: false,
   })
   isTelegramChatIdConfirmed: boolean
+
+  @Column({
+    type: 'enum',
+    enum: TimeFormat,
+    default: TimeFormat['12-hour'],
+  })
+  timeFormat: TimeFormat
 
   @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
   @JoinTable()
