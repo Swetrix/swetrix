@@ -371,7 +371,7 @@
     "12-hour": "12 hour",
     "24-hour": "24 hour",
     "timeFormat": "Time notation",
-    "selectTimeFormat": "This will be the time notation, it is only used to visualize the data on the chart in 12 hour or 24 hour format"
+    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format."
   },
   "dashboard": {
     "newProject": "New project",
