@@ -19,7 +19,7 @@ import utc from 'dayjs/plugin/utc'
 
 import {
   reportFrequencies, DEFAULT_TIMEZONE, WEEKLY_REPORT_FREQUENCY, CONFIRMATION_TIMEOUT,
-  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, THEME_TYPE,
+  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, THEME_TYPE, TimeFormat,
 } from 'redux/constants'
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -58,6 +58,7 @@ const UserSettings = ({
     email: user.email || '',
     password: '',
     repeat: '',
+    timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
   const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -279,6 +280,16 @@ const UserSettings = ({
     }
   }
 
+  const setAsyncTimeFormat = async () => {
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit({
+        ...form,
+      })
+    }
+  }
+
   return (
     <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
@@ -356,6 +367,24 @@ const UserSettings = ({
             </div>
           </div>
           <Button className='mt-4' onClick={handleTimezoneSave} primary large>
+            {t('common.save')}
+          </Button>
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.timeFormat')}
+          </h3>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+            <div>
+              <Select
+                title={t(`profileSettings.${form.timeFormat}`)}
+                label={t('profileSettings.selectTimeFormat')}
+                className='w-full'
+                items={[TimeFormat['12-hour'], TimeFormat['24-hour']]}
+                onSelect={(f) => setForm({ ...form, timeFormat: f })}
+              />
+            </div>
+          </div>
+          <Button className='mt-4' onClick={setAsyncTimeFormat} primary large>
             {t('common.save')}
           </Button>
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
