@@ -37,6 +37,7 @@ import {
   MAX_EMAIL_REQUESTS,
   PlanCode,
   Theme,
+  TimeFormat,
 } from './entities/user.entity'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -89,7 +90,6 @@ export class UserController {
     return await this.userService.paginate({ take, skip })
   }
 
-  // set theme
   @Put('/theme')
   @UseGuards(RolesGuard)
   @UseGuards(SelfhostedGuard)
@@ -499,6 +499,12 @@ export class UserController {
             },
           },
         )
+      }
+
+      if (userDTO.timeFormat && user.timeFormat !== userDTO.timeFormat) {
+        await this.userService.update(id, {
+          timeFormat: userDTO.timeFormat,
+        })
       }
 
       // delete internal properties from userDTO before updating it
