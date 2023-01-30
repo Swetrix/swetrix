@@ -27,7 +27,7 @@ export default function* signupWorder({ payload: { data: rawData, callback, t } 
     callback(true)
   } catch (error) {
     const message = error.message || (typeof error === 'string' ? error : error[0])
-    yield put(errorsActions.signupFailed(t([`apiNotifications.${message}`, 'apiNotifications.somethingWentWrong'])))
+    yield put(errorsActions.signupFailed(message || 'apiNotifications.somethingWentWrong'))
     callback(false)
   } finally {
     yield put(authActions.finishLoading())

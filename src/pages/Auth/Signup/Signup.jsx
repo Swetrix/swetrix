@@ -18,6 +18,7 @@ import {
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
+import _omit from 'lodash/omit'
 
 const Signup = ({ signup }) => {
   const { t } = useTranslation('common')
@@ -70,7 +71,7 @@ const Signup = ({ signup }) => {
   const onSubmit = data => {
     if (!isLoading) {
       setIsLoading(true)
-      signup(data, t, (result) => {
+      signup(_omit(data, 'tos'), t, (result) => {
         if (result) {
           trackCustom('SIGNUP')
         } else {

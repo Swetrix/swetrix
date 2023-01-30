@@ -164,7 +164,7 @@ export const exportUserData = () =>
 
 export const createNewPassword = (id, password) =>
   api
-    .post(`v1/auth/password-reset/${id}`, { password })
+    .post(`v1/auth/reset-password/confirm/${id}`, { newPassword: password })
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message

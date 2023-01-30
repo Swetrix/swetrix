@@ -35,7 +35,7 @@ export default function* singinWorker({ payload: { credentials, callback } }) {
     callback(true, false)
   } catch (error) {
     const err = _isObject(error) ? error.message : error
-    yield put(errorsActions.loginFailed(err))
+    yield put(errorsActions.loginFailed(err || 'apiNotifications.somethingWentWrong'))
     callback(false, false)
   } finally {
     yield put(authActions.finishLoading())
