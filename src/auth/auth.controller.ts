@@ -94,6 +94,10 @@ export class AuthController {
       }
     }
 
+    if (body.email === body.password) {
+      throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
+    }
+
     const newUser = await this.authService.createUnverifiedUser(
       body.email,
       body.password,
