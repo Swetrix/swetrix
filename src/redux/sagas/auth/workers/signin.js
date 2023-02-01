@@ -20,6 +20,7 @@ export default function* singinWorker({ payload: { credentials, callback } }) {
 
     if (user.isTwoFactorAuthenticationEnabled) {
       yield call(setAccessToken, accessToken, true)
+      yield call(setRefreshToken, refreshToken)
       yield put(authActions.updateUserData(user))
       callback(false, true)
       return
