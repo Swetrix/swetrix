@@ -103,7 +103,7 @@ export class AuthController {
       body.password,
     )
 
-    const jwtTokens = await this.authService.generateJwtTokens(newUser.id)
+    const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
 
     return {
       accessToken: jwtTokens.accessToken,
@@ -139,7 +139,7 @@ export class AuthController {
 
     await this.authService.sendTelegramNotification(user.id, headers, ip)
 
-    const jwtTokens = await this.authService.generateJwtTokens(user.id)
+    const jwtTokens = await this.authService.generateJwtTokens(user.id, !user.isTwoFactorAuthenticationEnabled)
 
     if (user.isTwoFactorAuthenticationEnabled) {
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])

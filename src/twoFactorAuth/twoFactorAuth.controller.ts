@@ -171,6 +171,11 @@ export class TwoFactorAuthController {
       throw new BadRequestException('Wrong authentication code')
     }
 
-    return await this.authService.generateJwtTokens(user.id, true)
+    const tokens = await this.authService.generateJwtTokens(user.id, true)
+
+    return {
+      ...tokens,
+      user: this.userService.omitSensitiveData(user),
+    }
   }
 }
