@@ -50,6 +50,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard'
 import { UserType } from '../../user/entities/user.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { Auth } from 'src/auth/decorators'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -73,6 +74,7 @@ export class ExtensionsController {
   ) {}
 
   @Get('installed')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   async getInstalledExtensions(
     @Query() queries: GetInstalledExtensionsQueriesDto,
     @CurrentUserId() userId: string,
@@ -226,6 +228,7 @@ export class ExtensionsController {
     type: String,
   })
   @Get('published')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   async getAllPublishedExtensions(
     @Query() queries: GetAllExtensionsQueries,
     @CurrentUserId() userId: string,
@@ -408,6 +411,7 @@ export class ExtensionsController {
   }
 
   @Post()
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'mainImage', maxCount: 1 },
@@ -691,6 +695,7 @@ export class ExtensionsController {
   }
 
   @Post(':extensionId/install')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   async installExtension(
     @Param() params: InstallExtensionParamsDto,
     @Body() body: InstallExtensionBodyDto,
@@ -756,6 +761,7 @@ export class ExtensionsController {
   }
 
   @Delete(':extensionId/uninstall')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   async uninstallExtension(
     @Param() params: UninstallExtensionParamsDto,
     @Body() body: UninstallExtensionBodyDto,
