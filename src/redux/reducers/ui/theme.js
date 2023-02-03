@@ -38,7 +38,7 @@ const getInitialTheme = () => {
 const getInitialState = () => {
   return {
     theme: getInitialTheme(),
-    type: THEME_TYPE.christmas,
+    type: THEME_TYPE.classic,
   }
 }
 

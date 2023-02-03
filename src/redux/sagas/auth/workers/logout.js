@@ -14,7 +14,7 @@ export default function* logoutWorker({ payload: { basedOn401Error } = {} }) {
       yield put(UIActions.setGeneralStats(stats))
     }
 
-    yield put(UIActions.setThemeType(THEME_TYPE.christmas))
+    yield put(UIActions.setThemeType(THEME_TYPE.classic))
   } catch (e) {
     debug('Error while getting general stats data: %s', e)
   }
