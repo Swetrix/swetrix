@@ -39,6 +39,7 @@ const Header = ({ authenticated, theme, themeType }) => {
 
   return (
     <Popover className='relative bg-white'>
+      {/* Computer / Laptop / Tablet layout header */}
       <header className='bg-indigo-600 dark:bg-gray-750 relative overflow-x-clip'>
         {themeType === THEME_TYPE.christmas && (
           <div className='santa-claus group'>
@@ -62,6 +63,7 @@ const Header = ({ authenticated, theme, themeType }) => {
         <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
           <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-gray-300 lg:border-none'>
             <div className='flex items-center'>
+              {/* Logo */}
               <Link to={routes.main}>
                 <span className='sr-only'>Swetrix</span>
                 {themeType === THEME_TYPE.christmas ? (
@@ -70,6 +72,7 @@ const Header = ({ authenticated, theme, themeType }) => {
                   <img className='h-10' src='/assets/logo_white.svg' alt='' />
                 )}
               </Link>
+
               <div className='hidden ml-10 space-x-1 lg:flex'>
                 <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
                   <RssIcon className='w-5 h-5 mr-1' />
@@ -101,6 +104,7 @@ const Header = ({ authenticated, theme, themeType }) => {
               </div>
             </div>
             <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
+              {/* Theme switch */}
               {theme === 'dark' ? (
                 <div className='transition-all duration-1000 ease-in-out rotate-180'>
                   <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
@@ -110,6 +114,8 @@ const Header = ({ authenticated, theme, themeType }) => {
                   <MoonIcon onClick={switchTheme} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
                 </div>
               )}
+
+              {/* Language selector */}
               <Dropdown
                 items={whitelist}
                 buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
@@ -122,7 +128,9 @@ const Header = ({ authenticated, theme, themeType }) => {
                 )}
                 labelExtractor={(lng) => (
                   <div className='flex'>
-                    <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt='' />
+                    <div className='pt-1'>
+                      <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
+                    </div>
                     {languages[lng]}
                   </div>
                 )}
@@ -156,6 +164,7 @@ const Header = ({ authenticated, theme, themeType }) => {
               )}
             </div>
             <div className='md:hidden flex justify-center items-center'>
+              {/* Theme switch */}
               {theme === 'dark' ? (
                 <div className='transition-all duration-1000 ease-in-out rotate-180'>
                   <SunIcon onClick={switchTheme} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
@@ -203,6 +212,7 @@ const Header = ({ authenticated, theme, themeType }) => {
         </nav>
       </header>
 
+      {/* Mobile header popup */}
       <Transition
         as={Fragment}
         enter='duration-200 ease-out'
@@ -238,6 +248,7 @@ const Header = ({ authenticated, theme, themeType }) => {
             </div>
             <div className='py-6 px-5 space-y-6'>
               <div className='grid grid-cols-1 gap-y-4'>
+                {/* Language selector */}
                 <Dropdown
                   items={whitelist}
                   buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
@@ -250,7 +261,9 @@ const Header = ({ authenticated, theme, themeType }) => {
                   )}
                   labelExtractor={(lng) => (
                     <div className='flex'>
-                      <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt='' />
+                      <div className='pt-1'>
+                        <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
+                      </div>
                       {languages[lng]}
                     </div>
                   )}
