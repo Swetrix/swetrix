@@ -631,7 +631,7 @@ const Panel = ({
       })}
       {/* for pagination in tabs */}
       {_size(keys) > 5 && (
-        <div className='absolute bottom-0 w-card-toggle'>
+        <div className='absolute bottom-0 w-card-toggle-sm sm:w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <span
               className={cx('text-gray-500 dark:text-gray-200 font-light', {
