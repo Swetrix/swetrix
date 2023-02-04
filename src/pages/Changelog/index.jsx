@@ -14,6 +14,12 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-02-04',
+    changes: [
+      'Added a Polish translation.',
+    ],
+  },
+  {
     date: '2023-01-28',
     changes: [
       'Added time notation setting: now you can display chart hours in 12-hour or 24-hour format.',
