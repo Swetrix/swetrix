@@ -42,7 +42,7 @@ const Lines = () => (
   <div className='relative pointer-events-none'>
     {/* 1 */}
     <div className='absolute rotate-12 -right-0 bottom-[4.2rem] xl:bottom-20 h-px w-[400%] bg-gradient-to-l from-slate-400 opacity-20' />
-    <div className='absolute rotate-12 -left-32 top-3 mt-[-0.5px] h-[2px] w-28 rounded-full bg-gradient-to-r from-blue-500' />
+    <div className='absolute rotate-12 -left-32 top-3 xl:top-[0.78rem] mt-[-0.5px] h-[2px] w-28 rounded-full bg-gradient-to-r from-blue-500' />
 
     {/* 2 */}
     <div className='absolute rotate-6 right-[-48rem] top-[32rem] h-px w-[800%] bg-gradient-to-l from-slate-400 opacity-10' />
