@@ -367,7 +367,11 @@
     },
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
-    "chatID": "Chat ID"
+    "chatID": "Chat ID",
+    "12-hour": "12 hour",
+    "24-hour": "24 hour",
+    "timeFormat": "Time notation",
+    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format."
   },
   "dashboard": {
     "newProject": "New project",
@@ -600,7 +604,7 @@
       "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} months of data retention.",
       "evXPlanIncl": "Everything {{plan}} plan includes.",
-      "smallBusiSupport": "By buying this in you are supporting a small business.",
+      "smallBusiSupport": "By buying this you are supporting a small business.",
       "dataExports": "Unlimited data exports.",
       "dataOwnership": "100% data ownership.",
       "noBanners": "No cookie banners required.",

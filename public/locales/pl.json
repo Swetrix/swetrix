@@ -24,13 +24,13 @@
   "common": {
     "features": "Funkcje",
     "docs": "Dokumentacja",
-    "getStarted": "Rozpocznij",
+    "getStarted": "Rejestracja",
     "billing": "Rozliczenie",
     "pricing": "Cennik",
     "faqs": "FAQ",
     "you": "Konto",
     "explore": "Przeglądaj",
-    "liveDemo": "Demo",
+    "liveDemo": "Zobacz demo",
     "dashboard": "Panel",
     "logout": "Wyloguj",
     "save": "Zapisz",
@@ -65,7 +65,7 @@
   },
   "main": {
     "ukrSupport": "Wspieraj ukraińską armię w walce z rosyjską inwazją.",
-    "slogan": "<span>Najlepsza analityka open-source</span> dla wszystkich Twoich potrzeb.",
+    "slogan": "<span>Najlepszy serwis analityczny</span>, który spełni wszystkie Twoje potrzeby.",
     "trackEveryMetric": "Śledź każdą metrykę, której potrzebujesz, bez naruszania prywatności swoich użytkowników.",
     "description": "Swetrix zapewnia zaawansowaną i konfigurowalną usługę analityczną dla Twoich aplikacji internetowych.",
     "start": "Rozpocznij za darmo",
@@ -73,7 +73,7 @@
     "signupTerms": "Rejestrując się, zgadzasz się na nasze <tos>Warunki handlowe</tos> i <pp>Politykę prywatności</pp>.",
     "techDetails": "Chcesz poznać więcej szczegółów technicznych?",
     "lookAtDocs": "Zajrzyj na stronę z dokumentacją i demo na żywo.",
-    "readyToStart": "Gotowy, aby zacząć?",
+    "readyToStart": "Gotowy, aby rozpocząć?",
     "exploreService": "Poznaj naszą usługę lub załóż konto.",
     "coreFeatures": {
       "title": "Główne funkcje analityczne",
@@ -134,8 +134,8 @@
         "desc": "Najdokładniejsze rozwiązanie analityczne do śledzenia wszystkich podstawowych metryk i zobaczenia PRAWIDŁOWYCH danych."
       },
       {
-        "name": "Raporty demo i geo",
-        "desc": "Tak, to standard. Ale śledzimy dokładnie, skąd pochodzą twoi użytkownicy, jak to jest."
+        "name": "Dane demograficzne i geolokalizacja",
+        "desc": "Tak, to standard. Ale śledzimy dokładnie, skąd pochodzą twoi użytkownicy."
       },
       {
         "name": "Śledzenie metryk UTM",
@@ -268,7 +268,7 @@
       "tosError": "Musisz zaakceptować nasz regulamin i politykę prywatności, aby móc korzystać z naszych usług.",
       "email": "Email",
       "signin": "Zaloguj się",
-      "checkLeakedPassword": "Sprawdź, czy hasło wyciekło",
+      "checkLeakedPassword": "Sprawdź, czy Twoje hasło wyciekło",
       "checkLeakedPasswordDesc": "Po włączeniu sprawdzamy hasło z bazą danych <db>{{database}}</db>. Nie wysyłamy twojego hasła do usługi. Najpierw hashujemy twoje hasło (używając SHA1) i wysyłamy tylko pierwsze 5 znaków tego hasha do usługi. Serwis zwraca wszystkie wyciekłe hasła, które zaczynają się od tych 5 znaków. Na naszym końcu sprawdzamy, czy jedno z nich pasuje do Twojego hasła. Pokażemy Ci ostrzeżenie, jeśli został on wyciekły wcześniej. Nigdy nie przechowujemy Twojego hasła w postaci zwykłego tekstu."
     }
   },
@@ -367,7 +367,11 @@
     },
     "addIntegration": "Dodaj integrację",
     "removeIntegration": "Usuń integrację",
-    "chatID": "ID czatu"
+    "chatID": "ID czatu",
+    "12-hour": "12 godzinna",
+    "24-hour": "24 godzinna",
+    "timeFormat": "Notacja czasowa",
+    "selectTimeFormat": "Będzie to notacja czasu używana na wykresie, służy ona jedynie do wizualizacji danych na wykresie w formacie 12 lub 24 godzinnym."
   },
   "dashboard": {
     "newProject": "Nowy projekt",
@@ -378,18 +382,18 @@
     "eventsXPercUsed": "Wykorzystałeś więcej niż {{amount}}% dostępnych zdarzeń w Twoim planie w tym miesiącu.",
     "noProjects": "Nie utworzyłeś jeszcze żadnego projektu",
     "createProject": "Utwórz nowy projekt tutaj, aby zacząć korzystać z naszych usług",
-    "active": "Aktywne",
+    "active": "Aktywny",
     "public": "Publiczne",
     "shared": "Udostępnione",
     "disabled": "Wyłączone",
-    "pageviews": "Wyświetlenia stron",
+    "pageviews": "Odsłony",
     "unique": "Unikalne wyświetlenia",
     "createdAt": "Utworzono dnia",
     "inc": "Wzrost o",
     "dec": "Spadek o",
     "liveVisitors": "Użytkownicy na żywo",
     "live": "Na żywo",
-    "bounceRate": "Wskaźnik odrzuceń",
+    "bounceRate": "Współczynnik odrzuceń",
     "viewsPerUnique": "Wyświetlenia na sesję",
     "trendlines": "Linie trendów",
     "invitationFor": "Zaproszenie do {{project}}",
@@ -436,9 +440,9 @@
     "enabledHint": "Wyłączone alerty nie będą powiadamiać Cię o żadnych wydarzeniach.",
     "conditions": {
       "greater_than": "Więcej niż",
-      "greater_equal_than": "Większe lub równe",
+      "greater_equal_than": "Więcej lub równo",
       "less_than": "Mniej niż",
-      "less_equal_than": "Mniejsze lub równe"
+      "less_equal_than": "Mniej lub równo"
     },
     "metrics": {
       "page_views": "Wyświetlenia strony",
@@ -466,11 +470,11 @@
     "mapping": {
       "cc": "Kraj",
       "pg": "Strona",
-      "lc": "Wersja językowa",
-      "ref": "Referrer",
+      "lc": "Język",
+      "ref": "Źródło",
       "dv": "Rodzaj urządzenia",
       "br": "Przeglądarka",
-      "os": "Nazwa systemu",
+      "os": "System operacyjny",
       "lt": "Czas ładowania"
     },
     "overview": "Przegląd",
@@ -595,12 +599,12 @@
       "upToXVMo": "Do {{amount}} wizyt miesięcznie.",
       "xVMo": "{{amount}} wizyt miesięcznie.",
       "xAlertsSingular": "{{amount}} reguła alertu",
-      "xAlertsPlural": "{{amount}} reguł alertu",
+      "xAlertsPlural": "{{amount}} reguł alertu.",
       "upToXProjects": "Utwórz do {{amount}} projektów.",
       "upToXWebsites": "Dodaj do {{amount}} witryn.",
       "xMoDataRetention": "{{amount}} miesiące przechowywania danych.",
       "evXPlanIncl": "Wszystko, co zawiera plan {{plan}}.",
-      "smallBusiSupport": "Kupując to wspierasz małą firmę.",
+      "smallBusiSupport": "Kupując to, wspierasz małą firmę.",
       "dataExports": "Nielimitowany eksport danych.",
       "dataOwnership": "100% własności danych.",
       "noBanners": "Banery cookie nie są wymagane.",
@@ -636,7 +640,7 @@
     "billing": "Płatności",
     "contact": "Kontakt",
     "changelog": "Lista zmian",
-    "main": "Najlepsza analityka open-source dla wszystkich Twoich potrzeb"
+    "main": "Najlepszy serwis analityczny, który spełni wszystkie Twoje potrzeby"
   },
   "footer": {
     "slogan": "Najlepsze aplikacje potrzebują najlepszych usług.",
