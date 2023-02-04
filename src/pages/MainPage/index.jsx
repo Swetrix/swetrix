@@ -50,7 +50,7 @@ const Lines = () => (
 
     {/* 3 */}
     <div className='absolute rotate-0 top-44 right-0 bottom-0 h-px w-[400%] bg-gradient-to-l from-slate-400 opacity-20' />
-    <div className='absolute -rotate-90 top-28 -left-28 ml-[-0.5px] h-32 w-[2px] rounded-full bg-gradient-to-t from-violet-400' />
+    <div className='absolute -rotate-90 top-[7.03rem] -left-28 ml-[-0.5px] h-32 w-[2px] rounded-full bg-gradient-to-t from-violet-400' />
   </div>
 )
 
