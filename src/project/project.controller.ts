@@ -185,7 +185,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @UseGuards(SelfhostedGuard)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
+  @Auth([UserType.ADMIN])
   @ApiResponse({ status: 200, type: Project })
   async getAllProjects(
     @Query('take') take: number | undefined,

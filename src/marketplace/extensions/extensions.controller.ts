@@ -161,7 +161,7 @@ export class ExtensionsController {
     required: false,
     type: String,
   })
-  @Roles(UserType.ADMIN)
+  @Auth([UserType.ADMIN])
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin')
   async getAllExtensionsAdmin(@Query() queries: GetAllExtensionsQueries): Promise<{
