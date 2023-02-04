@@ -153,11 +153,12 @@ export const LOW_EVENTS_WARNING = 'low_events_warning'
 export const TOKEN = 'access_token'
 
 // List of languages with translations available
-export const whitelist = ['en', 'uk', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
+export const whitelist = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
 export const defaultLanguage = 'en'
 export const languages = {
   en: 'English',
   uk: 'Українська',
+  pl: 'Polski',
   de: 'Deutsch',
   sv: 'Svenska',
   el: 'Ελληνικά',
@@ -169,6 +170,7 @@ export const languages = {
 export const languageFlag = {
   en: 'GB',
   uk: 'UA',
+  pl: 'PL',
   de: 'DE',
   sv: 'SE',
   el: 'GR',

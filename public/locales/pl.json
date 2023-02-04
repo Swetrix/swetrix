@@ -1,0 +1,669 @@
+{
+  "apiNotifications": {
+    "somethingWentWrong": "Coś poszło nie tak, spróbuj ponownie",
+    "emailRegistered": "Użytkownik z tym adresem e-mail już istnieje",
+    "leakedPassword": "Podane hasło wyciekło, użyj innego",
+    "rateLimitHit": "Zbyt wiele żądań, spróbuj ponownie później",
+    "cancelSubFirst": "Najpierw anuluj płatną subskrypcję",
+    "accountDeleted": "Twoje konto zostało usunięte",
+    "accountDeleteError": "Wystąpił błąd podczas usuwania konta",
+    "roleUpdated": "Rola użytkownika została zmieniona",
+    "roleUpdateError": "Wystąpił błąd podczas zmiany roli użytkownika",
+    "userInvited": "Użytkownik został zaproszony do twojego projektu",
+    "userInviteError": "Wystąpił błąd podczas zaproszenia użytkownika do projektu",
+    "userRemoved": "Użytkownik został usunięty z projektu",
+    "userRemoveError": "Wystąpił błąd podczas usuwania użytkownika z projektu",
+    "quitProjectError": "Wystąpił błąd podczas opuszczania projektu",
+    "quitProject": "Opuściłeś projekt",
+    "acceptInvitationError": "Wystąpił błąd podczas akceptacji zaproszenia do projektu",
+    "acceptInvitation": "Zaproszenie do projektu zostało zaakceptowane",
+    "subscriptionUpdated": "Twoja subskrypcja została zaktualizowana",
+    "generate2FAError": "Wystąpił błąd podczas generowania kodu 2FA",
+    "integrationRemovalError": "Wystąpił błąd podczas usuwania integracji"
+  },
+  "common": {
+    "features": "Funkcje",
+    "docs": "Dokumentacja",
+    "getStarted": "Rozpocznij",
+    "billing": "Rozliczenie",
+    "pricing": "Cennik",
+    "faqs": "FAQ",
+    "you": "Konto",
+    "explore": "Przeglądaj",
+    "liveDemo": "Demo",
+    "dashboard": "Panel",
+    "logout": "Wyloguj",
+    "save": "Zapisz",
+    "continue": "Kontynuuj",
+    "error": "Błąd",
+    "close": "Zamknij",
+    "cancel": "Anuluj",
+    "gotIt": "Rozumiem",
+    "settings": "Ustawienia",
+    "openMenu": "Otwórz menu",
+    "closeMenu": "Zamknij menu",
+    "learnMore": "Dowiedz się więcej",
+    "yes": "Tak",
+    "no": "Nie",
+    "is": "jest",
+    "isNot": "nie jest",
+    "invite": "Zaproś",
+    "pending": "Oczekujące",
+    "notConnected": "Brak połączenia",
+    "connected": "Połączono",
+    "goBack": "Wróć",
+    "accept": "Akceptuj",
+    "reject": "Odmów",
+    "delete": "Usuń",
+    "quit": "Zamknij",
+    "enable": "Włącz",
+    "disable": "Wyłącz",
+    "copied": "Skopiowano",
+    "new": "Nowy",
+    "loading": "Ładowanie..",
+    "edit": "Edycja"
+  },
+  "main": {
+    "ukrSupport": "Wspieraj ukraińską armię w walce z rosyjską inwazją.",
+    "slogan": "<span>Najlepsza analityka open-source</span> dla wszystkich Twoich potrzeb.",
+    "trackEveryMetric": "Śledź każdą metrykę, której potrzebujesz, bez naruszania prywatności swoich użytkowników.",
+    "description": "Swetrix zapewnia zaawansowaną i konfigurowalną usługę analityczną dla Twoich aplikacji internetowych.",
+    "start": "Rozpocznij za darmo",
+    "signup": "Zarejestruj się, to nic nie kosztuje!",
+    "signupTerms": "Rejestrując się, zgadzasz się na nasze <tos>Warunki handlowe</tos> i <pp>Politykę prywatności</pp>.",
+    "techDetails": "Chcesz poznać więcej szczegółów technicznych?",
+    "lookAtDocs": "Zajrzyj na stronę z dokumentacją i demo na żywo.",
+    "readyToStart": "Gotowy, aby zacząć?",
+    "exploreService": "Poznaj naszą usługę lub załóż konto.",
+    "coreFeatures": {
+      "title": "Główne funkcje analityczne",
+      "desc": "Potężna i łatwa analityka, aby wyświetlić wszystkie metryki, których potrzebujesz. Bez plików cookies. Nie trzeba być naukowcem od danych, aby zrozumieć naszą analitykę."
+    },
+    "marketplace": {
+      "title": "Wbudowane rozszerzenia i marketplace",
+      "desc1": "Potrzebujesz dodatkowych funkcji? Połącz rozszerzenia lub napisz własne! Teraz nie musisz korzystać z wielu źródeł z różnych systemów - rozszerzaj i uzupełniaj wszystko w jednym!",
+      "desc2": "Instaluj rozszerzenia i sprzedawaj swoje własne. Wymyśliłeś świetne rozszerzenie dla swojej firmy? Świetnie! Opublikuj je na rynku i podziel się swoimi spostrzeżeniami z całą społecznością."
+    },
+    "visitAddons": "Odwiedź Swetrix Marketplace",
+    "privacy": {
+      "title": "Zgodność z zasadami prywatności",
+      "list": [
+        {
+          "label": "RODO",
+          "desc": "dane i przetwarzanie w strefie UE."
+        },
+        {
+          "label": "HIPAA",
+          "desc": "ochrona wrażliwych informacji."
+        },
+        {
+          "label": "PCI DSS",
+          "desc": "bezpieczeństwo danych płatniczych."
+        },
+        {
+          "label": "CCPA",
+          "desc": "kontrola nad danymi osobowymi."
+        }
+      ]
+    },
+    "dataProtection": "Więcej na temat ochrony danych",
+    "faq": {
+      "title": "Uzyskaj odpowiedź na kilka pytań",
+      "list": [
+        {
+          "question": "Czy śledzenie Swetrix wymaga plików cookie?",
+          "answer": "Nie, nie ma. Nasz skrypt analityczny jest w pełni pozbawiony plików cookie. Możesz korzystać z naszej usługi bez konieczności stosowania powiadomienia o cookies na swojej stronie.\nJesteśmy zgodni z takimi regulacjami jak RODO, PECR, CCPA, ePrivacy i COPPA."
+        },
+        {
+          "question": "Czy wykorzystujesz/udostępniasz/sprzedajesz dane użytkowników końcowych?",
+          "answer": "Nie, nie robimy tego. Ponadto wszystkie gromadzone przez nas dane są anonimowe. Nie przechowujemy żadnych danych, które pozwoliłyby nam zidentyfikować konkretnego użytkownika. Staramy się być jak najbardziej transparentni i szanować prywatność."
+        },
+        {
+          "question": "Czy muszę płacić za waszą usługę?",
+          "answer": "Oferujemy zarówno konta darmowe, jak i płatne. Podczas gdy większość funkcji płatnych poziomów jest zawarta w wariancie darmowym, płatne poziomy oferują większą ilość zdarzeń w miesiącu. Możesz uaktualnić lub obniżyć subskrypcję konta w dowolnym momencie."
+        },
+        {
+          "question": "Czy moje dane są bezpieczne?",
+          "answer": "Przestrzegamy wszystkich standardów dotyczących bezpieczeństwa przechowywania i przetwarzania danych. Wszystkie dane są bezpiecznie przechowywane, nie mają do nich dostępu osoby trzecie, a cała komunikacja odbywa się zawsze za pośrednictwem szyfrowanych kanałów (HTTPS)."
+        }
+      ]
+    },
+    "features": [
+      {
+        "name": "Mierzenie ruchu na stronie z 99% dokładnością",
+        "desc": "Najdokładniejsze rozwiązanie analityczne do śledzenia wszystkich podstawowych metryk i zobaczenia PRAWIDŁOWYCH danych."
+      },
+      {
+        "name": "Raporty demo i geo",
+        "desc": "Tak, to standard. Ale śledzimy dokładnie, skąd pochodzą twoi użytkownicy, jak to jest."
+      },
+      {
+        "name": "Śledzenie metryk UTM",
+        "desc": "Cały ruch z Twoich firm i stron internetowych zostanie pokazany bez utraty danych."
+      },
+      {
+        "name": "System Agile",
+        "desc": "Elastyczny system ustawień podstawowych zasad użytkowania - takich jak definiowanie sesji, obliczanie ruchu itd. jest łatwy do skonfigurowania i dostosowania."
+      },
+      {
+        "name": "Niestandardowe zdarzenia\n(bardzo łatwe w konfiguracji)",
+        "desc": "Przyjazny interfejs i łatwość ustalania celów pomogą Ci zmierzyć efektywność Twojej strony."
+      },
+      {
+        "name": "Przepływ użytkowników",
+        "desc": "Śledź jak użytkownicy trafiają na Twoją stronę i gdzie się udają. Badaj zachowania i wzorce swoich odwiedzających."
+      }
+    ],
+    "demoGeoReports": "Tak, to standard. Ale śledzimy dokładnie, skąd pochodzą twoi użytkownicy.",
+    "mFeatures": [
+      {
+        "name": "Rozszerz swoje możliwości",
+        "desc": "Rozszerzenia przeglądarki, powiadomienia, 2FA, elastyczna funkcjonalność i inne!"
+      },
+      {
+        "name": "Opensource",
+        "desc": "Dostosuj Swetrix do swoich potrzeb lub z łatwością utrzymuj go samodzielnie."
+      },
+      {
+        "name": "Platforma handlowa",
+        "desc": "Rynek z rozszerzeniami tworzonymi przez społeczność, aby zwiększyć możliwości analityczne."
+      },
+      {
+        "name": "Prosta integracja",
+        "desc": "Zintegruj swoje projekty, dodaj nowe rozszerzenia i z łatwością zanurz się w świecie analityki."
+      },
+      {
+        "name": "Rozwiązuj swoje problemy, a nie je twórz",
+        "desc": "Zdobądź informacje i skorzystaj z najlepszych rozwiązań, aby rozwiązać swoje problemy."
+      },
+      {
+        "name": "Podziel się swoimi najlepszymi rozwiązaniami",
+        "desc": "Podziel się ze społecznością swoimi najlepszymi rozwiązaniami, zdobądź popularność i pieniądze."
+      }
+    ],
+    "supports": "Obsługuje wszystkie popularne platformy",
+    "becomeDev": "Zostań deweloperem",
+    "becomeDevDesc": "Twórz swoje rozszerzenia, podążaj za aktualnościami i dołącz do naszej społeczności programistów.",
+    "marketplaceBlock": "Funkcje rynku i rozszerzenia",
+    "coreFeaturesBlock": "Główne funkcje",
+    "testimonials": "Opinie",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Założyciel startupu",
+        "desc": "W projekcie wykorzystujemy kilka systemów analitycznych w celu uzyskania jak najdokładniejszych danych.\nDo analityki internetowej wybraliśmy Swetrix jako rozwiązanie, w którym zespół stale wprowadza nowe ulepszenia i funkcje."
+      },
+      {
+        "name": "Michael",
+        "role": "Właściciel małej firmy",
+        "desc": "W biznesie muszę zrozumieć, jak klienci zachowują się na stronie internetowej i dlaczego kupują lub nie kupują mojego produktu.\nSwetrix daje mi niezbędne dane i cenne spostrzeżenia, aby zrozumieć odwiedzających moją stronę i pomóc mi zwiększyć sprzedaż."
+      },
+      {
+        "name": "Rachel",
+        "role": "CMO w firmie NDA",
+        "desc": "Pracuję nad dość dużym projektem i musimy przestrzegać umów GDPR i wielu innych wymagań.\nWspółpracujemy z dużymi firmami na całym świecie i odwiedzający nasze zasoby chcą widzieć, że jesteśmy wobec nich lojalni, ale jednocześnie pozwalają naszemu działowi zwiększyć konwersję na stronie i otrzymać cenne spostrzeżenia do testowania nowych hipotez produktowych.\nTe zadania są całkowicie rozwiązane przez Swetrix."
+      }
+    ],
+    "opensourceAdv": "Zalety korzystania z <url>open source</url>",
+    "opensource": [
+      {
+        "desc": "Zainstaluj Swetrix na swoich serwerach - kod źródłowy jest dostępny dla wszystkich."
+      },
+      {
+        "desc": "Znajdź błędy i zaproponuj ulepszenia - społeczność będzie Ci wdzięczna."
+      },
+      {
+        "desc": "Twoje dane są chronione, wszystkie funkcje i poprawki są wdrażane w ciągu kilku dni przez naszych programistów."
+      }
+    ],
+    "os": "Analityka <gradi>open source</gradi> - potężne i proste narzędzie.",
+    "custSupport": "Nie możesz znaleźć odpowiedzi, której szukasz? Skontaktuj się z naszym <mail>działem obsługi klienta</mail>.",
+    "whyUs": "Dlaczego my",
+    "ourStats": "Nasze statystyki",
+    "statsDesc": "Swetrix opiera się na zaufaniu użytkowników do usługi i jest w stanie obsługiwać tysiące użytkowników i stron internetowych.",
+    "users": "Zarejestrowani użytkownicy",
+    "websites": "Dodane witryny",
+    "pageviews": "Śledzone zdarzenia"
+  },
+  "auth": {
+    "recovery": {
+      "title": "Odzyskiwanie konta",
+      "save": "Zapisz nowe hasło",
+      "newPassword": "Twoje nowe hasło",
+      "updated": "Twoje hasło zostało zaktualizowane"
+    },
+    "forgot": {
+      "sent": "E-mail resetujący hasło został wysłany na podany adres",
+      "reset": "Zresetuj hasło"
+    },
+    "signin": {
+      "title": "Zaloguj się na swoje konto",
+      "forgot": "Nie pamiętasz hasła?",
+      "button": "Zaloguj",
+      "2fa": "Uwierzytelnianie dwuskładnikowe",
+      "2faDesc": "Otwórz aplikację uwierzytelniania dwuskładnikowego na swoim urządzeniu, aby wyświetlić kod uwierzytelniający i zweryfikować swoją tożsamość.\nMożesz również użyć kodu zapasowego.",
+      "2faUnavailable": "Nie masz dostępu do 2FA?\n<ctl>Skontaktuj się z pomocą techniczną</ctl>.",
+      "6digitCode": "6-cyfrowy kod uwierzytelniania"
+    },
+    "signup": {
+      "button": "Zarejestruj się",
+      "tos": "Akceptuję <tos>Regulamin</tos> oraz <pp>Politykę Prywatności</pp>.",
+      "email": "Adres e-mail",
+      "create": "Utwórz konto"
+    },
+    "verification": {
+      "success": "Twój adres e-mail został pomyślnie zweryfikowany!"
+    },
+    "common": {
+      "signinInstead": "Zamiast tego zaloguj się",
+      "signupInstead": "Zamiast tego zarejestruj się",
+      "password": "Hasło",
+      "noRemember": "Nie pamiętaj mnie.",
+      "repeat": "Powtórz hasło",
+      "hint": "Dłuższe niż {{amount}} znaków",
+      "xCharsError": "Hasło musi składać się z co najmniej {{amount}} znaków.",
+      "noMatchError": "Hasła muszą się zgadzać.",
+      "badEmailError": "Podaj poprawny adres e-mail.",
+      "passwordTooLong": "Podane hasło jest zbyt długie, maksymalna długość to {{amount}} znaków",
+      "tosError": "Musisz zaakceptować nasz regulamin i politykę prywatności, aby móc korzystać z naszych usług.",
+      "email": "Email",
+      "signin": "Zaloguj się",
+      "checkLeakedPassword": "Sprawdź, czy hasło wyciekło",
+      "checkLeakedPasswordDesc": "Po włączeniu sprawdzamy hasło z bazą danych <db>{{database}}</db>. Nie wysyłamy twojego hasła do usługi. Najpierw hashujemy twoje hasło (używając SHA1) i wysyłamy tylko pierwsze 5 znaków tego hasha do usługi. Serwis zwraca wszystkie wyciekłe hasła, które zaczynają się od tych 5 znaków. Na naszym końcu sprawdzamy, czy jedno z nich pasuje do Twojego hasła. Pokażemy Ci ostrzeżenie, jeśli został on wyciekły wcześniej. Nigdy nie przechowujemy Twojego hasła w postaci zwykłego tekstu."
+    }
+  },
+  "features": {
+    "feature1Name": "Przejrzystość",
+    "feature1Content": "W Swetrix wierzymy, że każdy ma prawo do prywatności i przejrzystości, zwłaszcza jeśli chodzi o analitykę.\nNie zbieramy więcej informacji niż <docs>claim</docs>, wszystkie dane są przechowywane na serwerach fizycznie zlokalizowanych w Unii Europejskiej, a nasz skrypt analityczny jest publicznie dostępny i dostępny dla wszystkich na naszym <gh>Githubie</gh>.",
+    "feature2Name": "Dodatki do przeglądarki",
+    "feature2Content": "Potrzebujesz szybko przejrzeć statystyki dla swojej strony?\nW tym celu stworzyliśmy rozszerzenia <chrome>Chrome</chrome> i <firefox>Firefox</firefox>.\nKorzystając z nich, możesz błyskawicznie przeglądać najważniejsze spostrzeżenia, otrzymywać powiadomienia o skokach ruchu i wiele więcej!",
+    "ready": "Gotowy do poznania swoich użytkowników?",
+    "start": "Zacznij korzystać z Swetrix dzisiaj.",
+    "list": [
+      {
+        "name": "Prostota",
+        "content": "Tworząc nasz serwis staraliśmy się, aby był on jak najprostszy i najbardziej elastyczny.\nKoniec z zagmatwanymi metrykami i skomplikowanymi dashboardami - z nami możesz mieć kontrolę nad wszystkimi swoimi projektami i danymi w prosty i łatwy sposób."
+      },
+      {
+        "name": "Śledzenie wyświetleń stron",
+        "content": "Swetrix oferuje możliwość śledzenia widoków stron, w tym unikalnych widoków, jak również przepływu użytkowników.\nWszystkie odsłony zawierają szeroki zakres danych, takich jak kraj użytkownika, locale, typ urządzenia, czas ładowania strony i inne.\nNie używamy plików cookie ani żadnego innego rodzaju profilowania użytkowników do zbierania danych. Wszystkie przychodzące dane są anonimizowane, co zapewnia, że użytkownicy nie mogą być w żaden sposób śledzeni na ich podstawie."
+      },
+      {
+        "name": "Śledzenie zdarzeń niestandardowych",
+        "content": "Oprócz śledzenia odsłon oferujemy również możliwość śledzenia zdarzeń niestandardowych.\nMożesz śledzić dowolne zdarzenia, takie jak kliknięcia przycisków, rejestracje lub autoryzacje.\nWszystko to jest również całkowicie prywatne dla użytkownika, ponieważ nie przechowujemy żadnych innych informacji o nim wraz z wydarzeniami.\nWięcej o niestandardowych zdarzeniach można przeczytać w naszej dokumentacji."
+      },
+      {
+        "name": "Prędkość",
+        "content": "Jesteśmy szybcy. Nasz skrypt analityczny jest maksymalnie zoptymalizowany, a do jego dostarczenia wykorzystujemy CDN-y, co gwarantuje, że skrypt nie spowolni Twoich stron."
+      },
+      {
+        "name": "Zaufanie",
+        "content": "Jesteśmy małą firmą, a nie wielką korporacją.\nInteresuje nas stworzenie dobrego i jakościowego produktu, z którego będą korzystać zadowoleni klienci, a nie wyciskanie jak największej ilości pieniędzy z naszych użytkowników czy sprzedaż Waszych danych osobowych."
+      }
+    ]
+  },
+  "profileSettings": {
+    "general": "Ustawienia ogólne",
+    "update": "Zaktualizuj profil",
+    "email": "Raporty e-mail",
+    "timezone": "Preferencje strefy czasowej",
+    "frequency": "Jak często powinniśmy wysyłać Ci e-mail z podsumowaniem Twoich witryn?",
+    "noLink": "Nie otrzymałeś linku do potwierdzenia adresu e-mail? Poproś o nowy!",
+    "requestExport": "Eksport danych",
+    "delete": "Usuń konto",
+    "deactivateConfirmation": "Czy na pewno chcesz dezaktywować swoje konto?\nWszystkie Twoje dane zostaną trwale usunięte z naszych serwerów na zawsze.\nTej czynności nie można cofnąć.",
+    "exportConfirmation": "Zgodnie z wymogami Art. 20 Ogólnego rozporządzenia o ochronie danych (RODO) masz prawo do otrzymania swoich danych osobowych, które przechowujemy. Raport ten nie zawiera danych o zdarzeniach w podziale na projekty.\nRaport z danymi zostanie wysłany na Twój adres e-mail.\nUwaga: możesz zażądać eksportu danych tylko raz na dwa tygodnie.",
+    "dataExport": "Eksport danych",
+    "aDelete": "Usuń konto",
+    "qDelete": "Usunąć konto?",
+    "weekly": "Co tydzień",
+    "monthly": "Co miesiąc",
+    "never": "Nigdy",
+    "reportSent": "Raport danych GDPR został wysłany na Twój adres e-mail.",
+    "tryAgainInXDays": "Spróbuj ponownie później. Możesz wnioskować o eksport GDPR tylko raz na {{amount}} dni.",
+    "updated": "Ustawienia konta zostały zaktualizowane",
+    "confTimeout": "E-mail został już wysłany, sprawdź skrzynkę pocztową lub spróbuj ponownie za kilka minut",
+    "confSent": "Link potwierdzający konto został wysłany na Twój adres e-mail",
+    "noConfLeft": "Niestety, skończyły się Twoje żądania potwierdzenia maila.\nUpewnij się, że jesteś w stanie odbierać wiadomości e-mail i sprawdź ponownie swój folder SPAM w poszukiwaniu wiadomości.\nMożesz spróbować użyć innego adresu e-mail lub skontaktować się z naszym działem obsługi klienta.",
+    "timezoneDesc": "Będzie to strefa czasowa, w której dane są wyświetlane. Jest używana tylko do wizualizacji.\nŻadne dane nie będą modyfikowane na podstawie tego ustawienia.",
+    "quitProject": "Czy na pewno chcesz zamknąć ten projekt?",
+    "quitProjectTitle": "Zamknąć {{project}}?",
+    "shared": "Udostępnione projekty",
+    "owned": "Własne projekty",
+    "sharedTable": {
+      "project": "Projekt",
+      "role": "Rola",
+      "joinedOn": "Połączone na"
+    },
+    "noSharedProjects": "Nikt nie udostępnia Ci jeszcze projektu.",
+    "2fa": "Uwierzytelnianie dwuskładnikowe (2FA)",
+    "2faEnable": "Włącz 2FA, aby zwiększyć bezpieczeństwo konta.",
+    "2faEnableBtn": "Włącz 2FA",
+    "2faDisableBtn": "Wyłącz 2FA",
+    "2faDesc": "Aplikacja uwierzytelniająca, która obsługuje czasowe, jednorazowe hasła (TOTP), takie jak andOTP lub Google Authenticator, może zeskanować poniższy kod QR, aby włączyć 2FA na koncie Swetrix:",
+    "2faQRAlt": "Nie możesz zeskanować kodu QR?\nZamiast tego użyj tego tajnego klucza: {{key}}",
+    "enter2faToEnable": "Wprowadź swój jednorazowy kod, aby włączyć funkcję 2FA",
+    "enter2faToDisable": "Wprowadź swój kod jednorazowy lub kod odzyskiwania",
+    "yourOneTimeCode": "Twój jednokrotny kod",
+    "invalid2fa": "Nieprawidłowy kod 2FA, spróbuj ponownie",
+    "2faRecoveryNote": "Ważne: Jeśli nie możesz użyć aplikacji uwierzytelniającej, ponieważ usunąłeś ją lub zgubiłeś urządzenie, będziesz potrzebował sposobu na uzyskanie dostępu do swojego konta i wyłączenie funkcji 2FA.\n\nMożesz użyć tego kodu odzyskiwania, aby wyłączyć 2FA. Zapisz go i przechowuj w bezpiecznym miejscu.",
+    "2faRecoverySaved": "Zapisałem ten kod odzyskiwania",
+    "2faEnabled": "Uwierzytelnianie dwuskładnikowe jest włączone na Twoim koncie.",
+    "2faDisableHint": "Aby wyłączyć uwierzytelnianie dwuskładnikowe, wprowadź 6-cyfrowy kod lub jeden z kodów odzyskiwania.",
+    "apiKey": "Klucz API",
+    "noApiKey": "Nie utworzyłeś jeszcze żadnych kluczy API.",
+    "apiKeyWarning": "Traktuj swój klucz API jak hasło i zachowaj go w tajemnicy. Nigdy nie koduj go w swoich programach, ani nie udostępniaj nikomu.",
+    "addApiKeyBtn": "Utwórz klucz API",
+    "deleteApiKeyBtn": "Usuń klucz API",
+    "apiKeyDelete": "Usunąć klucz API?",
+    "apiKeyDeleteConf": "Czy na pewno chcesz usunąć klucz API?\nCały dostęp API za pomocą tego klucza zostanie wyłączony.",
+    "theme": "Motyw",
+    "selectTheme": "Wybierz motyw",
+    "integrations": "Integracje",
+    "integrationsDesc": "Integracje można wykorzystać do połączenia ulubionych komunikatorów ze Swetrix i bezpośredniego otrzymywania aktualizacji, takich jak powiadomienia, raporty czy alerty.",
+    "integrationsList": {
+      "telegram": "Otrzymuj powiadomienia bezpośrednio do bota Telegrama.",
+      "tgHint": "Napisz wiadomość do <url>{{username}}</url>, aby uzyskać ID czatu. Ten bot zostanie użyty później, aby wysyłać powiadomienia lub alerty."
+    },
+    "addIntegration": "Dodaj integrację",
+    "removeIntegration": "Usuń integrację",
+    "chatID": "ID czatu"
+  },
+  "dashboard": {
+    "newProject": "Nowy projekt",
+    "verifyEmailTitle": "Proszę najpierw zweryfikować adres e-mail",
+    "verifyEmailDesc": "Aby zacząć korzystać z naszego serwisu i tworzyć swoje projekty, musisz najpierw potwierdzić swój adres e-mail.\n\nNa podany podczas rejestracji adres e-mail został wysłany link do potwierdzenia konta, jeśli nie został dostarczony - możesz poprosić o ponowne przesłanie linku w ustawieniach konta.",
+    "lowEventsTitle": "Kończą Ci się zdarzenia!",
+    "lowEventsDesc": "Wykorzystałeś więcej niż 85% dostępnych zdarzeń na Twoim planie na ten miesiąc.\nOznacza to, że w przypadku wykorzystania 100% dostępnych wydarzeń do końca miesiąca, cały kolejny ruch nie zostanie zapisany.\nAby tego uniknąć, zalecamy aktualizację swojego planu na stronie rozliczeniowej.",
+    "eventsXPercUsed": "Wykorzystałeś więcej niż {{amount}}% dostępnych zdarzeń w Twoim planie w tym miesiącu.",
+    "noProjects": "Nie utworzyłeś jeszcze żadnego projektu",
+    "createProject": "Utwórz nowy projekt tutaj, aby zacząć korzystać z naszych usług",
+    "active": "Aktywne",
+    "public": "Publiczne",
+    "shared": "Udostępnione",
+    "disabled": "Wyłączone",
+    "pageviews": "Wyświetlenia stron",
+    "unique": "Unikalne wyświetlenia",
+    "createdAt": "Utworzono dnia",
+    "inc": "Wzrost o",
+    "dec": "Spadek o",
+    "liveVisitors": "Użytkownicy na żywo",
+    "live": "Na żywo",
+    "bounceRate": "Wskaźnik odrzuceń",
+    "viewsPerUnique": "Wyświetlenia na sesję",
+    "trendlines": "Linie trendów",
+    "invitationFor": "Zaproszenie do {{project}}",
+    "invitationDesc": "Zostałeś zaproszony do projektu {{project}}.\nMożesz zaakceptować zaproszenie tutaj lub odrzucić je w ustawieniach konta.",
+    "sessionDuration": "Czas trwania sesji",
+    "traffic": "Ruch",
+    "performance": "Wydajność",
+    "alerts": "Alerty",
+    "alertsDesc": "Zautomatyzowane alerty to potężne narzędzie, które pozwala uruchomić automatyczne zadania, gdy wystąpią określone zdarzenia.\nMożemy automatycznie monitorować Twój projekt pod kątem skoków ruchu i powiadamiać Cię za pośrednictwem Telegrama.",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Sieć",
+    "timing": "Podział czasowy",
+    "timingFull": "Podział czasowy (pełny)",
+    "dns": "DNS",
+    "conn": "Połączenie",
+    "tls": "Ustawienia TLS",
+    "ttfb": "Czas do pierwszego bajtu (TTFB)",
+    "domLoad": "Ładowanie zawartości DOM",
+    "pageLoad": "Czas ładowania strony",
+    "render": "Renderowanie przez przeglądarkę",
+    "response": "Czas odpowiedzi"
+  },
+  "alert": {
+    "create": "Utwórz alert",
+    "add": "Dodaj alert",
+    "delete": "Usuń alert",
+    "noIntegration": "Nie skonfigurowałeś jeszcze integracji. Utwórz ją w swoich <url>ustawieniach konta</url>.",
+    "noNotification": "Brak ustawionych kanałów powiadomień",
+    "lastTriggered": "Ostatnio uruchomione",
+    "never": "Nigdy",
+    "qDelete": "Usunąć alert?",
+    "settingsOf": "Ustawienia {{name}}",
+    "deleteHint": "Ta akcja jest nieodwracalna.\nAlert i wszystkie dane z nim związane zostaną usunięte z naszych serwerów.",
+    "name": "Nazwa alertu",
+    "metric": "Metryka zapytania",
+    "condition": "Wyzwalaj, gdy metryka jest",
+    "threshold": "Próg",
+    "time": "Podczas ostatniego",
+    "xMinutes": "{{amount}} minut",
+    "xHours": "{{amount}} godzin",
+    "xHour": "{{amount}} godzina",
+    "enabled": "Alert włączony",
+    "enabledHint": "Wyłączone alerty nie będą powiadamiać Cię o żadnych wydarzeniach.",
+    "conditions": {
+      "greater_than": "Więcej niż",
+      "greater_equal_than": "Większe lub równe",
+      "less_than": "Mniej niż",
+      "less_equal_than": "Mniejsze lub równe"
+    },
+    "metrics": {
+      "page_views": "Wyświetlenia strony",
+      "unique_page_views": "Unikalne sesje",
+      "online_users": "Użytkownicy online"
+    }
+  },
+  "notFoundPage": {
+    "title": "Strona nie znaleziona",
+    "description": "Przepraszamy, nie mogliśmy znaleźć strony, której szukasz.\nProszę sprawdzić adres URL w pasku adresu i spróbować ponownie.",
+    "goHome": "Powrót do strony głównej",
+    "support": "Skontaktuj się z obsługą"
+  },
+  "project": {
+    "ad": "Chcesz te statystyki dla swojej witryny?",
+    "noExist": "Wybrany projekt nie istnieje",
+    "exportData": "Eksportuj dane",
+    "asImage": "Jako zdjęcie",
+    "asCSV": "Jako CSV",
+    "noEvTitle": "Brak zdarzeń",
+    "showAll": "Pokaż wszystkie wyświetlenia",
+    "trendlineUnique": "Linia trendu unikalnych odwiedzających",
+    "trendlineTotal": "Linia trendu odsłon witryny",
+    "noEvContent": "Nie przechwycono żadnych zdarzeń dla określonego przedziału czasowego.\nJeśli nie śledziłeś jeszcze żadnych zdarzeń, możesz sprawdzić naszą <url>Dokumentację</url>, aby łatwo zintegrować śledzenie w swojej aplikacji.",
+    "mapping": {
+      "cc": "Kraj",
+      "pg": "Strona",
+      "lc": "Wersja językowa",
+      "ref": "Referrer",
+      "dv": "Rodzaj urządzenia",
+      "br": "Przeglądarka",
+      "os": "Nazwa systemu",
+      "lt": "Czas ładowania"
+    },
+    "overview": "Przegląd",
+    "weeklyStats": "Statystyki tygodniowe",
+    "statsFor": "Statystyki dla",
+    "event": "Zdarzenie",
+    "quantity": "Liczba",
+    "conversion": "Konwersja",
+    "ratio": "Współczynnik",
+    "customEv": "Niestandardowe zdarzenia",
+    "noParamData": "Brak danych dla tego parametru",
+    "conflictMetric": "Wybrana przez Ciebie metryka koliduje z już wybraną",
+    "prev": "Poprzedni",
+    "next": "Następny",
+    "unique": "Unikalni użytkownicy",
+    "total": "Łączna liczba odsłon",
+    "today": "Dziś",
+    "yesterday": "Wczoraj",
+    "last24h": "Ostatnie 24 godziny",
+    "lastXDays": "Ostatnie {{amount}} dni",
+    "lastXWeeks": "Ostatnie {{amount}} tygodnie",
+    "lastXMonths": "Ostatnie {{amount}} miesiące",
+    "custom": "Własna data",
+    "hour": "Godzina",
+    "day": "Dzień",
+    "week": "Tydzień",
+    "month": "Miesiąc",
+    "resetFilters": "Zresetuj filtry",
+    "exportImgError": "Nie udało się wyeksportować danych jako obraz",
+    "codeExample": "Lub wstaw poniższy kod do swojej strony internetowej, aby śledzić zdarzenia:",
+    "metricVis": "Wizualizacja metryczna",
+    "settings": {
+      "verify": "Zweryfikuj najpierw swój adres e-mail",
+      "updated": "Ustawienia projektu zostały zaktualizowane",
+      "created": "Projekt został utworzony",
+      "pxCharsError": "Nazwa projektu nie może być dłuższa niż {{amount}} znaków.",
+      "oxCharsError": "Lista dozwolonych źródeł musi być mniejsza niż {{amount}} znaków.",
+      "noNameError": "Wprowadź nazwę projektu.",
+      "create": "Utwórz nowy projekt",
+      "settings": "Ustawienia",
+      "name": "Nazwa projektu",
+      "pid": "ID projektu",
+      "origins": "Dozwolone źródła",
+      "originsHint": "Lista źródeł (domen), które mogą używać skryptu z twoim identyfikatorem projektu, oddzielonych przecinkami.\nPozostaw puste, aby zezwolić na wszystkie źródła (ustawienie domyślne).\nPrzykład: cornell.edu, app.example.com, ssu.gov.ua",
+      "enabled": "Aktywny projekt",
+      "public": "Publiczny Panel",
+      "enabledHint": "Wyłączone projekty nie będą zliczać żadnych nowo przychodzących zdarzeń ani odsłon.\nNadal będziesz miał dostęp do analityki projektu w panelu.",
+      "publicHint": "Zaznaczając to, każdy w Internecie (w tym Google) będzie mógł zobaczyć Panel tego projektu.\nTylko administrator projektu może edytować ustawienia.",
+      "createHint": "*będziesz mógł skonfigurować swój projekt dokładniej po jego utworzeniu",
+      "delete": "Usuń projekt",
+      "reset": "Zresetuj projekt",
+      "qDelete": "Usunąć projekt?",
+      "qReset": "Zresetować projekt?",
+      "deleteHint": "Naciskając \"Usuń projekt\" rozumiesz, że ta akcja jest nieodwracalna.\nProjekt i wszystkie związane z nim dane zostaną usunięte z naszych serwerów.",
+      "resetHint": "Naciskając \"Zresetuj projekt\" rozumiesz, że ta akcja jest nieodwracalna.\nOdsłony i zdarzenia własne projektu zostaną usunięte z naszych serwerów, ale identyfikator projektu i inne konfiguracje zostaną zachowane.",
+      "deleted": "Projekt został usunięty",
+      "resetted": "Projekt został zresetowany",
+      "noPeople": "Do tego projektu nie dodano jeszcze żadnych osób.",
+      "removeMember": "Usuń użytkownika",
+      "removeConfirm": "Czy na pewno chcesz przestać udostępniać swój projekt temu użytkownikowi?",
+      "removeUser": "Usunąć {{user}}?",
+      "people": "Użytkownicy",
+      "inviteCoworkers": "Zaproś swoich współpracowników",
+      "invite": "Zaproś użytkownika",
+      "inviteTo": "Zaproś użytkownika do {{project}}",
+      "inviteDesc": "Wpisz adres e-mail i rolę osoby, której chcesz udostępnić swój projekt.\nSkontaktujemy się z nią za pośrednictwem poczty elektronicznej, aby zaoferować dostęp do projektu.",
+      "inviteExpity": "Zaproszenie wygaśnie w ciągu {{amount}} godzin.",
+      "role": "Rola",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Może zarządzać ustawieniami projektu, dodawać/usuwać członków i zapraszać nowych użytkowników.",
+          "shortDesc": "Może zarządzać projektem"
+        },
+        "viewer": {
+          "name": "Widz",
+          "desc": "Ma dostęp tylko do odczytu projektu.",
+          "shortDesc": "Może tylko przeglądać projekt"
+        }
+      },
+      "errorNoRole": "Wybierz rolę.",
+      "ipBlacklist": "Dodaj adresy IP do czarnej listy",
+      "ipBlacklistHint": "Lista adresów IP, z których nie będzie zbierana analityka na tym projekcie.\nTa funkcjonalność jest przydatna, jeśli chcesz na przykład zignorować analitykę z Twojego IP.\nPrzykład: 172.126.10.16, 192.168.0.1/32, ::1"
+    }
+  },
+  "billing": {
+    "title": "Cennik i plany",
+    "desc": "Rozpoczęcie i korzystanie z naszych usług jest darmowe.\nJeśli musisz poradzić sobie z większą liczbą ruchów, prawdopodobnie będziesz musiał zaktualizować swój plan.\nPoniżej znajduje się lista dostępnych planów. Żadnych ukrytych opłat ani innych BS, wszystko jest jasne i przejrzyste!",
+    "contact": "Potrzebujesz śledzić ponad 1 milion zdarzeń miesięcznie?\nSkontaktuj się z nami pod adresem <mail>{{email}}</mail>, aby omówić swoje potrzeby.",
+    "update": "Zaktualizuj metodę płatności",
+    "nextBillDate": "Data następnego rozliczenia:"
+  },
+  "modals": {
+    "paidFeature": {
+      "title": "Ulepsz swój plan, aby korzystać z tej funkcji",
+      "desc": "Przepraszamy za niedogodności, ale aby korzystać z tej funkcji, musisz wykupić płatny plan.\n\nZdajemy sobie sprawę, że możesz nie być jeszcze gotowy na zakup płatnej subskrypcji, ale jej zakup da Ci nie tylko dostęp do tej funkcji, ale także wiele innych wspaniałych korzyści, takich jak dostęp do wszystkich innych płatnych funkcji, wyższe limity wizyt w miesiącu i liczba dostępnych stron internetowych, a także będziesz wspierać rozwój małego biznesu :)"
+    }
+  },
+  "pricing": {
+    "title": "Plany cenowe",
+    "adv": "Zacznij za darmo, bez konieczności posiadania karty kredytowej.\nGdy Twoja firma się rozwinie, możesz w każdej chwili ulepszyć swój plan.",
+    "currentPlan": "Obecny plan",
+    "mostPopular": "Najpopularniejszy",
+    "free": "Za darmo",
+    "perMonth": "mies.",
+    "perYear": "rocznie",
+    "yourPlan": "Twój plan",
+    "downgrade": "Obniżenie wersji",
+    "upgrade": "Ulepsz",
+    "whatIncl": "Co zawiera",
+    "monthlyBilling": "Płatność miesięczna",
+    "yearlyBilling": "Płatność roczna",
+    "switchToMonthly": "Przełącz na płatność miesięczną",
+    "switchToYearly": "Przełącz na płatność roczną",
+    "tiers": {
+      "hobby": "Hobby",
+      "freelancer": "Freelancer",
+      "startup": "Startup",
+      "enterprise": "Enterprise",
+      "upToXEVMo": "Do {{amount}} zdarzeń miesięcznie.",
+      "xEvMo": "{{amount}} zdarzeń miesięcznie.",
+      "upToXVMo": "Do {{amount}} wizyt miesięcznie.",
+      "xVMo": "{{amount}} wizyt miesięcznie.",
+      "xAlertsSingular": "{{amount}} reguła alertu",
+      "xAlertsPlural": "{{amount}} reguł alertu",
+      "upToXProjects": "Utwórz do {{amount}} projektów.",
+      "upToXWebsites": "Dodaj do {{amount}} witryn.",
+      "xMoDataRetention": "{{amount}} miesiące przechowywania danych.",
+      "evXPlanIncl": "Wszystko, co zawiera plan {{plan}}.",
+      "smallBusiSupport": "Kupując to wspierasz małą firmę.",
+      "dataExports": "Nielimitowany eksport danych.",
+      "dataOwnership": "100% własności danych.",
+      "noBanners": "Banery cookie nie są wymagane.",
+      "dashboards": "Współdzielone i publiczne panele.",
+      "reports": "Raporty e-mail."
+    },
+    "downgradeTitle": "Czy na pewno chcesz obniżyć swój plan?",
+    "downgradeDesc": "Po obniżeniu planu, będzie zawierał on mniej projektów i dostępnych zdarzeń na miesiąc. W przypadku, gdy Twoja strona zawiera więcej ruchu niż zawiera plan, do którego chcesz przejść, spowoduje to, że nie wszystkie zdarzenia zostaną zapisane w naszej bazie danych.\nW każdej chwili będziesz mógł powrócić do swojego obecnego planu.\nJeśli masz jakiekolwiek pytania, zawsze możesz wysłać do nas e-mail na adres {{email}}."
+  },
+  "contact": {
+    "howTo": "Masz jakieś pytania? Jest kilka sposobów, aby się z nami skontaktować:",
+    "ways": {
+      "email": "Możesz wysłać nam e-mail na adres <mail>{{email}}</mail>",
+      "twitter": "Tweetuj lub napisz do nas na <url>{{twitter}}</url>",
+      "discord": "Dołącz do naszego serwera Discord, obserwując <url>ten link</url>",
+      "chat": "Użyj skrzynki czatu znajdującej się w prawym dolnym rogu tej strony"
+    }
+  },
+  "beta": {
+    "title": "Beta",
+    "description": "Ta funkcja znajduje się w fazie Beta. Używaj jej ostrożnie, ponieważ mogą wystąpić działania niepożądane."
+  },
+  "titles": {
+    "recovery": "Odzyskiwanie konta",
+    "signin": "Zaloguj się",
+    "signup": "Zarejestruj się",
+    "verification": "Weryfikacja adresu e-mail",
+    "invitation": "Zaproszenie do udziału w projekcie",
+    "profileSettings": "Ustawienia profilu",
+    "features": "Funkcjonalności",
+    "dashboard": "Panel",
+    "docs": "Dokumentacja",
+    "billing": "Płatności",
+    "contact": "Kontakt",
+    "changelog": "Lista zmian",
+    "main": "Najlepsza analityka open-source dla wszystkich Twoich potrzeb"
+  },
+  "footer": {
+    "slogan": "Najlepsze aplikacje potrzebują najlepszych usług.",
+    "description": "Swetrix to potężna platforma analityczna, która szanuje prywatność użytkowników.",
+    "madeIn": "Stworzone w",
+    "hostedIn": "Hostowane w",
+    "ukraine": "Ukrainie",
+    "eu": "Unii Europejskiej",
+    "support": "Wsparcie",
+    "company": "Firma",
+    "legal": "Informacje prawne",
+    "copy": "Swetrix Analytics. Wszelkie prawa zastrzeżone.",
+    "contact": "Kontakt",
+    "pp": "Polityka prywatności",
+    "tos": "Warunki korzystania z usługi",
+    "blog": "Blog",
+    "utm": "Generator UTM",
+    "billing": "Płatności",
+    "pricing": "Cennik",
+    "docs": "Dokumentacja",
+    "guides": "Poradniki",
+    "privacy": "Prywatność",
+    "terms": "Regulamin",
+    "status": "Status",
+    "donate": "Przekaż darowiznę",
+    "changelog": "Lista zmian",
+    "about": "O nas",
+    "comparisons": "Porównania"
+  }
+}
