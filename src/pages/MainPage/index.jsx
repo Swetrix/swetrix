@@ -46,7 +46,7 @@ const Lines = () => (
 
     {/* 2 */}
     <div className='absolute rotate-6 -right-96 top-[32rem] h-px w-[800%] bg-gradient-to-l from-slate-400 opacity-20' />
-    <div className='absolute rotate-[96deg] top-[30.8rem] xl:top-[32rem] -left-60 ml-[-0.5px] h-48 w-[2px] rounded-full bg-gradient-to-t from-orange-400' />
+    <div className='absolute rotate-[96deg] top-[30.8rem] xl:top-[32.03rem] -left-60 ml-[-0.5px] h-48 w-[2px] rounded-full bg-gradient-to-t from-rose-400' />
 
     {/* 3 */}
     <div className='absolute rotate-0 top-44 right-0 bottom-0 h-px w-[400%] bg-gradient-to-l from-slate-400 opacity-20' />
