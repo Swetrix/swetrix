@@ -182,6 +182,11 @@ code {
   opacity: 0.75;
 }
 
+/* adaptive panels buttons next and prev */
+.w-card-toggle-sm {
+  width: calc(100% - 2rem) !important;
+}
+
 /* custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
