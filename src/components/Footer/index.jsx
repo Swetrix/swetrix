@@ -30,6 +30,7 @@ const navigation = {
   legal: [
     { key: 'privacy', href: routes.privacy },
     { key: 'terms', href: routes.terms },
+    { key: 'cookie', href: routes.cookiePolicy },
   ],
   comparisons: [
     { value: 'Google Analytics', href: SWETRIX_VS_GOOGLE },

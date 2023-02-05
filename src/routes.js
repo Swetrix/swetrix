@@ -15,6 +15,7 @@ const routes = Object.freeze({
   features: '/features',
   billing: '/billing',
   privacy: '/privacy',
+  cookiePolicy: '/cookie-policy',
   terms: '/terms',
   contact: '/contact',
   changelog: '/changelog',
