@@ -19,7 +19,7 @@ const changelog = [
     changes: [
       'Added a Polish translation.',
       <>
-        Added a 
+        Added a
         {' '}
         <Link to={routes.cookiePolicy} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
           Cookie policy
