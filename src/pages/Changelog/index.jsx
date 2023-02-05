@@ -4,6 +4,7 @@ import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import { HashLink } from 'react-router-hash-link'
+import { Link } from 'react-router-dom'
 
 import { SWETRIX_VS_GOOGLE, DOCS_URL } from 'redux/constants'
 import Title from 'components/Title'
@@ -17,6 +18,14 @@ const changelog = [
     date: '2023-02-04',
     changes: [
       'Added a Polish translation.',
+      <>
+        Added a 
+        {' '}
+        <Link to={routes.cookiePolicy} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+          Cookie policy
+        </Link>
+        .
+      </>,
     ],
   },
   {
