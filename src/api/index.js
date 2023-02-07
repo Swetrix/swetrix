@@ -42,7 +42,9 @@ const refreshAuthLogic = (failedRequest) =>
     })
 
 // Instantiate the interceptor
-createAuthRefreshInterceptor(api, refreshAuthLogic)
+createAuthRefreshInterceptor(api, refreshAuthLogic, {
+  statusCodes: [401, 403],
+})
 
 api.interceptors.request.use(
   (config) => {
