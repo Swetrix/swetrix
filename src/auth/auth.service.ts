@@ -180,14 +180,14 @@ export class AuthService {
     const headersInfo = await this.getHeadersInfo(headers)
     const loginDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
     const message =
-      '⚠️ *New login detected* ⚠️\n\n' +
+      '🚨 *Someone has logged into your account!*\n\n' +
       `*Browser:* ${headersInfo.browser}\n` +
       `*Device:* ${headersInfo.device}\n` +
       `*OS:* ${headersInfo.os}\n` +
       `*Country:* ${headersInfo.country}\n` +
       `*IP:* ${ip}\n` +
       `*Date:* ${loginDate} (UTC)\n\n` +
-      'If this was not you, please change your password immediately.'
+      'If it was not you, please change your password immediately.'
     await this.telegramBot.telegram.sendMessage(user.telegramChatId, message, {
       parse_mode: 'Markdown',
     })
@@ -196,16 +196,18 @@ export class AuthService {
   private async getHeadersInfo(headers: unknown) {
     const ua = UAParser(headers['user-agent'])
     const browser = ua.browser.name || 'Unknown'
-    const device = ua.device.type || 'Unknown'
+    const device = ua.device.type || 'Desktop'
     const os = ua.os.name || 'Unknown'
-    const country =
-      headers['cf-ipcountry'] === 'XX'
-        ? 'Unknown'
-        : headers['cf-ipcountry'] === 'T1'
-        ? 'Unknown (Tor)'
-        : headers['cf-ipcountry']
-        ? getCountry(headers['cf-ipcountry']).name
-        : 'Unknown'
+    let country = 'Unknown'
+    const cfCountry = headers['cf-ipcountry']
+
+    if (cfCountry === 'T1') {
+      country = 'Unknown (Tor)'
+    }
+
+    if (cfCountry) {
+      country = getCountry(cfCountry)?.name
+    }
 
     return {
       browser,
