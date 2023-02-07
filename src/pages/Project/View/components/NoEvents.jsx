@@ -2,7 +2,6 @@ import React, {
   memo, useEffect, useState, useRef,
 } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import Prism from 'prismjs'
 import { ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
@@ -11,7 +10,7 @@ import PropTypes from 'prop-types'
 import Code from 'ui/Code'
 import Button from 'ui/Button'
 import { getUMDBuildExample } from 'pages/Docs/examples'
-import routes from 'routes'
+import { DOCS_URL } from 'redux/constants'
 
 /**
  * This component is used to display text if the data is not available.
@@ -59,7 +58,8 @@ const NoEvents = ({
             t={t}
             i18nKey='project.noEvContent'
             components={{
-              url: <Link to={routes.docs} className='hover:underline text-blue-600' />,
+              // eslint-disable-next-line jsx-a11y/anchor-has-content
+              url: <a href={DOCS_URL} className='hover:underline text-blue-600' target='_blank' rel='noreferrer noopener' />,
             }}
           />
         </h2>

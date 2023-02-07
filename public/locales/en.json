@@ -367,7 +367,11 @@
     },
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
-    "chatID": "Chat ID"
+    "chatID": "Chat ID",
+    "12-hour": "12 hour",
+    "24-hour": "24 hour",
+    "timeFormat": "Time notation",
+    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format."
   },
   "dashboard": {
     "newProject": "New project",
@@ -445,43 +449,6 @@
       "unique_page_views": "Unique sessions",
       "online_users": "Online users"
     }
-  },
-  "docs": {
-    "titles": {
-      "start": "Getting Started",
-      "umd": "UMD Build",
-      "npm": "NPM Package",
-      "int": "Integrations",
-      "how": "How to..",
-      "pv": "Track pageviews",
-      "ce": "Track custom events",
-      "api": "API"
-    },
-    "install": "You can also install the tracking script with NPM or Yarn",
-    "import": "Next you should import module into your project's root, for example",
-    "track": "After you can track anything you want.\nRead the detailed documentation on tracking params below.",
-    "integrations": "We support the following integrations (click on the title for details)",
-    "3rdPartyInt": "There are also integrations made by the community",
-    "pv": "Swetrix.js tracking script provides a way to collect a page view event once the page has loaded.\nThis can be accomplished via calling the <url>trackViews()</url> function:",
-    "ce": "In addition to tracking pageviews we provide an ability to track custom events.\nFor example, if you want to track an event like 'Sign up' or 'Newsletter subscription', this feature would be very useful.\nUnder the screen, the principle of this function is similar to trackViews.",
-    "init": "This fuction is used to initialise the analytics.\nBasically you're letting the script know which project do you want to use it with, as well as specifying your custom parameters if needed.",
-    "tr": "With this function you are able to track any custom events you want.\nYou should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.\nThe total number of track calls and their conversion rate will be saved.",
-    "tv": {
-      "call": "Calling trackViews will result in sending the data about the user to our servers.\nSuch data will include the next params if available:\n",
-      "gather": "On the server side we also gather users IP Address and User Agent.\nThis data is used to detect whether the page view is unique or not.\n<b>We DO NOT store neither IP Address nor User Agent as a raw strings</b>, such data is stored as a salted hash for no longer than 30 minutes or 12:00 AM UTC, whatever happens first.\nAfter this timeframe the identifiable data is forever deleted from our servers.",
-      "params": {
-        "pid": "the unique Project ID request is related to.",
-        "lc": "users locale (e.g. en_US or uk_UA).",
-        "tz": "users timezone (e.g. Europe/Helsinki).",
-        "ref": "the URL of the previous webpage from which a page was opened.",
-        "so": "the page source ('ref' | 'source' | 'utm_source' GET param).",
-        "me": "UTM medium ('utm_medium' GET param).",
-        "ca": "UTM campaign ('utm_campaign' GET param).",
-        "pg": "the page user currently views (e.g. /hello)."
-      }
-    },
-    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
-    "contents": "Contents"
   },
   "notFoundPage": {
     "title": "Page not found",
@@ -637,7 +604,7 @@
       "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} months of data retention.",
       "evXPlanIncl": "Everything {{plan}} plan includes.",
-      "smallBusiSupport": "By buying this in you are supporting a small business.",
+      "smallBusiSupport": "By buying this you are supporting a small business.",
       "dataExports": "Unlimited data exports.",
       "dataOwnership": "100% data ownership.",
       "noBanners": "No cookie banners required.",
@@ -696,6 +663,7 @@
     "docs": "Documentation",
     "guides": "Guides",
     "privacy": "Privacy",
+    "cookie": "Cookie Policy",
     "terms": "Terms",
     "status": "Status",
     "donate": "Donate",

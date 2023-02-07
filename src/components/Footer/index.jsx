@@ -9,15 +9,14 @@ import PropTypes from 'prop-types'
 import {
   isSelfhosted, DONATE_URL, FIREFOX_ADDON_URL, CHROME_EXTENSION_URL, GITHUB_URL,
   LINKEDIN_URL, STATUSPAGE_URL, TWITTER_URL, BLOG_URL, UTM_GENERATOR_URL, SWETRIX_VS_GOOGLE,
-  SWETRIX_VS_CLOUDFLARE,
+  SWETRIX_VS_CLOUDFLARE, DOCS_URL,
 } from 'redux/constants'
 import routes from 'routes'
 
 const navigation = {
   support: [
     (authenticated) => (authenticated ? { key: 'billing', href: routes.billing } : { key: 'pricing', href: `${routes.main}#pricing` }),
-    () => ({ key: 'docs', href: routes.docs }),
-    () => ({ key: 'guides', href: `${routes.docs}#docs-ht` }),
+    () => ({ key: 'docs', href: DOCS_URL }),
     () => ({ key: 'contact', href: routes.contact, internal: true }),
   ],
   company: [
@@ -31,6 +30,7 @@ const navigation = {
   legal: [
     { key: 'privacy', href: routes.privacy },
     { key: 'terms', href: routes.terms },
+    { key: 'cookie', href: routes.cookiePolicy },
   ],
   comparisons: [
     { value: 'Google Analytics', href: SWETRIX_VS_GOOGLE },

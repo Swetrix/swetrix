@@ -367,7 +367,11 @@
     },
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
-    "chatID": "Chat ID"
+    "chatID": "Chat ID",
+    "12-hour": "12 hour",
+    "24-hour": "24 hour",
+    "timeFormat": "Time notation",
+    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format."
   },
   "dashboard": {
     "newProject": "Nytt projekt",
@@ -445,43 +449,6 @@
       "unique_page_views": "Unique sessions",
       "online_users": "Online users"
     }
-  },
-  "docs": {
-    "titles": {
-      "start": "Komma igång",
-      "umd": "UMD",
-      "npm": "NPM Paket",
-      "int": "Integrationer",
-      "how": " Hur-till",
-      "pv": "Spåra sidvisningar",
-      "ce": "Spåra anpassade händelser",
-      "api": "API"
-    },
-    "install": "Du kan också installera spårningsskriptet med NPM eller Yarn",
-    "import": "Därefter ska du importera modulen till projektets root, till exempel",
-    "track": "Efter det kan du spåra vad du vill.\nLäs den detaljerade dokumentationen om spårningsparametrar nedan.",
-    "integrations": "Vi stöder följande integrationer (klicka på titeln för detaljer)",
-    "3rdPartyInt": "There are also integrations made by the community",
-    "pv": "Swetrix.js spårningsskriptet ger ett sätt att samla in en sidvy händelse när sidan har laddats.\nDetta kan åstadkommas genom att anropa <url>trackViews()</url> funktion:",
-    "ce": "Förutom att spåra sidvisningar har vi möjlighet att spåra anpassade händelser.\nOm du till exempel vill spåra en händelse som \" Registrering \" eller \"Nyhetsbrev prenumeration \", Denna funktion skulle vara mycket användbar.\nUnder skärmen är principen för den här funktionen likadan som för trackViews.",
-    "init": "Denna funktion används för att initiera analytics.\nI princip låter du skriptet veta vilket projekt du vill använda det med, och du anger dina anpassade parametrar om det behövs.",
-    "tr": "Med den här funktionen kan du spåra alla anpassade händelser du vill.\nDu bör aldrig skicka identifierbara data ( t.ex. användar-ID, e-post, sessionscookie osv.) som ett händelsenamn.\nDet totala antalet spårningssamtal och deras konverteringsgrad kommer att sparas.",
-    "tv": {
-      "call": "Kalla trackViews för att skicka data om användaren till våra servrar.\nDessa data kommer att inkludera följande parametrar om tillgängliga:\n",
-      "gather": "På serversidan samlar vi också in användarens IP-adress och User Agent.\nDessa uppgifter används för att upptäcka om sidvy är unik eller inte.\n<b>Vi lagrar INTE varken IP-adress eller User Agent som råa strängar</b>, utan dessa data lagras som en saltad hash i högst 30 minuter eller 12:00 AM UTC, vad som än händer först.\nEfter denna tidsram raderas de identifierbara data för alltid från våra servrar.",
-      "params": {
-        "pid": "det unika projekt-ID är relaterat till.",
-        "lc": "användare språk (t.ex. sv_SE eller uk_UA).",
-        "tz": "användarnas tidszon (t.ex. Europa/Helsingfors).",
-        "ref": "URL för den föregående webbsidan från vilken en sida öppnades.",
-        "so": "Sidkällan ('ref' | 'source' | 'utm_source' GET param).",
-        "me": "UTM medium ('utm_medium' GET param).",
-        "ca": "UTM campaign ('utm_campaign' GET param).",
-        "pg": "den sida användaren för närvarande visar (t.ex. /hello)."
-      }
-    },
-    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
-    "contents": "Innehåll"
   },
   "notFoundPage": {
     "title": "Sidan hittades inte",
@@ -637,7 +604,7 @@
       "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} månaders lagring av data.",
       "evXPlanIncl": "Allt {{plan}} plan inkluderar.",
-      "smallBusiSupport": "Genom att köpa denna produkt stöder du ett litet företag.",
+      "smallBusiSupport": "By buying this you are supporting a small business.",
       "dataExports": "Unlimited data exports.",
       "dataOwnership": "100% data ownership.",
       "noBanners": "No cookie banners required.",

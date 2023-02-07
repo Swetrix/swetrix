@@ -18,7 +18,7 @@ import _fill from 'lodash/fill'
 import _reduce from 'lodash/reduce'
 import JSZip from 'jszip'
 
-import { tbsFormatMapper } from 'redux/constants'
+import { TimeFormat, tbsFormatMapper, tbsFormatMapper24h } from 'redux/constants'
 import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
 
@@ -236,7 +236,7 @@ const getColumnsPerf = (chart, activeChartMetrics) => {
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
+const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat) => {
   const xAxisSize = _size(chart.x)
   let regions
 
@@ -317,7 +317,9 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions) => {
       x: {
         tick: {
           fit: true,
+          format: timeFormat === TimeFormat['24-hour'] ? (x) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
         },
+        localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
       },
       y2: {

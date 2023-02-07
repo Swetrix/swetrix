@@ -18,18 +18,24 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
 
     let {
       // eslint-disable-next-line prefer-const
-      results, totalMonthlyEvents, total,
+      results, total,
     } = yield call(getSharedProjects, take, skip)
-    const projectsWithShared = _map(results, (project) => {
+
+    if (total === 0) {
+      return
+    }
+
+    const projectsWithShared = _map(results, (result) => {
       return {
-        ...project,
+        ...result,
         project: {
-          ...project.project,
+          ...result.project,
           shared: true,
         },
       }
     })
     const pids = _map(projectsWithShared, ({ project }) => project.id)
+
     let overall
 
     try {
@@ -47,7 +53,6 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
     }))
 
     yield put(UIActions.setProjects(results, true))
-    yield put(UIActions.setTotalMonthlyEvents(totalMonthlyEvents))
     yield put(UIActions.setTotal(total, true))
 
     const liveStats = yield call(getLiveVisitors, pids)
@@ -56,6 +61,6 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
     if (_isString(message)) {
       yield put(UIActions.setProjectsError(message))
     }
-    debug('failed to load projects: %s', message)
+    debug('failed to load shared projects: %s', message)
   }
 }

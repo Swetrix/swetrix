@@ -38,6 +38,22 @@ import './styles.css'
 
 const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 
+const Lines = () => (
+  <div className='relative pointer-events-none'>
+    {/* 1 */}
+    <div className='absolute rotate-12 -right-0 bottom-[4.2rem] xl:bottom-20 h-px w-[400%] bg-gradient-to-l from-slate-400 opacity-20' />
+    <div className='absolute rotate-12 -left-32 top-3 xl:top-[0.78rem] mt-[-0.5px] h-[2px] w-28 rounded-full bg-gradient-to-r from-blue-500' />
+
+    {/* 2 */}
+    <div className='absolute rotate-6 right-[-48rem] top-[32rem] h-px w-[800%] bg-gradient-to-l from-slate-400 opacity-10' />
+    <div className='absolute rotate-[96deg] top-[22.26rem] xl:top-[23.5rem] -left-60 ml-[-0.5px] h-96 w-[2px] rounded-full bg-gradient-to-t from-emerald-700 opacity-50' />
+
+    {/* 3 */}
+    <div className='absolute rotate-0 top-44 right-0 bottom-0 h-px w-[400%] bg-gradient-to-l from-slate-400 opacity-20' />
+    <div className='absolute -rotate-90 top-[7.03rem] -left-28 ml-[-0.5px] h-32 w-[2px] rounded-full bg-gradient-to-t from-violet-400' />
+  </div>
+)
+
 const Main = () => {
   const { t, i18n: { language } } = useTranslation('common')
   const { theme } = useSelector(state => state.ui.theme)
@@ -59,7 +75,7 @@ const Main = () => {
         <div className='bg-gray-800 dark:bg-gray-900'>
           <main>
             {/* first block with live demo */}
-            <div className='relativ overflow-x-clip'>
+            <div className='relative overflow-x-clip'>
               <div
                 className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'
               >
@@ -130,16 +146,17 @@ const Main = () => {
                     </div>
                   </div>
                   <div className='max-w-md xl:max-w-lg hidden lg:block'>
+                    <Lines />
                     <picture>
                       <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
-                      <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} className='rounded-xl' style={{ height: '100%', minWidth: '880px' }} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                      <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} className='rounded-xl relative' style={{ height: '100%', minWidth: '880px' }} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                     </picture>
                   </div>
                 </div>
                 <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
                   <picture>
                     <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
-                    <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} className='rounded-xl shadow-colored-2xl w-full' width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                    <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} className='rounded-xl relative shadow-colored-2xl w-full' width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </picture>
                 </div>
               </div>

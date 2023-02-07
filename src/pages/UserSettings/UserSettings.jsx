@@ -19,7 +19,7 @@ import utc from 'dayjs/plugin/utc'
 
 import {
   reportFrequencies, DEFAULT_TIMEZONE, WEEKLY_REPORT_FREQUENCY, CONFIRMATION_TIMEOUT,
-  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, THEME_TYPE,
+  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, TimeFormat,
 } from 'redux/constants'
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -28,7 +28,6 @@ import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Beta from 'ui/Beta'
 import Select from 'ui/Select'
-import { ActivePin } from 'ui/Pin'
 import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
@@ -36,7 +35,7 @@ import routes from 'routes'
 import { trackCustom } from 'utils/analytics'
 import { getCookie, setCookie } from 'utils/cookie'
 import {
-  confirmEmail, exportUserData, generateApiKey, deleteApiKey, setTheme,
+  confirmEmail, exportUserData, generateApiKey, deleteApiKey, // setTheme,
 } from 'api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
@@ -45,11 +44,13 @@ import NoSharedProjects from './components/NoSharedProjects'
 
 dayjs.extend(utc)
 
+const timeFormatArray = _map(TimeFormat, (key) => key)
+
 const UserSettings = ({
   onDelete, onDeleteProjectCache, removeProject, removeShareProject, setUserShareData,
   setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData, login,
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
-  accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, setThemeType, themeType,
+  accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
 }) => {
   const history = useHistory()
   const { t, i18n: { language } } = useTranslation('common')
@@ -58,6 +59,7 @@ const UserSettings = ({
     email: user.email || '',
     password: '',
     repeat: '',
+    timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
   const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -72,6 +74,7 @@ const UserSettings = ({
   const [error, setError] = useState(null)
   const [copied, setCopied] = useState(false)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
 
   const copyTimerRef = useRef(null)
 
@@ -270,12 +273,22 @@ const UserSettings = ({
     }
   }
 
-  const setAsyncThemeType = async (theme) => {
-    try {
-      await setTheme(theme)
-      setThemeType(theme)
-    } catch (e) {
-      updateProfileFailed(e)
+  // const setAsyncThemeType = async (theme) => {
+  //   try {
+  //     await setTheme(theme)
+  //     setThemeType(theme)
+  //   } catch (e) {
+  //     updateProfileFailed(e)
+  //   }
+  // }
+
+  const setAsyncTimeFormat = async () => {
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit({
+        ...form,
+      })
     }
   }
 
@@ -328,12 +341,10 @@ const UserSettings = ({
           <Button className='mt-4' type='submit' primary large>
             {t('profileSettings.update')}
           </Button>
-          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+          {/* Theme type switch */}
+          {/* <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.theme')}
-            <div className='ml-3'>
-              <ActivePin label={t('common.new')} />
-            </div>
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-2 mb-4'>
             <div>
@@ -345,7 +356,8 @@ const UserSettings = ({
                 onSelect={(f) => setAsyncThemeType(f)}
               />
             </div>
-          </div>
+          </div> */}
+          {/* Timezone selector */}
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.timezone')}
@@ -358,6 +370,26 @@ const UserSettings = ({
           <Button className='mt-4' onClick={handleTimezoneSave} primary large>
             {t('common.save')}
           </Button>
+          {/* Timeformat selector (12 / 24 hour format) */}
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.timeFormat')}
+          </h3>
+          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+            <div>
+              <Select
+                title={t(`profileSettings.${form.timeFormat}`)}
+                label={t('profileSettings.selectTimeFormat')}
+                className='w-full'
+                items={translatedTimeFormat}
+                onSelect={(f) => setForm({ ...form, timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)] })}
+              />
+            </div>
+          </div>
+          <Button className='mt-4' onClick={setAsyncTimeFormat} primary large>
+            {t('common.save')}
+          </Button>
+          {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.email')}
@@ -381,6 +413,7 @@ const UserSettings = ({
           </Button>
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
+          {/* Integrations setup */}
           <h3 id='integrations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.integrations')}
             <div className='ml-5'>
@@ -393,9 +426,9 @@ const UserSettings = ({
             handleIntegrationSave={handleIntegrationSave}
             genericError={genericError}
           />
-
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
+          {/* API access setup */}
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.apiKey')}
             <div className='ml-5'>
@@ -455,6 +488,8 @@ const UserSettings = ({
               {t('profileSettings.addApiKeyBtn')}
             </Button>
           )}
+
+          {/* 2FA setting */}
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.2fa')}
@@ -467,6 +502,7 @@ const UserSettings = ({
             genericError={genericError}
           />
 
+          {/* Shared projects setting */}
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.shared')}

@@ -1,11 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
 import React from 'react'
-import { HashLink } from 'react-router-hash-link'
 import _map from 'lodash/map'
 
 import Title from 'components/Title'
-import { CONTACT_EMAIL, SECURITY_EMAIL } from 'redux/constants'
-import routes from 'routes'
+import {
+  CONTACT_EMAIL, SECURITY_EMAIL, DOCS_URL,
+} from 'redux/constants'
 
 const serviceProviders = [
   {
@@ -120,7 +120,7 @@ const Features = () => {
             <br />
             The information processed may include but is not limited to IP addresses, device or system information, and other information about the traffic on our Customers websites, devices, applications, and/or networks (collectively, “Log Data”). You can find more information on the data collected and how we process it
             {' '}
-            <HashLink className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' to={`${routes.docs}#docs-tv`}>here</HashLink>
+            <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href={`${DOCS_URL}/swetrix-js-reference#trackviews`} target='_blank' rel='noreferrer noopener'>here</a>
             .
           </p>
 

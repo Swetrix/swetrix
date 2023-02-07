@@ -81,6 +81,18 @@ export const tbsFormatMapper = {
   month: '%d %B %Y',
 }
 
+export const tbsFormatMapper24h = {
+  hour: '%H:%M',
+  day: '%d %B',
+  week: '%d %B',
+  month: '%d %B %Y',
+}
+
+export const TimeFormat = {
+  '12-hour': '12-hour',
+  '24-hour': '24-hour',
+}
+
 export const FREE_TIER_KEY = 'free'
 
 // a dedicated variable is needed for paid tier checking
@@ -111,6 +123,7 @@ export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const BLOG_URL = 'https://blog.swetrix.com'
 export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
 export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
+export const DOCS_URL = 'https://docs.swetrix.com'
 export const CDN_URL = process.env.REACT_APP_CDN_URL
 
 // Swetrix vs ...
@@ -141,11 +154,12 @@ export const TOKEN = 'access_token'
 export const REFRESH_TOKEN = 'refresh_token'
 
 // List of languages with translations available
-export const whitelist = ['en', 'uk', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
+export const whitelist = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
 export const defaultLanguage = 'en'
 export const languages = {
   en: 'English',
   uk: 'Українська',
+  pl: 'Polski',
   de: 'Deutsch',
   sv: 'Svenska',
   el: 'Ελληνικά',
@@ -157,6 +171,7 @@ export const languages = {
 export const languageFlag = {
   en: 'GB',
   uk: 'UA',
+  pl: 'PL',
   de: 'DE',
   sv: 'SE',
   el: 'GR',

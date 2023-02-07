@@ -367,7 +367,11 @@
     },
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
-    "chatID": "Chat ID"
+    "chatID": "Chat ID",
+    "12-hour": "12 hour",
+    "24-hour": "24 hour",
+    "timeFormat": "Time notation",
+    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format."
   },
   "dashboard": {
     "newProject": "Νέο έργο",
@@ -445,43 +449,6 @@
       "unique_page_views": "Unique sessions",
       "online_users": "Online users"
     }
-  },
-  "docs": {
-    "titles": {
-      "start": "Πρώτα βήματα",
-      "umd": "Έκδοση UMD",
-      "npm": "Πακέτο NPM",
-      "int": "Integrations",
-      "how": "Πώς να..",
-      "pv": "Παρακολουθήστε τις προβολές σελίδων",
-      "ce": "Παρακολούθηση προσαρμοσμένων συμβάντων",
-      "api": "API"
-    },
-    "install": "Μπορείτε επίσης να εγκαταστήσετε το σενάριο παρακολούθησης με NPM ή Yarn",
-    "import": "Στη συνέχεια θα πρέπει να εισαγάγετε την ενότητα στη ρίζα του έργου σας, για παράδειγμα",
-    "track": "Μετά μπορείτε να παρακολουθείτε ό, τι θέλετε.\nΔιαβάστε τη λεπτομερή τεκμηρίωση σχετικά με τις παραμέτρους παρακολούθησης παρακάτω.",
-    "integrations": "We support the following integrations (click on the title for details)",
-    "3rdPartyInt": "There are also integrations made by the community",
-    "pv": "Το σενάριο παρακολούθησης Swetrix.js παρέχει έναν τρόπο συλλογής ενός συμβάντος προβολής σελίδας μόλις φορτωθεί η σελίδα.\nΑυτό μπορεί να επιτευχθεί μέσω της κλήσης της συνάρτησης <url>trackViews()</url>:",
-    "ce": "Εκτός από την παρακολούθηση των προβολών σελίδων, παρέχουμε τη δυνατότητα παρακολούθησης προσαρμοσμένων συμβάντων.\nΓια παράδειγμα, αν θέλετε να παρακολουθείτε ένα συμβάν όπως \"Εγγραφή\" ή \"Εγγραφή στο ενημερωτικό δελτίο\", αυτή η λειτουργία θα ήταν πολύ χρήσιμη.\nΚάτω από την οθόνη, η αρχή αυτής της λειτουργίας είναι παρόμοια με την trackViews.",
-    "init": "Αυτή η λειτουργία χρησιμοποιείται για την αρχικοποίηση των αναλυτικών στοιχείων.\nΒασικά, ενημερώνετε το σενάριο για το έργο με το οποίο θέλετε να το χρησιμοποιήσετε, καθώς και καθορίζετε τις προσαρμοσμένες παραμέτρους σας, αν χρειάζεται.",
-    "tr": "Με αυτή τη λειτουργία μπορείτε να παρακολουθείτε οποιαδήποτε προσαρμοσμένα συμβάντα θέλετε.\nΔεν θα πρέπει ποτέ να στέλνετε οποιαδήποτε αναγνωρίσιμα δεδομένα (όπως αναγνωριστικό χρήστη, email, cookie συνεδρίας κ. λπ.) ως όνομα συμβάντος.\nΟ συνολικός αριθμός των κλήσεων παρακολούθησης και το ποσοστό μετατροπής τους θα αποθηκευτούν.",
-    "tv": {
-      "call": "Η κλήση του trackViews θα έχει ως αποτέλεσμα την αποστολή των δεδομένων σχετικά με τον χρήστη στους διακομιστές μας.\nΤα δεδομένα αυτά θα περιλαμβάνουν τις επόμενες παραμέτρους, εάν είναι διαθέσιμες:\n",
-      "gather": "On the server side we also gather users IP Address and User Agent.\nThis data is used to detect whether the page view is unique or not.\n<b>We DO NOT store neither IP Address nor User Agent as a raw strings</b>, such data is stored as a salted hash for no longer than 30 minutes or 12:00 AM UTC, whatever happens first.\nAfter this timeframe the identifiable data is forever deleted from our servers.",
-      "params": {
-        "pid": "το μοναδικό αναγνωριστικό έργου με το οποίο σχετίζεται η αίτηση.",
-        "lc": "τοπική γλώσσα των χρηστών (π.χ. en_US ή uk_UA).",
-        "tz": "ζώνη ώρας των χρηστών (π.χ. Ευρώπη/Χέλσι).",
-        "ref": "η διεύθυνση URL της προηγούμενης ιστοσελίδας από την οποία ανοίχτηκε μια σελίδα.",
-        "so": "την πηγή της σελίδας ('ref' | 'source' | 'utm_source' παράμετρος GET).",
-        "me": "Μέσο UTM ('utm_medium' παράμετρος GET).",
-        "ca": "Καμπάνια UTM ('utm_campaign' παράμετρος GET).",
-        "pg": "τη σελίδα που βλέπει ο χρήστης αυτή τη στιγμή (π.χ. /hello)."
-      }
-    },
-    "tvReturn": "The trackViews function returns a Promise with an object with some methods allowing you to alter the behaviour of page tracking.",
-    "contents": "Περιεχόμενα"
   },
   "notFoundPage": {
     "title": "Η σελίδα δε βρέθηκε",
@@ -637,7 +604,7 @@
       "upToXWebsites": "Add up to {{amount}} websites.",
       "xMoDataRetention": "{{amount}} μήνες διατήρησης δεδομένων.",
       "evXPlanIncl": "Το σχέδιο {{plan}} περιλαμβάνει.",
-      "smallBusiSupport": "Αγοράζοντας αυτό το προϊόν υποστηρίζετε μια μικρή επιχείρηση.",
+      "smallBusiSupport": "By buying this you are supporting a small business.",
       "dataExports": "Unlimited data exports.",
       "dataOwnership": "100% data ownership.",
       "noBanners": "No cookie banners required.",

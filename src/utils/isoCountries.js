@@ -7,6 +7,7 @@ import countriesUk from 'i18n-iso-countries/langs/uk.json'
 import countriesZh from 'i18n-iso-countries/langs/zh.json'
 import countriesRu from 'i18n-iso-countries/langs/ru.json'
 import countriesSv from 'i18n-iso-countries/langs/sv.json'
+import countriesPl from 'i18n-iso-countries/langs/pl.json'
 
 countries.registerLocale(countriesEn)
 countries.registerLocale(countriesDe)
@@ -16,5 +17,6 @@ countries.registerLocale(countriesHi)
 countries.registerLocale(countriesUk)
 countries.registerLocale(countriesZh)
 countries.registerLocale(countriesSv)
+countries.registerLocale(countriesPl)
 
 export default countries
