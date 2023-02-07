@@ -22,9 +22,9 @@ const api = axios.create({
 // Function that will be called to refresh authorization
 const refreshAuthLogic = (failedRequest) =>
   axios
-    .post(`${baseURL}/v1/auth/refresh-token`, null, {
+    .post(`${baseURL}v1/auth/refresh-token`, null, {
       headers: {
-        Authorization: `Bearer ${getRefreshToken}`,
+        Authorization: `Bearer ${getRefreshToken()}`,
       },
     })
     .then((tokenRefreshResponse) => {
@@ -33,6 +33,12 @@ const refreshAuthLogic = (failedRequest) =>
       // eslint-disable-next-line
       failedRequest.response.config.headers.Authorization = `Bearer ${accessToken}`
       return Promise.resolve()
+    })
+    .catch((error) => {
+      removeAccessToken()
+      removeRefreshToken()
+      store.dispatch(authActions.logout())
+      return Promise.reject(error)
     })
 
 // Instantiate the interceptor
@@ -48,18 +54,6 @@ api.interceptors.request.use(
     return config
   },
   (error) => {
-    return Promise.reject(error)
-  },
-)
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.data.statusCode === 401) {
-      removeAccessToken()
-      removeRefreshToken()
-      store.dispatch(authActions.logout())
-    }
     return Promise.reject(error)
   },
 )
