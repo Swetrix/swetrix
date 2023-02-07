@@ -7,7 +7,7 @@ import Title from 'components/Title'
 
 const socialIcons = {
   LinkedIn: (
-    <img className='h-6 w-6 opacity-75 hover:opacity-90 bg-white rounded' aria-hidden='true' src='/assets/linkedin.svg' alt='' />
+    <img className='h-6 w-6 opacity-75 hover:opacity-90 bg-white rounded' aria-hidden='true' src='/assets/linkedin.svg' alt='LinkedIn' />
   ),
   Github: (
     <svg className='h-6 w-6' fill='currentColor' viewBox='0 0 24 24'>
@@ -24,7 +24,7 @@ const Teammate = ({
   photo, name, role, socials, desc,
 }) => (
   <div className='flex flex-col lg:flex-row mt-6'>
-    <img alt='' src={photo} className='rounded-xl shadow-lg w-80' />
+    <img alt={name} src={photo} className='rounded-xl shadow-lg w-80' />
     <div className='ml-0 lg:ml-2'>
       <p className='text-3xl mt-2 lg:mt-0 font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
         {name}
@@ -34,7 +34,7 @@ const Teammate = ({
       </p>
       <div className='flex space-x-4 mt-2'>
         {_map(socials, (value, key) => (
-          <a key={value} href={value} title={key} target='_blank' rel='noopener noreferrer' className='text-gray-400 hover:text-gray-300'>
+          <a key={value} href={value} title={key} target='_blank' rel='noopener noreferrer' className='text-gray-400 hover:text-gray-300' aria-label={`${key} (opens in a new tab)`}>
             <span className='sr-only'>{key}</span>
             {socialIcons[key]}
           </a>
@@ -109,7 +109,7 @@ const About = () => (
           Swetrix was launched in August 2021 as a project that focuses on user privacy and transparency, while at the same time offering the same functionality as competitors like Google Analytics.
           <br />
           Swetrix is completely&nbsp;
-          <a href={GITHUB_URL} className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noopener noreferrer'>
+          <a href={GITHUB_URL} className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noopener noreferrer' aria-label='Source code (opens in a new tab)'>
             open source
           </a>
           , we don't use cookies to track users so you can forget about cookie banners using our service.

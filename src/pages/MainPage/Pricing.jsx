@@ -289,6 +289,7 @@ const Pricing = ({ t, language }) => {
                       <Link
                         className='mt-8 block w-full bg-indigo-600 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
                         to={routes.signup}
+                        aria-label={t('titles.signup')}
                       >
                         {tier.planCode === 'free' ? t('common.getStarted') : t('pricing.upgrade')}
                       </Link>

@@ -66,6 +66,7 @@ const LiveVisitorsDropdown = ({ live, projectId }) => {
                       country={cc}
                       size={21}
                       alt=''
+                      aria-hidden='true'
                     />
                     <p className='mr-2'>{os}</p>
                     <p className='mr-2'>{br}</p>

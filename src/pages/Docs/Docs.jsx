@@ -180,7 +180,7 @@ const Docs = () => {
             <ul className='ml-5 text-lg list-disc marker:text-gray-900 dark:marker:text-gray-50'>
               {_map(integrations, ({ name, link }) => (
                 <li key={name}>
-                  <a href={link} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer'>
+                  <a href={link} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer' aria-label={`${name} (opens in a new tab)`}>
                     {name}
                   </a>
                 </li>
@@ -193,7 +193,7 @@ const Docs = () => {
             <ul className='ml-5 text-lg list-disc marker:text-gray-900 dark:marker:text-gray-50'>
               {_map(thirdPartyIntegrations, ({ name, link }) => (
                 <li key={name}>
-                  <a href={link} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer'>
+                  <a href={link} className='flex hover:underline hover:opacity-80 text-indigo-600 dark:text-indigo-400 ml-1' target='_blank' rel='noopener noreferrer' aria-label={`${name} (opens in a new tab)`}>
                     {name}
                   </a>
                 </li>

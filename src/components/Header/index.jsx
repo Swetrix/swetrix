@@ -65,9 +65,9 @@ const Header = ({ authenticated, theme, themeType }) => {
               <Link to={routes.main}>
                 <span className='sr-only'>Swetrix</span>
                 {themeType === THEME_TYPE.christmas ? (
-                  <img className='h-10' src='/assets/logo_white_christmas.png' alt='' />
+                  <img className='h-10' src='/assets/logo_white_christmas.png' alt='Swetrix' />
                 ) : (
-                  <img className='h-10' src='/assets/logo_white.svg' alt='' />
+                  <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
                 )}
               </Link>
               <div className='hidden ml-10 space-x-1 lg:flex'>
@@ -116,13 +116,13 @@ const Header = ({ authenticated, theme, themeType }) => {
                 selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
                 title={(
                   <>
-                    <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' />
+                    <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' aria-hidden='true' />
                     {languages[language]}
                   </>
                 )}
                 labelExtractor={(lng) => (
                   <div className='flex'>
-                    <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt='' />
+                    <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt='' aria-hidden='true' />
                     {languages[lng]}
                   </div>
                 )}
@@ -148,7 +148,7 @@ const Header = ({ authenticated, theme, themeType }) => {
                     {t('auth.common.signin')}
                   </Link>
                   {!isSelfhosted && (
-                    <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-gray-700 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-gray-600'>
+                    <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-gray-700 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-gray-600' aria-label={t('titles.signup')}>
                       {t('common.getStarted')}
                     </Link>
                   )}
@@ -220,12 +220,12 @@ const Header = ({ authenticated, theme, themeType }) => {
                   <span className='sr-only'>Swetrix</span>
                   {theme === 'dark' ? (
                     themeType === THEME_TYPE.christmas ? (
-                      <img className='h-10' src='/assets/logo_white_christmas.png' alt='' />
+                      <img className='h-10' src='/assets/logo_white_christmas.png' alt='Swetrix' />
                     ) : (
-                      <img className='h-10' src='/assets/logo_white.svg' alt='' />
+                      <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
                     )
                   ) : (
-                    <img className='h-10' src='/assets/logo_blue.svg' alt='' />
+                    <img className='h-10' src='/assets/logo_blue.svg' alt='Swetrix' />
                   )}
                 </Link>
                 <Popover.Button ref={buttonRef} className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
@@ -244,13 +244,13 @@ const Header = ({ authenticated, theme, themeType }) => {
                   selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
                   title={(
                     <>
-                      <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' />
+                      <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' aria-hidden='true' />
                       {languages[language]}
                     </>
                   )}
                   labelExtractor={(lng) => (
                     <div className='flex'>
-                      <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt='' />
+                      <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt='' aria-hidden='true' />
                       {languages[lng]}
                     </div>
                   )}
@@ -282,7 +282,7 @@ const Header = ({ authenticated, theme, themeType }) => {
                       </Link>
                     </div>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routes.signup} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
+                      <Link to={routes.signup} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700' aria-label={t('titles.signup')}>
                         {t('common.getStarted')}
                       </Link>
                     </div>

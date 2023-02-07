@@ -93,7 +93,7 @@ const Main = () => {
                         <div className='h-6 bg-slate-700 w-full rounded-md' />
                       ) : (
                         <a
-                          className='text-indigo-500 dark:text-indigo-600 hover:underline font-semibold'
+                          className='text-indigo-400 hover:underline font-semibold'
                           href={`${process.env.REACT_APP_BLOG_URL}post/${lastBlogPost.url_path}`}
                           target='_blank'
                           rel='noopener'
@@ -108,13 +108,23 @@ const Main = () => {
                       {t('main.trackEveryMetric')}
                     </p>
                     <div className='mt-10 flex flex-col items-center sm:flex-row'>
-                      <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
+                      <Link
+                        to={routes.signup}
+                        className='rounded-md border !duration-300 transition-all w-full sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'
+                        aria-label={t('titles.signup')}
+                      >
                         <span className='text-base font-semibold mr-1'>
                           {t('main.start')}
                         </span>
                         <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
                       </Link>
-                      <a href={LIVE_DEMO_URL} className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-gray-200 border w-full sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-gray-800' target='_blank' rel='noopener noreferrer'>
+                      <a
+                        href={LIVE_DEMO_URL}
+                        className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 !border-gray-200 border w-full sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-white bg-transparent hover:bg-gray-800'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
+                      >
                         <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
                       </a>
                     </div>
@@ -143,13 +153,19 @@ const Main = () => {
                   <img src='/assets/CoreFeaturesLight.png' className='md:max-w-md md:mr-3 mt-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />
                 </picture>
                 <div className='max-w-lg'>
-                  <h1 className='font-extrabold text-4xl dark:text-white text-gray-800'>
+                  <h2 className='font-extrabold text-4xl dark:text-white text-gray-800'>
                     {t('main.coreFeatures.title')}
-                  </h1>
+                  </h2>
                   <p className='mt-6 dark:text-gray-400 text-gray-600 mb-11'>
                     {t('main.coreFeatures.desc')}
                   </p>
-                  <a href={LIVE_DEMO_URL} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center' target='_blank' rel='noopener noreferrer'>
+                  <a
+                    href={LIVE_DEMO_URL}
+                    className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
+                  >
                     {t('common.liveDemo')}
                     <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </a>
@@ -159,16 +175,22 @@ const Main = () => {
               {/* section Marketplace & build-in Extensions */}
               <section className='flex pt-20 md:pt-30 flex-col md:flex-row items-center md:justify-between max-w-7xl m-auto'>
                 <div className='max-w-[516px]'>
-                  <h1 className='font-extrabold text-4xl text-gray-800 dark:text-white'>
+                  <h2 className='font-extrabold text-4xl text-gray-800 dark:text-white'>
                     {t('main.marketplace.title')}
-                  </h1>
+                  </h2>
                   <p className='mt-6 text-gray-600 dark:text-gray-400 mb-3'>
                     {t('main.marketplace.desc1')}
                   </p>
                   <p className='text-gray-600 dark:text-gray-400 mb-11'>
                     {t('main.marketplace.desc2')}
                   </p>
-                  <a href={MARKETPLACE_URL} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center' target='_blank' rel='noopener noreferrer'>
+                  <a
+                    href={MARKETPLACE_URL}
+                    className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label='Swetrix Marketplace (opens in a new tab)'
+                  >
                     {t('main.visitAddons')}
                     <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </a>
@@ -180,9 +202,9 @@ const Main = () => {
               <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <img className='md:max-w-[360px] md:mr-3 mt-3 md:mt-0 lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
                 <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0 md:pt-8'>
-                  <h1 className='font-extrabold mb-6 text-4xl text-gray-800 dark:text-white'>
+                  <h2 className='font-extrabold mb-6 text-4xl text-gray-800 dark:text-white'>
                     {t('main.privacy.title')}
-                  </h1>
+                  </h2>
                   {_map(t('main.privacy.list', { returnObjects: true }), (item) => (
                     <div key={item.label} className='mb-4 flex items-center'>
                       <div className='mr-3'>
@@ -195,7 +217,7 @@ const Main = () => {
                       </p>
                     </div>
                   ))}
-                  <Link to={routes.privacy} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'>
+                  <Link to={routes.privacy} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center' aria-label={t('footer.pp')}>
                     {t('main.dataProtection')}
                     <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </Link>
@@ -223,8 +245,8 @@ const Main = () => {
                             t={t}
                             i18nKey='main.signupTerms'
                             components={{
-                              tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
-                              pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
+                              tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
+                              pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
                             }}
                           />
                         </p>
@@ -242,7 +264,7 @@ const Main = () => {
                   />
                   <picture>
                     <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
-                    <img src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'} className='relative z-50 hidden md:block' alt='' />
+                    <img src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'} className='relative z-50 hidden md:block' alt='Swetrix Dashboard overview' />
                   </picture>
                 </div>
               </div>
@@ -252,9 +274,9 @@ const Main = () => {
             <section className='bg-white dark:bg-gray-900 pt-20 relative pb-14'>
               <BackgroundSvg className='absolute -left-8' type='shapes' />
               <div className='mx-auto text-gray-800 font-extrabold text-3xl sm:text-5xl w-fit relative'>
-                <h1 className='relative z-20 dark:text-white'>
+                <h2 className='relative z-20 dark:text-white'>
                   {t('main.coreFeaturesBlock')}
-                </h1>
+                </h2>
                 <BackgroundSvg className='absolute right-0 sm:-right-16 top-9 z-10 opacity-30' type='semicircle' />
               </div>
               <div className='mt-[60px] flex items-center max-w-7xl w-full mx-auto flex-wrap justify-center xl:justify-between'>
@@ -273,9 +295,9 @@ const Main = () => {
             {/* end Core features section */}
             {/* section supports */}
             <section className='bg-white dark:bg-gray-800 pt-24 sm:px-5 px-3 relative pb-28'>
-              <h1 className='mx-auto text-gray-800 dark:text-white font-bold text-3xl sm:ext-5xl w-fit text-center'>
+              <h2 className='mx-auto text-gray-800 dark:text-white font-bold text-3xl sm:ext-5xl w-fit text-center'>
                 {t('main.supports')}
-              </h1>
+              </h2>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-7xl w-full mx-auto justify-between'>
                 <Telegram theme={theme} className='max-w-[64px] sm:max-w-[150px] max-h-16' />
                 <NuxtJS theme={theme} className='max-w-[106px] sm:max-w-[150px] max-h-12' />
@@ -303,9 +325,9 @@ const Main = () => {
                   }}
                 />
                 <section className='relative z-20 px-3'>
-                  <h1 className='mt-20 text-center text-3xl sm:text-5xl text-white font-extrabold max-w-lg w-full mx-auto'>
+                  <h2 className='mt-20 text-center text-3xl sm:text-5xl text-white font-extrabold max-w-lg w-full mx-auto'>
                     {t('main.marketplaceBlock')}
-                  </h1>
+                  </h2>
                   <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-24 justify-between justify-items-center text-white pt-20 pb-36'>
                     {_map(t('main.mFeatures', { returnObjects: true }), (item, index) => (
                       <div key={item.name} className='max-w-[310px] w-full'>
@@ -338,9 +360,9 @@ const Main = () => {
                 <BackgroundSvg type='shapes' />
               </div>
               <div className='max-w-[1000px] w-full mx-auto'>
-                <h1 className='text-gray-800 text-center font-extrabold text-5xl relative z-20 dark:text-white'>
+                <h2 className='text-gray-800 text-center font-extrabold text-5xl relative z-20 dark:text-white'>
                   {t('main.testimonials')}
-                </h1>
+                </h2>
                 <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
                   {_map(t('main.lTestimonials', { returnObjects: true }), (item, index) => (
                     <div
@@ -374,7 +396,7 @@ const Main = () => {
               <section className='max-w-7xl w-full mx-auto bg-gray-800 overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
                 <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
                   <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
-                    <h1 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px] text-white mb-3'>
+                    <h2 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px] text-white mb-3'>
                       <Trans
                         t={t}
                         i18nKey='main.os'
@@ -383,11 +405,11 @@ const Main = () => {
                           gradi: <span className='text-transparent bg-clip-text' style={{ background: 'linear-gradient(91.37deg, #4E46DD 10%, #5C3CDA 55%, #A274EF 100%)' }} />,
                         }}
                       />
-                    </h1>
+                    </h2>
                     <p className='text-gray-300 mb-9 font-medium text-base sm:text-lg'>
                       {t('main.demoGeoReports')}
                     </p>
-                    <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'>
+                    <Link to={routes.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent' aria-label={t('titles.signup')}>
                       <span className='text-base font-semibold mr-1'>{t('main.start')}</span>
                       <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                     </Link>
@@ -407,7 +429,7 @@ const Main = () => {
               <div className='absolute left-10'>
                 <BackgroundSvg type='shapes' />
               </div>
-              <h1 className='text-gray-800 text-5xl font-extrabold text-center relative z-20 dark:text-white'>Checklist</h1>
+              <h2 className='text-gray-800 text-5xl font-extrabold text-center relative z-20 dark:text-white'>Checklist</h2>
               <div className='flex flex-col lg:flex-row items-center justify-between max-w-5xl w-full mx-auto mt-16'>
                 <div
                   className='max-w-xs w-full mx-auto shadow-lg overflow-hidden relative z-10'
@@ -557,16 +579,16 @@ const Main = () => {
                 <img src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'} loading='lazy' alt='Swetrix open source' />
               </picture>
               <div className='max-w-lg w-full lg:ml-5'>
-                <h1 className='text-3xl md:text-4xl text-white font-extrabold'>
+                <h2 className='text-3xl md:text-4xl text-white font-extrabold'>
                   <Trans
                     t={t}
                     i18nKey='main.opensourceAdv'
                     components={{
                       // eslint-disable-next-line jsx-a11y/anchor-has-content
-                      url: <a href={GITHUB_URL} className='hover:underline' target='_blank' rel='noopener noreferrer' />,
+                      url: <a href={GITHUB_URL} className='hover:underline' target='_blank' rel='noopener noreferrer' aria-label='Source code (opens in a new tab)' />,
                     }}
                   />
-                </h1>
+                </h2>
                 <hr className='border-gray-600 border-1 max-w-[346px] my-6' />
                 <div className='max-w-md w-full lg:mb-0 mb-9'>
                   {_map(t('main.opensource', { returnObjects: true }), (item) => (
@@ -591,9 +613,9 @@ const Main = () => {
               </div>
               <div className='max-w-5xl w-full mx-auto px-3'>
                 <div className='max-w-sm w-full mx-auto'>
-                  <h1 className='text-gray-900 dark:text-white text-3xl md:text-4xl font-extrabold text-center'>
+                  <h2 className='text-gray-900 dark:text-white text-3xl md:text-4xl font-extrabold text-center'>
                     {t('main.becomeDev')}
-                  </h1>
+                  </h2>
                   <p className='text-gray-600 dark:text-gray-400 text-base font-medium text-center mt-2'>
                     {t('main.becomeDevDesc')}
                   </p>

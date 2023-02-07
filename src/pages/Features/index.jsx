@@ -29,7 +29,7 @@ const Features = () => {
               i18nKey='features.feature1Content'
               components={{
                 docs: <HashLink className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' to={`${routes.docs}#docs-tv`} />,
-                gh: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href='https://github.com/Swetrix' target='_blank' rel='noopener noreferrer' />,
+                gh: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href='https://github.com/Swetrix' target='_blank' rel='noopener noreferrer' aria-label='Swetrix Github (opens in a new tab)' />,
               }}
             />
           </p>
@@ -42,8 +42,8 @@ const Features = () => {
               t={t}
               i18nKey='features.feature2Content'
               components={{
-                firefox: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href={FIREFOX_ADDON_URL} target='_blank' rel='noopener noreferrer' />,
-                chrome: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href={CHROME_EXTENSION_URL} target='_blank' rel='noopener noreferrer' />,
+                firefox: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href={FIREFOX_ADDON_URL} target='_blank' rel='noopener noreferrer' aria-label='Firefox Addon (opens in a new tab)' />,
+                chrome: <a className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' href={CHROME_EXTENSION_URL} target='_blank' rel='noopener noreferrer' aria-label='Chrome Extension (opens in a new tab)' />,
               }}
             />
           </p>
@@ -74,6 +74,7 @@ const Features = () => {
             <Link
               to={routes.signup}
               className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+              aria-label={t('titles.signup')}
             >
               {t('common.getStarted')}
             </Link>
