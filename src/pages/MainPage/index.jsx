@@ -48,12 +48,13 @@ const processedList = _reduce(COMPETITORS_LIST, (acc, curr) => {
   return acc
 }, [])
 
+// The order in the table is defined by the Swetrix object
 const COMPETITOR_FEATURE_TABLE = {
   Swetrix: {
+    'main.competitiveFeatures.gdpr': true, // GDPR-compatible
     'main.competitiveFeatures.open': true, // Open-source
     'main.competitiveFeatures.perf': true, // Performance
     'main.competitiveFeatures.ext': true, // Custom extensions
-    'main.competitiveFeatures.gdpr': true, // GDPR-compatible
     'main.competitiveFeatures.alrt': true, // Custom alerts
     'main.competitiveFeatures.pbld': true, // Public dashboards
     'main.competitiveFeatures.shad': true, // Dashboard sharing
@@ -62,10 +63,10 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.api': true, // Has a free plan
   },
   'Google Analytics': {
+    'main.competitiveFeatures.gdpr': false,
     'main.competitiveFeatures.open': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
-    'main.competitiveFeatures.gdpr': false,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': false,
     'main.competitiveFeatures.shad': false,
@@ -74,10 +75,10 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.api': true,
   },
   Fathom: {
-    'main.competitiveFeatures.open': false,
+    'main.competitiveFeatures.gdpr': false,
+    'main.competitiveFeatures.open': null,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
-    'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.alrt': true,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': true,
@@ -86,10 +87,10 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.api': true,
   },
   Plausible: {
-    'main.competitiveFeatures.open': false,
+    'main.competitiveFeatures.gdpr': false,
+    'main.competitiveFeatures.open': true,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
-    'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': true,
@@ -98,10 +99,10 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.api': true,
   },
   'Simple Analytics': {
+    'main.competitiveFeatures.gdpr': false,
     'main.competitiveFeatures.open': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
-    'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': false,
@@ -463,7 +464,7 @@ const Main = () => {
                                   {_map(SWETRIX_AND_COMPETITORS_LIST, (item) => (
                                     <th
                                       scope='col'
-                                      className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-50 sm:pl-6'
+                                      className='w-1/6 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-50 sm:pl-6'
                                     >
                                       {item}
                                     </th>
@@ -473,18 +474,24 @@ const Main = () => {
                               <tbody className='divide-y divide-gray-600 bg-gray-800'>
                                 {_map(COMPETITOR_FEATURE_TABLE.Swetrix, (_, key) => (
                                   <tr key={key}>
-                                    <td className='px-3 py-4 text-sm text-gray-50 sm:pl-6'>
+                                    <td className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'>
                                       {t(key)}
                                     </td>
                                     {_map(SWETRIX_AND_COMPETITORS_LIST, (service) => (
                                       <td
                                         key={`${key}-${service}`}
-                                        className='px-3 py-4 text-sm text-gray-50 sm:pl-6'
+                                        className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'
                                       >
-                                        {COMPETITOR_FEATURE_TABLE[service][key] ? (
+                                        {COMPETITOR_FEATURE_TABLE[service][key] && (
                                           <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-500' aria-label={t('common.yes')} />
-                                        ) : (
+                                        )}
+                                        {COMPETITOR_FEATURE_TABLE[service][key] === false && (
                                           <XMarkIcon className='flex-shrink-0 h-5 w-5 text-red-500' aria-label={t('common.no')} />
+                                        )}
+                                        {COMPETITOR_FEATURE_TABLE[service][key] === null && (
+                                          <p className='text-gray-50 h-5 w-5 text-center'>
+                                            -
+                                          </p>
                                         )}
                                       </td>
                                     ))}
