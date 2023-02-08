@@ -37,7 +37,7 @@ import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { CategoriesService } from '../categories/categories.service'
 import { SortByExtension } from './enums/sort-by-extension.enum'
 import { CdnService } from '../cdn/cdn.service'
-import { CurrentUserId } from 'src/common/decorators/current-user-id.decorator'
+import { CurrentUserId } from 'src/auth/decorators/current-user-id.decorator'
 import { Extension } from './entities/extension.entity'
 import { GetInstalledExtensionsQueriesDto } from './dtos/queries/get-installed-extensions.dto'
 import { InstallExtensionParamsDto } from './dtos/params/install-extension.dto'
@@ -45,10 +45,12 @@ import { UninstallExtensionParamsDto } from './dtos/params/uninstall-extension.d
 import { InstallExtensionBodyDto } from './dtos/bodies/install-extension.dto'
 import { UninstallExtensionBodyDto } from './dtos/bodies/uninstall-extension.dto'
 import { ProjectService } from '../../project/project.service'
-import { Roles } from '../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
+import { Roles } from '../../auth/decorators/roles.decorator'
+import { RolesGuard } from '../../auth/guards/roles.guard'
 import { UserType } from '../../user/entities/user.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { Auth } from 'src/auth/decorators'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -72,6 +74,7 @@ export class ExtensionsController {
   ) {}
 
   @Get('installed')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   async getInstalledExtensions(
     @Query() queries: GetInstalledExtensionsQueriesDto,
     @CurrentUserId() userId: string,
@@ -158,8 +161,8 @@ export class ExtensionsController {
     required: false,
     type: String,
   })
-  @Roles(UserType.ADMIN)
-  @UseGuards(RolesGuard)
+  @Auth([UserType.ADMIN])
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin')
   async getAllExtensionsAdmin(@Query() queries: GetAllExtensionsQueries): Promise<{
     extensions: Extension[]
@@ -225,6 +228,7 @@ export class ExtensionsController {
     type: String,
   })
   @Get('published')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   async getAllPublishedExtensions(
     @Query() queries: GetAllExtensionsQueries,
     @CurrentUserId() userId: string,
@@ -367,7 +371,7 @@ export class ExtensionsController {
     type: String,
   })
   @Roles(UserType.ADMIN)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin/search')
   async searchExtensionAdmin(@Query() queries: SearchExtensionQueries): Promise<{
     extensions: Extension[]
@@ -407,6 +411,7 @@ export class ExtensionsController {
   }
 
   @Post()
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'mainImage', maxCount: 1 },
@@ -494,7 +499,7 @@ export class ExtensionsController {
       { name: 'file', maxCount: 1 },
     ]),
   )
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @Patch(':extensionId')
   async updateExtension(
@@ -627,7 +632,7 @@ export class ExtensionsController {
     example: 'de025965-3221-4d09-ba35-a09da59793a6',
     type: String,
   })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':extensionId/approve')
   async approveExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
@@ -652,7 +657,7 @@ export class ExtensionsController {
     example: 'de025965-3221-4d09-ba35-a09da59793a6',
     type: String,
   })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':extensionId/reject')
   async rejectExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
@@ -690,6 +695,7 @@ export class ExtensionsController {
   }
 
   @Post(':extensionId/install')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   async installExtension(
     @Param() params: InstallExtensionParamsDto,
     @Body() body: InstallExtensionBodyDto,
@@ -755,6 +761,7 @@ export class ExtensionsController {
   }
 
   @Delete(':extensionId/uninstall')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
   async uninstallExtension(
     @Param() params: UninstallExtensionParamsDto,
     @Body() body: UninstallExtensionBodyDto,

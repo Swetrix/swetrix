@@ -13,6 +13,7 @@ import { Extension } from '../../marketplace/extensions/entities/extension.entit
 import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
+import { RefreshToken } from './refresh-token.entity'
 export enum PlanCode {
   free = 'free',
   freelancer = 'freelancer',
@@ -27,6 +28,7 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 5000,
     maxProjects: 10,
     maxAlerts: 1,
+    maxApiKeyRequestsPerHour: 5,
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
@@ -36,6 +38,7 @@ export const ACCOUNT_PLANS = {
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
     maxAlerts: 10,
+    maxApiKeyRequestsPerHour: 600,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
@@ -45,6 +48,7 @@ export const ACCOUNT_PLANS = {
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
+    maxApiKeyRequestsPerHour: 6000, // REVIEW
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
@@ -54,6 +58,7 @@ export const ACCOUNT_PLANS = {
     pid: '752318',
     ypid: '776471',
     maxAlerts: 100,
+    maxApiKeyRequestsPerHour: 60000, // REVIEW
   },
 }
 
@@ -215,6 +220,13 @@ export class User {
   })
   isTelegramChatIdConfirmed: boolean
 
+  @Column({
+    type: 'enum',
+    enum: TimeFormat,
+    default: TimeFormat['12-hour'],
+  })
+  timeFormat: TimeFormat
+
   @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
   @JoinTable()
   extensions: ExtensionToUser[]
@@ -227,10 +239,7 @@ export class User {
   @JoinTable()
   complaints: Complaint[]
 
-  @Column({
-    type: 'enum',
-    enum: TimeFormat,
-    default: TimeFormat['12-hour'],
-  })
-  timeFormat: TimeFormat
+  @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
+  @JoinTable()
+  refreshTokens: RefreshToken[]
 }

@@ -39,14 +39,20 @@ import {
   Theme,
   TimeFormat,
 } from './entities/user.entity'
-import { Roles } from '../common/decorators/roles.decorator'
+import { Roles } from '../auth/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
-import { GDPR_EXPORT_TIMEFRAME, clickhouse } from '../common/constants'
-import { RolesGuard } from '../common/guards/roles.guard'
+import {
+  GDPR_EXPORT_TIMEFRAME,
+  clickhouse,
+  isSelfhosted,
+  SELFHOSTED_UUID,
+  SELFHOSTED_EMAIL,
+} from '../common/constants'
+import { RolesGuard } from '../auth/guards/roles.guard'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
-import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
+import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
@@ -57,6 +63,7 @@ import { UserProfileDTO } from './dto/user.dto'
 import { checkRateLimit } from '../common/utils'
 import { InjectBot } from 'nestjs-telegraf'
 import { Scenes, Telegraf } from 'telegraf'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 dayjs.extend(utc)
 
@@ -64,7 +71,7 @@ export type TelegrafContext = Scenes.SceneContext
 
 @ApiTags('User')
 @Controller('user')
-@UseGuards(RolesGuard)
+@UseGuards(JwtAccessTokenGuard, RolesGuard)
 export class UserController {
   constructor(
     private readonly userService: UserService,
@@ -76,10 +83,39 @@ export class UserController {
     @InjectBot() private bot: Telegraf<TelegrafContext>,
   ) {}
 
+  @Get('/me')
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async me(@CurrentUserId() user_id: string): Promise<User> {
+    this.logger.log({ user_id }, 'GET /user/me')
+    let user
+
+    if (isSelfhosted) {
+      user = {
+        id: SELFHOSTED_UUID,
+        email: SELFHOSTED_EMAIL,
+      }
+    } else {
+      const sharedProjects = await this.projectService.findShare({
+        where: {
+          user: user_id,
+        },
+        relations: ['project'],
+      })
+      user = this.userService.processUser(
+        await this.userService.findOneWhere({ id: user_id }),
+      )
+
+      user.sharedProjects = sharedProjects
+    }
+
+    return this.userService.omitSensitiveData(user)
+  }
+
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async get(
@@ -91,7 +127,7 @@ export class UserController {
   }
 
   @Put('/theme')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async setTheme(
@@ -103,7 +139,7 @@ export class UserController {
 
   @Get('/search')
   @ApiQuery({ name: 'query', required: false })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async searchUsers(
@@ -114,7 +150,7 @@ export class UserController {
   }
 
   @Post('/')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async create(@Body() userDTO: UserProfileDTO): Promise<User> {
@@ -135,7 +171,7 @@ export class UserController {
   }
 
   @Post('/api-key')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async generateApiKey(
@@ -166,7 +202,7 @@ export class UserController {
   }
 
   @Delete('/api-key')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
@@ -183,7 +219,7 @@ export class UserController {
 
   @Delete('/:id')
   @HttpCode(204)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async delete(
@@ -227,7 +263,7 @@ export class UserController {
 
   @Delete('/')
   @HttpCode(204)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteSelf(@CurrentUserId() id: string): Promise<any> {
@@ -267,7 +303,7 @@ export class UserController {
   @Delete('/share/:shareId')
   @HttpCode(204)
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
@@ -297,7 +333,7 @@ export class UserController {
   @Get('/share/:shareId')
   @HttpCode(204)
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async acceptShare(
@@ -327,7 +363,7 @@ export class UserController {
   }
 
   @Post('/confirm_email')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(
@@ -361,7 +397,7 @@ export class UserController {
   }
 
   @Put('/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async update(
@@ -397,7 +433,7 @@ export class UserController {
   }
 
   @Delete('/tg/:id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @HttpCode(204)
@@ -418,7 +454,7 @@ export class UserController {
   }
 
   @Put('/')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async updateCurrentUser(
@@ -541,7 +577,7 @@ export class UserController {
   }
 
   @Get('/export')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {

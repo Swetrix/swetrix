@@ -6,14 +6,17 @@ import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { User } from './entities/user.entity'
+import { User, ACCOUNT_PLANS } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
+import { RefreshToken } from './entities/refresh-token.entity'
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
   async create(userDTO: UserProfileDTO | User): Promise<User> {
@@ -130,6 +133,21 @@ export class UserService {
     }
   }
 
+  processUser(user: User): object {
+    // @ts-ignore
+    const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
+    const userData = {
+      // @ts-ignore
+      ...user,
+      password: undefined,
+      twoFactorRecoveryCode: undefined,
+      twoFactorAuthenticationSecret: undefined,
+      maxEventsCount,
+    }
+
+    return userData
+  }
+
   search(query: string): Promise<User[]> {
     return this.usersRepository
       .createQueryBuilder('user')
@@ -137,5 +155,48 @@ export class UserService {
       .where('email like :query', { query: `%${query}%` })
       .limit(5)
       .getMany()
+  }
+
+  public async findUser(email: string) {
+    return await this.usersRepository.findOne({ email })
+  }
+
+  public async createUser(user: Pick<User, 'email' | 'password'>) {
+    return await this.usersRepository.save(user)
+  }
+
+  public async findUserById(id: string) {
+    return await this.usersRepository.findOne({ id })
+  }
+
+  public async updateUser(id: string, user: Partial<Omit<User, 'id'>>) {
+    return await this.usersRepository.update({ id }, user)
+  }
+
+  public async saveRefreshToken(userId: string, refreshToken: string) {
+    return await this.refreshTokenRepository.save({
+      userId,
+      refreshToken,
+    })
+  }
+
+  public async findRefreshToken(userId: string, refreshToken: string) {
+    return await this.refreshTokenRepository.findOne({
+      where: {
+        userId,
+        refreshToken,
+      },
+    })
+  }
+
+  public async deleteRefreshToken(userId: string, refreshToken: string) {
+    await this.refreshTokenRepository.delete({
+      userId,
+      refreshToken,
+    })
+  }
+
+  public async findUserByApiKey(apiKey: string) {
+    return await this.usersRepository.findOne({ where: { apiKey } })
   }
 }

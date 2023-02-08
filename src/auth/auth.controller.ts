@@ -1,339 +1,412 @@
 import {
   Controller,
+  UseFilters,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
   Post,
   Body,
-  Req,
+  Ip,
+  ConflictException,
+  HttpCode,
+  HttpStatus,
   Get,
   Param,
-  BadRequestException,
-  UseGuards,
-  Ip,
+  UnauthorizedException,
   Headers,
-  UnprocessableEntityException,
 } from '@nestjs/common'
-import { Request } from 'express'
-import { ApiTags } from '@nestjs/swagger'
-
-import { AuthService } from './auth.service'
-import { UserLoginDTO } from './dto/user-login.dto'
-import { SignupUserDTO } from './dto/user-signup.dto'
-import { UserService } from '../user/user.service'
-import { MailerService } from '../mailer/mailer.service'
-import { ActionTokensService } from '../action-tokens/action-tokens.service'
-import { ActionTokenType } from '../action-tokens/action-token.entity'
-import { User, UserType } from '../user/entities/user.entity'
-import { ProjectService } from '../project/project.service'
-import { PasswordChangeDTO } from './dto/password-change.dto'
-import { RequestPasswordChangeDTO } from './dto/request-pass-change.dto'
-import { RolesGuard } from '../common/guards/roles.guard'
-import { Roles } from '../common/decorators/roles.decorator'
-import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
-import { checkRateLimit } from '../common/utils'
-import { LetterTemplate } from '../mailer/letter'
-import { AppLoggerService } from '../logger/logger.service'
-import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
-  isSelfhosted,
-  SELFHOSTED_EMAIL,
-  SELFHOSTED_PASSWORD,
-  SELFHOSTED_UUID,
-} from '../common/constants'
+  ApiTags,
+  ApiOperation,
+  ApiCreatedResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger'
+import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import * as _pick from 'lodash/pick'
-import { InjectBot } from 'nestjs-telegraf'
-import { TelegrafContext } from 'src/user/user.controller'
-import { Telegraf } from 'telegraf'
-import * as UAParser from 'ua-parser-js'
-import ct from 'countries-and-timezones'
 
-// TODO: Add logout endpoint to invalidate the token
+import { checkRateLimit } from 'src/common/utils'
+import { UserType } from 'src/user/entities/user.entity'
+import { UserService } from 'src/user/user.service'
+import { AuthService } from './auth.service'
+import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
+import {
+  RegisterResponseDto,
+  RegisterRequestDto,
+  LoginResponseDto,
+  LoginRequestDto,
+  VerifyEmailDto,
+  RequestResetPasswordDto,
+  ConfirmResetPasswordDto,
+  ResetPasswordDto,
+  ChangePasswordDto,
+  ConfirmChangeEmailDto,
+  RequestChangeEmailDto,
+} from './dtos'
+import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
+
 @ApiTags('Auth')
-@Controller('auth')
+@Controller({ path: 'auth', version: '1' })
+@UseFilters(new I18nValidationExceptionFilter())
+@UseGuards(JwtAccessTokenGuard)
+@UsePipes(
+  new ValidationPipe({
+    forbidNonWhitelisted: true,
+    forbidUnknownValues: true,
+    transform: true,
+    whitelist: true,
+  }),
+)
 export class AuthController {
   constructor(
-    private authService: AuthService,
-    private userService: UserService,
-    private mailerService: MailerService,
-    private actionTokensService: ActionTokensService,
-    private readonly projectService: ProjectService,
-    private readonly logger: AppLoggerService,
-    @InjectBot() private bot: Telegraf<TelegrafContext>,
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
   ) {}
 
-  @Get('/me')
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async me(@CurrentUserId() user_id: string): Promise<User> {
-    this.logger.log({ user_id }, 'GET /auth/me')
-    let user
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiCreatedResponse({
+    description: 'User registered',
+    type: RegisterResponseDto,
+  })
+  @Public()
+  @Post('register')
+  public async register(
+    @Body() body: RegisterRequestDto,
+    @I18n() i18n: I18nContext,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<RegisterResponseDto> {
+    const ip =
+      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
 
-    if (isSelfhosted) {
-      user = {
-        id: SELFHOSTED_UUID,
-        email: SELFHOSTED_EMAIL,
-      }
-    } else {
-      const sharedProjects = await this.projectService.findShare({
-        where: {
-          user: user_id,
-        },
-        relations: ['project'],
-      })
-      user = this.authService.processUser(
-        await this.userService.findOneWhere({ id: user_id }),
-      )
+    await checkRateLimit(ip, 'register', 5)
 
-      user.sharedProjects = sharedProjects
+    const user = await this.userService.findUser(body.email)
+
+    if (user) {
+      throw new ConflictException(i18n.t('user.emailAlreadyUsed'))
     }
 
-    return this.userService.omitSensitiveData(user)
+    if (body.checkIfLeaked) {
+      const isLeaked = await this.authService.checkIfLeaked(body.password)
+
+      if (isLeaked) {
+        throw new ConflictException(i18n.t('auth.leakedPassword'))
+      }
+    }
+
+    if (body.email === body.password) {
+      throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
+    }
+
+    const newUser = await this.authService.createUnverifiedUser(
+      body.email,
+      body.password,
+    )
+
+    const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
+
+    return {
+      accessToken: jwtTokens.accessToken,
+      refreshToken: jwtTokens.refreshToken,
+      user: this.userService.omitSensitiveData(newUser),
+    }
   }
 
-  @Post('/login')
-  async loginUser(
-    @Body() userLoginDTO: UserLoginDTO,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<any> {
-    this.logger.log({ userLoginDTO }, 'POST /auth/login')
+  @ApiOperation({ summary: 'Login a user' })
+  @ApiOkResponse({
+    description: 'User logged in',
+    type: LoginResponseDto,
+  })
+  @Public()
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  public async login(
+    @Body() body: LoginRequestDto,
+    @I18n() i18n: I18nContext,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<LoginResponseDto> {
     const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
+
     await checkRateLimit(ip, 'login', 10, 1800)
-    const { 'user-agent': userAgent } = headers
-    // await this.authService.checkCaptcha(userLoginDTO.recaptcha)
 
-    if (isSelfhosted) {
-      if (
-        userLoginDTO.email !== SELFHOSTED_EMAIL ||
-        userLoginDTO.password !== SELFHOSTED_PASSWORD
-      ) {
-        throw new UnprocessableEntityException('Email or password is incorrect')
-      }
-      return this.authService.login({
-        email: SELFHOSTED_EMAIL,
-      })
-    } else {
-      const user = await this.authService.validateUser(
-        userLoginDTO.email,
-        userLoginDTO.password,
-      )
-
-      if (user.isTwoFactorAuthenticationEnabled) {
-        const processedUser = this.authService.postLoginProcess(user)
-        return this.authService.login(processedUser)
-      }
-
-      const sharedProjects = await this.projectService.findShare({
-        where: {
-          user: user.id,
-        },
-        relations: ['project'],
-      })
-
-      user.sharedProjects = sharedProjects
-
-      if (user.isTelegramChatIdConfirmed && process.env.TG_BOT_TOKEN) {
-        const ua = UAParser(userAgent)
-        const br = ua.browser.name || 'Unknown'
-        const dv = ua.device.type || 'Desktop'
-        const os = ua.os.name || 'Unknown'
-        let country
-
-        if (headers['cf-ipcountry'] === 'XX') {
-          country = 'Unknown'
-        } else if (headers['cf-ipcountry'] === 'T1') {
-          country = 'Unknown (Tor Browser detected)'
-        } else {
-          ct.getCountry(headers['cf-ipcountry'])?.name || 'Unknown'
-        }
-
-        this.bot.telegram.sendMessage(
-          user.telegramChatId,
-          `🚨 *Someone has logged into your account!*` +
-            '\n\n' +
-            `Browser: \`${br}\`` +
-            '\n' +
-            `Device: \`${dv}\`` +
-            '\n' +
-            `OS: \`${os}\`` +
-            '\n' +
-            `Country: \`${country}\`` +
-            '\n' +
-            `IP: \`${ip}\`` +
-            '\n\n' +
-            `If it was you, ignore this message. If not, please contact customer support immediately.`,
-          {
-            parse_mode: 'Markdown',
-          },
-        )
-      }
-
-      return this.authService.login(user)
-    }
-  }
-
-  @UseGuards(SelfhostedGuard)
-  @Post('/register')
-  async register(
-    @Body() userDTO: SignupUserDTO,
-    /*@Body('recaptcha') recaptcha: string,*/ @Req() request: Request,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<any> {
-    this.logger.log({ userDTO }, 'POST /auth/register')
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-
-    if (userDTO.checkIfLeaked) {
-      await this.authService.checkIfPasswordLeaked(userDTO.password)
-    }
-
-    await checkRateLimit(ip, 'register', 6)
-
-    // await this.authService.checkCaptcha(recaptcha)
-    this.userService.validatePassword(userDTO.password)
-
-    const doesEmailExist = await this.userService.findOneWhere({
-      email: userDTO.email,
-    })
-
-    if (doesEmailExist) {
-      throw new BadRequestException('emailRegistered')
-    }
-
-    userDTO.password = await this.authService.hashPassword(userDTO.password)
-
-    try {
-      const userToUpdate = _pick(userDTO, ['email', 'password'])
-      const user = await this.userService.create(userToUpdate)
-      const actionToken = await this.actionTokensService.createForUser(
-        user,
-        ActionTokenType.EMAIL_VERIFICATION,
-      )
-      const url = `${request.headers.origin}/verify/${actionToken.id}`
-      await this.mailerService.sendEmail(userDTO.email, LetterTemplate.SignUp, {
-        url,
-      })
-      user.sharedProjects = []
-
-      return this.authService.login(user)
-    } catch (e) {
-      this.logger.log(
-        `[ERROR WHILE CREATING ACCOUNT]: ${e}`,
-        'POST /auth/register',
-        true,
-      )
-    }
-  }
-
-  @UseGuards(SelfhostedGuard)
-  @Get('/verify/:id')
-  async verify(@Param('id') id: string): Promise<User> {
-    this.logger.log({ id }, 'GET /auth/verify/:id')
-    let actionToken
-
-    try {
-      actionToken = await this.actionTokensService.find(id)
-    } catch {
-      throw new BadRequestException('Incorrect token provided')
-    }
-
-    if (actionToken.action === ActionTokenType.EMAIL_VERIFICATION) {
-      await this.userService.update(actionToken.user.id, {
-        ...actionToken.user,
-        isActive: true,
-      })
-      await this.actionTokensService.delete(actionToken.id)
-      return
-    }
-  }
-
-  @UseGuards(SelfhostedGuard)
-  @Get('/change-email/:id')
-  async changeEmail(@Param('id') id: string): Promise<User> {
-    this.logger.log({ id }, 'GET /auth/change-email/:id')
-    let actionToken
-
-    try {
-      actionToken = await this.actionTokensService.find(id)
-    } catch {
-      throw new BadRequestException('Incorrect token provided')
-    }
-
-    if (actionToken.action === ActionTokenType.EMAIL_CHANGE) {
-      await this.userService.update(actionToken.user.id, {
-        ...actionToken.user,
-        email: actionToken.newValue,
-      })
-      await this.mailerService.sendEmail(
-        actionToken.user.email,
-        LetterTemplate.MailAddressHadChanged,
-        actionToken.user.locale,
-      )
-      await this.actionTokensService.delete(actionToken.id)
-      return
-    }
-  }
-
-  @UseGuards(SelfhostedGuard)
-  @Post('/reset-password')
-  async requestReset(
-    @Body() body: RequestPasswordChangeDTO,
-    @Req() request: Request,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<string> {
-    this.logger.log({ body }, 'POST /auth/password-reset')
-    const { email } = body
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-    await checkRateLimit(ip, 'reset-password')
-    await checkRateLimit(email, 'reset-password')
-
-    const user = await this.userService.findOneWhere({ email })
+    let user = await this.authService.validateUser(body.email, body.password)
 
     if (!user) {
-      return 'A password reset URL has been sent to your email'
+      throw new ConflictException(i18n.t('auth.invalidCredentials'))
     }
 
-    const actionToken = await this.actionTokensService.createForUser(
-      user,
-      ActionTokenType.PASSWORD_RESET,
-    )
-    const url = `${request.headers.origin}/password-reset/${actionToken.id}`
+    await this.authService.sendTelegramNotification(user.id, headers, ip)
 
-    await this.mailerService.sendEmail(
-      email,
-      LetterTemplate.ConfirmPasswordChange,
-      { url },
-    )
-    return 'A password reset URL has been sent to your email'
+    const jwtTokens = await this.authService.generateJwtTokens(user.id, !user.isTwoFactorAuthenticationEnabled)
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
+    } else {
+      user = await this.authService.getSharedProjectsForUser(user)
+    }
+
+    return {
+      accessToken: jwtTokens.accessToken,
+      refreshToken: jwtTokens.refreshToken,
+      user: this.userService.omitSensitiveData(user),
+    }
   }
 
-  @UseGuards(SelfhostedGuard)
-  @Post('/password-reset/:id')
-  async reset(
-    @Param('id') id: string,
-    @Body() body: PasswordChangeDTO,
-  ): Promise<User> {
-    this.logger.log({ id }, 'POST /auth/password-reset/:id')
-    this.userService.validatePassword(body.password)
-    let actionToken
+  @ApiOperation({ summary: 'Verify a user email' })
+  @ApiOkResponse({
+    description: 'User email verified',
+  })
+  @Public()
+  @Get('verify-email/:token')
+  public async verifyEmail(
+    @Param() params: VerifyEmailDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const actionToken = await this.authService.checkVerificationToken(
+      params.token,
+    )
 
-    try {
-      actionToken = await this.actionTokensService.find(id)
-    } catch {
-      throw new BadRequestException('Incorrect token provided')
+    if (!actionToken) {
+      throw new ConflictException(i18n.t('auth.invalidVerificationToken'))
     }
 
-    if (actionToken.action === ActionTokenType.PASSWORD_RESET) {
-      const password = await this.authService.hashPassword(body.password)
+    await this.authService.verifyEmail(actionToken)
+  }
 
-      await this.userService.update(actionToken.user.id, {
-        ...actionToken.user,
-        password,
-      })
-      await this.actionTokensService.delete(actionToken.id)
-      return
+  @ApiOperation({ summary: 'Request a password reset' })
+  @ApiOkResponse({
+    description: 'Password reset requested',
+  })
+  @Public()
+  @Post('reset-password')
+  public async requestResetPassword(
+    @Body() body: RequestResetPasswordDto,
+    @I18n() i18n: I18nContext,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<void> {
+    const ip =
+      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
+
+    await checkRateLimit(ip, 'reset-password')
+    await checkRateLimit(body.email, 'reset-password')
+
+    const user = await this.userService.findUser(body.email)
+
+    if (!user) {
+      throw new ConflictException(i18n.t('auth.accountNotExists'))
     }
+
+    await this.authService.sendResetPasswordEmail(user.id, user.email)
+  }
+
+  @ApiOperation({ summary: 'Reset a password' })
+  @ApiOkResponse({
+    description: 'Password reset',
+  })
+  @Public()
+  @Post('reset-password/confirm/:token')
+  @HttpCode(200)
+  public async resetPassword(
+    @Param() params: ConfirmResetPasswordDto,
+    @Body() body: ResetPasswordDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const actionToken = await this.authService.checkResetPasswordToken(
+      params.token,
+    )
+
+    if (!actionToken) {
+      throw new ConflictException(i18n.t('auth.invalidResetPasswordToken'))
+    }
+
+    await this.authService.resetPassword(actionToken, body.newPassword)
+  }
+
+  @ApiOperation({ summary: 'Change a password' })
+  @ApiOkResponse({
+    description: 'Password changed',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Post('change-password')
+  public async changePassword(
+    @Body() body: ChangePasswordDto,
+    @CurrentUserId() userId: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isPasswordValid = await this.authService.validateUser(
+      user.email,
+      body.oldPassword,
+    )
+
+    if (!isPasswordValid) {
+      throw new ConflictException(i18n.t('auth.invalidPassword'))
+    }
+
+    await this.authService.changePassword(user.id, body.newPassword)
+  }
+
+  @ApiOperation({ summary: 'Request a resend of the verification email' })
+  @ApiOkResponse({
+    description: 'Resend of the verification email requested',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Post('verify-email')
+  public async requestResendVerificationEmail(
+    @CurrentUserId() userId: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isMaxEmailRequestsReached =
+      await this.authService.checkIfMaxEmailRequestsReached(user.id)
+
+    if (isMaxEmailRequestsReached) {
+      throw new ConflictException(i18n.t('auth.maxEmailRequestsReached'))
+    }
+
+    if (user.isActive) {
+      throw new ConflictException(i18n.t('auth.emailAlreadyVerified'))
+    }
+
+    await this.authService.sendVerificationEmail(user.id, user.email)
+  }
+
+  @ApiOperation({ summary: 'Change a user email' })
+  @ApiOkResponse({
+    description: 'User email changed',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Post('change-email')
+  public async requestChangeEmail(
+    @Body() body: RequestChangeEmailDto,
+    @CurrentUserId() userId: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isPasswordValid = await this.authService.validateUser(
+      user.email,
+      body.password,
+    )
+
+    if (!isPasswordValid) {
+      throw new ConflictException(i18n.t('auth.invalidPassword'))
+    }
+
+    const isEmailTaken = await this.authService.checkIfEmailTaken(body.newEmail)
+
+    if (isEmailTaken) {
+      throw new ConflictException(i18n.t('auth.emailAlreadyTaken'))
+    }
+
+    await this.authService.changeEmail(user.id, user.email, body.newEmail)
+  }
+
+  @ApiOperation({ summary: 'Confirm a user email change' })
+  @ApiOkResponse({
+    description: 'User email confirmed',
+  })
+  @Public()
+  @Get('change-email/confirm/:token')
+  public async confirmChangeEmail(
+    @Param() params: ConfirmChangeEmailDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const actionToken = await this.authService.checkChangeEmailToken(
+      params.token,
+    )
+
+    if (!actionToken) {
+      throw new ConflictException(i18n.t('auth.invalidChangeEmailToken'))
+    }
+
+    await this.authService.confirmChangeEmail(actionToken)
+  }
+
+  @ApiOperation({ summary: 'Refresh a token' })
+  @ApiOkResponse({
+    description: 'Token refreshed',
+  })
+  @Public()
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post('refresh-token')
+  @HttpCode(200)
+  public async refreshToken(
+    @CurrentUserId() userId: string,
+    @CurrentUser('refreshToken') refreshToken: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<{ accessToken: string }> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isRefreshTokenValid = await this.authService.checkRefreshToken(
+      user.id,
+      refreshToken,
+    )
+
+    if (!isRefreshTokenValid) {
+      throw new ConflictException(i18n.t('auth.invalidRefreshToken'))
+    }
+
+    const accessToken = await this.authService.generateJwtAccessToken(
+      user.id,
+      user.isTwoFactorAuthenticationEnabled,
+    )
+
+    return { accessToken }
+  }
+
+  @ApiOperation({ summary: 'Logout' })
+  @ApiOkResponse({
+    description: 'Logged out',
+  })
+  @Public()
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post('logout')
+  @HttpCode(200)
+  public async logout(
+    @CurrentUserId() userId: string,
+    @CurrentUser('refreshToken') refreshToken: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isRefreshTokenValid = await this.authService.checkRefreshToken(
+      user.id,
+      refreshToken,
+    )
+
+    if (!isRefreshTokenValid) {
+      throw new ConflictException(i18n.t('auth.invalidRefreshToken'))
+    }
+
+    await this.authService.logout(user.id, refreshToken)
   }
 }

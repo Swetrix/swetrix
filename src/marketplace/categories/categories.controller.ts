@@ -14,8 +14,8 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { Roles } from '../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
+import { Roles } from '../../auth/decorators/roles.decorator'
+import { RolesGuard } from '../../auth/guards/roles.guard'
 import { UserType } from '../../user/entities/user.entity'
 import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'
@@ -27,6 +27,7 @@ import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
 import { ISaveCategory } from './interfaces/save-category.interface'
 import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 @ApiTags('categories')
 @UsePipes(
@@ -90,7 +91,7 @@ export class CategoriesController {
     return category
   }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Post()
   async createCategory(
@@ -113,7 +114,7 @@ export class CategoriesController {
     example: 1,
     type: Number,
   })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':categoryId')
   async updateCategory(
@@ -145,7 +146,7 @@ export class CategoriesController {
     example: 1,
     type: Number,
   })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Delete(':categoryId')
   async deleteCategory(@Param() params: DeleteCategoryParams): Promise<void> {

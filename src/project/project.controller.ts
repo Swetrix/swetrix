@@ -29,13 +29,13 @@ import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { LetterTemplate } from '../mailer/letter'
-import { Roles } from '../common/decorators/roles.decorator'
+import { Roles } from '../auth/decorators/roles.decorator'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
-import { RolesGuard } from '../common/guards/roles.guard'
+import { RolesGuard } from '../auth/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectShare, roles } from './entity/project-share.entity'
-import { CurrentUserId } from '../common/decorators/current-user-id.decorator'
+import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { ShareDTO } from './dto/share.dto'
@@ -55,6 +55,8 @@ import {
   updateProjectClickhouse,
   deleteProjectClickhouse,
 } from '../common/utils'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { Auth, Public } from 'src/auth/decorators'
 
 // const updateProjectRedis = async (id: string, project: Project) => {
 //   const key = getRedisProjectKey(id)
@@ -107,8 +109,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
@@ -152,8 +153,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async getShared(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
@@ -184,8 +184,8 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
-  @Roles(UserType.ADMIN)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Auth([UserType.ADMIN])
   @ApiResponse({ status: 200, type: Project })
   async getAllProjects(
     @Query('take') take: number | undefined,
@@ -203,7 +203,7 @@ export class ProjectController {
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   async getUserProject(
     @Param('id') userId: string,
@@ -225,6 +225,7 @@ export class ProjectController {
   }
 
   @Get('/:id')
+  @Auth([], true, true)
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,
@@ -266,7 +267,7 @@ export class ProjectController {
   @Post('/admin/:id')
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   async createForAdmin(
     @Param('id') userId: string,
@@ -320,7 +321,7 @@ export class ProjectController {
 
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(
     @Body() projectDTO: ProjectDTO,
@@ -389,7 +390,7 @@ export class ProjectController {
 
   @Delete('/reset/:id')
   @HttpCode(204)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async reset(
@@ -447,7 +448,7 @@ export class ProjectController {
 
   @Put('/:id')
   @HttpCode(200)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
   async update(
@@ -503,7 +504,7 @@ export class ProjectController {
 
   @Delete('/:id')
   @HttpCode(204)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
@@ -569,7 +570,7 @@ export class ProjectController {
   @Delete('/:pid/:shareId')
   @HttpCode(204)
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
@@ -612,7 +613,7 @@ export class ProjectController {
   @Post('/:pid/share')
   @HttpCode(200)
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
   async share(
@@ -733,7 +734,7 @@ export class ProjectController {
   @Put('/share/:shareId')
   @HttpCode(200)
   @UseGuards(SelfhostedGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
   async updateShare(
@@ -773,8 +774,9 @@ export class ProjectController {
 
   @HttpCode(204)
   @UseGuards(SelfhostedGuard)
-  // @UseGuards(RolesGuard)
+  // @UseGuards(JwtAccessTokenGuard, RolesGuard)
   // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Public()
   @ApiResponse({ status: 204, description: 'Empty body' })
   @Get('/share/:id')
   async acceptShare(@Param('id') id: string): Promise<any> {

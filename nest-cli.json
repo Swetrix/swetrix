@@ -2,6 +2,9 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "assets": [{ "include": "common/templates/**/*", "watchAssets": true }]
+    "assets": [
+      { "include": "common/templates/**/*", "watchAssets": true },
+      { "include": "i18n/**/*", "watchAssets": true }
+    ]
   }
 }
