@@ -16,8 +16,9 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 import { isSelfhosted } from 'redux/constants'
-import { submit2FA } from 'api'
+import { submit2FA, authMe } from 'api'
 import { setAccessToken } from 'utils/accessToken'
+import { setRefreshToken } from 'utils/refreshToken'
 
 const Signin = ({ login, loginSuccess, loginFailed }) => {
   const { t } = useTranslation('common')
@@ -81,8 +82,9 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
       setIsLoading(true)
 
       try {
-        const { access_token: accessToken, user } = await submit2FA(twoFACode)
-        setAccessToken(accessToken, form.dontRemember)
+        const { accessToken, refreshToken, user } = await submit2FA(twoFACode)
+        setAccessToken(accessToken)
+        setRefreshToken(refreshToken)
         loginSuccess(user)
       } catch (err) {
         if (_isString(err)) {
@@ -205,7 +207,7 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
                     {t('auth.signin.forgot')}
                   </Link>
                   <span className='text-gray-900 dark:text-gray-50'>&nbsp;|&nbsp;</span>
-                  <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
+                  <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500' aria-label={t('titles.signup')}>
                     {t('auth.common.signupInstead')}
                   </Link>
                 </>

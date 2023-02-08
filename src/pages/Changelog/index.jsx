@@ -77,7 +77,7 @@ const changelog = [
       <>
         Added the comparisons column to the footer. There&apos;s only
         {' '}
-        <a href={SWETRIX_VS_GOOGLE} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noopener noreferrer'>
+        <a href={SWETRIX_VS_GOOGLE} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noopener noreferrer' aria-label='Swetrix to Google Analytics comparison (opens in a new tab)'>
           Google Analytics comparison
         </a>
         {' '}

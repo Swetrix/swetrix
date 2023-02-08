@@ -15,7 +15,7 @@ const Checkbox = ({
       <div className='flex items-center h-5'>
         <input
           id={identifier}
-          aria-describedby={`${identifier}-description`}
+          aria-describedby={identifier}
           name={name}
           type='checkbox'
           checked={checked}

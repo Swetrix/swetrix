@@ -15,6 +15,7 @@ import {
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
+import _omit from 'lodash/omit'
 
 const BasicSignup = () => {
   const { t } = useTranslation('common')
@@ -35,7 +36,7 @@ const BasicSignup = () => {
   const onSubmit = (data) => {
     if (!isLoading) {
       setIsLoading(true)
-      dispatch(authActions.signupAsync(data, t, (result) => {
+      dispatch(authActions.signupAsync(_omit(data, 'tos'), t, (result) => {
         if (result) {
           trackCustom('SIGNUP_BASIC')
         } else {

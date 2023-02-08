@@ -1,5 +1,6 @@
 /* eslint-disable implicit-arrow-linebreak */
 import axios from 'axios'
+import createAuthRefreshInterceptor from 'axios-auth-refresh'
 import { store } from 'redux/store'
 import Debug from 'debug'
 import _map from 'lodash/map'
@@ -7,13 +8,40 @@ import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
 import { authActions } from 'redux/actions/auth'
 
-import { getAccessToken, removeAccessToken } from 'utils/accessToken'
+import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
+import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
 
 const debug = Debug('swetrix:api')
+const baseURL = isSelfhosted ? window.env.API_URL : process.env.REACT_APP_API_URL
 
 const api = axios.create({
-  baseURL: isSelfhosted ? window.env.API_URL : process.env.REACT_APP_API_URL,
+  baseURL,
+})
+
+// Function that will be called to refresh authorization
+const refreshAuthLogic = (failedRequest) =>
+  axios
+    .post(`${baseURL}v1/auth/refresh-token`, null, {
+      headers: {
+        Authorization: `Bearer ${getRefreshToken()}`,
+      },
+    })
+    .then((tokenRefreshResponse) => {
+      const { accessToken } = tokenRefreshResponse.data
+      setAccessToken(accessToken)
+      // eslint-disable-next-line
+      failedRequest.response.config.headers.Authorization = `Bearer ${accessToken}`
+      return Promise.resolve()
+    })
+    .catch((error) => {
+      store.dispatch(authActions.logout())
+      return Promise.reject(error)
+    })
+
+// Instantiate the interceptor
+createAuthRefreshInterceptor(api, refreshAuthLogic, {
+  statusCodes: [401, 403],
 })
 
 api.interceptors.request.use(
@@ -30,20 +58,39 @@ api.interceptors.request.use(
   },
 )
 
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.data.statusCode === 401) {
-      removeAccessToken()
-      store.dispatch(authActions.logout(true))
-    }
-    return Promise.reject(error)
-  },
-)
-
 export const authMe = () =>
   api
-    .get('/auth/me')
+    .get('user/me')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const logoutApi = (refreshToken) =>
+  axios
+    .post(`${baseURL}v1/auth/logout`, null, {
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+      },
+    })
+    .then((response) => {
+      removeAccessToken()
+      removeRefreshToken()
+      return response.data
+    })
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const refreshToken = () =>
+  api
+    .post('v1/auth/refresh-token')
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -54,7 +101,7 @@ export const authMe = () =>
 
 export const login = (credentials) =>
   api
-    .post('/auth/login', credentials)
+    .post('v1/auth/login', credentials)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -65,7 +112,7 @@ export const login = (credentials) =>
 
 export const signup = (data) =>
   api
-    .post('/auth/register', data)
+    .post('v1/auth/register', data)
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
@@ -97,7 +144,7 @@ export const changeUserDetails = (data) =>
 
 export const forgotPassword = (email) =>
   api
-    .post('/auth/reset-password', email)
+    .post('v1/auth/reset-password', email)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -130,7 +177,7 @@ export const exportUserData = () =>
 
 export const createNewPassword = (id, password) =>
   api
-    .post(`/auth/password-reset/${id}`, { password })
+    .post(`v1/auth/reset-password/confirm/${id}`, { newPassword: password })
     .then((response) => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
@@ -142,7 +189,7 @@ export const createNewPassword = (id, password) =>
 
 export const verifyEmail = ({ path, id }) =>
   api
-    .get(`/auth/${path}/${id}`)
+    .get(`v1/auth/${path}/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

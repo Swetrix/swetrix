@@ -1409,7 +1409,7 @@ const ViewProject = ({
               <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>
                 {t('dashboard.alertsDesc')}
               </p>
-              <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'>
+              <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50' aria-label={t('titles.signup')}>
                 {t('common.getStarted')}
               </Link>
             </div>
@@ -1634,6 +1634,7 @@ const ViewProject = ({
                 <Link
                   to={routes.signup}
                   className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+                  aria-label={t('titles.signup')}
                 >
                   {t('common.getStarted')}
                 </Link>

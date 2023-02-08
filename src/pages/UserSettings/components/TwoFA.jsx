@@ -11,6 +11,7 @@ import {
   generate2FA, enable2FA, disable2FA,
 } from 'api'
 import { setAccessToken } from 'utils/accessToken'
+import { setRefreshToken } from 'utils/refreshToken'
 
 const TwoFA = ({
   user, dontRemember, updateUserData, login, genericError,
@@ -59,9 +60,10 @@ const TwoFA = ({
       setIsTwoFaLoading(true)
 
       try {
-        const { twoFactorRecoveryCode, access_token: accessToken, user: updatedUser } = await enable2FA(twoFACode)
-        login(updatedUser)
+        const { twoFactorRecoveryCode, accessToken, refreshToken } = await enable2FA(twoFACode)
+        setRefreshToken(refreshToken)
         setAccessToken(accessToken, dontRemember)
+        updateUserData({ isTwoFactorAuthenticationEnabled: true })
         setTwoFARecovery(twoFactorRecoveryCode)
       } catch (e) {
         if (_isString(e)) {

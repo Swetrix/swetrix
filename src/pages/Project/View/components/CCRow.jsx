@@ -17,6 +17,7 @@ const CCRow = ({ rowName, language }) => (
       country={rowName}
       size={21}
       alt=''
+      aria-hidden='true'
     />
     &nbsp;&nbsp;
     {countries.getName(rowName, language)}

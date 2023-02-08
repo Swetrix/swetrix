@@ -601,6 +601,7 @@ const Panel = ({
                   href={rowData}
                   target='_blank'
                   rel='noopener noreferrer nofollow'
+                  aria-label={`${rowData} (opens in a new tab)`}
                 >
                   {rowData}
                   {!hideFilters && (

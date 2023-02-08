@@ -1,5 +1,7 @@
 import { removeItem } from 'utils/localstorage'
 import { removeAccessToken } from 'utils/accessToken'
+import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
+import { logoutApi } from 'api'
 import { LS_VIEW_PREFS_SETTING } from 'redux/constants'
 import { types } from './types'
 
@@ -32,7 +34,10 @@ export const authActions = {
   },
 
   logout(basedOn401Error) {
+    const refreshToken = getRefreshToken()
+    logoutApi(refreshToken)
     removeAccessToken()
+    removeRefreshToken()
     removeItem(LS_VIEW_PREFS_SETTING)
 
     return {
@@ -69,7 +74,10 @@ export const authActions = {
   },
 
   deleteAccountSuccess() {
+    const refreshToken = getRefreshToken()
+    logoutApi(refreshToken)
     removeAccessToken()
+    removeRefreshToken()
     removeItem('user_info')
 
     return {

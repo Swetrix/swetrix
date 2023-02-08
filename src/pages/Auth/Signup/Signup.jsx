@@ -18,6 +18,7 @@ import {
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
+import _omit from 'lodash/omit'
 
 const Signup = ({ signup }) => {
   const { t } = useTranslation('common')
@@ -70,7 +71,7 @@ const Signup = ({ signup }) => {
   const onSubmit = data => {
     if (!isLoading) {
       setIsLoading(true)
-      signup(data, t, (result) => {
+      signup(_omit(data, 'tos'), t, (result) => {
         if (result) {
           trackCustom('SIGNUP')
         } else {
@@ -153,8 +154,8 @@ const Signup = ({ signup }) => {
                   t={t}
                   i18nKey='auth.signup.tos'
                   components={{
-                    tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
-                    pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' />,
+                    tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
+                    pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
                   }}
                 />
               </span>
