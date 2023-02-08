@@ -506,7 +506,7 @@ const Main = () => {
                   </div>
                 </section>
                 <div
-                  className='absolute w-80 h-[558px] z-10 -left-[30vw] top-[80vh] sm:left-[70vw] sm:top-[30vh] filter_blur'
+                  className='absolute w-80 h-[558px] z-10 -right-[30vw] top-[80vh] sm:right-[70vw] sm:top-[30vh] filter_blur'
                   style={{
                     background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
                     transform: 'rotate(-50.32deg)',
