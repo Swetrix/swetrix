@@ -5,10 +5,11 @@ import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
 import {
-  ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon,
+  ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon, CheckIcon, XMarkIcon,
 } from '@heroicons/react/24/solid'
-// import { CheckCircleIcon as CheckCircleIconOutline, Cog8ToothIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { TypeAnimation } from 'react-type-animation'
 import _map from 'lodash/map'
+import _reduce from 'lodash/reduce'
 import _isEmpty from 'lodash/isEmpty'
 
 import routes from 'routes'
@@ -37,6 +38,84 @@ import Pricing from './Pricing'
 import './styles.css'
 
 const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
+
+const COMPETITORS_LIST = ['Google Analytics', 'Fathom', 'Plausible', 'Simple Analytics']
+const SWETRIX_AND_COMPETITORS_LIST = ['Swetrix', ...COMPETITORS_LIST]
+const COMPETITOR_SEQUENCE_DELAY = 5000 // in milliseconds
+const processedList = _reduce(COMPETITORS_LIST, (acc, curr) => {
+  acc.push(curr)
+  acc.push(COMPETITOR_SEQUENCE_DELAY)
+  return acc
+}, [])
+
+// The order in the table is defined by the Swetrix object
+const COMPETITOR_FEATURE_TABLE = {
+  Swetrix: {
+    'main.competitiveFeatures.gdpr': true, // GDPR-compatible
+    'main.competitiveFeatures.open': true, // Open-source
+    'main.competitiveFeatures.free': true, // Has a free plan
+    'main.competitiveFeatures.perf': true, // Performance
+    'main.competitiveFeatures.ext': true, // Custom extensions
+    'main.competitiveFeatures.alrt': true, // Custom alerts
+    'main.competitiveFeatures.pbld': true, // Public dashboards
+    'main.competitiveFeatures.shad': true, // Dashboard sharing
+    'main.competitiveFeatures.ckfree': true, // Has a free plan
+    'main.competitiveFeatures.api': true, // Has a free plan
+    'main.competitiveFeatures.2fa': true, // 2FA
+  },
+  'Google Analytics': {
+    'main.competitiveFeatures.gdpr': false,
+    'main.competitiveFeatures.open': false,
+    'main.competitiveFeatures.free': true,
+    'main.competitiveFeatures.perf': false,
+    'main.competitiveFeatures.ext': false,
+    'main.competitiveFeatures.alrt': false,
+    'main.competitiveFeatures.pbld': false,
+    'main.competitiveFeatures.shad': false,
+    'main.competitiveFeatures.ckfree': false,
+    'main.competitiveFeatures.api': true,
+    'main.competitiveFeatures.2fa': true,
+  },
+  Fathom: {
+    'main.competitiveFeatures.gdpr': true,
+    'main.competitiveFeatures.open': null,
+    'main.competitiveFeatures.free': false,
+    'main.competitiveFeatures.perf': false,
+    'main.competitiveFeatures.ext': false,
+    'main.competitiveFeatures.alrt': true,
+    'main.competitiveFeatures.pbld': true,
+    'main.competitiveFeatures.shad': true,
+    'main.competitiveFeatures.ckfree': true,
+    'main.competitiveFeatures.api': true,
+    'main.competitiveFeatures.2fa': true,
+  },
+  Plausible: {
+    'main.competitiveFeatures.gdpr': true,
+    'main.competitiveFeatures.open': true,
+    'main.competitiveFeatures.free': false,
+    'main.competitiveFeatures.perf': false,
+    'main.competitiveFeatures.ext': false,
+    'main.competitiveFeatures.alrt': false,
+    'main.competitiveFeatures.pbld': true,
+    'main.competitiveFeatures.shad': true,
+    'main.competitiveFeatures.ckfree': true,
+    'main.competitiveFeatures.api': true,
+    'main.competitiveFeatures.2fa': false,
+  },
+  'Simple Analytics': {
+    'main.competitiveFeatures.gdpr': true,
+    'main.competitiveFeatures.open': false,
+    'main.competitiveFeatures.free': false,
+    'main.competitiveFeatures.perf': false,
+    'main.competitiveFeatures.ext': false,
+    'main.competitiveFeatures.alrt': false,
+    'main.competitiveFeatures.pbld': true,
+    'main.competitiveFeatures.shad': false,
+    'main.competitiveFeatures.ckfree': true,
+    'main.competitiveFeatures.api': true,
+    'main.competitiveFeatures.2fa': false,
+  },
+}
 
 const Lines = () => (
   <div className='relative pointer-events-none'>
@@ -368,6 +447,101 @@ const Main = () => {
             </div>
             {/* end Marketplace and extension features */}
             <Pricing t={t} language={language} />
+
+            {/* section: Why use Swetrix when there is .... */}
+            <div className='overflow-hidden'>
+              <div className='relative max-w-7xl w-full mx-auto'>
+                <div
+                  className='absolute w-60 h-[458px] z-10 left-[10vw] -top-[10vh] filter_blur'
+                  style={{
+                    background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
+                    transform: 'rotate(-50.32deg)',
+                  }}
+                />
+                <section className='relative z-20 px-3'>
+                  <h1 className='mt-20 text-center text-3xl sm:text-5xl text-white font-extrabold max-w-prose w-full mx-auto'>
+                    <Trans
+                      t={t}
+                      i18nKey='main.whyUseSwetrix'
+                      components={{
+                        // eslint-disable-next-line jsx-a11y/anchor-has-content
+                        competitor: (
+                          <TypeAnimation
+                            sequence={processedList}
+                            className='text-gray-400'
+                            wrapper='span'
+                            speed={10}
+                            repeat={Infinity}
+                            cursor
+                          />
+                        ),
+                        swetrix: <span className='text-indigo-500'>Swetrix</span>,
+                      }}
+                    />
+                  </h1>
+                  <div className='py-20 text-lg text-gray-50 tracking-tight'>
+                    <div className='mt-2 flex flex-col'>
+                      <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                        <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                          <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                            <table className='w-full min-w-full divide-y divide-gray-500'>
+                              <thead className='bg-gray-800'>
+                                <tr>
+                                  <th />
+                                  {_map(SWETRIX_AND_COMPETITORS_LIST, (item) => (
+                                    <th
+                                      scope='col'
+                                      className='w-1/6 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-50 sm:pl-6'
+                                    >
+                                      {item}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody className='divide-y divide-gray-600 bg-gray-800'>
+                                {_map(COMPETITOR_FEATURE_TABLE.Swetrix, (_, key) => (
+                                  <tr key={key}>
+                                    <td className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'>
+                                      {t(key)}
+                                    </td>
+                                    {_map(SWETRIX_AND_COMPETITORS_LIST, (service) => (
+                                      <td
+                                        key={`${key}-${service}`}
+                                        className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'
+                                      >
+                                        {COMPETITOR_FEATURE_TABLE[service][key] && (
+                                          <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-500' aria-label={t('common.yes')} />
+                                        )}
+                                        {COMPETITOR_FEATURE_TABLE[service][key] === false && (
+                                          <XMarkIcon className='flex-shrink-0 h-5 w-5 text-red-500' aria-label={t('common.no')} />
+                                        )}
+                                        {COMPETITOR_FEATURE_TABLE[service][key] === null && (
+                                          <p className='text-gray-50 h-5 w-5 text-center'>
+                                            -
+                                          </p>
+                                        )}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+                <div
+                  className='absolute w-80 h-[558px] z-10 -right-[30vw] top-[80vh] sm:right-[70vw] sm:top-[30vh] filter_blur'
+                  style={{
+                    background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
+                    transform: 'rotate(-50.32deg)',
+                  }}
+                />
+              </div>
+            </div>
+
             {/* section Testimonials */}
             <section className='bg-white dark:bg-gray-900 pt-20 pb-20 relative'>
               <div className='absolute right-0 top-0'>
@@ -437,157 +611,6 @@ const Main = () => {
                 </div>
               </section>
             </div>
-
-            {/* Checklist section */}
-            {/* <section className='bg-white dark:bg-gray-800 px-4 md:px-8 pt-24 pb-32 relative'>
-              <div className='absolute right-0 top-0 z-0 sm:top-28'>
-                <BackgroundSvg type='circle' />
-              </div>
-              <div className='absolute left-10'>
-                <BackgroundSvg type='shapes' />
-              </div>
-              <h2 className='text-gray-800 text-5xl font-extrabold text-center relative z-20 dark:text-white'>Checklist</h2>
-              <div className='flex flex-col lg:flex-row items-center justify-between max-w-5xl w-full mx-auto mt-16'>
-                <div
-                  className='max-w-xs w-full mx-auto shadow-lg overflow-hidden relative z-10'
-                  style={{ borderRadius: '20px 10px 10px 10px' }}
-                >
-                  <div className='flex items-center justify-between pl-11 pr-6 bg-orange-300 py-4'>
-                    <h2 className='text-xl text-white font-semibold'>Done</h2>
-                    <CheckCircleIconOutline className='w-7 h-7 text-white' />
-                  </div>
-                  <div className='mt-14 px-11 pb-12'>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='h-5 w-5 text-orange-300 mr-2' />
-                      {' '}
-                      Up to 5,000 visits per month.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='h-5 w-5 text-orange-300 mr-2' />
-                      {' '}
-                      Add up to 10 websites.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='h-5 w-5 text-orange-300 mr-2' />
-                      {' '}
-                      Unlimited data exports.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='h-5 w-5 text-orange-300 mr-2' />
-                      {' '}
-                      100% data ownership.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='h-5 w-5 text-orange-300 mr-2' />
-                      {' '}
-                      No cookie banners required.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <CheckCircleIconOutline className='h-5 w-5 text-orange-300 mr-2' />
-                      {' '}
-                      Shared & Public Dashboards.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center'>
-                      <CheckCircleIconOutline className='h-5 w-5 text-orange-300 mr-2' />
-                      {' '}
-                      Email reports.
-                    </p>
-                  </div>
-                </div>
-                <div
-                  className='max-w-xs w-full mx-auto shadow-lg overflow-hidden my-9 lg:my-0'
-                  style={{ borderRadius: '20px 10px 10px 10px' }}
-                >
-                  <div className='flex items-center justify-between pl-11 pr-6 bg-purple-400 py-4'>
-                    <h2 className='text-xl text-white font-semibold'>In progress</h2>
-                    <Cog8ToothIcon alt='Swetrix settings icon' className='w-7 h-7 text-white' />
-                  </div>
-                  <div className='mt-14 px-11 pb-12'>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
-                      {' '}
-                      Up to 5,000 visits per month.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
-                      {' '}
-                      Add up to 10 websites.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
-                      {' '}
-                      Unlimited data exports.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
-                      {' '}
-                      100% data ownership.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
-                      {' '}
-                      No cookie banners required.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
-                      {' '}
-                      Shared & Public Dashboards.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center'>
-                      <Cog8ToothIcon className='h-5 w-5 text-purple-400 mr-2' />
-                      {' '}
-                      Email reports.
-                    </p>
-                  </div>
-                </div>
-                <div
-                  className='max-w-xs w-full mx-auto shadow-lg overflow-hidden relative z-10'
-                  style={{ borderRadius: '20px 10px 10px 10px' }}
-                >
-                  <div className='flex items-center justify-between pl-11 pr-6 bg-gray-800 dark:bg-blue-900 py-4'>
-                    <h2 className='text-xl text-white font-semibold'>Plans</h2>
-                    <ClockIcon className='w-7 h-7 text-white' />
-                  </div>
-                  <div className='mt-14 px-11 pb-12'>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='h-5 w-5 text-gray-800 dark:text-blue-900 mr-2' />
-                      {' '}
-                      Up to 5,000 visits per month.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='h-5 w-5 text-gray-800 dark:text-blue-900 mr-2' />
-                      {' '}
-                      Add up to 10 websites.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='h-5 w-5 text-gray-800 dark:text-blue-900 mr-2' />
-                      {' '}
-                      Unlimited data exports.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='h-5 w-5 text-gray-800 dark:text-blue-900 mr-2' />
-                      {' '}
-                      100% data ownership.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='h-5 w-5 text-gray-800 dark:text-blue-900 mr-2' />
-                      {' '}
-                      No cookie banners required.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center mb-3'>
-                      <ClockIcon className='h-5 w-5 text-gray-800 dark:text-blue-900 mr-2' />
-                      {' '}
-                      Shared & Public Dashboards.
-                    </p>
-                    <p className='text-gray-500 dark:text-white text-xs flex items-center'>
-                      <ClockIcon className='h-5 w-5 text-gray-800 dark:text-blue-900 mr-2' />
-                      {' '}
-                      Email reports.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section> */}
 
             {/* Advantages of using open source */}
             <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-7xl w-full mx-auto py-20 lg:py-32 px-5'>
