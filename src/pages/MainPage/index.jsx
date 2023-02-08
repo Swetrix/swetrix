@@ -53,62 +53,67 @@ const COMPETITOR_FEATURE_TABLE = {
   Swetrix: {
     'main.competitiveFeatures.gdpr': true, // GDPR-compatible
     'main.competitiveFeatures.open': true, // Open-source
+    'main.competitiveFeatures.free': true, // Has a free plan
     'main.competitiveFeatures.perf': true, // Performance
     'main.competitiveFeatures.ext': true, // Custom extensions
     'main.competitiveFeatures.alrt': true, // Custom alerts
     'main.competitiveFeatures.pbld': true, // Public dashboards
     'main.competitiveFeatures.shad': true, // Dashboard sharing
-    'main.competitiveFeatures.free': true, // Has a free plan
     'main.competitiveFeatures.ckfree': true, // Has a free plan
     'main.competitiveFeatures.api': true, // Has a free plan
+    'main.competitiveFeatures.2fa': true, // 2FA
   },
   'Google Analytics': {
     'main.competitiveFeatures.gdpr': false,
     'main.competitiveFeatures.open': false,
+    'main.competitiveFeatures.free': true,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': false,
     'main.competitiveFeatures.shad': false,
-    'main.competitiveFeatures.free': true,
     'main.competitiveFeatures.ckfree': false,
     'main.competitiveFeatures.api': true,
+    'main.competitiveFeatures.2fa': true,
   },
   Fathom: {
-    'main.competitiveFeatures.gdpr': false,
+    'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.open': null,
+    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': true,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': true,
-    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.ckfree': true,
     'main.competitiveFeatures.api': true,
+    'main.competitiveFeatures.2fa': true,
   },
   Plausible: {
-    'main.competitiveFeatures.gdpr': false,
+    'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.open': true,
+    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': true,
-    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.ckfree': true,
     'main.competitiveFeatures.api': true,
+    'main.competitiveFeatures.2fa': false,
   },
   'Simple Analytics': {
-    'main.competitiveFeatures.gdpr': false,
+    'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.open': false,
+    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': false,
-    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.ckfree': true,
     'main.competitiveFeatures.api': true,
+    'main.competitiveFeatures.2fa': false,
   },
 }
 

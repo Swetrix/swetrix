@@ -235,7 +235,8 @@
       "open": "Open source",
       "free": "Has a free plan",
       "ckfree": "Cookie free analytics",
-      "api": "Developer API"
+      "api": "Developer API",
+      "2fa": "Two-factor authentication"
     }
   },
   "auth": {
