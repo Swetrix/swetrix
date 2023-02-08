@@ -26,6 +26,7 @@ import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 import UIActions from 'redux/actions/ui'
 import routes from 'routes'
+import { getRefreshToken } from 'utils/refreshToken'
 import { authMe } from './api'
 
 const MainPage = lazy(() => import('pages/MainPage'))
@@ -90,6 +91,7 @@ const App = () => {
   const { message, type } = useSelector(state => state.alerts)
   const themeType = useSelector(state => state.ui.theme.type)
   const accessToken = getAccessToken()
+  const refreshToken = getRefreshToken()
 
   useEffect(() => {
     const eventCallback = (data) => {
@@ -124,7 +126,7 @@ const App = () => {
 
   useEffect(() => {
     (async () => {
-      if (accessToken && !authenticated) {
+      if ((accessToken && refreshToken) && !authenticated) {
         try {
           const me = await authMe()
           dispatch(UIActions.setThemeType(me.theme))

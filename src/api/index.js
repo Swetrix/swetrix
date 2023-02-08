@@ -35,8 +35,6 @@ const refreshAuthLogic = (failedRequest) =>
       return Promise.resolve()
     })
     .catch((error) => {
-      removeAccessToken()
-      removeRefreshToken()
       store.dispatch(authActions.logout())
       return Promise.reject(error)
     })
@@ -64,6 +62,25 @@ export const authMe = () =>
   api
     .get('user/me')
     .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const logoutApi = (refreshToken) =>
+  axios
+    .post(`${baseURL}v1/auth/logout`, null, {
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+      },
+    })
+    .then((response) => {
+      removeAccessToken()
+      removeRefreshToken()
+      return response.data
+    })
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
