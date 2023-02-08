@@ -453,7 +453,7 @@ const Main = () => {
                                   {_map(SWETRIX_AND_COMPETITORS_LIST, (item) => (
                                     <th
                                       scope='col'
-                                      className='w-1/5 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-50 sm:pl-6'
+                                      className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-50 sm:pl-6'
                                     >
                                       {item}
                                     </th>
@@ -463,13 +463,13 @@ const Main = () => {
                               <tbody className='divide-y divide-gray-600 bg-gray-800'>
                                 {_map(COMPETITOR_FEATURE_TABLE.Swetrix, (_, key) => (
                                   <tr key={key}>
-                                    <td className='w-1/5 px-3 py-4 text-sm text-gray-50 sm:pl-6'>
+                                    <td className='px-3 py-4 text-sm text-gray-50 sm:pl-6'>
                                       {t(key)}
                                     </td>
                                     {_map(SWETRIX_AND_COMPETITORS_LIST, (service) => (
                                       <td
                                         key={`${key}-${service}`}
-                                        className='w-1/5 px-3 py-4 text-sm text-gray-50 sm:pl-6'
+                                        className='px-3 py-4 text-sm text-gray-50 sm:pl-6'
                                       >
                                         {COMPETITOR_FEATURE_TABLE[service][key] ? (
                                           <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-500' aria-label={t('common.yes')} />
