@@ -58,6 +58,8 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.pbld': true, // Public dashboards
     'main.competitiveFeatures.shad': true, // Dashboard sharing
     'main.competitiveFeatures.free': true, // Has a free plan
+    'main.competitiveFeatures.ckfree': true, // Has a free plan
+    'main.competitiveFeatures.api': true, // Has a free plan
   },
   'Google Analytics': {
     'main.competitiveFeatures.open': false,
@@ -67,7 +69,9 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': false,
     'main.competitiveFeatures.shad': false,
-    'main.competitiveFeatures.free': true, // Has a free plan
+    'main.competitiveFeatures.free': true,
+    'main.competitiveFeatures.ckfree': false,
+    'main.competitiveFeatures.api': true,
   },
   Fathom: {
     'main.competitiveFeatures.open': false,
@@ -77,7 +81,9 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.alrt': true,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': true,
-    'main.competitiveFeatures.free': false, // Has a free plan
+    'main.competitiveFeatures.free': false,
+    'main.competitiveFeatures.ckfree': true,
+    'main.competitiveFeatures.api': true,
   },
   Plausible: {
     'main.competitiveFeatures.open': false,
@@ -87,7 +93,9 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': true,
-    'main.competitiveFeatures.free': false, // Has a free plan
+    'main.competitiveFeatures.free': false,
+    'main.competitiveFeatures.ckfree': true,
+    'main.competitiveFeatures.api': true,
   },
   'Simple Analytics': {
     'main.competitiveFeatures.open': false,
@@ -97,7 +105,9 @@ const COMPETITOR_FEATURE_TABLE = {
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': true,
     'main.competitiveFeatures.shad': false,
-    'main.competitiveFeatures.free': false, // Has a free plan
+    'main.competitiveFeatures.free': false,
+    'main.competitiveFeatures.ckfree': true,
+    'main.competitiveFeatures.api': true,
   },
 }
 
