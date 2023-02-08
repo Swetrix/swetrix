@@ -87,7 +87,7 @@ export class AuthService {
 
     const verificationLink = `${this.configService.get(
       'CLIENT_URL',
-    )}/verify-email/${actionToken.id}`
+    )}/verify/${actionToken.id}`
 
     await this.mailerService.sendEmail(email, LetterTemplate.SignUp, {
       url: verificationLink,
@@ -252,7 +252,7 @@ export class AuthService {
 
     const verificationLink = `${this.configService.get(
       'CLIENT_URL',
-    )}/reset-password/${actionToken.id}`
+    )}/password-reset/${actionToken.id}`
 
     await this.mailerService.sendEmail(
       email,
