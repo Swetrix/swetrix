@@ -164,7 +164,7 @@ export class User {
   @Column('varchar', { length: 30, nullable: true })
   twoFactorRecoveryCode: string
 
-  @Column('varchar', { length: 50, default: Theme.christmas })
+  @Column('varchar', { length: 50, default: Theme.classic })
   theme: Theme
 
   @Column({ default: false })
