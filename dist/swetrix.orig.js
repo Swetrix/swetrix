@@ -79,6 +79,7 @@
             this.pageData = null;
             this.pageViewsOptions = null;
             this.perfStatsCollected = false;
+            this.activePage = null;
             this.trackPathChange = this.trackPathChange.bind(this);
             this.heartbeat = this.heartbeat.bind(this);
         }
@@ -86,7 +87,7 @@
             if (!this.canTrack()) {
                 return;
             }
-            var data = __assign({ pid: this.projectID }, event);
+            var data = __assign({ pid: this.projectID, pg: this.activePage, lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign() }, event);
             this.sendRequest('custom', data);
         };
         Lib.prototype.trackPageViews = function (options) {
@@ -191,6 +192,7 @@
             this.pageData.path = pg;
             if (this.checkIgnore(pg))
                 return;
+            this.activePage = pg;
             var perf = this.getPerformanceStats();
             var data = {
                 pid: this.projectID,
