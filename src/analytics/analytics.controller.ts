@@ -10,7 +10,6 @@ import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
-import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import ct from 'countries-and-timezones'
 import {
@@ -67,6 +66,8 @@ import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
+
+const mysql = require('mysql2')
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -147,20 +148,40 @@ const performanceDTO = (
   ]
 }
 
-const customLogDTO = (pid: string, ev: string): string => {
-  const dto = {
-    id: uuidv4(),
+const customLogDTO = (
+  pid: string,
+  ev: string,
+  pg: string,
+  dv: string,
+  br: string,
+  os: string,
+  lc: string,
+  ref: string,
+  so: string,
+  me: string,
+  ca: string,
+  cc: string,
+): Array<string | number> => {
+  return [
     pid,
     ev,
-    created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
-  }
-
-  return JSON.stringify(dto)
+    pg,
+    dv,
+    br,
+    os,
+    lc,
+    ref,
+    so,
+    me,
+    ca,
+    cc,
+    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+  ]
 }
 
 const getElValue = el => {
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
-  return `'${el}'`
+  return `'${mysql.escape(el)}'`
 }
 
 export const getPIDsArray = (pids, pid) => {
@@ -240,9 +261,20 @@ export class AnalyticsController {
     let groupFrom = from,
       groupTo = to
 
-    const queryCustoms =
+    let queryCustoms =
       'SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev'
-    const subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    let customEVFilterApplied = false
+
+    // @ts-ignore
+    if (filtersParams?.ev) {
+      customEVFilterApplied = true
+      // @ts-ignore
+      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
+
+      // @ts-ignore
+      subQuery = `FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    }
 
     const paramsData = {
       params: {
@@ -347,6 +379,7 @@ export class AnalyticsController {
       filtersQuery,
       paramsData,
       timezone,
+      customEVFilterApplied,
     )
 
     const customs = await this.analyticsService.processCustomEV(
@@ -651,10 +684,31 @@ export class AnalyticsController {
       }
     }
 
-    const dto = customLogDTO(eventsDTO.pid, eventsDTO.ev)
+    const ua = UAParser(userAgent)
+    const dv = ua.device.type || 'desktop'
+    const br = ua.browser.name
+    const os = ua.os.name
+    // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
+    const cc = ct.getCountryForTimezone(eventsDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+
+    const dto = customLogDTO(
+      eventsDTO.pid,
+      eventsDTO.ev,
+      eventsDTO.pg,
+      dv,
+      br,
+      os,
+      eventsDTO.lc,
+      eventsDTO.ref,
+      eventsDTO.so,
+      eventsDTO.me,
+      eventsDTO.ca,
+      cc,
+    )
 
     try {
-      await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, dto)
+      const values = `(${dto.map(getElValue).join(',')})`
+      await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, values)
       return
     } catch (e) {
       this.logger.error(e)
@@ -792,7 +846,6 @@ export class AnalyticsController {
       )
     }
 
-    // todo: fix: may be vulnerable to sql injection attack
     const values = `(${dto.map(getElValue).join(',')})`
     const perfValues = `(${perfDTO.map(getElValue).join(',')})`
     try {
@@ -889,7 +942,6 @@ export class AnalyticsController {
       )
     }
 
-    // todo: fix: may be vulnerable to sql injection attack
     const values = `(${dto.map(getElValue).join(',')})`
     try {
       await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
