@@ -48,7 +48,7 @@ export const ACCOUNT_PLANS = {
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 6000, // REVIEW
+    maxApiKeyRequestsPerHour: 600, // REVIEW
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
@@ -58,7 +58,7 @@ export const ACCOUNT_PLANS = {
     pid: '752318',
     ypid: '776471',
     maxAlerts: 100,
-    maxApiKeyRequestsPerHour: 60000, // REVIEW
+    maxApiKeyRequestsPerHour: 600, // REVIEW
   },
 }
 
