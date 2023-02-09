@@ -10,6 +10,7 @@ export class Lib {
         this.pageData = null;
         this.pageViewsOptions = null;
         this.perfStatsCollected = false;
+        this.activePage = null;
         this.trackPathChange = this.trackPathChange.bind(this);
         this.heartbeat = this.heartbeat.bind(this);
     }
@@ -19,6 +20,13 @@ export class Lib {
         }
         const data = {
             pid: this.projectID,
+            pg: this.activePage,
+            lc: getLocale(),
+            tz: getTimezone(),
+            ref: getReferrer(),
+            so: getUTMSource(),
+            me: getUTMMedium(),
+            ca: getUTMCampaign(),
             ...event,
         };
         this.sendRequest('custom', data);
@@ -121,6 +129,7 @@ export class Lib {
         this.pageData.path = pg;
         if (this.checkIgnore(pg))
             return;
+        this.activePage = pg;
         const perf = this.getPerformanceStats();
         const data = {
             pid: this.projectID,

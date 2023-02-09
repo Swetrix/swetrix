@@ -56,6 +56,7 @@ export declare class Lib {
     private pageData;
     private pageViewsOptions;
     private perfStatsCollected;
+    private activePage;
     constructor(projectID: string, options?: LibOptions | undefined);
     track(event: TrackEventOptions): void;
     trackPageViews(options?: PageViewsOptions): PageActions;
