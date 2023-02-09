@@ -354,10 +354,18 @@ export class AnalyticsController {
       paramsData,
     )
 
+    let appliedFilters = filters
+
+    if (filters) {
+      try {
+        appliedFilters = JSON.parse(filters)
+      } catch {}
+    }
+
     return {
       ...result,
       customs,
-      appliedFilters: filters,
+      appliedFilters,
     }
   }
 
@@ -496,9 +504,17 @@ export class AnalyticsController {
       timezone,
     )
 
+    let appliedFilters = filters
+
+    if (filters) {
+      try {
+        appliedFilters = JSON.parse(filters)
+      } catch {}
+    }
+
     return {
       ...result,
-      appliedFilters: filters,
+      appliedFilters,
     }
   }
 
