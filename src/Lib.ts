@@ -75,6 +75,7 @@ export class Lib {
   private pageData: PageData | null = null
   private pageViewsOptions: PageViewsOptions | null | undefined = null
   private perfStatsCollected: Boolean = false
+  private activePage: string | null = null
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
@@ -88,6 +89,13 @@ export class Lib {
 
     const data = {
       pid: this.projectID,
+      pg: this.activePage,
+      lc: getLocale(),
+      tz: getTimezone(),
+      ref: getReferrer(),
+      so: getUTMSource(),
+      me: getUTMMedium(),
+      ca: getUTMCampaign(),
       ...event,
     }
     this.sendRequest('custom', data)
@@ -210,6 +218,7 @@ export class Lib {
 
     if (this.checkIgnore(pg)) return
 
+    this.activePage = pg
     const perf = this.getPerformanceStats()
 
     const data = {
