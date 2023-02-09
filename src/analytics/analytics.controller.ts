@@ -203,7 +203,7 @@ const TRANSPARENT_GIF_BUFFER = Buffer.from(
 
 @ApiTags('Analytics')
 @UseGuards(OptionalJwtAccessTokenGuard, RolesGuard)
-@Controller('log')
+@Controller(['log', 'v1/log'])
 export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
