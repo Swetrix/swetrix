@@ -181,7 +181,7 @@ const customLogDTO = (
 
 const getElValue = el => {
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
-  return `'${mysql.escape(el)}'`
+  return mysql.escape(el)
 }
 
 export const getPIDsArray = (pids, pid) => {
