@@ -10,7 +10,6 @@ import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
-import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'blake3'
 import ct from 'countries-and-timezones'
 import {
@@ -67,6 +66,8 @@ import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
+
+const mysql = require('mysql2')
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -180,7 +181,7 @@ const customLogDTO = (
 
 const getElValue = el => {
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
-  return `'${el}'`
+  return `'${mysql.escape(el)}'`
 }
 
 export const getPIDsArray = (pids, pid) => {
@@ -706,7 +707,6 @@ export class AnalyticsController {
     )
 
     try {
-      // todo: fix: may be vulnerable to sql injection attack
       const values = `(${dto.map(getElValue).join(',')})`
       await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, values)
       return
@@ -846,7 +846,6 @@ export class AnalyticsController {
       )
     }
 
-    // todo: fix: may be vulnerable to sql injection attack
     const values = `(${dto.map(getElValue).join(',')})`
     const perfValues = `(${perfDTO.map(getElValue).join(',')})`
     try {
@@ -943,7 +942,6 @@ export class AnalyticsController {
       )
     }
 
-    // todo: fix: may be vulnerable to sql injection attack
     const values = `(${dto.map(getElValue).join(',')})`
     try {
       await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
