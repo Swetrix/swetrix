@@ -9,8 +9,9 @@ export class ApiKeyRateLimitGuard implements CanActivate {
     const user = request.user
 
     if (request.headers['x-api-key']) {
-      const reqAmount =
-        ACCOUNT_PLANS[user.planCode as PlanCode].maxApiKeyRequestsPerHour
+      if (!user) return false
+
+      const reqAmount = ACCOUNT_PLANS[user.planCode as PlanCode].maxApiKeyRequestsPerHour
       return await checkRateLimitForApiKey(user.apiKey, reqAmount)
     }
 

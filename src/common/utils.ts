@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common'
+import { ForbiddenException, NotFoundException, HttpException } from '@nestjs/common'
 import { hash } from 'blake3'
 import * as randomstring from 'randomstring'
 import * as _sample from 'lodash/sample'
@@ -70,7 +70,7 @@ const checkRateLimit = async (
   const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
 
   if (rlCount >= reqAmount) {
-    throw new ForbiddenException('Too many requests, please try again later')
+    throw new HttpException('Too many requests, please try again later', 429)
   }
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
 }
@@ -84,7 +84,7 @@ export const checkRateLimitForApiKey = async (
   const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
 
   if (rlCount >= reqAmount) {
-    throw new ForbiddenException('Too many requests, please try again later')
+    throw new HttpException('Too many requests, please try again later', 429)
   }
   await redis.set(rlHash, 1 + rlCount, 'EX', RATE_LIMIT_FOR_API_KEY_TIMEOUT)
   return true
