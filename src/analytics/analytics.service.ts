@@ -165,7 +165,7 @@ export const checkIfTBAllowed = (
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(private readonly projectService: ProjectService) { }
 
   async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
@@ -288,28 +288,27 @@ export class AnalyticsService {
           'An incorrect event name (ev) is provided',
         )
       }
-    } else {
-      // the type is 'log'
-      // 'tz' does not need validation as it's based on getCountryForTimezone detection
-      // @ts-ignore
-      const { lc } = logDTO
+    }
 
-      // validate locale ('lc' param)
-      if (!_isEmpty(lc)) {
-        if (validator.isLocale(lc)) {
-          // uppercase the locale after '-' char, so for example both 'en-gb' and 'en-GB' in result will be 'en-GB'
-          const lcParted = _split(lc, '-')
+    // 'tz' does not need validation as it's based on getCountryForTimezone detection
+    // @ts-ignore
+    const { lc } = logDTO
 
-          if (_size(lcParted) > 1) {
-            lcParted[1] = _toUpper(lcParted[1])
-          }
+    // validate locale ('lc' param)
+    if (!_isEmpty(lc)) {
+      if (validator.isLocale(lc)) {
+        // uppercase the locale after '-' char, so for example both 'en-gb' and 'en-GB' in result will be 'en-GB'
+        const lcParted = _split(lc, '-')
 
-          // @ts-ignore
-          logDTO.lc = _join(lcParted, '-')
-        } else {
-          // @ts-ignore
-          logDTO.lc = 'NULL'
+        if (_size(lcParted) > 1) {
+          lcParted[1] = _toUpper(lcParted[1])
         }
+
+        // @ts-ignore
+        logDTO.lc = _join(lcParted, '-')
+      } else {
+        // @ts-ignore
+        logDTO.lc = 'NULL'
       }
     }
 
@@ -409,6 +408,16 @@ export class AnalyticsService {
 
     for (let i = 0; i < _size(parsed); ++i) {
       const { column, filter, isExclusive } = parsed[i]
+
+      if (column === 'ev') {
+        params = {
+          ...params,
+          [column]: filter,
+          [`${column}_exclusive`]: isExclusive,
+        }
+
+        continue
+      }
 
       if (!_includes(cols, column)) {
         throw new UnprocessableEntityException(
@@ -520,6 +529,7 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: object,
     timezone: string,
+    customEVFilterApplied: boolean,
   ): Promise<object | void> {
     const params = {}
 
@@ -542,9 +552,12 @@ export class AnalyticsService {
     }
 
     // Average session duration calculation
-    const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
-    let avgSdur = await clickhouse.query(avgSdurQuery, paramsData).toPromise()
-    avgSdur = _round(avgSdur[0]['avg(sdur)'])
+    let avgSdur = 0
+    if (!customEVFilterApplied) {
+      const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
+      let avgSdur = await clickhouse.query(avgSdurQuery, paramsData).toPromise()
+      avgSdur = _round(avgSdur[0]['avg(sdur)'])
+    }
 
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
@@ -577,14 +590,57 @@ export class AnalyticsService {
     const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
     let query = ''
 
+    if (customEVFilterApplied) {
+      for (let i = 0; i < _size(x); ++i) {
+        if (i > 0) {
+          query += ' UNION ALL '
+        }
+  
+        // @ts-ignore
+        query += `select count() from customEV where ${paramsData.params.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${xM[i]
+          }' and '${xM[1 + i]}' ${filtersQuery}`
+      }
+  
+      // @ts-ignore
+      const result: Array<chartCHResponse> = (
+        await clickhouse.query(query, paramsData).toPromise()
+      )
+        // @ts-ignore
+        .sort((a, b) => a.index - b.index)
+
+      const uniques = []
+      let sdur = []
+
+      for (let i = 0; i < _size(x); ++i) {
+        uniques[i] = result[i]['count()']
+        sdur[i] = 0
+      }
+  
+      if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+        x = _map(x, el =>
+          dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+        )
+      }
+  
+      return Promise.resolve({
+        params,
+        chart: {
+          x,
+          visits: uniques,
+          uniques,
+          sdur,
+        },
+        avgSdur,
+      })
+    }
+
     for (let i = 0; i < _size(x); ++i) {
       if (i > 0) {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
+      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
     // @ts-ignore
@@ -724,9 +780,8 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
+      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
     }
 
     // @ts-ignore
