@@ -8,6 +8,8 @@ import { HelmetProvider } from 'react-helmet-async'
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import 'billboard.js/dist/billboard.min.css'
 import 'prismjs/themes/prism-tomorrow.css'
+import { getAccessToken, removeAccessToken } from 'utils/accessToken'
+import { getRefreshToken } from 'utils/refreshToken'
 
 import CrashHandler from 'pages/CrashHandler'
 import { trackViews } from 'utils/analytics'
@@ -30,6 +32,19 @@ const options = {
 if (process.env.NODE_ENV !== 'production') {
   localStorage.debug = 'swetrix:*'
 }
+
+// this function is needed to remove old style auth tokens to log out users and force them to log in to use auth / refresh tokens pair
+// otherwise the app crashes (this problem is on production right now, sorry I'm an idiot and didn't test it before)
+const removeObsoleteAuthTokens = () => {
+  const accessToken = getAccessToken()
+  const refreshToken = getRefreshToken()
+
+  if (accessToken && !refreshToken) {
+    removeAccessToken()
+  }
+}
+
+removeObsoleteAuthTokens()
 
 const container = document.getElementById('root')
 const root = createRoot(container)
