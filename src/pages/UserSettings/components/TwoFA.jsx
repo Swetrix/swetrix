@@ -14,7 +14,7 @@ import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
 
 const TwoFA = ({
-  user, dontRemember, updateUserData, login, genericError,
+  user, dontRemember, updateUserData, genericError,
 }) => {
   const { t } = useTranslation('common')
   const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)

@@ -16,7 +16,7 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 import { isSelfhosted } from 'redux/constants'
-import { submit2FA, authMe } from 'api'
+import { submit2FA } from 'api'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
 

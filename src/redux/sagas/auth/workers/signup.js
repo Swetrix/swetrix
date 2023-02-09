@@ -8,7 +8,7 @@ import { setAccessToken } from 'utils/accessToken'
 import { signup } from 'api'
 import { setRefreshToken } from 'utils/refreshToken'
 
-export default function* signupWorder({ payload: { data: rawData, callback, t } }) {
+export default function* signupWorder({ payload: { data: rawData, callback } }) {
   try {
     const { repeat, ...data } = rawData
     const { dontRemember } = data
