@@ -62,7 +62,7 @@ Filters are used to aggregate data by specific parameters. For example, you can 
 This endpoint returns the aggregated traffic data for your project. This is the exact same data you see in the Traffic tab of your Dashboard, but represented as a JSON entity.
 
 ```bash
-curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'
+curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
@@ -164,7 +164,7 @@ The metrics are:
 - `ttfb` - Time to First Byte.
 
 ```bash
-curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'
+curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
@@ -224,7 +224,7 @@ This endpoint returns a summary of the log data for the specified projects. The 
 - `percChangeUnique` - the percentage change in the number of unique visitors between the current and previous weeks.
 
 ```bash
-curl 'https://api.swetrix.com/v1/log/birdseye?pids=["YOUR_PROJECT_ID"]'
+curl 'https://api.swetrix.com/v1/log/birdseye?pids=["YOUR_PROJECT_ID"]'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
@@ -260,7 +260,7 @@ A single project ID to return summary data for. You can use either `pids` or `pi
 This endpoint returns a list of currently active visitors on the specified project.
 
 ```bash
-curl 'https://api.swetrix.com/v1/log/liveVisitors?pid=YOUR_PROJECT_ID'
+curl 'https://api.swetrix.com/v1/log/liveVisitors?pid=YOUR_PROJECT_ID'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
@@ -294,7 +294,7 @@ The project ID to return live visitors for.
 This endpoint returns a list of heartbeat events for the specified project.
 
 ```bash
-curl 'https://api.swetrix.com/log/hb?pids=["YOUR_PROJECT_ID"]'
+curl 'https://api.swetrix.com/log/hb?pids=["YOUR_PROJECT_ID"]'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
@@ -324,7 +324,7 @@ A single project ID to return heartbeat events for. You can use either `pids` or
 This example returns the data about people from the UK who did not visit the website using mobile devices.
 
 ```bash
-curl 'https://api.swetrix.com/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&filters=[{"column":"cc","filter":"GB","isExclusive":false},{"column":"dv","filter":"mobile","isExclusive":false}]'
+curl 'https://api.swetrix.com/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&filters=[{"column":"cc","filter":"GB","isExclusive":false},{"column":"dv","filter":"mobile","isExclusive":false}]'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
