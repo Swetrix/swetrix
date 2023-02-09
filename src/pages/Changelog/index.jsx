@@ -15,6 +15,22 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-02-09',
+    changes: [
+      <>
+        Released a public
+        {' '}
+        <a href={`${DOCS_URL}/statistics-api`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noopener noreferrer'>
+          API Documentation
+        </a>
+        {' '}
+        related to data aggregation.
+      </>,
+      'Fully refactored the authentication system.',
+      'Added support for API keys.',
+    ],
+  },
+  {
     date: '2023-02-04',
     changes: [
       'Added a Polish translation.',
