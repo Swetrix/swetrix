@@ -340,7 +340,7 @@ const getPieOptions = (customs, uniques, t) => {
 
 // Tabs with custom events like submit form, press button, go to the link rate etc.
 const CustomEvents = ({
-  customs, chartData, t,
+  customs, chartData, onFilter, t,
 }) => {
   const keys = _keys(customs)
   const uniques = _sum(chartData.uniques)
@@ -387,26 +387,31 @@ const CustomEvents = ({
     <PanelContainer name={t('project.customEv')} type='ce' setActiveFragment={setActiveFragment} activeFragment={activeFragment}>
       <table className='table-fixed'>
         <thead>
-          <tr>
-            <th className='w-4/6 text-left text-gray-900 dark:text-gray-50'>{t('project.event')}</th>
-            <th className='w-1/6 text-right text-gray-900 dark:text-gray-50'>
+          <tr className='text-gray-900 dark:text-gray-50'>
+            <th className='w-4/6 text-left'>{t('project.event')}</th>
+            <th className='w-1/6 text-right'>
               {t('project.quantity')}
               &nbsp;&nbsp;
             </th>
-            <th className='w-1/6 text-right text-gray-900 dark:text-gray-50'>{t('project.conversion')}</th>
+            <th className='w-1/6 text-right'>{t('project.conversion')}</th>
           </tr>
         </thead>
         <tbody>
           {_map(keys, (ev) => (
-            <tr key={ev}>
-              <td className='text-left text-gray-900 dark:text-gray-50'>
+            <tr
+              key={ev}
+              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-gray-700 cursor-pointer'
+              onClick={() => onFilter('ev', ev)}
+            >
+              <td className='text-left flex items-center'>
                 {ev}
+                <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
               </td>
-              <td className='text-right text-gray-900 dark:text-gray-50'>
+              <td className='text-right'>
                 {customs[ev]}
                 &nbsp;&nbsp;
               </td>
-              <td className='text-right text-gray-900 dark:text-gray-50'>
+              <td className='text-right'>
                 {_round((customs[ev] / uniques) * 100, 2)}
                 %
               </td>
@@ -420,6 +425,10 @@ const CustomEvents = ({
 
 CustomEvents.propTypes = {
   customs: PropTypes.objectOf(PropTypes.number).isRequired,
+  onFilter: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
+  chartData: PropTypes.objectOf(PropTypes.any).isRequired,
 }
 
 const Panel = ({

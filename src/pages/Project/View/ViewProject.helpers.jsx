@@ -488,6 +488,7 @@ const typeNameMapping = (t) => ({
   me: 'utm_medium',
   ca: 'utm_campaign',
   lt: t('project.mapping.lt'),
+  ev: t('project.event'),
 })
 
 const iconClassName = 'w-6 h-6'

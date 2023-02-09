@@ -1528,6 +1528,7 @@ const ViewProject = ({
                   <CustomEvents
                     t={t}
                     customs={panelsData.customs}
+                    onFilter={filterHandler}
                     chartData={chartData}
                   />
                 )}

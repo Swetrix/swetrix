@@ -45,7 +45,7 @@
     "redux": "^4.2.1",
     "redux-saga": "^1.2.2",
     "spacetime": "^7.4.1",
-    "swetrix": "^2.0.1",
+    "swetrix": "^2.1.0",
     "timezone-soft": "^1.4.1"
   },
   "scripts": {
