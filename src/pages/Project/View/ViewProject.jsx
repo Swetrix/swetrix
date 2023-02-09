@@ -327,13 +327,11 @@ const ViewProject = ({
 
       setSessionDurationAVG(getStringFromTime(processedSdur))
 
-      const convertApliedFilters = JSON.parse(appliedFilters)
-
-      if (!_isEmpty(convertApliedFilters)) {
+      if (!_isEmpty(appliedFilters)) {
         if (_isEmpty(filters) || !_isEqual(filters, appliedFilters)) {
-          setFilters(convertApliedFilters)
+          setFilters(appliedFilters)
         } else {
-          setFilters((filter) => [...filter, ...convertApliedFilters])
+          setFilters((filter) => [...filter, ...appliedFilters])
         }
       }
 
@@ -411,13 +409,11 @@ const ViewProject = ({
         appliedFilters,
       } = dataPerf
 
-      const convertApliedFilters = JSON.parse(appliedFilters)
-
-      if (!_isEmpty(convertApliedFilters)) {
+      if (!_isEmpty(appliedFilters)) {
         if (_isEmpty(filtersPerf) || !_isEqual(filtersPerf, appliedFilters)) {
-          setFiltersPerf(convertApliedFilters)
+          setFiltersPerf(appliedFilters)
         } else {
-          setFiltersPerf((filter) => [...filter, ...convertApliedFilters])
+          setFiltersPerf((filter) => [...filter, ...appliedFilters])
         }
       }
 
