@@ -189,7 +189,7 @@ export const createNewPassword = (id, password) =>
 
 export const verifyEmail = ({ path, id }) =>
   api
-    .get(`v1/auth/${path}/${id}`)
+    .get(`v1/auth/verify-email/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
