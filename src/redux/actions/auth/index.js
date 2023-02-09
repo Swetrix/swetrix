@@ -74,8 +74,6 @@ export const authActions = {
   },
 
   deleteAccountSuccess() {
-    const refreshToken = getRefreshToken()
-    logoutApi(refreshToken)
     removeAccessToken()
     removeRefreshToken()
     removeItem('user_info')
@@ -125,6 +123,9 @@ export const authActions = {
   },
 
   deleteAccountAsync(errorCallback, successCallback, t) {
+    const refreshToken = getRefreshToken()
+    logoutApi(refreshToken)
+
     return {
       type: types.DELETE_ACCOUNT_ASYNC,
       payload: {
