@@ -488,9 +488,10 @@ const Main = () => {
                               <thead className='bg-gray-800'>
                                 <tr>
                                   <th />
-                                  {_map(SWETRIX_AND_COMPETITORS_LIST, (item) => (
+                                  {_map(SWETRIX_AND_COMPETITORS_LIST, (item, key) => (
                                     <th
                                       scope='col'
+                                      key={key}
                                       className='w-1/6 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-50 sm:pl-6'
                                     >
                                       {item}
