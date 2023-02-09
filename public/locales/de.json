@@ -223,7 +223,21 @@
     "statsDesc": "Swetrix basiert auf dem Vertrauen der Nutzer in den Dienst und ist auch in der Lage, Tausende von Benutzern und Websites zu verwalten.",
     "users": "Registrierte Nutzer",
     "websites": "Hinzugefügte Webseiten",
-    "pageviews": "Events verfolgt"
+    "pageviews": "Events verfolgt",
+    "whyUseSwetrix": "Why use <swetrix>Swetrix</swetrix> if there is <competitor></competitor>?",
+    "competitiveFeatures": {
+      "perf": "Performance monitoring",
+      "ext": "Custom extensions",
+      "gdpr": "GDPR-compatible",
+      "alrt": "Custom alerts",
+      "pbld": "Public dashboards",
+      "shad": "Dashboard sharing",
+      "open": "Open source",
+      "free": "Has a free plan",
+      "ckfree": "Cookie free analytics",
+      "api": "Developer API",
+      "2fa": "Two-factor authentication"
+    }
   },
   "auth": {
     "recovery": {
@@ -663,6 +677,7 @@
     "docs": "Dokumentation",
     "guides": "Anleitungen",
     "privacy": "Datenschutz",
+    "cookie": "Cookie Policy",
     "terms": "AGB",
     "status": "Status",
     "donate": "Unterstützen",

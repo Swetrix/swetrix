@@ -223,7 +223,21 @@
     "statsDesc": "Η Swetrix βασίζεται στην εμπιστοσύνη των χρηστών στην υπηρεσία και είναι επίσης ικανή να διαχειρίζεται χιλιάδες χρήστες και ιστότοπους.",
     "users": "Εγγεγραμμένοι χρήστες",
     "websites": "Προστιθέμενοι ιστότοποι",
-    "pageviews": "Events tracked"
+    "pageviews": "Events tracked",
+    "whyUseSwetrix": "Why use <swetrix>Swetrix</swetrix> if there is <competitor></competitor>?",
+    "competitiveFeatures": {
+      "perf": "Performance monitoring",
+      "ext": "Custom extensions",
+      "gdpr": "GDPR-compatible",
+      "alrt": "Custom alerts",
+      "pbld": "Public dashboards",
+      "shad": "Dashboard sharing",
+      "open": "Open source",
+      "free": "Has a free plan",
+      "ckfree": "Cookie free analytics",
+      "api": "Developer API",
+      "2fa": "Two-factor authentication"
+    }
   },
   "auth": {
     "recovery": {
@@ -663,6 +677,7 @@
     "docs": "Τεκμηρίωση",
     "guides": "Οδηγοί",
     "privacy": "Απόρρητο",
+    "cookie": "Cookie Policy",
     "terms": "Όροι",
     "status": "Κατάσταση",
     "donate": "Δωρεά",
