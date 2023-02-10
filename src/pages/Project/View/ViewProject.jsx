@@ -819,7 +819,6 @@ const ViewProject = ({
             isExclusive,
           })
         })
-        console.log(initialFilters)
         setFilters(initialFilters)
       } finally {
         setAreFiltersParsed(true)
@@ -1138,10 +1137,6 @@ const ViewProject = ({
       loadAnalytics(true, [])
     }
   }
-
-  useEffect(() => {
-    console.log('filters', filters)
-  }, [filters])
 
   const exportTypes = [
     { label: t('project.asImage'), onClick: exportAsImageHandler },
