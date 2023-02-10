@@ -328,11 +328,7 @@ const ViewProject = ({
       setSessionDurationAVG(getStringFromTime(processedSdur))
 
       if (!_isEmpty(appliedFilters)) {
-        if (_isEmpty(filters) || !_isEqual(filters, appliedFilters)) {
-          setFilters(appliedFilters)
-        } else {
-          setFilters((filter) => [...filter, ...appliedFilters])
-        }
+        setFilters(appliedFilters)
       }
 
       if (_isEmpty(params)) {
@@ -410,11 +406,7 @@ const ViewProject = ({
       } = dataPerf
 
       if (!_isEmpty(appliedFilters)) {
-        if (_isEmpty(filtersPerf) || !_isEqual(filtersPerf, appliedFilters)) {
-          setFiltersPerf(appliedFilters)
-        } else {
-          setFiltersPerf((filter) => [...filter, ...appliedFilters])
-        }
+        setFilters(appliedFilters)
       }
 
       if (_isEmpty(dataPerf)) {
@@ -827,7 +819,6 @@ const ViewProject = ({
             isExclusive,
           })
         })
-
         setFilters(initialFilters)
       } finally {
         setAreFiltersParsed(true)
