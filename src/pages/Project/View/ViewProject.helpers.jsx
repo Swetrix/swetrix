@@ -474,7 +474,7 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics) => {
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const paidPeriods = ['12M', '24M']
-const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt']
+const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt', 'ev']
 
 const typeNameMapping = (t) => ({
   cc: t('project.mapping.cc'),
