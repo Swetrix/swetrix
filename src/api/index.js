@@ -187,7 +187,7 @@ export const createNewPassword = (id, password) =>
       throw new Error(errorsArray)
     })
 
-export const verifyEmail = ({ path, id }) =>
+export const verifyEmail = ({ id }) =>
   api
     .get(`v1/auth/verify-email/${id}`)
     .then((response) => response.data)

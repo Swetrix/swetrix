@@ -1,4 +1,3 @@
-import _isEmpty from 'lodash/isEmpty'
 import { REFRESH_TOKEN } from 'redux/constants'
 import { getCookie, setCookie } from './cookie'
 

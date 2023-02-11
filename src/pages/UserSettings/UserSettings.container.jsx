@@ -41,9 +41,6 @@ const mapDispatchToProps = (dispatch) => ({
   onDeleteProjectCache: () => {
     dispatch(UIActions.deleteProjectCache())
   },
-  login: (user) => {
-    dispatch(authActions.loginSuccess(user))
-  },
   userSharedUpdate: (message) => {
     dispatch(alertsActions.userSharedUpdate(message))
   },

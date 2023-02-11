@@ -48,7 +48,7 @@ const timeFormatArray = _map(TimeFormat, (key) => key)
 
 const UserSettings = ({
   onDelete, onDeleteProjectCache, removeProject, removeShareProject, setUserShareData,
-  setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData, login,
+  setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData,
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
   accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
 }) => {
@@ -498,7 +498,6 @@ const UserSettings = ({
             user={user}
             dontRemember={dontRemember}
             updateUserData={updateUserData}
-            login={login}
             genericError={genericError}
           />
 
@@ -653,7 +652,6 @@ UserSettings.propTypes = {
   userSharedUpdate: PropTypes.func.isRequired,
   sharedProjectError: PropTypes.func.isRequired,
   updateUserData: PropTypes.func.isRequired,
-  login: PropTypes.func.isRequired,
   genericError: PropTypes.func.isRequired,
   updateProfileFailed: PropTypes.func.isRequired,
   updateUserProfileAsync: PropTypes.func.isRequired,
