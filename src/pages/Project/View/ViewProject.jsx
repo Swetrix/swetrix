@@ -2,6 +2,7 @@
 import React, {
   useState, useEffect, useMemo, memo, useRef, Fragment, useCallback,
 } from 'react'
+import useSize from 'hooks/useSize'
 import { useHistory, useParams, Link } from 'react-router-dom'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
@@ -22,7 +23,6 @@ import _values from 'lodash/values'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _startsWith from 'lodash/startsWith'
-import _isEqual from 'lodash/isEqual'
 import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 import PropTypes from 'prop-types'
@@ -132,6 +132,8 @@ const ViewProject = ({
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   const [panelsDataPerf, setPanelsDataPerf] = useState({})
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
+  const [ref, size] = useSize()
+  console.log('size', size)
 
   const tabs = useMemo(() => {
     return [
@@ -614,6 +616,65 @@ const ViewProject = ({
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
+
+  useEffect(() => {
+    if ((size.width < 400 && size.width > 50) && !isLoading) {
+      if (activeTab === PROJECT_TABS.performance) {
+        const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, true)
+
+        if (!_isEmpty(mainChart)) {
+          mainChart.destroy()
+        }
+
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names(dataNamesPerf)
+          return generete
+        })
+      } else {
+        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, true)
+
+        if (!_isEmpty(mainChart)) {
+          mainChart.destroy()
+        }
+
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names(dataNames)
+          return generete
+        })
+      }
+    } else if (size.width > 400 && !isLoading) {
+      if (activeTab === PROJECT_TABS.performance) {
+        const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf)
+
+        if (!_isEmpty(mainChart)) {
+          mainChart.destroy()
+        }
+
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names(dataNamesPerf)
+          return generete
+        })
+      } else {
+        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+
+        if (!_isEmpty(mainChart)) {
+          mainChart.destroy()
+        }
+
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names(dataNames)
+          return generete
+        })
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [size.width, activeTab, chartData, chartDataPerf, isLoading])
 
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
@@ -1416,6 +1477,7 @@ const ViewProject = ({
                 className={cx('h-80', {
                   hidden: checkIfAllMetricsAreDisabled,
                 })}
+                ref={ref}
               >
                 <div className='h-80' id='dataChart' />
               </div>
@@ -1532,6 +1594,7 @@ const ViewProject = ({
                 className={cx('h-80', {
                   hidden: checkIfAllMetricsAreDisabled,
                 })}
+                ref={ref}
               >
                 <div className='h-80' id='dataChart' />
               </div>
