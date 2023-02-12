@@ -184,6 +184,22 @@ const getElValue = el => {
   return mysql.escape(el)
 }
 
+
+// Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes)
+const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
+const isPerformanceValid = (perf: any) => {
+  return (
+    perf.dns <= MAX_PERFORMANCE_VALUE &&
+    perf.tls <= MAX_PERFORMANCE_VALUE &&
+    perf.conn <= MAX_PERFORMANCE_VALUE &&
+    perf.response <= MAX_PERFORMANCE_VALUE &&
+    perf.render <= MAX_PERFORMANCE_VALUE &&
+    perf.dom_load <= MAX_PERFORMANCE_VALUE &&
+    perf.page_load <= MAX_PERFORMANCE_VALUE &&
+    perf.ttfb <= MAX_PERFORMANCE_VALUE
+  )
+}
+
 export const getPIDsArray = (pids, pid) => {
   const pidsEmpty = _isEmpty(pids)
   const pidEmpty = _isEmpty(pid)
@@ -392,7 +408,7 @@ export class AnalyticsController {
     if (filters) {
       try {
         appliedFilters = JSON.parse(filters)
-      } catch {}
+      } catch { }
     }
 
     return {
@@ -542,7 +558,7 @@ export class AnalyticsController {
     if (filters) {
       try {
         appliedFilters = JSON.parse(filters)
-      } catch {}
+      } catch { }
     }
 
     return {
@@ -815,13 +831,15 @@ export class AnalyticsController {
       )
     }
 
-    if (!_isEmpty(logDTO.perf)) {
+    if (!_isEmpty(logDTO.perf) && isPerformanceValid(logDTO.perf)) {
       if (!ua) {
         ua = UAParser(userAgent)
       }
+
       if (!cc) {
         cc = ct.getCountryForTimezone(logDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
       }
+
       const dv = ua.device.type || 'desktop'
       const br = ua.browser.name
 
