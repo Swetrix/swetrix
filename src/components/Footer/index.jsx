@@ -198,7 +198,7 @@ const Footer = ({ minimal, authenticated }) => {
                 </h3>
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.support, (func) => {
-                    const { key, href } = func(authenticated)
+                    const { key, href, internal } = func(authenticated)
 
                     return (
                       <li key={key}>
