@@ -599,7 +599,7 @@ const Panel = ({
         return (
           <Fragment key={key}>
             <div
-              className={cx('flex justify-between mt-1 dark:text-gray-50 rounded', {
+              className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
                 'group hover:bg-gray-100 hover:dark:bg-gray-700 cursor-pointer': !hideFilters,
               })}
               onClick={() => _onFilter(id, key)}
