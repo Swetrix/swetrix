@@ -108,7 +108,7 @@ const ViewProject = ({
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
   const [filtersPerf, setFiltersPerf] = useState([])
-  // That is needed when using 'Export as image' feature
+  // That is needed when using 'Export as image' feature,
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
   const isLoading = authenticated ? _isLoading : false

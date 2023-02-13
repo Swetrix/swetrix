@@ -17,6 +17,7 @@ const changelog = [
   {
     date: '2023-02-09',
     changes: [
+      'Added an ability to filter data by custom events.',
       <>
         Released a public
         {' '}
