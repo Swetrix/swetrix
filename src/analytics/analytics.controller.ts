@@ -278,7 +278,7 @@ export class AnalyticsController {
       groupTo = to
 
     let queryCustoms =
-      'SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev'
+      `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     let customEVFilterApplied = false
 
@@ -286,7 +286,7 @@ export class AnalyticsController {
     if (filtersParams?.ev) {
       customEVFilterApplied = true
       // @ts-ignore
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
+      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
 
       // @ts-ignore
       subQuery = `FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
