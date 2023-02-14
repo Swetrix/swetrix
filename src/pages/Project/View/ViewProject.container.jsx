@@ -68,6 +68,9 @@ const mapDispatchToProps = (dispatch) => ({
   setProjectTab: (tabs) => {
     dispatch(UIActions.setProjectTab(tabs))
   },
+  setProjectForcastCache: (pid, data, key) => {
+    dispatch(UIActions.setProjectForcastCache(pid, data, key))
+  },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(ViewProject)

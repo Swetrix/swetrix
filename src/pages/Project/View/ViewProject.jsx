@@ -33,7 +33,7 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -69,7 +69,7 @@ const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -623,10 +623,19 @@ const ViewProject = ({
   const onForecastSubmit = async (periodToForecast) => {
     setIsForecastOpened(false)
     setDataLoading(true)
+    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast)
+    const data = cache[id][key]
+
+    if (!_isEmpty(data)) {
+      setForecasedChartData(data)
+      setDataLoading(false)
+      return
+    }
 
     try {
       const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
       const transformed = transformAIChartData(result)
+      setProjectForcastCache(id, transformed, key)
       setForecasedChartData(transformed)
     } catch (e) {
       console.error(`[onForecastSubmit] Error: ${e}`)

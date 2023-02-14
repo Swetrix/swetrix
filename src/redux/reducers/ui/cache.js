@@ -2,7 +2,7 @@ import { types } from 'redux/actions/ui/types'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 
-import { getProjectCacheKey, LS_VIEW_PREFS_SETTING } from 'redux/constants'
+import { getProjectCacheKey, getProjectForcastCacheKey, LS_VIEW_PREFS_SETTING } from 'redux/constants'
 
 export const getInitialViewPrefs = () => {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -133,6 +133,21 @@ const cacheReducer = (state = getInitialState(), { type, payload }) => {
         analyticsPerf: {
           ...state.analyticsPerf,
           [pid]: _filter(state.analyticsPerf[pid], (ckey) => ckey !== key),
+        },
+      }
+    }
+
+    case types.SET_PROJECT_FORECAST_CACHE: {
+      const { pid, data, key } = payload
+
+      return {
+        ...state,
+        analytics: {
+          ...state.analytics,
+          [pid]: {
+            ...state.analytics[pid],
+            [key]: data,
+          },
         },
       }
     }
