@@ -41,7 +41,9 @@ import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
+import Robot from 'ui/icons/Robot'
 import PaidFeature from 'modals/PaidFeature'
+import Forecast from 'modals/Forecast'
 import routes from 'routes'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData,
@@ -87,6 +89,7 @@ const ViewProject = ({
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
+  const [isForecastOpened, setIsForecastOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
   const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
@@ -596,6 +599,20 @@ const ViewProject = ({
         loadAnalytics(true)
       }
     }
+  }
+
+  const onForecastOpen = () => {
+    if (isLoading || dataLoading) {
+      return
+    }
+
+    setIsForecastOpened(true)
+  }
+
+  const onForecastSubmit = () => {
+    // todo
+
+    setIsForecastOpened(false)
   }
 
   useEffect(() => {
@@ -1236,6 +1253,17 @@ const ViewProject = ({
                     </button>
                   </div>
                   <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
+                    <button
+                      type='button'
+                      onClick={onForecastOpen}
+                      className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                        'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                      })}
+                    >
+                      <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
+                    </button>
+                  </div>
+                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
                     <span className='relative z-0 inline-flex shadow-sm rounded-md'>
                       {_map(activePeriod.tbs, (tb, index, { length }) => (
                         <button
@@ -1638,6 +1666,12 @@ const ViewProject = ({
         <PaidFeature
           isOpened={isPaidFeatureOpened}
           onClose={() => setIsPaidFeatureOpened(false)}
+        />
+        <Forecast
+          isOpened={isForecastOpened}
+          onClose={() => setIsForecastOpened(false)}
+          onSubmit={onForecastSubmit}
+          activeTB={t(`project.${timeBucket}`)}
         />
       </Title>
     )
