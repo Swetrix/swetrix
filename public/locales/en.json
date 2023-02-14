@@ -591,7 +591,7 @@
     "forecast": {
       "title": "Traffic forecast",
       "desc": "This is a rough estimate of how much traffic you can expect to get on your website, based on Swetrix AI models.",
-      "input": "Enter the quantity of '{{frequency}}' you want to forecast"
+      "input": "The quantity of '{{frequency}}' you want to forecast"
     }
   },
   "pricing": {
