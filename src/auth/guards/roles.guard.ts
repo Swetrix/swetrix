@@ -29,7 +29,15 @@ export class RolesGuard implements CanActivate {
 
     const user = await this.userService.findUserById(userFromRequest.id)
 
-    const hasRole = user.roles.some(role => roles.includes(role))
+    // this is a temp measure as well due to some fucking bug related to undefined user, will revert it when I find the cause
+    let hasRole
+    try {
+      hasRole = user.roles.some(role => roles.includes(role))
+    } catch (error) {
+      console.error(`[AUTH ERROR - ROLES GUARD] ${error.message}`)
+      console.error(user, roles)
+      console.error(request?.path, request?.originalUrl, request?.method)
+    }
 
     if (!hasRole) return false
 
