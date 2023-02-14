@@ -16,7 +16,7 @@ import _size from 'lodash/size'
 import _round from 'lodash/round'
 import _fill from 'lodash/fill'
 import _reduce from 'lodash/reduce'
-import _tail from 'lodash/tail'
+import _last from 'lodash/last'
 import JSZip from 'jszip'
 
 import { TimeFormat, tbsFormatMapper, tbsFormatMapper24h } from 'redux/constants'
@@ -269,12 +269,9 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
   const modifiedChart = { ...chart }
   let regions
 
-  // console.log(chart, forecasedChartData)
-
   if (!_isEmpty(forecasedChartData)) {
     lines.push({
-      // value: _tail(chart?.x),
-      value: _size(chart?.x),
+      value: _last(chart?.x),
       text: 'Forecast',
     })
     modifiedChart.x = [...modifiedChart.x, ...forecasedChartData.x]
