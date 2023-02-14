@@ -612,6 +612,11 @@ const ViewProject = ({
       return
     }
 
+    if (!_isEmpty(forecasedChartData)) {
+      setForecasedChartData({})
+      return
+    }
+
     setIsForecastOpened(true)
   }
 
@@ -632,6 +637,7 @@ const ViewProject = ({
 
   useEffect(() => {
     loadAnalytics()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forecasedChartData])
 
   useEffect(() => {
@@ -661,9 +667,9 @@ const ViewProject = ({
           })
         }
 
-        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration) {
+        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -676,9 +682,9 @@ const ViewProject = ({
           })
         }
 
-        if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
+        if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -1281,6 +1287,7 @@ const ViewProject = ({
                       onClick={onForecastOpen}
                       className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
                         'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                        '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
                       })}
                     >
                       <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />

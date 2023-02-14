@@ -280,8 +280,6 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
     modifiedChart.sdur = [...modifiedChart.sdur, ...forecasedChartData.sdur]
   }
 
-  console.log(lines)
-
   if (applyRegions) {
     let regionStart
 
