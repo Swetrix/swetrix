@@ -2,10 +2,12 @@ import React from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 
-const Robot = ({ theme, className, containerClassName }) => {
+const Robot = ({
+  className, containerClassName, // theme,
+}) => {
   const cn = cx(className, {
-    'fill-white': theme === 'dark',
-    'fill-slate-800': theme === 'light',
+    // 'fill-white': theme === 'dark',
+    // 'fill-slate-800': theme === 'light',
   })
 
   return (
@@ -21,7 +23,7 @@ const Robot = ({ theme, className, containerClassName }) => {
 
 Robot.propTypes = {
   className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
+  // theme: PropTypes.string.isRequired,
 }
 
 Robot.defaultProps = {

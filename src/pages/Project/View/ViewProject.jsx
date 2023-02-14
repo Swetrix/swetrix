@@ -48,12 +48,14 @@ import routes from 'routes'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData,
 } from 'api'
+import { getChartPrediction } from 'api/ai'
 import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getSettingsPerf,
+  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
+  CHART_METRICS_MAPPING_PERF, getSettingsPerf, transformAIChartData,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -129,6 +131,10 @@ const ViewProject = ({
 
     return projectTab || PROJECT_TABS.traffic
   })
+
+  // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
+  // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
+  const [forecasedChartData, setForecasedChartData] = useState({})
 
   const [chartDataPerf, setChartDataPerf] = useState({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
@@ -337,7 +343,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
         setChartData(chart)
 
         setPanelsData({
@@ -609,11 +615,24 @@ const ViewProject = ({
     setIsForecastOpened(true)
   }
 
-  const onForecastSubmit = () => {
-    // todo
-
+  const onForecastSubmit = async (periodToForecast) => {
     setIsForecastOpened(false)
+    setDataLoading(true)
+
+    try {
+      const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
+      const transformed = transformAIChartData(result)
+      setForecasedChartData(transformed)
+    } catch (e) {
+      console.error(`[onForecastSubmit] Error: ${e}`)
+    }
+
+    setDataLoading(false)
   }
+
+  useEffect(() => {
+    loadAnalytics()
+  }, [forecasedChartData])
 
   useEffect(() => {
     const url = new URL(window.location)
@@ -1252,7 +1271,11 @@ const ViewProject = ({
                       <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                     </button>
                   </div>
-                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
+                  <div
+                    className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3', {
+                      hidden: activeTab !== PROJECT_TABS.traffic,
+                    })}
+                  >
                     <button
                       type='button'
                       onClick={onForecastOpen}

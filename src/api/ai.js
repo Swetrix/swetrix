@@ -19,7 +19,7 @@ const api = axios.create({
  */
 export const getChartPrediction = (chart, periodToForecast, frequency) =>
   api
-    .post('', {
+    .post('/', {
       ...chart,
       period_to_forecast: periodToForecast,
       frequency,

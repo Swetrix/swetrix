@@ -35,7 +35,7 @@ const Forecast = ({
       return
     }
 
-    onSubmit(period)
+    onSubmit(processedPeriod)
   }
 
   const _onClose = () => {
