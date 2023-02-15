@@ -96,6 +96,7 @@ export class WebhookController {
           billingFrequency: monthlyBilling
             ? BillingFrequency.Monthly
             : BillingFrequency.Yearly,
+          isPaymentActive: true,
         }
 
         if (uid) {
