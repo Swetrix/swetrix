@@ -14,8 +14,10 @@ import { ExtensionToUser } from '../../marketplace/extensions/entities/extension
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
+
 export enum PlanCode {
   free = 'free',
+  hobby = 'hobby',
   freelancer = 'freelancer',
   startup = 'startup',
   enterprise = 'enterprise',
@@ -28,7 +30,19 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 5000,
     maxProjects: 10,
     maxAlerts: 1,
-    maxApiKeyRequestsPerHour: 5,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: true,
+  },
+  [PlanCode.hobby]: {
+    id: PlanCode.hobby,
+    displayName: 'Hobby plan',
+    monthlyUsageLimit: 100000,
+    maxProjects: 20,
+    pid: '813694', // Plan ID
+    ypid: '813695', // Plan ID - Yearly billing
+    maxAlerts: 10,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
@@ -37,28 +51,31 @@ export const ACCOUNT_PLANS = {
     maxProjects: 20,
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
-    maxAlerts: 10,
+    maxAlerts: 20,
     maxApiKeyRequestsPerHour: 600,
+    legacy: false,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
     displayName: 'Startup plan',
     monthlyUsageLimit: 1000000,
-    maxProjects: 20,
+    maxProjects: 30,
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600, // REVIEW
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
     displayName: 'Enterprise plan',
     monthlyUsageLimit: 5000000,
-    maxProjects: 30,
+    maxProjects: 50,
     pid: '752318',
     ypid: '776471',
     maxAlerts: 100,
-    maxApiKeyRequestsPerHour: 600, // REVIEW
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
   },
 }
 
@@ -122,6 +139,11 @@ export class User {
 
   @Column({ default: false })
   isActive: boolean
+
+  // true -> the user is on an active trial subscription or is a paying customer
+  // false -> trial has expired without receiving a payment or user cancelled subscription
+  @Column({ default: true })
+  isPaymentActive: boolean
 
   @Column({
     type: 'enum',

@@ -113,7 +113,8 @@ export class WebhookController {
         const { subscription_id } = body
 
         await this.userService.updateBySubID(subscription_id, {
-          planCode: PlanCode.free,
+          // planCode: PlanCode.free,
+          isPaymentActive: false,
           billingFrequency: BillingFrequency.Monthly,
         })
 
