@@ -139,23 +139,15 @@ const PricingItem = ({
         </p>
       )}
       <p className='mt-4 text-center'>
-        {tier.planCode === 'free' ? (
-          <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
-            {t('pricing.free')}
-          </span>
-        ) : (
-          <>
-            <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
-              $
-              {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
-            </span>
-            &nbsp;
-            <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
-              /
-              {t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
-            </span>
-          </>
-        )}
+        <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
+          $
+          {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
+        </span>
+        &nbsp;
+        <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
+          /
+          {t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
+        </span>
       </p>
       {authenticated ? (
         <span
@@ -219,8 +211,6 @@ const Pricing = ({ t, language }) => {
   const tiers = getTiers(t)
   const nonStandardTiers = getNonStandardTiers(t)
   const isNonStandardTier = authenticated && !_isEmpty(nonStandardTiers[user.planCode])
-
-  console.log(isNonStandardTier, user.planCode)
 
   useEffect(() => {
     const lastEventHandler = async (data) => {

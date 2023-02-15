@@ -257,6 +257,8 @@ export const DEFAULT_ALERTS_TAKE = 100
 // TODO: Eventually this should be fetched from the API, e.g. GET /config route
 export const PLAN_LIMITS = {
   free: {
+    priceMonthly: 0,
+    priceYearly: 0,
     monthlyUsageLimit: 5000,
     maxProjects: 10,
     maxAlerts: 1,
