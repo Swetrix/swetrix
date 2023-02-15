@@ -17,6 +17,7 @@ import { RefreshToken } from './refresh-token.entity'
 
 export enum PlanCode {
   free = 'free',
+  trial = 'trial',
   hobby = 'hobby',
   freelancer = 'freelancer',
   startup = 'startup',
@@ -33,10 +34,19 @@ export const ACCOUNT_PLANS = {
     maxApiKeyRequestsPerHour: 600,
     legacy: true,
   },
+  [PlanCode.trial]: {
+    id: PlanCode.trial,
+    displayName: 'Free trial',
+    monthlyUsageLimit: 100000,
+    maxProjects: 20,
+    maxAlerts: 20,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
+  },
   [PlanCode.hobby]: {
     id: PlanCode.hobby,
     displayName: 'Hobby plan',
-    monthlyUsageLimit: 100000,
+    monthlyUsageLimit: 10000,
     maxProjects: 20,
     pid: '813694', // Plan ID
     ypid: '813695', // Plan ID - Yearly billing
@@ -126,7 +136,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: PlanCode,
-    default: PlanCode.free,
+    default: PlanCode.trial,
   })
   planCode: PlanCode
 
