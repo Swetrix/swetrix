@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-has-content, lodash/prefer-lodash-method */
-import React, { memo, useMemo } from 'react'
+import React, { memo, useMemo, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import dayjs from 'dayjs'
@@ -9,12 +9,14 @@ import duration from 'dayjs/plugin/duration'
 import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
+import Modal from 'ui/Modal'
 import Pricing from '../MainPage/Pricing'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
 
 const Billing = () => {
+  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
   const { user } = useSelector(state => state.auth)
   const { theme } = useSelector(state => state.ui.theme)
   const { t, i18n: { language } } = useTranslation('common')
@@ -57,6 +59,26 @@ const Billing = () => {
     })
   }, [language, trialEndDate, isTrial, timeFormat, t])
 
+  const onSubscriptionCancel = () => {
+    if (!window.Paddle) {
+      window.location.replace(user.subCancelURL)
+      return
+    }
+
+    window.Paddle.Checkout.open({
+      override: user.subCancelURL,
+      method: 'inline',
+      frameTarget: 'checkout-container',
+      frameInitialHeight: 416,
+      frameStyle: 'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
+      locale: paddleLanguageMapping[language] || language,
+      displayModeTheme: theme,
+    })
+    setTimeout(() => {
+      document.querySelector('#checkout-container').scrollIntoView()
+    }, 500)
+  }
+
   const onUpdatePaymentDetails = () => {
     if (!window.Paddle) {
       window.location.replace(subUpdateURL)
@@ -86,9 +108,14 @@ const Billing = () => {
               {t('billing.title')}
             </h1>
             {!isFree && !isTrial && (
-              <span onClick={onUpdatePaymentDetails} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
-                {t('billing.update')}
-              </span>
+              <div>
+                <span onClick={onUpdatePaymentDetails} className='inline-flex cursor-pointer mr-2 items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
+                  {t('billing.update')}
+                </span>
+                <span onClick={() => setIsCancelSubModalOpened(true)} className='inline-flex cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-4 py-2 text-sm'>
+                  {t('billing.cancelSub')}
+                </span>
+              </div>
             )}
           </div>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
@@ -127,6 +154,30 @@ const Billing = () => {
             />
           </p>
         </div>
+        <Modal
+          onClose={() => {
+            setIsCancelSubModalOpened(false)
+          }}
+          onSubmit={() => {
+            setIsCancelSubModalOpened(false)
+            onSubscriptionCancel()
+          }}
+          submitText={t('common.yes')}
+          closeText={t('common.no')}
+          title={t('pricing.cancelTitle')}
+          submitType='danger'
+          type='error'
+          message={(
+            <Trans
+              t={t}
+              i18nKey='pricing.cancelDesc'
+              values={{
+                email: CONTACT_EMAIL,
+              }}
+            />
+          )}
+          isOpened={isCancelSubModalOpened}
+        />
       </div>
     </Title>
   )
