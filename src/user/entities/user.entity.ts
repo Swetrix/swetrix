@@ -109,6 +109,8 @@ export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 addit
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
+export const TRIAL_DURATION = 14 // days
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -142,8 +144,11 @@ export class User {
 
   // true -> the user is on an active trial subscription or is a paying customer
   // false -> trial has expired without receiving a payment or user cancelled subscription
-  @Column({ default: true })
+  @Column({ default: false })
   isPaymentActive: boolean
+
+  @Column({ type: 'timestamp', nullable: true })
+  trialEndDate: Date
 
   @Column({
     type: 'enum',

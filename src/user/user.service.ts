@@ -161,7 +161,7 @@ export class UserService {
     return await this.usersRepository.findOne({ email })
   }
 
-  public async createUser(user: Pick<User, 'email' | 'password'>) {
+  public async createUser(user: Pick<User, 'email' | 'password' | 'trialEndDate'>) {
     return await this.usersRepository.save(user)
   }
 
