@@ -264,6 +264,14 @@ export const PLAN_LIMITS = {
     maxAlerts: 1,
     legacy: true,
   },
+  trial: {
+    monthlyUsageLimit: 100000,
+    maxProjects: 20,
+    maxAlerts: 20,
+    legacy: false,
+    priceMonthly: 0,
+    priceYearly: 0,
+  },
   hobby: {
     monthlyUsageLimit: 10000,
     maxProjects: 20,
