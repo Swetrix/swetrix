@@ -577,7 +577,7 @@
   "billing": {
     "title": "Billing & Plans",
     "desc": "It is free to get started and use our services.\nIf you need to handle more traffic, you probably need to upgrade your plan.\nBelow is a list of available plans. No hidden fees or other BS, everything is clear and transparent!",
-    "contact": "Need to track more than 1 million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
+    "contact": "Need to track more than {{amount}} million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
     "update": "Update payment details",
     "nextBillDate": "Next bill date:",
     "trialEnds": "Trial ends {{date}}",

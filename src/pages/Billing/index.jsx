@@ -150,6 +150,7 @@ const Billing = () => {
               values={{ email: CONTACT_EMAIL }}
               components={{
                 mail: <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
+                amount: 5,
               }}
             />
           </p>
