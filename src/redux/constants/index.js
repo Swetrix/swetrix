@@ -254,26 +254,44 @@ export const THEME_TYPE = {
 
 export const DEFAULT_ALERTS_TAKE = 100
 
-// Eventually this should be fetched from the API, e.g. GET /config route
+// TODO: Eventually this should be fetched from the API, e.g. GET /config route
 export const PLAN_LIMITS = {
   free: {
     monthlyUsageLimit: 5000,
     maxProjects: 10,
     maxAlerts: 1,
+    legacy: true,
+  },
+  hobby: {
+    monthlyUsageLimit: 10000,
+    maxProjects: 20,
+    maxAlerts: 10,
+    legacy: false,
+    priceMonthly: 5,
+    priceYearly: 50,
   },
   freelancer: {
     monthlyUsageLimit: 100000,
     maxProjects: 20,
-    maxAlerts: 10,
+    maxAlerts: 20,
+    legacy: false,
+    priceMonthly: 15,
+    priceYearly: 150,
   },
   startup: {
     monthlyUsageLimit: 1000000,
-    maxProjects: 20,
+    maxProjects: 30,
     maxAlerts: 50,
+    legacy: false,
+    priceMonthly: 59,
+    priceYearly: 590,
   },
   enterprise: {
     monthlyUsageLimit: 5000000,
-    maxProjects: 30,
+    maxProjects: 50,
     maxAlerts: 100,
+    legacy: false,
+    priceMonthly: 110,
+    priceYearly: 1100,
   },
 }

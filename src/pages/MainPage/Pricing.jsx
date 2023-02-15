@@ -21,13 +21,14 @@ import routes from 'routes'
 const getTiers = (t) => [
   {
     name: t('pricing.tiers.hobby'),
-    planCode: 'free',
-    priceMonthly: null,
+    planCode: 'hobby',
+    priceMonthly: PLAN_LIMITS.hobby.priceMonthly,
+    priceYearly: PLAN_LIMITS.hobby.priceYearly,
     includedFeatures: [
-      t('pricing.tiers.upToXVMo', { amount: '5,000' }),
-      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.free.maxProjects }),
+      t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString() }),
+      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.hobby.maxProjects }),
       // t('pricing.tiers.xMoDataRetention', { amount: 3 }),
-      t('pricing.tiers.xAlertsSingular', { amount: PLAN_LIMITS.free.maxAlerts }),
+      t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.hobby.maxAlerts }),
       t('pricing.tiers.dataExports'),
       t('pricing.tiers.dataOwnership'),
       t('pricing.tiers.noBanners'),
@@ -38,11 +39,11 @@ const getTiers = (t) => [
   {
     name: t('pricing.tiers.freelancer'),
     planCode: 'freelancer',
-    priceMonthly: 15,
-    priceYearly: 150,
+    priceMonthly: PLAN_LIMITS.freelancer.priceMonthly,
+    priceYearly: PLAN_LIMITS.freelancer.priceYearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
-      t('pricing.tiers.xVMo', { amount: '100,000' }),
+      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString() }),
       t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.freelancer.maxProjects }),
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.freelancer.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
@@ -54,11 +55,11 @@ const getTiers = (t) => [
   {
     name: t('pricing.tiers.startup'),
     planCode: 'startup',
-    priceMonthly: 59,
-    priceYearly: 590,
+    priceMonthly: PLAN_LIMITS.startup.priceMonthly,
+    priceYearly: PLAN_LIMITS.startup.priceYearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
-      t('pricing.tiers.xVMo', { amount: '1,000,000' }),
+      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.startup.monthlyUsageLimit.toLocaleString() }),
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.startup.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
     ],
@@ -69,11 +70,11 @@ const getTiers = (t) => [
   {
     name: t('pricing.tiers.enterprise'),
     planCode: 'enterprise',
-    priceMonthly: 110,
-    priceYearly: 1100,
+    priceMonthly: PLAN_LIMITS.enterprise.priceMonthly,
+    priceYearly: PLAN_LIMITS.enterprise.priceYearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.startup') }),
-      t('pricing.tiers.xVMo', { amount: '5,000,000' }),
+      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.enterprise.monthlyUsageLimit.toLocaleString() }),
       t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.enterprise.maxProjects }),
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.enterprise.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 24 }),
