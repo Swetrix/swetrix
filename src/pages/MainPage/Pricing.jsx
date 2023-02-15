@@ -138,6 +138,11 @@ const PricingItem = ({
           {t('pricing.mostPopular')}
         </p>
       )}
+      {tier.legacy && (
+        <p className='absolute top-0 left-2 py-1 px-2 bg-yellow-500 rounded-full text-xs font-semibold uppercase tracking-wide text-white transform translate-y-4'>
+          {t('pricing.legacy')}
+        </p>
+      )}
       <p className='mt-4 text-center'>
         <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
           $
