@@ -701,6 +701,11 @@ export class AnalyticsService {
     // to replace nulls with zeros
     sdur = _map(sdur, el => el || 0)
 
+    // length of sdur is sometimes lower than uniques, let's fix it by adding zeros
+    while (_size(sdur) < _size(uniques)) {
+      sdur.push(0)
+    }
+
     return Promise.resolve({
       params,
       chart: {
