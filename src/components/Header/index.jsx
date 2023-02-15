@@ -78,6 +78,8 @@ const Header = ({
     return [TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS, t('pricing.xTrialDaysLeft', { amount })]
   }, [user, t])
 
+  console.log(authenticated, rawStatus, status)
+
   const logoutHandler = () => {
     dispatch(authActions.logout())
   }
@@ -134,7 +136,7 @@ const Header = ({
                       'text-amber-800 bg-amber-200 dark:bg-amber-300 hover:bg-amber-300 dark:hover:bg-amber-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                       'text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
                     })}
-                    key='Billing'
+                    key='TrialNotification'
                   >
                     {status}
                   </Link>
@@ -336,6 +338,18 @@ const Header = ({
                 />
                 {authenticated ? (
                   <>
+                    {!isSelfhosted && user?.planCode === 'trial' && (
+                      <Link
+                        to={routes.billing}
+                        className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
+                          'text-amber-800 bg-amber-200 dark:bg-amber-300 hover:bg-amber-300 dark:hover:bg-amber-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
+                          'text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
+                        })}
+                        key='TrialNotification'
+                      >
+                        {status}
+                      </Link>
+                    )}
                     <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.you')}
