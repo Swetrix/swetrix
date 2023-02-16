@@ -316,10 +316,11 @@ export class AnalyticsService {
 
     this.checkIpBlacklist(project, ip)
 
-    if (!project.active)
+    if (!project.active) {
       throw new BadRequestException(
         'Incoming analytics is disabled for this project',
       )
+    }
 
     if (!isSelfhosted) {
       const count = await this.projectService.getRedisCount(project.admin.id)

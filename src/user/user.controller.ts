@@ -37,7 +37,6 @@ import {
   MAX_EMAIL_REQUESTS,
   PlanCode,
   Theme,
-  TimeFormat,
 } from './entities/user.entity'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -236,7 +235,7 @@ export class UserController {
       throw new BadRequestException(`User with id ${id} does not exist`)
     }
 
-    if (user.planCode !== PlanCode.free) {
+    if (user.planCode !== PlanCode.free && user.planCode !== PlanCode.trial) {
       throw new BadRequestException('cancelSubFirst')
     }
 
@@ -274,7 +273,7 @@ export class UserController {
       select: ['id', 'planCode'],
     })
 
-    if (user.planCode !== PlanCode.free) {
+    if (user.planCode !== PlanCode.free && user.planCode !== PlanCode.trial) {
       throw new BadRequestException('cancelSubFirst')
     }
 
@@ -566,6 +565,7 @@ export class UserController {
         'twoFactorAuthenticationSecret',
         'isTwoFactorAuthenticationEnabled',
         'isTelegramChatIdConfirmed',
+        'trialEndDate',
       ])
       await this.userService.update(id, userToUpdate)
 

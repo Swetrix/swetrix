@@ -96,7 +96,6 @@ export class WebhookController {
           billingFrequency: monthlyBilling
             ? BillingFrequency.Monthly
             : BillingFrequency.Yearly,
-          isPaymentActive: true,
         }
 
         if (uid) {
@@ -114,8 +113,7 @@ export class WebhookController {
         const { subscription_id } = body
 
         await this.userService.updateBySubID(subscription_id, {
-          // planCode: PlanCode.free,
-          isPaymentActive: false,
+          planCode: PlanCode.none,
           billingFrequency: BillingFrequency.Monthly,
         })
 

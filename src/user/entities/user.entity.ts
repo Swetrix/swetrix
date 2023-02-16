@@ -16,6 +16,7 @@ import { Complaint } from '../../marketplace/complaints/entities/complaint.entit
 import { RefreshToken } from './refresh-token.entity'
 
 export enum PlanCode {
+  none = 'none',
   free = 'free',
   trial = 'trial',
   hobby = 'hobby',
@@ -25,6 +26,15 @@ export enum PlanCode {
 }
 
 export const ACCOUNT_PLANS = {
+  [PlanCode.none]: {
+    id: PlanCode.none,
+    displayName: 'No plan',
+    monthlyUsageLimit: 0,
+    maxProjects: 0,
+    maxAlerts: 0,
+    maxApiKeyRequestsPerHour: 0,
+    legacy: false,
+  },
   [PlanCode.free]: {
     id: PlanCode.free,
     displayName: 'Free plan',
@@ -151,11 +161,6 @@ export class User {
 
   @Column({ default: false })
   isActive: boolean
-
-  // true -> the user is on an active trial subscription or is a paying customer
-  // false -> trial has expired without receiving a payment or user cancelled subscription
-  @Column({ default: false })
-  isPaymentActive: boolean
 
   @Column({ type: 'timestamp', nullable: true })
   trialEndDate: Date
