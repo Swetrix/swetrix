@@ -20,7 +20,7 @@ import { AlertService } from 'src/alert/alert.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
-import { ReportFrequency, ACCOUNT_PLANS } from '../user/entities/user.entity'
+import { ReportFrequency, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
 import {
   clickhouse,
   redis,
@@ -387,6 +387,7 @@ export class TaskManagerService {
       {
         admin: {
           isTelegramChatIdConfirmed: true,
+          planCode: Not(PlanCode.none),
         },
       },
       ['admin'],
@@ -439,6 +440,7 @@ export class TaskManagerService {
       {
         admin: {
           isTelegramChatIdConfirmed: true,
+          planCode: Not(PlanCode.none),
         },
       },
       ['admin'],

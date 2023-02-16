@@ -353,6 +353,12 @@ export class ProjectController {
         throw new ForbiddenException('Please, verify your email address first')
       }
 
+      if (user.planCode === PlanCode.none) {
+        throw new ForbiddenException(
+          'You cannot create new projects due to no active subscription. Please upgrade your account plan to continue.',
+        )
+      }
+
       if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
         throw new ForbiddenException(
           `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,

@@ -100,6 +100,12 @@ export class AlertController {
     const pids = _map(user.projects, (project) => project.id)
     const alertsCount = await this.alertService.count({ project: In(pids) })
 
+    if (user.planCode === PlanCode.none) {
+      throw new ForbiddenException(
+        'You cannot create new alerts due to no active subscription. Please upgrade your account plan to continue.',
+      )
+    }
+
     if (alertsCount >= (maxAlerts || ALERTS_MAXIMUM)) {
       throw new ForbiddenException(
         `You cannot create more than ${maxAlerts} alerts on your account plan. Please upgrade to be able to create more alerts.`,
