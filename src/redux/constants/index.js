@@ -18,41 +18,49 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   period: 'today',
   tbs: ['hour'],
   access: 'free',
+  daysCount: 1,
 }, {
   label: t('project.yesterday'),
   period: 'yesterday',
   tbs: ['hour'],
   access: 'free',
+  daysCount: 1,
 }, {
   label: t('project.last24h'),
   period: '1d',
   tbs: ['hour'],
   access: 'free',
+  daysCount: 1,
 }, {
   label: t('project.lastXDays', { amount: 7 }),
   period: '7d',
   tbs: ['hour', 'day'],
   access: 'free',
+  daysCount: 7,
 }, {
   label: t('project.lastXWeeks', { amount: 4 }),
   period: '4w',
   tbs: ['day', 'week'],
   access: 'free',
+  daysCount: 28,
 }, {
   label: t('project.lastXMonths', { amount: 3 }),
   period: '3M',
   tbs: ['week', 'month'],
   access: 'free',
+  daysCount: 90,
 }, {
   label: t('project.lastXMonths', { amount: 12 }),
   period: '12M',
   tbs: ['week', 'month'],
   access: 'paid',
+  daysCount: 365,
 }, {
   label: t('project.lastXMonths', { amount: 24 }),
   period: '24M',
   tbs: ['month'],
   access: 'paid',
+  daysCount: 730,
 }, {
   label: getCustomLabel(dates, t),
   dropdownLabel: t('project.custom'),
@@ -60,6 +68,7 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   period: 'custom',
   tbs: tbs || ['custom'],
   access: 'free',
+  daysCount: dates ? Math.ceil((dates[1] - dates[0]) / (1000 * 60 * 60 * 24)) : 0,
 }]
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
