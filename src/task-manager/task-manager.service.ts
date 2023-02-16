@@ -420,9 +420,15 @@ export class TaskManagerService {
       }
     })
 
-    // TODO:
-    // send email reminding user that trial period will end tomorrow
-    // set trialReminderSent to true
+    for (let i = 0; i < _size(users); ++i) {
+      await this.userService.update(users[i].id, {
+        trialReminderSent: true,
+      })
+      await this.mailerService.sendEmail(
+        users[i].email,
+        LetterTemplate.TrialEndsTomorrow,
+      )
+    }
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)
@@ -439,8 +445,10 @@ export class TaskManagerService {
         planCode: PlanCode.none,
         trialEndDate: null,
       })
-
-      // TODO: send email notifying user that trial period has ended
+      await this.mailerService.sendEmail(
+        users[i].email,
+        LetterTemplate.TrialExpired,
+      )
     }
   }
 
