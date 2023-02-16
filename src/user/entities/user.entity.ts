@@ -240,10 +240,10 @@ export class User {
   billingFrequency: BillingFrequency
 
   @Column({ type: 'date', nullable: true })
-  nextBillDate: Date
+  nextBillDate: Date | null
 
   @Column({ type: 'date', nullable: true })
-  cancellationEffectiveDate: Date
+  cancellationEffectiveDate: Date | null
 
   @Column({
     type: 'varchar',
