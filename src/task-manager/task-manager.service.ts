@@ -402,6 +402,7 @@ export class TaskManagerService {
           nextBillDate: null,
           billingFrequency: BillingFrequency.Monthly,
         })
+        await this.projectService.clearProjectsRedisCache(user.id)
       }
     }
   }
@@ -433,21 +434,28 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_2_HOURS)
   async trialEnd(): Promise<void> {
     const users = await this.userService.find({
-      where: {
+      where: [{
         planCode: PlanCode.trial,
         trialEndDate: LessThan(new Date()),
-      }
+      },
+      {
+        planCode: PlanCode.trial,
+        trialEndDate: IsNull(),
+      }]
     })
 
     for (let i = 0; i < _size(users); ++i) {
-      await this.userService.update(users[i].id, {
+      const { id, email } = users[i]
+
+      await this.userService.update(id, {
         planCode: PlanCode.none,
         trialEndDate: null,
       })
       await this.mailerService.sendEmail(
-        users[i].email,
+        email,
         LetterTemplate.TrialExpired,
       )
+      await this.projectService.clearProjectsRedisCache(id)
     }
   }
 

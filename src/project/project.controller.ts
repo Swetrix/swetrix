@@ -23,7 +23,7 @@ import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
 
-import { ProjectService, processProjectUser } from './project.service'
+import { ProjectService, processProjectUser, deleteProjectRedis } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -42,9 +42,7 @@ import { ShareDTO } from './dto/share.dto'
 import { ShareUpdateDTO } from './dto/share-update.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  redis,
   isValidPID,
-  getRedisProjectKey,
   clickhouse,
   isSelfhosted,
   PROJECT_INVITE_EXPIRE,
@@ -57,31 +55,6 @@ import {
 } from '../common/utils'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
-
-// const updateProjectRedis = async (id: string, project: Project) => {
-//   const key = getRedisProjectKey(id)
-
-//   try {
-//     await redis.set(
-//       key,
-//       JSON.stringify(project),
-//       'EX',
-//       redisProjectCacheTimeout,
-//     )
-//   } catch {
-//     await redis.del(key)
-//   }
-// }
-
-export const deleteProjectRedis = async (id: string) => {
-  const key = getRedisProjectKey(id)
-
-  try {
-    await redis.del(key)
-  } catch (e) {
-    console.error(`Error deleting project ${id} from redis: ${e}`)
-  }
-}
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 

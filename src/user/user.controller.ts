@@ -30,8 +30,7 @@ import * as _omit from 'lodash/omit'
 import { v4 as uuidv4 } from 'uuid'
 
 import { UserService } from './user.service'
-import { ProjectService } from '../project/project.service'
-import { deleteProjectRedis } from '../project/project.controller'
+import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import {
   User,
   UserType,

@@ -18,6 +18,7 @@ import {
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
+import { ProjectService } from 'src/project/project.service'
 import { WebhookService } from './webhook.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 
@@ -30,6 +31,7 @@ export class WebhookController {
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
     private readonly webhookService: WebhookService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @UseGuards(SelfhostedGuard)
@@ -102,8 +104,10 @@ export class WebhookController {
 
         if (uid) {
           await this.userService.update(uid, updateParams)
+          await this.projectService.clearProjectsRedisCache(uid)
         } else {
           await this.userService.updateByEmail(email, updateParams)
+          await this.projectService.clearProjectsRedisCacheByEmail(email)
         }
 
         break
