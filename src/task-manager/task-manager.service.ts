@@ -20,7 +20,9 @@ import { AlertService } from 'src/alert/alert.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
-import { ReportFrequency, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
+import {
+  ReportFrequency, ACCOUNT_PLANS, PlanCode, BillingFrequency,
+} from '../user/entities/user.entity'
 import {
   clickhouse,
   redis,
@@ -377,6 +379,30 @@ export class TaskManagerService {
       await this.userService.update(users[i].id, {
         telegramChatId: null,
       })
+    }
+  }
+
+  @Cron(CronExpression.EVERY_2_HOURS)
+  async cleanUpUnpaidSubUsers(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        cancellationEffectiveDate: Not(IsNull()),
+      }
+    })
+
+    for (let i = 0; i < _size(users); ++i) {
+      const user = users[i]
+      const cancellationEffectiveDate = new Date(user.cancellationEffectiveDate)
+      const now = new Date()
+
+      if (now > cancellationEffectiveDate) {
+        await this.userService.update(user.id, {
+          cancellationEffectiveDate: null,
+          planCode: PlanCode.none,
+          nextBillDate: null,
+          billingFrequency: BillingFrequency.Monthly,
+        })
+      }
     }
   }
 

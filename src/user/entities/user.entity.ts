@@ -239,6 +239,9 @@ export class User {
   @Column({ type: 'date', nullable: true })
   nextBillDate: Date
 
+  @Column({ type: 'date', nullable: true })
+  cancellationEffectiveDate: Date
+
   @Column({
     type: 'varchar',
     length: 36,

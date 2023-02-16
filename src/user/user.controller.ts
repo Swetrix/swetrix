@@ -569,6 +569,7 @@ export class UserController {
         'isTwoFactorAuthenticationEnabled',
         'isTelegramChatIdConfirmed',
         'trialEndDate',
+        'cancellationEffectiveDate',
       ])
       await this.userService.update(id, userToUpdate)
 
