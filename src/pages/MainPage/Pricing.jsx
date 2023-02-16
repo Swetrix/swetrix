@@ -67,6 +67,8 @@ const getTiers = (t) => [
       t('pricing.tiers.dashboards'),
       t('pricing.tiers.reports'),
     ],
+    pid: '813694', // Plan ID
+    ypid: '813695', // Plan ID - Yearly billing
   },
   {
     name: t('pricing.tiers.freelancer'),
