@@ -407,7 +407,6 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_4_HOURS)
-  // @Cron(CronExpression.EVERY_MINUTE)
   async trialReminder(): Promise<void> {
     const users = await this.userService.find({
       where: {
