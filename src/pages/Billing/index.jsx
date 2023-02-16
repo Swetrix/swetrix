@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import duration from 'dayjs/plugin/duration'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -21,22 +22,30 @@ const Billing = () => {
   const { theme } = useSelector(state => state.ui.theme)
   const { t, i18n: { language } } = useTranslation('common')
   const {
-    nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat,
+    nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat, isPaymentActive,
   } = user
 
   const isFree = planCode === 'free'
   const isTrial = planCode === 'trial'
 
-  const trialMessage = useMemo(() => {
-    if (!trialEndDate || !isTrial) {
-      return null
+  const isTrialEnded = useMemo(() => {
+    if (!trialEndDate) {
+      return false
     }
 
     const now = dayjs.utc()
     const future = dayjs.utc(trialEndDate)
     const diff = future.diff(now)
 
-    if (diff < 0) {
+    return diff < 0
+  }, [trialEndDate])
+
+  const trialMessage = useMemo(() => {
+    if (!trialEndDate || !isTrial) {
+      return null
+    }
+
+    if (isTrialEnded) {
       return t('pricing.trialEnded')
     }
 
@@ -57,7 +66,7 @@ const Billing = () => {
     return t('billing.trialEnds', {
       date,
     })
-  }, [language, trialEndDate, isTrial, timeFormat, t])
+  }, [language, trialEndDate, isTrial, timeFormat, isTrialEnded, t])
 
   const onSubscriptionCancel = () => {
     if (!window.Paddle) {
@@ -139,6 +148,14 @@ const Billing = () => {
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <span className='font-bold'>
                 {trialMessage}
+              </span>
+            </div>
+          )}
+          {!isPaymentActive && !isFree && isTrialEnded && (
+            <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+              <ExclamationTriangleIcon className='h-10 w-10 mr-2 text-red-600' aria-hidden='true' />
+              <span className='font-bold max-w-prose'>
+                {t('billing.noSubWarning')}
               </span>
             </div>
           )}
