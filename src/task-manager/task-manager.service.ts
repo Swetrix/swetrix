@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, In, Not } from 'typeorm'
+import { IsNull, LessThan, In, Not, Between } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -403,6 +403,44 @@ export class TaskManagerService {
           billingFrequency: BillingFrequency.Monthly,
         })
       }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_4_HOURS)
+  // @Cron(CronExpression.EVERY_MINUTE)
+  async trialReminder(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        planCode: PlanCode.trial,
+        trialEndDate: Between( // between today & tomorrow
+          new Date(),
+          new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+        ),
+        trialReminderSent: false,
+      }
+    })
+
+    // TODO:
+    // send email reminding user that trial period will end tomorrow
+    // set trialReminderSent to true
+  }
+
+  @Cron(CronExpression.EVERY_2_HOURS)
+  async trialEnd(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        planCode: PlanCode.trial,
+        trialEndDate: LessThan(new Date()),
+      }
+    })
+
+    for (let i = 0; i < _size(users); ++i) {
+      await this.userService.update(users[i].id, {
+        planCode: PlanCode.none,
+        trialEndDate: null,
+      })
+
+      // TODO: send email notifying user that trial period has ended
     }
   }
 

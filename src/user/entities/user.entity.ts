@@ -212,6 +212,9 @@ export class User {
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean
 
+  @Column({ default: false })
+  trialReminderSent: boolean
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date()

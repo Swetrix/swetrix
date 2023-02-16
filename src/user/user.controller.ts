@@ -570,6 +570,7 @@ export class UserController {
         'isTelegramChatIdConfirmed',
         'trialEndDate',
         'cancellationEffectiveDate',
+        'trialReminderSent',
       ])
       await this.userService.update(id, userToUpdate)
 
