@@ -263,7 +263,9 @@
       "button": "Sign up",
       "tos": "I do accept <tos>Terms and Conditions</tos> and the <pp>Privacy Policy</pp>.",
       "email": "Email address",
-      "create": "Create your account"
+      "create": "Create your account",
+      "trial": "Start your free {{amount}} day trial",
+      "noCC": "No credit card required."
     },
     "verification": {
       "success": "Your email has been successfully verified!"
@@ -577,9 +579,14 @@
   "billing": {
     "title": "Billing & Plans",
     "desc": "It is free to get started and use our services.\nIf you need to handle more traffic, you probably need to upgrade your plan.\nBelow is a list of available plans. No hidden fees or other BS, everything is clear and transparent!",
-    "contact": "Need to track more than 1 million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
+    "contact": "Need to track more than {{amount}} million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
     "update": "Update payment details",
-    "nextBillDate": "Next bill date:"
+    "nextBillDate": "Next bill date:",
+    "trialEnds": "Trial ends {{date}}",
+    "cancelSub": "Cancel subscription",
+    "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
+    "inactive": "Inactive",
+    "cancelledSubMessage": "You've cancelled your subscription.\nThe subscription will be active until {{date}}.\nAfter that, no new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled."
   },
   "modals": {
     "paidFeature": {
@@ -593,6 +600,7 @@
     "currentPlan": "Current plan",
     "mostPopular": "Most popular",
     "free": "Free",
+    "legacy": "Legacy",
     "perMonth": "mo",
     "perYear": "yr",
     "yourPlan": "Your plan",
@@ -603,11 +611,16 @@
     "yearlyBilling": "Yearly billing",
     "switchToMonthly": "Switch to monthly billing",
     "switchToYearly": "Switch to yearly billing",
+    "xTrialDaysLeft": "{{amount}} trial days left",
+    "trialEnded": "Trial ended",
+    "trialEndsToday": "Trial ends today",
+    "trialEndsTomorrow": "Trial ends tomorrow",
     "tiers": {
       "hobby": "Hobby",
       "freelancer": "Freelancer",
       "startup": "Startup",
       "enterprise": "Enterprise",
+      "trial": "Free trial",
       "upToXEVMo": "Up to {{amount}} events per month.",
       "xEvMo": "{{amount}} events per month.",
       "upToXVMo": "Up to {{amount}} visits per month.",
@@ -621,12 +634,13 @@
       "smallBusiSupport": "By buying this you are supporting a small business.",
       "dataExports": "Unlimited data exports.",
       "dataOwnership": "100% data ownership.",
-      "noBanners": "No cookie banners required.",
       "dashboards": "Shared & Public Dashboards.",
       "reports": "Email reports."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
-    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
+    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}.",
+    "cancelTitle": "Are you sure you want to cancel your subscription?",
+    "cancelDesc": "After cancelling your subscription, no new events will be collected by Swetrix for your projects.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
     "howTo": "Have something to ask? There are several ways on how to contact us:",
