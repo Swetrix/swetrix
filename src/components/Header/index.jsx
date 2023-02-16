@@ -350,6 +350,15 @@ const Header = ({
                         {status}
                       </Link>
                     )}
+                    {user?.planCode === 'none' && (
+                      <Link
+                        to={routes.billing}
+                        className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
+                        key='NoSubscription'
+                      >
+                        {t('billing.inactive')}
+                      </Link>
+                    )}
                     <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.you')}

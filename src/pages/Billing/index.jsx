@@ -22,11 +22,12 @@ const Billing = () => {
   const { theme } = useSelector(state => state.ui.theme)
   const { t, i18n: { language } } = useTranslation('common')
   const {
-    nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat, isPaymentActive,
+    nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat,
   } = user
 
   const isFree = planCode === 'free'
   const isTrial = planCode === 'trial'
+  const isNoSub = planCode === 'none'
 
   const isTrialEnded = useMemo(() => {
     if (!trialEndDate) {
@@ -151,7 +152,7 @@ const Billing = () => {
               </span>
             </div>
           )}
-          {!isPaymentActive && !isFree && isTrialEnded && (
+          {isNoSub && (
             <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <ExclamationTriangleIcon className='h-10 w-10 mr-2 text-red-600' aria-hidden='true' />
               <span className='font-bold max-w-prose'>

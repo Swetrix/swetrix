@@ -582,7 +582,8 @@
     "nextBillDate": "Next bill date:",
     "trialEnds": "Trial ends {{date}}",
     "cancelSub": "Cancel subscription",
-    "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled."
+    "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
+    "inactive": "Inactive"
   },
   "modals": {
     "paidFeature": {
