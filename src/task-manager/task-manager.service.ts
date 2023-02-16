@@ -21,7 +21,7 @@ import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import {
-  ReportFrequency, ACCOUNT_PLANS, PlanCode, BillingFrequency,
+  ReportFrequency, ACCOUNT_PLANS, PlanCode, BillingFrequency, TRIAL_DURATION,
 } from '../user/entities/user.entity'
 import {
   clickhouse,
@@ -431,6 +431,23 @@ export class TaskManagerService {
     }
   }
 
+  // A temporary fix for a bug that was causing trialEndDate to be null
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async fixAFuckingTrialEndDateNullBug(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        planCode: PlanCode.trial,
+        trialEndDate: IsNull(),
+      }
+    })
+
+    for (let i = 0; i < _size(users); ++i) {
+      await this.userService.update(users[i].id, {
+        trialEndDate: new Date(new Date(users[i].created).getTime() + TRIAL_DURATION * 24 * 60 * 60 * 1000),
+      })
+    }
+  }
+
   @Cron(CronExpression.EVERY_2_HOURS)
   async trialEnd(): Promise<void> {
     const users = await this.userService.find({
@@ -449,7 +466,7 @@ export class TaskManagerService {
 
       await this.userService.update(id, {
         planCode: PlanCode.none,
-        trialEndDate: null,
+        // trialEndDate: null,
       })
       await this.mailerService.sendEmail(
         email,
