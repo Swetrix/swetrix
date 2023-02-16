@@ -139,7 +139,10 @@ export class AuthController {
 
     await this.authService.sendTelegramNotification(user.id, headers, ip)
 
-    const jwtTokens = await this.authService.generateJwtTokens(user.id, !user.isTwoFactorAuthenticationEnabled)
+    const jwtTokens = await this.authService.generateJwtTokens(
+      user.id,
+      !user.isTwoFactorAuthenticationEnabled,
+    )
 
     if (user.isTwoFactorAuthenticationEnabled) {
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])

@@ -1,24 +1,23 @@
-import {
-  ApiProperty,
-  IntersectionType,
-  OmitType,
-  PickType,
-} from '@nestjs/swagger'
-import { RegisterRequestDto, RegisterResponseDto } from './register.dto'
+import { ApiProperty, OmitType } from '@nestjs/swagger'
+import { RegisterRequestDto } from './register.dto'
 
 export class LoginRequestDto extends OmitType(RegisterRequestDto, [
   'checkIfLeaked',
 ] as const) {}
 
-class AdditionalInfo {
+export class LoginResponseDto {
+  @ApiProperty({
+    description: 'Access token (JWT)',
+  })
+  public readonly accessToken: string
+
+  @ApiProperty({
+    description: 'Refresh token (JWT)',
+  })
+  public readonly refreshToken: string
+
   @ApiProperty({
     description: 'User entity',
-    example: false,
   })
   user: object
 }
-
-export class LoginResponseDto extends IntersectionType(
-  PickType(RegisterResponseDto, ['accessToken', 'refreshToken'] as const),
-  AdditionalInfo,
-) {}
