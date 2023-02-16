@@ -33,7 +33,7 @@ const getNonStandardTiers = (t) => ({
       t('pricing.tiers.xAlertsSingular', { amount: PLAN_LIMITS.free.maxAlerts }),
       t('pricing.tiers.dataExports'),
       t('pricing.tiers.dataOwnership'),
-      t('pricing.tiers.noBanners'),
+      t('main.competitiveFeatures.perf'),
       t('pricing.tiers.dashboards'),
       t('pricing.tiers.reports'),
     ],
@@ -63,7 +63,7 @@ const getTiers = (t) => [
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.hobby.maxAlerts }),
       t('pricing.tiers.dataExports'),
       t('pricing.tiers.dataOwnership'),
-      t('pricing.tiers.noBanners'),
+      t('main.competitiveFeatures.perf'),
       t('pricing.tiers.dashboards'),
       t('pricing.tiers.reports'),
     ],
@@ -79,7 +79,7 @@ const getTiers = (t) => [
       t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.freelancer.maxProjects }),
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.freelancer.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
-      t('pricing.tiers.smallBusiSupport'),
+      // t('pricing.tiers.smallBusiSupport'),
     ],
     pid: 752316, // Plan ID
     ypid: 776469, // Plan ID - Yearly billing
