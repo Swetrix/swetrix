@@ -305,3 +305,5 @@ export const PLAN_LIMITS = {
     priceYearly: 1100,
   },
 }
+
+export const TRIAL_DAYS = 14

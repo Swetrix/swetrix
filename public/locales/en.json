@@ -263,7 +263,9 @@
       "button": "Sign up",
       "tos": "I do accept <tos>Terms and Conditions</tos> and the <pp>Privacy Policy</pp>.",
       "email": "Email address",
-      "create": "Create your account"
+      "create": "Create your account",
+      "trial": "Start your free {{amount}} day trial",
+      "noCC": "No credit card required."
     },
     "verification": {
       "success": "Your email has been successfully verified!"
