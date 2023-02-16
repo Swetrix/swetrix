@@ -18,8 +18,11 @@ import {
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
+import { ProjectService } from 'src/project/project.service'
 import { WebhookService } from './webhook.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
+
+const MAX_PAYMENT_ATTEMPTS = 5
 
 @ApiTags('Webhook')
 @Controller('webhook')
@@ -28,6 +31,7 @@ export class WebhookController {
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
     private readonly webhookService: WebhookService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @UseGuards(SelfhostedGuard)
@@ -100,25 +104,53 @@ export class WebhookController {
 
         if (uid) {
           await this.userService.update(uid, updateParams)
+          await this.projectService.clearProjectsRedisCache(uid)
         } else {
           await this.userService.updateByEmail(email, updateParams)
+          await this.projectService.clearProjectsRedisCacheByEmail(email)
         }
 
         break
       }
 
-      case 'subscription_cancelled':
-      case 'subscription_payment_failed':
-      case 'subscription_payment_refunded': {
-        const { subscription_id } = body
+      case 'subscription_cancelled': {
+        const { subscription_id, cancellation_effective_date } = body
 
         await this.userService.updateBySubID(subscription_id, {
-          planCode: PlanCode.free,
           billingFrequency: BillingFrequency.Monthly,
+          nextBillDate: null,
+          cancellationEffectiveDate: cancellation_effective_date,
         })
 
         break
       }
+
+      case 'subscription_payment_refunded': {
+        const { subscription_id } = body
+
+        await this.userService.updateBySubID(subscription_id, {
+          planCode: PlanCode.none,
+          billingFrequency: BillingFrequency.Monthly,
+          nextBillDate: null,
+        })
+
+        break
+      }
+
+      case 'subscription_payment_failed': {
+        const { subscription_id, attempt_number } = body
+
+        if (parseInt(attempt_number) >= MAX_PAYMENT_ATTEMPTS) {
+          await this.userService.updateBySubID(subscription_id, {
+            planCode: PlanCode.none,
+            billingFrequency: BillingFrequency.Monthly,
+            nextBillDate: null,
+          })
+        }
+
+        break
+      }
+
       default:
         throw new BadRequestException('Unexpected event type')
     }

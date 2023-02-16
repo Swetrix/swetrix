@@ -24,20 +24,19 @@ import * as _map from 'lodash/map'
 import * as _join from 'lodash/join'
 import * as _isNull from 'lodash/isNull'
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _includes from 'lodash/includes'
 import * as _isString from 'lodash/isString'
 import * as _omit from 'lodash/omit'
 import { v4 as uuidv4 } from 'uuid'
 
 import { UserService } from './user.service'
-import { ProjectService } from '../project/project.service'
-import { deleteProjectRedis } from '../project/project.controller'
+import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import {
   User,
   UserType,
   MAX_EMAIL_REQUESTS,
   PlanCode,
   Theme,
-  TimeFormat,
 } from './entities/user.entity'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -68,6 +67,8 @@ import { JwtAccessTokenGuard } from 'src/auth/guards'
 dayjs.extend(utc)
 
 export type TelegrafContext = Scenes.SceneContext
+
+const UNPAID_PLANS = [PlanCode.free, PlanCode.trial, PlanCode.none]
 
 @ApiTags('User')
 @Controller('user')
@@ -236,7 +237,7 @@ export class UserController {
       throw new BadRequestException(`User with id ${id} does not exist`)
     }
 
-    if (user.planCode !== PlanCode.free) {
+    if (!_includes(UNPAID_PLANS, user.planCode)) {
       throw new BadRequestException('cancelSubFirst')
     }
 
@@ -274,7 +275,7 @@ export class UserController {
       select: ['id', 'planCode'],
     })
 
-    if (user.planCode !== PlanCode.free) {
+    if (!_includes(UNPAID_PLANS, user.planCode)) {
       throw new BadRequestException('cancelSubFirst')
     }
 
@@ -566,6 +567,9 @@ export class UserController {
         'twoFactorAuthenticationSecret',
         'isTwoFactorAuthenticationEnabled',
         'isTelegramChatIdConfirmed',
+        'trialEndDate',
+        'cancellationEffectiveDate',
+        'trialReminderSent',
       ])
       await this.userService.update(id, userToUpdate)
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, In, Not } from 'typeorm'
+import { IsNull, LessThan, In, Not, Between } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -20,7 +20,9 @@ import { AlertService } from 'src/alert/alert.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
-import { ReportFrequency, ACCOUNT_PLANS } from '../user/entities/user.entity'
+import {
+  ReportFrequency, ACCOUNT_PLANS, PlanCode, BillingFrequency,
+} from '../user/entities/user.entity'
 import {
   clickhouse,
   redis,
@@ -380,6 +382,83 @@ export class TaskManagerService {
     }
   }
 
+  @Cron(CronExpression.EVERY_2_HOURS)
+  async cleanUpUnpaidSubUsers(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        cancellationEffectiveDate: Not(IsNull()),
+      }
+    })
+
+    for (let i = 0; i < _size(users); ++i) {
+      const user = users[i]
+      const cancellationEffectiveDate = new Date(user.cancellationEffectiveDate)
+      const now = new Date()
+
+      if (now > cancellationEffectiveDate) {
+        await this.userService.update(user.id, {
+          cancellationEffectiveDate: null,
+          planCode: PlanCode.none,
+          nextBillDate: null,
+          billingFrequency: BillingFrequency.Monthly,
+        })
+        await this.projectService.clearProjectsRedisCache(user.id)
+      }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_4_HOURS)
+  async trialReminder(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        planCode: PlanCode.trial,
+        trialEndDate: Between( // between today & tomorrow
+          new Date(),
+          new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+        ),
+        trialReminderSent: false,
+      }
+    })
+
+    for (let i = 0; i < _size(users); ++i) {
+      await this.userService.update(users[i].id, {
+        trialReminderSent: true,
+      })
+      await this.mailerService.sendEmail(
+        users[i].email,
+        LetterTemplate.TrialEndsTomorrow,
+      )
+    }
+  }
+
+  @Cron(CronExpression.EVERY_2_HOURS)
+  async trialEnd(): Promise<void> {
+    const users = await this.userService.find({
+      where: [{
+        planCode: PlanCode.trial,
+        trialEndDate: LessThan(new Date()),
+      },
+      {
+        planCode: PlanCode.trial,
+        trialEndDate: IsNull(),
+      }]
+    })
+
+    for (let i = 0; i < _size(users); ++i) {
+      const { id, email } = users[i]
+
+      await this.userService.update(id, {
+        planCode: PlanCode.none,
+        trialEndDate: null,
+      })
+      await this.mailerService.sendEmail(
+        email,
+        LetterTemplate.TrialExpired,
+      )
+      await this.projectService.clearProjectsRedisCache(id)
+    }
+  }
+
   @Cron(CronExpression.EVERY_5_MINUTES)
   // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkOnlineUsersAlerts(): Promise<void> {
@@ -387,6 +466,7 @@ export class TaskManagerService {
       {
         admin: {
           isTelegramChatIdConfirmed: true,
+          planCode: Not(PlanCode.none),
         },
       },
       ['admin'],
@@ -439,6 +519,7 @@ export class TaskManagerService {
       {
         admin: {
           isTelegramChatIdConfirmed: true,
+          planCode: Not(PlanCode.none),
         },
       },
       ['admin'],

@@ -71,6 +71,16 @@ const metaInfoJson = {
       en: () => '2FA has been disabled on your Swetrix account',
     },
   },
+  [LetterTemplate.TrialExpired]: {
+    subject: {
+      en: () => 'Your free Swetrix trial has ended',
+    },
+  },
+  [LetterTemplate.TrialEndsTomorrow]: {
+    subject: {
+      en: () => 'Your free Swetrix trial ends tomorrow',
+    },
+  },
 }
 
 interface Params {

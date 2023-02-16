@@ -28,6 +28,7 @@ import { Project } from './entity/project.entity'
 import { ProjectShare } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
+import { UserService } from 'src/user/user.service'
 import { Role } from '../project/entity/project-share.entity'
 import {
   isValidPID,
@@ -38,9 +39,39 @@ import {
   isSelfhosted,
   IP_REGEX,
   ORIGINS_REGEX,
+  getRedisProjectKey,
 } from '../common/constants'
 
 dayjs.extend(utc)
+
+// const updateProjectRedis = async (id: string, project: Project) => {
+//   const key = getRedisProjectKey(id)
+
+//   try {
+//     await redis.set(
+//       key,
+//       JSON.stringify(project),
+//       'EX',
+//       redisProjectCacheTimeout,
+//     )
+//   } catch {
+//     await redis.del(key)
+//   }
+// }
+
+export const deleteProjectRedis = async (id: string) => {
+  const key = getRedisProjectKey(id)
+
+  try {
+    await redis.del(key)
+  } catch (e) {
+    console.error(`Error deleting project ${id} from redis: ${e}`)
+  }
+}
+
+export const deleteProjectsRedis = async (ids: string[]) => {
+  await Promise.all(_map(ids, deleteProjectRedis))
+}
 
 export const processProjectUser = (project: Project): Project => {
   const { share } = project
@@ -71,7 +102,8 @@ export class ProjectService {
     private projectsRepository: Repository<Project>,
     @InjectRepository(ProjectShare)
     private projectShareRepository: Repository<ProjectShare>,
-  ) {}
+    private userService: UserService,
+  ) { }
 
   async paginate(
     options: PaginationOptionsInterface,
@@ -367,5 +399,29 @@ export class ProjectService {
 
     // @ts-ignore
     return count
+  }
+
+  async clearProjectsRedisCache(uid: string): Promise<void> {
+    const projects = await this.findWhere({
+      admin: uid,
+    })
+
+    if (_isEmpty(projects)) {
+      return
+    }
+
+    const pids = _map(projects, 'id')
+
+    await deleteProjectsRedis(pids)
+  }
+
+  async clearProjectsRedisCacheByEmail(email: string): Promise<void> {
+    const user = await this.userService.findOneWhere({ email })
+
+    if (!user) {
+      return
+    }
+
+    await this.clearProjectsRedisCache(user.id)
   }
 }

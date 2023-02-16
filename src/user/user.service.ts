@@ -1,12 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { User, ACCOUNT_PLANS } from './entities/user.entity'
+import { User, ACCOUNT_PLANS, TRIAL_DURATION } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 
@@ -162,7 +163,10 @@ export class UserService {
   }
 
   public async createUser(user: Pick<User, 'email' | 'password'>) {
-    return await this.usersRepository.save(user)
+    return await this.usersRepository.save({
+      ...user,
+      trialEndDate: dayjs.utc().add(TRIAL_DURATION, 'day').format('YYYY-MM-DD HH:mm:ss'),
+    })
   }
 
   public async findUserById(id: string) {

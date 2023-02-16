@@ -14,21 +14,55 @@ import { ExtensionToUser } from '../../marketplace/extensions/entities/extension
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
+
 export enum PlanCode {
+  none = 'none',
   free = 'free',
+  trial = 'trial',
+  hobby = 'hobby',
   freelancer = 'freelancer',
   startup = 'startup',
   enterprise = 'enterprise',
 }
 
 export const ACCOUNT_PLANS = {
+  [PlanCode.none]: {
+    id: PlanCode.none,
+    displayName: 'No plan',
+    monthlyUsageLimit: 0,
+    maxProjects: 0,
+    maxAlerts: 0,
+    maxApiKeyRequestsPerHour: 0,
+    legacy: false,
+  },
   [PlanCode.free]: {
     id: PlanCode.free,
     displayName: 'Free plan',
     monthlyUsageLimit: 5000,
     maxProjects: 10,
     maxAlerts: 1,
-    maxApiKeyRequestsPerHour: 5,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: true,
+  },
+  [PlanCode.trial]: {
+    id: PlanCode.trial,
+    displayName: 'Free trial',
+    monthlyUsageLimit: 100000,
+    maxProjects: 20,
+    maxAlerts: 20,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
+  },
+  [PlanCode.hobby]: {
+    id: PlanCode.hobby,
+    displayName: 'Hobby plan',
+    monthlyUsageLimit: 10000,
+    maxProjects: 20,
+    pid: '813694', // Plan ID
+    ypid: '813695', // Plan ID - Yearly billing
+    maxAlerts: 10,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
@@ -37,28 +71,31 @@ export const ACCOUNT_PLANS = {
     maxProjects: 20,
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
-    maxAlerts: 10,
+    maxAlerts: 20,
     maxApiKeyRequestsPerHour: 600,
+    legacy: false,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
     displayName: 'Startup plan',
     monthlyUsageLimit: 1000000,
-    maxProjects: 20,
+    maxProjects: 30,
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600, // REVIEW
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
     displayName: 'Enterprise plan',
     monthlyUsageLimit: 5000000,
-    maxProjects: 30,
+    maxProjects: 50,
     pid: '752318',
     ypid: '776471',
     maxAlerts: 100,
-    maxApiKeyRequestsPerHour: 600, // REVIEW
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
   },
 }
 
@@ -92,6 +129,8 @@ export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 addit
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
+export const TRIAL_DURATION = 14 // days
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -107,7 +146,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: PlanCode,
-    default: PlanCode.free,
+    default: PlanCode.trial,
   })
   planCode: PlanCode
 
@@ -122,6 +161,9 @@ export class User {
 
   @Column({ default: false })
   isActive: boolean
+
+  @Column({ type: 'timestamp', nullable: true })
+  trialEndDate: Date | null
 
   @Column({
     type: 'enum',
@@ -170,6 +212,9 @@ export class User {
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean
 
+  @Column({ default: false })
+  trialReminderSent: boolean
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date()
@@ -195,7 +240,10 @@ export class User {
   billingFrequency: BillingFrequency
 
   @Column({ type: 'date', nullable: true })
-  nextBillDate: Date
+  nextBillDate: Date | null
+
+  @Column({ type: 'date', nullable: true })
+  cancellationEffectiveDate: Date | null
 
   @Column({
     type: 'varchar',

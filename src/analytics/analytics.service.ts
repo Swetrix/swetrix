@@ -27,7 +27,7 @@ import {
   PreconditionFailedException,
 } from '@nestjs/common'
 
-import { ACCOUNT_PLANS, DEFAULT_TIMEZONE } from '../user/entities/user.entity'
+import { ACCOUNT_PLANS, DEFAULT_TIMEZONE, PlanCode } from '../user/entities/user.entity'
 import {
   redis,
   isValidPID,
@@ -316,12 +316,19 @@ export class AnalyticsService {
 
     this.checkIpBlacklist(project, ip)
 
-    if (!project.active)
+    if (!project.active) {
       throw new BadRequestException(
         'Incoming analytics is disabled for this project',
       )
+    }
 
     if (!isSelfhosted) {
+      if (project.admin.planCode === PlanCode.none) {
+        throw new ForbiddenException(
+          'You cannot send analytics to this project due to no active subscription. Please upgrade your account plan to continue sending analytics.',
+        )
+      }
+
       const count = await this.projectService.getRedisCount(project.admin.id)
       const maxCount =
         ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
