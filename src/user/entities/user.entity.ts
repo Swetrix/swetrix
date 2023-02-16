@@ -163,7 +163,7 @@ export class User {
   isActive: boolean
 
   @Column({ type: 'timestamp', nullable: true })
-  trialEndDate: Date
+  trialEndDate: Date | null
 
   @Column({
     type: 'enum',

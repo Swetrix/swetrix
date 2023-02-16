@@ -14,7 +14,7 @@ import {
 import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { MailerService } from 'src/mailer/mailer.service'
-import { MAX_EMAIL_REQUESTS, User, TRIAL_DURATION } from 'src/user/entities/user.entity'
+import { MAX_EMAIL_REQUESTS, User } from 'src/user/entities/user.entity'
 import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
@@ -103,8 +103,6 @@ export class AuthService {
     const user = await this.userService.createUser({
       email,
       password: hashedPassword, // Using the password field is incorrect.
-      // @ts-ignore
-      trialEndDate: dayjs.utc().add(TRIAL_DURATION, 'day').format('YYYY-MM-DD HH:mm:ss'),
     })
 
     await this.sendVerificationEmail(user.id, user.email)
