@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import duration from 'dayjs/plugin/duration'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 
 import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -22,10 +22,9 @@ const Billing = () => {
   const { theme } = useSelector(state => state.ui.theme)
   const { t, i18n: { language } } = useTranslation('common')
   const {
-    nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat,
+    nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat, cancellationEffectiveDate, subCancelURL,
   } = user
 
-  const isFree = planCode === 'free'
   const isTrial = planCode === 'trial'
   const isNoSub = planCode === 'none'
 
@@ -71,12 +70,12 @@ const Billing = () => {
 
   const onSubscriptionCancel = () => {
     if (!window.Paddle) {
-      window.location.replace(user.subCancelURL)
+      window.location.replace(subCancelURL)
       return
     }
 
     window.Paddle.Checkout.open({
-      override: user.subCancelURL,
+      override: subCancelURL,
       method: 'inline',
       frameTarget: 'checkout-container',
       frameInitialHeight: 416,
@@ -117,21 +116,35 @@ const Billing = () => {
             <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
               {t('billing.title')}
             </h1>
-            {!isFree && !isTrial && (
-              <div>
+            <div>
+              {subUpdateURL && (
                 <span onClick={onUpdatePaymentDetails} className='inline-flex select-none cursor-pointer mr-2 items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
                   {t('billing.update')}
                 </span>
+              )}
+              {subCancelURL && (
                 <span onClick={() => setIsCancelSubModalOpened(true)} className='inline-flex select-none cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-4 py-2 text-sm'>
                   {t('billing.cancelSub')}
                 </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('billing.desc')}
           </p>
           <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
+          {cancellationEffectiveDate && (
+            <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+              <InformationCircleIcon className='h-10 w-10 mr-2 text-blue-600' aria-hidden='true' />
+              <span className='font-bold max-w-prose'>
+                {t('billing.cancelledSubMessage', {
+                  date: language === 'en'
+                    ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
+                    : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY')
+                })}
+              </span>
+            </div>
+          )}
           {nextBillDate && (
             <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               <span className='font-bold'>

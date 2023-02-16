@@ -583,7 +583,8 @@
     "trialEnds": "Trial ends {{date}}",
     "cancelSub": "Cancel subscription",
     "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "cancelledSubMessage": "You've cancelled your subscription.\nThe subscription will be active until {{date}}.\nAfter that, no new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled."
   },
   "modals": {
     "paidFeature": {
