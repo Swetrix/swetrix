@@ -198,7 +198,7 @@ const PricingItem = ({
             to={routes.signup}
             aria-label={t('titles.signup')}
           >
-            {tier.planCode === 'free' ? t('common.getStarted') : t('pricing.upgrade')}
+            {t('common.getStarted')}
           </Link>
         )}
       </div>

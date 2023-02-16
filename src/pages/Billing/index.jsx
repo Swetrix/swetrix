@@ -140,7 +140,7 @@ const Billing = () => {
                 {t('billing.cancelledSubMessage', {
                   date: language === 'en'
                     ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
-                    : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY')
+                    : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
                 })}
               </span>
             </div>
