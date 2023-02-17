@@ -1,6 +1,7 @@
 import { Project } from '../../../project/entity/project.entity'
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -29,4 +30,7 @@ export class ExtensionToProject {
   @ManyToOne(() => Project, project => project.extensions)
   @JoinColumn()
   project: Project
+
+  @CreateDateColumn()
+  createdAt: Date
 }

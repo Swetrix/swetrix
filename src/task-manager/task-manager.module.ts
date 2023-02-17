@@ -6,6 +6,7 @@ import { ProjectModule } from '../project/project.module'
 import { AnalyticsModule } from '../analytics/analytics.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { AlertModule } from 'src/alert/alert.module'
+import { ExtensionsModule } from 'src/marketplace/extensions/extensions.module'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AlertModule } from 'src/alert/alert.module'
     ActionTokensModule,
     AlertModule,
     forwardRef(() => AnalyticsModule),
+    ExtensionsModule,
   ],
   providers: [TaskManagerService],
   exports: [TaskManagerService],

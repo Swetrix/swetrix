@@ -82,4 +82,7 @@ export class Extension {
   @OneToMany(() => Complaint, complaint => complaint.extension)
   @JoinTable()
   complaints: Complaint[]
+
+  @Column({ type: 'simple-array' })
+  tags: string[]
 }
