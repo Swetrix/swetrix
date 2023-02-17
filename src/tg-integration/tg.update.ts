@@ -2,7 +2,7 @@ import { Ctx, Hears, On, Sender, Start, Update } from 'nestjs-telegraf'
 import { ProjectService } from 'src/project/project.service'
 import { SWETRIX_SETTINGS_URL } from 'src/tg-integration/constants'
 import { UserService } from 'src/user/user.service'
-import { Context } from 'telegraf'
+import { Context, Markup } from 'telegraf'
 import * as _map from 'lodash/map'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as dayjs from 'dayjs'
@@ -56,24 +56,49 @@ export class SwetrixUpdate {
     const [action, entityId] = ctx.callbackQuery?.['data'].split(':')
 
     if (action === 'unlinkTelegramAccount') {
-      await ctx.telegram.deleteMessage(
-        ctx.chat.id,
-        ctx.callbackQuery?.['message'].message_id,
+      await ctx.editMessageText(
+        '⚠️ Are you sure you want to unlink your Telegram account from your Swetrix account?',
+        Markup.inlineKeyboard([
+          Markup.button.callback('✅ Yes', 'unlinkTelegramAccountConfirm'),
+          Markup.button.callback('❌ No', 'unlinkTelegramAccountCancel'),
+        ]),
       )
+    }
 
-      await this.userService.update(entityId, {
+    if (action === 'unlinkTelegramAccountConfirm') {
+      const user = await this.userService.findOneWhere({
+        telegramChatId: chatId,
+      })
+
+      if (!user) {
+        await ctx.telegram.editMessageText(
+          ctx.chat.id,
+          ctx.callbackQuery?.['message'].message_id,
+          undefined,
+          '❌ Your Telegram account is not connected to your Swetrix account.',
+        )
+        return
+      }
+
+      await this.userService.update(user.id, {
         telegramChatId: null,
         isTelegramChatIdConfirmed: false,
       })
 
-      await ctx.telegram.sendMessage(
+      await ctx.telegram.editMessageText(
         ctx.chat.id,
+        ctx.callbackQuery?.['message'].message_id,
+        undefined,
         '✅ Your Telegram account is unlinked from your Swetrix account.',
-        {
-          reply_markup: {
-            remove_keyboard: true,
-          },
-        },
+      )
+    }
+
+    if (action === 'unlinkTelegramAccountCancel') {
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        ctx.callbackQuery?.['message'].message_id,
+        undefined,
+        '❌ Your Telegram account is not unlinked from your Swetrix account.',
       )
     }
 
@@ -267,7 +292,7 @@ export class SwetrixUpdate {
           [
             {
               text: 'Unlink Telegram account',
-              callback_data: 'unlinkTelegramAccount:' + user.id,
+              callback_data: 'unlinkTelegramAccount',
             },
           ],
         ],
