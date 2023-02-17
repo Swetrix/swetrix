@@ -74,7 +74,7 @@ export class ExtensionsController {
   ) {}
 
   @Get('installed')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
   async getInstalledExtensions(
     @Query() queries: GetInstalledExtensionsQueriesDto,
     @CurrentUserId() userId: string,
@@ -228,7 +228,7 @@ export class ExtensionsController {
     type: String,
   })
   @Get('published')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
   async getAllPublishedExtensions(
     @Query() queries: GetAllExtensionsQueries,
     @CurrentUserId() userId: string,
@@ -411,7 +411,7 @@ export class ExtensionsController {
   }
 
   @Post()
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'mainImage', maxCount: 1 },
@@ -695,7 +695,7 @@ export class ExtensionsController {
   }
 
   @Post(':extensionId/install')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
   async installExtension(
     @Param() params: InstallExtensionParamsDto,
     @Body() body: InstallExtensionBodyDto,
@@ -761,7 +761,7 @@ export class ExtensionsController {
   }
 
   @Delete(':extensionId/uninstall')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true, true)
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
   async uninstallExtension(
     @Param() params: UninstallExtensionParamsDto,
     @Body() body: UninstallExtensionBodyDto,
