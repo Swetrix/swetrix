@@ -41,7 +41,7 @@ export class SwetrixUpdate {
       disable_web_page_preview: true,
       ...(user && {
         reply_markup: {
-          keyboard: [[{ text: 'Projects' }]],
+          keyboard: [[{ text: 'Projects' }, { text: 'Settings' }]],
           resize_keyboard: true,
         },
       }),
@@ -55,6 +55,28 @@ export class SwetrixUpdate {
   ): Promise<void> {
     const [action, entityId] = ctx.callbackQuery?.['data'].split(':')
 
+    if (action === 'unlinkTelegramAccount') {
+      await ctx.telegram.deleteMessage(
+        ctx.chat.id,
+        ctx.callbackQuery?.['message'].message_id,
+      )
+
+      await this.userService.update(entityId, {
+        telegramChatId: null,
+        isTelegramChatIdConfirmed: false,
+      })
+
+      await ctx.telegram.sendMessage(
+        ctx.chat.id,
+        '✅ Your Telegram account is unlinked from your Swetrix account.',
+        {
+          reply_markup: {
+            remove_keyboard: true,
+          },
+        },
+      )
+    }
+
     if (action === 'confirmTelegramChatId') {
       await ctx.telegram.deleteMessage(
         ctx.chat.id,
@@ -65,7 +87,7 @@ export class SwetrixUpdate {
         '✅ Your Telegram account is connected to your Swetrix account.',
         {
           reply_markup: {
-            keyboard: [[{ text: 'Projects' }]],
+            keyboard: [[{ text: 'Projects' }, { text: 'Settings' }]],
             resize_keyboard: true,
           },
         },
@@ -109,9 +131,7 @@ export class SwetrixUpdate {
         project: project.id,
       })
 
-      const online = await this.analyticsService.getOnlineUserCount(
-        project.id,
-      )
+      const online = await this.analyticsService.getOnlineUserCount(project.id)
 
       const stats = await this.analyticsService.getSummary([project.id], 'w')
       let alertsString = ''
@@ -119,7 +139,7 @@ export class SwetrixUpdate {
       if (_isEmpty(alerts)) {
         alertsString = '❌ Not set'
       } else {
-        alertsString = _map(alerts, (alert) => {
+        alertsString = _map(alerts, alert => {
           return `*${alert.name}*: ${alert.type} -> ${alert.value}`
         }).join('\n')
       }
@@ -225,6 +245,32 @@ export class SwetrixUpdate {
     await ctx.reply('Your projects:', {
       reply_markup: {
         inline_keyboard: keyboard,
+        resize_keyboard: true,
+      },
+    })
+  }
+
+  @Hears('Settings')
+  async settings(
+    @Sender('id') chatId: string,
+    @Ctx() ctx: Context,
+  ): Promise<void> {
+    const user = await this.userService.findOneWhere({ telegramChatId: chatId })
+
+    if (!user) {
+      return
+    }
+
+    await ctx.reply('Extra settings:', {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: 'Unlink Telegram account',
+              callback_data: 'unlinkTelegramAccount:' + user.id,
+            },
+          ],
+        ],
         resize_keyboard: true,
       },
     })
