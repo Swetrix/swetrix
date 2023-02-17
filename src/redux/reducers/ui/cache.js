@@ -2,7 +2,7 @@ import { types } from 'redux/actions/ui/types'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 
-import { getProjectCacheKey, getProjectForcastCacheKey, LS_VIEW_PREFS_SETTING } from 'redux/constants'
+import { getProjectCacheKey, LS_VIEW_PREFS_SETTING } from 'redux/constants'
 
 export const getInitialViewPrefs = () => {
   if (typeof window !== 'undefined' && window.localStorage) {

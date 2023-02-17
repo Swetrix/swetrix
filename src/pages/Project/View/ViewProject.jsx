@@ -632,7 +632,6 @@ const ViewProject = ({
       return
     }
 
-    console.log(activePeriod)
     // return error if periodToForecast is less than 1 or greater than period
     if (periodToForecast < 1 || periodToForecast > activePeriod.daysCount) {
       setDataLoading(false)
@@ -1721,6 +1720,7 @@ const ViewProject = ({
           onClose={() => setIsForecastOpened(false)}
           onSubmit={onForecastSubmit}
           activeTB={t(`project.${timeBucket}`)}
+          tb={timeBucket}
         />
       </Title>
     )

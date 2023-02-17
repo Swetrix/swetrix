@@ -21,7 +21,8 @@
     "generate2FAError": "Error occurred while generating 2FA code",
     "integrationRemovalError": "Error occurred while removing the integration",
     "enterACorrectNumber": "Please enter a correct number",
-    "numberCantBeNegative": "The number cannot be negative"
+    "numberCantBeNegative": "The number cannot be negative",
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency"
   },
   "common": {
     "features": "Features",

@@ -5,11 +5,12 @@ import _isNaN from 'lodash/isNaN'
 
 import Modal from 'ui/Modal'
 import Input from 'ui/Input'
+import { FORECAST_MAX_MAPPING } from 'redux/constants'
 
 const DEFAULT_PERIOD = 3
 
 const Forecast = ({
-  onClose, onSubmit, isOpened, activeTB,
+  onClose, onSubmit, isOpened, activeTB, tb,
 }) => {
   const { t } = useTranslation('common')
   const [period, setPeriod] = useState(DEFAULT_PERIOD)
@@ -32,6 +33,13 @@ const Forecast = ({
 
     if (processedPeriod <= 0) {
       setError(t('apiNotifications.numberCantBeNegative'))
+      return
+    }
+
+    if (processedPeriod > FORECAST_MAX_MAPPING[tb]) {
+      setError(t('apiNotifications.forecastNumberCantBeBigger', {
+        max: FORECAST_MAX_MAPPING[tb],
+      }))
       return
     }
 
@@ -80,6 +88,7 @@ Forecast.propTypes = {
   isOpened: PropTypes.bool.isRequired,
   onSubmit: PropTypes.func.isRequired,
   activeTB: PropTypes.string.isRequired,
+  tb: PropTypes.string.isRequired,
 }
 
 export default Forecast
