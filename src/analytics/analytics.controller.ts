@@ -185,7 +185,7 @@ const getElValue = el => {
 }
 
 
-// Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes)
+// Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
 const isPerformanceValid = (perf: any) => {
   return (
@@ -196,7 +196,15 @@ const isPerformanceValid = (perf: any) => {
     perf.render <= MAX_PERFORMANCE_VALUE &&
     perf.dom_load <= MAX_PERFORMANCE_VALUE &&
     perf.page_load <= MAX_PERFORMANCE_VALUE &&
-    perf.ttfb <= MAX_PERFORMANCE_VALUE
+    perf.ttfb <= MAX_PERFORMANCE_VALUE &&
+    perf.dns >= 0 &&
+    perf.tls >= 0 &&
+    perf.conn >= 0 &&
+    perf.response >= 0 &&
+    perf.render >= 0 &&
+    perf.dom_load >= 0 &&
+    perf.page_load >= 0 &&
+    perf.ttfb >= 0
   )
 }
 
