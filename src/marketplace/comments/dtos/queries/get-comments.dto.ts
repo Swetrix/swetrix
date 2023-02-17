@@ -1,4 +1,4 @@
-import { IsNumberString, IsOptional } from 'class-validator'
+import { IsNumberString, IsOptional, IsString } from 'class-validator'
 
 export class GetCommentsQueryDto {
   @IsNumberString()
@@ -9,11 +9,11 @@ export class GetCommentsQueryDto {
   @IsOptional()
   limit?: number
 
-  @IsNumberString()
+  @IsString()
   @IsOptional()
-  extensionId?: number
+  extensionId: string
 
-  @IsNumberString()
+  @IsString()
   @IsOptional()
-  userId?: number
+  userId?: string
 }
