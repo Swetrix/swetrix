@@ -79,6 +79,7 @@ const Forecast = ({
       )}
       title={t('modals.forecast.title')}
       isOpened={isOpened}
+      isBeta
     />
   )
 }
