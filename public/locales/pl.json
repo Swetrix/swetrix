@@ -19,7 +19,10 @@
     "acceptInvitation": "Zaproszenie do projektu zostało zaakceptowane",
     "subscriptionUpdated": "Twoja subskrypcja została zaktualizowana",
     "generate2FAError": "Wystąpił błąd podczas generowania kodu 2FA",
-    "integrationRemovalError": "Wystąpił błąd podczas usuwania integracji"
+    "integrationRemovalError": "Wystąpił błąd podczas usuwania integracji",
+    "enterACorrectNumber": "Please enter a correct number",
+    "numberCantBeNegative": "The number cannot be negative",
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency"
   },
   "common": {
     "features": "Funkcje",
@@ -233,7 +236,6 @@
       "pbld": "Public dashboards",
       "shad": "Dashboard sharing",
       "open": "Open source",
-      "free": "Has a free plan",
       "ckfree": "Cookie free analytics",
       "api": "Developer API",
       "2fa": "Two-factor authentication"
@@ -263,7 +265,9 @@
       "button": "Zarejestruj się",
       "tos": "Akceptuję <tos>Regulamin</tos> oraz <pp>Politykę Prywatności</pp>.",
       "email": "Adres e-mail",
-      "create": "Utwórz konto"
+      "create": "Utwórz konto",
+      "trial": "Start your free {{amount}} day trial",
+      "noCC": "No credit card required."
     },
     "verification": {
       "success": "Twój adres e-mail został pomyślnie zweryfikowany!"
@@ -295,6 +299,22 @@
     "start": "Zacznij korzystać z Swetrix dzisiaj.",
     "list": [
       {
+        "name": "Performance monitoring",
+        "content": "With Swetrix you can stop guessing how fast does your website load across the globe.\nWe offer a wide range of metrics, such as page load time, DNS lookup time, TTFB and more.\nYou can see data breakdowns by time spent on frontend, backend or network, view this data for the specific countries, browsers, devices.\nAll of this is available in real-time, so you can see how your website performs at any given moment."
+      },
+      {
+        "name": "Custom alerts",
+        "content": "Do you want to track traffic spikes? Or maybe the pageviews for a specific time period? All this is available with custom alerts.\nYou can set up alerts for a wide range of metrics and receive notifications via messengers like Telegram when they get triggered."
+      },
+      {
+        "name": "Extensions & Extension Marketplace",
+        "content": "Is there some feature missing or you want to modify the Dashboard specifically for your needs? All of this is possible with Swetrix Extensions: we offer a customisable SDK which will allow you to modify the dashboard in any way you want, you can also publish your extension for other people to use or install addons people created from our Extension Marketplace."
+      },
+      {
+        "name": "Public & Shared Dashboards",
+        "content": "With Swetrix you can make your dashboard available for other people to view.\nYou can also invite other Swetrix users to your projects, assign different roles to them."
+      },
+      {
         "name": "Prostota",
         "content": "Tworząc nasz serwis staraliśmy się, aby był on jak najprostszy i najbardziej elastyczny.\nKoniec z zagmatwanymi metrykami i skomplikowanymi dashboardami - z nami możesz mieć kontrolę nad wszystkimi swoimi projektami i danymi w prosty i łatwy sposób."
       },
@@ -305,6 +325,14 @@
       {
         "name": "Śledzenie zdarzeń niestandardowych",
         "content": "Oprócz śledzenia odsłon oferujemy również możliwość śledzenia zdarzeń niestandardowych.\nMożesz śledzić dowolne zdarzenia, takie jak kliknięcia przycisków, rejestracje lub autoryzacje.\nWszystko to jest również całkowicie prywatne dla użytkownika, ponieważ nie przechowujemy żadnych innych informacji o nim wraz z wydarzeniami.\nWięcej o niestandardowych zdarzeniach można przeczytać w naszej dokumentacji."
+      },
+      {
+        "name": "Developer API",
+        "content": "We offer a developer API, which allows you to integrate Swetrix into your own applications.\nYou can use our API to create custom dashboards, or to integrate Swetrix into your own applications."
+      },
+      {
+        "name": "Convenience",
+        "content": "Besides the big features we try to focus on small things that make any project better.\nYou can customise Swetrix for your needs, for example use your native language or your favourite theme, set up 2FA, use a timezone or a time notation you prefer."
       },
       {
         "name": "Prędkość",
@@ -577,14 +605,24 @@
   "billing": {
     "title": "Cennik i plany",
     "desc": "Rozpoczęcie i korzystanie z naszych usług jest darmowe.\nJeśli musisz poradzić sobie z większą liczbą ruchów, prawdopodobnie będziesz musiał zaktualizować swój plan.\nPoniżej znajduje się lista dostępnych planów. Żadnych ukrytych opłat ani innych BS, wszystko jest jasne i przejrzyste!",
-    "contact": "Potrzebujesz śledzić ponad 1 milion zdarzeń miesięcznie?\nSkontaktuj się z nami pod adresem <mail>{{email}}</mail>, aby omówić swoje potrzeby.",
+    "contact": "Need to track more than {{amount}} million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
     "update": "Zaktualizuj metodę płatności",
-    "nextBillDate": "Data następnego rozliczenia:"
+    "nextBillDate": "Data następnego rozliczenia:",
+    "trialEnds": "Trial ends {{date}}",
+    "cancelSub": "Cancel subscription",
+    "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
+    "inactive": "Inactive",
+    "cancelledSubMessage": "You've cancelled your subscription.\nThe subscription will be active until {{date}}.\nAfter that, no new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled."
   },
   "modals": {
     "paidFeature": {
       "title": "Ulepsz swój plan, aby korzystać z tej funkcji",
       "desc": "Przepraszamy za niedogodności, ale aby korzystać z tej funkcji, musisz wykupić płatny plan.\n\nZdajemy sobie sprawę, że możesz nie być jeszcze gotowy na zakup płatnej subskrypcji, ale jej zakup da Ci nie tylko dostęp do tej funkcji, ale także wiele innych wspaniałych korzyści, takich jak dostęp do wszystkich innych płatnych funkcji, wyższe limity wizyt w miesiącu i liczba dostępnych stron internetowych, a także będziesz wspierać rozwój małego biznesu :)"
+    },
+    "forecast": {
+      "title": "Traffic forecast",
+      "desc": "This is a rough estimate of how much traffic you can expect to get on your website, based on Swetrix AI models.",
+      "input": "The quantity of '{{frequency}}' you want to forecast"
     }
   },
   "pricing": {
@@ -593,6 +631,7 @@
     "currentPlan": "Obecny plan",
     "mostPopular": "Najpopularniejszy",
     "free": "Za darmo",
+    "legacy": "Legacy",
     "perMonth": "mies.",
     "perYear": "rocznie",
     "yourPlan": "Twój plan",
@@ -603,11 +642,16 @@
     "yearlyBilling": "Płatność roczna",
     "switchToMonthly": "Przełącz na płatność miesięczną",
     "switchToYearly": "Przełącz na płatność roczną",
+    "xTrialDaysLeft": "{{amount}} trial days left",
+    "trialEnded": "Trial ended",
+    "trialEndsToday": "Trial ends today",
+    "trialEndsTomorrow": "Trial ends tomorrow",
     "tiers": {
       "hobby": "Hobby",
       "freelancer": "Freelancer",
       "startup": "Startup",
       "enterprise": "Enterprise",
+      "trial": "Free trial",
       "upToXEVMo": "Do {{amount}} zdarzeń miesięcznie.",
       "xEvMo": "{{amount}} zdarzeń miesięcznie.",
       "upToXVMo": "Do {{amount}} wizyt miesięcznie.",
@@ -621,12 +665,13 @@
       "smallBusiSupport": "Kupując to, wspierasz małą firmę.",
       "dataExports": "Nielimitowany eksport danych.",
       "dataOwnership": "100% własności danych.",
-      "noBanners": "Banery cookie nie są wymagane.",
       "dashboards": "Współdzielone i publiczne panele.",
       "reports": "Raporty e-mail."
     },
     "downgradeTitle": "Czy na pewno chcesz obniżyć swój plan?",
-    "downgradeDesc": "Po obniżeniu planu, będzie zawierał on mniej projektów i dostępnych zdarzeń na miesiąc. W przypadku, gdy Twoja strona zawiera więcej ruchu niż zawiera plan, do którego chcesz przejść, spowoduje to, że nie wszystkie zdarzenia zostaną zapisane w naszej bazie danych.\nW każdej chwili będziesz mógł powrócić do swojego obecnego planu.\nJeśli masz jakiekolwiek pytania, zawsze możesz wysłać do nas e-mail na adres {{email}}."
+    "downgradeDesc": "Po obniżeniu planu, będzie zawierał on mniej projektów i dostępnych zdarzeń na miesiąc. W przypadku, gdy Twoja strona zawiera więcej ruchu niż zawiera plan, do którego chcesz przejść, spowoduje to, że nie wszystkie zdarzenia zostaną zapisane w naszej bazie danych.\nW każdej chwili będziesz mógł powrócić do swojego obecnego planu.\nJeśli masz jakiekolwiek pytania, zawsze możesz wysłać do nas e-mail na adres {{email}}.",
+    "cancelTitle": "Are you sure you want to cancel your subscription?",
+    "cancelDesc": "After cancelling your subscription, no new events will be collected by Swetrix for your projects.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
     "howTo": "Masz jakieś pytania? Jest kilka sposobów, aby się z nami skontaktować:",
