@@ -311,6 +311,10 @@
         "content": "Is there some feature missing or you want to modify the Dashboard specifically for your needs? All of this is possible with Swetrix Extensions: we offer a customisable SDK which will allow you to modify the dashboard in any way you want, you can also publish your extension for other people to use or install addons people created from our Extension Marketplace."
       },
       {
+        "name": "AI forecasting",
+        "content": "You can forecast your website traffic with our AI-powered forecasting tool."
+      },
+      {
         "name": "Public & Shared Dashboards",
         "content": "With Swetrix you can make your dashboard available for other people to view.\nYou can also invite other Swetrix users to your projects, assign different roles to them."
       },
@@ -327,11 +331,11 @@
         "content": "Zusätzlich zur Verfolgung der Seitenaufrufe bieten wir auch die Möglichkeit, benutzerdefinierte Tracking-Events zu erfassen.\nSie können jedes Ereignis nachvollziehen, z. B. Button-Klicks, Registrierungen oder Freigaben.\nAll dies ist auch für den Nutzer völlig unbedenklich, da wir keine anderen Informationen über ihn zusammen mit den Ereignissen speichern.\nWeitere Informationen zu benutzerdefinierten Tracking-Events finden Sie in unserer Dokumentation."
       },
       {
-        "name": "Developer API",
+        "name": "Entwickler-API",
         "content": "We offer a developer API, which allows you to integrate Swetrix into your own applications.\nYou can use our API to create custom dashboards, or to integrate Swetrix into your own applications."
       },
       {
-        "name": "Convenience",
+        "name": "Komfort",
         "content": "Besides the big features we try to focus on small things that make any project better.\nYou can customise Swetrix for your needs, for example use your native language or your favourite theme, set up 2FA, use a timezone or a time notation you prefer."
       },
       {

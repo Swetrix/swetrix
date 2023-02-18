@@ -311,6 +311,10 @@
         "content": "Is there some feature missing or you want to modify the Dashboard specifically for your needs? All of this is possible with Swetrix Extensions: we offer a customisable SDK which will allow you to modify the dashboard in any way you want, you can also publish your extension for other people to use or install addons people created from our Extension Marketplace."
       },
       {
+        "name": "AI forecasting",
+        "content": "You can forecast your website traffic with our AI-powered forecasting tool."
+      },
+      {
         "name": "Public & Shared Dashboards",
         "content": "With Swetrix you can make your dashboard available for other people to view.\nYou can also invite other Swetrix users to your projects, assign different roles to them."
       },
