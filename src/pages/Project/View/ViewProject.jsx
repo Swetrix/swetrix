@@ -632,13 +632,6 @@ const ViewProject = ({
       return
     }
 
-    // return error if periodToForecast is less than 1 or greater than period
-    if (periodToForecast < 1 || periodToForecast > activePeriod.daysCount) {
-      setDataLoading(false)
-      showError('Period to forecast should be greater than 0 and less than period')
-      return
-    }
-
     try {
       const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
       const transformed = transformAIChartData(result)
