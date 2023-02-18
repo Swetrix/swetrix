@@ -18,6 +18,7 @@ const changelog = [
     date: '2023-02-18',
     changes: [
       'Added AI forecasting functionality.',
+      'Migrated to a paid-only model with a free trial. Everyone who had signed up on Swetrix before that change can continue to use their free tier.',
     ],
   },
   {
