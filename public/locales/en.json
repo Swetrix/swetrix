@@ -299,6 +299,22 @@
     "start": "Start using Swetrix today.",
     "list": [
       {
+        "name": "Performance monitoring",
+        "content": "With Swetrix you can stop guessing how fast does your website load across the globe.\nWe offer a wide range of metrics, such as page load time, DNS lookup time, TTFB and more.\nYou can see data breakdowns by time spent on frontend, backend or network, view this data for the specific countries, browsers, devices.\nAll of this is available in real-time, so you can see how your website performs at any given moment."
+      },
+      {
+        "name": "Custom alerts",
+        "content": "Do you want to track traffic spikes? Or maybe the pageviews for a specific time period? All this is available with custom alerts.\nYou can set up alerts for a wide range of metrics and reveive notifications via messengers like Telegram when they get triggered."
+      },
+      {
+        "name": "Extensions & Extension Marketplace",
+        "content": "Is there some feature missing or you want to modify the Dashboard specifically for your needs? All of this is possible with Swetrix Extensions: we offer a customisable SDK which will allow you to modify the dashboard in any way you want, you can also publish your extension for other people to use or install addons people created from our Extension Marketplace."
+      },
+      {
+        "name": "Public & Shared Dashboards",
+        "content": "With Swetrix you can make your dashboard available for other people to view.\nYou can also invite other Swetrix users to your projects, assign different roles to them."
+      },
+      {
         "name": "Simplicity",
         "content": "When we created our service we tried to make it as simple and flexible as possible.\nNo more confusing metrics and complicated dashboards - with us you can have control over all your projects and data in a simple and straightforward way."
       },
@@ -309,6 +325,14 @@
       {
         "name": "Custom Events Tracking",
         "content": "In addition to tracking page views, we also offer the ability to track сustom events.\nYou can track any event, such as button clicks, registrations or authorisations.\nAll of this is also completely private to the user, as we don't store any other information about them along with the events.\nYou can read more about custom events in our documentation."
+      },
+      {
+        "name": "Developer API",
+        "content": "We offer a developer API, which allows you to integrate Swetrix into your own applications.\nYou can use our API to create custom dashboards, or to integrate Swetrix into your own applications."
+      },
+      {
+        "name": "Convenience",
+        "content": "Besides the big features we try to focus on small things that make any project better.\nYou can customise Swetrix for your needs, for example use your native language or your favourite theme, set up 2FA, use a timezone or a time notation you prefer."
       },
       {
         "name": "Speed",
