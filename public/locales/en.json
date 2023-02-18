@@ -304,7 +304,7 @@
       },
       {
         "name": "Custom alerts",
-        "content": "Do you want to track traffic spikes? Or maybe the pageviews for a specific time period? All this is available with custom alerts.\nYou can set up alerts for a wide range of metrics and reveive notifications via messengers like Telegram when they get triggered."
+        "content": "Do you want to track traffic spikes? Or maybe the pageviews for a specific time period? All this is available with custom alerts.\nYou can set up alerts for a wide range of metrics and receive notifications via messengers like Telegram when they get triggered."
       },
       {
         "name": "Extensions & Extension Marketplace",
