@@ -5,9 +5,10 @@ import { Dialog, Transition } from '@headlessui/react'
 import {
   CheckIcon, ExclamationTriangleIcon, InformationCircleIcon, UserGroupIcon,
 } from '@heroicons/react/24/outline'
+import Beta from 'ui/Beta'
 
 const Modal = ({
-  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons,
+  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons, isBeta,
 }) => (
   <Transition.Root show={isOpened} as={Fragment}>
     <Dialog
@@ -77,8 +78,11 @@ const Modal = ({
               )}
               <div className='mt-3 text-center sm:mt-0 sm:text-left w-full'>
                 {title && (
-                  <Dialog.Title as='h3' className='text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
+                  <Dialog.Title as='h3' className='flex items-center text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
                     {title}
+                    {isBeta && (
+                      <Beta className='ml-10' />
+                    )}
                   </Dialog.Title>
                 )}
                 <div className='mt-2 text-sm text-gray-600 whitespace-pre-line dark:text-gray-200'>
@@ -132,6 +136,7 @@ Modal.propTypes = {
   submitType: PropTypes.oneOf(['regular', 'danger']),
   size: PropTypes.oneOf(['regular', 'large']),
   customButtons: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]),
+  isBeta: PropTypes.bool,
 }
 
 Modal.defaultProps = {
@@ -146,6 +151,7 @@ Modal.defaultProps = {
   type: null,
   title: null,
   customButtons: null,
+  isBeta: false,
 }
 
 export default memo(Modal)

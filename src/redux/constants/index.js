@@ -13,6 +13,13 @@ const getCustomLabel = (dates, t) => {
   return t('project.custom')
 }
 
+export const FORECAST_MAX_MAPPING = {
+  hour: 72,
+  day: 21,
+  week: 21,
+  month: 12,
+}
+
 export const tbPeriodPairs = (t, tbs, dates) => [{
   label: t('project.today'),
   period: 'today',
@@ -144,6 +151,7 @@ export const GENERAL_STATS_UPDATE_INTERVAL = 60000
 
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
+export const getProjectForcastCacheKey = (period, timeBucket, periodToForecast) => `${period}${timeBucket}${periodToForecast}forecast`
 export const getProjectCacheCustomKey = (from, to, timeBucket) => `${from}-${to}-${timeBucket}`
 
 // Cookies

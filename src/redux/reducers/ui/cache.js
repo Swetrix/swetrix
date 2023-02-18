@@ -137,6 +137,21 @@ const cacheReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
+    case types.SET_PROJECT_FORECAST_CACHE: {
+      const { pid, data, key } = payload
+
+      return {
+        ...state,
+        analytics: {
+          ...state.analytics,
+          [pid]: {
+            ...state.analytics[pid],
+            [key]: data,
+          },
+        },
+      }
+    }
+
     default:
       return state
   }

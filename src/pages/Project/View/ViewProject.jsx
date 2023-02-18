@@ -33,7 +33,7 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -41,17 +41,21 @@ import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
+import Robot from 'ui/icons/Robot'
 import PaidFeature from 'modals/PaidFeature'
+import Forecast from 'modals/Forecast'
 import routes from 'routes'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData,
 } from 'api'
+import { getChartPrediction } from 'api/ai'
 import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getSettingsPerf,
+  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
+  CHART_METRICS_MAPPING_PERF, getSettingsPerf, transformAIChartData,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -65,7 +69,7 @@ const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -87,6 +91,7 @@ const ViewProject = ({
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
+  const [isForecastOpened, setIsForecastOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
   const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
@@ -126,6 +131,10 @@ const ViewProject = ({
 
     return projectTab || PROJECT_TABS.traffic
   })
+
+  // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
+  // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
+  const [forecasedChartData, setForecasedChartData] = useState({})
 
   const [chartDataPerf, setChartDataPerf] = useState({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
@@ -334,7 +343,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
         setChartData(chart)
 
         setPanelsData({
@@ -598,6 +607,48 @@ const ViewProject = ({
     }
   }
 
+  const onForecastOpen = () => {
+    if (isLoading || dataLoading) {
+      return
+    }
+
+    if (!_isEmpty(forecasedChartData)) {
+      setForecasedChartData({})
+      return
+    }
+
+    setIsForecastOpened(true)
+  }
+
+  const onForecastSubmit = async (periodToForecast) => {
+    setIsForecastOpened(false)
+    setDataLoading(true)
+    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast)
+    const data = cache[id][key]
+
+    if (!_isEmpty(data)) {
+      setForecasedChartData(data)
+      setDataLoading(false)
+      return
+    }
+
+    try {
+      const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
+      const transformed = transformAIChartData(result)
+      setProjectForcastCache(id, transformed, key)
+      setForecasedChartData(transformed)
+    } catch (e) {
+      console.error(`[onForecastSubmit] Error: ${e}`)
+    }
+
+    setDataLoading(false)
+  }
+
+  useEffect(() => {
+    loadAnalytics()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forecasedChartData])
+
   useEffect(() => {
     const url = new URL(window.location)
     url.searchParams.delete('tab')
@@ -625,9 +676,9 @@ const ViewProject = ({
           })
         }
 
-        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration) {
+        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -640,9 +691,9 @@ const ViewProject = ({
           })
         }
 
-        if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
+        if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -1027,6 +1078,7 @@ const ViewProject = ({
       timeBucket: tb,
       dateRange: newPeriod.period === 'custom' ? dateRange : null,
     })
+    setForecasedChartData({})
   }
 
   const updateTimebucket = (newTimebucket) => {
@@ -1048,6 +1100,7 @@ const ViewProject = ({
       timeBucket: newTimebucket,
       dateRange,
     })
+    setForecasedChartData({})
   }
 
   const openSettingsHandler = () => {
@@ -1233,6 +1286,23 @@ const ViewProject = ({
                       })}
                     >
                       <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                    </button>
+                  </div>
+                  <div
+                    className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3', {
+                      hidden: activeTab !== PROJECT_TABS.traffic,
+                    })}
+                  >
+                    <button
+                      type='button'
+                      onClick={onForecastOpen}
+                      disabled={!_isEmpty(filters)}
+                      className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                        'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
+                        '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
+                      })}
+                    >
+                      <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
                     </button>
                   </div>
                   <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
@@ -1638,6 +1708,13 @@ const ViewProject = ({
         <PaidFeature
           isOpened={isPaidFeatureOpened}
           onClose={() => setIsPaidFeatureOpened(false)}
+        />
+        <Forecast
+          isOpened={isForecastOpened}
+          onClose={() => setIsForecastOpened(false)}
+          onSubmit={onForecastSubmit}
+          activeTB={t(`project.${timeBucket}`)}
+          tb={timeBucket}
         />
       </Title>
     )
