@@ -2,7 +2,7 @@ import { Ctx, Hears, On, Sender, Start, Update } from 'nestjs-telegraf'
 import { ProjectService } from 'src/project/project.service'
 import { SWETRIX_SETTINGS_URL } from 'src/tg-integration/constants'
 import { UserService } from 'src/user/user.service'
-import { Context } from 'telegraf'
+import { Context, Markup } from 'telegraf'
 import * as _map from 'lodash/map'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as dayjs from 'dayjs'
@@ -41,7 +41,7 @@ export class SwetrixUpdate {
       disable_web_page_preview: true,
       ...(user && {
         reply_markup: {
-          keyboard: [[{ text: 'Projects' }]],
+          keyboard: [[{ text: 'Projects' }, { text: 'Settings' }]],
           resize_keyboard: true,
         },
       }),
@@ -55,6 +55,53 @@ export class SwetrixUpdate {
   ): Promise<void> {
     const [action, entityId] = ctx.callbackQuery?.['data'].split(':')
 
+    if (action === 'unlinkTelegramAccount') {
+      await ctx.editMessageText(
+        '⚠️ Are you sure you want to unlink your Telegram account from your Swetrix account?',
+        Markup.inlineKeyboard([
+          Markup.button.callback('✅ Yes', 'unlinkTelegramAccountConfirm'),
+          Markup.button.callback('❌ No', 'unlinkTelegramAccountCancel'),
+        ]),
+      )
+    }
+
+    if (action === 'unlinkTelegramAccountConfirm') {
+      const user = await this.userService.findOneWhere({
+        telegramChatId: chatId,
+      })
+
+      if (!user) {
+        await ctx.telegram.editMessageText(
+          ctx.chat.id,
+          ctx.callbackQuery?.['message'].message_id,
+          undefined,
+          '❌ Your Telegram account is not connected to your Swetrix account.',
+        )
+        return
+      }
+
+      await this.userService.update(user.id, {
+        telegramChatId: null,
+        isTelegramChatIdConfirmed: false,
+      })
+
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        ctx.callbackQuery?.['message'].message_id,
+        undefined,
+        '✅ Your Telegram account is unlinked from your Swetrix account.',
+      )
+    }
+
+    if (action === 'unlinkTelegramAccountCancel') {
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        ctx.callbackQuery?.['message'].message_id,
+        undefined,
+        '❌ Canceled unlinking of this Telegram account from your Swetrix account.',
+      )
+    }
+
     if (action === 'confirmTelegramChatId') {
       await ctx.telegram.deleteMessage(
         ctx.chat.id,
@@ -65,7 +112,7 @@ export class SwetrixUpdate {
         '✅ Your Telegram account is connected to your Swetrix account.',
         {
           reply_markup: {
-            keyboard: [[{ text: 'Projects' }]],
+            keyboard: [[{ text: 'Projects' }, { text: 'Settings' }]],
             resize_keyboard: true,
           },
         },
@@ -109,9 +156,7 @@ export class SwetrixUpdate {
         project: project.id,
       })
 
-      const online = await this.analyticsService.getOnlineUserCount(
-        project.id,
-      )
+      const online = await this.analyticsService.getOnlineUserCount(project.id)
 
       const stats = await this.analyticsService.getSummary([project.id], 'w')
       let alertsString = ''
@@ -119,7 +164,7 @@ export class SwetrixUpdate {
       if (_isEmpty(alerts)) {
         alertsString = '❌ Not set'
       } else {
-        alertsString = _map(alerts, (alert) => {
+        alertsString = _map(alerts, alert => {
           return `*${alert.name}*: ${alert.type} -> ${alert.value}`
         }).join('\n')
       }
@@ -225,6 +270,32 @@ export class SwetrixUpdate {
     await ctx.reply('Your projects:', {
       reply_markup: {
         inline_keyboard: keyboard,
+        resize_keyboard: true,
+      },
+    })
+  }
+
+  @Hears('Settings')
+  async settings(
+    @Sender('id') chatId: string,
+    @Ctx() ctx: Context,
+  ): Promise<void> {
+    const user = await this.userService.findOneWhere({ telegramChatId: chatId })
+
+    if (!user) {
+      return
+    }
+
+    await ctx.reply('Extra settings:', {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: 'Unlink Telegram account',
+              callback_data: 'unlinkTelegramAccount',
+            },
+          ],
+        ],
         resize_keyboard: true,
       },
     })
