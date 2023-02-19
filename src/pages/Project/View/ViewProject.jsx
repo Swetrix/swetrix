@@ -646,7 +646,7 @@ const ViewProject = ({
 
   useEffect(() => {
     loadAnalytics()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forecasedChartData])
 
   useEffect(() => {
@@ -1209,7 +1209,7 @@ const ViewProject = ({
         <EventsRunningOutBanner />
         <div
           className={cx(
-            'bg-gray-50 dark:bg-gray-800 py-6 px-4 sm:px-6 lg:px-8',
+            'bg-gray-50 dark:bg-gray-800 py-6 px-2 sm:px-4 lg:px-8',
             {
               'min-h-min-footer': authenticated || activeTab === PROJECT_TABS.alerts,
               'min-h-min-footer-ad': !authenticated && activeTab !== PROJECT_TABS.alerts,
@@ -1272,12 +1272,12 @@ const ViewProject = ({
           </div>
           {activeTab !== PROJECT_TABS.alerts && (
             <>
-              <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mt-2'>
+              <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
                 <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
                   {name}
                 </h2>
-                <div className='flex mt-3 md:mt-0'>
-                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
+                <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
+                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                     <button
                       type='button'
                       onClick={refreshStats}
@@ -1289,7 +1289,7 @@ const ViewProject = ({
                     </button>
                   </div>
                   <div
-                    className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3', {
+                    className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
                       hidden: activeTab !== PROJECT_TABS.traffic,
                     })}
                   >
@@ -1305,7 +1305,7 @@ const ViewProject = ({
                       <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
                     </button>
                   </div>
-                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
+                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                     <span className='relative z-0 inline-flex shadow-sm rounded-md'>
                       {_map(activePeriod.tbs, (tb, index, { length }) => (
                         <button
@@ -1373,84 +1373,86 @@ const ViewProject = ({
                   />
                 </div>
               </div>
-              <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-                {activeTab === PROJECT_TABS.traffic ? (
-                  !isPanelsDataEmpty && (
-                    <Dropdown
-                      items={chartMetrics}
-                      title={t('project.metricVis')}
-                      labelExtractor={(pair) => {
-                        const {
-                          label, id: pairID, active, conflicts,
-                        } = pair
+              <div>
+                <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4'>
+                  {activeTab === PROJECT_TABS.traffic ? (
+                    !isPanelsDataEmpty && (
+                      <Dropdown
+                        items={chartMetrics}
+                        title={t('project.metricVis')}
+                        labelExtractor={(pair) => {
+                          const {
+                            label, id: pairID, active, conflicts,
+                          } = pair
 
-                        const conflicted = isConflicted(conflicts)
+                          const conflicted = isConflicted(conflicts)
 
-                        return (
-                          <Checkbox
-                            className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                            label={label}
-                            disabled={conflicted}
-                            id={pairID}
-                            checked={active}
-                          />
-                        )
-                      }}
-                      keyExtractor={(pair) => pair.id}
-                      onSelect={({ id: pairID, conflicts }) => {
-                        if (isConflicted(conflicts)) {
-                          generateAlert(t('project.conflictMetric'), 'error')
-                          return
-                        }
-                        switchActiveChartMetric(pairID)
-                      }}
-                    />
-                  )) : (
-                  !isPanelsDataEmptyPerf && (
-                    <Dropdown
-                      items={chartMetricsPerf}
-                      title={(
-                        <p>
-                          {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
-                        </p>
-                      )}
-                      labelExtractor={(pair) => {
-                        const {
-                          label,
-                        } = pair
+                          return (
+                            <Checkbox
+                              className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                              label={label}
+                              disabled={conflicted}
+                              id={pairID}
+                              checked={active}
+                            />
+                          )
+                        }}
+                        keyExtractor={(pair) => pair.id}
+                        onSelect={({ id: pairID, conflicts }) => {
+                          if (isConflicted(conflicts)) {
+                            generateAlert(t('project.conflictMetric'), 'error')
+                            return
+                          }
+                          switchActiveChartMetric(pairID)
+                        }}
+                      />
+                    )) : (
+                    !isPanelsDataEmptyPerf && (
+                      <Dropdown
+                        items={chartMetricsPerf}
+                        title={(
+                          <p>
+                            {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                          </p>
+                        )}
+                        labelExtractor={(pair) => {
+                          const {
+                            label,
+                          } = pair
 
-                        return label
-                      }}
-                      keyExtractor={(pair) => pair.id}
-                      onSelect={({ id: pairID }) => {
-                        switchActiveChartMetric(pairID)
-                      }}
-                    />
-                  )
-                )}
-                <Dropdown
-                  items={[...exportTypes, ...customExportTypes]}
-                  title={[
-                    <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                    <Fragment key='export-data'>
-                      {t('project.exportData')}
-                    </Fragment>,
-                  ]}
-                  labelExtractor={item => item.label}
-                  keyExtractor={item => item.label}
-                  onSelect={item => item.onClick(panelsData, t)}
-                  className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                />
-                {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
-                  <Button
-                    onClick={openSettingsHandler}
-                    className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                    secondary
-                  >
-                    <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                    {t('common.settings')}
-                  </Button>
-                )}
+                          return label
+                        }}
+                        keyExtractor={(pair) => pair.id}
+                        onSelect={({ id: pairID }) => {
+                          switchActiveChartMetric(pairID)
+                        }}
+                      />
+                    )
+                  )}
+                  <Dropdown
+                    items={[...exportTypes, ...customExportTypes]}
+                    title={[
+                      <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                      <Fragment key='export-data'>
+                        {t('project.exportData')}
+                      </Fragment>,
+                    ]}
+                    labelExtractor={item => item.label}
+                    keyExtractor={item => item.label}
+                    onSelect={item => item.onClick(panelsData, t)}
+                    className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                  />
+                  {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
+                    <Button
+                      onClick={openSettingsHandler}
+                      className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                      secondary
+                    >
+                      <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                      {t('common.settings')}
+                    </Button>
+                  )}
+                </div>
               </div>
             </>
           )}
