@@ -1273,7 +1273,7 @@ const ViewProject = ({
           {activeTab !== PROJECT_TABS.alerts && (
             <>
               <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
-                <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
+                <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
                   {name}
                 </h2>
                 <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
