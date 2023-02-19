@@ -98,7 +98,7 @@ export class SwetrixUpdate {
         ctx.chat.id,
         ctx.callbackQuery?.['message'].message_id,
         undefined,
-        '❌ Your Telegram account is not unlinked from your Swetrix account.',
+        '❌ Canceled unlinking of this Telegram account from your Swetrix account.',
       )
     }
 
