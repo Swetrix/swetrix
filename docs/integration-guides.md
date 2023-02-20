@@ -15,6 +15,7 @@ We support a variety of different integrations you can use.
 5. [Python Django](/django-integration)
 6. [SvelteKit](/sveltekit-integration)
 7. [Next.js](https://github.com/Swetrix/swetrix-nextjs)
+8. [Cloudquery](https://github.com/Swetrix/cq-source-swetrix)
 
 ## Unofficial integrations
 1. [Java SDK](https://github.com/Casterlabs/swetrix-java)
