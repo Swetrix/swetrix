@@ -16,5 +16,8 @@ module.exports = {
       'ext-sdk-faq',
       'ext-sdk-reference',
     ],
+    'API': [
+      'api/stats',
+    ],
   },
 }
