@@ -53,7 +53,6 @@ const COMPETITOR_FEATURE_TABLE = {
   Swetrix: {
     'main.competitiveFeatures.gdpr': true, // GDPR-compatible
     'main.competitiveFeatures.open': true, // Open-source
-    'main.competitiveFeatures.free': true, // Has a free plan
     'main.competitiveFeatures.perf': true, // Performance
     'main.competitiveFeatures.ext': true, // Custom extensions
     'main.competitiveFeatures.alrt': true, // Custom alerts
@@ -66,7 +65,6 @@ const COMPETITOR_FEATURE_TABLE = {
   'Google Analytics': {
     'main.competitiveFeatures.gdpr': false,
     'main.competitiveFeatures.open': false,
-    'main.competitiveFeatures.free': true,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,
@@ -79,7 +77,6 @@ const COMPETITOR_FEATURE_TABLE = {
   Fathom: {
     'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.open': null,
-    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': true,
@@ -92,7 +89,6 @@ const COMPETITOR_FEATURE_TABLE = {
   Plausible: {
     'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.open': true,
-    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,
@@ -105,7 +101,6 @@ const COMPETITOR_FEATURE_TABLE = {
   'Simple Analytics': {
     'main.competitiveFeatures.gdpr': true,
     'main.competitiveFeatures.open': false,
-    'main.competitiveFeatures.free': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,

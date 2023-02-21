@@ -1,5 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react/no-unstable-nested-components */
-import React, { memo, Fragment, useRef } from 'react'
+import React, {
+  memo, Fragment, useRef, useMemo,
+} from 'react'
+import PropTypes from 'prop-types'
 import { Link, NavLink } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
 import { useDispatch } from 'react-redux'
@@ -11,6 +14,10 @@ import {
   Bars3Icon, XMarkIcon, DocumentTextIcon, CreditCardIcon, CircleStackIcon, RssIcon,
 } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import duration from 'dayjs/plugin/duration'
+import cx from 'clsx'
 
 import routes from 'routes'
 import { authActions } from 'redux/actions/auth'
@@ -20,10 +27,58 @@ import {
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
-const Header = ({ authenticated, theme, themeType }) => {
+dayjs.extend(utc)
+dayjs.extend(duration)
+
+const TRIAL_STATUS_MAPPING = {
+  ENDED: 1,
+  ENDS_TODAY: 2,
+  ENDS_TOMORROW: 3,
+  ENDS_IN_X_DAYS: 4,
+}
+
+const Header = ({
+  authenticated, theme, themeType, user,
+}) => {
   const { t, i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
   const buttonRef = useRef()
+
+  const [rawStatus, status] = useMemo(() => {
+    const { trialEndDate } = (user || {})
+
+    if (!trialEndDate) {
+      return [null, null]
+    }
+
+    const now = dayjs.utc()
+    const future = dayjs.utc(trialEndDate)
+    const diff = future.diff(now)
+
+    if (diff < 0) {
+      // trial has already ended
+      return [TRIAL_STATUS_MAPPING.ENDED, t('pricing.trialEnded')]
+    }
+
+    if (diff < dayjs.duration(1, 'day').asMilliseconds()) {
+      // trial ends today or tomorrow
+      const isToday = future.isSame(now, 'day')
+      const isTomorrow = future.isSame(now.add(1, 'day'), 'day')
+
+      if (isToday) {
+        return [TRIAL_STATUS_MAPPING.ENDS_TODAY, t('pricing.trialEndsToday')]
+      }
+      if (isTomorrow) {
+        return [TRIAL_STATUS_MAPPING.ENDS_TOMORROW, t('pricing.trialEndsTomorrow')]
+      }
+    }
+
+    // trial ends in more than 1 day
+    const amount = Math.round(dayjs.duration(diff).asDays())
+    return [TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS, t('pricing.xTrialDaysLeft', { amount })]
+  }, [user, t])
+
+  console.log(authenticated, rawStatus, status)
 
   const logoutHandler = () => {
     dispatch(authActions.logout())
@@ -74,6 +129,27 @@ const Header = ({ authenticated, theme, themeType }) => {
               </Link>
 
               <div className='hidden ml-10 space-x-1 lg:flex'>
+                {!isSelfhosted && authenticated && user?.planCode === 'trial' && (
+                  <Link
+                    to={routes.billing}
+                    className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
+                      'text-amber-800 bg-amber-200 dark:bg-amber-300 hover:bg-amber-300 dark:hover:bg-amber-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
+                      'text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
+                    })}
+                    key='TrialNotification'
+                  >
+                    {status}
+                  </Link>
+                )}
+                {authenticated && user?.planCode === 'none' && (
+                  <Link
+                    to={routes.billing}
+                    className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
+                    key='NoSubscription'
+                  >
+                    {t('billing.inactive')}
+                  </Link>
+                )}
                 <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
                   <RssIcon className='w-5 h-5 mr-1' />
                   {t('footer.blog')}
@@ -271,6 +347,27 @@ const Header = ({ authenticated, theme, themeType }) => {
                 />
                 {authenticated ? (
                   <>
+                    {!isSelfhosted && user?.planCode === 'trial' && (
+                      <Link
+                        to={routes.billing}
+                        className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
+                          'text-amber-800 bg-amber-200 dark:bg-amber-300 hover:bg-amber-300 dark:hover:bg-amber-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
+                          'text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
+                        })}
+                        key='TrialNotification'
+                      >
+                        {status}
+                      </Link>
+                    )}
+                    {user?.planCode === 'none' && (
+                      <Link
+                        to={routes.billing}
+                        className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
+                        key='NoSubscription'
+                      >
+                        {t('billing.inactive')}
+                      </Link>
+                    )}
                     <div onClick={() => buttonRef.current?.click()}>
                       <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
                         {t('common.you')}
@@ -308,6 +405,18 @@ const Header = ({ authenticated, theme, themeType }) => {
       </Transition>
     </Popover>
   )
+}
+
+Header.propTypes = {
+  authenticated: PropTypes.bool.isRequired,
+  theme: PropTypes.string.isRequired,
+  themeType: PropTypes.string.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
+  user: PropTypes.object,
+}
+
+Header.defaultProps = {
+  user: {},
 }
 
 export default memo(Header)

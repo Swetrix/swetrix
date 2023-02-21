@@ -85,7 +85,9 @@ const App = () => {
   const dispatch = useDispatch()
   const location = useLocation()
   const alert = useAlert()
-  const { loading, authenticated } = useSelector(state => state.auth)
+  const {
+    loading, authenticated, user,
+  } = useSelector(state => state.auth)
   const { theme } = useSelector(state => state.ui.theme)
   const { error } = useSelector(state => state.errors)
   const { message, type } = useSelector(state => state.alerts)
@@ -166,7 +168,12 @@ const App = () => {
     (!accessToken || !loading) && (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
-        <Header authenticated={authenticated} theme={theme} themeType={themeType} />
+        <Header
+          authenticated={authenticated}
+          theme={theme}
+          themeType={themeType}
+          user={user}
+        />
         {/* {location.pathname === routes.main && (
           <Snowfall />
         )} */}

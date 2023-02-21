@@ -15,7 +15,7 @@ import routes from 'routes'
 
 const navigation = {
   support: [
-    (authenticated) => (authenticated ? { key: 'billing', href: routes.billing } : { key: 'pricing', href: `${routes.main}#pricing` }),
+    (authenticated) => (authenticated ? { key: 'billing', href: routes.billing, internal: true } : { key: 'pricing', href: `${routes.main}#pricing`, internal: true }),
     () => ({ key: 'docs', href: DOCS_URL }),
     () => ({ key: 'contact', href: routes.contact, internal: true }),
   ],
@@ -198,13 +198,19 @@ const Footer = ({ minimal, authenticated }) => {
                 </h3>
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.support, (func) => {
-                    const { key, href } = func(authenticated)
+                    const { key, href, internal } = func(authenticated)
 
                     return (
                       <li key={key}>
-                        <HashLink to={href} className='text-base text-gray-300 hover:text-white'>
-                          {t(`footer.${key}`)}
-                        </HashLink>
+                        {internal ? (
+                          <HashLink to={href} className='text-base text-gray-300 hover:text-white'>
+                            {t(`footer.${key}`)}
+                          </HashLink>
+                        ) : (
+                          <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}>
+                            {t(`footer.${key}`)}
+                          </a>
+                        )}
                       </li>
                     )
                   })}

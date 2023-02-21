@@ -125,6 +125,13 @@ const setProjectCachePerf = (pid, data, key) => ({
   },
 })
 
+const setProjectForcastCache = (pid, data, key) => ({
+  type: types.SET_PROJECT_FORECAST_CACHE,
+  payload: {
+    pid, data, key,
+  },
+})
+
 const deleteProjectCache = (pid, period, timeBucket) => ({
   type: types.DELETE_PROJECT_CACHE,
   payload: {
@@ -256,6 +263,7 @@ const UIActions = {
   setProjectAlertsTotal,
   setProjectAlertsLoading,
   loadProjectAlerts,
+  setProjectForcastCache,
 }
 
 export default UIActions

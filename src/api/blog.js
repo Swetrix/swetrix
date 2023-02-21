@@ -3,7 +3,7 @@ import axios from 'axios'
 import Debug from 'debug'
 import _isEmpty from 'lodash/isEmpty'
 
-const debug = Debug('swetrix:api')
+const debug = Debug('swetrix:blog')
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BLOG_URL,

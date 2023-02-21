@@ -34,7 +34,7 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -42,17 +42,21 @@ import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
+import Robot from 'ui/icons/Robot'
 import PaidFeature from 'modals/PaidFeature'
+import Forecast from 'modals/Forecast'
 import routes from 'routes'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData,
 } from 'api'
+import { getChartPrediction } from 'api/ai'
 import {
   Panel, Overview, CustomEvents,
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getSettingsPerf,
+  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
+  CHART_METRICS_MAPPING_PERF, getSettingsPerf, transformAIChartData,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -66,7 +70,7 @@ const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -88,6 +92,7 @@ const ViewProject = ({
   const [panelsData, setPanelsData] = useState({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
+  const [isForecastOpened, setIsForecastOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
   const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
@@ -108,7 +113,7 @@ const ViewProject = ({
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState([])
   const [filtersPerf, setFiltersPerf] = useState([])
-  // That is needed when using 'Export as image' feature
+  // That is needed when using 'Export as image' feature,
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState(true)
   const isLoading = authenticated ? _isLoading : false
@@ -127,6 +132,10 @@ const ViewProject = ({
 
     return projectTab || PROJECT_TABS.traffic
   })
+
+  // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
+  // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
+  const [forecasedChartData, setForecasedChartData] = useState({})
 
   const [chartDataPerf, setChartDataPerf] = useState({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
@@ -337,7 +346,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
         setChartData(chart)
 
         setPanelsData({
@@ -601,6 +610,48 @@ const ViewProject = ({
     }
   }
 
+  const onForecastOpen = () => {
+    if (isLoading || dataLoading) {
+      return
+    }
+
+    if (!_isEmpty(forecasedChartData)) {
+      setForecasedChartData({})
+      return
+    }
+
+    setIsForecastOpened(true)
+  }
+
+  const onForecastSubmit = async (periodToForecast) => {
+    setIsForecastOpened(false)
+    setDataLoading(true)
+    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast)
+    const data = cache[id][key]
+
+    if (!_isEmpty(data)) {
+      setForecasedChartData(data)
+      setDataLoading(false)
+      return
+    }
+
+    try {
+      const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
+      const transformed = transformAIChartData(result)
+      setProjectForcastCache(id, transformed, key)
+      setForecasedChartData(transformed)
+    } catch (e) {
+      console.error(`[onForecastSubmit] Error: ${e}`)
+    }
+
+    setDataLoading(false)
+  }
+
+  useEffect(() => {
+    loadAnalytics()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forecasedChartData])
+
   useEffect(() => {
     const url = new URL(window.location)
     url.searchParams.delete('tab')
@@ -687,9 +738,9 @@ const ViewProject = ({
           })
         }
 
-        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration) {
+        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -702,9 +753,9 @@ const ViewProject = ({
           })
         }
 
-        if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
+        if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -1089,6 +1140,7 @@ const ViewProject = ({
       timeBucket: tb,
       dateRange: newPeriod.period === 'custom' ? dateRange : null,
     })
+    setForecasedChartData({})
   }
 
   const updateTimebucket = (newTimebucket) => {
@@ -1110,6 +1162,7 @@ const ViewProject = ({
       timeBucket: newTimebucket,
       dateRange,
     })
+    setForecasedChartData({})
   }
 
   const openSettingsHandler = () => {
@@ -1218,7 +1271,7 @@ const ViewProject = ({
         <EventsRunningOutBanner />
         <div
           className={cx(
-            'bg-gray-50 dark:bg-gray-800 py-6 px-4 sm:px-6 lg:px-8',
+            'bg-gray-50 dark:bg-gray-800 py-6 px-2 sm:px-4 lg:px-8',
             {
               'min-h-min-footer': authenticated || activeTab === PROJECT_TABS.alerts,
               'min-h-min-footer-ad': !authenticated && activeTab !== PROJECT_TABS.alerts,
@@ -1281,12 +1334,12 @@ const ViewProject = ({
           </div>
           {activeTab !== PROJECT_TABS.alerts && (
             <>
-              <div className='flex flex-col md:flex-row items-center md:items-start justify-between h-10 mt-2'>
-                <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words'>
+              <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
+                <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
                   {name}
                 </h2>
-                <div className='flex mt-3 md:mt-0'>
-                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
+                <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
+                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                     <button
                       type='button'
                       onClick={refreshStats}
@@ -1297,7 +1350,24 @@ const ViewProject = ({
                       <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                     </button>
                   </div>
-                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 mr-3'>
+                  <div
+                    className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
+                      hidden: activeTab !== PROJECT_TABS.traffic,
+                    })}
+                  >
+                    <button
+                      type='button'
+                      onClick={onForecastOpen}
+                      disabled={!_isEmpty(filters)}
+                      className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                        'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
+                        '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
+                      })}
+                    >
+                      <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
+                    </button>
+                  </div>
+                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                     <span className='relative z-0 inline-flex shadow-sm rounded-md'>
                       {_map(activePeriod.tbs, (tb, index, { length }) => (
                         <button
@@ -1365,84 +1435,86 @@ const ViewProject = ({
                   />
                 </div>
               </div>
-              <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-16 md:mt-5 mb-4'>
-                {activeTab === PROJECT_TABS.traffic ? (
-                  !isPanelsDataEmpty && (
-                    <Dropdown
-                      items={chartMetrics}
-                      title={t('project.metricVis')}
-                      labelExtractor={(pair) => {
-                        const {
-                          label, id: pairID, active, conflicts,
-                        } = pair
+              <div>
+                <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4'>
+                  {activeTab === PROJECT_TABS.traffic ? (
+                    !isPanelsDataEmpty && (
+                      <Dropdown
+                        items={chartMetrics}
+                        title={t('project.metricVis')}
+                        labelExtractor={(pair) => {
+                          const {
+                            label, id: pairID, active, conflicts,
+                          } = pair
 
-                        const conflicted = isConflicted(conflicts)
+                          const conflicted = isConflicted(conflicts)
 
-                        return (
-                          <Checkbox
-                            className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                            label={label}
-                            disabled={conflicted}
-                            id={pairID}
-                            checked={active}
-                          />
-                        )
-                      }}
-                      keyExtractor={(pair) => pair.id}
-                      onSelect={({ id: pairID, conflicts }) => {
-                        if (isConflicted(conflicts)) {
-                          generateAlert(t('project.conflictMetric'), 'error')
-                          return
-                        }
-                        switchActiveChartMetric(pairID)
-                      }}
-                    />
-                  )) : (
-                  !isPanelsDataEmptyPerf && (
-                    <Dropdown
-                      items={chartMetricsPerf}
-                      title={(
-                        <p>
-                          {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
-                        </p>
-                      )}
-                      labelExtractor={(pair) => {
-                        const {
-                          label,
-                        } = pair
+                          return (
+                            <Checkbox
+                              className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                              label={label}
+                              disabled={conflicted}
+                              id={pairID}
+                              checked={active}
+                            />
+                          )
+                        }}
+                        keyExtractor={(pair) => pair.id}
+                        onSelect={({ id: pairID, conflicts }) => {
+                          if (isConflicted(conflicts)) {
+                            generateAlert(t('project.conflictMetric'), 'error')
+                            return
+                          }
+                          switchActiveChartMetric(pairID)
+                        }}
+                      />
+                    )) : (
+                    !isPanelsDataEmptyPerf && (
+                      <Dropdown
+                        items={chartMetricsPerf}
+                        title={(
+                          <p>
+                            {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                          </p>
+                        )}
+                        labelExtractor={(pair) => {
+                          const {
+                            label,
+                          } = pair
 
-                        return label
-                      }}
-                      keyExtractor={(pair) => pair.id}
-                      onSelect={({ id: pairID }) => {
-                        switchActiveChartMetric(pairID)
-                      }}
-                    />
-                  )
-                )}
-                <Dropdown
-                  items={[...exportTypes, ...customExportTypes]}
-                  title={[
-                    <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                    <Fragment key='export-data'>
-                      {t('project.exportData')}
-                    </Fragment>,
-                  ]}
-                  labelExtractor={item => item.label}
-                  keyExtractor={item => item.label}
-                  onSelect={item => item.onClick(panelsData, t)}
-                  className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                />
-                {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
-                  <Button
-                    onClick={openSettingsHandler}
-                    className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                    secondary
-                  >
-                    <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                    {t('common.settings')}
-                  </Button>
-                )}
+                          return label
+                        }}
+                        keyExtractor={(pair) => pair.id}
+                        onSelect={({ id: pairID }) => {
+                          switchActiveChartMetric(pairID)
+                        }}
+                      />
+                    )
+                  )}
+                  <Dropdown
+                    items={[...exportTypes, ...customExportTypes]}
+                    title={[
+                      <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                      <Fragment key='export-data'>
+                        {t('project.exportData')}
+                      </Fragment>,
+                    ]}
+                    labelExtractor={item => item.label}
+                    keyExtractor={item => item.label}
+                    onSelect={item => item.onClick(panelsData, t)}
+                    className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                  />
+                  {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
+                    <Button
+                      onClick={openSettingsHandler}
+                      className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                      secondary
+                    >
+                      <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                      {t('common.settings')}
+                    </Button>
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -1702,6 +1774,13 @@ const ViewProject = ({
         <PaidFeature
           isOpened={isPaidFeatureOpened}
           onClose={() => setIsPaidFeatureOpened(false)}
+        />
+        <Forecast
+          isOpened={isForecastOpened}
+          onClose={() => setIsForecastOpened(false)}
+          onSubmit={onForecastSubmit}
+          activeTB={t(`project.${timeBucket}`)}
+          tb={timeBucket}
         />
       </Title>
     )

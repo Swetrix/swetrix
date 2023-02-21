@@ -19,7 +19,10 @@
     "acceptInvitation": "The project invitation has been accepted",
     "subscriptionUpdated": "Your subscription has been updated",
     "generate2FAError": "Error occurred while generating 2FA code",
-    "integrationRemovalError": "Error occurred while removing the integration"
+    "integrationRemovalError": "Error occurred while removing the integration",
+    "enterACorrectNumber": "Please enter a correct number",
+    "numberCantBeNegative": "The number cannot be negative",
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency"
   },
   "common": {
     "features": "विशेषताएं",
@@ -233,7 +236,6 @@
       "pbld": "Public dashboards",
       "shad": "Dashboard sharing",
       "open": "Open source",
-      "free": "Has a free plan",
       "ckfree": "Cookie free analytics",
       "api": "Developer API",
       "2fa": "Two-factor authentication"
@@ -263,7 +265,9 @@
       "button": "साइन अप करें",
       "tos": "मैं <tos>नियम और शर्तें</tos> और <pp>गोपनीयता नीति</pp>को स्वीकार करता हूं।",
       "email": "ईमेल पता",
-      "create": "अपना अकाउंट बनाएं"
+      "create": "अपना अकाउंट बनाएं",
+      "trial": "Start your free {{amount}} day trial",
+      "noCC": "No credit card required."
     },
     "verification": {
       "success": "आपका ईमेल सफलतापूर्वक सत्यापित कर दिया गया है!"
@@ -295,6 +299,26 @@
     "start": "आज ही स्वेट्रिक्स का उपयोग करना शुरू करें।",
     "list": [
       {
+        "name": "Performance monitoring",
+        "content": "With Swetrix you can stop guessing how fast does your website load across the globe.\nWe offer a wide range of metrics, such as page load time, DNS lookup time, TTFB and more.\nYou can see data breakdowns by time spent on frontend, backend or network, view this data for the specific countries, browsers, devices.\nAll of this is available in real-time, so you can see how your website performs at any given moment."
+      },
+      {
+        "name": "Custom alerts",
+        "content": "Do you want to track traffic spikes? Or maybe the pageviews for a specific time period? All this is available with custom alerts.\nYou can set up alerts for a wide range of metrics and receive notifications via messengers like Telegram when they get triggered."
+      },
+      {
+        "name": "Extensions & Extension Marketplace",
+        "content": "Is there some feature missing or you want to modify the Dashboard specifically for your needs? All of this is possible with Swetrix Extensions: we offer a customisable SDK which will allow you to modify the dashboard in any way you want, you can also publish your extension for other people to use or install addons people created from our Extension Marketplace."
+      },
+      {
+        "name": "AI forecasting",
+        "content": "You can forecast your website traffic with our AI-powered forecasting tool."
+      },
+      {
+        "name": "Public & Shared Dashboards",
+        "content": "With Swetrix you can make your dashboard available for other people to view.\nYou can also invite other Swetrix users to your projects, assign different roles to them."
+      },
+      {
         "name": "सरलता",
         "content": "जब हमने अपनी सर्विस बनाई तो हमने इसे यथासंभव सरल और लचीला बनाने की कोशिश की।\nअब और अधिक भ्रमित मेट्रिक और जटिल डैशबोर्ड नहीं - हमारे साथ आप अपने सभी प्रोजेक्ट और डेटा को सरल और सीधे तरीके से नियंत्रित कर सकते हैं।"
       },
@@ -305,6 +329,14 @@
       {
         "name": "कस्टम ईवेंट ट्रैकिंग",
         "content": "पेज व्यूज को ट्रैक करने के अलावा, हम कस्टम ईवेंट को ट्रैक करने की क्षमता भी प्रदान करते हैं।\nआप किसी भी इवेंट को ट्रैक कर सकते हैं, जैसे बटन क्लिक, पंजीकरण या प्राधिकरण।\nयह सभी उपयोगकर्ता के लिए पूरी तरह से निजी है, क्योंकि हम इवेंट के साथ उनके बारे में कोई अन्य जानकारी संग्रहीत नहीं करते हैं।\nआप हमारे दस्तावेज़ भाग में कस्टम ईवेंट के बारे में और अधिक पढ़ सकते हैं।"
+      },
+      {
+        "name": "विकासक API",
+        "content": "We offer a developer API, which allows you to integrate Swetrix into your own applications.\nYou can use our API to create custom dashboards, or to integrate Swetrix into your own applications."
+      },
+      {
+        "name": "Convenience",
+        "content": "Besides the big features we try to focus on small things that make any project better.\nYou can customise Swetrix for your needs, for example use your native language or your favourite theme, set up 2FA, use a timezone or a time notation you prefer."
       },
       {
         "name": "गति",
@@ -577,14 +609,24 @@
   "billing": {
     "title": "बिलिंग और प्लान",
     "desc": "शुरुआत करना और हमारी सेवाओं का उपयोग करना फ्री है।\nयदि आपको और अधिक ट्रैफ़िक संभालने की आवश्यकता है, तो आपको शायद अपने प्लान को अपग्रेड करने की आवश्यकता होगी।\nनीचे उपलब्ध प्लान्स की एक सूची है। कोई छिपी हुई फीस या अन्य बीएस नहीं है, सब कुछ स्पष्ट और पारदर्शी है!",
-    "contact": "क्या प्रति माह 1 मिलियन से अधिक इवेंट को ट्रैक करने की आवश्यकता है?\nअपनी आवश्यकताओं पर चर्चा करने के लिए हमसे <mail>{{email}}</mail> पर संपर्क करें।",
+    "contact": "Need to track more than {{amount}} million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
     "update": "Update payment details",
-    "nextBillDate": "Next bill date:"
+    "nextBillDate": "Next bill date:",
+    "trialEnds": "Trial ends {{date}}",
+    "cancelSub": "Cancel subscription",
+    "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
+    "inactive": "Inactive",
+    "cancelledSubMessage": "You've cancelled your subscription.\nThe subscription will be active until {{date}}.\nAfter that, no new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled."
   },
   "modals": {
     "paidFeature": {
       "title": "Upgrade your plan to use this feature",
       "desc": "We apologise for the inconvenience, but you must subscribe to a paid plan to use this feature.\n\nWe realise that you might not be ready to buy a paid subscription yet, but buying it will give you not only access to this feature, but also many other great perks, such as access to all the other paid features, higher limits on visits per month and number of websites available, and you will support the growth of a small business :)"
+    },
+    "forecast": {
+      "title": "Traffic forecast",
+      "desc": "This is a rough estimate of how much traffic you can expect to get on your website, based on Swetrix AI models.",
+      "input": "The quantity of '{{frequency}}' you want to forecast"
     }
   },
   "pricing": {
@@ -593,6 +635,7 @@
     "currentPlan": "वर्तमान प्लान",
     "mostPopular": "Most popular",
     "free": "फ्री",
+    "legacy": "Legacy",
     "perMonth": "माह",
     "perYear": "yr",
     "yourPlan": "आपका प्लान",
@@ -603,11 +646,16 @@
     "yearlyBilling": "Yearly billing",
     "switchToMonthly": "Switch to monthly billing",
     "switchToYearly": "Switch to yearly billing",
+    "xTrialDaysLeft": "{{amount}} trial days left",
+    "trialEnded": "Trial ended",
+    "trialEndsToday": "Trial ends today",
+    "trialEndsTomorrow": "Trial ends tomorrow",
     "tiers": {
       "hobby": "शौक",
       "freelancer": "फ्रीलांसर",
       "startup": "स्टार्टअप",
       "enterprise": "एंटरप्राइस",
+      "trial": "Free trial",
       "upToXEVMo": "हर महीने {{amount}} इवेंट तक।",
       "xEvMo": "{{amount}} इवेंट प्रति माह।",
       "upToXVMo": "Up to {{amount}} visits per month.",
@@ -621,12 +669,13 @@
       "smallBusiSupport": "By buying this you are supporting a small business.",
       "dataExports": "Unlimited data exports.",
       "dataOwnership": "100% data ownership.",
-      "noBanners": "No cookie banners required.",
       "dashboards": "Shared & Public Dashboards.",
       "reports": "Email reports."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
-    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
+    "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}.",
+    "cancelTitle": "Are you sure you want to cancel your subscription?",
+    "cancelDesc": "After cancelling your subscription, no new events will be collected by Swetrix for your projects.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
     "howTo": "Have something to ask? There are several ways on how to contact us:",

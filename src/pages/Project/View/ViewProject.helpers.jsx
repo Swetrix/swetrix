@@ -16,6 +16,7 @@ import _size from 'lodash/size'
 import _round from 'lodash/round'
 import _fill from 'lodash/fill'
 import _reduce from 'lodash/reduce'
+import _last from 'lodash/last'
 import JSZip from 'jszip'
 
 import { TimeFormat, tbsFormatMapper, tbsFormatMapper24h } from 'redux/constants'
@@ -29,6 +30,32 @@ const getAvg = (arr) => {
 
 const getSum = (arr) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
+}
+
+const transformAIChartData = (data) => {
+  const transformedData = {
+    x: [],
+    sdur: [],
+    uniques: [],
+    visits: [],
+  }
+
+  _forEach(data, (d) => {
+    if (d.x) {
+      transformedData.x = d.x
+    }
+    if (d.sdur) {
+      transformedData.sdur = d.sdur
+    }
+    if (d.uniques) {
+      transformedData.uniques = d.uniques
+    }
+    if (d.visits) {
+      transformedData.visits = d.visits
+    }
+  })
+
+  return transformedData
 }
 
 const trendline = (data) => {
@@ -236,9 +263,22 @@ const getColumnsPerf = (chart, activeChartMetrics) => {
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias) => {
+const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias) => {
   const xAxisSize = _size(chart.x)
+  const lines = []
+  const modifiedChart = { ...chart }
   let regions
+
+  if (!_isEmpty(forecasedChartData)) {
+    lines.push({
+      value: _last(chart?.x),
+      text: 'Forecast',
+    })
+    modifiedChart.x = [...modifiedChart.x, ...forecasedChartData.x]
+    modifiedChart.uniques = [...modifiedChart.uniques, ...forecasedChartData.uniques]
+    modifiedChart.visits = [...modifiedChart.visits, ...forecasedChartData.visits]
+    modifiedChart.sdur = [...modifiedChart.sdur, ...forecasedChartData.sdur]
+  }
 
   if (applyRegions) {
     let regionStart
@@ -288,7 +328,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
   return {
     data: {
       x: 'x',
-      columns: getColumns(chart, activeChartMetrics),
+      columns: getColumns(modifiedChart, activeChartMetrics),
       types: {
         unique: area(),
         total: area(),
@@ -311,6 +351,11 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
       axes: {
         bounce: 'y2',
         sessionDuration: 'y2',
+      },
+    },
+    grid: {
+      x: {
+        lines,
       },
     },
     axis: {
@@ -515,5 +560,8 @@ const getFormatDate = (date) => {
 }
 
 export {
-  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING, CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf,
+  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters,
+  validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings,
+  getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
+  CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData,
 }
