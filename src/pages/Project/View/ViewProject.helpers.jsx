@@ -263,7 +263,7 @@ const getColumnsPerf = (chart, activeChartMetrics) => {
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData) => {
+const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias) => {
   const xAxisSize = _size(chart.x)
   const lines = []
   const modifiedChart = { ...chart }
@@ -362,6 +362,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
       x: {
         tick: {
           fit: true,
+          rotate: rotateXAxias ? 45 : 0,
           format: timeFormat === TimeFormat['24-hour'] ? (x) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
         },
         localtime: timeFormat === TimeFormat['24-hour'],
@@ -422,7 +423,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
   }
 }
 
-const getSettingsPerf = (chart, timeBucket, activeChartMetrics) => {
+const getSettingsPerf = (chart, timeBucket, activeChartMetrics, rotateXAxias) => {
   const xAxisSize = _size(chart.x)
 
   return {
@@ -463,6 +464,7 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics) => {
         type: 'timeseries',
         tick: {
           format: tbsFormatMapper[timeBucket],
+          rotate: rotateXAxias ? 45 : 0,
         },
       },
       y: {

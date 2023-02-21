@@ -82,17 +82,17 @@ export const timeBucketToDays = [
 ]
 
 export const tbsFormatMapper = {
-  hour: '%d %B %H:%M',
-  day: '%d %B',
-  week: '%d %B',
-  month: '%d %B %Y',
+  hour: '%d %b %H:%M',
+  day: '%d %b',
+  week: '%d %b',
+  month: '%d %b %Y',
 }
 
 export const tbsFormatMapper24h = {
   hour: '%H:%M',
-  day: '%d %B',
-  week: '%d %B',
-  month: '%d %B %Y',
+  day: '%d %b',
+  week: '%d %b',
+  month: '%d %b %Y',
 }
 
 export const TimeFormat = {

@@ -2,6 +2,7 @@
 import React, {
   useState, useEffect, useMemo, memo, useRef, Fragment, useCallback,
 } from 'react'
+import useSize from 'hooks/useSize'
 import { useHistory, useParams, Link } from 'react-router-dom'
 import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
@@ -140,6 +141,8 @@ const ViewProject = ({
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   const [panelsDataPerf, setPanelsDataPerf] = useState({})
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
+  const [ref, size] = useSize()
+  const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size.width])
 
   const tabs = useMemo(() => {
     return [
@@ -343,7 +346,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
         setChartData(chart)
 
         setPanelsData({
@@ -421,7 +424,7 @@ const ViewProject = ({
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -678,7 +681,7 @@ const ViewProject = ({
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -693,7 +696,7 @@ const ViewProject = ({
 
         if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -725,7 +728,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias)
 
       if (!_isEmpty(mainChart)) {
         mainChart.destroy()
@@ -1487,6 +1490,7 @@ const ViewProject = ({
                 className={cx('h-80', {
                   hidden: checkIfAllMetricsAreDisabled,
                 })}
+                ref={ref}
               >
                 <div className='h-80' id='dataChart' />
               </div>
@@ -1603,6 +1607,7 @@ const ViewProject = ({
                 className={cx('h-80', {
                   hidden: checkIfAllMetricsAreDisabled,
                 })}
+                ref={ref}
               >
                 <div className='h-80' id='dataChart' />
               </div>
