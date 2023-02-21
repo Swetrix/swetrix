@@ -142,7 +142,7 @@ const ViewProject = ({
   const [panelsDataPerf, setPanelsDataPerf] = useState({})
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
-  const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size.width])
+  const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
 
   const tabs = useMemo(() => {
     return [
@@ -1210,70 +1210,71 @@ const ViewProject = ({
     return (
       <Title title={name}>
         <EventsRunningOutBanner />
-        <div
-          className={cx(
-            'bg-gray-50 dark:bg-gray-800 py-6 px-2 sm:px-4 lg:px-8',
-            {
-              'min-h-min-footer': authenticated || activeTab === PROJECT_TABS.alerts,
-              'min-h-min-footer-ad': !authenticated && activeTab !== PROJECT_TABS.alerts,
-            },
-          )}
-          ref={dashboardRef}
-        >
-          {/* Tabs selector */}
-          <div>
-            <div className='sm:hidden'>
-              <Select
-                items={tabs}
-                keyExtractor={(item) => item.id}
-                labelExtractor={(item) => item.label}
-                onSelect={(label) => {
-                  const selected = _find(tabs, (tab) => tab.label === label)
-                  setProjectTab(selected.id)
-                  setActiveTab(selected.id)
-                }}
-                title={activeTabLabel}
-              />
-            </div>
-            <div className='hidden sm:block'>
-              <div>
-                <nav className='-mb-px flex space-x-4' aria-label='Tabs'>
-                  {_map(tabs, tab => {
-                    const isCurrent = tab.id === activeTab
+        <div ref={ref}>
+          <div
+            className={cx(
+              'bg-gray-50 dark:bg-gray-800 py-6 px-2 sm:px-4 lg:px-8',
+              {
+                'min-h-min-footer': authenticated || activeTab === PROJECT_TABS.alerts,
+                'min-h-min-footer-ad': !authenticated && activeTab !== PROJECT_TABS.alerts,
+              },
+            )}
+            ref={dashboardRef}
+          >
+            {/* Tabs selector */}
+            <div>
+              <div className='sm:hidden'>
+                <Select
+                  items={tabs}
+                  keyExtractor={(item) => item.id}
+                  labelExtractor={(item) => item.label}
+                  onSelect={(label) => {
+                    const selected = _find(tabs, (tab) => tab.label === label)
+                    setProjectTab(selected.id)
+                    setActiveTab(selected.id)
+                  }}
+                  title={activeTabLabel}
+                />
+              </div>
+              <div className='hidden sm:block'>
+                <div>
+                  <nav className='-mb-px flex space-x-4' aria-label='Tabs'>
+                    {_map(tabs, tab => {
+                      const isCurrent = tab.id === activeTab
 
-                    return (
-                      <div
-                        key={tab.id}
-                        onClick={() => {
-                          setProjectTab(tab.id)
-                          setActiveTab(tab.id)
-                        }}
-                        className={cx(
-                          isCurrent
-                            ? 'border-indigo-700 text-indigo-700 dark:text-indigo-500 dark:border-indigo-500'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300',
-                          'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
-                        )}
-                        aria-current={isCurrent ? 'page' : undefined}
-                      >
-                        <tab.icon
+                      return (
+                        <div
+                          key={tab.id}
+                          onClick={() => {
+                            setProjectTab(tab.id)
+                            setActiveTab(tab.id)
+                          }}
                           className={cx(
-                            isCurrent ? 'text-indigo-700 dark:text-indigo-500' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
-                            '-ml-0.5 mr-2 h-5 w-5',
+                            isCurrent
+                              ? 'border-indigo-700 text-indigo-700 dark:text-indigo-500 dark:border-indigo-500'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300',
+                            'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
                           )}
-                          aria-hidden='true'
-                        />
-                        <span>
-                          {tab.label}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </nav>
+                          aria-current={isCurrent ? 'page' : undefined}
+                        >
+                          <tab.icon
+                            className={cx(
+                              isCurrent ? 'text-indigo-700 dark:text-indigo-500' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
+                              '-ml-0.5 mr-2 h-5 w-5',
+                            )}
+                            aria-hidden='true'
+                          />
+                          <span>
+                            {tab.label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </nav>
+                </div>
               </div>
             </div>
-          </div>
-          {activeTab !== PROJECT_TABS.alerts && (
+            {activeTab !== PROJECT_TABS.alerts && (
             <>
               <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
                 <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
@@ -1458,8 +1459,8 @@ const ViewProject = ({
                 </div>
               </div>
             </>
-          )}
-          {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors || !authenticated)) && (
+            )}
+            {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors || !authenticated)) && (
             <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
               <div className='flex items-center text-gray-50'>
                 <BellIcon className='w-8 h-8 mr-2' />
@@ -1474,23 +1475,22 @@ const ViewProject = ({
                 {t('common.getStarted')}
               </Link>
             </div>
-          )}
-          {(activeTab === PROJECT_TABS.alerts && !isSharedProject && !project?.isPublicVisitors && authenticated) && (
+            )}
+            {(activeTab === PROJECT_TABS.alerts && !isSharedProject && !project?.isPublicVisitors && authenticated) && (
             <ProjectAlertsView projectId={id} />
-          )}
-          {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
+            )}
+            {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
             <Loader />
-          )}
-          {(isPanelsDataEmpty && activeTab !== PROJECT_TABS.alerts) && (
+            )}
+            {(isPanelsDataEmpty && activeTab !== PROJECT_TABS.alerts) && (
             <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
-          )}
-          {activeTab === PROJECT_TABS.traffic && (
+            )}
+            {activeTab === PROJECT_TABS.traffic && (
             <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <div
                 className={cx('h-80', {
                   hidden: checkIfAllMetricsAreDisabled,
                 })}
-                ref={ref}
               >
                 <div className='h-80' id='dataChart' />
               </div>
@@ -1600,14 +1600,13 @@ const ViewProject = ({
                 )}
               </div>
             </div>
-          )}
-          {activeTab === PROJECT_TABS.performance && (
+            )}
+            {activeTab === PROJECT_TABS.performance && (
             <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <div
                 className={cx('h-80', {
                   hidden: checkIfAllMetricsAreDisabled,
                 })}
-                ref={ref}
               >
                 <div className='h-80' id='dataChart' />
               </div>
@@ -1683,7 +1682,8 @@ const ViewProject = ({
                 })}
               </div>
             </div>
-          )}
+            )}
+          </div>
         </div>
         {!authenticated && activeTab !== PROJECT_TABS.alerts && (
           <div className='bg-indigo-600'>
