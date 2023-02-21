@@ -142,7 +142,7 @@ const ViewProject = ({
   const [panelsDataPerf, setPanelsDataPerf] = useState({})
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
-  console.log('size', size)
+  const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size.width])
 
   const tabs = useMemo(() => {
     return [
@@ -346,7 +346,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
         setChartData(chart)
 
         setPanelsData({
@@ -424,7 +424,7 @@ const ViewProject = ({
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -669,65 +669,6 @@ const ViewProject = ({
   }, [activeTab])
 
   useEffect(() => {
-    if ((size.width < 400 && size.width > 50) && !isLoading) {
-      if (activeTab === PROJECT_TABS.performance) {
-        const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, true)
-
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNamesPerf)
-          return generete
-        })
-      } else {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, true)
-
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
-      }
-    } else if (size.width > 400 && !isLoading) {
-      if (activeTab === PROJECT_TABS.performance) {
-        const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf)
-
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNamesPerf)
-          return generete
-        })
-      } else {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat)
-
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size.width, activeTab, chartData, chartDataPerf, isLoading])
-
-  useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
       if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
         mainChart.data.names(dataNames)
@@ -740,7 +681,7 @@ const ViewProject = ({
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -755,7 +696,7 @@ const ViewProject = ({
 
         if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -787,7 +728,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias)
 
       if (!_isEmpty(mainChart)) {
         mainChart.destroy()
