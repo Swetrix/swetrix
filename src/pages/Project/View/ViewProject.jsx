@@ -671,8 +671,6 @@ const ViewProject = ({
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
       if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
-        mainChart.data.names(dataNames)
-
         if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique || activeChartMetrics.trendlines) {
           mainChart.load({
             columns: getColumns(chartData, activeChartMetrics),
