@@ -360,6 +360,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
     },
     axis: {
       x: {
+        clipPath: false,
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
@@ -418,6 +419,10 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
     },
     area: {
       linearGradient: true,
+    },
+    padding: {
+      right: rotateXAxias ? 35 : 25,
+      left: 40,
     },
     bindto: '#dataChart',
   }

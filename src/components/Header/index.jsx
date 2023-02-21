@@ -78,8 +78,6 @@ const Header = ({
     return [TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS, t('pricing.xTrialDaysLeft', { amount })]
   }, [user, t])
 
-  console.log(authenticated, rawStatus, status)
-
   const logoutHandler = () => {
     dispatch(authActions.logout())
   }
