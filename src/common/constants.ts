@@ -38,6 +38,25 @@ const clickhouse = new ClickHouse({
   },
 })
 
+const clickhouseCSV = new ClickHouse({
+  url: process.env.CLICKHOUSE_HOST,
+  port: _toNumber(process.env.CLICKHOUSE_PORT),
+  debug: false,
+  basicAuth: {
+    username: process.env.CLICKHOUSE_USER,
+    password: process.env.CLICKHOUSE_PASSWORD,
+  },
+  isUseGzip: false,
+  format: 'csv',
+  raw: false,
+  config: {
+    session_timeout: 60,
+    output_format_json_quote_64bit_integers: 0,
+    enable_http_compression: 0,
+    database: process.env.CLICKHOUSE_DATABASE,
+  },
+})
+
 const isSelfhosted = Boolean(process.env.SELFHOSTED)
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 
@@ -195,6 +214,7 @@ const PROJECT_INVITE_EXPIRE = 48
 
 export {
   clickhouse,
+  clickhouseCSV,
   JWT_LIFE_TIME,
   HISTORY_LIFE_TIME_DAYS,
   redis,

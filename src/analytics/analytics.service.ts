@@ -736,6 +736,7 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const params = {}
 
+    console.log(subQuery, paramsData)
     for (const i of perfCols) {
       const query = `SELECT ${i}, avg(pageLoad) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
       const res = await clickhouse.query(query, paramsData).toPromise()

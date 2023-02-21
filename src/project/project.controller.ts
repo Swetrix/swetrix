@@ -19,9 +19,12 @@ import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
+import * as _split from 'lodash/split'
+import * as _head from 'lodash/head'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
+import * as dayjs from 'dayjs'
 
 import { ProjectService, processProjectUser, deleteProjectRedis } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
@@ -40,10 +43,13 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { ShareDTO } from './dto/share.dto'
 import { ShareUpdateDTO } from './dto/share-update.dto'
+import { RequestExportDTO } from './dto/request-export.dto'
+import { isValidDate } from 'src/analytics/analytics.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isValidPID,
   clickhouse,
+  clickhouseCSV,
   isSelfhosted,
   PROJECT_INVITE_EXPIRE,
 } from '../common/constants'
@@ -364,6 +370,60 @@ export class ProjectController {
 
         throw new BadRequestException(e)
       }
+    }
+  }
+
+  @Post('/request_export')
+  @ApiResponse({ status: 201 })
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async requestExport(
+    @Body() exportDTO: RequestExportDTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ exportDTO, userId: uid }, 'POST /request_export')
+
+    if (isSelfhosted) {
+      throw new NotImplementedException('Not implemented for self-hosted yet')
+    } else {
+      let { pid, from, to } = exportDTO
+
+      if (!isValidPID(pid)) {
+        throw new BadRequestException('The provided Project ID (pid) is incorrect',)
+      }
+
+      from = _head(_split(from, 'T'))
+      to = _head(_split(to, 'T'))
+
+      if (!isValidDate(from)) {
+        throw new BadRequestException('The provided \'from\' date is incorrect',)
+      }
+
+      if (!isValidDate(to)) {
+        throw new BadRequestException('The provided \'to\' date is incorrect',)
+      }
+
+      from = dayjs(from).format('YYYY-MM-DD')
+      to = dayjs(to).format('YYYY-MM-DD 23:59:59')
+
+      const project = await this.projectService.findOne(pid, {
+        relations: ['admin', 'share'],
+      })
+
+      if (!project) {
+        throw new NotFoundException('Project not found')
+      }
+
+      this.projectService.allowedToManage(project, uid)
+
+      const query = 'SELECT * FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+      const data = await clickhouseCSV.query(query, {
+        params: {
+          pid, from, to,
+        },
+      }).toPromise()
+
+      console.log(data)
     }
   }
 
