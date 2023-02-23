@@ -136,6 +136,7 @@ export const CDN_URL = process.env.REACT_APP_CDN_URL
 // Swetrix vs ...
 export const SWETRIX_VS_GOOGLE = 'https://blog.swetrix.com/post/vs-google-analytics/'
 export const SWETRIX_VS_CLOUDFLARE = 'https://blog.swetrix.com/post/vs-cloudflare-analytics/'
+export const SWETRIX_VS_SIMPLE_ANALYTICS = 'https://blog.swetrix.com/post/vs-simple-analytics/'
 
 export const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
 
