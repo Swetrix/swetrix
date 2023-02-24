@@ -423,37 +423,45 @@ export class ProjectService {
   }
 
   async findUserProject(projectId: string, userId: string) {
-    // TODO: add check for user's role
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) return null
+
+    if (user.roles.includes(UserType.ADMIN)) {
+      return await this.projectsRepository.findOne({
+        where: {
+          id: projectId,
+        },
+      })
+    }
+
     return await this.projectsRepository.findOne({
-      where: { id: projectId, admin: userId },
+      where: {
+        id: projectId,
+        admin: userId,
+      },
     })
   }
 
-  // REVIEW
   async createExport(projectId: string, startDate?: Date, endDate?: Date) {
-    clickhouse
-      .query(
-        `SELECT * FROM analytics WHERE pid = '${projectId}' FORMAT CSVWithNames`,
-      )
-      .toPromise()
-    // const analytics = await this.exportAnalytics(projectId, startDate, endDate)
-    // const customEvents = await this.exportCustomEvents(
-    //   projectId,
-    //   startDate,
-    //   endDate,
-    // )
-    // const performance = await this.exportPerformance(
-    //   projectId,
-    //   startDate,
-    //   endDate,
-    // )
-    // return { analytics, customEvents, performance }
+    const analytics = await this.exportAnalytics(projectId, startDate, endDate)
+    const customEvents = await this.exportCustomEvents(
+      projectId,
+      startDate,
+      endDate,
+    )
+    const performance = await this.exportPerformance(
+      projectId,
+      startDate,
+      endDate,
+    )
+    return { analytics, customEvents, performance }
   }
 
   async exportAnalytics(projectId: string, startDate?: Date, endDate?: Date) {
     return clickhouse
       .query(
-        "SELECT * FROM analytics WHERE pid = {projectId:FixedString(12)} FORMAT CSVWithNames",
+        'SELECT * FROM analytics WHERE pid = {projectId:FixedString(12)}',
         {
           params: {
             projectId,
@@ -469,21 +477,18 @@ export class ProjectService {
     endDate?: Date,
   ) {
     return clickhouse
-      .query(
-        "SELECT * FROM customEV WHERE pid = {projectId:FixedString(12)} FORMAT CSVWithNames",
-        {
-          params: {
-            projectId,
-          },
+      .query('SELECT * FROM customEV WHERE pid = {projectId:FixedString(12)}', {
+        params: {
+          projectId,
         },
-      )
+      })
       .toPromise()
   }
 
   async exportPerformance(projectId: string, startDate?: Date, endDate?: Date) {
     return clickhouse
       .query(
-        "SELECT * FROM performance WHERE pid = {projectId:FixedString(12)} FORMAT CSVWithNames",
+        'SELECT * FROM performance WHERE pid = {projectId:FixedString(12)}',
         {
           params: {
             projectId,
