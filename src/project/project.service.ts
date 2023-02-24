@@ -103,7 +103,7 @@ export class ProjectService {
     @InjectRepository(ProjectShare)
     private projectShareRepository: Repository<ProjectShare>,
     private userService: UserService,
-  ) { }
+  ) {}
 
   async paginate(
     options: PaginationOptionsInterface,
@@ -154,10 +154,7 @@ export class ProjectService {
     return this.projectsRepository.save(project)
   }
 
-  async update(
-    id: string,
-    projectDTO: ProjectDTO,
-  ): Promise<any> {
+  async update(id: string, projectDTO: ProjectDTO): Promise<any> {
     return this.projectsRepository.update(id, projectDTO)
   }
 
@@ -249,7 +246,7 @@ export class ProjectService {
     project: Project,
     uid: string,
     roles: Array<UserType> = [],
-    message: string = 'You are not allowed to manage this project'
+    message: string = 'You are not allowed to manage this project',
   ): void {
     if (
       uid === project.admin?.id ||
@@ -423,5 +420,76 @@ export class ProjectService {
     }
 
     await this.clearProjectsRedisCache(user.id)
+  }
+
+  async findUserProject(projectId: string, userId: string) {
+    // TODO: add check for user's role
+    return await this.projectsRepository.findOne({
+      where: { id: projectId, admin: userId },
+    })
+  }
+
+  // REVIEW
+  async createExport(projectId: string, startDate?: Date, endDate?: Date) {
+    clickhouse
+      .query(
+        `SELECT * FROM analytics WHERE pid = '${projectId}' FORMAT CSVWithNames`,
+      )
+      .toPromise()
+    // const analytics = await this.exportAnalytics(projectId, startDate, endDate)
+    // const customEvents = await this.exportCustomEvents(
+    //   projectId,
+    //   startDate,
+    //   endDate,
+    // )
+    // const performance = await this.exportPerformance(
+    //   projectId,
+    //   startDate,
+    //   endDate,
+    // )
+    // return { analytics, customEvents, performance }
+  }
+
+  async exportAnalytics(projectId: string, startDate?: Date, endDate?: Date) {
+    return clickhouse
+      .query(
+        "SELECT * FROM analytics WHERE pid = {projectId:FixedString(12)} FORMAT CSVWithNames",
+        {
+          params: {
+            projectId,
+          },
+        },
+      )
+      .toPromise()
+  }
+
+  async exportCustomEvents(
+    projectId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
+    return clickhouse
+      .query(
+        "SELECT * FROM customEV WHERE pid = {projectId:FixedString(12)} FORMAT CSVWithNames",
+        {
+          params: {
+            projectId,
+          },
+        },
+      )
+      .toPromise()
+  }
+
+  async exportPerformance(projectId: string, startDate?: Date, endDate?: Date) {
+    return clickhouse
+      .query(
+        "SELECT * FROM performance WHERE pid = {projectId:FixedString(12)} FORMAT CSVWithNames",
+        {
+          params: {
+            projectId,
+          },
+        },
+      )
+      .toPromise()
   }
 }

@@ -55,6 +55,11 @@ import {
 } from '../common/utils'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
+import {
+  CreateExportBodyDto,
+  CreateExportParamsDto,
+  GetExportParamsDto,
+} from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 
@@ -784,6 +789,57 @@ export class ProjectController {
 
       await this.projectService.updateShare(shareId, share)
       await this.actionTokensService.delete(id)
+    }
+  }
+
+  @Post(':projectId/exports')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async createExport(
+    @Param() params: CreateExportParamsDto,
+    @Body() body: CreateExportBodyDto,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log(
+      { params, body, userId },
+      'POST /project/:projectId/exports',
+    )
+
+    const project = await this.projectService.findUserProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const exportData = await this.projectService.createExport(
+      params.projectId,
+      body.startDate,
+      body.endDate,
+    )
+
+    this.logger.log({ exportData }, 'Export data')
+  }
+
+  @Get(':projectId/exports/:exportId')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async getExport(
+    @Param() params: GetExportParamsDto,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log(
+      { params, userId },
+      'GET /project/:projectId/exports/:exportId',
+    )
+
+    const project = await this.projectService.findUserProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
     }
   }
 }
