@@ -8,6 +8,6 @@ export type CreateExtensionType = {
   ownerId: string
   name: string
   description?: string
-  price?: number
+  price?: string
   files: CreateExtensionFilesType
 }

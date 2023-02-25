@@ -177,7 +177,7 @@ export class ExtensionsService {
       status: extension.files.extensionScript
         ? ExtensionStatus.PENDING
         : ExtensionStatus.NO_EXTENSION_UPLOADED,
-      price: extension.price,
+      price: extension.price && Number(extension.price),
       mainImage:
         extension.files.mainImage &&
         (

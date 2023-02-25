@@ -450,7 +450,7 @@ export class ExtensionsController {
     )
     files: CreateExtensionFilesType,
     @CurrentUserId() userId: string,
-  ): Promise<unknown> {
+  ): Promise<Extension> {
     return await this.extensionsService.createExtension({
       ownerId: userId,
       ...body,
