@@ -5,7 +5,9 @@ import {
 } from '@heroicons/react/24/outline'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
-import { area, areaSpline, spline } from 'billboard.js'
+import {
+  area, areaSpline, spline, bar,
+} from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
 import _split from 'lodash/split'
@@ -19,7 +21,9 @@ import _reduce from 'lodash/reduce'
 import _last from 'lodash/last'
 import JSZip from 'jszip'
 
-import { TimeFormat, tbsFormatMapper, tbsFormatMapper24h } from 'redux/constants'
+import {
+  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h,
+} from 'redux/constants'
 import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
 
@@ -263,7 +267,7 @@ const getColumnsPerf = (chart, activeChartMetrics) => {
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias) => {
+const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType) => {
   const xAxisSize = _size(chart.x)
   const lines = []
   const modifiedChart = { ...chart }
@@ -330,13 +334,13 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
       x: 'x',
       columns: getColumns(modifiedChart, activeChartMetrics),
       types: {
-        unique: area(),
-        total: area(),
-        bounce: spline(),
-        viewsPerUnique: spline(),
+        unique: chartType === chartTypes.line ? area() : bar(),
+        total: chartType === chartTypes.line ? area() : bar(),
+        bounce: chartType === chartTypes.line ? spline() : bar(),
+        viewsPerUnique: chartType === chartTypes.line ? spline() : bar(),
         trendlineUnique: spline(),
         trendlineTotal: spline(),
-        sessionDuration: spline(),
+        sessionDuration: chartType === chartTypes.line ? spline() : bar(),
       },
       colors: {
         unique: '#2563EB',
@@ -421,14 +425,14 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
       linearGradient: true,
     },
     padding: {
-      right: rotateXAxias ? 35 : 25,
+      right: (rotateXAxias && !(activeChartMetrics.bounce || activeChartMetrics.sessionDuration)) && 35,
       left: 40,
     },
     bindto: '#dataChart',
   }
 }
 
-const getSettingsPerf = (chart, timeBucket, activeChartMetrics, rotateXAxias) => {
+const getSettingsPerf = (chart, timeBucket, activeChartMetrics, rotateXAxias, chartType) => {
   const xAxisSize = _size(chart.x)
 
   return {
@@ -437,16 +441,16 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, rotateXAxias) =>
       xFormat: tbsFormatMapper[timeBucket],
       columns: getColumnsPerf(chart, activeChartMetrics),
       types: {
-        dns: areaSpline(),
-        tls: areaSpline(),
-        conn: areaSpline(),
-        response: areaSpline(),
-        render: areaSpline(),
-        dom_load: areaSpline(),
-        ttfb: areaSpline(),
-        frontend: areaSpline(),
-        network: areaSpline(),
-        backend: areaSpline(),
+        dns: chartType === chartTypes.line ? areaSpline() : bar(),
+        tls: chartType === chartTypes.line ? areaSpline() : bar(),
+        conn: chartType === chartTypes.line ? areaSpline() : bar(),
+        response: chartType === chartTypes.line ? areaSpline() : bar(),
+        render: chartType === chartTypes.line ? areaSpline() : bar(),
+        dom_load: chartType === chartTypes.line ? areaSpline() : bar(),
+        ttfb: chartType === chartTypes.line ? areaSpline() : bar(),
+        frontend: chartType === chartTypes.line ? areaSpline() : bar(),
+        network: chartType === chartTypes.line ? areaSpline() : bar(),
+        backend: chartType === chartTypes.line ? areaSpline() : bar(),
       },
       colors: {
         dns: '#EC4319',
@@ -518,6 +522,9 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, rotateXAxias) =>
     },
     area: {
       linearGradient: true,
+    },
+    padding: {
+      right: rotateXAxias && 35,
     },
     bindto: '#dataChart',
   }

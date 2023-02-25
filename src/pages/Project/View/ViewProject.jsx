@@ -8,7 +8,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon, PresentationChartBarIcon, PresentationChartLineIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -30,11 +30,12 @@ import * as SwetrixSDK from '@swetrix/sdk'
 
 import { SWETRIX_PID } from 'utils/analytics'
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
+import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -143,6 +144,7 @@ const ViewProject = ({
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
+  const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
 
   const tabs = useMemo(() => {
     return [
@@ -346,7 +348,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
         setChartData(chart)
 
         setPanelsData({
@@ -424,7 +426,7 @@ const ViewProject = ({
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -679,7 +681,7 @@ const ViewProject = ({
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -694,7 +696,7 @@ const ViewProject = ({
 
         if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -726,7 +728,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
 
       if (!_isEmpty(mainChart)) {
         mainChart.destroy()
@@ -1204,6 +1206,22 @@ const ViewProject = ({
     },
   ]
 
+  // function set chart type and save to local storage
+  const setChartTypeOnClick = (type) => {
+    setItem('chartType', type)
+    setChartType(type)
+  }
+
+  // useEffect to change chart if we change chart type
+  useEffect(() => {
+    if (activeTab === PROJECT_TABS.performance) {
+      loadAnalyticsPerf()
+    } else {
+      loadAnalytics()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartType])
+
   if (!isLoading) {
     return (
       <Title title={name}>
@@ -1412,6 +1430,7 @@ const ViewProject = ({
                     !isPanelsDataEmptyPerf && (
                       <Dropdown
                         items={chartMetricsPerf}
+                        className='min-w-[170px] xs:min-w-0'
                         title={(
                           <p>
                             {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
@@ -1454,6 +1473,37 @@ const ViewProject = ({
                       {t('common.settings')}
                     </Button>
                   )}
+                </div>
+              </div>
+              <div className='mt-14 xs:mt-0' />
+              <div className='relative'>
+                <div className={cx('absolute right-0 z-10 -top-2', {
+                  'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
+                  'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
+                })}
+                >
+                  <Button
+                    onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                    className={cx('text-gray-700 bg-white hover:bg-gray-50 border-transparent dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0', {
+                      'text-indigo-600 dark:text-indigo-500': chartType === chartTypes.bar,
+                      'text-gray-400 dark:text-gray-500': chartType !== chartTypes.bar,
+                    })}
+                    small
+                    noBorder
+                  >
+                    <PresentationChartBarIcon className='w-6 h-6' />
+                  </Button>
+                  <Button
+                    onClick={() => setChartTypeOnClick(chartTypes.line)}
+                    className={cx('text-gray-700 bg-white hover:bg-gray-50 border-transparent dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0', {
+                      'text-indigo-600 dark:text-indigo-500': chartType === chartTypes.line,
+                      'text-gray-400 dark:text-gray-500': chartType !== chartTypes.line,
+                    })}
+                    small
+                    noBorder
+                  >
+                    <PresentationChartLineIcon className='w-6 h-6' />
+                  </Button>
                 </div>
               </div>
             </>
