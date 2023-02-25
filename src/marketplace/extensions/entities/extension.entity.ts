@@ -30,13 +30,13 @@ export class Extension {
   @Column({ type: 'text', nullable: true, default: null })
   description: string | null
 
-  @Column('varchar')
+  @Column('varchar', { default: '0.0.1' })
   version: string
 
   @Column({
     type: 'enum',
     enum: ExtensionStatus,
-    default: ExtensionStatus.PENDING,
+    default: ExtensionStatus.PENDING, // REVIEW: Should this be PENDING or NO_EXTENSION_UPLOADED?
   })
   status: string
 

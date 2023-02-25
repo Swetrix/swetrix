@@ -3,12 +3,15 @@ import {
   ConflictException,
   Controller,
   Delete,
+  FileTypeValidator,
   ForbiddenException,
   Get,
   InternalServerErrorException,
   Logger,
+  MaxFileSizeValidator,
   NotFoundException,
   Param,
+  ParseFilePipe,
   Patch,
   Post,
   Query,
@@ -24,7 +27,6 @@ import { getRepository, Like } from 'typeorm'
 import * as _map from 'lodash/map'
 import * as _size from 'lodash/size'
 import * as _isEmpty from 'lodash/isEmpty'
-import { CreateExtension } from './dtos/create-extension.dto'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
@@ -51,6 +53,7 @@ import { UserType } from '../../user/entities/user.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth } from 'src/auth/decorators'
+import { CreateExtensionBodyDto } from './dtos'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -89,11 +92,11 @@ export class ExtensionsController {
     }
 
     const [extensionsToUser, count] = await this.extensionsService.findAndCountExtensionToUser({
-      where: {
-        userId,
-      },
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
+          where: {
+            userId,
+          },
+          skip: queries.offset || 0,
+          take: queries.limit > 100 ? 25 : queries.limit || 25,
     }, ['extension'])
 
     const extensions = _map(extensionsToUser, (extensionToUser) => {
@@ -241,11 +244,11 @@ export class ExtensionsController {
     }
 
     let [extensions, count] = await this.extensionsService.findAndCount({
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
-      where: {
-        owner: userId,
-      },
+        skip: queries.offset || 0,
+        take: queries.limit > 100 ? 25 : queries.limit || 25,
+        where: {
+          owner: userId,
+        },
     }, ['category'])
 
     return { extensions, count }
@@ -416,74 +419,42 @@ export class ExtensionsController {
     FileFieldsInterceptor([
       { name: 'mainImage', maxCount: 1 },
       { name: 'additionalImages', maxCount: 5 },
-      { name: 'file', maxCount: 1 },
+      { name: 'extensionScript', maxCount: 1 },
     ]),
   )
   async createExtension(
-    @Body() body: CreateExtension,
-    @CurrentUserId() userId: string,
-    @UploadedFiles()
+    @Body() body: CreateExtensionBodyDto,
+    @UploadedFiles(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /^image\/(jpg|jpeg|png|gif)$/ }),
+        ],
+      }),
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /^image\/(jpg|jpeg|png|gif)$/ }),
+        ],
+      }),
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /^text\/javascript$/ }),
+        ],
+      }),
+    )
     files: {
-      mainImage?: Express.Multer.File
+      mainImage?: Express.Multer.File[]
       additionalImages?: Express.Multer.File[]
-      file?: Express.Multer.File
+      extensionScript?: Express.Multer.File[]
     },
-  ): Promise<ISaveExtension & Extension> {
-    if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
-    }
-
-    const additionalImageFilenames = []
-
-    if (files.additionalImages) {
-      Promise.all(
-        files.additionalImages.map(async additionalImage => {
-          additionalImageFilenames.push(
-            (await this.cdnService.uploadFile(additionalImage))?.filename,
-          )
-        }),
-      )
-    }
-
-    let fileURL
-    let mainImageURL
-    let statusInfo
-
-    try {
-      fileURL = files.file && (await this.cdnService.uploadFile(files.file[0]))?.filename
-    } catch (e) {
-      throw new InternalServerErrorException('Failed to upload extension to the CDN.')
-    }
-
-    try {
-      mainImageURL = files.mainImage && (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
-    } catch (e) {
-      throw new InternalServerErrorException('Failed to upload main image to the CDN.')
-    }
-
-    if (fileURL) {
-      statusInfo = ExtensionStatus.PENDING
-    } else {
-      statusInfo = ExtensionStatus.NO_EXTENSION_UPLOADED
-    }
-
-    const user = await this.userService.findOne(userId)
-    const extensionInstance = this.extensionsService.create({
-      name: body.name,
-      description: body.description,
-      version: '0.0.1',
-      price: body.price,
-      owner: user,
-      mainImage: mainImageURL,
-      status: statusInfo,
-      additionalImages: additionalImageFilenames,
-      fileURL,
-      category: body.categoryID
-        ? await this.categoriesService.findById(body.categoryID)
-        : undefined,
-    })
-
-    return await this.extensionsService.save(extensionInstance)
+    @CurrentUserId() userId: string,
+  ): Promise<unknown> {
+    return
   }
 
   @ApiParam({
