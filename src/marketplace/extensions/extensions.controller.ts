@@ -454,7 +454,11 @@ export class ExtensionsController {
     },
     @CurrentUserId() userId: string,
   ): Promise<unknown> {
-    return
+    // TODO: Add upload files to CDN
+    return await this.extensionsService.createExtension({
+      ownerId: userId,
+      ...body,
+    })
   }
 
   @ApiParam({

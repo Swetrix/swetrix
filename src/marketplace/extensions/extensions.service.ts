@@ -9,6 +9,7 @@ import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
 import { User } from '../../user/entities/user.entity'
 import { IUpdateExtension } from './interfaces/update-extension.interface'
+import { CreateExtensionType } from './types'
 
 @Injectable()
 export class ExtensionsService {
@@ -163,5 +164,9 @@ export class ExtensionsService {
       ...options,
       relations,
     })
+  }
+
+  async createExtension(extension: CreateExtensionType): Promise<Extension> {
+    return await this.extensionRepository.save(extension)
   }
 }

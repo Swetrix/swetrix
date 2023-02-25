@@ -24,6 +24,9 @@ export class Extension {
   @ManyToOne(() => User, user => user.ownedExtensions)
   owner: User
 
+  @Column()
+  ownerId: string
+
   @Column('varchar')
   name: string
 
