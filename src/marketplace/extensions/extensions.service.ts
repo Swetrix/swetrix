@@ -10,6 +10,8 @@ import { ISaveExtension } from './interfaces/save-extension.interface'
 import { User } from '../../user/entities/user.entity'
 import { IUpdateExtension } from './interfaces/update-extension.interface'
 import { CreateExtensionType } from './types'
+import { ExtensionStatus } from './enums/extension-status.enum'
+import { CdnService } from '../cdn/cdn.service'
 
 @Injectable()
 export class ExtensionsService {
@@ -20,6 +22,7 @@ export class ExtensionsService {
     private readonly extensionToProjectRepository: Repository<ExtensionToProject>,
     @InjectRepository(ExtensionToUser)
     private readonly extensionToUserRepository: Repository<ExtensionToUser>,
+    private readonly cdnService: CdnService,
   ) {}
 
   async findOne(options: FindOneOptions<Extension>): Promise<Extension> {
@@ -166,7 +169,37 @@ export class ExtensionsService {
     })
   }
 
-  async createExtension(extension: CreateExtensionType): Promise<Extension> {
-    return await this.extensionRepository.save(extension)
+  async createExtension(extension: CreateExtensionType) {
+    return await this.extensionRepository.save({
+      ownerId: extension.ownerId,
+      name: extension.name,
+      description: extension.description,
+      status: extension.files.extensionScript
+        ? ExtensionStatus.PENDING
+        : ExtensionStatus.NO_EXTENSION_UPLOADED,
+      price: extension.price,
+      mainImage:
+        extension.files.mainImage &&
+        (
+          await this.cdnService.uploadFile(extension.files.mainImage[0])
+        ).filename,
+      additionalImages: extension.files.additionalImages
+        ? [
+            ...(await Promise.all(
+              extension.files.additionalImages.map(
+                async image =>
+                  (
+                    await this.cdnService.uploadFile(image)
+                  ).filename,
+              ),
+            )),
+          ]
+        : [],
+      fileURL:
+        extension.files.extensionScript &&
+        (
+          await this.cdnService.uploadFile(extension.files.extensionScript[0])
+        ).filename,
+    })
   }
 }

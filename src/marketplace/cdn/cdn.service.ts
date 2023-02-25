@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { createReadStream } from 'fs'
 import { unlink, writeFile } from 'fs/promises'
@@ -31,6 +31,7 @@ export class CdnService {
       return data
     } catch (error) {
       console.error(error)
+      throw new InternalServerErrorException('Failed to upload extension to the CDN.')
     }
   }
 

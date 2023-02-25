@@ -36,12 +36,8 @@ export class Extension {
   @Column('varchar', { default: '0.0.1' })
   version: string
 
-  @Column({
-    type: 'enum',
-    enum: ExtensionStatus,
-    default: ExtensionStatus.PENDING, // REVIEW: Should this be PENDING or NO_EXTENSION_UPLOADED?
-  })
-  status: string
+  @Column({ type: 'enum', enum: ExtensionStatus })
+  status: ExtensionStatus
 
   @Column({ type: 'int', default: 0 })
   price: number

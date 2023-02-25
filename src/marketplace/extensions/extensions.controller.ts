@@ -54,6 +54,7 @@ import { ExtensionStatus } from './enums/extension-status.enum'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth } from 'src/auth/decorators'
 import { CreateExtensionBodyDto } from './dtos'
+import { CreateExtensionFilesType } from './types'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -447,17 +448,13 @@ export class ExtensionsController {
         ],
       }),
     )
-    files: {
-      mainImage?: Express.Multer.File[]
-      additionalImages?: Express.Multer.File[]
-      extensionScript?: Express.Multer.File[]
-    },
+    files: CreateExtensionFilesType,
     @CurrentUserId() userId: string,
   ): Promise<unknown> {
-    // TODO: Add upload files to CDN
     return await this.extensionsService.createExtension({
       ownerId: userId,
       ...body,
+      files,
     })
   }
 
