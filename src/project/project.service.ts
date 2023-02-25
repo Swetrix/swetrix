@@ -22,6 +22,7 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 // @ts-ignore
 import * as validateIP from 'validate-ip-node'
+import { Parser } from '@json2csv/plainjs'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
@@ -443,22 +444,11 @@ export class ProjectService {
     })
   }
 
-  async createExport(projectId: string, startDate?: Date, endDate?: Date) {
-    const analytics = await this.exportAnalytics(projectId, startDate, endDate)
-    const customEvents = await this.exportCustomEvents(
-      projectId,
-      startDate,
-      endDate,
-    )
-    const performance = await this.exportPerformance(
-      projectId,
-      startDate,
-      endDate,
-    )
-    return { analytics, customEvents, performance }
+  async createExport(projectId: string, startDate: Date, endDate: Date) {
+    return await this.exportCSV(projectId, startDate, endDate)
   }
 
-  async exportAnalytics(projectId: string, startDate?: Date, endDate?: Date) {
+  async exportAnalytics(projectId: string, startDate: Date, endDate: Date) {
     return clickhouse
       .query(
         'SELECT * FROM analytics WHERE pid = {projectId:FixedString(12)}',
@@ -471,11 +461,7 @@ export class ProjectService {
       .toPromise()
   }
 
-  async exportCustomEvents(
-    projectId: string,
-    startDate?: Date,
-    endDate?: Date,
-  ) {
+  async exportCustomEvents(projectId: string, startDate: Date, endDate: Date) {
     return clickhouse
       .query('SELECT * FROM customEV WHERE pid = {projectId:FixedString(12)}', {
         params: {
@@ -485,7 +471,7 @@ export class ProjectService {
       .toPromise()
   }
 
-  async exportPerformance(projectId: string, startDate?: Date, endDate?: Date) {
+  async exportPerformance(projectId: string, startDate: Date, endDate: Date) {
     return clickhouse
       .query(
         'SELECT * FROM performance WHERE pid = {projectId:FixedString(12)}',
@@ -496,5 +482,35 @@ export class ProjectService {
         },
       )
       .toPromise()
+  }
+
+  async jsonToCSV(json: unknown) {
+    try {
+      const parser = new Parser()
+      const csv = parser.parse(json)
+      console.log(csv)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  async exportCSV(projectId: string, startDate: Date, endDate: Date) {
+    const analytics = await this.exportAnalytics(projectId, startDate, endDate)
+    const customEvents = await this.exportCustomEvents(
+      projectId,
+      startDate,
+      endDate,
+    )
+    const performance = await this.exportPerformance(
+      projectId,
+      startDate,
+      endDate,
+    )
+
+    const analyticsCSV = await this.jsonToCSV(analytics)
+    const customEventsCSV = await this.jsonToCSV(customEvents)
+    const performanceCSV = await this.jsonToCSV(performance)
+
+    return { analyticsCSV, customEventsCSV, performanceCSV }
   }
 }

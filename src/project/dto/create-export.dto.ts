@@ -3,6 +3,6 @@ export class CreateExportParamsDto {
 }
 
 export class CreateExportBodyDto {
-  readonly startDate?: Date
-  readonly endDate?: Date
+  readonly startDate: Date
+  readonly endDate: Date
 }

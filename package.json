@@ -24,6 +24,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@json2csv/plainjs": "^6.1.2",
     "@nestjs/axios": "^1.0.1",
     "@nestjs/common": "^9.2.1",
     "@nestjs/config": "^2.2.0",
