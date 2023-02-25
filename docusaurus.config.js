@@ -74,7 +74,7 @@ module.exports = {
             },
             {
               label: 'Discord',
-              href: 'https://discord.gg/',
+              href: 'https://discord.gg/35jHATy65F',
             },
           ],
         },
@@ -92,7 +92,7 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Copyright © 2019-${new Date().getFullYear()} Swetrix. Built with Docusaurus.`,
+      copyright: `Copyright © 2021-${new Date().getFullYear()} Swetrix. Built with Docusaurus.`,
     },
     // prism: {
     //   theme: lightCodeTheme,
