@@ -3,15 +3,12 @@ import {
   ConflictException,
   Controller,
   Delete,
-  FileTypeValidator,
   ForbiddenException,
   Get,
   InternalServerErrorException,
   Logger,
-  MaxFileSizeValidator,
   NotFoundException,
   Param,
-  ParseFilePipe,
   Patch,
   Post,
   Query,
@@ -54,7 +51,7 @@ import { ExtensionStatus } from './enums/extension-status.enum'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth } from 'src/auth/decorators'
 import { CreateExtensionBodyDto } from './dtos'
-import { CreateExtensionFilesType } from './types'
+import { FormDataRequest } from 'nestjs-form-data'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -416,45 +413,14 @@ export class ExtensionsController {
 
   @Post()
   @Auth([UserType.CUSTOMER, UserType.ADMIN])
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'mainImage', maxCount: 1 },
-      { name: 'additionalImages', maxCount: 5 },
-      { name: 'extensionScript', maxCount: 1 },
-    ]),
-  )
+  @FormDataRequest()
   async createExtension(
     @Body() body: CreateExtensionBodyDto,
-    @UploadedFiles(
-      new ParseFilePipe({
-        fileIsRequired: false,
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /^image\/(jpg|jpeg|png|gif)$/ }),
-        ],
-      }),
-      new ParseFilePipe({
-        fileIsRequired: false,
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /^image\/(jpg|jpeg|png|gif)$/ }),
-        ],
-      }),
-      new ParseFilePipe({
-        fileIsRequired: false,
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /^text\/javascript$/ }),
-        ],
-      }),
-    )
-    files: CreateExtensionFilesType,
     @CurrentUserId() userId: string,
   ): Promise<Extension> {
     return await this.extensionsService.createExtension({
       ownerId: userId,
       ...body,
-      files,
     })
   }
 

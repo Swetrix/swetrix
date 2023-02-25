@@ -13,9 +13,14 @@ export class CdnService {
     private readonly configService: ConfigService,
   ) {}
 
-  async uploadFile(file: Express.Multer.File): Promise<{ filename: string }> {
+  /**
+   * To clarify, in this case the file parameter type was set to "any" because
+   * Multer from Express returns the "originalname" property,
+   * whereas the nestjs-form-data package uses the "originalName" property.
+   */
+  async uploadFile(file: any): Promise<{ filename: string }> {
     try {
-      const filePath = `${tmpdir()}/${file.originalname}`
+      const filePath = `${tmpdir()}/${file.originalName}`
       await writeFile(filePath, file.buffer)
 
       const form = new FormData()

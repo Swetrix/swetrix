@@ -174,19 +174,19 @@ export class ExtensionsService {
       ownerId: extension.ownerId,
       name: extension.name,
       description: extension.description,
-      status: extension.files.extensionScript
+      status: extension.extensionScript
         ? ExtensionStatus.PENDING
         : ExtensionStatus.NO_EXTENSION_UPLOADED,
       price: extension.price && Number(extension.price),
       mainImage:
-        extension.files.mainImage &&
+        extension.mainImage &&
         (
-          await this.cdnService.uploadFile(extension.files.mainImage[0])
+          await this.cdnService.uploadFile(extension.mainImage)
         ).filename,
-      additionalImages: extension.files.additionalImages
+      additionalImages: extension.additionalImages
         ? [
             ...(await Promise.all(
-              extension.files.additionalImages.map(
+              extension.additionalImages.map(
                 async image =>
                   (
                     await this.cdnService.uploadFile(image)
@@ -196,9 +196,9 @@ export class ExtensionsService {
           ]
         : [],
       fileURL:
-        extension.files.extensionScript &&
+        extension.extensionScript &&
         (
-          await this.cdnService.uploadFile(extension.files.extensionScript[0])
+          await this.cdnService.uploadFile(extension.extensionScript)
         ).filename,
     })
   }
