@@ -7,11 +7,14 @@ import { ExtensionToUser } from './entities/extension-to-user.entity'
 import { Extension } from './entities/extension.entity'
 import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
-import { User } from '../../user/entities/user.entity'
+import { User, UserType } from '../../user/entities/user.entity'
 import { IUpdateExtension } from './interfaces/update-extension.interface'
-import { CreateExtensionType } from './types'
+import { CreateExtensionType, UpdateExtensionType } from './types'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { CdnService } from '../cdn/cdn.service'
+import { UserService } from 'src/user/user.service'
+import { ExtensionVersionType } from './dtos'
+import { VersionTypes } from './interfaces'
 
 @Injectable()
 export class ExtensionsService {
@@ -23,6 +26,7 @@ export class ExtensionsService {
     @InjectRepository(ExtensionToUser)
     private readonly extensionToUserRepository: Repository<ExtensionToUser>,
     private readonly cdnService: CdnService,
+    private readonly userService: UserService,
   ) {}
 
   async findOne(options: FindOneOptions<Extension>): Promise<Extension> {
@@ -201,5 +205,88 @@ export class ExtensionsService {
           await this.cdnService.uploadFile(extension.extensionScript)
         ).filename,
     })
+  }
+
+  async findUserExtension(extensionId: string, userId: string) {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) return null
+
+    if (user.roles.includes(UserType.ADMIN)) {
+      return await this.extensionRepository.findOne({
+        where: { id: extensionId },
+      })
+    }
+
+    return await this.extensionRepository.findOne({
+      where: { id: extensionId, ownerId: userId },
+    })
+  }
+
+  async updateExtension(
+    extensionId: string,
+    extension: UpdateExtensionType,
+    extensionVersion: string,
+  ) {
+    await this.extensionRepository.update(
+      { id: extensionId },
+      {
+        name: extension.name,
+        description: extension.description,
+        version:
+          extension.version &&
+          this.extensionVersion(extensionVersion, extension.version),
+        status: extension.extensionScript && ExtensionStatus.PENDING,
+        price: extension.price && Number(extension.price),
+        mainImage:
+          extension.mainImage &&
+          (
+            await this.cdnService.uploadFile(extension.mainImage)
+          ).filename,
+        additionalImages: extension.additionalImages
+          ? [
+              ...(await Promise.all(
+                extension.additionalImages.map(
+                  async image =>
+                    (
+                      await this.cdnService.uploadFile(image)
+                    ).filename,
+                ),
+              )),
+            ]
+          : [],
+        fileURL:
+          extension.extensionScript &&
+          (
+            await this.cdnService.uploadFile(extension.extensionScript)
+          ).filename,
+      },
+    )
+
+    return await this.extensionRepository.findOne({
+      where: { id: extensionId },
+    })
+  }
+
+  extensionVersion(
+    extensionVersion: string,
+    versionType: ExtensionVersionType,
+  ) {
+    const versionTypes: VersionTypes = {
+      major: [1, 0, 0],
+      minor: [0, 1, 0],
+      patch: [0, 0, 1],
+    }
+
+    const updateVersion: number[] = extensionVersion.split('.').map(Number)
+    const versionUpdate: number[] = versionTypes[versionType]
+
+    updateVersion[0] += versionUpdate[0]
+    updateVersion[1] += versionUpdate[1]
+    updateVersion[2] += versionUpdate[2]
+
+    const newVersion: string = updateVersion.join('.')
+
+    return newVersion
   }
 }

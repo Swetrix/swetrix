@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Controller,
@@ -43,7 +44,11 @@ import { UserType } from '../../user/entities/user.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth } from 'src/auth/decorators'
-import { CreateExtensionBodyDto, UpdateExtensionBodyDto, UpdateExtensionParamsDto } from './dtos'
+import {
+  CreateExtensionBodyDto,
+  UpdateExtensionBodyDto,
+  UpdateExtensionParamsDto,
+} from './dtos'
 import { FormDataRequest } from 'nestjs-form-data'
 
 @ApiTags('extensions')
@@ -424,8 +429,25 @@ export class ExtensionsController {
     @Param() params: UpdateExtensionParamsDto,
     @Body() body: UpdateExtensionBodyDto,
     @CurrentUserId() userId: string,
-  ): Promise<unknown> {
-    return
+  ): Promise<Extension> {
+    const extension = await this.extensionsService.findUserExtension(
+      params.extensionId,
+      userId,
+    )
+
+    if (!extension) {
+      throw new NotFoundException('Extension not found.')
+    }
+
+    if (Object.keys(body).length === 0) {
+      throw new BadRequestException('Extension body is required.')
+    }
+
+    return await this.extensionsService.updateExtension(
+      params.extensionId,
+      body,
+      extension.version,
+    )
   }
 
   @ApiParam({
