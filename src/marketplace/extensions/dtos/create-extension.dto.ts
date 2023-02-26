@@ -1,4 +1,5 @@
 import {
+  IsEnum,
   IsNotEmpty,
   IsNumberString,
   IsOptional,
@@ -39,4 +40,16 @@ export class CreateExtensionBodyDto {
   @MaxFileSize(10 * 1024 * 1024)
   @HasMimeType(['text/javascript', 'application/javascript'])
   readonly extensionScript?: Express.Multer.File
+}
+
+export enum ExtensionVersionType {
+  MAJOR = 'major',
+  MINOR = 'minor',
+  PATCH = 'patch',
+}
+
+export class AdditionalExtensionInfo {
+  @IsNotEmpty()
+  @IsEnum(ExtensionVersionType)
+  readonly version: ExtensionVersionType
 }

@@ -5,33 +5,26 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
   Param,
   Patch,
   Post,
   Query,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { FileFieldsInterceptor } from '@nestjs/platform-express'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { getRepository, Like } from 'typeorm'
 import * as _map from 'lodash/map'
 import * as _size from 'lodash/size'
-import * as _isEmpty from 'lodash/isEmpty'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 import { ExtensionsService } from './extensions.service'
 import { UserService } from '../../user/user.service'
-import { ISaveExtension } from './interfaces/save-extension.interface'
 import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
-import { UpdateExtension } from './dtos/update-extension.dto'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { CategoriesService } from '../categories/categories.service'
 import { SortByExtension } from './enums/sort-by-extension.enum'
@@ -50,7 +43,7 @@ import { UserType } from '../../user/entities/user.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth } from 'src/auth/decorators'
-import { CreateExtensionBodyDto } from './dtos'
+import { CreateExtensionBodyDto, UpdateExtensionBodyDto, UpdateExtensionParamsDto } from './dtos'
 import { FormDataRequest } from 'nestjs-form-data'
 
 @ApiTags('extensions')
@@ -424,144 +417,15 @@ export class ExtensionsController {
     })
   }
 
-  @ApiParam({
-    name: 'extensionId',
-    description: 'Extension ID',
-    example: 'de025965-3221-4d09-ba35-a09da59793a6',
-    type: String,
-  })
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'mainImage', maxCount: 1 },
-      { name: 'additionalImages', maxCount: 5 },
-      { name: 'file', maxCount: 1 },
-    ]),
-  )
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @Patch(':extensionId')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @FormDataRequest()
   async updateExtension(
-    @Param() params: UpdateExtensionParams,
-    @Body() body: UpdateExtension,
+    @Param() params: UpdateExtensionParamsDto,
+    @Body() body: UpdateExtensionBodyDto,
     @CurrentUserId() userId: string,
-    @UploadedFiles()
-    files: {
-      mainImage?: Express.Multer.File
-      additionalImages?: Express.Multer.File[]
-      file?: Express.Multer.File
-    },
-  ): Promise<ISaveExtension & Extension> {
-    this.extensionsService.allowedToManage(userId, params.extensionId)
-    const extension = await this.extensionsService.findOne({
-      where: {
-        id: params.extensionId,
-        owner: userId,
-      },
-    })
-
-    if (!extension) {
-      throw new NotFoundException('Extension not found.')
-    }
-
-    const additionalImagesConcat = [
-      ...(files.additionalImages || []),
-      ...(body.additionalImagesCdn || []),
-    ]
-
-    const additionalImageFilenames = []
-
-    try {
-      if (additionalImagesConcat) {
-        await Promise.all(
-          additionalImagesConcat.map(async additionalImage => {
-            if (typeof additionalImage === 'string') {
-              additionalImageFilenames.push(additionalImage)
-            } else {
-              additionalImageFilenames.push(
-                (await this.cdnService.uploadFile(additionalImage))?.filename,
-              )
-            }
-          }),
-        )
-      }
-    } catch (e) {
-      throw new InternalServerErrorException(
-        'Failed to upload additional images to the CDN.',
-      )
-    }
-
-    let fileURL
-    let mainImageURL
-    let statusInfo
-
-    try {
-      fileURL =
-        files.file &&
-        (await this.cdnService.uploadFile(files.file[0]))?.filename
-    } catch (e) {
-      throw new InternalServerErrorException(
-        'Failed to upload extension to the CDN.',
-      )
-    }
-
-    try {
-      mainImageURL =
-        files.mainImage &&
-        (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
-    } catch (e) {
-      throw new InternalServerErrorException(
-        'Failed to upload main image to the CDN.',
-      )
-    }
-
-    let updateVersion
-
-    if (body.version && fileURL) {
-      switch (body.version) {
-        case 'major':
-          updateVersion = extension.version.split('.')
-          updateVersion[0] = (parseInt(updateVersion[0]) + 1).toString()
-          updateVersion[1] = '0'
-          updateVersion[2] = '0'
-          break
-        case 'minor':
-          updateVersion = extension.version.split('.')
-          updateVersion[1] = (parseInt(updateVersion[1]) + 1).toString()
-          updateVersion[2] = '0'
-          break
-        case 'patch':
-          updateVersion = extension.version.split('.')
-          updateVersion[2] = (parseInt(updateVersion[2]) + 1).toString()
-          break
-        default:
-          updateVersion = extension.version.split('.')
-          updateVersion[2] = (parseInt(updateVersion[2]) + 1).toString()
-      }
-      updateVersion = updateVersion.join('.')
-    }
-
-    if (fileURL) {
-      statusInfo = ExtensionStatus.PENDING
-    }
-
-    const extensionInstance = this.extensionsService.create({
-      ...extension,
-      name: body.name || extension.name,
-      description: body.description || extension.description,
-      version: updateVersion || extension.version,
-      price: body.price || extension.price,
-      status: statusInfo,
-      mainImage: mainImageURL || extension.mainImage,
-      additionalImages: _isEmpty(additionalImageFilenames)
-        ? extension.additionalImages
-        : additionalImageFilenames,
-      fileURL: fileURL || extension.fileURL,
-      category: body.categoryID
-        ? await this.categoriesService.findById(body.categoryID)
-        : extension.category,
-    })
-
-    return await this.extensionsService.save(extensionInstance)
+  ): Promise<unknown> {
+    return
   }
 
   @ApiParam({
