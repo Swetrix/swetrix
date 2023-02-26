@@ -1219,7 +1219,7 @@ const ViewProject = ({
     } else {
       loadAnalytics()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartType])
 
   if (!isLoading) {
@@ -1291,394 +1291,435 @@ const ViewProject = ({
               </div>
             </div>
             {activeTab !== PROJECT_TABS.alerts && (
-            <>
-              <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
-                <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
-                  {name}
-                </h2>
-                <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
-                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
-                    <button
-                      type='button'
-                      onClick={refreshStats}
-                      className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                        'cursor-not-allowed opacity-50': isLoading || dataLoading,
+              <>
+                <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
+                  <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
+                    {name}
+                  </h2>
+                  <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
+                    <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
+                      <button
+                        type='button'
+                        onClick={refreshStats}
+                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                          'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                        })}
+                      >
+                        <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                      </button>
+                    </div>
+                    <div
+                      className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
+                        hidden: activeTab !== PROJECT_TABS.traffic,
                       })}
                     >
-                      <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
-                    </button>
-                  </div>
-                  <div
-                    className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
-                      hidden: activeTab !== PROJECT_TABS.traffic,
-                    })}
-                  >
-                    <button
-                      type='button'
-                      onClick={onForecastOpen}
-                      disabled={!_isEmpty(filters)}
-                      className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                        'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
-                        '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
-                      })}
-                    >
-                      <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
-                    </button>
-                  </div>
-                  <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
-                    <span className='relative z-0 inline-flex shadow-sm rounded-md'>
-                      {_map(activePeriod.tbs, (tb, index, { length }) => (
-                        <button
-                          key={tb}
-                          type='button'
-                          onClick={() => updateTimebucket(tb)}
-                          className={cx(
-                            'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
-                            {
-                              '-ml-px': index > 0,
-                              'rounded-l-md': index === 0,
-                              'rounded-r-md': 1 + index === length,
-                              'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
-                              'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
-                            },
-                          )}
-                        >
-                          {t(`project.${tb}`)}
-                        </button>
-                      ))}
-                    </span>
-                  </div>
-                  <Dropdown
-                    items={periodPairs}
-                    title={activePeriod.label}
-                    labelExtractor={(pair) => {
-                      const label = pair.dropdownLabel || pair.label
+                      <button
+                        type='button'
+                        onClick={onForecastOpen}
+                        disabled={!_isEmpty(filters)}
+                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                          'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
+                          '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
+                        })}
+                      >
+                        <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
+                      </button>
+                    </div>
+                    <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
+                      <span className='relative z-0 inline-flex shadow-sm rounded-md'>
+                        {_map(activePeriod.tbs, (tb, index, { length }) => (
+                          <button
+                            key={tb}
+                            type='button'
+                            onClick={() => updateTimebucket(tb)}
+                            className={cx(
+                              'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                              {
+                                '-ml-px': index > 0,
+                                'rounded-l-md': index === 0,
+                                'rounded-r-md': 1 + index === length,
+                                'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
+                                'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
+                              },
+                            )}
+                          >
+                            {t(`project.${tb}`)}
+                          </button>
+                        ))}
+                      </span>
+                    </div>
+                    <Dropdown
+                      items={periodPairs}
+                      title={activePeriod.label}
+                      labelExtractor={(pair) => {
+                        const label = pair.dropdownLabel || pair.label
 
-                      // disable limitation for shared projects as project hosts already have a paid plan
-                      // disable limitation for Swetrix public project (for demonstration purposes)
-                      if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                        return (
-                          <span className='flex items-center'>
-                            <CurrencyDollarIcon className='w-4 h-4 mr-1' />
-                            {label}
-                          </span>
-                        )
-                      }
-
-                      return label
-                    }}
-                    keyExtractor={(pair) => pair.label}
-                    onSelect={(pair) => {
-                      if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                        setIsPaidFeatureOpened(true)
-                        return
-                      }
-
-                      if (pair.isCustomDate) {
-                        setTimeout(() => {
-                          refCalendar.current.openCalendar()
-                        }, 100)
-                      } else {
-                        setPeriodPairs(tbPeriodPairs(t))
-                        setDateRange(null)
-                        updatePeriod(pair)
-                      }
-                    }}
-                  />
-                  <FlatPicker
-                    ref={refCalendar}
-                    onChange={(date) => setDateRange(date)}
-                    value={dateRange}
-                    maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4'>
-                  {activeTab === PROJECT_TABS.traffic ? (
-                    !isPanelsDataEmpty && (
-                      <Dropdown
-                        items={chartMetrics}
-                        title={t('project.metricVis')}
-                        labelExtractor={(pair) => {
-                          const {
-                            label, id: pairID, active, conflicts,
-                          } = pair
-
-                          const conflicted = isConflicted(conflicts)
-
+                        // disable limitation for shared projects as project hosts already have a paid plan
+                        // disable limitation for Swetrix public project (for demonstration purposes)
+                        if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
                           return (
-                            <Checkbox
-                              className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                              label={label}
-                              disabled={conflicted}
-                              id={pairID}
-                              checked={active}
-                            />
+                            <span className='flex items-center'>
+                              <CurrencyDollarIcon className='w-4 h-4 mr-1' />
+                              {label}
+                            </span>
                           )
-                        }}
-                        keyExtractor={(pair) => pair.id}
-                        onSelect={({ id: pairID, conflicts }) => {
-                          if (isConflicted(conflicts)) {
-                            generateAlert(t('project.conflictMetric'), 'error')
-                            return
-                          }
-                          switchActiveChartMetric(pairID)
-                        }}
-                      />
-                    )) : (
-                    !isPanelsDataEmptyPerf && (
-                      <Dropdown
-                        items={chartMetricsPerf}
-                        className='min-w-[170px] xs:min-w-0'
-                        title={(
-                          <p>
-                            {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
-                          </p>
-                        )}
-                        labelExtractor={(pair) => {
-                          const {
-                            label,
-                          } = pair
+                        }
 
-                          return label
-                        }}
-                        keyExtractor={(pair) => pair.id}
-                        onSelect={({ id: pairID }) => {
-                          switchActiveChartMetric(pairID)
-                        }}
-                      />
-                    )
-                  )}
-                  <Dropdown
-                    items={[...exportTypes, ...customExportTypes]}
-                    title={[
-                      <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                      <Fragment key='export-data'>
-                        {t('project.exportData')}
-                      </Fragment>,
-                    ]}
-                    labelExtractor={item => item.label}
-                    keyExtractor={item => item.label}
-                    onSelect={item => item.onClick(panelsData, t)}
-                    className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                  />
-                  {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
-                    <Button
-                      onClick={openSettingsHandler}
-                      className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                      secondary
-                    >
-                      <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                      {t('common.settings')}
-                    </Button>
-                  )}
+                        return label
+                      }}
+                      keyExtractor={(pair) => pair.label}
+                      onSelect={(pair) => {
+                        if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                          setIsPaidFeatureOpened(true)
+                          return
+                        }
+
+                        if (pair.isCustomDate) {
+                          setTimeout(() => {
+                            refCalendar.current.openCalendar()
+                          }, 100)
+                        } else {
+                          setPeriodPairs(tbPeriodPairs(t))
+                          setDateRange(null)
+                          updatePeriod(pair)
+                        }
+                      }}
+                    />
+                    <FlatPicker
+                      ref={refCalendar}
+                      onChange={(date) => setDateRange(date)}
+                      value={dateRange}
+                      maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className='mt-14 xs:mt-0' />
-              <div className='relative'>
-                <div className={cx('absolute right-0 z-10 -top-2', {
-                  'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
-                  'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
-                })}
+                <div>
+                  <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4'>
+                    {activeTab === PROJECT_TABS.traffic ? (
+                      !isPanelsDataEmpty && (
+                        <Dropdown
+                          items={chartMetrics}
+                          title={t('project.metricVis')}
+                          labelExtractor={(pair) => {
+                            const {
+                              label, id: pairID, active, conflicts,
+                            } = pair
+
+                            const conflicted = isConflicted(conflicts)
+
+                            return (
+                              <Checkbox
+                                className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                                label={label}
+                                disabled={conflicted}
+                                id={pairID}
+                                checked={active}
+                              />
+                            )
+                          }}
+                          keyExtractor={(pair) => pair.id}
+                          onSelect={({ id: pairID, conflicts }) => {
+                            if (isConflicted(conflicts)) {
+                              generateAlert(t('project.conflictMetric'), 'error')
+                              return
+                            }
+                            switchActiveChartMetric(pairID)
+                          }}
+                        />
+                      )) : (
+                      !isPanelsDataEmptyPerf && (
+                        <Dropdown
+                          items={chartMetricsPerf}
+                          className='min-w-[170px] xs:min-w-0'
+                          title={(
+                            <p>
+                              {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                            </p>
+                          )}
+                          labelExtractor={(pair) => {
+                            const {
+                              label,
+                            } = pair
+
+                            return label
+                          }}
+                          keyExtractor={(pair) => pair.id}
+                          onSelect={({ id: pairID }) => {
+                            switchActiveChartMetric(pairID)
+                          }}
+                        />
+                      )
+                    )}
+                    <Dropdown
+                      items={[...exportTypes, ...customExportTypes]}
+                      title={[
+                        <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                        <Fragment key='export-data'>
+                          {t('project.exportData')}
+                        </Fragment>,
+                      ]}
+                      labelExtractor={item => item.label}
+                      keyExtractor={item => item.label}
+                      onSelect={item => item.onClick(panelsData, t)}
+                      className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                    />
+                    {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
+                      <Button
+                        onClick={openSettingsHandler}
+                        className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                        secondary
+                      >
+                        <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                        {t('common.settings')}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div
+                  className={cx({
+                    hidden: isPanelsDataEmpty || analyticsLoading,
+                  })}
                 >
-                  <Button
-                    onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                    className={cx('text-gray-700 bg-white hover:bg-gray-50 border-transparent dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0', {
-                      'text-indigo-600 dark:text-indigo-500': chartType === chartTypes.bar,
-                      'text-gray-400 dark:text-gray-500': chartType !== chartTypes.bar,
+                  <div className='mt-14 xs:mt-0' />
+                  <div className='relative'>
+                    <div className={cx('absolute right-0 z-10 -top-2', {
+                      'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
+                      'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
                     })}
-                    small
-                    noBorder
-                  >
-                    <PresentationChartBarIcon className='w-6 h-6' />
-                  </Button>
-                  <Button
-                    onClick={() => setChartTypeOnClick(chartTypes.line)}
-                    className={cx('text-gray-700 bg-white hover:bg-gray-50 border-transparent dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0', {
-                      'text-indigo-600 dark:text-indigo-500': chartType === chartTypes.line,
-                      'text-gray-400 dark:text-gray-500': chartType !== chartTypes.line,
-                    })}
-                    small
-                    noBorder
-                  >
-                    <PresentationChartLineIcon className='w-6 h-6' />
-                  </Button>
+                    >
+                      <Button
+                        onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                        className={cx('text-gray-700 bg-white hover:bg-gray-50 border-transparent dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0', {
+                          'text-indigo-600 dark:text-indigo-500': chartType === chartTypes.bar,
+                          'text-gray-400 dark:text-gray-500': chartType !== chartTypes.bar,
+                        })}
+                        small
+                        noBorder
+                      >
+                        <PresentationChartBarIcon className='w-6 h-6' />
+                      </Button>
+                      <Button
+                        onClick={() => setChartTypeOnClick(chartTypes.line)}
+                        className={cx('text-gray-700 bg-white hover:bg-gray-50 border-transparent dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0', {
+                          'text-indigo-600 dark:text-indigo-500': chartType === chartTypes.line,
+                          'text-gray-400 dark:text-gray-500': chartType !== chartTypes.line,
+                        })}
+                        small
+                        noBorder
+                      >
+                        <PresentationChartLineIcon className='w-6 h-6' />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </>
+              </>
             )}
             {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors || !authenticated)) && (
-            <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
-              <div className='flex items-center text-gray-50'>
-                <BellIcon className='w-8 h-8 mr-2' />
-                <p className='font-bold text-3xl'>
-                  {t('dashboard.alerts')}
+              <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
+                <div className='flex items-center text-gray-50'>
+                  <BellIcon className='w-8 h-8 mr-2' />
+                  <p className='font-bold text-3xl'>
+                    {t('dashboard.alerts')}
+                  </p>
+                </div>
+                <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>
+                  {t('dashboard.alertsDesc')}
                 </p>
+                <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50' aria-label={t('titles.signup')}>
+                  {t('common.getStarted')}
+                </Link>
               </div>
-              <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>
-                {t('dashboard.alertsDesc')}
-              </p>
-              <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50' aria-label={t('titles.signup')}>
-                {t('common.getStarted')}
-              </Link>
-            </div>
             )}
             {(activeTab === PROJECT_TABS.alerts && !isSharedProject && !project?.isPublicVisitors && authenticated) && (
-            <ProjectAlertsView projectId={id} />
+              <ProjectAlertsView projectId={id} />
             )}
             {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
-            <Loader />
+              <Loader />
             )}
             {(isPanelsDataEmpty && activeTab !== PROJECT_TABS.alerts) && (
-            <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
+              <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
             )}
             {activeTab === PROJECT_TABS.traffic && (
-            <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-              <div
-                className={cx('h-80', {
-                  hidden: checkIfAllMetricsAreDisabled,
-                })}
-              >
-                <div className='h-80' id='dataChart' />
-              </div>
-              <Filters
-                filters={filters}
-                onRemoveFilter={filterHandler}
-                onChangeExclusive={onChangeExclusive}
-                tnMapping={tnMapping}
-              />
-              {dataLoading && (
-                <div className='loader bg-transparent static mt-4' id='loader'>
-                  <div className='loader-head'>
-                    <div className='first' />
-                    <div className='second' />
-                  </div>
+              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+                <div
+                  className={cx('h-80', {
+                    hidden: checkIfAllMetricsAreDisabled,
+                  })}
+                >
+                  <div className='h-80' id='dataChart' />
                 </div>
-              )}
-              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                {!_isEmpty(project.overall) && (
-                  <Overview
-                    t={t}
-                    overall={project.overall}
-                    chartData={chartData}
-                    activePeriod={activePeriod}
-                    sessionDurationAVG={sessionDurationAVG}
-                    live={project.live}
-                    projectId={id}
-                  />
+                <Filters
+                  filters={filters}
+                  onRemoveFilter={filterHandler}
+                  onChangeExclusive={onChangeExclusive}
+                  tnMapping={tnMapping}
+                />
+                {dataLoading && (
+                  <div className='loader bg-transparent static mt-4' id='loader'>
+                    <div className='loader-head'>
+                      <div className='first' />
+                      <div className='second' />
+                    </div>
+                  </div>
                 )}
-                {_map(panelsData.types, (type) => {
-                  const panelName = tnMapping[type]
-                  const panelIcon = panelIconMapping[type]
-                  const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
-
-                  if (type === 'cc') {
-                    return (
-                      <Panel
-                        t={t}
-                        key={type}
-                        icon={panelIcon}
-                        id={type}
-                        onFilter={filterHandler}
-                        name={panelName}
-                        data={panelsData.data[type]}
-                        customTabs={customTabs}
-                        rowMapper={(rowName) => (
-                          <CCRow rowName={rowName} language={language} />
-                        )}
-                      />
-                    )
-                  }
-
-                  if (type === 'dv') {
-                    return (
-                      <Panel
-                        t={t}
-                        key={type}
-                        icon={panelIcon}
-                        id={type}
-                        onFilter={filterHandler}
-                        name={panelName}
-                        data={panelsData.data[type]}
-                        customTabs={customTabs}
-                        capitalize
-                      />
-                    )
-                  }
-
-                  if (type === 'ref') {
-                    return (
-                      <Panel
-                        t={t}
-                        key={type}
-                        icon={panelIcon}
-                        id={type}
-                        onFilter={filterHandler}
-                        name={panelName}
-                        data={panelsData.data[type]}
-                        customTabs={customTabs}
-                        rowMapper={(rowName) => (
-                          <RefRow rowName={rowName} showIcons={showIcons} />
-                        )}
-                      />
-                    )
-                  }
-
-                  return (
-                    <Panel
+                <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                  {!_isEmpty(project.overall) && (
+                    <Overview
                       t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      customTabs={customTabs}
+                      overall={project.overall}
+                      chartData={chartData}
+                      activePeriod={activePeriod}
+                      sessionDurationAVG={sessionDurationAVG}
+                      live={project.live}
+                      projectId={id}
                     />
-                  )
-                })}
-                {!_isEmpty(panelsData.customs) && (
-                  <CustomEvents
-                    t={t}
-                    customs={panelsData.customs}
-                    onFilter={filterHandler}
-                    chartData={chartData}
-                  />
-                )}
+                  )}
+                  {_map(panelsData.types, (type) => {
+                    const panelName = tnMapping[type]
+                    const panelIcon = panelIconMapping[type]
+                    const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
+
+                    if (type === 'cc') {
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsData.data[type]}
+                          customTabs={customTabs}
+                          rowMapper={(rowName) => (
+                            <CCRow rowName={rowName} language={language} />
+                          )}
+                        />
+                      )
+                    }
+
+                    if (type === 'dv') {
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsData.data[type]}
+                          customTabs={customTabs}
+                          capitalize
+                        />
+                      )
+                    }
+
+                    if (type === 'ref') {
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsData.data[type]}
+                          customTabs={customTabs}
+                          rowMapper={(rowName) => (
+                            <RefRow rowName={rowName} showIcons={showIcons} />
+                          )}
+                        />
+                      )
+                    }
+
+                    return (
+                      <Panel
+                        t={t}
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        onFilter={filterHandler}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        customTabs={customTabs}
+                      />
+                    )
+                  })}
+                  {!_isEmpty(panelsData.customs) && (
+                    <CustomEvents
+                      t={t}
+                      customs={panelsData.customs}
+                      onFilter={filterHandler}
+                      chartData={chartData}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
             )}
             {activeTab === PROJECT_TABS.performance && (
-            <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-              <div
-                className={cx('h-80', {
-                  hidden: checkIfAllMetricsAreDisabled,
-                })}
-              >
-                <div className='h-80' id='dataChart' />
-              </div>
-              <Filters
-                filters={filtersPerf}
-                onRemoveFilter={filterHandler}
-                onChangeExclusive={onChangeExclusive}
-                tnMapping={tnMapping}
-              />
-              {dataLoading && (
-                <div className='loader bg-transparent static mt-4' id='loader'>
-                  <div className='loader-head'>
-                    <div className='first' />
-                    <div className='second' />
-                  </div>
+              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+                <div
+                  className={cx('h-80', {
+                    hidden: checkIfAllMetricsAreDisabled,
+                  })}
+                >
+                  <div className='h-80' id='dataChart' />
                 </div>
-              )}
-              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                {_map(panelsDataPerf.types, (type) => {
-                  const panelName = tnMapping[type]
-                  const panelIcon = panelIconMapping[type]
-                  const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
+                <Filters
+                  filters={filtersPerf}
+                  onRemoveFilter={filterHandler}
+                  onChangeExclusive={onChangeExclusive}
+                  tnMapping={tnMapping}
+                />
+                {dataLoading && (
+                  <div className='loader bg-transparent static mt-4' id='loader'>
+                    <div className='loader-head'>
+                      <div className='first' />
+                      <div className='second' />
+                    </div>
+                  </div>
+                )}
+                <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                  {_map(panelsDataPerf.types, (type) => {
+                    const panelName = tnMapping[type]
+                    const panelIcon = panelIconMapping[type]
+                    const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 
-                  if (type === 'cc') {
+                    if (type === 'cc') {
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsDataPerf.data[type]}
+                          customTabs={customTabs}
+                          rowMapper={(rowName) => (
+                            <CCRow rowName={rowName} language={language} />
+                          )}
+                          valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                        />
+                      )
+                    }
+
+                    if (type === 'dv') {
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsDataPerf.data[type]}
+                          customTabs={customTabs}
+                          valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                          capitalize
+                        />
+                      )
+                    }
+
                     return (
                       <Panel
                         t={t}
@@ -1689,47 +1730,12 @@ const ViewProject = ({
                         name={panelName}
                         data={panelsDataPerf.data[type]}
                         customTabs={customTabs}
-                        rowMapper={(rowName) => (
-                          <CCRow rowName={rowName} language={language} />
-                        )}
                         valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                       />
                     )
-                  }
-
-                  if (type === 'dv') {
-                    return (
-                      <Panel
-                        t={t}
-                        key={type}
-                        icon={panelIcon}
-                        id={type}
-                        onFilter={filterHandler}
-                        name={panelName}
-                        data={panelsDataPerf.data[type]}
-                        customTabs={customTabs}
-                        valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                        capitalize
-                      />
-                    )
-                  }
-
-                  return (
-                    <Panel
-                      t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsDataPerf.data[type]}
-                      customTabs={customTabs}
-                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                    />
-                  )
-                })}
+                  })}
+                </div>
               </div>
-            </div>
             )}
           </div>
         </div>
