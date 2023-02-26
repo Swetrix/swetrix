@@ -316,3 +316,8 @@ export const PLAN_LIMITS = {
 }
 
 export const TRIAL_DAYS = 14
+
+export const chartTypes = {
+  line: 'line',
+  bar: 'bar',
+}

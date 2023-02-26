@@ -15,6 +15,12 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-02-26',
+    changes: [
+      'Added a switch between line and bar chart on the dashboard page.',
+    ],
+  },
+  {
     date: '2023-02-18',
     changes: [
       'Added AI forecasting functionality.',
