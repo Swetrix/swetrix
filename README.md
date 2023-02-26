@@ -74,8 +74,8 @@ Below you will find the Environment Variables that are required to run the API. 
 `TWO_FACTOR_AUTHENTICATION_APP_NAME`=Swetrix Selfhosted
 
 #### Authorisation
-JWT_ACCESS_TOKEN_SECRET='jwt-access-token-secret'
-JWT_REFRESH_TOKEN_SECRET='jwt-refresh-token-secret'
+`JWT_ACCESS_TOKEN_SECRET`='jwt-access-token-secret'\
+`JWT_REFRESH_TOKEN_SECRET`='jwt-refresh-token-secret'
 
 ### Running Swetrix-API behind a Reverse Proxy
 
