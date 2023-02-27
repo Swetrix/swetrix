@@ -128,6 +128,9 @@ export class ExtensionsController {
       {
         skip: queries.offset || 0,
         take: queries.limit > 100 ? 25 : queries.limit || 25,
+        where: {
+          status: ExtensionStatus.ACCEPTED,
+        },
       },
       ['owner', 'users', 'category'],
     )
@@ -240,7 +243,7 @@ export class ExtensionsController {
         skip: queries.offset || 0,
         take: queries.limit > 100 ? 25 : queries.limit || 25,
         where: {
-          owner: userId,
+          ownerId: userId,
         },
     }, ['category'])
 
