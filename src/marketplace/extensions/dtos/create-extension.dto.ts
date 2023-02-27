@@ -1,4 +1,5 @@
 import {
+  ArrayMaxSize,
   IsEnum,
   IsNotEmpty,
   IsNumberString,
@@ -33,6 +34,7 @@ export class CreateExtensionBodyDto {
   @IsFiles()
   @MaxFileSize(10 * 1024 * 1024, { each: true })
   @HasMimeType(['image/jpeg', 'image/png'], { each: true })
+  @ArrayMaxSize(5)
   readonly additionalImages?: Express.Multer.File[]
 
   @IsOptional()
