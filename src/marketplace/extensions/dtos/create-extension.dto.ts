@@ -40,7 +40,12 @@ export class CreateExtensionBodyDto {
   @IsOptional()
   @IsFile()
   @MaxFileSize(10 * 1024 * 1024)
-  @HasMimeType(['text/javascript', 'application/javascript'])
+  @HasMimeType([
+    'text/javascript',
+    'application/javascript',
+    'application/x-javascript',
+    'application/octet-stream',
+  ])
   readonly extensionScript?: Express.Multer.File
 }
 
