@@ -1,5 +1,7 @@
 import {
   ArrayMaxSize,
+  ArrayNotEmpty,
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumberString,
@@ -59,4 +61,11 @@ export class AdditionalExtensionInfo {
   @IsNotEmpty()
   @IsEnum(ExtensionVersionType)
   readonly version: ExtensionVersionType
+
+  @IsNotEmpty()
+  @ArrayNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(5)
+  readonly additionalImagesCdn: string[]
 }

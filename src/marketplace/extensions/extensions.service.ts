@@ -232,6 +232,25 @@ export class ExtensionsService {
       where: { id: extensionId },
     })
 
+    const additionalImages = [
+      ...(extension.additionalImages || []),
+      ...(extension.additionalImagesCdn || []),
+    ]
+
+    const additionalImageFilenames = await additionalImages.reduce(
+      async (promise, additionalImage) => {
+        const filenames = await promise
+        if (typeof additionalImage !== 'string') {
+          const { filename } = await this.cdnService.uploadFile(additionalImage)
+          filenames.push(filename)
+        } else {
+          filenames.push(additionalImage)
+        }
+        return filenames
+      },
+      Promise.resolve([]),
+    )
+
     await this.extensionRepository.update(
       { id: extensionId },
       {
@@ -251,18 +270,7 @@ export class ExtensionsService {
               await this.cdnService.uploadFile(extension.mainImage)
             ).filename
           : _extension.mainImage,
-        additionalImages: extension.additionalImages
-          ? [
-              ...(await Promise.all(
-                extension.additionalImages.map(
-                  async image =>
-                    (
-                      await this.cdnService.uploadFile(image)
-                    ).filename,
-                ),
-              )),
-            ]
-          : _extension.additionalImages,
+        additionalImages: additionalImageFilenames,
         fileURL: extension.extensionScript
           ? (
               await this.cdnService.uploadFile(extension.extensionScript)
