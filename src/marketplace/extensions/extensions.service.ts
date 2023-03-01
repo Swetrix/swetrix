@@ -228,21 +228,29 @@ export class ExtensionsService {
     extension: UpdateExtensionType,
     extensionVersion: string,
   ) {
+    const _extension = await this.extensionRepository.findOne({
+      where: { id: extensionId },
+    })
+
     await this.extensionRepository.update(
       { id: extensionId },
       {
-        name: extension.name,
-        description: extension.description,
-        version:
-          extension.version &&
-          this.extensionVersion(extensionVersion, extension.version),
-        status: extension.extensionScript && ExtensionStatus.PENDING,
-        price: extension.price && Number(extension.price),
-        mainImage:
-          extension.mainImage &&
-          (
-            await this.cdnService.uploadFile(extension.mainImage)
-          ).filename,
+        name: extension.name ? extension.name : _extension.name,
+        description: extension.description
+          ? extension.description
+          : _extension.description,
+        version: extension.version
+          ? this.extensionVersion(extensionVersion, extension.version)
+          : _extension.version,
+        status: extension.extensionScript
+          ? ExtensionStatus.PENDING
+          : _extension.status,
+        price: extension.price ? Number(extension.price) : _extension.price,
+        mainImage: extension.mainImage
+          ? (
+              await this.cdnService.uploadFile(extension.mainImage)
+            ).filename
+          : _extension.mainImage,
         additionalImages: extension.additionalImages
           ? [
               ...(await Promise.all(
@@ -254,12 +262,12 @@ export class ExtensionsService {
                 ),
               )),
             ]
-          : [],
-        fileURL:
-          extension.extensionScript &&
-          (
-            await this.cdnService.uploadFile(extension.extensionScript)
-          ).filename,
+          : _extension.additionalImages,
+        fileURL: extension.extensionScript
+          ? (
+              await this.cdnService.uploadFile(extension.extensionScript)
+            ).filename
+          : _extension.fileURL,
       },
     )
 
