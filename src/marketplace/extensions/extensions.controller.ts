@@ -93,10 +93,17 @@ export class ExtensionsController {
           },
           skip: queries.offset || 0,
           take: queries.limit > 100 ? 25 : queries.limit || 25,
-    }, ['extension'])
+    }, ['extension', 'extension.owner', 'extension.category', 'extension.users'])
 
-    const extensions = _map(extensionsToUser, (extensionToUser) => {
+    let extensions = _map(extensionsToUser, (extensionToUser) => {
       return extensionToUser.extension
+    })
+
+    extensions = _map(extensions, extension => {
+      extension.usersQuantity = _size(extension.users)
+      extension.users = undefined
+      extension.owner = this.extensionsService.filterOwner(extension.owner)
+      return extension
     })
 
     // todo: also return projectExtensions - via findAndCountExtensionToProject
