@@ -285,67 +285,10 @@ export class ExtensionsController {
     type: String,
   })
   @Get('search')
-  async searchExtension(@Query() queries: SearchExtensionQueries): Promise<{
-    extensions: Extension[]
-    count: number
-  }> {
-    if (queries.category) {
-      const [extensions, count] = await getRepository(Extension)
-        .createQueryBuilder('extension')
-        .leftJoin('extension.category', 'category')
-        .where('extension.name LIKE :term', { term: `%${queries.term}%` })
-        .andWhere('category.name = :category', { category: queries.category })
-        .andWhere('extension.status = :status', {
-          status: ExtensionStatus.ACCEPTED,
-        })
-        .skip(queries.offset || 0)
-        .take(queries.limit > 100 ? 25 : queries.limit || 25)
-        .getManyAndCount()
-
-      return { extensions, count }
-    }
-
-    if (queries.sortBy) {
-      if (queries.sortBy === SortByExtension.CREATED_AT) {
-        const [extensions, count] = await getRepository(Extension)
-          .createQueryBuilder('extension')
-          .where('extension.name LIKE :term', { term: `%${queries.term}%` })
-          .andWhere('extension.status = :status', {
-            status: ExtensionStatus.ACCEPTED,
-          })
-          .orderBy('extension.createdAt', 'DESC')
-          .skip(queries.offset || 0)
-          .take(queries.limit > 100 ? 25 : queries.limit || 25)
-          .getManyAndCount()
-
-        return { extensions, count }
-      }
-
-      if (queries.sortBy === SortByExtension.UPDATED_AT) {
-        const [extensions, count] = await getRepository(Extension)
-          .createQueryBuilder('extension')
-          .where('extension.name LIKE :term', { term: `%${queries.term}%` })
-          .andWhere('extension.status = :status', {
-            status: ExtensionStatus.ACCEPTED,
-          })
-          .orderBy('extension.updatedAt', 'DESC')
-          .skip(queries.offset || 0)
-          .take(queries.limit > 100 ? 25 : queries.limit || 25)
-          .getManyAndCount()
-
-        return { extensions, count }
-      }
-    }
-
-    const [extensions, count] = await this.extensionsService.findAndCount({
-      where: {
-        name: Like(`%${queries.term}%`),
-        status: ExtensionStatus.ACCEPTED,
-      },
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
-    })
-
+  async searchExtension(@Query() queries: SearchExtensionQueries) {
+    const [extensions, count] = await this.extensionsService.searchExtension(
+      queries,
+    )
     return { extensions, count }
   }
 

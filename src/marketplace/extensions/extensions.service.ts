@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common'
 import * as _pick from 'lodash/pick'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
+import { FindManyOptions, FindOneOptions, Like, Repository } from 'typeorm'
 import { ExtensionToProject } from './entities/extension-to-project.entity'
 import { ExtensionToUser } from './entities/extension-to-user.entity'
 import { Extension } from './entities/extension.entity'
@@ -15,6 +15,7 @@ import { CdnService } from '../cdn/cdn.service'
 import { UserService } from 'src/user/user.service'
 import { ExtensionVersionType } from './dtos'
 import { VersionTypes } from './interfaces'
+import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 
 @Injectable()
 export class ExtensionsService {
@@ -304,5 +305,21 @@ export class ExtensionsService {
     const newVersion: string = updateVersion.join('.')
 
     return newVersion
+  }
+
+  async searchExtension(data: SearchExtensionQueries) {
+    return await this.extensionRepository.findAndCount({
+      skip: data.offset || 0,
+      take: data.limit > 100 ? 100 : data.limit || 10,
+      where: {
+        name: Like(`%${data.term}%`),
+      },
+      order: {
+        createdAt:
+          data.sortBy && data.sortBy === 'createdAt' ? 'DESC' : undefined,
+        updatedAt:
+          data.sortBy && data.sortBy === 'updatedAt' ? 'DESC' : undefined,
+      },
+    })
   }
 }
