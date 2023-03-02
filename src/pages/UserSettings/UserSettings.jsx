@@ -41,6 +41,7 @@ import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
 import Integrations from './components/Integrations'
 import NoSharedProjects from './components/NoSharedProjects'
+import Emails from './components/Emails'
 
 dayjs.extend(utc)
 
@@ -501,6 +502,11 @@ const UserSettings = ({
             genericError={genericError}
           />
 
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.emails')}
+          </h3>
+          <Emails />
           {/* Shared projects setting */}
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
