@@ -12,5 +12,5 @@ export type CreateExtensionType = {
 
 export type AdditionalExtensionInfo = {
   version: ExtensionVersionType
-  additionalImagesCdn: string[]
+  additionalImagesToDelete: string[]
 }

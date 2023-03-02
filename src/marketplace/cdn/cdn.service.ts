@@ -42,8 +42,8 @@ export class CdnService {
 
   async deleteFile(filename: string): Promise<void> {
     try {
-      await this.httpService.axiosRef.delete(`file/${filename}`, {
-        data: { token: this.configService.get('CDN_ACCESS_TOKEN') },
+      await this.httpService.axiosRef.delete(`file`, {
+        data: { token: this.configService.get('CDN_ACCESS_TOKEN'), filename },
       })
     } catch (error) {
       console.error(error)

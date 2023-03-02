@@ -383,6 +383,21 @@ export class ExtensionsController {
       throw new BadRequestException('Extension body is required.')
     }
 
+    const extensionBodyAdditionalImagesCount = body.additionalImages
+      ? body.additionalImages.length
+      : 0
+    const extensionAdditionalImagesCount = extension.additionalImages.length
+    const maxAdditionalImagesCount = 5
+
+    if (
+      extensionBodyAdditionalImagesCount + extensionAdditionalImagesCount >
+      maxAdditionalImagesCount
+    ) {
+      throw new BadRequestException(
+        `You can upload maximum ${maxAdditionalImagesCount} additional images.`,
+      )
+    }
+
     return await this.extensionsService.updateExtension(
       params.extensionId,
       body,

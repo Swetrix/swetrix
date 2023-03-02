@@ -234,24 +234,31 @@ export class ExtensionsService {
       where: { id: extensionId },
     })
 
-    const additionalImages = [
-      ...(extension.additionalImages || []),
-      ...(extension.additionalImagesCdn || []),
-    ]
+    const additionalImages = [..._extension.additionalImages]
 
-    const additionalImageFilenames = await additionalImages.reduce(
-      async (promise, additionalImage) => {
-        const filenames = await promise
-        if (typeof additionalImage !== 'string') {
-          const { filename } = await this.cdnService.uploadFile(additionalImage)
-          filenames.push(filename)
-        } else {
-          filenames.push(additionalImage)
+    if (extension.additionalImages) {
+      additionalImages.push(
+        ...(await Promise.all(
+          extension.additionalImages.map(
+            async image => (await this.cdnService.uploadFile(image)).filename,
+          ),
+        )),
+      )
+    }
+
+    if (extension.additionalImagesToDelete) {
+      extension.additionalImagesToDelete.forEach(async image => {
+        const index = additionalImages.indexOf(image)
+
+        if (index > -1) {
+          additionalImages.splice(index, 1)
         }
-        return filenames
-      },
-      Promise.resolve([]),
-    )
+
+        if (additionalImages.includes(image)) {
+          await this.cdnService.deleteFile(image)
+        }
+      })
+    }
 
     await this.extensionRepository.update(
       { id: extensionId },
@@ -272,7 +279,7 @@ export class ExtensionsService {
               await this.cdnService.uploadFile(extension.mainImage)
             ).filename
           : _extension.mainImage,
-        additionalImages: additionalImageFilenames,
+        additionalImages,
         fileURL: extension.extensionScript
           ? (
               await this.cdnService.uploadFile(extension.extensionScript)
