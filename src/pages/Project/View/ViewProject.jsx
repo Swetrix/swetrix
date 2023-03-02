@@ -424,6 +424,13 @@ const ViewProject = ({
 
       if (_isEmpty(dataPerf)) {
         setIsPanelsDataEmptyPerf(true)
+        setDataLoading(false)
+        setAnalyticsLoading(false)
+        return
+      }
+
+      if (_isEmpty(dataPerf.params)) {
+        setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
         const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
@@ -1534,7 +1541,10 @@ const ViewProject = ({
             {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
               <Loader />
             )}
-            {(isPanelsDataEmpty && activeTab !== PROJECT_TABS.alerts) && (
+            {(isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic) && (
+              <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
+            )}
+            {(isPanelsDataEmptyPerf && activeTab === PROJECT_TABS.performance) && (
               <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
             )}
             {activeTab === PROJECT_TABS.traffic && (
@@ -1654,7 +1664,7 @@ const ViewProject = ({
               </div>
             )}
             {activeTab === PROJECT_TABS.performance && (
-              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
                 <div
                   className={cx('h-80', {
                     hidden: checkIfAllMetricsAreDisabled,
