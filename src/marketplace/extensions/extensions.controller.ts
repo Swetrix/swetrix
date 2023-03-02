@@ -229,12 +229,19 @@ export class ExtensionsController {
     }
 
     let [extensions, count] = await this.extensionsService.findAndCount({
-        skip: queries.offset || 0,
-        take: queries.limit > 100 ? 25 : queries.limit || 25,
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 100 : queries.limit || 10,
         where: {
           ownerId: userId,
         },
-    }, ['category'])
+    }, ['owner', 'users', 'category'], )
+
+    extensions = _map(extensions, extension => {
+      extension.usersQuantity = _size(extension.users)
+      extension.users = undefined
+      extension.owner = this.extensionsService.filterOwner(extension.owner)
+      return extension
+    })
 
     return { extensions, count }
   }
