@@ -120,22 +120,11 @@ export class ExtensionsController {
     type: String,
   })
   @Get()
-  async getAllExtensions(@Query() queries: GetAllExtensionsQueries): Promise<{
-    extensions: Extension[]
-    count: number
-  }> {
-    let [extensions, count] = await this.extensionsService.findAndCount(
-      {
-        skip: queries.offset || 0,
-        take: queries.limit > 100 ? 25 : queries.limit || 25,
-        where: {
-          status: ExtensionStatus.ACCEPTED,
-        },
-      },
-      ['owner', 'users', 'category'],
+  async getExtensions(@Query() queries: GetAllExtensionsQueries) {
+    let [extensions, count] = await this.extensionsService.getExtensions(
+      queries,
     )
 
-    // temporary fix; the usersQuantity should be counted via .count() method of typeorm
     extensions = _map(extensions, extension => {
       extension.usersQuantity = _size(extension.users)
       extension.users = undefined
@@ -286,9 +275,17 @@ export class ExtensionsController {
   })
   @Get('search')
   async searchExtension(@Query() queries: SearchExtensionQueries) {
-    const [extensions, count] = await this.extensionsService.searchExtension(
+    let [extensions, count] = await this.extensionsService.searchExtension(
       queries,
     )
+
+    extensions = _map(extensions, extension => {
+      extension.usersQuantity = _size(extension.users)
+      extension.users = undefined
+      extension.owner = this.extensionsService.filterOwner(extension.owner)
+      return extension
+    })
+
     return { extensions, count }
   }
 

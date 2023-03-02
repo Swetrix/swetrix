@@ -16,6 +16,7 @@ import { UserService } from 'src/user/user.service'
 import { ExtensionVersionType } from './dtos'
 import { VersionTypes } from './interfaces'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
+import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 
 @Injectable()
 export class ExtensionsService {
@@ -320,6 +321,18 @@ export class ExtensionsService {
         updatedAt:
           data.sortBy && data.sortBy === 'updatedAt' ? 'DESC' : undefined,
       },
+      relations: ['owner', 'users', 'category'],
+    })
+  }
+
+  async getExtensions(data: GetAllExtensionsQueries) {
+    return await this.extensionRepository.findAndCount({
+      skip: data.offset || 0,
+      take: data.limit > 100 ? 100 : data.limit || 10,
+      where: {
+        status: ExtensionStatus.ACCEPTED,
+      },
+      relations: ['owner', 'users', 'category'],
     })
   }
 }
