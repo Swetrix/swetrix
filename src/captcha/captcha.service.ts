@@ -43,7 +43,11 @@ export class CaptchaService {
   }
 
   async generateCaptcha(): Promise<GeneratedCaptcha> {
-    const captcha = svgCaptcha.create()
+    const captcha = svgCaptcha.create({
+      size: 6,
+      ignoreChars: '0o1il',
+      noise: 2,
+    })
     const hash = this.hashCaptcha(captcha.text)
 
     console.log(captcha.text, hash)
