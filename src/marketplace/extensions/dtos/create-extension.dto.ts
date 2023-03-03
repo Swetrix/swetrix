@@ -66,6 +66,5 @@ export class AdditionalExtensionInfo {
   @ArrayNotEmpty()
   @IsArray()
   @IsString({ each: true })
-  @ArrayMaxSize(5)
   readonly additionalImagesToDelete: string[]
 }
