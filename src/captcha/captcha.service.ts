@@ -4,6 +4,8 @@ import {
 import * as svgCaptcha from 'svg-captcha'
 import * as CryptoJS from 'crypto-js'
 import { hash } from 'blake3'
+import * as _toLower from 'lodash/toLower'
+import * as _toUpper from 'lodash/toUpper'
 
 import {
   CAPTCHA_SALT, CAPTCHA_ENCRYPTION_KEY,
@@ -50,7 +52,6 @@ export class CaptchaService {
     })
     const hash = this.hashCaptcha(captcha.text)
 
-    console.log(captcha.text, hash)
     return {
       data: captcha.data,
       hash,
@@ -58,9 +59,8 @@ export class CaptchaService {
   }
 
   verifyCaptcha(text: string, hash: string): boolean {
-    const hashedText = this.hashCaptcha(text)
-    console.log(text, hashedText)
-    return hashedText === hash
+    // Checking for both lower, upper case and the original text
+    return hash === this.hashCaptcha(text) || hash === this.hashCaptcha(_toLower(text)) || hash === this.hashCaptcha(_toUpper(text))
   }
 
   incrementManuallyVerified(tokenCaptcha: TokenCaptcha): TokenCaptcha {
