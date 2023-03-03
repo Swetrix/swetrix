@@ -46,6 +46,7 @@ export class CaptchaService {
     const captcha = svgCaptcha.create()
     const hash = this.hashCaptcha(captcha.text)
 
+    console.log(captcha.text, hash)
     return {
       data: captcha.data,
       hash,
@@ -54,6 +55,7 @@ export class CaptchaService {
 
   verifyCaptcha(text: string, hash: string): boolean {
     const hashedText = this.hashCaptcha(text)
+    console.log(text, hashedText)
     return hashedText === hash
   }
 

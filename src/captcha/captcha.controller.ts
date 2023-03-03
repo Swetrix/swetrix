@@ -2,12 +2,12 @@ import {
   Controller, Post, Body, UseGuards, ForbiddenException, InternalServerErrorException,
   Headers, Ip, Request, Req, Response, Res, HttpCode, Get,
 } from '@nestjs/common'
-import { ApiResponse } from '@nestjs/swagger'
 
 import { CaptchaService } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { isDevelopment } from '../common/constants'
+import { ManualDTO } from './dtos/manual.dto'
 
 const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 
@@ -20,17 +20,90 @@ export class CaptchaController {
     private readonly captchaService: CaptchaService,
   ) { }
 
-  @Get('/auto-verifiable')
-  @HttpCode(204)
+  @Post('/generate')
+  @HttpCode(200)
   @UseGuards(BotDetectionGuard)
   @BotDetection()
-  @ApiResponse({ status: 204, description: 'Empty body' })
+  async generateCaptcha(
+    // @Req() request: Request,
+    // @Res({ passthrough: true }) response: Response,
+  ): Promise<any> {
+    return await this.captchaService.generateCaptcha()
+  }
+
+  @Post('/verify-manual')
+  @HttpCode(200)
+  @UseGuards(BotDetectionGuard)
+  @BotDetection()
+  async verifyManual(
+    @Body() manualDTO: ManualDTO,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<any> {
+    // @ts-ignore
+    const tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
+    const { code, hash } = manualDTO
+
+    if (!this.captchaService.verifyCaptcha(code, hash)) {
+      throw new ForbiddenException('Incorrect captcha')
+    }
+
+    let decrypted
+
+    try {
+      decrypted = await this.captchaService.decryptTokenCaptcha(tokenCookie)
+    } catch (e) {
+      decrypted = {
+        manuallyVerified: 0,
+        automaticallyVerified: 0,
+      }
+    }
+
+    console.log(decrypted)
+
+    const {
+      manuallyVerified, automaticallyVerified,
+    } = this.captchaService.incrementManuallyVerified(decrypted)
+
+    const newTokenCookie = this.captchaService.getTokenCaptcha(manuallyVerified, automaticallyVerified)
+
+    // Set the new cookie
+    if (isDevelopment) {
+      // @ts-ignore
+      response.cookie(CAPTCHA_COOKIE_KEY, newTokenCookie, {
+        httpOnly: true,
+        // 300 days
+        maxAge: 300 * 24 * 60 * 60 * 1000,
+      })
+    } else {
+      // @ts-ignore
+      response.cookie(CAPTCHA_COOKIE_KEY, newTokenCookie, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        // 300 days
+        maxAge: 300 * 24 * 60 * 60 * 1000,
+      })
+    }
+
+    // TODO: return token
+    return {
+      success: true,
+      token: 'token',
+    }
+  }
+
+  @Post('/verify')
+  @HttpCode(200)
+  @UseGuards(BotDetectionGuard)
+  @BotDetection()
   async autoVerifiable(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<any> {
     // @ts-ignore
     const tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
+
     let verifiable
 
     try {
@@ -51,6 +124,8 @@ export class CaptchaController {
         // @ts-ignore
         response.cookie(CAPTCHA_COOKIE_KEY, newTokenCookie, {
           httpOnly: true,
+          // 300 days
+          maxAge: 300 * 24 * 60 * 60 * 1000,
         })
       } else {
         // @ts-ignore
@@ -58,12 +133,22 @@ export class CaptchaController {
           httpOnly: true,
           secure: true,
           sameSite: 'none',
+          // 300 days
+          maxAge: 300 * 24 * 60 * 60 * 1000,
         })
       }
     }
 
     if (!verifiable) {
       throw new ForbiddenException('Captcha required')
+    }
+
+    // TODO: Increase auto
+
+    // TODO: return token
+    return {
+      success: true,
+      token: 'token',
     }
   }
 }
