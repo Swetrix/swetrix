@@ -1,3 +1,9 @@
+const API_URL = 'http://localhost:5005/v1/captcha'
+
+const ENDPOINTS = {
+  AUTO_VERIFIABLE: '/auto-verifiable',
+}
+
 let activeAction = 'checkbox'
 
 /**
@@ -44,17 +50,29 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation()
   })
 
-  captchaComponent.addEventListener('click', () => {
+  captchaComponent.addEventListener('click', async () => {
+    if (activeAction === 'loading' || activeAction === 'completed') {
+      return
+    }
+
     if (activeAction === 'failure') {
       activateAction('checkbox')
       return
     }
 
     activateAction('loading')
+    let response
 
-    setTimeout(() => {
-      // activateAction('completed')
+    try {
+      response = await fetch(`${API_URL}${ENDPOINTS.AUTO_VERIFIABLE}`, {
+        method: 'GET',
+      })
+    } catch (e) {
       activateAction('failure')
-    }, 2000)
+      return
+    }
+
+    console.log(response)
+    activateAction('completed')
   })
 })
