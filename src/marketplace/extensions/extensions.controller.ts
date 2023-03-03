@@ -402,11 +402,15 @@ export class ExtensionsController {
       : 0
     const extensionAdditionalImagesCount = extension.additionalImages.length
     const maxAdditionalImagesCount = 5
+    const additionalImagesToDelete = body.additionalImagesToDelete
+      ? body.additionalImagesToDelete.length
+      : 0
+    const sum =
+      extensionAdditionalImagesCount +
+      extensionBodyAdditionalImagesCount -
+      additionalImagesToDelete
 
-    if (
-      extensionBodyAdditionalImagesCount + extensionAdditionalImagesCount >
-      maxAdditionalImagesCount
-    ) {
+    if (sum > maxAdditionalImagesCount || sum < 0) {
       throw new BadRequestException(
         `You can upload maximum ${maxAdditionalImagesCount} additional images.`,
       )
