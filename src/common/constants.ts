@@ -173,6 +173,8 @@ const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
 const REDIS_PERFORMANCE_COUNT_KEY = 'stats:performance'
 
+const CAPTCHA_SALT = process.env.CAPTCHA_SALT
+
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
 
@@ -226,4 +228,5 @@ export {
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
   REDIS_PERFORMANCE_COUNT_KEY,
+  CAPTCHA_SALT,
 }
