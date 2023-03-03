@@ -1,7 +1,11 @@
 const API_URL = 'http://localhost:5005/v1/captcha'
+let TOKEN = ''
+let HASH = ''
 
 const ENDPOINTS = {
-  AUTO_VERIFIABLE: '/auto-verifiable',
+  VERIFY: '/verify',
+  GENERATE: '/generate',
+  VERIFY_MANUAL: '/verify-manual',
 }
 
 let activeAction = 'checkbox'
@@ -42,12 +46,116 @@ const activateAction = (action) => {
   actions[action].classList.remove('hidden')
 }
 
+const enableManualChallenge = (svg) => {
+  const manualChallenge = document.querySelector('#manual-challenge')
+  const svgCaptcha = document.querySelector('#svg-captcha')
+
+  svgCaptcha.innerHTML = svg
+  manualChallenge.classList.remove('hidden')
+}
+
+const disableManualChallenge = () => {
+  const manualChallenge = document.querySelector('#manual-challenge')
+  const svgCaptcha = document.querySelector('#svg-captcha')
+
+  svgCaptcha.innerHTML = ''
+  manualChallenge.classList.add('hidden')
+}
+
+const generateCaptcha = async () => {
+  try {
+    const response = await fetch(`${API_URL}${ENDPOINTS.GENERATE}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  
+    if (!response.ok) {
+      throw ''
+    }
+  
+    const data = await response.json()
+    return data
+  } catch (e) {
+    return null
+  }
+}
+
+const verify = async () => {
+  try {
+    const response = await fetch(`${API_URL}${ENDPOINTS.VERIFY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw ''
+    }
+
+    const data = await response.json()
+    return data
+  } catch (e) {
+    return null
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const captchaComponent = document.querySelector('#swetrix-captcha')
   const branding = document.querySelector('#branding')
+  const svgCaptchaInput = document.querySelector('#svg-captcha-input')
+  const manualSubmitBtn = document.querySelector('#manual-submit-btn')
 
   branding.addEventListener('click', (e) => {
     e.stopPropagation()
+  })
+
+  manualSubmitBtn.addEventListener('click', async (e) => {
+    e.stopPropagation()
+
+    const code = svgCaptchaInput.value
+
+    if (!code) {
+      return
+    }
+
+    let response
+
+    try {
+      response = await fetch(`${API_URL}${ENDPOINTS.VERIFY_MANUAL}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          hash: HASH,
+          code,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } catch (e) {
+      disableManualChallenge()
+      activateAction('failure')
+      svgCaptchaInput.value = ''
+      return
+    }
+
+    if (!response.ok) {
+      disableManualChallenge()
+      activateAction('failure')
+      svgCaptchaInput.value = ''
+      return
+    }
+
+    const data = await response.json()
+    console.log(data)
+
+    // TODO
+
+    svgCaptchaInput.value = ''
+    activateAction('completed')
+    disableManualChallenge()
   })
 
   captchaComponent.addEventListener('click', async () => {
@@ -61,18 +169,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     activateAction('loading')
-    let response
 
     try {
-      response = await fetch(`${API_URL}${ENDPOINTS.AUTO_VERIFIABLE}`, {
-        method: 'GET',
-      })
+      const { token } = await verify()
+
+      if (!token) {
+        throw ''
+      }
+
+      TOKEN = token
+      activateAction('completed')
+      return
     } catch (e) {
-      activateAction('failure')
+      const { data, hash } = await generateCaptcha()
+
+      HASH = hash
+      enableManualChallenge(data)
       return
     }
-
-    console.log(response)
-    activateAction('completed')
   })
 })
