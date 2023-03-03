@@ -9,4 +9,4 @@ import { CaptchaService } from './captcha.service'
   exports: [CaptchaService],
   controllers: [CaptchaController],
 })
-export class AnalyticsModule {}
+export class CaptchaModule {}

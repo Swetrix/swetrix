@@ -2,9 +2,8 @@ import {
   Injectable,
 } from '@nestjs/common'
 import * as svgCaptcha from 'svg-captcha'
+import * as CryptoJS from 'crypto-js'
 import { hash } from 'blake3'
-import * as crypto from 'crypto'
-import { promisify } from 'util'
 
 import {
   CAPTCHA_SALT, CAPTCHA_ENCRYPTION_KEY,
@@ -20,27 +19,14 @@ interface TokenCaptcha {
   automaticallyVerified: number
 }
 
-// Encrypts a string using ChaCha20 algorithm with a given key
-function encryptString(str: string, key: string | undefined = CAPTCHA_ENCRYPTION_KEY): string {
-  const iv = crypto.randomBytes(12)
-  const cipher = crypto.createCipheriv('chacha20', key, iv)
-  const encrypted = Buffer.concat([cipher.update(str, 'utf8'), cipher.final()])
-  return Buffer.concat([iv, encrypted]).toString('hex')
+const encryptString = (text: string, key: string): string => {
+  return CryptoJS.Rabbit.encrypt(text, key).toString()
 }
 
-// Decrypts an encrypted string using ChaCha20 algorithm with a given key
-function decryptString(encryptedStr: string, key: string | undefined = CAPTCHA_ENCRYPTION_KEY): string {
-  const input = Buffer.from(encryptedStr, 'hex')
-  const iv = input.slice(0, 12)
-  const encrypted = input.slice(12)
-  const decipher = crypto.createDecipheriv('chacha20', key, iv)
-  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()])
-  return decrypted.toString('utf8')
+const decryptString = (text: string, key: string): string => {
+  const bytes = CryptoJS.Rabbit.decrypt(text, key)
+  return bytes.toString(CryptoJS.enc.Utf8)
 }
-
-// Promisify the encryption and decryption functions
-const encryptStringAsync = promisify(encryptString)
-const decryptStringAsync = promisify(decryptString)
 
 // Set the weights for the manual and automatic verifications
 const MANUAL_WEIGHT = 2
@@ -97,9 +83,9 @@ export class CaptchaService {
   }
 
   async decryptTokenCaptcha(jwtCookie: string | undefined): Promise<TokenCaptcha> {
-    const decryptedtokenCaptcha = await decryptStringAsync(jwtCookie, CAPTCHA_ENCRYPTION_KEY)
-
     try {
+      const decryptedtokenCaptcha = decryptString(jwtCookie, CAPTCHA_ENCRYPTION_KEY)
+
       // @ts-ignore
       return JSON.parse(decryptedtokenCaptcha)
     } catch (e) {
@@ -107,16 +93,16 @@ export class CaptchaService {
     }
   }
 
-  async setTokenCaptcha(manuallyVerified: number = 0, automaticallyVerified: number = 0): Promise<string> {
+  async getTokenCaptcha(manuallyVerified: number = 0, automaticallyVerified: number = 0): Promise<string> {
     const tokenCaptcha: TokenCaptcha = {
       manuallyVerified,
       automaticallyVerified,
     }
 
     // @ts-ignore
-    const encryptedtokenCaptcha: string = await encryptStringAsync(JSON.stringify(tokenCaptcha), CAPTCHA_ENCRYPTION_KEY)
+    const encryptedTokenCaptcha: string = encryptString(JSON.stringify(tokenCaptcha), CAPTCHA_ENCRYPTION_KEY)
 
-    return encryptedtokenCaptcha
+    return encryptedTokenCaptcha
   }
 
   async autoVerifiable(tokenCookie: string | undefined): Promise<boolean> {

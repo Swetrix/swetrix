@@ -37,13 +37,17 @@ export class CaptchaController {
       verifiable = await this.captchaService.autoVerifiable(tokenCookie)
     } catch (e) {
       // Either there was no cookie or the cookie was invalid
+      let newTokenCookie
 
       // Set a new cookie
-      const newTokenCookie = await this.captchaService.setTokenCaptcha()
+      try {
+        newTokenCookie = await this.captchaService.getTokenCaptcha()
+      } catch (e) {
+        console.error(e)
+        throw new InternalServerErrorException('Could not generate a captcha cookie')
+      }
 
       if (isDevelopment) {
-        console.log('New captcha cookie:', newTokenCookie)
-
         // @ts-ignore
         response.cookie(CAPTCHA_COOKIE_KEY, newTokenCookie, {
           httpOnly: true,
