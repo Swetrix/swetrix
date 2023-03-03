@@ -40,6 +40,7 @@ const clickhouse = new ClickHouse({
 
 const isSelfhosted = Boolean(process.env.SELFHOSTED)
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 const CLICKHOUSE_INIT_QUERIES = [
   'CREATE DATABASE IF NOT EXISTS analytics',
@@ -173,7 +174,9 @@ const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
 const REDIS_PERFORMANCE_COUNT_KEY = 'stats:performance'
 
+// Captcha service
 const CAPTCHA_SALT = process.env.CAPTCHA_SALT
+const CAPTCHA_ENCRYPTION_KEY = process.env.CAPTCHA_ENCRYPTION_KEY
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -229,4 +232,6 @@ export {
   REDIS_LOG_PERF_CACHE_KEY,
   REDIS_PERFORMANCE_COUNT_KEY,
   CAPTCHA_SALT,
+  CAPTCHA_ENCRYPTION_KEY,
+  isDevelopment,
 }
