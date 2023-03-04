@@ -2,14 +2,21 @@ import {
   Controller, Post, Body, UseGuards, ForbiddenException, InternalServerErrorException,
   Headers, Ip, Request, Req, Response, Res, HttpCode, Get,
 } from '@nestjs/common'
+import * as dayjs from 'dayjs'
+import * as utc from 'dayjs/plugin/utc'
 
 import { CaptchaService } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { isDevelopment } from '../common/constants'
 import { ManualDTO } from './dtos/manual.dto'
+import { ValidateDTO } from './dtos/validate.dto'
+
+dayjs.extend(utc)
 
 const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
+
+const TEST_PUBLIC_KEY = 'test'
 
 @Controller({
   version: '1',
@@ -59,37 +66,22 @@ export class CaptchaController {
       }
     }
 
-    console.log(decrypted)
-
     const {
       manuallyVerified, automaticallyVerified,
     } = this.captchaService.incrementManuallyVerified(decrypted)
 
     const newTokenCookie = this.captchaService.getTokenCaptcha(manuallyVerified, automaticallyVerified)
+    this.captchaService.setTokenCookie(response, newTokenCookie)
 
-    // Set the new cookie
-    if (isDevelopment) {
-      // @ts-ignore
-      response.cookie(CAPTCHA_COOKIE_KEY, newTokenCookie, {
-        httpOnly: true,
-        // 300 days
-        maxAge: 300 * 24 * 60 * 60 * 1000,
-      })
-    } else {
-      // @ts-ignore
-      response.cookie(CAPTCHA_COOKIE_KEY, newTokenCookie, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        // 300 days
-        maxAge: 300 * 24 * 60 * 60 * 1000,
-      })
-    }
+    const timestamp = dayjs.utc().unix()
 
-    // TODO: return token
+    const token = this.captchaService.generateToken(TEST_PUBLIC_KEY, hash, timestamp, false)
+
     return {
       success: true,
-      token: 'token',
+      token,
+      timestamp,
+      hash,
     }
   }
 
@@ -102,7 +94,7 @@ export class CaptchaController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<any> {
     // @ts-ignore
-    const tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
+    let tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
 
     let verifiable
 
@@ -114,41 +106,58 @@ export class CaptchaController {
 
       // Set a new cookie
       try {
-        newTokenCookie = await this.captchaService.getTokenCaptcha()
+        newTokenCookie = this.captchaService.getTokenCaptcha()
       } catch (e) {
         console.error(e)
         throw new InternalServerErrorException('Could not generate a captcha cookie')
       }
 
-      if (isDevelopment) {
-        // @ts-ignore
-        response.cookie(CAPTCHA_COOKIE_KEY, newTokenCookie, {
-          httpOnly: true,
-          // 300 days
-          maxAge: 300 * 24 * 60 * 60 * 1000,
-        })
-      } else {
-        // @ts-ignore
-        response.cookie(CAPTCHA_COOKIE_KEY, newTokenCookie, {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'none',
-          // 300 days
-          maxAge: 300 * 24 * 60 * 60 * 1000,
-        })
-      }
+      tokenCookie = newTokenCookie
+
+      this.captchaService.setTokenCookie(response, newTokenCookie)
     }
 
     if (!verifiable) {
       throw new ForbiddenException('Captcha required')
     }
 
-    // TODO: Increase auto
+    let decrypted
 
-    // TODO: return token
+    try {
+      decrypted = await this.captchaService.decryptTokenCaptcha(tokenCookie)
+    } catch (e) {
+      throw new InternalServerErrorException('Could not decrypt captcha cookie')
+    }
+
+    const {
+      manuallyVerified, automaticallyVerified,
+    } = this.captchaService.incrementAutomaticallyVerified(decrypted)
+
+    const newTokenCookie = this.captchaService.getTokenCaptcha(manuallyVerified, automaticallyVerified)
+
+    this.captchaService.setTokenCookie(response, newTokenCookie)
+
+    const timestamp = dayjs.utc().unix()
+
+    const token = this.captchaService.generateToken(TEST_PUBLIC_KEY, null, timestamp, true)
+
     return {
       success: true,
-      token: 'token',
+      token,
+      timestamp,
+      hash: null,
     }
+  }
+
+  @Post('/validate')
+  @HttpCode(200)
+  async validateToken(
+    @Body() validateDTO: ValidateDTO,
+  ): Promise<any> {
+    const {
+      token, secret, hash, timestamp,
+    } = validateDTO
+
+    return this.captchaService.validateToken(token, secret, hash, timestamp)
   }
 }

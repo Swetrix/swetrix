@@ -6,7 +6,7 @@ export class ManualDTO {
     required: true,
   })
   @IsNotEmpty()
-  hash?: string
+  hash: string
 
   @ApiProperty({
     required: true,
@@ -14,5 +14,5 @@ export class ManualDTO {
     description: 'Captcha code',
   })
   @IsNotEmpty()
-  code?: string
+  code: string
 }

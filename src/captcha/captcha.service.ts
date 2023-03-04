@@ -1,11 +1,13 @@
 import {
-  Injectable,
+  Injectable, BadRequestException,
 } from '@nestjs/common'
 import * as svgCaptcha from 'svg-captcha'
 import * as CryptoJS from 'crypto-js'
 import { hash } from 'blake3'
 import * as _toLower from 'lodash/toLower'
 import * as _toUpper from 'lodash/toUpper'
+
+import { isDevelopment } from '../common/constants'
 
 import {
   CAPTCHA_SALT, CAPTCHA_ENCRYPTION_KEY,
@@ -35,13 +37,50 @@ const MANUAL_WEIGHT = 2
 const AUTO_WEIGHT = 1
 const THRESHOLD = 1.5
 
+// 300 days
+const COOKIE_MAX_AGE = 300 * 24 * 60 * 60 * 1000
+
+const TEST_SECRET_KEY = 'wfOw1Jw3JAjcrHaQFvIvBS4qdG'
+
 @Injectable()
 export class CaptchaService {
   constructor(
   ) { }
 
+  generateToken(publicKey: string, hash: string, timestamp: number, autoVerified: boolean): string {
+    // todo: lookup the secret key from the public key in the database
+    const secretKey = TEST_SECRET_KEY
+
+    const token = {
+      hash, timestamp, autoVerified,
+    }
+
+    return encryptString(JSON.stringify(token), secretKey)
+  }
+
+  validateToken(token: string, secretKey: string, hash: string, timestamp: number): boolean {
+    let parsed
+
+    try {
+      const decrypted = decryptString(token, secretKey)
+      parsed = JSON.parse(decrypted)
+    } catch (e) {
+      throw new BadRequestException('Could not decrypt token')
+    }
+
+    if (!parsed.autoVerified && parsed.hash !== hash) {
+      throw new BadRequestException('Token: captcha pass hash does not match')
+    }
+
+    if (parsed.timestamp !== timestamp) {
+      throw new BadRequestException('Token: timestamp does not match')
+    }
+
+    return true
+  }
+
   hashCaptcha(text: string): string {
-    return hash(`${text}${CAPTCHA_SALT}`).toString('hex')
+    return encryptString(`${text}${CAPTCHA_SALT}`, CAPTCHA_ENCRYPTION_KEY)
   }
 
   async generateCaptcha(): Promise<GeneratedCaptcha> {
@@ -50,7 +89,11 @@ export class CaptchaService {
       ignoreChars: '0o1il',
       noise: 2,
     })
-    const hash = this.hashCaptcha(captcha.text)
+    const hash = this.hashCaptcha(
+      _toLower(captcha.text)
+    )
+
+    console.log(captcha.text, hash)
 
     return {
       data: captcha.data,
@@ -60,7 +103,8 @@ export class CaptchaService {
 
   verifyCaptcha(text: string, hash: string): boolean {
     // Checking for both lower, upper case and the original text
-    return hash === this.hashCaptcha(text) || hash === this.hashCaptcha(_toLower(text)) || hash === this.hashCaptcha(_toUpper(text))
+    // return hash === this.hashCaptcha(text) || hash === this.hashCaptcha(_toLower(text)) || hash === this.hashCaptcha(_toUpper(text))
+    return text === _toLower(decryptString(hash, CAPTCHA_ENCRYPTION_KEY))
   }
 
   incrementManuallyVerified(tokenCaptcha: TokenCaptcha): TokenCaptcha {
@@ -99,7 +143,7 @@ export class CaptchaService {
     }
   }
 
-  async getTokenCaptcha(manuallyVerified: number = 0, automaticallyVerified: number = 0): Promise<string> {
+  getTokenCaptcha(manuallyVerified: number = 0, automaticallyVerified: number = 0): string {
     const tokenCaptcha: TokenCaptcha = {
       manuallyVerified,
       automaticallyVerified,
@@ -119,5 +163,23 @@ export class CaptchaService {
     const tokenCaptcha: TokenCaptcha = await this.decryptTokenCaptcha(tokenCookie)
 
     return this.canPassWithoutVerification(tokenCaptcha)
+  }
+
+  setTokenCookie(response: any, tokenCookie: string): void {
+    if (isDevelopment) {
+      // @ts-ignore
+      response.cookie(CAPTCHA_COOKIE_KEY, tokenCookie, {
+        httpOnly: true,
+        maxAge: COOKIE_MAX_AGE,
+      })
+    } else {
+      // @ts-ignore
+      response.cookie(CAPTCHA_COOKIE_KEY, tokenCookie, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: COOKIE_MAX_AGE,
+      })
+    }
   }
 }
