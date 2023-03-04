@@ -177,7 +177,7 @@ export class ExtensionsService {
 
   async createExtension(extension: CreateExtensionType) {
     return await this.extensionRepository.save({
-      ownerId: extension.ownerId,
+      owner: { id: extension.ownerId },
       name: extension.name,
       description: extension.description,
       status: extension.extensionScript
@@ -221,7 +221,7 @@ export class ExtensionsService {
     }
 
     return await this.extensionRepository.findOne({
-      where: { id: extensionId, ownerId: userId },
+      where: { id: extensionId, owner: { id: userId } },
     })
   }
 
