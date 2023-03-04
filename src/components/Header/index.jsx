@@ -23,7 +23,9 @@ import routes from 'routes'
 import { authActions } from 'redux/actions/auth'
 import UIActions from 'redux/actions/ui'
 import {
-  whitelist, languages, languageFlag, isSelfhosted, BLOG_URL, THEME_TYPE, DOCS_URL,
+  whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
+  // THEME_TYPE,
+  DOCS_URL,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
@@ -38,7 +40,9 @@ const TRIAL_STATUS_MAPPING = {
 }
 
 const Header = ({
-  authenticated, theme, themeType, user,
+  authenticated, theme,
+  // themeType,
+  user,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const dispatch = useDispatch()
@@ -94,7 +98,7 @@ const Header = ({
     <Popover className='relative bg-white'>
       {/* Computer / Laptop / Tablet layout header */}
       <header className='bg-indigo-600 dark:bg-gray-750 relative overflow-x-clip'>
-        {themeType === THEME_TYPE.christmas && (
+        {/* {themeType === THEME_TYPE.christmas && (
           <div className='santa-claus group'>
             <div className='group-hover:cursor-pointer group-hover:translate-y-[-100px] transition-all ease-linear delay-100 duration-500'>
               <div className='sc-head'>
@@ -112,18 +116,19 @@ const Header = ({
             </div>
             <div className='sc-body' />
           </div>
-        )}
+        )} */}
         <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
           <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-gray-300 lg:border-none'>
             <div className='flex items-center'>
               {/* Logo */}
               <Link to={routes.main}>
                 <span className='sr-only'>Swetrix</span>
-                {themeType === THEME_TYPE.christmas ? (
+                {/* {themeType === THEME_TYPE.christmas ? (
                   <img className='h-10' src='/assets/logo_white_christmas.png' alt='Swetrix' />
                 ) : (
                   <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
-                )}
+                )} */}
+                <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
               </Link>
 
               <div className='hidden ml-10 space-x-1 lg:flex'>
@@ -303,11 +308,12 @@ const Header = ({
                 <Link to={routes.main}>
                   <span className='sr-only'>Swetrix</span>
                   {theme === 'dark' ? (
-                    themeType === THEME_TYPE.christmas ? (
-                      <img className='h-10' src='/assets/logo_white_christmas.png' alt='Swetrix' />
-                    ) : (
-                      <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
-                    )
+                    // themeType === THEME_TYPE.christmas ? (
+                    //   <img className='h-10' src='/assets/logo_white_christmas.png' alt='Swetrix' />
+                    // ) : (
+                    //   <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
+                    // )
+                    <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
                   ) : (
                     <img className='h-10' src='/assets/logo_blue.svg' alt='Swetrix' />
                   )}
@@ -408,7 +414,7 @@ const Header = ({
 Header.propTypes = {
   authenticated: PropTypes.bool.isRequired,
   theme: PropTypes.string.isRequired,
-  themeType: PropTypes.string.isRequired,
+  // themeType: PropTypes.string.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
 }
