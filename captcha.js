@@ -78,6 +78,7 @@ const generateCaptcha = async () => {
     const data = await response.json()
     return data
   } catch (e) {
+    activateAction('failure')
     return null
   }
 }
@@ -98,6 +99,7 @@ const verify = async () => {
     const data = await response.json()
     return data
   } catch (e) {
+    activateAction('failure')
     return null
   }
 }
