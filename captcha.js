@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:5005/v1/captcha'
+const DEFAULT_THEME = 'light'
 let TOKEN = ''
 let HASH = ''
 
@@ -50,7 +51,15 @@ const enableManualChallenge = (svg) => {
   const manualChallenge = document.querySelector('#manual-challenge')
   const svgCaptcha = document.querySelector('#svg-captcha')
 
-  svgCaptcha.innerHTML = svg
+  if (!svg) {
+    const error = document.createElement('p')
+    error.innerText = 'Error loading captcha'
+    error.style.color = '#d6292a'
+    svgCaptcha.appendChild(error)
+  } else {
+    svgCaptcha.innerHTML = svg
+  }
+  
   manualChallenge.classList.remove('hidden')
 }
 
@@ -69,6 +78,9 @@ const generateCaptcha = async () => {
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        theme: window.__SWETRIX_CAPTCHA_THEME || DEFAULT_THEME,
+      }),
     })
   
     if (!response.ok) {
@@ -79,7 +91,7 @@ const generateCaptcha = async () => {
     return data
   } catch (e) {
     activateAction('failure')
-    return null
+    return {}
   }
 }
 
@@ -93,14 +105,14 @@ const verify = async () => {
     })
 
     if (!response.ok) {
-      throw ''
+      return {}
     }
 
     const data = await response.json()
     return data
   } catch (e) {
     activateAction('failure')
-    return null
+    return {}
   }
 }
 

@@ -13,6 +13,13 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
+    body {
+      margin: 0;
+      padding: 0;
+      height: auto;
+      overflow: auto;
+    }
+
     #swetrix-captcha {
       display: flex;
       justify-content: center;
@@ -61,7 +68,6 @@
     #status {
       font-size: 16px;
       color: #0f0f0f;
-      /* font-weight: 400; */
     }
 
     .hidden {
@@ -92,6 +98,7 @@
     #legal>.separator::before {
       content: "-";
       margin: 0 2px;
+      color: #0f0f0f;
     }
 
     #action svg {
@@ -175,6 +182,9 @@
       flex: 1;
     }
   </style>
+  <script>
+    window.__SWETRIX_CAPTCHA_THEME = 'light'
+  </script>
   <script src="captcha.js" defer></script>
 </head>
 
