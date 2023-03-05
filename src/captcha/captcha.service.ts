@@ -5,7 +5,6 @@ import * as svgCaptcha from 'svg-captcha'
 import * as CryptoJS from 'crypto-js'
 import { hash } from 'blake3'
 import * as _toLower from 'lodash/toLower'
-import * as _toUpper from 'lodash/toUpper'
 
 import { isDevelopment } from '../common/constants'
 
@@ -40,7 +39,11 @@ const THRESHOLD = 1.5
 // 300 days
 const COOKIE_MAX_AGE = 300 * 24 * 60 * 60 * 1000
 
+const captchaString = (text: string) => `${_toLower(text)}${CAPTCHA_SALT}`
+
 const TEST_SECRET_KEY = 'wfOw1Jw3JAjcrHaQFvIvBS4qdG'
+
+export const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 
 @Injectable()
 export class CaptchaService {
@@ -80,7 +83,7 @@ export class CaptchaService {
   }
 
   hashCaptcha(text: string): string {
-    return encryptString(`${text}${CAPTCHA_SALT}`, CAPTCHA_ENCRYPTION_KEY)
+    return hash(captchaString(text)).toString('hex')
   }
 
   async generateCaptcha(): Promise<GeneratedCaptcha> {
@@ -93,8 +96,6 @@ export class CaptchaService {
       _toLower(captcha.text)
     )
 
-    console.log(captcha.text, hash)
-
     return {
       data: captcha.data,
       hash,
@@ -102,9 +103,7 @@ export class CaptchaService {
   }
 
   verifyCaptcha(text: string, hash: string): boolean {
-    // Checking for both lower, upper case and the original text
-    // return hash === this.hashCaptcha(text) || hash === this.hashCaptcha(_toLower(text)) || hash === this.hashCaptcha(_toUpper(text))
-    return text === _toLower(decryptString(hash, CAPTCHA_ENCRYPTION_KEY))
+    return hash === this.hashCaptcha(text)
   }
 
   incrementManuallyVerified(tokenCaptcha: TokenCaptcha): TokenCaptcha {

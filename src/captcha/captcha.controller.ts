@@ -5,16 +5,13 @@ import {
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 
-import { CaptchaService } from './captcha.service'
+import { CaptchaService, CAPTCHA_COOKIE_KEY } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
-import { isDevelopment } from '../common/constants'
 import { ManualDTO } from './dtos/manual.dto'
 import { ValidateDTO } from './dtos/validate.dto'
 
 dayjs.extend(utc)
-
-const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 
 const TEST_PUBLIC_KEY = 'test'
 
