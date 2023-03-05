@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { IsOptional } from 'class-validator'
 
 export const DEFAULT_THEME = 'light'
 
@@ -8,5 +9,6 @@ export class GenerateDTO {
     required: false,
     description: 'Captcha theme',
   })
+  @IsOptional()
   theme?: string
 }

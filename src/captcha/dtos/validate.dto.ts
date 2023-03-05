@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsOptional } from 'class-validator'
 
 export class ValidateDTO {
   @ApiProperty({
@@ -20,6 +20,7 @@ export class ValidateDTO {
     required: false,
     description: 'Captcha hash (if available)',
   })
+  @IsOptional()
   hash?: string
 
   @ApiProperty({
