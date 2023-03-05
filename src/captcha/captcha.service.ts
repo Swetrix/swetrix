@@ -86,11 +86,17 @@ export class CaptchaService {
     return hash(captchaString(text)).toString('hex')
   }
 
-  async generateCaptcha(): Promise<GeneratedCaptcha> {
+  async generateCaptcha(theme: string): Promise<GeneratedCaptcha> {
+    const themeParams = theme === 'light' ? {} : {
+      background: '#1f2937',
+      color: true,
+    }
+
     const captcha = svgCaptcha.create({
       size: 6,
-      ignoreChars: '0o1il',
+      ignoreChars: '0o1iIl',
       noise: 2,
+      ...themeParams,
     })
     const hash = this.hashCaptcha(
       _toLower(captcha.text)

@@ -5,11 +5,13 @@ import {
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 
+import { AppLoggerService } from '../logger/logger.service'
 import { CaptchaService, CAPTCHA_COOKIE_KEY } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { ManualDTO } from './dtos/manual.dto'
 import { ValidateDTO } from './dtos/validate.dto'
+import { GenerateDTO, DEFAULT_THEME } from './dtos/generate.dto'
 
 dayjs.extend(utc)
 
@@ -22,6 +24,7 @@ const TEST_PUBLIC_KEY = 'test'
 export class CaptchaController {
   constructor(
     private readonly captchaService: CaptchaService,
+    private readonly logger: AppLoggerService,
   ) { }
 
   @Post('/generate')
@@ -29,10 +32,17 @@ export class CaptchaController {
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   async generateCaptcha(
-    // @Req() request: Request,
-    // @Res({ passthrough: true }) response: Response,
+    @Body() generateDTO: GenerateDTO,
   ): Promise<any> {
-    return await this.captchaService.generateCaptcha()
+    this.logger.log({ generateDTO }, 'POST /captcha/generate')
+
+    const {
+      theme = DEFAULT_THEME,
+    } = generateDTO
+
+    console.log(generateDTO)
+
+    return await this.captchaService.generateCaptcha(theme)
   }
 
   @Post('/verify-manual')
@@ -44,6 +54,8 @@ export class CaptchaController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<any> {
+    this.logger.log({ manualDTO }, 'POST /captcha/verify-manual')
+
     // @ts-ignore
     const tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
     const { code, hash } = manualDTO
@@ -90,6 +102,8 @@ export class CaptchaController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<any> {
+    this.logger.log(null, 'POST /captcha/verify')
+
     // @ts-ignore
     let tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
 
@@ -151,6 +165,8 @@ export class CaptchaController {
   async validateToken(
     @Body() validateDTO: ValidateDTO,
   ): Promise<any> {
+    this.logger.log({ validateDTO }, 'POST /captcha/validate')
+
     const {
       token, secret, hash, timestamp,
     } = validateDTO

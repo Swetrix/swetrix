@@ -20,7 +20,6 @@ export class ValidateDTO {
     required: false,
     description: 'Captcha hash (if available)',
   })
-  @IsNotEmpty()
   hash?: string
 
   @ApiProperty({
