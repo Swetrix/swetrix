@@ -370,6 +370,16 @@ export class ExtensionsController {
     @Body() body: CreateExtensionBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<Extension> {
+    if (body.categoryId) {
+      const category = await this.categoriesService.getCategoryById(
+        Number(body.categoryId),
+      )
+
+      if (!category) {
+        throw new BadRequestException('Category not found.')
+      }
+    }
+
     return await this.extensionsService.createExtension({
       ownerId: userId,
       ...body,
@@ -391,6 +401,16 @@ export class ExtensionsController {
 
     if (!extension) {
       throw new NotFoundException('Extension not found.')
+    }
+
+    if (body.categoryId) {
+      const category = await this.categoriesService.getCategoryById(
+        Number(body.categoryId),
+      )
+
+      if (!category) {
+        throw new BadRequestException('Category not found.')
+      }
     }
 
     if (Object.keys(body).length === 0) {

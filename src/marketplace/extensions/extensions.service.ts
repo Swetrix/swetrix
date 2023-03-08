@@ -184,6 +184,7 @@ export class ExtensionsService {
         ? ExtensionStatus.PENDING
         : ExtensionStatus.NO_EXTENSION_UPLOADED,
       price: extension.price && Number(extension.price),
+      category: { id: extension.categoryId && Number(extension.categoryId) },
       mainImage:
         extension.mainImage &&
         (
@@ -274,6 +275,7 @@ export class ExtensionsService {
           ? ExtensionStatus.PENDING
           : _extension.status,
         price: extension.price ? Number(extension.price) : _extension.price,
+        category: { id: extension.categoryId && Number(extension.categoryId) },
         mainImage: extension.mainImage
           ? (
               await this.cdnService.uploadFile(extension.mainImage)

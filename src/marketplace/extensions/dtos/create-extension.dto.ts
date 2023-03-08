@@ -27,6 +27,10 @@ export class CreateExtensionBodyDto {
   readonly price?: string
 
   @IsOptional()
+  @IsNumberString()
+  readonly categoryId?: string
+
+  @IsOptional()
   @IsFile()
   @MaxFileSize(10 * 1024 * 1024)
   @HasMimeType(['image/jpeg', 'image/png'])
