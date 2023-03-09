@@ -1,7 +1,9 @@
 import React, {
   memo, useState, useEffect, useMemo, Fragment,
 } from 'react'
-import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
+import {
+  ArrowSmallUpIcon, ArrowSmallDownIcon, ArrowLongRightIcon, ArrowLongLeftIcon,
+} from '@heroicons/react/24/solid'
 import {
   FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon,
 } from '@heroicons/react/24/outline'
@@ -21,10 +23,12 @@ import _floor from 'lodash/floor'
 import _size from 'lodash/size'
 import _slice from 'lodash/slice'
 import _sum from 'lodash/sum'
+import _ceil from 'lodash/ceil'
 
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
+import Button from 'ui/Button'
 import Chart from 'ui/Chart'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
@@ -439,6 +443,7 @@ const Panel = ({
   const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])
   const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + 5), [keys, currentIndex])
   const total = useMemo(() => _reduce(keys, (prev, curr) => prev + data[curr], 0), [keys]) // eslint-disable-line
+  const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_PANEL), [keys])
   const [activeFragment, setActiveFragment] = useState(0)
   const [modal, setModal] = useState(false)
   const canGoPrev = () => page > 0
@@ -643,32 +648,50 @@ const Panel = ({
       {_size(keys) > 5 && (
         <div className='absolute bottom-0 w-card-toggle-sm sm:w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
-            <span
-              className={cx('text-gray-500 dark:text-gray-200 font-light', {
-                hoverable: canGoPrev(),
-                disabled: !canGoPrev(),
-              })}
-              role='button'
-              onClick={onPrevious}
-              tabIndex={0}
-            >
-              &lt;
-              &nbsp;
-              {t('project.prev')}
-            </span>
-            <span
-              className={cx('text-gray-500 dark:text-gray-200 font-light', {
-                hoverable: canGoNext(),
-                disabled: !canGoNext(),
-              })}
-              role='button'
-              onClick={onNext}
-              tabIndex={0}
-            >
-              {t('project.next')}
-              &nbsp;
-              &gt;
-            </span>
+            <div>
+              <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
+                {_size(keys)}
+                {' '}
+                {/* {t('project.results')} */}
+                results
+              </span>
+              <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
+                .
+                {' '}
+                Page
+                {' '}
+                {/* {t('project.page')} */}
+                {page + 1}
+                {' '}
+                /
+                {' '}
+                {totalPages}
+              </span>
+            </div>
+            <div className='flex justify-between w-[4.5rem]'>
+              <Button
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 hover:dark:bg-slate-700 border-none px-1.5 py-0.5', {
+                  'opacity-50 cursor-not-allowed': !canGoPrev(),
+                })}
+                type='button'
+                onClick={onPrevious}
+                disabled={!canGoPrev()}
+                focus={false}
+              >
+                <ArrowLongLeftIcon className='w-5 h-5' />
+              </Button>
+              <Button
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 hover:dark:bg-slate-700 border-none px-1.5 py-0.5', {
+                  'opacity-50 cursor-not-allowed': !canGoNext(),
+                })}
+                onClick={onNext}
+                disabled={!canGoNext()}
+                type='button'
+                focus={false}
+              >
+                <ArrowLongRightIcon className='w-5 h-5' />
+              </Button>
+            </div>
           </div>
         </div>
       )}
