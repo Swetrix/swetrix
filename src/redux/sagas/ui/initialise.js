@@ -16,6 +16,7 @@ export default function* initialise() {
     if (token && refreshToken) {
       yield put(UIActions.loadProjects())
       yield put(UIActions.loadSharedProjects())
+      yield put(UIActions.loadProjectsCaptcha())
       yield put(UIActions.loadExtensions())
       yield put(UIActions.loadProjectAlerts())
     }

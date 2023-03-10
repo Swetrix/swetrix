@@ -14,7 +14,11 @@ const debug = Debug('swetrix:rx:s:load-projects')
 
 export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0, isCaptcha = false } }) {
   try {
-    yield put(UIActions.setProjectsLoading(true))
+    if (isCaptcha) {
+      yield put(UIActions.setCaptchaLoading(true))
+    } else {
+      yield put(UIActions.setProjectsLoading(true))
+    }
 
     let {
       // eslint-disable-next-line prefer-const
@@ -47,6 +51,7 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
     if (isCaptcha) {
       yield put(UIActions.setCaptchaProjects(results))
       yield put(UIActions.setTotalCaptcha(total))
+      console.log('total', total)
     } else {
       yield put(UIActions.setProjects(results))
       yield put(UIActions.setTotalMonthlyEvents(totalMonthlyEvents))

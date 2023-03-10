@@ -177,7 +177,7 @@ const Dashboard = ({
   projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData,
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
-  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, captchaPaginationPage, setDashboardPaginationPageCaptcha,
+  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
   isLoadingCaptcha, loadProjectsCaptcha,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
@@ -217,7 +217,7 @@ const Dashboard = ({
       loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageShared - 1) * ENTRIES_PER_PAGE_DASHBOARD)
     }
     if (tabProjects === tabForCaptchaProject) {
-      loadProjectsCaptcha(ENTRIES_PER_PAGE_DASHBOARD, (captchaPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+      loadProjectsCaptcha(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageCaptcha - 1) * ENTRIES_PER_PAGE_DASHBOARD)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage, dashboardPaginationPageShared])
@@ -383,7 +383,7 @@ const Dashboard = ({
               <Pagination page={dashboardPaginationPageShared} pageAmount={pageAmountShared} setPage={setDashboardPaginationPageShared} total={sharedTotal} />
             )}
             {(tabProjects === tabForCaptchaProject && pageAmountCaptcha > 1) && (
-              <Pagination page={captchaPaginationPage} pageAmount={pageAmountCaptcha} setPage={setDashboardPaginationPageCaptcha} total={captchaTotal} />
+              <Pagination page={dashboardPaginationPageCaptcha} pageAmount={pageAmountCaptcha} setPage={setDashboardPaginationPageCaptcha} total={captchaTotal} />
             )}
           </div>
         </div>

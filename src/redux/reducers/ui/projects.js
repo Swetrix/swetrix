@@ -104,11 +104,19 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
-    case types.SET_TOTAL_CAPTCHA: {
+    case types.SET_CAPTCHA_PROJECTS_TOTAL: {
       const { total } = payload
       return {
         ...state,
         captchaTotal: total,
+      }
+    }
+
+    case types.SET_CAPTCHA_PROJECTS_LOADING: {
+      const { isLoading } = payload
+      return {
+        ...state,
+        isLoadingCaptcha: isLoading,
       }
     }
 

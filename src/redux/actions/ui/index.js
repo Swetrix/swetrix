@@ -12,7 +12,7 @@ const loadSharedProjects = (take, skip) => ({
 
 const loadProjectsCaptcha = (take, skip) => ({
   type: types.LOAD_PROJECTS,
-  payload: { take, skip, captcha: true },
+  payload: { take, skip, isCaptcha: true },
 })
 
 const setProjects = (projects, shared) => ({
@@ -239,7 +239,7 @@ const setCaptchaProjects = (captchaProjects) => ({
 })
 
 const setTotalCaptcha = (totalCaptcha) => ({
-  type: types.SET_TOTAL_CAPTCHA,
+  type: types.SET_CAPTCHA_PROJECTS_TOTAL,
   payload: { totalCaptcha },
 })
 
@@ -247,6 +247,13 @@ const setDashboardPaginationPageCaptcha = (page) => ({
   type: types.SET_DASHBOARD_PAGINATION_PAGE_CAPTCHA,
   payload: {
     page,
+  },
+})
+
+const setCaptchaLoading = (captchaLoading) => ({
+  type: types.SET_CAPTCHA_PROJECTS_LOADING,
+  payload: {
+    captchaLoading,
   },
 })
 
@@ -290,6 +297,7 @@ const UIActions = {
   setTotalCaptcha,
   setDashboardPaginationPageCaptcha,
   loadProjectsCaptcha,
+  setCaptchaLoading,
 }
 
 export default UIActions
