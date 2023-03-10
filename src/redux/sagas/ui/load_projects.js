@@ -12,22 +12,31 @@ import {
 
 const debug = Debug('swetrix:rx:s:load-projects')
 
-export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0 } }) {
+export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0, isCaptcha = false } }) {
   try {
     yield put(UIActions.setProjectsLoading(true))
 
     let {
       // eslint-disable-next-line prefer-const
       results, totalMonthlyEvents, total,
-    } = yield call(getProjects, take, skip)
+    } = yield call(getProjects, take, skip, isCaptcha)
 
     const pids = _map(results, result => result.id)
     let overall
 
-    try {
-      overall = yield call(getOverallStats, pids)
-    } catch (e) {
-      debug('failed to overall stats: %s', e)
+    if (isCaptcha) {
+      // try {
+      //   overall = yield call(getOverallStats, pids, true)
+      // } catch (e) {
+      //   debug('failed to overall stats: %s', e)
+      // }
+      overall = {}
+    } else {
+      try {
+        overall = yield call(getOverallStats, pids)
+      } catch (e) {
+        debug('failed to overall stats: %s', e)
+      }
     }
 
     results = _map(results, res => ({
@@ -35,9 +44,14 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
       overall: overall?.[res.id],
     }))
 
-    yield put(UIActions.setProjects(results))
-    yield put(UIActions.setTotalMonthlyEvents(totalMonthlyEvents))
-    yield put(UIActions.setTotal(total))
+    if (isCaptcha) {
+      yield put(UIActions.setCaptchaProjects(results))
+      yield put(UIActions.setTotalCaptcha(total))
+    } else {
+      yield put(UIActions.setProjects(results))
+      yield put(UIActions.setTotalMonthlyEvents(totalMonthlyEvents))
+      yield put(UIActions.setTotal(total))
+    }
 
     const liveStats = yield call(getLiveVisitors, pids)
     yield put(UIActions.setLiveStats(liveStats))

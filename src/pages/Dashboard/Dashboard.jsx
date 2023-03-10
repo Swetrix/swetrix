@@ -26,7 +26,7 @@ import { ActivePin, InactivePin, WarningPin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
 import {
-  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabsForDashboard, tabForOwnedProject, tabForSharedProject,
+  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabsForDashboard, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject,
 } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
@@ -177,17 +177,24 @@ const Dashboard = ({
   projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData,
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
-  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared,
+  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, captchaPaginationPage, setDashboardPaginationPageCaptcha,
+  isLoadingCaptcha, loadProjectsCaptcha,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
   const [tabProjects, setTabProjects] = useState(dashboardTabs)
-  const pageAmount = useMemo(() => (dashboardTabs === tabForSharedProject ? _ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD) : _ceil(total / ENTRIES_PER_PAGE_DASHBOARD)), [total, sharedTotal, dashboardTabs])
+  const pageAmountShared = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
+  const pageAmount = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
+  const pageAmountCaptcha = Math.ceil(captchaTotal / ENTRIES_PER_PAGE_DASHBOARD)
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
-      history.push(routes.new_project)
+      if (dashboardTabs === tabForCaptchaProject) {
+        history.push('/dashboard/captcha/new')
+      } else {
+        history.push(routes.new_project)
+      }
     } else {
       setShowActivateEmailModal(true)
     }
@@ -208,6 +215,9 @@ const Dashboard = ({
     }
     if (tabProjects === tabForSharedProject) {
       loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageShared - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+    }
+    if (tabProjects === tabForCaptchaProject) {
+      loadProjectsCaptcha(ENTRIES_PER_PAGE_DASHBOARD, (captchaPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage, dashboardPaginationPageShared])
@@ -243,7 +253,7 @@ const Dashboard = ({
               </h2>
               <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm'>
                 <FolderPlusIcon className='w-5 h-5 mr-1' />
-                {t('dashboard.newProject')}
+                {tabProjects === tabForCaptchaProject ? t('dashboard.createCaptchaProject') : t('dashboard.newProject')}
               </span>
             </div>
             <div className='mt-6'>
@@ -366,12 +376,15 @@ const Dashboard = ({
                 )}
               </>
             )}
-
-            {
-                pageAmount > 1 && (
-                  <Pagination page={tabProjects === tabForSharedProject ? dashboardPaginationPageShared : dashboardPaginationPage} setPage={tabProjects === tabForSharedProject ? (page) => setDashboardPaginationPageShared(page) : (page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={tabProjects === tabForSharedProject ? sharedTotal : total} />
-                )
-              }
+            {(tabProjects === tabForOwnedProject && pageAmount > 1) && (
+              <Pagination page={dashboardPaginationPage} pageAmount={pageAmount} setPage={setDashboardPaginationPage} total={total} />
+            )}
+            {(tabProjects === tabForSharedProject && pageAmountShared > 1) && (
+              <Pagination page={dashboardPaginationPageShared} pageAmount={pageAmountShared} setPage={setDashboardPaginationPageShared} total={sharedTotal} />
+            )}
+            {(tabProjects === tabForCaptchaProject && pageAmountCaptcha > 1) && (
+              <Pagination page={captchaPaginationPage} pageAmount={pageAmountCaptcha} setPage={setDashboardPaginationPageCaptcha} total={captchaTotal} />
+            )}
           </div>
         </div>
       </div>

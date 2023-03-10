@@ -209,9 +209,9 @@ export const verifyShare = ({ path, id }) =>
         : error.response.data.message
     })
 
-export const getProjects = (take = 0, skip = 0) =>
+export const getProjects = (take = 0, skip = 0, isCaptcha = false) =>
   api
-    .get(`/project?take=${take}&skip=${skip}`)
+    .get(`/project?take=${take}&skip=${skip}&isCaptcha=${isCaptcha}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

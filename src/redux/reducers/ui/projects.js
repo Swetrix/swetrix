@@ -9,14 +9,18 @@ const getInitialState = () => {
   return {
     projects: [],
     sharedProjects: [],
+    captchaProjects: [],
     isLoading: true,
     isLoadingShared: true,
+    isLoadingCaptcha: true,
     error: null,
     totalMonthlyEvents: null,
     total: 0,
     sharedTotal: 0,
+    captchaTotal: 0,
     dashboardPaginationPage: 1,
     dashboardPaginationPageShared: 1,
+    dashboardPaginationPageCaptcha: 1,
     dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
     projectTab: PROJECT_TABS.traffic,
     alerts: [],
@@ -43,6 +47,15 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
+    case types.SET_CAPTCHA_PROJECTS: {
+      const { projects } = payload
+      return {
+        ...state,
+        captchaProjects: projects,
+        isLoadingCaptcha: false,
+      }
+    }
+
     case types.SET_DASHBOARD_PAGINATION_PAGE: {
       const { page } = payload
       return {
@@ -56,6 +69,14 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       return {
         ...state,
         dashboardPaginationPageShared: page,
+      }
+    }
+
+    case types.SET_DASHBOARD_PAGINATION_PAGE_CAPTCHA: {
+      const { page } = payload
+      return {
+        ...state,
+        dashboardPaginationPageCaptcha: page,
       }
     }
 
@@ -80,6 +101,14 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       return {
         ...state,
         total,
+      }
+    }
+
+    case types.SET_TOTAL_CAPTCHA: {
+      const { total } = payload
+      return {
+        ...state,
+        captchaTotal: total,
       }
     }
 

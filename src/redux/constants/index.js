@@ -213,6 +213,7 @@ export const roleAdmin = {
 
 export const tabForOwnedProject = 'owned'
 export const tabForSharedProject = 'shared'
+export const tabForCaptchaProject = 'captcha'
 
 export const tabsForDashboard = [
   {
@@ -222,6 +223,10 @@ export const tabsForDashboard = [
   {
     name: tabForSharedProject,
     label: 'profileSettings.shared',
+  },
+  {
+    name: tabForCaptchaProject,
+    label: 'profileSettings.captcha',
   },
 ]
 
