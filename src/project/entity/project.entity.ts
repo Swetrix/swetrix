@@ -70,12 +70,15 @@ export class Project {
   @JoinTable()
   extensions: ExtensionToProject[]
 
+  @ApiProperty()
   @Column({ default: true })
   isAnalyticsProject: boolean
 
+  @ApiProperty()
   @Column({ default: false})
   isCaptchaProject: boolean
 
+  @ApiProperty()
   @Column({ default: false})
   isCaptchaEnabled: boolean
 }
