@@ -652,15 +652,13 @@ const Panel = ({
               <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
                 {_size(keys)}
                 {' '}
-                {/* {t('project.results')} */}
-                results
+                {t('project.results')}
               </span>
               <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
                 .
                 {' '}
-                Page
+                {t('project.page')}
                 {' '}
-                {/* {t('project.page')} */}
                 {page + 1}
                 {' '}
                 /
