@@ -22,6 +22,7 @@ import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
+import * as _filter from 'lodash/filter'
 
 import { ProjectService, processProjectUser, deleteProjectRedis } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
@@ -80,6 +81,7 @@ export class ProjectController {
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
+  @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
@@ -87,6 +89,7 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
+    @Query('isCaptcha') isCaptcha: boolean | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
 
@@ -103,10 +106,17 @@ export class ProjectController {
       const where = Object()
       where.admin = userId
 
+      if (isCaptcha) {
+        where.isCaptchaProject = true
+      } else {
+        where.isAnalyticsProject = true
+      }
+
       const paginated = await this.projectService.paginate(
         { take, skip },
         where,
       )
+
       const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
 
       paginated.results = _map(paginated.results, p => ({
@@ -332,10 +342,18 @@ export class ProjectController {
         )
       }
 
-      if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
-        throw new ForbiddenException(
-          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-        )
+      if (projectDTO.isCaptcha) {
+        if (_size(_filter(user.projects, (project: Project) => project.isCaptchaProject) >= (maxProjects || PROJECTS_MAXIMUM))) {
+          throw new ForbiddenException(
+            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          )
+        }
+      } else {
+        if (_size(_filter(user.projects, (project: Project) => project.isAnalyticsProject) >= (maxProjects || PROJECTS_MAXIMUM))) {
+          throw new ForbiddenException(
+            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          )
+        }
       }
 
       this.projectService.validateProject(projectDTO)
@@ -346,6 +364,12 @@ export class ProjectController {
         const project = new Project()
         Object.assign(project, projectDTO)
         project.origins = _map(projectDTO.origins, _trim)
+
+        if (projectDTO.isCaptcha) {
+          project.isCaptchaProject = true
+          project.isAnalyticsProject = false
+          project.isCaptchaEnabled = true
+        }
 
         const newProject = await this.projectService.create(project)
         user.projects.push(project)
@@ -471,6 +495,21 @@ export class ProjectController {
       project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
       project.name = projectDTO.name
       project.public = projectDTO.public
+
+      if (project.isAnalyticsProject && projectDTO.isCaptcha) {
+        const captchaProjects = _filter(user.projects, (project: Project) => project.isCaptchaProject)
+        const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+
+
+        if (_size(captchaProjects >= (maxProjects || PROJECTS_MAXIMUM))) {
+          throw new ForbiddenException(
+            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          )
+        }
+
+        project.isCaptchaProject = true
+        project.isCaptchaEnabled = true
+      }
 
       await this.projectService.update(id, _omit(project, ['share', 'admin']))
     }

@@ -69,4 +69,13 @@ export class Project {
   )
   @JoinTable()
   extensions: ExtensionToProject[]
+
+  @Column({ default: true })
+  isAnalyticsProject: boolean
+
+  @Column({ default: false})
+  isCaptchaProject: boolean
+
+  @Column({ default: false})
+  isCaptchaEnabled: boolean
 }

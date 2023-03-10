@@ -46,4 +46,10 @@ export class ProjectDTO {
       "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
   })
   public: boolean
+
+  @ApiProperty({
+    required: false,
+    description: 'When true, created a new Captcha Project without Analytics Projects.'
+  })
+  isCaptcha: boolean
 }
