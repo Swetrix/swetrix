@@ -210,6 +210,7 @@ export class ExtensionsService {
           await this.cdnService.uploadFile(extension.extensionScript)
         ).filename,
       version: DEFAULT_EXTENSION_VERSION,
+      tags: ['New'],
     })
   }
 

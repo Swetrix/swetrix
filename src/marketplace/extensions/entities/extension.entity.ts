@@ -79,6 +79,6 @@ export class Extension {
   @JoinTable()
   complaints: Complaint[]
 
-  @Column({ type: 'simple-array', default: ['New'] })
+  @Column({ type: 'simple-array' })
   tags: string[]
 }
