@@ -70,6 +70,13 @@ Below you will find the Environment Variables that are required to run the API. 
 `EMAIL`=test@test.com\
 `PASSWORD`=12345678
 
+#### 2FA
+`TWO_FACTOR_AUTHENTICATION_APP_NAME`=Swetrix Selfhosted
+
+#### Authorisation
+`JWT_ACCESS_TOKEN_SECRET`='jwt-access-token-secret'\
+`JWT_REFRESH_TOKEN_SECRET`='jwt-refresh-token-secret'
+
 ### Running Swetrix-API behind a Reverse Proxy
 
 Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.\

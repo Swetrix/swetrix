@@ -346,5 +346,25 @@ export class ExtensionsService {
       },
       relations: ['owner', 'users', 'category'],
     })
+
+  async find(options: FindManyOptions<Extension>): Promise<Extension[]> {
+    return await this.extensionRepository.find(options)
+  }
+
+  async getExtensionInstallCount(
+    extensionId: string,
+    twoWeeksAgo?: Date,
+  ): Promise<number> {
+    const query = this.extensionToProjectRepository
+      .createQueryBuilder('extensionToProject')
+      .where('extensionToProject.extensionId = :extensionId', { extensionId })
+
+    if (twoWeeksAgo) {
+      query.andWhere('extensionToProject.createdAt > :twoWeeksAgo', {
+        twoWeeksAgo,
+      })
+    }
+
+    return await query.getCount()
   }
 }
