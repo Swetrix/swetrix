@@ -223,46 +223,6 @@ const getColumns = (chart, activeChartMetrics) => {
   return columns
 }
 
-const getColumnsPerf = (chart, activeChartMetrics) => {
-  const columns = [
-    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-  ]
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.full) {
-    columns.push(['dns', ...chart.dns])
-    columns.push(['tls', ...chart.tls])
-    columns.push(['conn', ...chart.conn])
-    columns.push(['response', ...chart.response])
-    columns.push(['render', ...chart.render])
-    columns.push(['dom_load', ...chart.domLoad])
-    columns.push(['ttfb', ...chart.ttfb])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.timing) {
-    columns.push(['frontend', ...sumArrays(chart.render, chart.domLoad)])
-    columns.push(['network', ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response)])
-    columns.push(['backend', ...chart.ttfb])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.network) {
-    columns.push(['dns', ...chart.dns])
-    columns.push(['tls', ...chart.tls])
-    columns.push(['conn', ...chart.conn])
-    columns.push(['response', ...chart.response])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend) {
-    columns.push(['render', ...chart.render])
-    columns.push(['dom_load', ...chart.domLoad])
-  }
-
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.backend) {
-    columns.push(['ttfb', ...chart.ttfb])
-  }
-
-  return columns
-}
-
 // setting the default values for the time period dropdown
 const noRegionPeriods = ['custom', 'yesterday']
 
@@ -432,104 +392,6 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
   }
 }
 
-const getSettingsPerf = (chart, timeBucket, activeChartMetrics, rotateXAxias, chartType) => {
-  const xAxisSize = _size(chart.x)
-
-  return {
-    data: {
-      x: 'x',
-      xFormat: tbsFormatMapper[timeBucket],
-      columns: getColumnsPerf(chart, activeChartMetrics),
-      types: {
-        dns: chartType === chartTypes.line ? areaSpline() : bar(),
-        tls: chartType === chartTypes.line ? areaSpline() : bar(),
-        conn: chartType === chartTypes.line ? areaSpline() : bar(),
-        response: chartType === chartTypes.line ? areaSpline() : bar(),
-        render: chartType === chartTypes.line ? areaSpline() : bar(),
-        dom_load: chartType === chartTypes.line ? areaSpline() : bar(),
-        ttfb: chartType === chartTypes.line ? areaSpline() : bar(),
-        frontend: chartType === chartTypes.line ? areaSpline() : bar(),
-        network: chartType === chartTypes.line ? areaSpline() : bar(),
-        backend: chartType === chartTypes.line ? areaSpline() : bar(),
-      },
-      colors: {
-        dns: '#EC4319',
-        tls: '#F27059',
-        conn: '#F7A265',
-        response: '#F5D376',
-        render: '#709775',
-        dom_load: '#A5E6AB',
-        ttfb: '#00A8E8',
-        frontend: '#709775',
-        network: '#F7A265',
-        backend: '#00A8E8',
-      },
-      groups: [
-        ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
-      ],
-    },
-    axis: {
-      x: {
-        type: 'timeseries',
-        tick: {
-          format: tbsFormatMapper[timeBucket],
-          rotate: rotateXAxias ? 45 : 0,
-        },
-      },
-      y: {
-        tick: {
-          format: (d) => getStringFromTime(getTimeFromSeconds(d), true),
-        },
-      },
-    },
-    tooltip: {
-      format: {
-        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
-      },
-      contents: {
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
-            <li class='font-semibold'>{=TITLE}</li>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            {{
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
-                </div>
-                <span class='pl-4'>{=VALUE}</span>
-              </li>
-            }}
-          </ul>`,
-      },
-    },
-    point: {
-      focus: {
-        only: xAxisSize > 1,
-      },
-      pattern: [
-        'circle',
-      ],
-      r: 3,
-    },
-    legend: {
-      usePoint: true,
-      item: {
-        tile: {
-          width: 10,
-        },
-      },
-    },
-    area: {
-      linearGradient: true,
-    },
-    padding: {
-      right: rotateXAxias && 35,
-    },
-    bindto: '#dataChart',
-  }
-}
-
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const paidPeriods = ['12M', '24M']
@@ -575,5 +437,5 @@ export {
   iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters,
   validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings,
   getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
-  CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData,
+  CHART_METRICS_MAPPING_PERF, transformAIChartData,
 }
