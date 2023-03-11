@@ -28,6 +28,7 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
+import Select from 'ui/Select'
 import { nanoid } from 'utils/random'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
@@ -38,10 +39,10 @@ const MAX_IPBLACKLIST_LENGTH = 300
 
 const tabForCreateCaptcha = [{
   name: 'new',
-  title: 'project.captcha.settings.general',
+  label: 'project.captcha.settings.general',
 }, {
   name: 'inheritance',
-  title: 'project.captcha.settings.inheritance',
+  label: 'project.captcha.settings.inheritance',
 }]
 
 const tabForNew = 'new'
@@ -50,7 +51,7 @@ const tabForInheritance = 'inheritance'
 const CaptchaSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user,
-  deleteProjectCache,
+  deleteProjectCache, analyticsProjects,
 }) => {
   const { t } = useTranslation('common')
   const { pathname } = useLocation()
@@ -73,6 +74,7 @@ const CaptchaSettings = ({
   const [projectResetting, setProjectResetting] = useState(false)
   const [projectSaving, setProjectSaving] = useState(false)
   const [tab, setTab] = useState(tabForCreateCaptcha[0].name)
+  const [reuseProjectId, setReuseProjectId] = useState()
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
@@ -116,7 +118,16 @@ const CaptchaSettings = ({
           await updateProject(id, formalisedData)
           newProject(t('project.captcha.settings.updated'))
         } else {
-          await createProject(formalisedData)
+          console.log(formalisedData)
+          if (tab === tabForInheritance) {
+            if (_isEmpty(reuseProjectId)) {
+              showError('Select projects')
+              return
+            }
+            await updateProject(formalisedData.id, formalisedData)
+          } else {
+            await createProject(formalisedData)
+          }
           trackCustom('PROJECT_CREATED')
           newProject(t('project.captcha.settings.created'))
         }
@@ -172,11 +183,11 @@ const CaptchaSettings = ({
   const validate = () => {
     const allErrors = {}
 
-    if (_isEmpty(form.name)) {
+    if (_isEmpty(form.name) && tabForInheritance !== tab) {
       allErrors.name = t('project.captcha.settings.noNameError')
     }
 
-    if (_size(form.name) > MAX_NAME_LENGTH) {
+    if (_size(form.name) > MAX_NAME_LENGTH && tabForInheritance !== tab) {
       allErrors.name = t('project.captcha.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
     }
 
@@ -189,7 +200,6 @@ const CaptchaSettings = ({
     }
 
     const valid = _isEmpty(_keys(allErrors))
-
     setErrors(allErrors)
     setValidated(valid)
   }
@@ -212,6 +222,17 @@ const CaptchaSettings = ({
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
+
+    if (tab === tabForInheritance) {
+      const data = _find(analyticsProjects, (item) => `${item.name} | ${item.id}` === reuseProjectId)
+
+      if (_isEmpty(data)) {
+        showError('Select project or select corect project')
+      }
+
+      onSubmit({ ...data, isCaptcha: true })
+      return
+    }
 
     if (validated) {
       onSubmit(form)
@@ -250,7 +271,7 @@ const CaptchaSettings = ({
                     'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabCaptcha.name,
                   })}
                 >
-                  {t(tab.label)}
+                  {t(tabCaptcha.label)}
                 </button>
               ))}
             </nav>
@@ -283,16 +304,14 @@ const CaptchaSettings = ({
           )}
           {tab === tabForInheritance && (
             <>
-              <Input
-                name='name'
-                id='name'
-                type='text'
-                label={t('project.captcha.settings.name')}
-                value={form.name}
-                placeholder='My awesome project'
-                className='mt-4'
-                onChange={handleInput}
-                error={beenSubmitted ? errors.name : null}
+              <Select
+                title={_isEmpty(reuseProjectId) ? 'select project' : reuseProjectId}
+                label={t('profileSettings.selectProject')}
+                className='w-full'
+                items={analyticsProjects}
+                labelExtractor={(item) => `${item.name} | ${item.id}`}
+                keyExtractor={(item) => item.id}
+                onSelect={(item) => setReuseProjectId(item)}
               />
               <Input
                 name='id'
