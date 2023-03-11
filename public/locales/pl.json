@@ -606,7 +606,7 @@
       "ipBlacklistHint": "Lista adresów IP, z których nie będzie zbierana analityka na tym projekcie.\nTa funkcjonalność jest przydatna, jeśli chcesz na przykład zignorować analitykę z Twojego IP.\nPrzykład: 172.126.10.16, 192.168.0.1/32, ::1"
     },
     "results": "Results",
-    "page": "Page"
+    "page": "Strona"
   },
   "billing": {
     "title": "Cennik i plany",
