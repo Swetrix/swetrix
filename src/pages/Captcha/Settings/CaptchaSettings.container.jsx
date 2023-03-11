@@ -31,7 +31,7 @@ const mapDispatchToProps = (dispatch) => ({
     UIActions.loadProjectsCaptcha()
   },
   removeProject: (pid) => {
-    dispatch(UIActions.removeCaptchaProject(pid))
+    dispatch(UIActions.removeCaptchProject(pid))
   },
   deleteProjectCache: (pid) => {
     dispatch(UIActions.deleteProjectCache(pid))
