@@ -48,10 +48,10 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
     }
 
     case types.SET_CAPTCHA_PROJECTS: {
-      const { projects } = payload
+      const { captchaProjects } = payload
       return {
         ...state,
-        captchaProjects: projects,
+        captchaProjects,
         isLoadingCaptcha: false,
       }
     }

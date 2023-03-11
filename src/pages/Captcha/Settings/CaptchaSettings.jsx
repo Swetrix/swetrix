@@ -47,11 +47,11 @@ const CaptchaSettings = ({
   const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
   const history = useHistory()
-
   const [form, setForm] = useState({
     name: '',
     id: id || nanoid(),
     public: false,
+    isCaptcha: true,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState({})

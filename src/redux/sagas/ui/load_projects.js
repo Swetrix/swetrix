@@ -47,6 +47,8 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
       ...res,
       overall: overall?.[res.id],
     }))
+    console.log(results)
+    console.log(total)
 
     if (isCaptcha) {
       yield put(UIActions.setCaptchaProjects(results))

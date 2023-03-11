@@ -243,9 +243,9 @@ const removeCaptchProject = (pid) => ({
   payload: { pid },
 })
 
-const setTotalCaptcha = (totalCaptcha) => ({
+const setTotalCaptcha = (total) => ({
   type: types.SET_CAPTCHA_PROJECTS_TOTAL,
-  payload: { totalCaptcha },
+  payload: { total },
 })
 
 const setDashboardPaginationPageCaptcha = (page) => ({
@@ -255,10 +255,10 @@ const setDashboardPaginationPageCaptcha = (page) => ({
   },
 })
 
-const setCaptchaLoading = (captchaLoading) => ({
+const setCaptchaLoading = (isLoading) => ({
   type: types.SET_CAPTCHA_PROJECTS_LOADING,
   payload: {
-    captchaLoading,
+    isLoading,
   },
 })
 

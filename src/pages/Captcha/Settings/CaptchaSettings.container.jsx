@@ -5,11 +5,14 @@ import { errorsActions } from 'redux/actions/errors'
 
 import CaptchaSettings from './CaptchaSettings'
 
-const mapStateToProps = (state) => ({
-  projects: state.ui.projects.captchaProjects,
-  isLoading: state.ui.projects.isLoadingCaptcha,
-  user: state.auth.user,
-})
+const mapStateToProps = (state) => {
+  console.log(state)
+  return {
+    projects: state.ui.projects.captchaProjects,
+    isLoading: state.ui.projects.isLoadingCaptcha,
+    user: state.auth.user,
+  }
+}
 
 const mapDispatchToProps = (dispatch) => ({
   updateProjectFailed: (message) => {
