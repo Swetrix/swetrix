@@ -55,6 +55,13 @@ import {
 } from '../common/utils'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
+import {
+  AddSubscriberBodyDto,
+  AddSubscriberParamsDto,
+  GetSubscribersParamsDto,
+  GetSubscribersQueriesDto,
+  RemoveSubscriberParamsDto,
+} from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 
@@ -788,17 +795,25 @@ export class ProjectController {
   }
 
   @Post(':projectId/subscribers')
-  async addSubscriber(): Promise<void> {
+  async addSubscriber(
+    @Param() params: AddSubscriberParamsDto,
+    @Body() body: AddSubscriberBodyDto,
+  ): Promise<void> {
     // TODO: Implement
   }
 
   @Get(':projectId/subscribers')
-  async getSubscribers(): Promise<void> {
+  async getSubscribers(
+    @Param() params: GetSubscribersParamsDto,
+    @Query() queries: GetSubscribersQueriesDto,
+  ): Promise<void> {
     // TODO: Implement
   }
 
   @Delete(':projectId/subscribers/:subscriberId')
-  async removeSubscriber(): Promise<void> {
+  async removeSubscriber(
+    @Param() params: RemoveSubscriberParamsDto,
+  ): Promise<void> {
     // TODO: Implement
   }
 }
