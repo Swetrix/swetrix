@@ -172,6 +172,11 @@ const ViewProject = ({
     }
   }, [t])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const switchActiveChartMetric = _debounce((pairID) => {
+    setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
+  })
+
   const onErrorLoading = () => {
     showError(t('project.noExist'))
     history.push(routes.dashboard)
@@ -499,6 +504,32 @@ const ViewProject = ({
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t))
   }, [t])
+
+  // Parsing initial filters from the address bar
+  useEffect(() => {
+    // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
+    try {
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const initialFilters = []
+      // eslint-disable-next-line lodash/prefer-lodash-method
+      searchParams.forEach((value, key) => {
+        if (!_includes(validFilters, key)) {
+          return
+        }
+
+        const isExclusive = _startsWith(value, '!')
+        initialFilters.push({
+          column: key,
+          filter: isExclusive ? value.substring(1) : value,
+          isExclusive,
+        })
+      })
+      setFilters(initialFilters)
+    } finally {
+      setAreFiltersParsed(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (arePeriodParsed) {
