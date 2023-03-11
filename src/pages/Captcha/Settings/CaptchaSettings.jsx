@@ -118,7 +118,6 @@ const CaptchaSettings = ({
           await updateProject(id, formalisedData)
           newProject(t('project.captcha.settings.updated'))
         } else {
-          console.log(formalisedData)
           if (tab === tabForInheritance) {
             if (_isEmpty(reuseProjectId)) {
               showError('Select projects')
