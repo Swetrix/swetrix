@@ -14,6 +14,7 @@ import {
   ForbiddenException,
   Headers,
   NotImplementedException,
+  Patch,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -56,10 +57,12 @@ import {
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
 import {
-  AddSubscriberBodyDto,
   AddSubscriberParamsDto,
+  AddSubscriberBodyDto,
   GetSubscribersParamsDto,
   GetSubscribersQueriesDto,
+  UpdateSubscriberParamsDto,
+  UpdateSubscriberBodyDto,
   RemoveSubscriberParamsDto,
 } from './dto'
 
@@ -806,6 +809,14 @@ export class ProjectController {
   async getSubscribers(
     @Param() params: GetSubscribersParamsDto,
     @Query() queries: GetSubscribersQueriesDto,
+  ): Promise<void> {
+    // TODO: Implement
+  }
+
+  @Patch(':projectId/subscribers/:subscriberId')
+  async updateSubscriber(
+    @Param() params: UpdateSubscriberParamsDto,
+    @Body() body: UpdateSubscriberBodyDto,
   ): Promise<void> {
     // TODO: Implement
   }
