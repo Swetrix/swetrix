@@ -786,4 +786,19 @@ export class ProjectController {
       await this.actionTokensService.delete(id)
     }
   }
+
+  @Post(':projectId/subscribers')
+  async addSubscriber(): Promise<void> {
+    // TODO: Implement
+  }
+
+  @Get(':projectId/subscribers')
+  async getSubscribers(): Promise<void> {
+    // TODO: Implement
+  }
+
+  @Delete(':projectId/subscribers/:subscriberId')
+  async removeSubscriber(): Promise<void> {
+    // TODO: Implement
+  }
 }
