@@ -24,7 +24,7 @@ import JSZip from 'jszip'
 import {
   TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h,
 } from 'redux/constants'
-import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import countries from 'utils/isoCountries'
 
 const getAvg = (arr) => {
@@ -34,32 +34,6 @@ const getAvg = (arr) => {
 
 const getSum = (arr) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
-}
-
-const transformAIChartData = (data) => {
-  const transformedData = {
-    x: [],
-    sdur: [],
-    uniques: [],
-    visits: [],
-  }
-
-  _forEach(data, (d) => {
-    if (d.x) {
-      transformedData.x = d.x
-    }
-    if (d.sdur) {
-      transformedData.sdur = d.sdur
-    }
-    if (d.uniques) {
-      transformedData.uniques = d.uniques
-    }
-    if (d.visits) {
-      transformedData.visits = d.visits
-    }
-  })
-
-  return transformedData
 }
 
 const trendline = (data) => {
@@ -163,14 +137,6 @@ const CHART_METRICS_MAPPING = {
   viewsPerUnique: 'viewsPerUnique',
   trendlines: 'trendlines',
   sessionDuration: 'sessionDuration',
-}
-
-const CHART_METRICS_MAPPING_PERF = {
-  full: 'full',
-  timing: 'timing',
-  network: 'network',
-  frontend: 'frontend',
-  backend: 'backend',
 }
 
 // function to filter the data for the chart
@@ -437,5 +403,4 @@ export {
   iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters,
   validPeriods, validTimeBacket, paidPeriods, noRegionPeriods, getSettings,
   getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
-  CHART_METRICS_MAPPING_PERF, transformAIChartData,
 }

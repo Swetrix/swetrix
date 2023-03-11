@@ -134,10 +134,6 @@ const ViewProject = ({
     return projectTab || PROJECT_TABS.traffic
   })
 
-  // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
-  // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
-  const [forecasedChartData, setForecasedChartData] = useState({})
-
   const [chartDataPerf, setChartDataPerf] = useState({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   const [panelsDataPerf, setPanelsDataPerf] = useState({})
@@ -348,7 +344,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
         setChartData(chart)
 
         setPanelsData({
@@ -619,48 +615,6 @@ const ViewProject = ({
     }
   }
 
-  const onForecastOpen = () => {
-    if (isLoading || dataLoading) {
-      return
-    }
-
-    if (!_isEmpty(forecasedChartData)) {
-      setForecasedChartData({})
-      return
-    }
-
-    setIsForecastOpened(true)
-  }
-
-  const onForecastSubmit = async (periodToForecast) => {
-    setIsForecastOpened(false)
-    setDataLoading(true)
-    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast)
-    const data = cache[id][key]
-
-    if (!_isEmpty(data)) {
-      setForecasedChartData(data)
-      setDataLoading(false)
-      return
-    }
-
-    try {
-      const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
-      const transformed = transformAIChartData(result)
-      setProjectForcastCache(id, transformed, key)
-      setForecasedChartData(transformed)
-    } catch (e) {
-      console.error(`[onForecastSubmit] Error: ${e}`)
-    }
-
-    setDataLoading(false)
-  }
-
-  useEffect(() => {
-    loadAnalytics()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forecasedChartData])
-
   useEffect(() => {
     const url = new URL(window.location)
     url.searchParams.delete('tab')
@@ -688,7 +642,7 @@ const ViewProject = ({
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -703,7 +657,7 @@ const ViewProject = ({
 
         if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -1313,23 +1267,6 @@ const ViewProject = ({
                         })}
                       >
                         <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
-                      </button>
-                    </div>
-                    <div
-                      className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
-                        hidden: activeTab !== PROJECT_TABS.traffic,
-                      })}
-                    >
-                      <button
-                        type='button'
-                        onClick={onForecastOpen}
-                        disabled={!_isEmpty(filters)}
-                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                          'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
-                          '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
-                        })}
-                      >
-                        <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
                       </button>
                     </div>
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
