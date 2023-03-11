@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/swagger'
+import { PickType } from '@nestjs/swagger'
 import { Matches, IsUUID } from 'class-validator'
 import { AddSubscriberBodyDto } from './add-subscriber.dto'
 
@@ -10,6 +10,6 @@ export class UpdateSubscriberParamsDto {
   readonly subscriberId: string
 }
 
-export class UpdateSubscriberBodyDto extends PartialType(
-  AddSubscriberBodyDto,
-) {}
+export class UpdateSubscriberBodyDto extends PickType(AddSubscriberBodyDto, [
+  'reportFrequency',
+] as const) {}
