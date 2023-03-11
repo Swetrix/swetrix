@@ -649,7 +649,7 @@ const Panel = ({
         <div className='absolute bottom-0 w-card-toggle-sm sm:w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <div>
-              <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
+              <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
                 {_size(keys)}
                 {' '}
                 {t('project.results')}
@@ -668,8 +668,9 @@ const Panel = ({
             </div>
             <div className='flex justify-between w-[4.5rem]'>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 hover:dark:bg-slate-700 border-none px-1.5 py-0.5', {
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-gray-800 border-none px-1.5 py-0.5', {
                   'opacity-50 cursor-not-allowed': !canGoPrev(),
+                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
                 })}
                 type='button'
                 onClick={onPrevious}
@@ -679,8 +680,9 @@ const Panel = ({
                 <ArrowLongLeftIcon className='w-5 h-5' />
               </Button>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 hover:dark:bg-slate-700 border-none px-1.5 py-0.5', {
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-gray-800 border-none px-1.5 py-0.5', {
                   'opacity-50 cursor-not-allowed': !canGoNext(),
+                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
                 })}
                 onClick={onNext}
                 disabled={!canGoNext()}
