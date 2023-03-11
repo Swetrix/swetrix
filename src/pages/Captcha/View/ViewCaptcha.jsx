@@ -113,17 +113,6 @@ const ViewProject = ({
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs[id]?.rangeDate
   const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
-  const [activeTab, setActiveTab] = useState(() => {
-    const url = new URL(window.location)
-    const { searchParams } = url
-    const tab = searchParams.get('tab')
-
-    if (_includes(PROJECT_TABS_VALUES, tab)) {
-      return tab
-    }
-
-    return projectTab || PROJECT_TABS.traffic
-  })
 
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
@@ -182,11 +171,6 @@ const ViewProject = ({
       sessionDuration: t('dashboard.sessionDuration'),
     }
   }, [t])
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const switchActiveChartMetric = useCallback(_debounce((pairID) => {
-    setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
-  }, 0), [activeTab])
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
@@ -269,17 +253,15 @@ const ViewProject = ({
           customs,
         })
 
-        if (activeTab === PROJECT_TABS.traffic) {
-          if (!_isEmpty(mainChart)) {
-            mainChart.destroy()
-          }
-
-          setMainChart(() => {
-            const generete = bb.generate(bbSettings)
-            generete.data.names(dataNames)
-            return generete
-          })
+        if (!_isEmpty(mainChart)) {
+          mainChart.destroy()
         }
+
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names(dataNames)
+          return generete
+        })
 
         setIsPanelsDataEmpty(false)
       }
@@ -379,22 +361,6 @@ const ViewProject = ({
       loadAnalytics(true)
     }
   }
-
-  useEffect(() => {
-    const url = new URL(window.location)
-    url.searchParams.delete('tab')
-
-    url.searchParams.append('tab', activeTab)
-    const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab])
 
   useEffect(() => {
     if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
@@ -534,32 +500,6 @@ const ViewProject = ({
     setPeriodPairs(tbPeriodPairs(t))
   }, [t])
 
-  // Parsing initial filters from the address bar
-  useEffect(() => {
-    // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
-    try {
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const initialFilters = []
-      // eslint-disable-next-line lodash/prefer-lodash-method
-      searchParams.forEach((value, key) => {
-        if (!_includes(validFilters, key)) {
-          return
-        }
-
-        const isExclusive = _startsWith(value, '!')
-        initialFilters.push({
-          column: key,
-          filter: isExclusive ? value.substring(1) : value,
-          isExclusive,
-        })
-      })
-      setFilters(initialFilters)
-    } finally {
-      setAreFiltersParsed(true)
-    }
-  }, [activeTab])
-
   useEffect(() => {
     if (arePeriodParsed) {
       try {
@@ -641,11 +581,9 @@ const ViewProject = ({
 
   useEffect(() => {
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      if (activeTab === PROJECT_TABS.traffic) {
-        loadAnalytics()
-      }
+      loadAnalytics()
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab]) // eslint-disable-line
+  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
 
   useEffect(() => {
     if (dateRange && arePeriodParsed) {
@@ -887,213 +825,193 @@ const ViewProject = ({
             className={cx(
               'bg-gray-50 dark:bg-gray-800 py-6 px-2 sm:px-4 lg:px-8',
               {
-                'min-h-min-footer': authenticated || activeTab === PROJECT_TABS.alerts,
-                'min-h-min-footer-ad': !authenticated && activeTab !== PROJECT_TABS.alerts,
+                'min-h-min-footer': authenticated,
+                'min-h-min-footer-ad': !authenticated,
               },
             )}
             ref={dashboardRef}
           >
-            {activeTab !== PROJECT_TABS.alerts && (
-              <>
-                <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
-                  <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
-                    {name}
-                  </h2>
-                  <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
-                    <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
-                      <button
-                        type='button'
-                        onClick={refreshStats}
-                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                          'cursor-not-allowed opacity-50': isLoading || dataLoading,
-                        })}
-                      >
-                        <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
-                      </button>
-                    </div>
-                    <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
-                      <span className='relative z-0 inline-flex shadow-sm rounded-md'>
-                        {_map(activePeriod.tbs, (tb, index, { length }) => (
-                          <button
-                            key={tb}
-                            type='button'
-                            onClick={() => updateTimebucket(tb)}
-                            className={cx(
-                              'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
-                              {
-                                '-ml-px': index > 0,
-                                'rounded-l-md': index === 0,
-                                'rounded-r-md': 1 + index === length,
-                                'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
-                                'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
-                              },
-                            )}
-                          >
-                            {t(`project.${tb}`)}
-                          </button>
-                        ))}
-                      </span>
-                    </div>
-                    <Dropdown
-                      items={periodPairs}
-                      title={activePeriod.label}
-                      labelExtractor={(pair) => {
-                        const label = pair.dropdownLabel || pair.label
-
-                        // disable limitation for shared projects as project hosts already have a paid plan
-                        // disable limitation for Swetrix public project (for demonstration purposes)
-                        if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                          return (
-                            <span className='flex items-center'>
-                              <CurrencyDollarIcon className='w-4 h-4 mr-1' />
-                              {label}
-                            </span>
-                          )
-                        }
-
-                        return label
-                      }}
-                      keyExtractor={(pair) => pair.label}
-                      onSelect={(pair) => {
-                        if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                          setIsPaidFeatureOpened(true)
-                          return
-                        }
-
-                        if (pair.isCustomDate) {
-                          setTimeout(() => {
-                            refCalendar.current.openCalendar()
-                          }, 100)
-                        } else {
-                          setPeriodPairs(tbPeriodPairs(t))
-                          setDateRange(null)
-                          updatePeriod(pair)
-                        }
-                      }}
-                    />
-                    <FlatPicker
-                      ref={refCalendar}
-                      onChange={(date) => setDateRange(date)}
-                      value={dateRange}
-                      maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4'>
-                    {!isPanelsDataEmpty && (
-                    <Dropdown
-                      items={chartMetrics}
-                      title={t('project.metricVis')}
-                      labelExtractor={(pair) => {
-                        const {
-                          label, id: pairID, active, conflicts,
-                        } = pair
-
-                        const conflicted = isConflicted(conflicts)
-
-                        return (
-                          <Checkbox
-                            className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                            label={label}
-                            disabled={conflicted}
-                            id={pairID}
-                            checked={active}
-                          />
-                        )
-                      }}
-                      keyExtractor={(pair) => pair.id}
-                      onSelect={({ id: pairID, conflicts }) => {
-                        if (isConflicted(conflicts)) {
-                          generateAlert(t('project.conflictMetric'), 'error')
-                          return
-                        }
-                        switchActiveChartMetric(pairID)
-                      }}
-                    />
-                    )}
-                    <Dropdown
-                      items={[...exportTypes, ...customExportTypes]}
-                      title={[
-                        <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                        <Fragment key='export-data'>
-                          {t('project.exportData')}
-                        </Fragment>,
-                      ]}
-                      labelExtractor={item => item.label}
-                      keyExtractor={item => item.label}
-                      onSelect={item => item.onClick(panelsData, t)}
-                      className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                    />
-                    {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
-                      <Button
-                        onClick={openSettingsHandler}
-                        className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                        secondary
-                      >
-                        <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                        {t('common.settings')}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <div
-                  className={cx({
-                    hidden: isPanelsDataEmpty || analyticsLoading,
-                  })}
-                >
-                  <div className='mt-14 xs:mt-0' />
-                  <div className='relative'>
-                    <div className={cx('absolute right-0 z-10 -top-2', {
-                      'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
-                      'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
+            <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
+              <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
+                {name}
+              </h2>
+              <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
+                <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
+                  <button
+                    type='button'
+                    onClick={refreshStats}
+                    className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                      'cursor-not-allowed opacity-50': isLoading || dataLoading,
                     })}
-                    >
-                      <button
-                        type='button'
-                        onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                        className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
-                          'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.bar,
-                          'text-gray-400 dark:text-gray-500': chartType !== chartTypes.bar,
-                        })}
-                      >
-                        <PresentationChartBarIcon className='w-6 h-6' />
-                      </button>
-                      <button
-                        type='button'
-                        onClick={() => setChartTypeOnClick(chartTypes.line)}
-                        className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
-                          'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.line,
-                          'text-gray-400 dark:text-gray-500': chartType !== chartTypes.line,
-                        })}
-                      >
-                        <PresentationChartLineIcon className='w-6 h-6' />
-                      </button>
-                    </div>
-                  </div>
+                  >
+                    <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                  </button>
                 </div>
-              </>
-            )}
-            {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors || !authenticated)) && (
-              <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
-                <div className='flex items-center text-gray-50'>
-                  <BellIcon className='w-8 h-8 mr-2' />
-                  <p className='font-bold text-3xl'>
-                    {t('dashboard.alerts')}
-                  </p>
+                <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
+                  <span className='relative z-0 inline-flex shadow-sm rounded-md'>
+                    {_map(activePeriod.tbs, (tb, index, { length }) => (
+                      <button
+                        key={tb}
+                        type='button'
+                        onClick={() => updateTimebucket(tb)}
+                        className={cx(
+                          'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                          {
+                            '-ml-px': index > 0,
+                            'rounded-l-md': index === 0,
+                            'rounded-r-md': 1 + index === length,
+                            'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
+                            'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
+                          },
+                        )}
+                      >
+                        {t(`project.${tb}`)}
+                      </button>
+                    ))}
+                  </span>
                 </div>
-                <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>
-                  {t('dashboard.alertsDesc')}
-                </p>
-                <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50' aria-label={t('titles.signup')}>
-                  {t('common.getStarted')}
-                </Link>
+                <Dropdown
+                  items={periodPairs}
+                  title={activePeriod.label}
+                  labelExtractor={(pair) => {
+                    const label = pair.dropdownLabel || pair.label
+
+                    // disable limitation for shared projects as project hosts already have a paid plan
+                    // disable limitation for Swetrix public project (for demonstration purposes)
+                    if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                      return (
+                        <span className='flex items-center'>
+                          <CurrencyDollarIcon className='w-4 h-4 mr-1' />
+                          {label}
+                        </span>
+                      )
+                    }
+
+                    return label
+                  }}
+                  keyExtractor={(pair) => pair.label}
+                  onSelect={(pair) => {
+                    if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                      setIsPaidFeatureOpened(true)
+                      return
+                    }
+
+                    if (pair.isCustomDate) {
+                      setTimeout(() => {
+                        refCalendar.current.openCalendar()
+                      }, 100)
+                    } else {
+                      setPeriodPairs(tbPeriodPairs(t))
+                      setDateRange(null)
+                      updatePeriod(pair)
+                    }
+                  }}
+                />
+                <FlatPicker
+                  ref={refCalendar}
+                  onChange={(date) => setDateRange(date)}
+                  value={dateRange}
+                  maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
+                />
               </div>
-            )}
-            {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
+            </div>
+            <div>
+              <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4'>
+                {!isPanelsDataEmpty && (
+                <Dropdown
+                  items={chartMetrics}
+                  title={t('project.metricVis')}
+                  labelExtractor={(pair) => {
+                    const {
+                      label, id: pairID, active, conflicts,
+                    } = pair
+
+                    const conflicted = isConflicted(conflicts)
+
+                    return (
+                      <Checkbox
+                        className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                        label={label}
+                        disabled={conflicted}
+                        id={pairID}
+                        checked={active}
+                      />
+                    )
+                  }}
+                  keyExtractor={(pair) => pair.id}
+                  onSelect={({ id: pairID, conflicts }) => {
+                    if (isConflicted(conflicts)) {
+                      generateAlert(t('project.conflictMetric'), 'error')
+                      return
+                    }
+                    switchActiveChartMetric(pairID)
+                  }}
+                />
+                )}
+                <Dropdown
+                  items={[...exportTypes, ...customExportTypes]}
+                  title={[
+                    <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                    <Fragment key='export-data'>
+                      {t('project.exportData')}
+                    </Fragment>,
+                  ]}
+                  labelExtractor={item => item.label}
+                  keyExtractor={item => item.label}
+                  onSelect={item => item.onClick(panelsData, t)}
+                  className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                />
+                {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
+                <Button
+                  onClick={openSettingsHandler}
+                  className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                  secondary
+                >
+                  <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                  {t('common.settings')}
+                </Button>
+                )}
+              </div>
+            </div>
+            <div
+              className={cx({
+                hidden: isPanelsDataEmpty || analyticsLoading,
+              })}
+            >
+              <div className='mt-14 xs:mt-0' />
+              <div className='relative'>
+                <div className={cx('absolute right-0 z-10 -top-2', {
+                  'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
+                  'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
+                })}
+                >
+                  <button
+                    type='button'
+                    onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                    className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
+                      'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.bar,
+                      'text-gray-400 dark:text-gray-500': chartType !== chartTypes.bar,
+                    })}
+                  >
+                    <PresentationChartBarIcon className='w-6 h-6' />
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setChartTypeOnClick(chartTypes.line)}
+                    className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
+                      'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.line,
+                      'text-gray-400 dark:text-gray-500': chartType !== chartTypes.line,
+                    })}
+                  >
+                    <PresentationChartLineIcon className='w-6 h-6' />
+                  </button>
+                </div>
+              </div>
+            </div>
+            {(analyticsLoading) && (
               <Loader />
             )}
-            {(isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic) && (
+            {(isPanelsDataEmpty) && (
               <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
             )}
             <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
