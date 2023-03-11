@@ -1,59 +1,74 @@
-import { ApiProperty } from '@nestjs/swagger'
 import {
-  IsNumber,
+  ArrayMaxSize,
+  ArrayNotEmpty,
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumberString,
   IsOptional,
   IsString,
-  MaxLength,
-  MinLength,
+  Length,
 } from 'class-validator'
+import { HasMimeType, IsFile, IsFiles, MaxFileSize } from 'nestjs-form-data'
 
-export class CreateExtension {
-  @ApiProperty({
-    description: 'Extension name',
-    example: '', // TODO: Add example
-    maxLength: 255,
-    minLength: 1,
-    type: String,
-  })
+export class CreateExtensionBodyDto {
+  @IsNotEmpty()
   @IsString()
-  @MinLength(1)
-  @MaxLength(255)
-  readonly name!: string
+  @Length(1, 255)
+  readonly name: string
 
-  @ApiProperty({
-    default: null,
-    description: 'Extension description',
-    example: '', // Add example
-    maxLength: 1024,
-    minLength: 1,
-    nullable: true,
-    required: false,
-    type: String,
-  })
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  @MinLength(1)
-  @MaxLength(1024)
-  readonly description?: string | null
+  @Length(1, 1024)
+  readonly description?: string
 
-  @ApiProperty({
-    default: 0,
-    description: 'Extension price',
-    example: 100,
-    required: false,
-    type: Number,
-  })
-  @IsNumber()
   @IsOptional()
-  readonly price?: number
+  @IsNumberString()
+  readonly price?: string
 
-  @ApiProperty({
-    default: [],
-    description: 'Extension category ID',
-    example: 1,
-    required: false,
-    type: Array<number>,
-  })
   @IsOptional()
-  readonly categoryID?: number
+  @IsNumberString()
+  readonly categoryId?: string
+
+  @IsOptional()
+  @IsFile()
+  @MaxFileSize(10 * 1024 * 1024)
+  @HasMimeType(['image/jpeg', 'image/png'])
+  readonly mainImage?: Express.Multer.File
+
+  @IsOptional()
+  @IsFiles()
+  @MaxFileSize(10 * 1024 * 1024, { each: true })
+  @HasMimeType(['image/jpeg', 'image/png'], { each: true })
+  @ArrayMaxSize(5)
+  readonly additionalImages?: Express.Multer.File[]
+
+  @IsOptional()
+  @IsFile()
+  @MaxFileSize(10 * 1024 * 1024)
+  @HasMimeType([
+    'text/javascript',
+    'application/javascript',
+    'application/x-javascript',
+    'application/octet-stream',
+  ])
+  readonly extensionScript?: Express.Multer.File
+}
+
+export enum ExtensionVersionType {
+  MAJOR = 'major',
+  MINOR = 'minor',
+  PATCH = 'patch',
+}
+
+export class AdditionalExtensionInfo {
+  @IsNotEmpty()
+  @IsEnum(ExtensionVersionType)
+  readonly version: ExtensionVersionType
+
+  @IsNotEmpty()
+  @ArrayNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  readonly additionalImagesToDelete: string[]
 }

@@ -19,6 +19,7 @@ import { AlertModule } from './alert/alert.module'
 import { I18nModule } from 'nestjs-i18n'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
+import { NestjsFormDataModule } from 'nestjs-form-data'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
@@ -34,6 +35,7 @@ const modules = [
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
+  NestjsFormDataModule.config({ isGlobal: true }),
   TaskManagerModule,
   UserModule,
   MailerModule,

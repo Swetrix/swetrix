@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { createReadStream } from 'fs'
 import { unlink, writeFile } from 'fs/promises'
@@ -13,9 +13,14 @@ export class CdnService {
     private readonly configService: ConfigService,
   ) {}
 
-  async uploadFile(file: Express.Multer.File): Promise<{ filename: string }> {
+  /**
+   * To clarify, in this case the file parameter type was set to "any" because
+   * Multer from Express returns the "originalname" property,
+   * whereas the nestjs-form-data package uses the "originalName" property.
+   */
+  async uploadFile(file: any): Promise<{ filename: string }> {
     try {
-      const filePath = `${tmpdir()}/${file.originalname}`
+      const filePath = `${tmpdir()}/${file.originalName}`
       await writeFile(filePath, file.buffer)
 
       const form = new FormData()
@@ -31,13 +36,14 @@ export class CdnService {
       return data
     } catch (error) {
       console.error(error)
+      throw new InternalServerErrorException('Failed to upload extension to the CDN.')
     }
   }
 
   async deleteFile(filename: string): Promise<void> {
     try {
-      await this.httpService.axiosRef.delete(`file/${filename}`, {
-        data: { token: this.configService.get('CDN_ACCESS_TOKEN') },
+      await this.httpService.axiosRef.delete(`file`, {
+        data: { token: this.configService.get('CDN_ACCESS_TOKEN'), filename },
       })
     } catch (error) {
       console.error(error)
