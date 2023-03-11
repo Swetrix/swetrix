@@ -89,9 +89,10 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
-    @Query('isCaptcha') isCaptcha: boolean | undefined,
+    @Query('isCaptcha') isCaptchaStr: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
+    const isCaptcha = isCaptchaStr === 'true'
 
     if (isSelfhosted) {
       const results = await getProjectsClickhouse()
@@ -118,6 +119,8 @@ export class ProjectController {
       )
 
       const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
+
+      console.log(where)
 
       paginated.results = _map(paginated.results, p => ({
         ...p,
