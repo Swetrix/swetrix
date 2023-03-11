@@ -36,6 +36,17 @@ const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
 
+const tabForCreateCaptcha = [{
+  name: 'new',
+  title: 'project.captcha.settings.general',
+}, {
+  name: 'inheritance',
+  title: 'project.captcha.settings.inheritance',
+}]
+
+const tabForNew = 'new'
+const tabForInheritance = 'inheritance'
+
 const CaptchaSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user,
@@ -61,6 +72,7 @@ const CaptchaSettings = ({
   const [projectDeleting, setProjectDeleting] = useState(false)
   const [projectResetting, setProjectResetting] = useState(false)
   const [projectSaving, setProjectSaving] = useState(false)
+  const [tab, setTab] = useState(tabForCreateCaptcha[0].name)
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
@@ -226,28 +238,75 @@ const CaptchaSettings = ({
           <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.general')}
           </h3>
-          <Input
-            name='name'
-            id='name'
-            type='text'
-            label={t('project.captcha.settings.name')}
-            value={form.name}
-            placeholder='My awesome project'
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted ? errors.name : null}
-          />
-          <Input
-            name='id'
-            id='id'
-            type='text'
-            label={t('project.captcha.settings.pid')}
-            value={form.id}
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted ? errors.id : null}
-            disabled
-          />
+          <div className='mt-6'>
+            <nav className='-mb-px flex space-x-8'>
+              {_map(tabForCreateCaptcha, (tabCaptcha) => (
+                <button
+                  key={tabCaptcha.name}
+                  type='button'
+                  onClick={() => setTab(tabCaptcha.name)}
+                  className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                    'border-indigo-500 text-indigo-600 dark:text-indigo-500': tab === tabCaptcha.name,
+                    'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabCaptcha.name,
+                  })}
+                >
+                  {t(tab.label)}
+                </button>
+              ))}
+            </nav>
+          </div>
+          {tab === tabForNew && (
+            <>
+              <Input
+                name='name'
+                id='name'
+                type='text'
+                label={t('project.captcha.settings.name')}
+                value={form.name}
+                placeholder='My awesome project'
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.name : null}
+              />
+              <Input
+                name='id'
+                id='id'
+                type='text'
+                label={t('project.captcha.settings.pid')}
+                value={form.id}
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.id : null}
+                disabled
+              />
+            </>
+          )}
+          {tab === tabForInheritance && (
+            <>
+              <Input
+                name='name'
+                id='name'
+                type='text'
+                label={t('project.captcha.settings.name')}
+                value={form.name}
+                placeholder='My awesome project'
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.name : null}
+              />
+              <Input
+                name='id'
+                id='id'
+                type='text'
+                label={t('project.captcha.settings.pid')}
+                value={form.id}
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.id : null}
+                disabled
+              />
+            </>
+          )}
           {isSettings ? (
             <>
               <Input
