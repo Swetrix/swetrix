@@ -346,6 +346,7 @@ export class ExtensionsService {
       },
       relations: ['owner', 'users', 'category'],
     })
+  }
 
   async find(options: FindManyOptions<Extension>): Promise<Extension[]> {
     return await this.extensionRepository.find(options)
