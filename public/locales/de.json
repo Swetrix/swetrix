@@ -604,7 +604,9 @@
       "errorNoRole": "Bitte wählen Sie eine Rolle.",
       "ipBlacklist": "IP-Adressen für die Sperrliste",
       "ipBlacklistHint": "Eine Liste von IP-Adressen, von denen keine Metriken für dieses Projekt gesammelt werden.\nDiese Funktion ist praktisch, wenn Sie z.B. Analysen von Ihrer eigenen IP-Adresse ignorieren möchten.\nBeispiel: 172.126.10.16, 192.168.0.1/32, ::1"
-    }
+    },
+    "results": "Results",
+    "page": "Page"
   },
   "billing": {
     "title": "Rechnung & Abonnement",
