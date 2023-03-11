@@ -120,6 +120,14 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
+    case types.REMOVE_CAPTCHA_PROJECT: {
+      const { id } = payload
+      return {
+        ...state,
+        captchaProjects: _filter(state.captchaProjects, (el) => el.id !== id),
+      }
+    }
+
     case types.SET_LIVE_STATS: {
       const { data, shared = false } = payload
 

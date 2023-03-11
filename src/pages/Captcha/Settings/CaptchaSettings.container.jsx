@@ -3,15 +3,12 @@ import UIActions from 'redux/actions/ui'
 import { alertsActions } from 'redux/actions/alerts'
 import { errorsActions } from 'redux/actions/errors'
 
-import { tabForSharedProject } from 'redux/constants'
-import ProjectSettings from './CaptchaSettings'
+import CaptchaSettings from './CaptchaSettings'
 
 const mapStateToProps = (state) => ({
-  projects: state.ui.projects.projects,
-  sharedProjects: state.ui.projects.sharedProjects,
-  isLoading: state.ui.projects.isLoading,
+  projects: state.ui.projects.captchaProjects,
+  isLoading: state.ui.projects.isLoadingCaptcha,
   user: state.auth.user,
-  isSharedProject: state.ui.projects.dashboardTabs === tabForSharedProject,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -30,15 +27,11 @@ const mapDispatchToProps = (dispatch) => ({
   deleteProjectFailed: (message) => {
     dispatch(errorsActions.deleteProjectFailed(message))
   },
-  loadProjects: (shared) => {
-    if (shared) {
-      dispatch(UIActions.loadSharedProjects())
-    } else {
-      dispatch(UIActions.loadProjects())
-    }
+  loadProjects: () => {
+    UIActions.loadProjectsCaptcha()
   },
-  removeProject: (pid, shared) => {
-    dispatch(UIActions.removeProject(pid, shared))
+  removeProject: (pid) => {
+    dispatch(UIActions.removeCaptchaProject(pid))
   },
   deleteProjectCache: (pid) => {
     dispatch(UIActions.deleteProjectCache(pid))
@@ -48,4 +41,4 @@ const mapDispatchToProps = (dispatch) => ({
   },
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProjectSettings)
+export default connect(mapStateToProps, mapDispatchToProps)(CaptchaSettings)

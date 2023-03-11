@@ -36,7 +36,7 @@ const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
 
-const ProjectSettings = ({
+const CaptchaSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
   deleteProjectCache,
@@ -359,7 +359,7 @@ const ProjectSettings = ({
   )
 }
 
-ProjectSettings.propTypes = {
+CaptchaSettings.propTypes = {
   updateProjectFailed: PropTypes.func.isRequired,
   createNewProjectFailed: PropTypes.func.isRequired,
   newProject: PropTypes.func.isRequired,
@@ -374,4 +374,4 @@ ProjectSettings.propTypes = {
   deleteProjectCache: PropTypes.func.isRequired,
 }
 
-export default memo(withAuthentication(ProjectSettings, auth.authenticated))
+export default memo(withAuthentication(CaptchaSettings, auth.authenticated))

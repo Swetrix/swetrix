@@ -238,6 +238,11 @@ const setCaptchaProjects = (captchaProjects) => ({
   payload: { captchaProjects },
 })
 
+const removeCaptchProject = (pid) => ({
+  type: types.REMOVE_CAPTCHA_PROJECT,
+  payload: { pid },
+})
+
 const setTotalCaptcha = (totalCaptcha) => ({
   type: types.SET_CAPTCHA_PROJECTS_TOTAL,
   payload: { totalCaptcha },
@@ -298,6 +303,7 @@ const UIActions = {
   setDashboardPaginationPageCaptcha,
   loadProjectsCaptcha,
   setCaptchaLoading,
+  removeCaptchProject,
 }
 
 export default UIActions
