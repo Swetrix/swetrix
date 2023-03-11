@@ -38,13 +38,13 @@ const MAX_IPBLACKLIST_LENGTH = 300
 
 const CaptchaSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
-  loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
+  loadProjects, isLoading, projects, showError, removeProject, user,
   deleteProjectCache,
 }) => {
   const { t } = useTranslation('common')
   const { pathname } = useLocation()
   const { id } = useParams()
-  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
+  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
   const history = useHistory()
 
@@ -64,13 +64,13 @@ const CaptchaSettings = ({
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
-      showError(t('project.settings.verify'))
+      showError(t('project.captcha.settings.verify'))
       history.push(routes.dashboard)
     }
 
     if (!isLoading && isSettings && !projectDeleting) {
       if (_isEmpty(project) || project?.uiHidden) {
-        showError(t('project.noExist'))
+        showError(t('project.captcha.noExist'))
         history.push(routes.dashboard)
       } else {
         setForm({
@@ -102,14 +102,14 @@ const CaptchaSettings = ({
         }
         if (isSettings) {
           await updateProject(id, formalisedData)
-          newProject(t('project.settings.updated'))
+          newProject(t('project.captcha.settings.updated'))
         } else {
           await createProject(formalisedData)
           trackCustom('PROJECT_CREATED')
-          newProject(t('project.settings.created'))
+          newProject(t('project.captcha.settings.created'))
         }
 
-        loadProjects(isSharedProject)
+        loadProjects()
         history.push(routes.dashboard)
       } catch (e) {
         if (isSettings) {
@@ -129,8 +129,8 @@ const CaptchaSettings = ({
       setProjectDeleting(true)
       try {
         await deleteProject(id)
-        removeProject(id, isSharedProject)
-        projectDeleted(t('project.settings.deleted'))
+        removeProject(id)
+        projectDeleted(t('project.captcha.settings.deleted'))
         history.push(routes.dashboard)
       } catch (e) {
         deleteProjectFailed(e)
@@ -147,7 +147,7 @@ const CaptchaSettings = ({
       try {
         await resetProject(id)
         deleteProjectCache(id)
-        projectDeleted(t('project.settings.resetted'))
+        projectDeleted(t('project.captcha.settings.resetted'))
         history.push(routes.dashboard)
       } catch (e) {
         deleteProjectFailed(e)
@@ -161,19 +161,19 @@ const CaptchaSettings = ({
     const allErrors = {}
 
     if (_isEmpty(form.name)) {
-      allErrors.name = t('project.settings.noNameError')
+      allErrors.name = t('project.captcha.settings.noNameError')
     }
 
     if (_size(form.name) > MAX_NAME_LENGTH) {
-      allErrors.name = t('project.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
+      allErrors.name = t('project.captcha.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
     }
 
     if (_size(form.origins) > MAX_ORIGINS_LENGTH) {
-      allErrors.origins = t('project.settings.oxCharsError', { amount: MAX_ORIGINS_LENGTH })
+      allErrors.origins = t('project.captcha.settings.oxCharsError', { amount: MAX_ORIGINS_LENGTH })
     }
 
     if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
-      allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
+      allErrors.ipBlacklist = t('project.captcha.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -210,7 +210,7 @@ const CaptchaSettings = ({
     history.push(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
   }
 
-  const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
+  const title = isSettings ? `${t('project.captcha.settings.settings')} ${form.name}` : t('project.captcha.settings.create')
 
   return (
     <Title title={title}>
@@ -230,7 +230,7 @@ const CaptchaSettings = ({
             name='name'
             id='name'
             type='text'
-            label={t('project.settings.name')}
+            label={t('project.captcha.settings.name')}
             value={form.name}
             placeholder='My awesome project'
             className='mt-4'
@@ -241,7 +241,7 @@ const CaptchaSettings = ({
             name='id'
             id='id'
             type='text'
-            label={t('project.settings.pid')}
+            label={t('project.captcha.settings.pid')}
             value={form.id}
             className='mt-4'
             onChange={handleInput}
@@ -254,8 +254,8 @@ const CaptchaSettings = ({
                 name='origins'
                 id='origins'
                 type='text'
-                label={t('project.settings.origins')}
-                hint={t('project.settings.originsHint')}
+                label={t('project.captcha.settings.origins')}
+                hint={t('project.captcha.settings.originsHint')}
                 value={form.origins || ''}
                 className='mt-4'
                 onChange={handleInput}
@@ -265,8 +265,8 @@ const CaptchaSettings = ({
                 name='ipBlacklist'
                 id='ipBlacklist'
                 type='text'
-                label={t('project.settings.ipBlacklist')}
-                hint={t('project.settings.ipBlacklistHint')}
+                label={t('project.captcha.settings.ipBlacklist')}
+                hint={t('project.captcha.settings.ipBlacklistHint')}
                 value={form.ipBlacklist || ''}
                 className='mt-4'
                 onChange={handleInput}
@@ -279,8 +279,8 @@ const CaptchaSettings = ({
                 name='active'
                 id='active'
                 className='mt-4'
-                label={t('project.settings.enabled')}
-                hint={t('project.settings.enabledHint')}
+                label={t('project.captcha.settings.enabled')}
+                hint={t('project.captcha.settings.enabledHint')}
               />
               <Checkbox
                 checked={Boolean(form.public)}
@@ -288,8 +288,8 @@ const CaptchaSettings = ({
                 name='public'
                 id='public'
                 className='mt-4'
-                label={t('project.settings.public')}
-                hint={t('project.settings.publicHint')}
+                label={t('project.captcha.settings.public')}
+                hint={t('project.captcha.settings.publicHint')}
               />
               <div className='flex justify-between mt-8 h-20 sm:h-min'>
                 <div className='flex flex-wrap items-center'>
@@ -304,11 +304,11 @@ const CaptchaSettings = ({
                   <div className='flex flex-wrap items-center justify-end'>
                     <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
                       <TrashIcon className='w-5 h-5 mr-1' />
-                      {t('project.settings.reset')}
+                      {t('project.captcha.settings.reset')}
                     </Button>
                     <Button className='ml-2' onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
                       <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-                      {t('project.settings.delete')}
+                      {t('project.captcha.settings.delete')}
                     </Button>
                   </div>
                 )}
@@ -317,7 +317,7 @@ const CaptchaSettings = ({
             </>
           ) : (
             <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
-              {t('project.settings.createHint')}
+              {t('project.captcha.settings.createHint')}
             </p>
           )}
 
@@ -335,10 +335,10 @@ const CaptchaSettings = ({
         <Modal
           onClose={() => setShowDelete(false)}
           onSubmit={onDelete}
-          submitText={t('project.settings.delete')}
+          submitText={t('project.captcha.settings.delete')}
           closeText={t('common.close')}
-          title={t('project.settings.qDelete')}
-          message={t('project.settings.deleteHint')}
+          title={t('project.captcha.settings.qDelete')}
+          message={t('project.captcha.settings.deleteHint')}
           submitType='danger'
           type='error'
           isOpened={showDelete}
@@ -346,10 +346,10 @@ const CaptchaSettings = ({
         <Modal
           onClose={() => setShowReset(false)}
           onSubmit={onReset}
-          submitText={t('project.settings.reset')}
+          submitText={t('project.captcha.settings.reset')}
           closeText={t('common.close')}
-          title={t('project.settings.qReset')}
-          message={t('project.settings.resetHint')}
+          title={t('project.captcha.settings.qReset')}
+          message={t('project.captcha.settings.resetHint')}
           submitType='danger'
           type='error'
           isOpened={showReset}
@@ -370,7 +370,6 @@ CaptchaSettings.propTypes = {
   showError: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
-  isSharedProject: PropTypes.bool.isRequired,
   deleteProjectCache: PropTypes.func.isRequired,
 }
 
