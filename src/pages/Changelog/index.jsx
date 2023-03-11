@@ -15,6 +15,12 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-03-11',
+    changes: [
+      'Redesigned Dashboard page panel pages layout (now it\'s more user friendly, the total count of items and pages are displayed as well).',
+    ],
+  },
+  {
     date: '2023-02-26',
     changes: [
       'Added a switch between line and bar chart on the dashboard page.',
