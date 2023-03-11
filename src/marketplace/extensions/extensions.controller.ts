@@ -239,7 +239,7 @@ export class ExtensionsController {
       skip: queries.offset || 0,
       take: queries.limit > 100 ? 100 : queries.limit || 10,
         where: {
-          ownerId: userId,
+          owner: userId,
         },
     }, ['owner', 'users', 'category'], )
 

@@ -18,6 +18,8 @@ import { VersionTypes } from './interfaces'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 
+export const DEFAULT_EXTENSION_VERSION = '0.0.1'
+
 @Injectable()
 export class ExtensionsService {
   constructor(
@@ -207,6 +209,7 @@ export class ExtensionsService {
         (
           await this.cdnService.uploadFile(extension.extensionScript)
         ).filename,
+      version: DEFAULT_EXTENSION_VERSION,
     })
   }
 
