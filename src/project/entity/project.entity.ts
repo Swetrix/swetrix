@@ -12,6 +12,7 @@ import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
 import { Alert } from 'src/alert/entity/alert.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
+import { ProjectSubscriber } from './project-subscriber.entity'
 
 // In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
 // and to add them to the GDPR data export email template
@@ -69,4 +70,9 @@ export class Project {
   )
   @JoinTable()
   extensions: ExtensionToProject[]
+
+  @OneToMany(() => ProjectSubscriber, subscriber => subscriber.project, {
+    cascade: true,
+  })
+  subscribers: ProjectSubscriber[]
 }
