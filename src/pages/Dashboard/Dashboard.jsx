@@ -336,6 +336,38 @@ const Dashboard = ({
                   )}
                 </div>
                 )}
+                {tabProjects === tabForCaptchaProject && (
+                <div>
+                  {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
+                    <NoProjects t={t} />
+                  ) : (
+                    <div className='shadow overflow-hidden sm:rounded-md'>
+                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                        {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
+                          name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
+                        }) => (
+                          <div key={confirmed ? `${id}-confirmed` : id}>
+                            <Link to={_replace(routes.project, ':id', id)}>
+                              <ProjectCart
+                                t={t}
+                                language={language}
+                                name={name}
+                                created={created}
+                                shared={shared}
+                                active={active}
+                                isPublic={isPublic}
+                                confirmed={confirmed}
+                                overall={overall}
+                                live={_isNumber(live) ? live : 'N/A'}
+                              />
+                            </Link>
+                          </div>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                )}
 
                 {tabProjects === tabForSharedProject && (
                 <div>
