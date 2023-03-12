@@ -17,7 +17,7 @@ export class ProjectSubscriber {
   @Column('varchar', { length: 254 })
   email: string
 
-  @Column('enum', { default: ReportFrequency.MONTHLY, enum: ReportFrequency })
+  @Column('enum', { enum: ReportFrequency })
   reportFrequency: ReportFrequency
 
   @Column('boolean', { default: false })
