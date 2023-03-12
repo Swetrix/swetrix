@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
 import React, {
-  useState, useEffect, useMemo, memo, useRef, Fragment, useCallback,
+  useState, useEffect, useMemo, memo, useRef, Fragment,
 } from 'react'
 import useSize from 'hooks/useSize'
 import { useHistory, useParams, Link } from 'react-router-dom'
@@ -8,7 +8,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon, PresentationChartBarIcon, PresentationChartLineIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, PresentationChartBarIcon, PresentationChartLineIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -19,7 +19,6 @@ import _includes from 'lodash/includes'
 import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
-import _values from 'lodash/values'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _startsWith from 'lodash/startsWith'
@@ -35,13 +34,12 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, chartTypes,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, TimeFormat, chartTypes,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
-import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
 import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
@@ -61,12 +59,9 @@ import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import './styles.css'
 
-const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
-
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert,
-  projectTab, setProjectTab, setProjects,
+  setLiveStatsForProject, authenticated, timezone, user, isPaidTierUsed, extensions, generateAlert, setProjects,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
@@ -76,11 +71,7 @@ const ViewProject = ({
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
-  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
-  const isSharedProject = useMemo(() => {
-    const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
-    return !_isEmpty(foundProject)
-  }, [id, sharedProjects])
+  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
   const [arePeriodParsed, setArePeriodParsed] = useState(false)
@@ -750,7 +741,7 @@ const ViewProject = ({
   }
 
   const openSettingsHandler = () => {
-    history.push(_replace(routes.project_settings, ':id', id))
+    history.push(_replace(routes.captcha_settings, ':id', id))
   }
 
   const exportAsImageHandler = async () => {
@@ -772,7 +763,7 @@ const ViewProject = ({
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = searchParams.get('period')
-      if (!_includes(validPeriods, intialPeriod) || (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
+      if (!_includes(validPeriods, intialPeriod) || (id !== SWETRIX_PID && !isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
         return
       }
 
@@ -909,7 +900,7 @@ const ViewProject = ({
 
                     // disable limitation for shared projects as project hosts already have a paid plan
                     // disable limitation for Swetrix public project (for demonstration purposes)
-                    if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                    if (id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
                       return (
                         <span className='flex items-center'>
                           <CurrencyDollarIcon className='w-4 h-4 mr-1' />
@@ -922,7 +913,7 @@ const ViewProject = ({
                   }}
                   keyExtractor={(pair) => pair.label}
                   onSelect={(pair) => {
-                    if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
+                    if (id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
                       setIsPaidFeatureOpened(true)
                       return
                     }
@@ -942,7 +933,7 @@ const ViewProject = ({
                   ref={refCalendar}
                   onChange={(date) => setDateRange(date)}
                   value={dateRange}
-                  maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
+                  maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
                 />
               </div>
             </div>
@@ -1207,7 +1198,6 @@ const ViewProject = ({
 
 ViewProject.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  sharedProjects: PropTypes.arrayOf(PropTypes.object).isRequired,
   cache: PropTypes.objectOf(PropTypes.object).isRequired,
   projectViewPrefs: PropTypes.objectOf(PropTypes.object).isRequired,
   showError: PropTypes.func.isRequired,

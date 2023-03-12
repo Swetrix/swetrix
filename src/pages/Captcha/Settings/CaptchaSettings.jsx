@@ -56,8 +56,8 @@ const CaptchaSettings = ({
   const { t } = useTranslation('common')
   const { pathname } = useLocation()
   const { id } = useParams()
-  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
-  const isSettings = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
+  const project = useMemo(() => _find([...projects, ...analyticsProjects], p => p.id === id) || {}, [projects, analyticsProjects, id])
+  const isSettings = !_isEmpty(id) && (_replace(routes.captcha_settings, ':id', id) === pathname)
   const history = useHistory()
   const [form, setForm] = useState({
     name: '',
@@ -259,21 +259,23 @@ const CaptchaSettings = ({
             {t('profileSettings.general')}
           </h3>
           <div className='mt-6'>
-            <nav className='-mb-px flex space-x-8'>
-              {_map(tabForCreateCaptcha, (tabCaptcha) => (
-                <button
-                  key={tabCaptcha.name}
-                  type='button'
-                  onClick={() => setTab(tabCaptcha.name)}
-                  className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                    'border-indigo-500 text-indigo-600 dark:text-indigo-500': tab === tabCaptcha.name,
-                    'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabCaptcha.name,
-                  })}
-                >
-                  {t(tabCaptcha.label)}
-                </button>
-              ))}
-            </nav>
+            {!isSettings && (
+              <nav className='-mb-px flex space-x-8'>
+                {_map(tabForCreateCaptcha, (tabCaptcha) => (
+                  <button
+                    key={tabCaptcha.name}
+                    type='button'
+                    onClick={() => setTab(tabCaptcha.name)}
+                    className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                      'border-indigo-500 text-indigo-600 dark:text-indigo-500': tab === tabCaptcha.name,
+                      'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabCaptcha.name,
+                    })}
+                  >
+                    {t(tabCaptcha.label)}
+                  </button>
+                ))}
+              </nav>
+            )}
           </div>
           {tab === tabForNew && (
             <>

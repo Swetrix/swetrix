@@ -6,7 +6,7 @@ import {
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import {
-  area, areaSpline, spline, bar,
+  area, spline, bar,
 } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
@@ -18,7 +18,6 @@ import _size from 'lodash/size'
 import _round from 'lodash/round'
 import _fill from 'lodash/fill'
 import _reduce from 'lodash/reduce'
-import _last from 'lodash/last'
 import JSZip from 'jszip'
 
 import {
@@ -198,17 +197,6 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
   const lines = []
   const modifiedChart = { ...chart }
   let regions
-
-  if (!_isEmpty(forecasedChartData)) {
-    lines.push({
-      value: _last(chart?.x),
-      text: 'Forecast',
-    })
-    modifiedChart.x = [...modifiedChart.x, ...forecasedChartData.x]
-    modifiedChart.uniques = [...modifiedChart.uniques, ...forecasedChartData.uniques]
-    modifiedChart.visits = [...modifiedChart.visits, ...forecasedChartData.visits]
-    modifiedChart.sdur = [...modifiedChart.sdur, ...forecasedChartData.sdur]
-  }
 
   if (applyRegions) {
     let regionStart

@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types */
 import React, {
-  memo, useState, useMemo, useEffect,
+  memo, useState, useEffect,
 } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import cx from 'clsx'
@@ -13,7 +13,6 @@ import _map from 'lodash/map'
 import _isUndefined from 'lodash/isUndefined'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
-import _ceil from 'lodash/ceil'
 import { useTranslation } from 'react-i18next'
 import { EyeIcon, CalendarIcon, FolderPlusIcon } from '@heroicons/react/24/outline'
 import { ArrowSmallUpIcon, ArrowSmallDownIcon, XCircleIcon } from '@heroicons/react/24/solid'
@@ -347,7 +346,7 @@ const Dashboard = ({
                           name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
                         }) => (
                           <div key={confirmed ? `${id}-confirmed` : id}>
-                            <Link to={_replace(routes.project, ':id', id)}>
+                            <Link to={_replace(routes.captcha, ':id', id)}>
                               <ProjectCart
                                 t={t}
                                 language={language}
