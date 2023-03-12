@@ -1,6 +1,6 @@
 (() => {
   const CAPTCHA_SELECTOR = '.swecaptcha'
-  const LIGHT_CAPTCHA_IFRAME_URL = './index.html'
+  const LIGHT_CAPTCHA_IFRAME_URL = './light.html'
   const DARK_CAPTCHA_IFRAME_URL = './dark.html'
 
   const THEMES = ['light', 'dark']
@@ -9,11 +9,21 @@
     console[status](`[Swetrix Captcha] ${text}`)
   }
 
+  const appendParamsToURL = (url, params) => {
+    const queryString = Object.keys(params).map((key) => {
+      return `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
+    }).join('&')
+  
+    return `${url}?${queryString}`
+  }
+
   const renderCaptcha = (container, params) => {
     const { theme } = params
     const captchaFrame = document.createElement('iframe')
 
-    captchaFrame.src = theme === 'dark' ? DARK_CAPTCHA_IFRAME_URL : LIGHT_CAPTCHA_IFRAME_URL
+    captchaFrame.src = theme === 'dark' ?
+      appendParamsToURL(DARK_CAPTCHA_IFRAME_URL, params) :
+      appendParamsToURL(LIGHT_CAPTCHA_IFRAME_URL, params)
     captchaFrame.title = 'Swetrix Captcha'
     captchaFrame.style.border = 'none'
     captchaFrame.style.width = '302px'

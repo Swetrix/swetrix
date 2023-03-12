@@ -80,6 +80,7 @@ const generateCaptcha = async () => {
       },
       body: JSON.stringify({
         theme: window.__SWETRIX_CAPTCHA_THEME || DEFAULT_THEME,
+        pid: window.__SWETRIX_PROJECT_ID,
       }),
     })
   
@@ -102,6 +103,9 @@ const verify = async () => {
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        pid: window.__SWETRIX_PROJECT_ID,
+      }),
     })
 
     if (!response.ok) {
@@ -143,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({
           hash: HASH,
           code,
+          pid: window.__SWETRIX_PROJECT_ID,
         }),
         headers: {
           'Content-Type': 'application/json',
