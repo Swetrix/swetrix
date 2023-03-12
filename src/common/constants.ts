@@ -166,6 +166,7 @@ const getRedisProjectKey = (pid: string) => `pid_${pid}`
 const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
+const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
 const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
 const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v2'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
@@ -208,6 +209,7 @@ export {
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
   REDIS_LOG_DATA_CACHE_KEY,
+  REDIS_LOG_CAPTCHA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,

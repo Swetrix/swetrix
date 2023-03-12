@@ -179,11 +179,10 @@ const customLogDTO = (
   ]
 }
 
-const getElValue = el => {
+export const getElValue = el => {
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
   return mysql.escape(el)
 }
-
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5

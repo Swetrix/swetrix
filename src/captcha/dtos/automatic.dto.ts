@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty } from 'class-validator'
 
-export class ManualDTO {
+export class AutomaticDTO {
   @ApiProperty({
     example: 'aUn1quEid-3',
     required: true,
@@ -9,18 +9,4 @@ export class ManualDTO {
   })
   @IsNotEmpty()
   pid: string
-
-  @ApiProperty({
-    required: true,
-  })
-  @IsNotEmpty()
-  hash: string
-
-  @ApiProperty({
-    required: true,
-    example: '4vic2',
-    description: 'Captcha code',
-  })
-  @IsNotEmpty()
-  code: string
 }

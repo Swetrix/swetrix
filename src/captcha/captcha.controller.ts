@@ -11,6 +11,7 @@ import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { ManualDTO } from './dtos/manual.dto'
 import { ValidateDTO } from './dtos/validate.dto'
+import { AutomaticDTO } from './dtos/automatic.dto'
 import { GenerateDTO, DEFAULT_THEME } from './dtos/generate.dto'
 
 dayjs.extend(utc)
@@ -37,12 +38,12 @@ export class CaptchaController {
     this.logger.log({ generateDTO }, 'POST /captcha/generate')
 
     const {
-      theme = DEFAULT_THEME,
+      theme = DEFAULT_THEME, pid,
     } = generateDTO
 
     console.log(generateDTO)
 
-    return await this.captchaService.generateCaptcha(theme)
+    return await this.captchaService.generateCaptcha(theme, pid)
   }
 
   @Post('/verify-manual')
@@ -52,15 +53,21 @@ export class CaptchaController {
   async verifyManual(
     @Body() manualDTO: ManualDTO,
     @Req() request: Request,
+    @Headers() headers,
     @Res({ passthrough: true }) response: Response,
   ): Promise<any> {
     this.logger.log({ manualDTO }, 'POST /captcha/verify-manual')
 
+    const { 'user-agent': userAgent } = headers
+    // todo: add origin checks
+
     // @ts-ignore
     const tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
-    const { code, hash } = manualDTO
+    const {
+      code, hash, pid,
+    } = manualDTO
 
-    if (!this.captchaService.verifyCaptcha(code, hash)) {
+    if (!this.captchaService.verifyCaptcha(code, hash, pid)) {
       throw new ForbiddenException('Incorrect captcha')
     }
 
@@ -86,11 +93,14 @@ export class CaptchaController {
 
     const token = this.captchaService.generateToken(TEST_PUBLIC_KEY, hash, timestamp, false)
 
+    await this.captchaService.logCaptchaPass(pid, userAgent, headers, timestamp, true)
+
     return {
       success: true,
       token,
       timestamp,
       hash,
+      pid,
     }
   }
 
@@ -99,10 +109,17 @@ export class CaptchaController {
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   async autoVerifiable(
+    @Body() automaticDTO: AutomaticDTO,
     @Req() request: Request,
+    @Headers() headers,
     @Res({ passthrough: true }) response: Response,
   ): Promise<any> {
-    this.logger.log(null, 'POST /captcha/verify')
+    this.logger.log(automaticDTO, 'POST /captcha/verify')
+
+    const { 'user-agent': userAgent } = headers
+    // todo: add origin checks
+
+    const { pid } = automaticDTO
 
     // @ts-ignore
     let tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
@@ -151,6 +168,8 @@ export class CaptchaController {
     const timestamp = dayjs.utc().unix()
 
     const token = this.captchaService.generateToken(TEST_PUBLIC_KEY, null, timestamp, true)
+
+    await this.captchaService.logCaptchaPass(pid, userAgent, headers, timestamp, false)
 
     return {
       success: true,

@@ -1,16 +1,26 @@
 import {
   Injectable, BadRequestException,
 } from '@nestjs/common'
+import { hash } from 'blake3'
 import * as svgCaptcha from 'svg-captcha'
 import * as CryptoJS from 'crypto-js'
-import { hash } from 'blake3'
 import * as _toLower from 'lodash/toLower'
+import * as UAParser from 'ua-parser-js'
+import * as _map from 'lodash/map'
+import * as dayjs from 'dayjs'
+import * as utc from 'dayjs/plugin/utc'
 
-import { isDevelopment } from '../common/constants'
+import { AppLoggerService } from '../logger/logger.service'
+import {
+  isDevelopment, redis, REDIS_LOG_CAPTCHA_CACHE_KEY,
+} from '../common/constants'
+import { getElValue } from '../analytics/analytics.controller'
 
 import {
   CAPTCHA_SALT, CAPTCHA_ENCRYPTION_KEY,
 } from '../common/constants'
+
+dayjs.extend(utc)
 
 interface GeneratedCaptcha {
   data: string
@@ -45,10 +55,49 @@ const TEST_SECRET_KEY = 'wfOw1Jw3JAjcrHaQFvIvBS4qdG'
 
 export const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 
+const captchaDTO = (
+  pid: string,
+  dv: string,
+  br: string,
+  os: string,
+  cc: string,
+  isManual: boolean,
+  timestamp: number
+): Array<string | number> => {
+  return [
+    pid,
+    dv,
+    br,
+    os,
+    cc,
+    isManual ? 1 : 0,
+    dayjs.utc(timestamp).format('YYYY-MM-DD HH:mm:ss'),
+  ]
+}
+
 @Injectable()
 export class CaptchaService {
   constructor(
+    private readonly logger: AppLoggerService,
   ) { }
+
+  async logCaptchaPass(pid: string, userAgent: string, headers: any, timestamp: number, isManual: boolean): Promise<void> {
+    const ua = UAParser(userAgent)
+    const dv = ua.device.type || 'desktop'
+    const br = ua.browser.name
+    const os = ua.os.name
+    const cc = headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
+
+    const dto = captchaDTO(pid, dv, br, os, cc, isManual, timestamp)
+
+    const values = `(${_map(dto, getElValue).join(',')})`
+
+    try {
+      await redis.rpush(REDIS_LOG_CAPTCHA_CACHE_KEY, values)
+    } catch (e) {
+      this.logger.error(`[CaptchaService -> logCaptchaPass] ${e}`)
+    }
+  }
 
   generateToken(publicKey: string, hash: string, timestamp: number, autoVerified: boolean): string {
     // todo: lookup the secret key from the public key in the database
@@ -82,11 +131,11 @@ export class CaptchaService {
     return true
   }
 
-  hashCaptcha(text: string): string {
+  hashCaptcha(text: string, pid: string): string {
     return hash(captchaString(text)).toString('hex')
   }
 
-  async generateCaptcha(theme: string): Promise<GeneratedCaptcha> {
+  async generateCaptcha(theme: string, pid: string): Promise<GeneratedCaptcha> {
     const themeParams = theme === 'light' ? {} : {
       background: '#1f2937',
       color: true,
@@ -99,7 +148,7 @@ export class CaptchaService {
       ...themeParams,
     })
     const hash = this.hashCaptcha(
-      _toLower(captcha.text)
+      _toLower(captcha.text), pid,
     )
 
     return {
@@ -108,8 +157,8 @@ export class CaptchaService {
     }
   }
 
-  verifyCaptcha(text: string, hash: string): boolean {
-    return hash === this.hashCaptcha(text)
+  verifyCaptcha(text: string, hash: string, pid: string): boolean {
+    return hash === this.hashCaptcha(text, pid)
   }
 
   incrementManuallyVerified(tokenCaptcha: TokenCaptcha): TokenCaptcha {
