@@ -1,38 +1,21 @@
-const findInSearch = (exp) => {
-    const res = location.search.match(exp);
-    return (res && res[2]) || undefined;
+const DEFAULT_API_HOST = 'https://api.swetrix.com/captcha';
+export const ENDPOINTS = {
+    VALIDATE: '/validate',
 };
-const utmSourceRegex = /[?&](ref|source|utm_source)=([^?&]+)/;
-const utmCampaignRegex = /[?&](utm_campaign)=([^?&]+)/;
-const utmMediumRegex = /[?&](utm_medium)=([^?&]+)/;
-export const isInBrowser = () => {
-    return typeof window !== 'undefined';
-};
-export const isLocalhost = () => {
-    return location?.hostname === 'localhost' || location?.hostname === '127.0.0.1' || location?.hostname === '';
-};
-export const isAutomated = () => {
-    return navigator?.webdriver;
-};
-export const getLocale = () => {
-    return typeof navigator.languages !== 'undefined' ? navigator.languages[0] : navigator.language;
-};
-export const getTimezone = () => {
+export const makeAPIRequest = async (path, method, body, apiURL) => {
+    let res;
     try {
-        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+        res = await fetch(`${apiURL || DEFAULT_API_HOST}${path}`, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
     }
     catch (e) {
-        return;
+        throw `Unable to make API request, error: ${e}`;
     }
-};
-export const getReferrer = () => {
-    return document.referrer || undefined;
-};
-export const getUTMSource = () => findInSearch(utmSourceRegex);
-export const getUTMMedium = () => findInSearch(utmMediumRegex);
-export const getUTMCampaign = () => findInSearch(utmCampaignRegex);
-export const getPath = () => {
-    // TODO: Maybe we should also include such data as location.hash or location.search
-    return location.pathname || '';
+    return await res.json();
 };
 //# sourceMappingURL=utils.js.map
