@@ -110,7 +110,7 @@ export class CaptchaService {
     return encryptString(JSON.stringify(token), secretKey)
   }
 
-  validateToken(token: string, secretKey: string, hash: string, timestamp: number): boolean {
+  validateToken(token: string, secretKey: string, hash: string, timestamp: number): object {
     let parsed
 
     try {
@@ -128,7 +128,7 @@ export class CaptchaService {
       throw new BadRequestException('Token: timestamp does not match')
     }
 
-    return true
+    return parsed
   }
 
   hashCaptcha(text: string, pid: string): string {

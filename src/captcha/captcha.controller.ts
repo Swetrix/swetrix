@@ -190,6 +190,9 @@ export class CaptchaController {
       token, secret, hash, timestamp,
     } = validateDTO
 
-    return this.captchaService.validateToken(token, secret, hash, timestamp)
+    return {
+      success: true,
+      data: this.captchaService.validateToken(token, secret, hash, timestamp),
+    }
   }
 }
