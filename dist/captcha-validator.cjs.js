@@ -2,6 +2,12 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+var https = require('https');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var https__default = /*#__PURE__*/_interopDefaultLegacy(https);
+
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
 
@@ -60,27 +66,48 @@ var ENDPOINTS = {
     VALIDATE: '/validate',
 };
 var makeAPIRequest = function (path, method, body, apiURL) { return __awaiter(void 0, void 0, void 0, function () {
-    var res, e_1;
+    var options;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, fetch("".concat(apiURL || DEFAULT_API_HOST).concat(path), {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(body),
-                    })];
-            case 1:
-                res = _a.sent();
-                return [3 /*break*/, 3];
-            case 2:
-                e_1 = _a.sent();
-                throw "Unable to make API request, error: ".concat(e_1);
-            case 3: return [4 /*yield*/, res.json()];
-            case 4: return [2 /*return*/, _a.sent()];
+        options = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        if (body) {
+            // @ts-ignore
+            options.body = JSON.stringify(body);
         }
+        return [2 /*return*/, new Promise(function (resolve, reject) {
+                var url = "".concat(apiURL || DEFAULT_API_HOST).concat(path);
+                var req = https__default["default"].request(url, options, function (res) {
+                    var data = '';
+                    res.on('data', function (chunk) {
+                        data += chunk;
+                    });
+                    res.on('end', function () {
+                        if (res.statusCode >= 400) {
+                            reject("Request failed with status code ".concat(res.statusCode, ": ").concat(data));
+                        }
+                        else {
+                            try {
+                                resolve(JSON.parse(data));
+                            }
+                            catch (e) {
+                                reject("Unable to parse JSON response: ".concat(data));
+                            }
+                        }
+                    });
+                });
+                req.on('error', function (e) {
+                    reject("Unable to make API request, error: ".concat(e));
+                });
+                if (body) {
+                    // @ts-ignore
+                    req.write(options.body);
+                }
+                req.end();
+            })];
     });
 }); };
 

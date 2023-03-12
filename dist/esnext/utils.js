@@ -1,21 +1,48 @@
+import https from 'https';
 const DEFAULT_API_HOST = 'https://api.swetrix.com/captcha';
 export const ENDPOINTS = {
     VALIDATE: '/validate',
 };
 export const makeAPIRequest = async (path, method, body, apiURL) => {
-    let res;
-    try {
-        res = await fetch(`${apiURL || DEFAULT_API_HOST}${path}`, {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+    if (body) {
+        // @ts-ignore
+        options.body = JSON.stringify(body);
+    }
+    return new Promise((resolve, reject) => {
+        const url = `${apiURL || DEFAULT_API_HOST}${path}`;
+        const req = https.request(url, options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            res.on('end', () => {
+                if (res.statusCode >= 400) {
+                    reject(`Request failed with status code ${res.statusCode}: ${data}`);
+                }
+                else {
+                    try {
+                        resolve(JSON.parse(data));
+                    }
+                    catch (e) {
+                        reject(`Unable to parse JSON response: ${data}`);
+                    }
+                }
+            });
         });
-    }
-    catch (e) {
-        throw `Unable to make API request, error: ${e}`;
-    }
-    return await res.json();
+        req.on('error', (e) => {
+            reject(`Unable to make API request, error: ${e}`);
+        });
+        if (body) {
+            // @ts-ignore
+            req.write(options.body);
+        }
+        req.end();
+    });
 };
 //# sourceMappingURL=utils.js.map
