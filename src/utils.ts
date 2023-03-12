@@ -1,7 +1,7 @@
 import https from 'https'
 import http from 'http'
 
-const DEFAULT_API_HOST = 'https://api.swetrix.com/captcha'
+const DEFAULT_API_HOST = 'https://api.swetrix.com/v1/captcha'
 
 export const ENDPOINTS = {
   VALIDATE: '/validate',
