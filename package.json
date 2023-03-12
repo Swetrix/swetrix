@@ -1,11 +1,9 @@
 {
   "name": "@swetrix/captcha-validator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Swetrix CAPTCHA token validator package.",
   "main": "dist/captcha-validator.cjs.js",
   "module": "dist/captcha-validator.es5.js",
-  "browser": "dist/captcha-validator.js",
-  "origbrowser": "dist/captcha-validator.orig.js",
   "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
   "scripts": {
@@ -45,7 +43,6 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-typescript2": "^0.34.1",
-    "rollup-plugin-uglify": "^6.0.4",
     "typescript": "^4.9.5"
   }
 }
