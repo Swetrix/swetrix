@@ -723,6 +723,38 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_WEEK)
   async handleWeeklyReports(): Promise<void> {
-    // TODO: Implement
+    const subscribers = await this.projectService.getSubscribersForReports(
+      ReportFrequency.WEEKLY,
+    )
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const weekAgo = dayjs.utc().subtract(1, 'w').format('DD.MM.YYYY')
+    const date = `${weekAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (const subscriber of subscribers) {
+      const projects = await this.projectService.getSubscriberProjects(
+        subscriber.id,
+      )
+
+      const ids = projects.map(project => project.id)
+      const data = await this.analyticsService.getSummary(ids, 'w')
+
+      const result = {
+        type: 'w', // week
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        subscriber.email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
   }
 }
