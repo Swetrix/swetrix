@@ -1,6 +1,6 @@
 {
   "name": "@swetrix/captcha-validator",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Swetrix CAPTCHA token validator package.",
   "main": "dist/captcha-validator.cjs.js",
   "module": "dist/captcha-validator.es5.js",
