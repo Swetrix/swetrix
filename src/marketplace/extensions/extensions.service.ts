@@ -327,6 +327,7 @@ export class ExtensionsService {
       take: data.limit > 100 ? 100 : data.limit || 10,
       where: {
         name: Like(`%${data.term}%`),
+        status: ExtensionStatus.ACCEPTED,
       },
       order: {
         createdAt:
