@@ -47,7 +47,7 @@ import { ActionTokenType } from 'src/action-tokens/action-token.entity'
 import { MailerService } from 'src/mailer/mailer.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { AddSubscriberType } from './types'
-import { GetSubscribersQueriesDto } from './dto'
+import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
 
 dayjs.extend(utc)
 
@@ -522,5 +522,18 @@ export class ProjectService {
       })
 
     return { subscribers, count }
+  }
+
+  async updateSubscriber(
+    projectId: string,
+    subscriberId: string,
+    data: UpdateSubscriberBodyDto,
+  ) {
+    await this.projectSubscriberRepository.update(
+      { id: subscriberId, projectId },
+      data,
+    )
+
+    return await this.getSubscriber(projectId, subscriberId)
   }
 }

@@ -901,11 +901,35 @@ export class ProjectController {
   }
 
   @Patch(':projectId/subscribers/:subscriberId')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async updateSubscriber(
     @Param() params: UpdateSubscriberParamsDto,
     @Body() body: UpdateSubscriberBodyDto,
-  ): Promise<void> {
-    // TODO: Implement
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const subscriber = await this.projectService.getSubscriber(
+      params.projectId,
+      params.subscriberId,
+    )
+
+    if (!subscriber) {
+      throw new NotFoundException('Subscriber not found.')
+    }
+
+    return await this.projectService.updateSubscriber(
+      params.projectId,
+      params.subscriberId,
+      body,
+    )
   }
 
   @Delete(':projectId/subscribers/:subscriberId')
