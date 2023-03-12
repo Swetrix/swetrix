@@ -933,9 +933,32 @@ export class ProjectController {
   }
 
   @Delete(':projectId/subscribers/:subscriberId')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async removeSubscriber(
     @Param() params: RemoveSubscriberParamsDto,
+    @CurrentUserId() userId: string,
   ): Promise<void> {
-    // TODO: Implement
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const subscriber = await this.projectService.getSubscriber(
+      params.projectId,
+      params.subscriberId,
+    )
+
+    if (!subscriber) {
+      throw new NotFoundException('Subscriber not found.')
+    }
+
+    await this.projectService.removeSubscriber(
+      params.projectId,
+      params.subscriberId,
+    )
   }
 }

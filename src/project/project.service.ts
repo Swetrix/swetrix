@@ -536,4 +536,11 @@ export class ProjectService {
 
     return await this.getSubscriber(projectId, subscriberId)
   }
+
+  async removeSubscriber(projectId: string, subscriberId: string) {
+    await this.projectSubscriberRepository.delete({
+      id: subscriberId,
+      projectId,
+    })
+  }
 }
