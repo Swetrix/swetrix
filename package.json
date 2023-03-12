@@ -24,13 +24,13 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Swetrix/captcha-vaildator.git"
+    "url": "git+https://github.com/Swetrix/captcha-validator.git"
   },
   "author": "Andrii Romasiun <andrii@swetrix.com>",
   "funding": "https://ko-fi.com/andriir",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Swetrix/captcha-vaildator/issues"
+    "url": "https://github.com/Swetrix/captcha-validator/issues"
   },
   "homepage": "https://docs.swetrix.com",
   "dependencies": {
