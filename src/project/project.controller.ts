@@ -882,11 +882,22 @@ export class ProjectController {
   }
 
   @Get(':projectId/subscribers')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async getSubscribers(
     @Param() params: GetSubscribersParamsDto,
     @Query() queries: GetSubscribersQueriesDto,
-  ): Promise<void> {
-    // TODO: Implement
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    return await this.projectService.getSubscribers(params.projectId, queries)
   }
 
   @Patch(':projectId/subscribers/:subscriberId')

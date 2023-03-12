@@ -47,6 +47,7 @@ import { ActionTokenType } from 'src/action-tokens/action-token.entity'
 import { MailerService } from 'src/mailer/mailer.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { AddSubscriberType } from './types'
+import { GetSubscribersQueriesDto } from './dto'
 
 dayjs.extend(utc)
 
@@ -510,5 +511,16 @@ export class ProjectService {
       { isConfirmed: true },
     )
     await this.actionTokens.deleteActionToken(token)
+  }
+
+  async getSubscribers(projectId: string, queries: GetSubscribersQueriesDto) {
+    const [subscribers, count] =
+      await this.projectSubscriberRepository.findAndCount({
+        skip: Number(queries.offset) || 0,
+        take: Number(queries.limit) > 100 ? 100 : Number(queries.limit) || 100,
+        where: { projectId },
+      })
+
+    return { subscribers, count }
   }
 }
