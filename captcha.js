@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:5005/v1/captcha'
+const MESSAGE_IDENTIFIER = 'swetrix-captcha'
 const DEFAULT_THEME = 'light'
 let TOKEN = ''
 let HASH = ''
@@ -9,7 +10,22 @@ const ENDPOINTS = {
   VERIFY_MANUAL: '/verify-manual',
 }
 
+const IFRAME_MESSAGE_TYPES = {
+  SUCCESS: 'success',
+  FAILURE: 'failure',
+  TOKEN_EXPIRED: 'tokenExpired',
+}
+
 let activeAction = 'checkbox'
+
+const postMessage = (event, data = {}) => {
+  window.parent.postMessage({
+    event,
+    type: MESSAGE_IDENTIFIER,
+    cid: window.__SWETRIX_CAPTCHA_ID,
+    ...data,
+  }, '*')
+}
 
 /**
  * Sets the provided action visible and the rest hidden
@@ -91,6 +107,7 @@ const generateCaptcha = async () => {
     const data = await response.json()
     return data
   } catch (e) {
+    postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
     activateAction('failure')
     return {}
   }
@@ -115,6 +132,7 @@ const verify = async () => {
     const data = await response.json()
     return data
   } catch (e) {
+    postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
     activateAction('failure')
     return {}
   }
@@ -155,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
       })
     } catch (e) {
       disableManualChallenge()
+      postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
       activateAction('failure')
       svgCaptchaInput.value = ''
       return
@@ -162,17 +181,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!response.ok) {
       disableManualChallenge()
+      postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
       activateAction('failure')
       svgCaptchaInput.value = ''
       return
     }
 
-    const data = await response.json()
-    console.log(data)
+    const { success, token } = await response.json()
 
-    // TODO
+    if (!success) {
+      disableManualChallenge()
+      postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
+      activateAction('failure')
+      svgCaptchaInput.value = ''
+      return
+    }
 
     svgCaptchaInput.value = ''
+
+    postMessage(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
     activateAction('completed')
     disableManualChallenge()
   })
@@ -197,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       TOKEN = token
+      postMessage(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
       activateAction('completed')
       return
     } catch (e) {

@@ -186,7 +186,9 @@
     window.__SWETRIX_CAPTCHA_THEME = 'light'
     const urlParams = new URLSearchParams(window.location.search)
     const pid = urlParams.get('pid')
+    const cid = urlParams.get('cid')
 
+    window.__SWETRIX_CAPTCHA_ID = cid
     window.__SWETRIX_PROJECT_ID = pid
   </script>
   <script src="captcha.js" defer></script>
