@@ -17,8 +17,6 @@ export async function validateToken(token: string, secret: string, timestamp: nu
     res = await makeAPIRequest(ENDPOINTS.VALIDATE, 'POST', {
       token,
       secret,
-      timestamp,
-      hash,
     }, apiURL)
   } catch (e: any) {
     return [false, e]
