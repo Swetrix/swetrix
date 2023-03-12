@@ -48,6 +48,7 @@ import { MailerService } from 'src/mailer/mailer.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { AddSubscriberType } from './types'
 import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
+import { ReportFrequency } from './enums'
 
 dayjs.extend(utc)
 
@@ -542,5 +543,21 @@ export class ProjectService {
       id: subscriberId,
       projectId,
     })
+  }
+
+  async getSubscribersForReports(reportFrequency: ReportFrequency) {
+    return await this.projectSubscriberRepository.find({
+      relations: ['project'],
+      where: { reportFrequency, isConfirmed: true },
+    })
+  }
+
+  async getSubscriberProjects(subscriberId: string) {
+    const projects = await this.projectSubscriberRepository.find({
+      relations: ['project'],
+      where: { id: subscriberId },
+    })
+
+    return projects.map(project => project.project)
   }
 }

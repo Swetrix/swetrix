@@ -21,7 +21,6 @@ import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import {
-  ReportFrequency,
   ACCOUNT_PLANS,
   PlanCode,
   BillingFrequency,
@@ -49,6 +48,7 @@ import { Telegraf } from 'telegraf'
 import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
 import { ExtensionsService } from 'src/marketplace/extensions/extensions.service'
 import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
+import { ReportFrequency } from 'src/project/enums'
 
 dayjs.extend(utc)
 
@@ -224,7 +224,7 @@ export class TaskManagerService {
 
     const users = await this.userService.find({
       where: {
-        reportFrequency: ReportFrequency.Weekly,
+        reportFrequency: ReportFrequency.WEEKLY,
       },
       relations: ['projects'],
       select: ['email'],
@@ -270,7 +270,7 @@ export class TaskManagerService {
 
     const users = await this.userService.find({
       where: {
-        reportFrequency: ReportFrequency.Monthly,
+        reportFrequency: ReportFrequency.MONTHLY,
       },
       relations: ['projects'],
       select: ['email'],
@@ -686,7 +686,39 @@ export class TaskManagerService {
 
   @Cron('0 0 1 * *')
   async handleMonthlyReports(): Promise<void> {
-    // TODO: Implement
+    const subscribers = await this.projectService.getSubscribersForReports(
+      ReportFrequency.MONTHLY,
+    )
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const weekAgo = dayjs.utc().subtract(1, 'M').format('DD.MM.YYYY')
+    const date = `${weekAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (const subscriber of subscribers) {
+      const projects = await this.projectService.getSubscriberProjects(
+        subscriber.id,
+      )
+
+      const ids = projects.map(project => project.id)
+      const data = await this.analyticsService.getSummary(ids, 'M')
+
+      const result = {
+        type: 'M', // month
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        subscriber.email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
   }
 
   @Cron(CronExpression.EVERY_WEEK)
