@@ -60,6 +60,8 @@ import { Auth, Public } from 'src/auth/decorators'
 import {
   AddSubscriberParamsDto,
   AddSubscriberBodyDto,
+  ConfirmSubscriberInviteParamsDto,
+  ConfirmSubscriberInviteQueriesDto,
   GetSubscribersParamsDto,
   GetSubscribersQueriesDto,
   UpdateSubscriberParamsDto,
@@ -841,7 +843,10 @@ export class ProjectController {
 
   @Post(':projectId/subscribers/invite')
   @HttpCode(HttpStatus.OK)
-  async confirmSubscriberInvite(): Promise<void> {
+  async confirmSubscriberInvite(
+    @Param() params: ConfirmSubscriberInviteParamsDto,
+    @Query() queries: ConfirmSubscriberInviteQueriesDto,
+  ): Promise<void> {
     // TODO: Implement
   }
 
