@@ -1,9 +1,12 @@
 import https from 'https';
-const DEFAULT_API_HOST = 'https://api.swetrix.com/captcha';
+import http from 'http';
+const DEFAULT_API_HOST = 'https://api.swetrix.com/v1/captcha';
 export const ENDPOINTS = {
     VALIDATE: '/validate',
 };
 export const makeAPIRequest = async (path, method, body, apiURL) => {
+    const url = `${apiURL || DEFAULT_API_HOST}${path}`;
+    const isHTTPSUrl = url.startsWith('https://');
     const options = {
         method,
         headers: {
@@ -15,26 +18,49 @@ export const makeAPIRequest = async (path, method, body, apiURL) => {
         options.body = JSON.stringify(body);
     }
     return new Promise((resolve, reject) => {
-        const url = `${apiURL || DEFAULT_API_HOST}${path}`;
-        const req = https.request(url, options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => {
-                data += chunk;
-            });
-            res.on('end', () => {
-                if (res.statusCode >= 400) {
-                    reject(`Request failed with status code ${res.statusCode}: ${data}`);
-                }
-                else {
-                    try {
-                        resolve(JSON.parse(data));
+        let req;
+        if (isHTTPSUrl) {
+            req = https.request(url, options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+                res.on('end', () => {
+                    if (res.statusCode >= 400) {
+                        reject(`Request failed with status code ${res.statusCode}: ${data}`);
                     }
-                    catch (e) {
-                        reject(`Unable to parse JSON response: ${data}`);
+                    else {
+                        try {
+                            resolve(JSON.parse(data));
+                        }
+                        catch (e) {
+                            reject(`Unable to parse JSON response: ${data}`);
+                        }
                     }
-                }
+                });
             });
-        });
+        }
+        else {
+            req = http.request(url, options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+                res.on('end', () => {
+                    if (res.statusCode >= 400) {
+                        reject(`Request failed with status code ${res.statusCode}: ${data}`);
+                    }
+                    else {
+                        try {
+                            resolve(JSON.parse(data));
+                        }
+                        catch (e) {
+                            reject(`Unable to parse JSON response: ${data}`);
+                        }
+                    }
+                });
+            });
+        }
         req.on('error', (e) => {
             reject(`Unable to make API request, error: ${e}`);
         });

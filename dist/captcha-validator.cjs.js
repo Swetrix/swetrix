@@ -3,10 +3,12 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var https = require('https');
+var http = require('http');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
 var https__default = /*#__PURE__*/_interopDefaultLegacy(https);
+var http__default = /*#__PURE__*/_interopDefaultLegacy(http);
 
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -61,13 +63,15 @@ function __generator(thisArg, body) {
     }
 }
 
-var DEFAULT_API_HOST = 'https://api.swetrix.com/captcha';
+var DEFAULT_API_HOST = 'https://api.swetrix.com/v1/captcha';
 var ENDPOINTS = {
     VALIDATE: '/validate',
 };
 var makeAPIRequest = function (path, method, body, apiURL) { return __awaiter(void 0, void 0, void 0, function () {
-    var options;
+    var url, isHTTPSUrl, options;
     return __generator(this, function (_a) {
+        url = "".concat(apiURL || DEFAULT_API_HOST).concat(path);
+        isHTTPSUrl = url.startsWith('https://');
         options = {
             method: method,
             headers: {
@@ -79,26 +83,49 @@ var makeAPIRequest = function (path, method, body, apiURL) { return __awaiter(vo
             options.body = JSON.stringify(body);
         }
         return [2 /*return*/, new Promise(function (resolve, reject) {
-                var url = "".concat(apiURL || DEFAULT_API_HOST).concat(path);
-                var req = https__default["default"].request(url, options, function (res) {
-                    var data = '';
-                    res.on('data', function (chunk) {
-                        data += chunk;
-                    });
-                    res.on('end', function () {
-                        if (res.statusCode >= 400) {
-                            reject("Request failed with status code ".concat(res.statusCode, ": ").concat(data));
-                        }
-                        else {
-                            try {
-                                resolve(JSON.parse(data));
+                var req;
+                if (isHTTPSUrl) {
+                    req = https__default["default"].request(url, options, function (res) {
+                        var data = '';
+                        res.on('data', function (chunk) {
+                            data += chunk;
+                        });
+                        res.on('end', function () {
+                            if (res.statusCode >= 400) {
+                                reject("Request failed with status code ".concat(res.statusCode, ": ").concat(data));
                             }
-                            catch (e) {
-                                reject("Unable to parse JSON response: ".concat(data));
+                            else {
+                                try {
+                                    resolve(JSON.parse(data));
+                                }
+                                catch (e) {
+                                    reject("Unable to parse JSON response: ".concat(data));
+                                }
                             }
-                        }
+                        });
                     });
-                });
+                }
+                else {
+                    req = http__default["default"].request(url, options, function (res) {
+                        var data = '';
+                        res.on('data', function (chunk) {
+                            data += chunk;
+                        });
+                        res.on('end', function () {
+                            if (res.statusCode >= 400) {
+                                reject("Request failed with status code ".concat(res.statusCode, ": ").concat(data));
+                            }
+                            else {
+                                try {
+                                    resolve(JSON.parse(data));
+                                }
+                                catch (e) {
+                                    reject("Unable to parse JSON response: ".concat(data));
+                                }
+                            }
+                        });
+                    });
+                }
                 req.on('error', function (e) {
                     reject("Unable to make API request, error: ".concat(e));
                 });
