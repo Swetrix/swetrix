@@ -187,12 +187,12 @@ export class CaptchaController {
     this.logger.log({ validateDTO }, 'POST /captcha/validate')
 
     const {
-      token, secret, hash, timestamp,
+      token, secret,
     } = validateDTO
 
     return {
       success: true,
-      data: this.captchaService.validateToken(token, secret, hash, timestamp),
+      data: this.captchaService.validateToken(token, secret),
     }
   }
 }

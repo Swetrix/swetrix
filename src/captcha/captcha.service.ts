@@ -110,7 +110,7 @@ export class CaptchaService {
     return encryptString(JSON.stringify(token), secretKey)
   }
 
-  validateToken(token: string, secretKey: string, hash: string, timestamp: number): object {
+  validateToken(token: string, secretKey: string): object {
     let parsed
 
     try {
@@ -118,14 +118,6 @@ export class CaptchaService {
       parsed = JSON.parse(decrypted)
     } catch (e) {
       throw new BadRequestException('Could not decrypt token')
-    }
-
-    if (!parsed.autoVerified && parsed.hash !== hash) {
-      throw new BadRequestException('Token: captcha pass hash does not match')
-    }
-
-    if (parsed.timestamp !== timestamp) {
-      throw new BadRequestException('Token: timestamp does not match')
     }
 
     return parsed
