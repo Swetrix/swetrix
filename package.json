@@ -1,0 +1,51 @@
+{
+  "name": "@swetrix/captcha-validator",
+  "version": "1.0.0",
+  "description": "Swetrix CAPTCHA token validator package.",
+  "main": "dist/captcha-validator.cjs.js",
+  "module": "dist/captcha-validator.es5.js",
+  "browser": "dist/captcha-validator.js",
+  "origbrowser": "dist/captcha-validator.orig.js",
+  "esnext": "dist/esnext/index.js",
+  "typings": "dist/esnext/index.d.ts",
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "prepublish": "npm run build",
+    "build": "rollup -c && tsc -p tsconfig.esnext.json",
+    "start": "rollup -c -w",
+    "tsc": "tsc -p tsconfig.esnext.json"
+  },
+  "keywords": [
+    "swetrix",
+    "analytics",
+    "monitoring",
+    "metrics",
+    "privacy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swetrix/captcha-vaildator.git"
+  },
+  "author": "Andrii Romasiun <andrii@swetrix.com>",
+  "funding": "https://ko-fi.com/andriir",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Swetrix/captcha-vaildator/issues"
+  },
+  "homepage": "https://docs.swetrix.com",
+  "dependencies": {
+    "@types/node": "^18.13.0",
+    "tslib": "^2.5.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "rimraf": "^4.1.2",
+    "rollup": "^2.79.1",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "rollup-plugin-uglify": "^6.0.4",
+    "typescript": "^4.9.5"
+  }
+}
