@@ -15,6 +15,7 @@ import {
   Headers,
   NotImplementedException,
   Patch,
+  HttpStatus,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -836,6 +837,12 @@ export class ProjectController {
       reportFrequency: body.reportFrequency,
       origin: headers.origin,
     })
+  }
+
+  @Post(':projectId/subscribers/invite')
+  @HttpCode(HttpStatus.OK)
+  async confirmSubscriberInvite(): Promise<void> {
+    // TODO: Implement
   }
 
   @Get(':projectId/subscribers')
