@@ -456,6 +456,7 @@ export class ProjectService {
     await this.sendSubscriberInvite(
       data.userId,
       data.projectId,
+      subscriber.id,
       data.email,
       data.origin,
     )
@@ -466,13 +467,14 @@ export class ProjectService {
   async sendSubscriberInvite(
     userId: string,
     projectId: string,
+    subscriberId: string,
     email: string,
     origin: string,
   ) {
     const actionToken = await this.actionTokens.createActionToken(
       userId,
       ActionTokenType.ADDING_PROJECT_SUBSCRIBER,
-      `${projectId}:${email}`,
+      `${projectId}:${subscriberId}`,
     )
 
     const inviteLink = `${origin}/projects/${projectId}/subscribers/invite?token=${actionToken.id}`
@@ -484,5 +486,29 @@ export class ProjectService {
         inviteLink,
       },
     )
+  }
+
+  async getProjectById(projectId: string) {
+    return await this.projectsRepository.findOne({
+      where: { id: projectId },
+    })
+  }
+
+  async getSubscriber(projectId: string, subscriberId: string) {
+    return await this.projectSubscriberRepository.findOne({
+      where: { id: subscriberId, projectId },
+    })
+  }
+
+  async confirmSubscriber(
+    projectId: string,
+    subscriberId: string,
+    token: string,
+  ) {
+    await this.projectSubscriberRepository.update(
+      { id: subscriberId, projectId },
+      { isConfirmed: true },
+    )
+    await this.actionTokens.deleteActionToken(token)
   }
 }

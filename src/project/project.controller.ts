@@ -841,13 +841,44 @@ export class ProjectController {
     })
   }
 
-  @Post(':projectId/subscribers/invite')
+  @Get(':projectId/subscribers/invite')
   @HttpCode(HttpStatus.OK)
   async confirmSubscriberInvite(
     @Param() params: ConfirmSubscriberInviteParamsDto,
     @Query() queries: ConfirmSubscriberInviteQueriesDto,
   ): Promise<void> {
-    // TODO: Implement
+    const project = await this.projectService.getProjectById(params.projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const actionToken = await this.actionTokensService.getActionToken(
+      queries.token,
+    )
+
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.ADDING_PROJECT_SUBSCRIBER
+    ) {
+      throw new BadRequestException('Invalid token.')
+    }
+
+    const [projectId, subscriberId] = actionToken.newValue.split(':')
+    const subscriber = await this.projectService.getSubscriber(
+      projectId,
+      subscriberId,
+    )
+
+    if (!subscriber) {
+      throw new NotFoundException('Subscriber not found.')
+    }
+
+    await this.projectService.confirmSubscriber(
+      projectId,
+      subscriberId,
+      actionToken.id,
+    )
   }
 
   @Get(':projectId/subscribers')
