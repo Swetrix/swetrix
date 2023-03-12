@@ -678,4 +678,19 @@ export class TaskManagerService {
     }
     return totalInstalls / extensions.length
   }
+
+  @Cron(CronExpression.EVERY_QUARTER)
+  async handleQuarterlyReports(): Promise<void> {
+    // TODO: Implement
+  }
+
+  @Cron('0 0 1 * *')
+  async handleMonthlyReports(): Promise<void> {
+    // TODO: Implement
+  }
+
+  @Cron(CronExpression.EVERY_WEEK)
+  async handleWeeklyReports(): Promise<void> {
+    // TODO: Implement
+  }
 }
