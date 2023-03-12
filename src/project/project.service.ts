@@ -41,6 +41,12 @@ import {
   ORIGINS_REGEX,
   getRedisProjectKey,
 } from '../common/constants'
+import { ProjectSubscriber } from './entity'
+import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
+import { ActionTokenType } from 'src/action-tokens/action-token.entity'
+import { MailerService } from 'src/mailer/mailer.service'
+import { LetterTemplate } from 'src/mailer/letter'
+import { AddSubscriberType } from './types'
 
 dayjs.extend(utc)
 
@@ -103,7 +109,11 @@ export class ProjectService {
     @InjectRepository(ProjectShare)
     private projectShareRepository: Repository<ProjectShare>,
     private userService: UserService,
-  ) { }
+    @InjectRepository(ProjectSubscriber)
+    private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
+    private readonly actionTokens: ActionTokensService,
+    private readonly mailerService: MailerService,
+  ) {}
 
   async paginate(
     options: PaginationOptionsInterface,
@@ -423,5 +433,56 @@ export class ProjectService {
     }
 
     await this.clearProjectsRedisCache(user.id)
+  }
+
+  async getProject(projectId: string, userId: string) {
+    return await this.projectsRepository.findOne({
+      where: {
+        id: projectId,
+        admin: { id: userId },
+      },
+    })
+  }
+
+  async getSubscriberByEmail(projectId: string, email: string) {
+    return await this.projectSubscriberRepository.findOne({
+      where: { projectId, email },
+    })
+  }
+
+  async addSubscriber(data: AddSubscriberType) {
+    const subscriber = await this.projectSubscriberRepository.save({ ...data })
+
+    await this.sendSubscriberInvite(
+      data.userId,
+      data.projectId,
+      data.email,
+      data.origin,
+    )
+
+    return subscriber
+  }
+
+  async sendSubscriberInvite(
+    userId: string,
+    projectId: string,
+    email: string,
+    origin: string,
+  ) {
+    const actionToken = await this.actionTokens.createActionToken(
+      userId,
+      ActionTokenType.ADDING_PROJECT_SUBSCRIBER,
+      `${projectId}:${email}`,
+    )
+
+    const inviteLink = `${origin}/projects/${projectId}/subscribers/invite?token=${actionToken.id}`
+
+    await this.mailerService.sendEmail(
+      email,
+      LetterTemplate.ProjectSubscriberInvitation,
+      {
+        inviteLink,
+      },
+    )
   }
 }

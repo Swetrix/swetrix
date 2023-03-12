@@ -798,11 +798,44 @@ export class ProjectController {
   }
 
   @Post(':projectId/subscribers')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async addSubscriber(
     @Param() params: AddSubscriberParamsDto,
     @Body() body: AddSubscriberBodyDto,
-  ): Promise<void> {
-    // TODO: Implement
+    @Headers() headers: { origin: string },
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.getUser(userId)
+
+    if (user.email === body.email) {
+      throw new BadRequestException('You cannot subscribe to your own project.')
+    }
+
+    const subscriber = await this.projectService.getSubscriberByEmail(
+      params.projectId,
+      body.email,
+    )
+
+    if (subscriber) {
+      throw new BadRequestException('Subscriber already exists.')
+    }
+
+    return await this.projectService.addSubscriber({
+      userId,
+      projectId: params.projectId,
+      email: body.email,
+      reportFrequency: body.reportFrequency,
+      origin: headers.origin,
+    })
   }
 
   @Get(':projectId/subscribers')

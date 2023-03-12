@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -13,6 +14,9 @@ import { Project } from './project.entity'
 export class ProjectSubscriber {
   @PrimaryGeneratedColumn('uuid')
   id: string
+
+  @Column('varchar', { length: 12 })
+  projectId: string
 
   @Column('varchar', { length: 254 })
   email: string
@@ -30,5 +34,6 @@ export class ProjectSubscriber {
   updatedAt: Date
 
   @ManyToOne(() => Project, project => project.subscribers)
+  @JoinColumn()
   project: Project
 }
