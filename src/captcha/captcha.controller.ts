@@ -194,7 +194,7 @@ export class CaptchaController {
 
     return {
       success: true,
-      data: this.captchaService.validateToken(token, secret),
+      data: await this.captchaService.validateToken(token, secret),
     }
   }
 }

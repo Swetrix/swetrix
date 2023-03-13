@@ -12,7 +12,7 @@ import * as utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  isDevelopment, redis, REDIS_LOG_CAPTCHA_CACHE_KEY, isValidPID,
+  isDevelopment, redis, REDIS_LOG_CAPTCHA_CACHE_KEY, isValidPID, getRedisCaptchaKey,
 } from '../common/constants'
 import { getElValue } from '../analytics/analytics.controller'
 import { ProjectService } from 'src/project/project.service'
@@ -54,6 +54,19 @@ const captchaString = (text: string) => `${_toLower(text)}${CAPTCHA_SALT}`
 
 export const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 export const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
+
+const isTokenAlreadyUsed = async (token: string): Promise<boolean> => {
+  const captchaKey = getRedisCaptchaKey(token)
+  const key = await redis.get(captchaKey)
+
+  if (key) {
+    return true
+  }
+
+  await redis.set(captchaKey, '1', 'EX', CAPTCHA_TOKEN_LIFETIME)
+
+  return false
+}
 
 const captchaDTO = (
   pid: string,
@@ -147,7 +160,7 @@ export class CaptchaService {
     return encryptString(JSON.stringify(token), secretKey)
   }
 
-  validateToken(token: string, secretKey: string): object {
+  async validateToken(token: string, secretKey: string): Promise<object> {
     let parsed
 
     try {
@@ -159,6 +172,12 @@ export class CaptchaService {
 
     if (dayjs().unix() - parsed.timestamp > CAPTCHA_TOKEN_LIFETIME) {
       throw new BadRequestException('Token expired')
+    }
+
+    const tokenUsed = await isTokenAlreadyUsed(token)
+
+    if (tokenUsed) {
+      throw new BadRequestException('Token already used')
     }
 
     return parsed

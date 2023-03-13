@@ -1,5 +1,6 @@
 import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
+import { hash } from 'blake3'
 import { v5 as uuidv5 } from 'uuid'
 import * as _toNumber from 'lodash/toNumber'
 
@@ -164,6 +165,7 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
+const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
 const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
@@ -236,4 +238,5 @@ export {
   CAPTCHA_SALT,
   CAPTCHA_ENCRYPTION_KEY,
   isDevelopment,
+  getRedisCaptchaKey,
 }
