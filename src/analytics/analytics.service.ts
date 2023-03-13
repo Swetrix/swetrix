@@ -31,15 +31,12 @@ import { ACCOUNT_PLANS, DEFAULT_TIMEZONE, PlanCode } from '../user/entities/user
 import {
   redis,
   isValidPID,
-  getRedisProjectKey,
-  redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
   clickhouse,
   isSelfhosted,
   REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import {
-  getProjectsClickhouse,
   calculateRelativePercentage,
   millisecondsToSeconds,
 } from '../common/utils'
@@ -167,59 +164,9 @@ export const checkIfTBAllowed = (
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) { }
 
-  async getRedisProject(pid: string): Promise<Project | null> {
-    const pidKey = getRedisProjectKey(pid)
-    let project: string | Project = await redis.get(pidKey)
-
-    if (_isEmpty(project)) {
-      if (isSelfhosted) {
-        project = await getProjectsClickhouse(pid)
-      } else {
-        // todo: optimise the relations - select
-        // select only required columns
-        // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
-        project = await this.projectService.findOne(pid, {
-          relations: ['admin'],
-          select: ['origins', 'active', 'admin', 'public', 'ipBlacklist'],
-        })
-      }
-      if (_isEmpty(project))
-        throw new BadRequestException(
-          'The provided Project ID (pid) is incorrect',
-        )
-
-      if (!isSelfhosted) {
-        const share = await this.projectService.findShare({
-          where: {
-            project: pid,
-          },
-          relations: ['user'],
-        })
-        // @ts-ignore
-        project = { ...project, share }
-      }
-
-      await redis.set(
-        pidKey,
-        JSON.stringify(project),
-        'EX',
-        redisProjectCacheTimeout,
-      )
-    } else {
-      try {
-        project = JSON.parse(project)
-      } catch {
-        throw new InternalServerErrorException('Error while processing project')
-      }
-    }
-
-    // @ts-ignore
-    return project
-  }
-
   async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
     if (!isSelfhosted) {
-      const project = await this.getRedisProject(pid)
+      const project = await this.projectService.getRedisProject(pid)
       this.projectService.allowedToView(project, uid)
     }
   }
@@ -312,7 +259,7 @@ export class AnalyticsService {
       }
     }
 
-    const project = await this.getRedisProject(pid)
+    const project = await this.projectService.getRedisProject(pid)
 
     this.checkIpBlacklist(project, ip)
 

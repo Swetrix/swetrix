@@ -48,6 +48,24 @@ export class Project {
   })
   public: boolean
 
+  // Swetrix CAPTCHA related stuff
+
+  @ApiProperty()
+  @Column({ default: true })
+  isAnalyticsProject: boolean
+
+  @ApiProperty()
+  @Column({ default: false })
+  isCaptchaProject: boolean
+
+  @ApiProperty()
+  @Column({ default: false })
+  isCaptchaEnabled: boolean
+
+  @ApiProperty()
+  @Column('varchar', { default: null, length: 50 })
+  captchaSecretKey: string
+
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.projects)
   admin: User
@@ -69,16 +87,4 @@ export class Project {
   )
   @JoinTable()
   extensions: ExtensionToProject[]
-
-  @ApiProperty()
-  @Column({ default: true })
-  isAnalyticsProject: boolean
-
-  @ApiProperty()
-  @Column({ default: false})
-  isCaptchaProject: boolean
-
-  @ApiProperty()
-  @Column({ default: false})
-  isCaptchaEnabled: boolean
 }

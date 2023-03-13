@@ -40,7 +40,11 @@ import {
   IP_REGEX,
   ORIGINS_REGEX,
   getRedisProjectKey,
+  redisProjectCacheTimeout,
 } from '../common/constants'
+import {
+  getProjectsClickhouse,
+} from '../common/utils'
 
 dayjs.extend(utc)
 
@@ -104,6 +108,56 @@ export class ProjectService {
     private projectShareRepository: Repository<ProjectShare>,
     private userService: UserService,
   ) { }
+
+  async getRedisProject(pid: string): Promise<Project | null> {
+    const pidKey = getRedisProjectKey(pid)
+    let project: string | Project = await redis.get(pidKey)
+
+    if (_isEmpty(project)) {
+      if (isSelfhosted) {
+        project = await getProjectsClickhouse(pid)
+      } else {
+        // todo: optimise the relations - select
+        // select only required columns
+        // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
+        project = await this.findOne(pid, {
+          relations: ['admin'],
+          select: ['origins', 'active', 'admin', 'public', 'ipBlacklist', 'captchaSecretKey', 'isCaptchaEnabled'],
+        })
+      }
+      if (_isEmpty(project))
+        throw new BadRequestException(
+          'The provided Project ID (pid) is incorrect',
+        )
+
+      if (!isSelfhosted) {
+        const share = await this.findShare({
+          where: {
+            project: pid,
+          },
+          relations: ['user'],
+        })
+        // @ts-ignore
+        project = { ...project, share }
+      }
+
+      await redis.set(
+        pidKey,
+        JSON.stringify(project),
+        'EX',
+        redisProjectCacheTimeout,
+      )
+    } else {
+      try {
+        project = JSON.parse(project)
+      } catch {
+        throw new InternalServerErrorException('Error while processing project')
+      }
+    }
+
+    // @ts-ignore
+    return project
+  }
 
   async paginate(
     options: PaginationOptionsInterface,

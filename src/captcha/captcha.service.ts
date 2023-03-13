@@ -12,9 +12,10 @@ import * as utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  isDevelopment, redis, REDIS_LOG_CAPTCHA_CACHE_KEY,
+  isDevelopment, redis, REDIS_LOG_CAPTCHA_CACHE_KEY, isValidPID,
 } from '../common/constants'
 import { getElValue } from '../analytics/analytics.controller'
+import { ProjectService } from 'src/project/project.service'
 
 import {
   CAPTCHA_SALT, CAPTCHA_ENCRYPTION_KEY,
@@ -33,11 +34,11 @@ interface TokenCaptcha {
 }
 
 const encryptString = (text: string, key: string): string => {
-  return CryptoJS.Rabbit.encrypt(text, key).toString()
+  return CryptoJS.Rabbit.encrypt(text, key + key).toString()
 }
 
 const decryptString = (text: string, key: string): string => {
-  const bytes = CryptoJS.Rabbit.decrypt(text, key)
+  const bytes = CryptoJS.Rabbit.decrypt(text, key + key)
   return bytes.toString(CryptoJS.enc.Utf8)
 }
 
@@ -51,9 +52,8 @@ const COOKIE_MAX_AGE = 300 * 24 * 60 * 60 * 1000
 
 const captchaString = (text: string) => `${_toLower(text)}${CAPTCHA_SALT}`
 
-const TEST_SECRET_KEY = 'wfOw1Jw3JAjcrHaQFvIvBS4qdG'
-
 export const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
+export const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 
 const captchaDTO = (
   pid: string,
@@ -79,7 +79,34 @@ const captchaDTO = (
 export class CaptchaService {
   constructor(
     private readonly logger: AppLoggerService,
+    private readonly projectService: ProjectService,
   ) { }
+
+  // checks if captcha is enabled for pid
+  async _isCaptchaEnabledForPID(pid: string): Promise<boolean> {
+    const project = await this.projectService.getRedisProject(pid)
+    
+    if (!project) {
+      return false
+    }
+
+    return project.isCaptchaEnabled
+  }
+
+  // validates pid, checks if captcha is enabled and throws an error otherwise
+  async validatePIDForCAPTCHA(pid: string): Promise<void> {
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    if (!(await this._isCaptchaEnabledForPID(pid))) {
+      throw new BadRequestException(
+        'CAPTCHA is not enabled for this Project',
+      )
+    }
+  }
 
   async logCaptchaPass(pid: string, userAgent: string, headers: any, timestamp: number, isManual: boolean): Promise<void> {
     const ua = UAParser(userAgent)
@@ -99,12 +126,22 @@ export class CaptchaService {
     }
   }
 
-  generateToken(publicKey: string, hash: string, timestamp: number, autoVerified: boolean): string {
-    // todo: lookup the secret key from the public key in the database
-    const secretKey = TEST_SECRET_KEY
+  async generateToken(pid: string, hash: string, timestamp: number, autoVerified: boolean): Promise<string> {
+    const project = await this.projectService.getRedisProject(pid)
+
+    if (!project) {
+      throw new BadRequestException('Project not found')
+    }
+
+    // @ts-ignore
+    const secretKey = project.captchaSecretKey
+
+    if (!secretKey) {
+      throw new BadRequestException('No secret key generated for this project')
+    }
 
     const token = {
-      hash, timestamp, autoVerified,
+      hash, timestamp, autoVerified, pid,
     }
 
     return encryptString(JSON.stringify(token), secretKey)
@@ -118,6 +155,10 @@ export class CaptchaService {
       parsed = JSON.parse(decrypted)
     } catch (e) {
       throw new BadRequestException('Could not decrypt token')
+    }
+
+    if (dayjs.utc().diff(dayjs.utc(parsed.timestamp), 'second') > CAPTCHA_TOKEN_LIFETIME) {
+      throw new BadRequestException('Token expired')
     }
 
     return parsed

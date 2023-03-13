@@ -1,6 +1,6 @@
 import {
   Controller, Post, Body, UseGuards, ForbiddenException, InternalServerErrorException,
-  Headers, Ip, Request, Req, Response, Res, HttpCode, Get,
+  Headers, Request, Req, Response, Res, HttpCode, BadRequestException,
 } from '@nestjs/common'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -15,8 +15,6 @@ import { AutomaticDTO } from './dtos/automatic.dto'
 import { GenerateDTO, DEFAULT_THEME } from './dtos/generate.dto'
 
 dayjs.extend(utc)
-
-const TEST_PUBLIC_KEY = 'test'
 
 @Controller({
   version: '1',
@@ -41,7 +39,7 @@ export class CaptchaController {
       theme = DEFAULT_THEME, pid,
     } = generateDTO
 
-    console.log(generateDTO)
+    this.captchaService.validatePIDForCAPTCHA(pid)
 
     return await this.captchaService.generateCaptcha(theme, pid)
   }
@@ -67,6 +65,8 @@ export class CaptchaController {
       code, hash, pid,
     } = manualDTO
 
+    this.captchaService.validatePIDForCAPTCHA(pid)
+
     if (!this.captchaService.verifyCaptcha(code, hash, pid)) {
       throw new ForbiddenException('Incorrect captcha')
     }
@@ -91,7 +91,7 @@ export class CaptchaController {
 
     const timestamp = dayjs.utc().unix()
 
-    const token = this.captchaService.generateToken(TEST_PUBLIC_KEY, hash, timestamp, false)
+    const token = await this.captchaService.generateToken(pid, hash, timestamp, false)
 
     await this.captchaService.logCaptchaPass(pid, userAgent, headers, timestamp, true)
 
@@ -120,6 +120,8 @@ export class CaptchaController {
     // todo: add origin checks
 
     const { pid } = automaticDTO
+
+    this.captchaService.validatePIDForCAPTCHA(pid)
 
     // @ts-ignore
     let tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
@@ -167,7 +169,7 @@ export class CaptchaController {
 
     const timestamp = dayjs.utc().unix()
 
-    const token = this.captchaService.generateToken(TEST_PUBLIC_KEY, null, timestamp, true)
+    const token = await this.captchaService.generateToken(pid, null, timestamp, true)
 
     await this.captchaService.logCaptchaPass(pid, userAgent, headers, timestamp, false)
 
