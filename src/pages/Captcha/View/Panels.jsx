@@ -3,7 +3,7 @@ import React, {
 } from 'react'
 import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
 import {
-  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon,
+  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -15,7 +15,6 @@ import _isEmpty from 'lodash/isEmpty'
 import _isFunction from 'lodash/isFunction'
 import _reduce from 'lodash/reduce'
 import _round from 'lodash/round'
-import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _floor from 'lodash/floor'
 import _size from 'lodash/size'
@@ -34,20 +33,13 @@ const ENTRIES_PER_PANEL = 5
 
 const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv']
 
-// function that checks if there are custom tabs for a specific type
-const checkCustomTabs = (panelID, customTabs) => {
-  if (_isEmpty(customTabs)) return false
-
-  return Boolean(_find(customTabs, (el) => el.panelID === panelID))
-}
-
 const checkIfBarsNeeded = (panelID) => {
   return _includes(panelsWithBars, panelID)
 }
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs,
+  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment,
 }) => (
   <div
     className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
@@ -66,7 +58,7 @@ const PanelContainer = ({
         {name}
       </h3>
       <div className='flex'>
-        {(checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs)) && (
+        {(checkIfBarsNeeded(type)) && (
           <Bars4Icon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-blue-500': activeFragment === 0,
@@ -103,20 +95,6 @@ const PanelContainer = ({
             })}
             onClick={() => setActiveFragment(1)}
           />
-        )}
-        {checkCustomTabs(type, customTabs) && (
-          <>
-            {_map(customTabs, ({ extensionID, panelID }) => (
-              <PuzzlePieceIcon
-                key={`${extensionID}-${panelID}`}
-                className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                  'text-blue-500': activeFragment === extensionID,
-                  'text-gray-900 dark:text-gray-50': activeFragment === 0,
-                })}
-                onClick={() => setActiveFragment(extensionID)}
-              />
-            ))}
-          </>
         )}
       </div>
     </div>
@@ -432,7 +410,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs,
+  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
 }) => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -479,7 +457,6 @@ const Panel = ({
         activeFragment={activeFragment}
         setActiveFragment={setActiveFragment}
         openModal={() => setModal(true)}
-        customTabs={customTabs}
       >
         <InteractiveMap
           data={data}
@@ -547,7 +524,6 @@ const Panel = ({
         type={id}
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
-        customTabs={customTabs}
       >
         {_isEmpty(data) ? (
           <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
@@ -562,31 +538,9 @@ const Panel = ({
       </PanelContainer>
     )
   }
-  // Showing chart of stats a data (end if)
-
-  // Showing custom tabs (Extensions Marketplace)
-  // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
-  if (!_isEmpty(customTabs) && typeof activeFragment === 'string' && !_isEmpty(data)) {
-    const content = _find(customTabs, (tab) => tab.extensionID === activeFragment).tabContent
-
-    return (
-      <PanelContainer
-        name={name}
-        icon={icon}
-        type={id}
-        activeFragment={activeFragment}
-        setActiveFragment={setActiveFragment}
-        openModal={() => setModal(true)}
-        customTabs={customTabs}
-      >
-        {/* eslint-disable-next-line react/no-danger */}
-        <div dangerouslySetInnerHTML={{ __html: content }} />
-      </PanelContainer>
-    )
-  }
 
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs}>
+    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment}>
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}

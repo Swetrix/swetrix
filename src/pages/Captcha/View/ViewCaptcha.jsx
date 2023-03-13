@@ -25,7 +25,6 @@ import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 import PropTypes from 'prop-types'
-import * as SwetrixSDK from '@swetrix/sdk'
 
 import { SWETRIX_PID } from 'utils/analytics'
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
@@ -33,8 +32,8 @@ import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, TimeFormat, chartTypes,
+  tbPeriodPairs, getProjectCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
+  MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, TimeFormat, chartTypes,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -60,14 +59,10 @@ import Filters from './components/Filters'
 import './styles.css'
 
 const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, isPaidTierUsed, extensions, generateAlert, setProjects,
+  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, generateAlert, setProjects,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
-  const [customExportTypes, setCustomExportTypes] = useState([])
-  const [customPanelTabs, setCustomPanelTabs] = useState([])
-  const [sdkInstance, setSdkInstance] = useState(null)
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
@@ -198,36 +193,24 @@ const ViewProject = ({
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
-          data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
+          data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to)
         } else {
-          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
+          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '')
         }
 
         setProjectCache(id, data || {}, key)
-      }
-
-      const sdkData = {
-        ...(data || {}),
-        filters: newFilters || filters,
-        timezone,
-        timeBucket,
-        period,
-        from,
-        to,
       }
 
       if (_isEmpty(data)) {
         setAnalyticsLoading(false)
         setDataLoading(false)
         setIsPanelsDataEmpty(true)
-        sdkInstance?._emitEvent('load', sdkData)
         return
       }
 
       const {
         chart, params, customs, appliedFilters, avgSdur,
       } = data
-      sdkInstance?._emitEvent('load', sdkData)
       const processedSdur = getTimeFromSeconds(avgSdur)
 
       setSessionDurationAVG(getStringFromTime(processedSdur))
@@ -316,7 +299,6 @@ const ViewProject = ({
       })
     }
 
-    sdkInstance?._emitEvent('filtersupdate', newFilters)
     loadAnalytics(true, newFilters)
   }
 
@@ -349,7 +331,6 @@ const ViewProject = ({
         scrollToTopDisable: true,
       },
     })
-    sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
 
   const refreshStats = () => {
@@ -415,82 +396,6 @@ const ViewProject = ({
       }
     }
   }, [isLoading, activeChartMetrics, chartData]) // eslint-disable-line
-
-  // Initialising Swetrix SDK instance
-  useEffect(() => {
-    let sdk = null
-    if (!_isEmpty(extensions)) {
-      const processedExtensions = _map(extensions, (ext) => {
-        const { id: extId, fileURL } = ext
-        return {
-          id: extId,
-          cdnURL: `${CDN_URL}file/${fileURL}`,
-        }
-      })
-
-      sdk = new SwetrixSDK(processedExtensions, {
-        debug: isDevelopment,
-      }, {
-        onAddExportDataRow: (label, onClick) => {
-          setCustomExportTypes((prev) => [
-            ...prev,
-            {
-              label,
-              onClick,
-            },
-          ])
-        },
-        onRemoveExportDataRow: (label) => {
-          setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
-        },
-        onAddPanelTab: (extensionID, panelID, tabContent, onOpen) => {
-          setCustomPanelTabs((prev) => [
-            ...prev,
-            {
-              extensionID,
-              panelID,
-              tabContent,
-              onOpen,
-            },
-          ])
-        },
-        onRemovePanelTab: (extensionID, panelID) => {
-          setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
-        },
-      })
-      setSdkInstance(sdk)
-    }
-
-    return () => {
-      if (sdk) {
-        sdk._destroy()
-      }
-    }
-  }, [extensions])
-
-  // Supplying 'timeupdate' event to the SDK after loading
-  useEffect(() => {
-    sdkInstance?._emitEvent('timeupdate', {
-      period,
-      timeBucket,
-      dateRange: period === 'custom' ? dateRange : null,
-    })
-  }, [sdkInstance]) // eslint-disable-line
-
-  // Supplying 'projectinfo' event to the SDK after loading
-  useEffect(() => {
-    if (_isEmpty(project)) {
-      return
-    }
-
-    const {
-      active: isActive, created, public: isPublic,
-    } = project
-
-    sdkInstance?._emitEvent('projectinfo', {
-      id, name, isActive, created, isPublic,
-    })
-  }, [sdkInstance, name]) // eslint-disable-line
 
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t))
@@ -590,12 +495,6 @@ const ViewProject = ({
         setPeriod('custom')
         setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], dates)
 
-        sdkInstance?._emitEvent('timeupdate', {
-          period: 'custom',
-          timeBucket: eventEmitTimeBucket,
-          dateRange: dates,
-        })
-
         break
       }
     }
@@ -614,63 +513,25 @@ const ViewProject = ({
   }, [dateRange, t, arePeriodParsed]) // eslint-disable-line
 
   useEffect(() => {
-    const updateLiveVisitors = async () => {
-      const { id: pid } = project
-      const result = await getLiveVisitors([pid])
-
-      setLiveStatsForProject(pid, result[pid])
-    }
-
-    let interval
-    if (project.uiHidden) {
-      updateLiveVisitors()
-      interval = setInterval(async () => {
-        await updateLiveVisitors()
-      }, LIVE_VISITORS_UPDATE_INTERVAL)
-    }
-
-    return () => clearInterval(interval)
-  }, [project.id, setLiveStatsForProject]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
       getProject(id)
         .then(projectRes => {
           if (!_isEmpty(projectRes)) {
-            if (projectRes.isPublic && !projectRes.isOwner) {
-              getOverallStats([id])
-                .then(res => {
-                  setPublicProject({
-                    ...projectRes,
-                    overall: res[id],
-                    live: 'N/A',
-                    isPublicVisitors: true,
-                  })
-                })
-                .catch(e => {
-                  console.error(e)
-                  onErrorLoading()
-                })
-            } else {
-              getOverallStats([id])
-                .then(res => {
-                  setProjects([...projects, {
-                    ...projectRes,
-                    overall: res[id],
-                    live: 'N/A',
-                  }])
-                })
-                .then(() => {
-                  return getLiveVisitors([id])
-                })
-                .then(res => {
-                  setLiveStatsForProject(id, res[id])
-                })
-                .catch(e => {
-                  console.error(e)
-                  onErrorLoading()
-                })
-            }
+            getOverallStats([id])
+              .then(res => {
+                setProjects([...projects, {
+                  ...projectRes,
+                  overall: res[id],
+                  live: 'N/A',
+                }])
+              })
+              .then(() => {
+                return getLiveVisitors([id])
+              })
+              .catch(e => {
+                console.error(e)
+                onErrorLoading()
+              })
           } else {
             onErrorLoading()
           }
@@ -712,11 +573,6 @@ const ViewProject = ({
         scrollToTopDisable: true,
       },
     })
-    sdkInstance?._emitEvent('timeupdate', {
-      period: newPeriod.period,
-      timeBucket: tb,
-      dateRange: newPeriod.period === 'custom' ? dateRange : null,
-    })
   }
 
   const updateTimebucket = (newTimebucket) => {
@@ -733,11 +589,6 @@ const ViewProject = ({
     })
     setTimebucket(newTimebucket)
     setProjectViewPrefs(id, period, newTimebucket, dateRange)
-    sdkInstance?._emitEvent('timeupdate', {
-      period,
-      timeBucket: newTimebucket,
-      dateRange,
-    })
   }
 
   const openSettingsHandler = () => {
@@ -971,7 +822,7 @@ const ViewProject = ({
                 />
                 )}
                 <Dropdown
-                  items={[...exportTypes, ...customExportTypes]}
+                  items={exportTypes}
                   title={[
                     <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
                     <Fragment key='export-data'>
@@ -1073,7 +924,6 @@ const ViewProject = ({
                 {_map(panelsData.types, (type) => {
                   const panelName = tnMapping[type]
                   const panelIcon = panelIconMapping[type]
-                  const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 
                   if (type === 'cc') {
                     return (
@@ -1085,7 +935,6 @@ const ViewProject = ({
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
-                        customTabs={customTabs}
                         rowMapper={(rowName) => (
                           <CCRow rowName={rowName} language={language} />
                         )}
@@ -1103,7 +952,6 @@ const ViewProject = ({
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
-                        customTabs={customTabs}
                         capitalize
                       />
                     )
@@ -1119,7 +967,6 @@ const ViewProject = ({
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
-                        customTabs={customTabs}
                         rowMapper={(rowName) => (
                           <RefRow rowName={rowName} showIcons={showIcons} />
                         )}
@@ -1136,7 +983,6 @@ const ViewProject = ({
                       onFilter={filterHandler}
                       name={panelName}
                       data={panelsData.data[type]}
-                      customTabs={customTabs}
                     />
                   )
                 })}
@@ -1204,16 +1050,8 @@ ViewProject.propTypes = {
   setProjectCache: PropTypes.func.isRequired,
   setProjectViewPrefs: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  setPublicProject: PropTypes.func.isRequired,
-  setLiveStatsForProject: PropTypes.func.isRequired,
   authenticated: PropTypes.bool.isRequired,
-  extensions: PropTypes.arrayOf(PropTypes.object).isRequired,
   isPaidTierUsed: PropTypes.bool.isRequired,
-  timezone: PropTypes.string,
-}
-
-ViewProject.defaultProps = {
-  timezone: DEFAULT_TIMEZONE,
 }
 
 export default memo(ViewProject)
