@@ -51,15 +51,15 @@ export class Project {
   // Swetrix CAPTCHA related stuff
 
   @ApiProperty()
-  @Column({ default: true })
+  @Column('boolean', { default: true })
   isAnalyticsProject: boolean
 
   @ApiProperty()
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   isCaptchaProject: boolean
 
   @ApiProperty()
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   isCaptchaEnabled: boolean
 
   @ApiProperty()
