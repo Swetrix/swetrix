@@ -210,7 +210,7 @@ export class ProjectService {
 
   async update(
     id: string,
-    projectDTO: ProjectDTO,
+    projectDTO: ProjectDTO | Project,
   ): Promise<any> {
     return this.projectsRepository.update(id, projectDTO)
   }

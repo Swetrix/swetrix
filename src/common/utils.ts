@@ -201,6 +201,8 @@ const generateRecoveryCode = () =>
 
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
+const generateRandomString = (length: number): string => randomstring.generate(length)
+
 export {
   getRandomTip,
   checkRateLimit,
@@ -213,4 +215,5 @@ export {
   getPercentageChange,
   calculateRelativePercentage,
   millisecondsToSeconds,
+  generateRandomString,
 }

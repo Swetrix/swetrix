@@ -47,12 +47,14 @@ import {
   clickhouse,
   isSelfhosted,
   PROJECT_INVITE_EXPIRE,
+  CAPTCHA_SECRET_KEY_LENGTH,
 } from '../common/constants'
 import {
   getProjectsClickhouse,
   createProjectClickhouse,
   updateProjectClickhouse,
   deleteProjectClickhouse,
+  generateRandomString,
 } from '../common/utils'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
@@ -516,6 +518,59 @@ export class ProjectController {
     await deleteProjectRedis(id)
 
     return project
+  }
+
+  @Post('/secret-gen/:pid')
+  @HttpCode(200)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 200, description: 'A regenerated CAPTCHA secret key' })
+  async secretGen(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, pid }, 'POST /project/secret-gen/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    let secret: string = null
+
+    if (isSelfhosted) {
+      const project = await getProjectsClickhouse(pid)
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+      secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+
+      project.captchaSecretKey = secret
+
+      await updateProjectClickhouse(
+        this.projectService.formatToClickhouse(project),
+      )
+    } else {
+      const project = await this.projectService.findOne(pid, {
+        relations: ['admin'],
+      })
+      const user = await this.userService.findOne(uid)
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+
+      // @ts-ignore
+      await this.projectService.update(pid, { captchaSecretKey: secret })
+    }
+
+    return secret
   }
 
   @Delete('/:id')

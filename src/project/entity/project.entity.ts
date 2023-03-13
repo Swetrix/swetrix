@@ -12,6 +12,7 @@ import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
 import { Alert } from 'src/alert/entity/alert.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
+import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
 
 // In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
 // and to add them to the GDPR data export email template
@@ -25,7 +26,7 @@ export class Project {
   id: string
 
   @ApiProperty()
-  @Column('varchar', { length: 50 })
+  @Column('varchar', { length: CAPTCHA_SECRET_KEY_LENGTH })
   name: string
 
   @ApiProperty()

@@ -203,6 +203,7 @@ const PROJECT_INVITE_EXPIRE = 48
 
 const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
+const CAPTCHA_SECRET_KEY_LENGTH = 50
 
 export {
   clickhouse,
@@ -245,4 +246,5 @@ export {
   CAPTCHA_COOKIE_KEY,
   CAPTCHA_TOKEN_LIFETIME,
   PID_REGEX,
+  CAPTCHA_SECRET_KEY_LENGTH,
 }
