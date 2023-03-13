@@ -35,7 +35,7 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(UIActions.removeCaptchProject(pid))
   },
   deleteProjectCache: (pid) => {
-    dispatch(UIActions.deleteProjectCache(pid))
+    dispatch(UIActions.deleteCaptchaProjectCache(pid))
   },
   showError: (message) => {
     dispatch(errorsActions.genericError(message))

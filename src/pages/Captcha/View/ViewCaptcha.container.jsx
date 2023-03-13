@@ -6,14 +6,13 @@ import { alertsActions } from 'redux/actions/alerts'
 import ViewProject from './ViewCaptcha'
 
 const mapStateToProps = (state) => ({
-  projects: state.ui.projects.projects,
-  isLoading: state.ui.projects.isLoading,
-  cache: state.ui.cache.analytics,
-  projectViewPrefs: state.ui.cache.projectViewPrefs,
+  projects: state.ui.projects.captchaProjects,
+  isLoading: state.ui.projects.isLoadingCaptcha,
+  cache: state.ui.cache.captchaAnalytics,
+  projectViewPrefs: state.ui.cache.captchaProjectsViewPrefs,
   authenticated: state.auth.authenticated,
   timezone: state.auth.user.timezone,
   isPaidTierUsed: state.auth.isPaidTierUsed,
-  extensions: state.ui.misc.extensions,
   user: state.auth.user,
 })
 
@@ -22,22 +21,16 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(errorsActions.genericError(message))
   },
   setProjectCache: (pid, data, key) => {
-    dispatch(UIActions.setProjectCache(pid, data, key))
-  },
-  setPublicProject: (project) => {
-    dispatch(UIActions.setPublicProject(project))
+    dispatch(UIActions.setCaptchaProjectCache(pid, data, key))
   },
   setProjects: (project) => {
-    dispatch(UIActions.setProjects(project))
-  },
-  setLiveStatsForProject: (id, count) => {
-    dispatch(UIActions.setLiveStatsForProject(id, count))
+    dispatch(UIActions.setCaptchaProjects(project))
   },
   generateAlert: (message, type) => {
     dispatch(alertsActions.generateAlerts(message, type))
   },
   setProjectViewPrefs: (pid, period, timeBucket, rangeDate) => {
-    dispatch(UIActions.setProjectViewPrefs(pid, period, timeBucket, rangeDate))
+    dispatch(UIActions.setCaptchaProjectsViewPrefs(pid, period, timeBucket, rangeDate))
   },
 })
 

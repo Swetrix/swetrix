@@ -123,6 +123,13 @@ const setProjectCache = (pid, data, key) => ({
   },
 })
 
+const setCaptchaProjectCache = (pid, data, key) => ({
+  type: types.SET_CAPTCHA_PROJECT_CHACHE,
+  payload: {
+    pid, data, key,
+  },
+})
+
 const setProjectCachePerf = (pid, data, key) => ({
   type: types.SET_PROJECT_CACHE_PERF,
   payload: {
@@ -144,6 +151,13 @@ const deleteProjectCache = (pid, period, timeBucket) => ({
   },
 })
 
+const deleteCaptchaProjectCache = (pid, period, timeBucket) => ({
+  type: types.DELETE_CAPTCHA_PROJECT_CACHE,
+  payload: {
+    pid, period, timeBucket,
+  },
+})
+
 const deleteProjectCachePerf = (pid, period, timeBucket) => ({
   type: types.DELETE_PROJECT_CACHE_PERF,
   payload: {
@@ -153,6 +167,13 @@ const deleteProjectCachePerf = (pid, period, timeBucket) => ({
 
 const setProjectViewPrefs = (pid, period, timeBucket, rangeDate) => ({
   type: types.SET_PROJECT_VIEW_PREFS,
+  payload: {
+    pid, period, timeBucket, rangeDate,
+  },
+})
+
+const setCaptchaProjectsViewPrefs = (pid, period, timeBucket, rangeDate) => ({
+  type: types.SET_CAPTCHA_PROJECTS_VIEW_PREFS,
   payload: {
     pid, period, timeBucket, rangeDate,
   },
@@ -304,6 +325,9 @@ const UIActions = {
   loadProjectsCaptcha,
   setCaptchaLoading,
   removeCaptchProject,
+  setCaptchaProjectsViewPrefs,
+  setCaptchaProjectCache,
+  deleteCaptchaProjectCache,
 }
 
 export default UIActions

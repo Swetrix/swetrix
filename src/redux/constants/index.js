@@ -114,6 +114,7 @@ export const TITLE_SUFFIX = '| Swetrix'
 
 export const LS_THEME_SETTING = 'colour-theme'
 export const LS_VIEW_PREFS_SETTING = 'proj-view-preferences'
+export const LS_CAPTCHA_VIEW_PREFS_SETTING = 'captcha-view-preferences'
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
