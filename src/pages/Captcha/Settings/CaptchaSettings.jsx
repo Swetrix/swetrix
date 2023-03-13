@@ -76,7 +76,7 @@ const CaptchaSettings = ({
   const [tab, setTab] = useState(tabForCreateCaptcha[0].name)
   const [reuseProjectId, setReuseProjectId] = useState()
   const [copied, setCopied] = useState(false)
-  const [captchaSecretKey, setCaptchaSecretKey] = useState(null)
+  const [captchaSecretKey, setCaptchaSecretKey] = useState(project.captchaSecretKey)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
   const copyTimerRef = useRef(null)
 
