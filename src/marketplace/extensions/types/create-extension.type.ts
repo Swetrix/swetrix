@@ -6,6 +6,7 @@ export type CreateExtensionType = {
   description?: string
   price?: string
   categoryId?: string
+  companySite?: string
   mainImage?: Express.Multer.File
   additionalImages?: Express.Multer.File[]
   extensionScript?: Express.Multer.File

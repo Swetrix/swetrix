@@ -7,6 +7,7 @@ import {
   IsNumberString,
   IsOptional,
   IsString,
+  IsUrl,
   Length,
 } from 'class-validator'
 import { HasMimeType, IsFile, IsFiles, MaxFileSize } from 'nestjs-form-data'
@@ -29,6 +30,10 @@ export class CreateExtensionBodyDto {
   @IsOptional()
   @IsNumberString()
   readonly categoryId?: string
+
+  @IsOptional()
+  @IsUrl()
+  readonly companySite?: string
 
   @IsOptional()
   @IsFile()
