@@ -456,36 +456,33 @@ export class ProjectService {
     const subscriber = await this.projectSubscriberRepository.save({ ...data })
 
     await this.sendSubscriberInvite(
-      data.userId,
-      data.projectId,
-      subscriber.id,
-      data.email,
-      data.origin,
+      data, subscriber.id,
     )
 
     return subscriber
   }
 
   async sendSubscriberInvite(
-    userId: string,
-    projectId: string,
+    data: AddSubscriberType,
     subscriberId: string,
-    email: string,
-    origin: string,
   ) {
+    const {
+      userId, projectId, projectName, email, origin 
+    } = data
+
     const actionToken = await this.actionTokens.createActionToken(
       userId,
       ActionTokenType.ADDING_PROJECT_SUBSCRIBER,
       `${projectId}:${subscriberId}`,
     )
 
-    const inviteLink = `${origin}/projects/${projectId}/subscribers/invite?token=${actionToken.id}`
+    const url = `${origin}/projects/${projectId}/subscribers/invite?token=${actionToken.id}`
 
     await this.mailerService.sendEmail(
       email,
       LetterTemplate.ProjectSubscriberInvitation,
       {
-        inviteLink,
+        url, projectName,
       },
     )
   }

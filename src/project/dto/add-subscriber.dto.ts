@@ -1,9 +1,14 @@
-import { Matches, IsEmail, IsNotEmpty, IsEnum } from 'class-validator'
+import { Matches, IsEmail, IsNotEmpty, IsEnum, IsString } from 'class-validator'
 import { ReportFrequency } from '../enums'
 
 export class AddSubscriberParamsDto {
   @Matches(/^(?!.*--)[a-zA-Z0-9-]{12}$/)
   readonly projectId: string
+}
+
+export class AddSubscriberMetaParamsDTO {
+  @IsString()
+  readonly projectName: string
 }
 
 export class AddSubscriberBodyDto {

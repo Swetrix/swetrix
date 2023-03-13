@@ -1,6 +1,6 @@
-import { AddSubscriberBodyDto, AddSubscriberParamsDto } from '../dto'
+import { AddSubscriberBodyDto, AddSubscriberParamsDto, AddSubscriberMetaParamsDTO } from '../dto'
 
-export type AddSubscriberType = { userId: string } & AddSubscriberParamsDto &
+export type AddSubscriberType = { userId: string } & AddSubscriberParamsDto & AddSubscriberMetaParamsDTO &
   AddSubscriberBodyDto & {
     origin: string
   }

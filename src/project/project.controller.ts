@@ -835,6 +835,7 @@ export class ProjectController {
     return await this.projectService.addSubscriber({
       userId,
       projectId: params.projectId,
+      projectName: project.name,
       email: body.email,
       reportFrequency: body.reportFrequency,
       origin: headers.origin,
