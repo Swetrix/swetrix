@@ -541,7 +541,7 @@ const ViewProject = ({
           onErrorLoading()
         })
     }
-  }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
+  }, [isLoading, project, id]) // eslint-disable-line
 
   const updatePeriod = (newPeriod) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
