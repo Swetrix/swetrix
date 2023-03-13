@@ -56,16 +56,11 @@ export const getSessionDurationKey = (hash: string, pid: string) =>
   `sd:${hash}:${pid}`
 
 export const cols = [
-  'cc',
-  'pg',
-  'lc',
-  'br',
-  'os',
-  'dv',
-  'ref',
-  'so',
-  'me',
-  'ca',
+  'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca',
+]
+
+export const captchaColumns = [
+  'cc', 'br', 'os', 'dv',
 ]
 
 export const perfCols = ['cc', 'pg', 'dv', 'br']
@@ -341,6 +336,7 @@ export class AnalyticsService {
 
   // returns SQL filters query in a format like 'AND col=value AND ...'
   getFiltersQuery(filters: string): GetFiltersQuery {
+    // TODO: Use captchaColumns for validation of CAPTCHA filters
     let parsed = []
     let query = ''
     let params = {}
@@ -484,6 +480,7 @@ export class AnalyticsService {
     paramsData: object,
     timezone: string,
     customEVFilterApplied: boolean,
+    isCaptcha: boolean,
   ): Promise<object | void> {
     const params = {}
 
@@ -593,7 +590,7 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${xM[i]
+      query += `select ${i} index, unique, count(), avg(sdur) from ${isCaptcha ? 'captcha' : 'analytics'} where pid = {pid:FixedString(12)} and created between '${xM[i]
         }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 

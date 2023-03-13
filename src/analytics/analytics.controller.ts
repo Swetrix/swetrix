@@ -260,6 +260,7 @@ export class AnalyticsController {
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
+    isCaptcha: boolean = false,
   ): Promise<any> {
     const {
       pid,
@@ -286,11 +287,12 @@ export class AnalyticsController {
 
     let queryCustoms =
       `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    // TODO: Refactor
+    let subQuery = `FROM ${isCaptcha ? 'captcha' : 'analytics'} WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     let customEVFilterApplied = false
 
     // @ts-ignore
-    if (filtersParams?.ev) {
+    if (filtersParams?.ev && !isCaptcha) {
       customEVFilterApplied = true
       // @ts-ignore
       queryCustoms = `SELECT ev, count() FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
@@ -403,11 +405,7 @@ export class AnalyticsController {
       paramsData,
       timezone,
       customEVFilterApplied,
-    )
-
-    const customs = await this.analyticsService.processCustomEV(
-      queryCustoms,
-      paramsData,
+      isCaptcha,
     )
 
     let appliedFilters = filters
@@ -417,6 +415,18 @@ export class AnalyticsController {
         appliedFilters = JSON.parse(filters)
       } catch { }
     }
+
+    if (isCaptcha) {
+      return {
+        ...result,
+        appliedFilters,
+      }
+    }
+
+    const customs = await this.analyticsService.processCustomEV(
+      queryCustoms,
+      paramsData,
+    )
 
     return {
       ...result,
@@ -572,6 +582,15 @@ export class AnalyticsController {
       ...result,
       appliedFilters,
     }
+  }
+
+  @Get('/captcha')
+  @Auth([], true, true)
+  async getCaptchaData(
+    @Query() data: AnalyticsGET_DTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    return await this.getData(data, uid, true)
   }
 
   @Get('/birdseye')
