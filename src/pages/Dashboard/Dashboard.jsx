@@ -36,6 +36,7 @@ import Pagination from 'ui/Pagination'
 const ProjectCart = ({
   name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
   sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
+  captcha,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -121,12 +122,14 @@ const ProjectCart = ({
                   </dd>
                 </div>
               )}
-              <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300 sm:mt-0'>
-                <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
-                {t('dashboard.liveVisitors')}
-                :&nbsp;
-                {live}
-              </div>
+              {!captcha && (
+                <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300 sm:mt-0'>
+                  <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
+                  {t('dashboard.liveVisitors')}
+                  :&nbsp;
+                  {live}
+                </div>
+              )}
             </div>
             <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300'>
               <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300' />
@@ -353,6 +356,7 @@ const Dashboard = ({
                                 name={name}
                                 created={created}
                                 shared={shared}
+                                captcha
                                 active={active}
                                 isPublic={isPublic}
                                 confirmed={confirmed}
