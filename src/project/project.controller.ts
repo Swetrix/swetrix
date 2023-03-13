@@ -107,11 +107,8 @@ export class ProjectController {
       const where = Object()
       where.admin = userId
 
-      if (isCaptcha) {
-        where.isCaptchaProject = true
-      } else {
-        where.isAnalyticsProject = true
-      }
+      where.isCaptchaProject = isCaptcha
+      where.isAnalyticsProject = !isCaptcha
 
       const paginated = await this.projectService.paginate(
         { take, skip },
