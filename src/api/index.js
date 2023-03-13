@@ -580,3 +580,14 @@ export const setTimeFormat = (timeFormat) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const reGenerateCaptchaSecretKey = (pid) =>
+  api
+    .post(`project/secret-gen/${pid}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

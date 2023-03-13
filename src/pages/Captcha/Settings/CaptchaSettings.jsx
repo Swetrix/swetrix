@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types */
 import React, {
-  useState, useEffect, useMemo, memo,
+  useState, useEffect, useMemo, memo, useRef,
 } from 'react'
 import { useLocation, useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -16,13 +16,13 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
-import { ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, TrashIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted } from 'redux/constants'
 import {
-  createProject, updateProject, deleteProject, resetProject,
+  createProject, updateProject, deleteProject, resetProject, reGenerateCaptchaSecretKey,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -75,6 +75,10 @@ const CaptchaSettings = ({
   const [projectSaving, setProjectSaving] = useState(false)
   const [tab, setTab] = useState(tabForCreateCaptcha[0].name)
   const [reuseProjectId, setReuseProjectId] = useState()
+  const [copied, setCopied] = useState(false)
+  const [captchaSecretKey, setCaptchaSecretKey] = useState(null)
+  const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
+  const copyTimerRef = useRef(null)
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
@@ -244,6 +248,25 @@ const CaptchaSettings = ({
 
   const title = isSettings ? `${t('project.captcha.settings.settings')} ${form.name}` : t('project.captcha.settings.create')
 
+  const onRegenerateSecretKey = async () => {
+    try {
+      const res = await reGenerateCaptchaSecretKey(id)
+      setCaptchaSecretKey(res)
+    } catch (e) {
+      showError(e)
+    }
+  }
+
+  const setToClipboard = (value) => {
+    if (!copied) {
+      navigator.clipboard.writeText(value)
+      setCopied(true)
+      copyTimerRef.current = setTimeout(() => {
+        setCopied(false)
+      }, 2000)
+    }
+  }
+
   return (
     <Title title={title}>
       <div
@@ -352,6 +375,64 @@ const CaptchaSettings = ({
                 error={beenSubmitted ? errors.ipBlacklist : null}
                 isBeta
               />
+              <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+              <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.captchaSecretKey')}
+              </h3>
+              {captchaSecretKey ? (
+                <>
+                  <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                    {t('profileSettings.captchaSecretKeyHint')}
+                  </p>
+                  <p className='mt-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                    {t('profileSettings.captchaSecretKey')}
+                  </p>
+                  <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
+                    <div className='relative group'>
+                      <Input
+                        name='sercretKey'
+                        id='sercretKey'
+                        type='text'
+                        className='pr-9'
+                        value={captchaSecretKey}
+                        onChange={handleInput}
+                        disabled
+                      />
+                      <div className='absolute right-2 top-3'>
+                        <div className='group relative'>
+                          <Button
+                            type='button'
+                            onClick={() => setToClipboard(captchaSecretKey)}
+                            className='opacity-70 hover:opacity-100'
+                            noBorder
+                          >
+                            <ClipboardDocumentIcon className='w-6 h-6' />
+                            {copied && (
+                              <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
+                                {t('common.copied')}
+                              </div>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.noApiKey')}
+                </p>
+              )}
+              {captchaSecretKey ? (
+                <Button className='mt-4' onClick={() => setShowRegenerateSecret(true)} danger large>
+                  {t('profileSettings.regenerateSecretKey')}
+                </Button>
+              ) : (
+                <Button className='mt-4' onClick={onRegenerateSecretKey} primary large>
+                  {t('profileSettings.generateSecretKey')}
+                </Button>
+              )}
+              <hr className='mt-5 border-gray-200 dark:border-gray-600' />
               <Checkbox
                 checked={Boolean(form.active)}
                 onChange={handleInput}
@@ -432,6 +513,20 @@ const CaptchaSettings = ({
           submitType='danger'
           type='error'
           isOpened={showReset}
+        />
+        <Modal
+          onClose={() => setShowRegenerateSecret(false)}
+          onSubmit={() => {
+            setShowRegenerateSecret(false)
+            onRegenerateSecretKey()
+          }}
+          submitText={t('profileSettings.regenerateSecretKey')}
+          closeText={t('common.close')}
+          title={t('profileSettings.regenerateSecretKeyTitle')}
+          submitType='danger'
+          type='error'
+          message={t('profileSettings.regenerateSecretKeyMessage')}
+          isOpened={showRegenerateSecret}
         />
       </div>
     </Title>
