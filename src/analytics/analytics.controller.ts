@@ -838,30 +838,6 @@ export class AnalyticsController {
       )
     }
 
-    // this is a temp measure to track a mindblowing bug that causing perf data like 4294966341 be written into the DB.
-    if (!_isEmpty(logDTO.perf) && !isPerformanceValid(logDTO.perf)) {
-      const {
-        dns, tls, conn, response, render, dom_load, page_load, ttfb,
-      } = logDTO.perf
-      console.error('[ERROR] Something is wrong with the performance data:', logDTO.perf)
-      console.error('Performance DTO:', performanceDTO(
-        'test',
-        'test',
-        'test',
-        'test',
-        'test',
-        dns,
-        tls,
-        conn,
-        response,
-        render,
-        dom_load,
-        page_load,
-        ttfb,
-      ))
-      console.error('Postprocessed performance DTO:', `(${perfDTO.map(getElValue).join(',')})`)
-    }
-
     if (!_isEmpty(logDTO.perf) && isPerformanceValid(logDTO.perf)) {
       if (!ua) {
         ua = UAParser(userAgent)

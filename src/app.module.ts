@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TelegrafModule } from 'nestjs-telegraf'
+import { NestjsFormDataModule } from 'nestjs-form-data'
 
 import { UserModule } from './user/user.module'
 import { AnalyticsModule } from './analytics/analytics.module'
@@ -35,6 +36,7 @@ const modules = [
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
+  NestjsFormDataModule.config({ isGlobal: true }),
   TaskManagerModule,
   UserModule,
   MailerModule,
