@@ -33,7 +33,7 @@ export class CreateExtensionBodyDto {
 
   @IsOptional()
   @IsUrl()
-  readonly companySite?: string
+  readonly companyLink?: string
 
   @IsOptional()
   @IsFile()

@@ -49,7 +49,7 @@ export class Extension {
   fileURL: string | null
 
   @Column('varchar', { default: null, nullable: true })
-  companySite: string | null
+  companyLink: string | null
 
   @CreateDateColumn()
   createdAt: Date
