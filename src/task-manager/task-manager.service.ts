@@ -307,6 +307,89 @@ export class TaskManagerService {
     }
   }
 
+  // EMAIL REPORTS, BUT FOR MULTIPLE PROJECT SUBSCRIBERS
+
+  @Cron(CronExpression.EVERY_QUARTER)
+  async handleQuarterlyReports(): Promise<void> {
+    // TODO: Implement
+  }
+
+  // ON THE FIRST DAY OF EVERY MONTH AT 3 AM
+  @Cron('0 03 1 * *')
+  async handleMonthlyReports(): Promise<void> {
+    const subscribers = await this.projectService.getSubscribersForReports(
+      ReportFrequency.MONTHLY,
+    )
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const weekAgo = dayjs.utc().subtract(1, 'M').format('DD.MM.YYYY')
+    const date = `${weekAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (const subscriber of subscribers) {
+      const projects = await this.projectService.getSubscriberProjects(
+        subscriber.id,
+      )
+
+      const ids = projects.map(project => project.id)
+      const data = await this.analyticsService.getSummary(ids, 'M')
+
+      const result = {
+        type: 'M', // month
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        subscriber.email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
+  }
+
+  // EVERY SUNDAY AT 3 AM
+  @Cron('0 03 * * 0')
+  async handleWeeklyReports(): Promise<void> {
+    const subscribers = await this.projectService.getSubscribersForReports(
+      ReportFrequency.WEEKLY,
+    )
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const weekAgo = dayjs.utc().subtract(1, 'w').format('DD.MM.YYYY')
+    const date = `${weekAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (const subscriber of subscribers) {
+      const projects = await this.projectService.getSubscriberProjects(
+        subscriber.id,
+      )
+
+      const ids = projects.map(project => project.id)
+      const data = await this.analyticsService.getSummary(ids, 'w')
+
+      const result = {
+        type: 'w', // week
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        subscriber.email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
+  }
+
   @Cron(CronExpression.EVERY_10_MINUTES)
   async getGeneralStats(): Promise<object> {
     if (isSelfhosted) {
@@ -677,84 +760,5 @@ export class TaskManagerService {
       )
     }
     return totalInstalls / extensions.length
-  }
-
-  @Cron(CronExpression.EVERY_QUARTER)
-  async handleQuarterlyReports(): Promise<void> {
-    // TODO: Implement
-  }
-
-  @Cron('0 0 1 * *')
-  async handleMonthlyReports(): Promise<void> {
-    const subscribers = await this.projectService.getSubscribersForReports(
-      ReportFrequency.MONTHLY,
-    )
-    const now = dayjs.utc().format('DD.MM.YYYY')
-    const weekAgo = dayjs.utc().subtract(1, 'M').format('DD.MM.YYYY')
-    const date = `${weekAgo} - ${now}`
-    const tip = getRandomTip()
-
-    for (const subscriber of subscribers) {
-      const projects = await this.projectService.getSubscriberProjects(
-        subscriber.id,
-      )
-
-      const ids = projects.map(project => project.id)
-      const data = await this.analyticsService.getSummary(ids, 'M')
-
-      const result = {
-        type: 'M', // month
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-      }
-
-      await this.mailerService.sendEmail(
-        subscriber.email,
-        LetterTemplate.ProjectReport,
-        result,
-        'broadcast',
-      )
-    }
-  }
-
-  @Cron(CronExpression.EVERY_WEEK)
-  async handleWeeklyReports(): Promise<void> {
-    const subscribers = await this.projectService.getSubscribersForReports(
-      ReportFrequency.WEEKLY,
-    )
-    const now = dayjs.utc().format('DD.MM.YYYY')
-    const weekAgo = dayjs.utc().subtract(1, 'w').format('DD.MM.YYYY')
-    const date = `${weekAgo} - ${now}`
-    const tip = getRandomTip()
-
-    for (const subscriber of subscribers) {
-      const projects = await this.projectService.getSubscriberProjects(
-        subscriber.id,
-      )
-
-      const ids = projects.map(project => project.id)
-      const data = await this.analyticsService.getSummary(ids, 'w')
-
-      const result = {
-        type: 'w', // week
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-      }
-
-      await this.mailerService.sendEmail(
-        subscriber.email,
-        LetterTemplate.ProjectReport,
-        result,
-        'broadcast',
-      )
-    }
   }
 }
