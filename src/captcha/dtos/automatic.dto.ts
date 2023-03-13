@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, Matches } from 'class-validator'
+
+import { PID_REGEX } from '../../common/constants'
 
 export class AutomaticDTO {
   @ApiProperty({
@@ -8,5 +10,6 @@ export class AutomaticDTO {
     description: 'A unique project ID',
   })
   @IsNotEmpty()
+  @Matches(PID_REGEX)
   pid: string
 }

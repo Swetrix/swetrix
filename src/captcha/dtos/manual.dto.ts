@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsString, Matches } from 'class-validator'
+
+import { PID_REGEX } from '../../common/constants'
 
 export class ManualDTO {
   @ApiProperty({
@@ -8,12 +10,14 @@ export class ManualDTO {
     description: 'A unique project ID',
   })
   @IsNotEmpty()
+  @Matches(PID_REGEX)
   pid: string
 
   @ApiProperty({
     required: true,
   })
   @IsNotEmpty()
+  @IsString()
   hash: string
 
   @ApiProperty({
@@ -22,5 +26,6 @@ export class ManualDTO {
     description: 'Captcha code',
   })
   @IsNotEmpty()
+  @IsString()
   code: string
 }

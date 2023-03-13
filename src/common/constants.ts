@@ -201,6 +201,9 @@ const SEND_WARNING_AT_PERC = 85
 
 const PROJECT_INVITE_EXPIRE = 48
 
+const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
+const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
+
 export {
   clickhouse,
   JWT_LIFE_TIME,
@@ -239,4 +242,7 @@ export {
   CAPTCHA_ENCRYPTION_KEY,
   isDevelopment,
   getRedisCaptchaKey,
+  CAPTCHA_COOKIE_KEY,
+  CAPTCHA_TOKEN_LIFETIME,
+  PID_REGEX,
 }

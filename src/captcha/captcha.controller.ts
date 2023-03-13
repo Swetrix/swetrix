@@ -1,12 +1,13 @@
 import {
   Controller, Post, Body, UseGuards, ForbiddenException, InternalServerErrorException,
-  Headers, Request, Req, Response, Res, HttpCode, BadRequestException,
+  Headers, Request, Req, Response, Res, HttpCode,
 } from '@nestjs/common'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
-import { CaptchaService, CAPTCHA_COOKIE_KEY } from './captcha.service'
+import { CAPTCHA_COOKIE_KEY } from '../common/constants'
+import { CaptchaService } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { ManualDTO } from './dtos/manual.dto'

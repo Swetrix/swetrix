@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsString } from 'class-validator'
 
 export class ValidateDTO {
   @ApiProperty({
@@ -7,6 +7,7 @@ export class ValidateDTO {
     description: 'Catpcha pass token',
   })
   @IsNotEmpty()
+  @IsString()
   token: string
 
   @ApiProperty({
@@ -14,5 +15,6 @@ export class ValidateDTO {
     description: 'Secret API key',
   })
   @IsNotEmpty()
+  @IsString()
   secret: string
 }

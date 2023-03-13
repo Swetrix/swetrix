@@ -16,29 +16,22 @@ import {
 } from '../common/constants'
 import { getElValue } from '../analytics/analytics.controller'
 import { ProjectService } from 'src/project/project.service'
+import { GeneratedCaptcha } from './interfaces/generated-captcha'
+import { TokenCaptcha } from './interfaces/token-captcha'
 
 import {
-  CAPTCHA_SALT, CAPTCHA_ENCRYPTION_KEY,
+  CAPTCHA_SALT, CAPTCHA_ENCRYPTION_KEY, CAPTCHA_COOKIE_KEY,
+  CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
 
 dayjs.extend(utc)
 
-interface GeneratedCaptcha {
-  data: string
-  hash: string
-}
-
-interface TokenCaptcha {
-  manuallyVerified: number
-  automaticallyVerified: number
-}
-
 const encryptString = (text: string, key: string): string => {
-  return CryptoJS.Rabbit.encrypt(text, key + key).toString()
+  return CryptoJS.Rabbit.encrypt(text, key).toString()
 }
 
 const decryptString = (text: string, key: string): string => {
-  const bytes = CryptoJS.Rabbit.decrypt(text, key + key)
+  const bytes = CryptoJS.Rabbit.decrypt(text, key)
   return bytes.toString(CryptoJS.enc.Utf8)
 }
 
@@ -51,9 +44,6 @@ const THRESHOLD = 1.5
 const COOKIE_MAX_AGE = 300 * 24 * 60 * 60 * 1000
 
 const captchaString = (text: string) => `${_toLower(text)}${CAPTCHA_SALT}`
-
-export const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
-export const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 
 const isTokenAlreadyUsed = async (token: string): Promise<boolean> => {
   const captchaKey = getRedisCaptchaKey(token)
