@@ -1,6 +1,7 @@
 const API_URL = 'http://localhost:5005/v1/captcha'
 const MESSAGE_IDENTIFIER = 'swetrix-captcha'
 const DEFAULT_THEME = 'light'
+const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 let TOKEN = ''
 let HASH = ''
 
@@ -61,6 +62,13 @@ const activateAction = (action) => {
 
   // Remove hidden class from the provided action
   actions[action].classList.remove('hidden')
+}
+
+const setLifetimeTimeout = () => {
+  setTimeout(() => {
+    postMessage(IFRAME_MESSAGE_TYPES.TOKEN_EXPIRED)
+    activateAction('checkbox')
+  }, CAPTCHA_TOKEN_LIFETIME * 1000)
 }
 
 const enableManualChallenge = (svg) => {
@@ -200,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     svgCaptchaInput.value = ''
 
     postMessage(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
+    setLifetimeTimeout()
     activateAction('completed')
     disableManualChallenge()
   })
@@ -225,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       TOKEN = token
       postMessage(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
+      setLifetimeTimeout()
       activateAction('completed')
       return
     } catch (e) {
