@@ -48,6 +48,9 @@ export class Extension {
   @Column({ type: 'varchar', nullable: true, default: null })
   fileURL: string | null
 
+  @Column('varchar', { default: null, nullable: true })
+  companyLink: string | null
+
   @CreateDateColumn()
   createdAt: Date
 
