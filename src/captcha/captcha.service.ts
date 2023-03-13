@@ -157,7 +157,7 @@ export class CaptchaService {
       throw new BadRequestException('Could not decrypt token')
     }
 
-    if (dayjs.utc().diff(dayjs.utc(parsed.timestamp), 'second') > CAPTCHA_TOKEN_LIFETIME) {
+    if (dayjs().unix() - parsed.timestamp > CAPTCHA_TOKEN_LIFETIME) {
       throw new BadRequestException('Token expired')
     }
 
