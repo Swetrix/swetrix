@@ -327,28 +327,15 @@ const CaptchaSettings = ({
             </>
           )}
           {tab === tabForInheritance && (
-            <>
-              <Select
-                title={_isEmpty(reuseProjectId) ? 'select project' : reuseProjectId}
-                label={t('profileSettings.selectProject')}
-                className='w-full'
-                items={analyticsProjects}
-                labelExtractor={(item) => `${item.name} | ${item.id}`}
-                keyExtractor={(item) => item.id}
-                onSelect={(item) => setReuseProjectId(item)}
-              />
-              <Input
-                name='id'
-                id='id'
-                type='text'
-                label={t('project.captcha.settings.pid')}
-                value={form.id}
-                className='mt-4'
-                onChange={handleInput}
-                error={beenSubmitted ? errors.id : null}
-                disabled
-              />
-            </>
+            <Select
+              title={_isEmpty(reuseProjectId) ? 'select project' : reuseProjectId}
+              label={t('profileSettings.selectProject')}
+              className='w-full'
+              items={analyticsProjects}
+              labelExtractor={(item) => `${item.name} | ${item.id}`}
+              keyExtractor={(item) => item.id}
+              onSelect={(item) => setReuseProjectId(item)}
+            />
           )}
           {isSettings ? (
             <>
