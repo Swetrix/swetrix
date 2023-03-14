@@ -78,8 +78,8 @@ describe('TaskManagerService', () => {
       expect(service.monthlyReportsHandler).toBeDefined()
     })
     it("should be defined saveLogData and don't return null", () => {
-      expect(service.saveLogData()).not.toBeNull()
-      expect(service.saveLogData).toBeDefined()
+      expect(service.saveCapthcaLogData()).not.toBeNull()
+      expect(service.saveCapthcaLogData).toBeDefined()
     })
     it("should be defined weeklyReportsHandler and don't return null", () => {
       expect(service.weeklyReportsHandler()).rejects.not.toBeNull()

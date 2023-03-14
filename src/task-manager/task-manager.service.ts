@@ -41,6 +41,7 @@ import {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   REDIS_PERFORMANCE_COUNT_KEY,
+  REDIS_LOG_CAPTCHA_CACHE_KEY,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 import { InjectBot } from 'nestjs-telegraf'
@@ -98,6 +99,7 @@ export class TaskManagerService {
     const data = await redis.lrange(REDIS_LOG_DATA_CACHE_KEY, 0, -1)
     const customData = await redis.lrange(REDIS_LOG_CUSTOM_CACHE_KEY, 0, -1)
     const perfData = await redis.lrange(REDIS_LOG_PERF_CACHE_KEY, 0, -1)
+    const captchaData = await redis.lrange(REDIS_LOG_CAPTCHA_CACHE_KEY, 0, -1)
 
     if (!_isEmpty(data)) {
       await redis.del(REDIS_LOG_DATA_CACHE_KEY)
@@ -106,6 +108,16 @@ export class TaskManagerService {
         await clickhouse.query(query).toPromise()
       } catch (e) {
         console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
+      }
+    }
+
+    if (!_isEmpty(captchaData)) {
+      await redis.del(REDIS_LOG_CAPTCHA_CACHE_KEY)
+      const query = `INSERT INTO captcha (*) VALUES ${_join(captchaData, ',')}`
+      try {
+        await clickhouse.query(query).toPromise()
+      } catch (e) {
+        console.error(`[CRON WORKER] Error whilst saving CAPTCHA log data: ${e}`)
       }
     }
 
