@@ -40,7 +40,7 @@ export class CaptchaController {
       theme = DEFAULT_THEME, pid,
     } = generateDTO
 
-    this.captchaService.validatePIDForCAPTCHA(pid)
+    await this.captchaService.validatePIDForCAPTCHA(pid)
 
     return await this.captchaService.generateCaptcha(theme, pid)
   }
@@ -66,7 +66,7 @@ export class CaptchaController {
       code, hash, pid,
     } = manualDTO
 
-    this.captchaService.validatePIDForCAPTCHA(pid)
+    await this.captchaService.validatePIDForCAPTCHA(pid)
 
     if (!this.captchaService.verifyCaptcha(code, hash, pid)) {
       throw new ForbiddenException('Incorrect captcha')
@@ -122,7 +122,7 @@ export class CaptchaController {
 
     const { pid } = automaticDTO
 
-    this.captchaService.validatePIDForCAPTCHA(pid)
+    await this.captchaService.validatePIDForCAPTCHA(pid)
 
     // @ts-ignore
     let tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
