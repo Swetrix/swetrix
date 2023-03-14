@@ -484,7 +484,9 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const params = {}
 
-    for (const i of cols) {
+    const columns = isCaptcha ? captchaColumns : cols
+
+    for (const i of columns) {
       const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
