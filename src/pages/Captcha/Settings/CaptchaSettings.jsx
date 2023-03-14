@@ -14,6 +14,7 @@ import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
+import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
@@ -331,7 +332,7 @@ const CaptchaSettings = ({
               title={_isEmpty(reuseProjectId) ? 'select project' : reuseProjectId}
               label={t('profileSettings.selectProject')}
               className='w-full'
-              items={analyticsProjects}
+              items={_filter(analyticsProjects, (item) => !item.isCaptchaProject)}
               labelExtractor={(item) => `${item.name} | ${item.id}`}
               keyExtractor={(item) => item.id}
               onSelect={(item) => setReuseProjectId(item)}
