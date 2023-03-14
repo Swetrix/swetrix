@@ -570,6 +570,8 @@ export class ProjectController {
       await this.projectService.update(pid, { captchaSecretKey: secret })
     }
 
+    await deleteProjectRedis(pid)
+
     return secret
   }
 
