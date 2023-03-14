@@ -43,7 +43,7 @@ import FlatPicker from 'ui/Flatpicker'
 import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
 import {
-  getProjectData, getProject, getOverallStats, getLiveVisitors,
+  getProject, getOverallStats, getLiveVisitors, getCaptchaData,
 } from 'api'
 import {
   Panel, Overview, CustomEvents,
@@ -82,11 +82,6 @@ const ViewProject = ({
   const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState({
     [CHART_METRICS_MAPPING.unique]: true,
-    [CHART_METRICS_MAPPING.views]: false,
-    [CHART_METRICS_MAPPING.sessionDuration]: false,
-    [CHART_METRICS_MAPPING.bounce]: false,
-    [CHART_METRICS_MAPPING.viewsPerUnique]: false,
-    [CHART_METRICS_MAPPING.trendlines]: false,
   })
   const [sessionDurationAVG, setSessionDurationAVG] = useState(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
@@ -116,45 +111,12 @@ const ViewProject = ({
         label: t('dashboard.unique'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.unique],
       },
-      {
-        id: CHART_METRICS_MAPPING.views,
-        label: t('project.showAll'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.views],
-      },
-      {
-        id: CHART_METRICS_MAPPING.sessionDuration,
-        label: t('dashboard.sessionDuration'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
-        conflicts: [CHART_METRICS_MAPPING.bounce],
-      },
-      {
-        id: CHART_METRICS_MAPPING.bounce,
-        label: t('dashboard.bounceRate'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.bounce],
-        conflicts: [CHART_METRICS_MAPPING.sessionDuration],
-      },
-      {
-        id: CHART_METRICS_MAPPING.viewsPerUnique,
-        label: t('dashboard.viewsPerUnique'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.viewsPerUnique],
-      },
-      {
-        id: CHART_METRICS_MAPPING.trendlines,
-        label: t('dashboard.trendlines'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.trendlines],
-      },
     ]
   }, [t, activeChartMetrics])
 
   const dataNames = useMemo(() => {
     return {
       unique: t('project.unique'),
-      total: t('project.total'),
-      bounce: `${t('dashboard.bounceRate')} (%)`,
-      viewsPerUnique: t('dashboard.viewsPerUnique'),
-      trendlineTotal: t('project.trendlineTotal'),
-      trendlineUnique: t('project.trendlineUnique'),
-      sessionDuration: t('dashboard.sessionDuration'),
     }
   }, [t])
 
@@ -193,9 +155,9 @@ const ViewProject = ({
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
-          data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to)
+          data = await getCaptchaData(id, timeBucket, '', newFilters || filters, from, to)
         } else {
-          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '')
+          data = await getCaptchaData(id, timeBucket, period, newFilters || filters, '', '')
         }
 
         setProjectCache(id, data || {}, key)
@@ -339,68 +301,6 @@ const ViewProject = ({
     }
   }
 
-  useEffect(() => {
-    if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
-      if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique || activeChartMetrics.trendlines) {
-        mainChart.load({
-          columns: getColumns(chartData, activeChartMetrics),
-        })
-      }
-
-      if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
-
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
-      }
-
-      if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
-
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
-      }
-
-      if (!activeChartMetrics.views) {
-        mainChart.unload({
-          ids: 'total',
-        })
-      }
-
-      if (!activeChartMetrics.unique) {
-        mainChart.unload({
-          ids: 'unique',
-        })
-      }
-
-      if (!activeChartMetrics.viewsPerUnique) {
-        mainChart.unload({
-          ids: 'viewsPerUnique',
-        })
-      }
-    }
-  }, [isLoading, activeChartMetrics, chartData]) // eslint-disable-line
-
-  useEffect(() => {
-    setPeriodPairs(tbPeriodPairs(t))
-  }, [t])
-
   // Parsing initial filters from the address bar
   useEffect(() => {
     // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
@@ -514,7 +414,7 @@ const ViewProject = ({
 
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
-      getProject(id)
+      getProject(id, true)
         .then(projectRes => {
           if (!_isEmpty(projectRes)) {
             getOverallStats([id])
@@ -636,14 +536,6 @@ const ViewProject = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const isConflicted = (conflicts) => {
-    const conflicted = conflicts && _some(conflicts, (conflict) => {
-      const conflictPair = _find(chartMetrics, (metric) => metric.id === conflict)
-      return conflictPair && conflictPair.active
-    })
-    return conflicted
-  }
 
   const resetFilters = () => {
     const url = new URL(window.location)
@@ -796,27 +688,20 @@ const ViewProject = ({
                   title={t('project.metricVis')}
                   labelExtractor={(pair) => {
                     const {
-                      label, id: pairID, active, conflicts,
+                      label, id: pairID, active,
                     } = pair
-
-                    const conflicted = isConflicted(conflicts)
 
                     return (
                       <Checkbox
                         className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
                         label={label}
-                        disabled={conflicted}
                         id={pairID}
                         checked={active}
                       />
                     )
                   }}
                   keyExtractor={(pair) => pair.id}
-                  onSelect={({ id: pairID, conflicts }) => {
-                    if (isConflicted(conflicts)) {
-                      generateAlert(t('project.conflictMetric'), 'error')
-                      return
-                    }
+                  onSelect={({ id: pairID }) => {
                     switchActiveChartMetric(pairID)
                   }}
                 />
