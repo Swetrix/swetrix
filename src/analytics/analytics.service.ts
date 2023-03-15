@@ -480,13 +480,10 @@ export class AnalyticsService {
     paramsData: object,
     timezone: string,
     customEVFilterApplied: boolean,
-    isCaptcha: boolean,
   ): Promise<object | void> {
     const params = {}
 
-    const columns = isCaptcha ? captchaColumns : cols
-
-    for (const i of columns) {
+    for (const i of cols) {
       const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
@@ -592,7 +589,7 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count(), avg(sdur) from ${isCaptcha ? 'captcha' : 'analytics'} where pid = {pid:FixedString(12)} and created between '${xM[i]
+      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${xM[i]
         }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
@@ -668,6 +665,114 @@ export class AnalyticsService {
         sdur,
       },
       avgSdur,
+    })
+  }
+
+  async groupCaptchaByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    timezone: string,
+  ): Promise<object | void> {
+    const params = {}
+
+    for (const i of captchaColumns) {
+      const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const res = await clickhouse.query(query1, paramsData).toPromise()
+
+      params[i] = {}
+
+      const size = _size(res)
+      for (let j = 0; j < size; ++j) {
+        const key = res[j][i]
+        const value = res[j]['count()']
+        params[i][key] = value
+      }
+    }
+
+    if (!_some(_values(params), val => !_isEmpty(val))) {
+      return Promise.resolve()
+    }
+
+    let groupDateIterator
+    const now = dayjs.utc().endOf(timeBucket)
+    const djsTo = dayjs.utc(to).endOf(timeBucket)
+    const iterateTo = djsTo > now ? now : djsTo
+
+    switch (timeBucket) {
+      case TimeBucketType.HOUR:
+        groupDateIterator = dayjs.utc(from).startOf('hour')
+        break
+
+      case TimeBucketType.DAY:
+      case TimeBucketType.WEEK:
+      case TimeBucketType.MONTH:
+        groupDateIterator = dayjs.utc(from).startOf('day')
+        break
+
+      default:
+        return Promise.reject()
+    }
+
+    let x = []
+
+    while (groupDateIterator < iterateTo) {
+      const nextIteration = groupDateIterator.add(1, timeBucket)
+      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
+      groupDateIterator = nextIteration
+    }
+
+    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery}`
+    }
+
+    // @ts-ignore
+    const result: Array<chartCHResponse> = (
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+      // @ts-ignore
+      .sort((a, b) => a.index - b.index)
+    const results = []
+
+    let idx = 0
+    const resSize = _size(result)
+
+    while (idx < resSize) {
+      const index = result[idx].index
+      const v = result[idx]['count()']
+      results[index] = v
+      idx++
+    }
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (!results[i]) {
+        results[i] = 0
+      }
+    }
+
+    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+      x = _map(x, el =>
+        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+      )
+    }
+
+    return Promise.resolve({
+      params,
+      chart: {
+        x,
+        results,
+      },
     })
   }
 

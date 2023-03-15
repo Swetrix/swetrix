@@ -396,17 +396,30 @@ export class AnalyticsController {
       groupTo,
     }
 
-    const result = await this.analyticsService.groupByTimeBucket(
-      timeBucket,
-      groupFrom,
-      groupTo,
-      subQuery,
-      filtersQuery,
-      paramsData,
-      timezone,
-      customEVFilterApplied,
-      isCaptcha,
-    )
+    let result: object | void
+
+    if (isCaptcha) {
+      result = await this.analyticsService.groupCaptchaByTimeBucket(
+        timeBucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        filtersQuery,
+        paramsData,
+        timezone,
+      )
+    } else {
+      result = await this.analyticsService.groupByTimeBucket(
+        timeBucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        filtersQuery,
+        paramsData,
+        timezone,
+        customEVFilterApplied,
+      )
+    }
 
     let appliedFilters = filters
 
