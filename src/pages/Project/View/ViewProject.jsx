@@ -1489,7 +1489,7 @@ const ViewProject = ({
                 >
                   <div className='mt-14 xs:mt-0' />
                   <div className='relative'>
-                    <div className={cx('absolute right-0 z-10 -top-2', {
+                    <div className={cx('absolute right-0 z-10 -top-2  max-sm:top-6', {
                       'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
                       'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
                     })}
@@ -1554,7 +1554,7 @@ const ViewProject = ({
                     hidden: checkIfAllMetricsAreDisabled,
                   })}
                 >
-                  <div className='h-80' id='dataChart' />
+                  <div className='h-80 mt-8' id='dataChart' />
                 </div>
                 <Filters
                   filters={filters}
