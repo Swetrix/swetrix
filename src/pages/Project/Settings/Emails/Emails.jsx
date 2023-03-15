@@ -21,24 +21,33 @@ import { reportFrequencyForEmailsOptions } from 'redux/constants'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
+import Loader from 'ui/Loader'
 import cx from 'clsx'
 import { WarningPin } from 'ui/Pin'
 
 const EmailList = ({
-  data, onRemove, t, setEmails, pid, updateEmailFailed, language, emailUpdateNotification,
+  data, onRemove, t, setEmails, updateEmailFailed, language, emailUpdateNotification,
 }) => {
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const openRef = useRef()
   useOnClickOutside(openRef, () => setOpen(false))
   const {
-    id, created, confirmed, emailReportType, email,
+    id, addedAt, isConfirmed, projectId, email, reportFrequency,
   } = data
 
   const changeRole = async (reportType) => {
     try {
-      const results = await updateSubscriber(id, email.id, { reportFrequency: reportType.value })
-      // setEmails()
+      const results = await updateSubscriber(projectId, id, { reportFrequency: reportType.value })
+      setEmails((prev) => {
+        const newEmails = _map(prev, (item) => {
+          if (item.id === results.id) {
+            return results
+          }
+          return item
+        })
+        return newEmails
+      })
       emailUpdateNotification(t('apiNotifications.roleUpdated'))
     } catch (e) {
       console.error(`[ERROR] Error while updating user's role: ${e}`)
@@ -55,18 +64,18 @@ const EmailList = ({
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
         {language === 'en'
-          ? dayjs(created).locale(language).format('MMMM D, YYYY')
-          : dayjs(created).locale(language).format('D MMMM, YYYY')}
+          ? dayjs(addedAt).locale(language).format('MMMM D, YYYY')
+          : dayjs(addedAt).locale(language).format('D MMMM, YYYY')}
       </td>
       <td className='relative whitespace-nowrap py-4 text-right text-sm font-medium pr-2'>
-        {confirmed ? (
+        {isConfirmed ? (
           <div ref={openRef}>
             <button
               onClick={() => setOpen(!open)}
               type='button'
               className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-600 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
             >
-              {t(`project.settings.roles.${emailReportType}.name`)}
+              {t(`project.settings.roles.${reportFrequency}.name`)}
               <ChevronDownIcon
                 style={{ transform: open ? 'rotate(180deg)' : '' }}
                 className='w-4 h-4 pt-px ml-0.5'
@@ -81,7 +90,7 @@ const EmailList = ({
                         {t(`project.settings.roles.${item.label}.name`)}
                       </p>
                     </div>
-                    {emailReportType === item.value && (
+                    {reportFrequency === item.value && (
                       <span className='text-indigo-600 group-hover:text-gray-200'>
                         <CheckIcon className='w-7 h-7 pt-px ml-1' />
                       </span>
@@ -127,7 +136,7 @@ const EmailList = ({
           submitText={t('common.yes')}
           type='confirmed'
           closeText={t('common.no')}
-          title={t('project.settings.removeUser', { user: emailReportType })}
+          title={t('project.settings.removeUser', { user: reportFrequency })}
           message={t('project.settings.removeConfirm')}
           isOpened={showDeleteModal}
         />
@@ -150,40 +159,18 @@ EmailList.defaultProps = {
   data: {},
 }
 
-const ReportFrequencyList = (handleInput, form, t) => {
-  const { reportFrequency } = form
-
-  return (
-    <>
-      {_map(reportFrequencyForEmailsOptions, (item) => (
-        <div key={item.value}>
-          {/*  eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-          <label className={cx('dark:border-gray-500 rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': item.value === reportFrequency, 'border-gray-200': reportFrequency !== item.value })}>
-            <input
-              name='reportFrequency'
-              className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300'
-              id='reportFrequency'
-              type='radio'
-              value={item.value}
-              onChange={handleInput}
-            />
-            <div className='ml-3 flex flex-col'>
-              <span className={cx('block text-sm font-medium', { 'text-indigo-900 dark:text-white': reportFrequency === item.value, 'text-gray-700 dark:text-gray-200': reportFrequency !== item.value })}>
-                {t(`project.settings.reportFrequency.${item.value}`)}
-              </span>
-              <span className={cx('block text-sm', { 'text-indigo-700 dark:text-gray-100': reportFrequency === item.value, 'text-gray-700 dark:text-gray-200': reportFrequency !== item.value })}>
-                {t(`project.settings.reportFrequency.${item.value}.desc`)}
-              </span>
-            </div>
-          </label>
-        </div>
-      ))}
-    </>
-  )
-}
+const NoEvents = ({ t }) => (
+  <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+    <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
+      <h2 className='text-2xl mb-8 text-center leading-snug'>
+        {t('project.settings.noPeople')}
+      </h2>
+    </div>
+  </div>
+)
 
 const Emails = ({
-  emailFailed, addEmail, removeEmail, projectId,
+  emailFailed, addEmail, removeEmail, projectId, projectName,
 }) => {
   const [showModal, setShowModal] = useState(false)
   const { t, i18n: { language } } = useTranslation('common')
@@ -324,35 +311,44 @@ const Emails = ({
         <div className='mt-3 flex flex-col'>
           <div className='-my-2 -mx-4 overflow-x-auto md:overflow-x-visible sm:-mx-6 lg:-mx-8'>
             <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
-              <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
-                <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                  <thead>
-                    <tr className='dark:bg-gray-700'>
-                      <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
-                        {t('auth.common.email')}
-                      </th>
-                      <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
-                        {t('auth.common.email.addOn')}
-                      </th>
-                      <th scope='col' />
-                      <th scope='col' />
-                    </tr>
-                  </thead>
-                  <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                    {_map(emails, email => (
-                      <EmailList
-                        data={email}
-                        key={email}
-                        onRemove={onRemove}
-                        t={t}
-                        language={language}
-                        setEmails={setEmails}
-                        emailFailed={emailFailed}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {(!loading && !_isEmpty(emails)) && (
+                <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                    <thead>
+                      <tr className='dark:bg-gray-700'>
+                        <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
+                          {t('auth.common.email')}
+                        </th>
+                        <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                          {t('auth.common.email.addOn')}
+                        </th>
+                        <th scope='col' />
+                        <th scope='col' />
+                      </tr>
+                    </thead>
+                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                      {_map(emails, email => (
+                        <EmailList
+                          data={email}
+                          key={email.id}
+                          pid={projectId}
+                          onRemove={onRemove}
+                          t={t}
+                          language={language}
+                          setEmails={setEmails}
+                          emailFailed={emailFailed}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {_isEmpty(emails) && (
+                <NoEvents t={t} />
+              )}
+              {loading && (
+                <Loader />
+              )}
             </div>
           </div>
         </div>
@@ -372,7 +368,7 @@ const Emails = ({
         message={(
           <div>
             <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
-              {t('project.settings.inviteTo')}
+              {t('project.settings.inviteTo', { project: projectName })}
             </h2>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
               {t('project.settings.inviteDesc')}
@@ -391,7 +387,7 @@ const Emails = ({
             <fieldset className='mt-4'>
               {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
-                {t('project.settings.role')}
+                {t('project.settings.reportFrequency')}
               </label>
               <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-gray-800', { 'border-red-300 border': errors.reportFrequency })}>
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
