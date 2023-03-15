@@ -1,36 +1,42 @@
 import React, { useState, useEffect, memo } from 'react'
-import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
-import _split from 'lodash/split'
 
 import Title from 'components/Title'
-import UIActions from 'redux/actions/ui'
 import Loader from 'ui/Loader'
 
-const ConfirmShare = () => {
+import { confirmSubscriberInvite } from 'api'
+
+const ConfirmReportsShare = () => {
   const { t } = useTranslation('common')
-  const dispatch = useDispatch()
   const { id } = useParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const handleConfirm = async (token) => {
+    try {
+      await confirmSubscriberInvite(id, token)
+    } catch (e) {
+      setError(t('apiNotifications.invalidToken'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     setLoading(true)
-    const path = _split(window.location.pathname, '/')[1]
+    const query = new URLSearchParams(window.location.search)
+    const token = query.get('token')
 
-    dispatch(
-      UIActions.shareVerifyAsync(
-        { path, id },
-        () => setLoading(false),
-        (verifyError) => {
-          setError(verifyError)
-          setLoading(false)
-        },
-      ),
-    )
-  }, [id]) // eslint-disable-line
+    if (!token) {
+      setError(t('apiNotifications.invalidToken'))
+      setLoading(false)
+      return
+    }
+
+    handleConfirm(token)
+  }, []) // eslint-disable-line
 
   if (loading) {
     return (
@@ -85,4 +91,4 @@ const ConfirmShare = () => {
   )
 }
 
-export default memo(ConfirmShare)
+export default memo(ConfirmReportsShare)

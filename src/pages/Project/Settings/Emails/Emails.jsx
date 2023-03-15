@@ -26,7 +26,7 @@ import cx from 'clsx'
 import { WarningPin } from 'ui/Pin'
 
 const EmailList = ({
-  data, onRemove, t, setEmails, updateEmailFailed, language, emailUpdateNotification,
+  data, onRemove, t, setEmails, emailFailed, language, reportTypeNotifiction,
 }) => {
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -48,10 +48,10 @@ const EmailList = ({
         })
         return newEmails
       })
-      emailUpdateNotification(t('apiNotifications.roleUpdated'))
+      reportTypeNotifiction(t('apiNotifications.roleUpdated'))
     } catch (e) {
       console.error(`[ERROR] Error while updating user's role: ${e}`)
-      updateEmailFailed(t('apiNotifications.roleUpdateError'))
+      emailFailed(t('apiNotifications.roleUpdateError'))
     }
 
     setOpen(false)
@@ -170,7 +170,7 @@ const NoEvents = ({ t }) => (
 )
 
 const Emails = ({
-  emailFailed, addEmail, removeEmail, projectId, projectName,
+  emailFailed, addEmail, removeEmail, projectId, projectName, reportTypeNotifiction,
 }) => {
   const [showModal, setShowModal] = useState(false)
   const { t, i18n: { language } } = useTranslation('common')
@@ -276,7 +276,8 @@ const Emails = ({
   const onRemove = async (email) => {
     try {
       await removeSubscriber(projectId, email)
-      const results = _map(_filter(emails, s => s !== email), s => s)
+      console.log('email', emails)
+      const results = _filter(emails, s => s.id !== email)
       setEmails(results)
       removeEmail(t('apiNotifications.emailDelete'))
     } catch (e) {
@@ -336,7 +337,9 @@ const Emails = ({
                           t={t}
                           language={language}
                           setEmails={setEmails}
+                          removeEmail={removeEmail}
                           emailFailed={emailFailed}
+                          reportTypeNotifiction={reportTypeNotifiction}
                         />
                       ))}
                     </tbody>

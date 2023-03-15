@@ -18,6 +18,9 @@ const mapDispatchToProps = (dispatch) => ({
   removeEmail: (message, type = 'success') => {
     dispatch(alertsActions.generateAlerts(message, type))
   },
+  reportTypeNotifiction: (message, type = 'success') => {
+    dispatch(alertsActions.generateAlerts(message, type))
+  },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Emails)
