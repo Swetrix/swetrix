@@ -1,5 +1,4 @@
 import { connect } from 'react-redux'
-import { authActions } from 'redux/actions/auth'
 import { errorsActions } from 'redux/actions/errors'
 import { alertsActions } from 'redux/actions/alerts'
 
@@ -12,9 +11,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   emailFailed: (message) => {
     dispatch(errorsActions.generateErrors(message))
-  },
-  setUser: (user) => {
-    dispatch(authActions.setUser(user))
   },
   addEmail: (message, type = 'success') => {
     dispatch(alertsActions.generateAlerts(message, type))

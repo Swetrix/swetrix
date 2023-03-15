@@ -20,6 +20,7 @@ const getInitialState = () => {
     dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
     projectTab: PROJECT_TABS.traffic,
     alerts: [],
+    subscribers: [],
   }
 }
 

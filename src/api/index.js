@@ -580,3 +580,47 @@ export const setTimeFormat = (timeFormat) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const addSubscriber = (id, data) =>
+  api
+    .post(`project/${id}/subscribers`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getSubscribers = (id, offset, limit) =>
+  api
+    .get(`project/${id}/subscribers?offset=${offset}&limit=${limit}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const updateSubscriber = (id, subscriberId, data) =>
+  api
+    .patch(`project/${id}/subscribers/${subscriberId}`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const removeSubscriber = (id, subscriberId) =>
+  api
+    .delete(`project/${id}/subscribers/${subscriberId}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

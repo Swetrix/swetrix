@@ -106,6 +106,13 @@ export const FREE_TIER_KEY = 'free'
 export const WEEKLY_REPORT_FREQUENCY = 'weekly'
 export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'never']
 
+export const reportFrequencyForEmailsOptions = [
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'never', label: 'Never' },
+]
+
 export const GDPR_EXPORT_TIMEFRAME = 14 // days
 
 export const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier are used
