@@ -3,7 +3,7 @@
 # Swetrix CAPTCHA validator
 This is a wrapper for the Swetrix CAPTCHA server-side validation API.\
 It is used to validate the user's response to the CAPTCHA.\
-Read more about server-side validation at https://docs.swetrix.com//captcha/server-side-validation
+Read more about server-side validation at https://docs.swetrix.com/captcha/server-side-validation
 
 # Installation
 ```bash
