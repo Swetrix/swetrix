@@ -255,7 +255,7 @@ const Dashboard = ({
               </h2>
               <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm'>
                 <FolderPlusIcon className='w-5 h-5 mr-1' />
-                {tabProjects === tabForCaptchaProject ? t('dashboard.createCaptchaProject') : t('dashboard.newProject')}
+                {tabProjects === tabForCaptchaProject ? t('dashboard.newCaptchaProject') : t('dashboard.newProject')}
               </span>
             </div>
             <div className='mt-6'>
