@@ -9,6 +9,13 @@ const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
 
 const isValidPID = (pid) => PID_REGEX.test(pid)
 
+const FRAME_HEIGHT_MAPPING = {
+  default: '66px',
+  manual: '200px',
+}
+
+const getFrameID = (cid) => `${cid}-frame`
+
 const ids = []
 
 const log = (status, text) => {
@@ -74,7 +81,7 @@ const postMessageCallback = (pmEvent) => {
   const inputExists = input !== null
 
   switch (event) {
-    case 'success':
+    case 'success': {
       const { token } = data
 
       if (!inputExists) {
@@ -85,8 +92,9 @@ const postMessageCallback = (pmEvent) => {
       input.value = token
 
       break
+    }
 
-    case 'failure':
+    case 'failure': {
       if (!inputExists) {
         log('error', '[PM -> failure] Input element does not exist.')
         return
@@ -95,8 +103,9 @@ const postMessageCallback = (pmEvent) => {
       input.value = ''
 
       break
+    }
 
-    case 'tokenExpired':
+    case 'tokenExpired': {
       if (!inputExists) {
         log('error', '[PM -> failure] Input element does not exist.')
         return
@@ -105,6 +114,33 @@ const postMessageCallback = (pmEvent) => {
       input.value = ''
 
       break
+    }
+    
+    case 'manualStarted': {
+      const frame = document.getElementById(getFrameID(cid))
+
+      if (!frame) {
+        log('error', '[PM -> manualStarted] Frame does not exist.')
+        return
+      }
+
+      frame.style.height = FRAME_HEIGHT_MAPPING.manual
+
+      break
+    }
+
+    case 'manualFinished': {
+      const frame = document.getElementById(getFrameID(cid))
+
+      if (!frame) {
+        log('error', '[PM -> manualFinished] Frame does not exist.')
+        return
+      }
+
+      frame.style.height = FRAME_HEIGHT_MAPPING.default
+
+      break
+    }
   }
 }
 
@@ -112,13 +148,14 @@ const generateCaptchaFrame = (params) => {
   const { theme } = params
   const captchaFrame = document.createElement('iframe')
 
+  captchaFrame.id = getFrameID(params.cid)
   captchaFrame.src = theme === 'dark'
     ? appendParamsToURL(DARK_CAPTCHA_IFRAME_URL, params)
     : appendParamsToURL(LIGHT_CAPTCHA_IFRAME_URL, params)
+  captchaFrame.style.height = FRAME_HEIGHT_MAPPING.default
   captchaFrame.title = 'Swetrix Captcha'
   captchaFrame.style.border = 'none'
   captchaFrame.style.width = '302px'
-  captchaFrame.style.height = 'auto'
   captchaFrame.style.overflow = 'visible'
 
   return captchaFrame

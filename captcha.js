@@ -15,6 +15,8 @@ const IFRAME_MESSAGE_TYPES = {
   SUCCESS: 'success',
   FAILURE: 'failure',
   TOKEN_EXPIRED: 'tokenExpired',
+  MANUAL_STARTED: 'manualStarted',
+  MANUAL_FINISHED: 'manualFinished',
 }
 
 let activeAction = 'checkbox'
@@ -83,7 +85,8 @@ const enableManualChallenge = (svg) => {
   } else {
     svgCaptcha.innerHTML = svg
   }
-  
+
+  postMessage(IFRAME_MESSAGE_TYPES.MANUAL_STARTED)
   manualChallenge.classList.remove('hidden')
 }
 
@@ -91,6 +94,7 @@ const disableManualChallenge = () => {
   const manualChallenge = document.querySelector('#manual-challenge')
   const svgCaptcha = document.querySelector('#svg-captcha')
 
+  postMessage(IFRAME_MESSAGE_TYPES.MANUAL_FINISHED)
   svgCaptcha.innerHTML = ''
   manualChallenge.classList.add('hidden')
 }
