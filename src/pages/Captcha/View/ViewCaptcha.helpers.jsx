@@ -83,21 +83,21 @@ const onCSVExportClick = (data, pid, tnMapping, language) => {
 }
 
 const CHART_METRICS_MAPPING = {
-  unique: 'unique',
+  results: 'results',
 }
 
 // function to filter the data for the chart
 const getColumns = (chart, activeChartMetrics) => {
   const {
-    unique,
+    results,
   } = activeChartMetrics
 
   const columns = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
 
-  if (unique) {
-    columns.push(['unique', ...chart.uniques])
+  if (results) {
+    columns.push(['results', ...chart.results])
   }
 
   return columns
@@ -123,7 +123,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
     }
 
     regions = {
-      unique: [
+      results: [
         {
           start: regionStart,
           style: {
@@ -139,10 +139,10 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
       x: 'x',
       columns: getColumns(modifiedChart, activeChartMetrics),
       types: {
-        unique: chartType === chartTypes.line ? area() : bar(),
+        results: chartType === chartTypes.line ? area() : bar(),
       },
       colors: {
-        unique: '#2563EB',
+        results: '#2563EB',
       },
       regions,
     },

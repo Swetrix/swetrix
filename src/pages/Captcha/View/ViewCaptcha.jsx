@@ -81,7 +81,7 @@ const ViewProject = ({
   const [mainChart, setMainChart] = useState(null)
   const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState({
-    [CHART_METRICS_MAPPING.unique]: true,
+    [CHART_METRICS_MAPPING.results]: true,
   })
   const [sessionDurationAVG, setSessionDurationAVG] = useState(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
@@ -107,16 +107,16 @@ const ViewProject = ({
   const chartMetrics = useMemo(() => {
     return [
       {
-        id: CHART_METRICS_MAPPING.unique,
-        label: t('dashboard.unique'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.unique],
+        id: CHART_METRICS_MAPPING.results,
+        label: t('dashboard.results'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.results],
       },
     ]
   }, [t, activeChartMetrics])
 
   const dataNames = useMemo(() => {
     return {
-      unique: t('project.unique'),
+      results: t('project.results'),
     }
   }, [t])
 
