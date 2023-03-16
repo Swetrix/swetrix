@@ -283,7 +283,7 @@ const CaptchaSettings = ({
             {t('profileSettings.general')}
           </h3>
           <div className='mt-6'>
-            {!isSettings && (
+            {(!isSettings && _filter(analyticsProjects, (item) => !item.isCaptchaProject).length > 0) && (
               <nav className='-mb-px flex space-x-8'>
                 {_map(tabForCreateCaptcha, (tabCaptcha) => (
                   <button
