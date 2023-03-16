@@ -25,6 +25,66 @@ import Loader from 'ui/Loader'
 import cx from 'clsx'
 import { WarningPin } from 'ui/Pin'
 
+const ModalMessage = ({
+  project, handleInput, beenSubmitted, errors, form, t,
+}) => (
+  <div>
+    <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+      {t('project.settings.inviteTo', { project })}
+    </h2>
+    <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+      {t('project.settings.inviteDesc')}
+    </p>
+    <Input
+      name='email'
+      id='email'
+      type='email'
+      label={t('auth.common.email')}
+      value={form.email}
+      placeholder='you@example.com'
+      className='mt-4'
+      onChange={handleInput}
+      error={beenSubmitted && errors.email}
+    />
+    <fieldset className='mt-4'>
+      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+      <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
+        {t('project.settings.reportFrequency')}
+      </label>
+      <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-gray-800', { 'border-red-300 border': errors.reportFrequency })}>
+        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+        {_map(reportFrequencyForEmailsOptions, (item) => (
+          <div key={item.value}>
+            {/*  eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+            <label className={cx('dark:border-gray-500 rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': item.value === form.reportFrequency, 'border-gray-200': form.reportFrequency !== item.value })}>
+              <input
+                name='reportFrequency'
+                className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300'
+                id='reportFrequency'
+                type='radio'
+                value={item.value}
+                onChange={handleInput}
+              />
+              <div className='ml-3 flex flex-col'>
+                <span className={cx('block text-sm font-medium', { 'text-indigo-900 dark:text-white': form.reportFrequency === item.value, 'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value })}>
+                  {t(`project.settings.reportFrequency.${item.value}`)}
+                </span>
+                <span className={cx('block text-sm', { 'text-indigo-700 dark:text-gray-100': form.reportFrequency === item.value, 'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value })}>
+                  {t(`project.settings.reportFrequency.${item.value}.desc`)}
+                </span>
+              </div>
+            </label>
+          </div>
+        ))}
+        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+      </div>
+      {errors.reportFrequency && (
+        <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>{errors.reportFrequency}</p>
+      )}
+    </fieldset>
+  </div>
+)
+
 const EmailList = ({
   data, onRemove, t, setEmails, emailFailed, language, reportTypeNotifiction,
 }) => {
@@ -369,61 +429,15 @@ const Emails = ({
         )}
         closeText={t('common.cancel')}
         message={(
-          <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
-              {t('project.settings.inviteTo', { project: projectName })}
-            </h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
-              {t('project.settings.inviteDesc')}
-            </p>
-            <Input
-              name='email'
-              id='email'
-              type='email'
-              label={t('auth.common.email')}
-              value={form.email}
-              placeholder='you@example.com'
-              className='mt-4'
-              onChange={handleInput}
-              error={beenSubmitted && errors.email}
-            />
-            <fieldset className='mt-4'>
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
-                {t('project.settings.reportFrequency')}
-              </label>
-              <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-gray-800', { 'border-red-300 border': errors.reportFrequency })}>
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                {_map(reportFrequencyForEmailsOptions, (item) => (
-                  <div key={item.value}>
-                    {/*  eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                    <label className={cx('dark:border-gray-500 rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': item.value === form.reportFrequency, 'border-gray-200': form.reportFrequency !== item.value })}>
-                      <input
-                        name='reportFrequency'
-                        className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300'
-                        id='reportFrequency'
-                        type='radio'
-                        value={item.value}
-                        onChange={handleInput}
-                      />
-                      <div className='ml-3 flex flex-col'>
-                        <span className={cx('block text-sm font-medium', { 'text-indigo-900 dark:text-white': form.reportFrequency === item.value, 'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value })}>
-                          {t(`project.settings.reportFrequency.${item.value}`)}
-                        </span>
-                        <span className={cx('block text-sm', { 'text-indigo-700 dark:text-gray-100': form.reportFrequency === item.value, 'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value })}>
-                          {t(`project.settings.reportFrequency.${item.value}.desc`)}
-                        </span>
-                      </div>
-                    </label>
-                  </div>
-                ))}
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-              </div>
-              {errors.reportFrequency && (
-                <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>{errors.reportFrequency}</p>
-              )}
-            </fieldset>
-          </div>
+          <ModalMessage
+            t={t}
+            project={projectName}
+            form={form}
+            handleInput={handleInput}
+            errors={errors}
+            beenSubmitted={beenSubmitted}
+            validated={validated}
+          />
         )}
         isOpened={showModal}
       />
