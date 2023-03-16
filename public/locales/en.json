@@ -609,7 +609,8 @@
     "emails": {
       "title": "Email reports",
       "description": "Send regular email reports to as many recipients as you want.",
-      "add": "Add a recipient"
+      "add": "Add a recipient",
+      "reportFrequency": "Report frequency"
     }
   },
   "billing": {
