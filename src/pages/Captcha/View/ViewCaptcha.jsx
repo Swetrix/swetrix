@@ -32,7 +32,7 @@ import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, getProjectCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
+  tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
   MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, TimeFormat, chartTypes,
 } from 'redux/constants'
 import Button from 'ui/Button'
@@ -148,7 +148,7 @@ const ViewProject = ({
         to = getFormatDate(dateRange[1])
         key = getProjectCacheCustomKey(from, to, timeBucket)
       } else {
-        key = getProjectCacheKey(period, timeBucket)
+        key = getProjectCaptchaCacheKey(period, timeBucket)
       }
 
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
@@ -216,6 +216,11 @@ const ViewProject = ({
       console.error(e)
     }
   }
+
+  useEffect(() => {
+    loadAnalytics()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartType])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column, filter, isExclusive = false) => {

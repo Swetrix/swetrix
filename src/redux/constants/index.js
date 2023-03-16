@@ -153,6 +153,7 @@ export const GENERAL_STATS_UPDATE_INTERVAL = 60000
 
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
+export const getProjectCaptchaCacheKey = (period, timeBucket) => `${period}${timeBucket}captcha`
 export const getProjectForcastCacheKey = (period, timeBucket, periodToForecast) => `${period}${timeBucket}${periodToForecast}forecast`
 export const getProjectCacheCustomKey = (from, to, timeBucket) => `${from}-${to}-${timeBucket}`
 

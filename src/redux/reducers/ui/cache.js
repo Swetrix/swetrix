@@ -2,7 +2,9 @@ import { types } from 'redux/actions/ui/types'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 
-import { getProjectCacheKey, LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING } from 'redux/constants'
+import {
+  getProjectCacheKey, LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, getProjectCaptchaCacheKey,
+} from 'redux/constants'
 
 export const getInitialViewPrefs = (LS_VIEW) => {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -98,7 +100,7 @@ const cacheReducer = (state = getInitialState(), { type, payload }) => {
 
     case types.DELETE_CAPTCHA_PROJECT_CACHE: {
       const { pid, period, timeBucket } = payload
-      const key = getProjectCacheKey(period, timeBucket)
+      const key = getProjectCaptchaCacheKey(period, timeBucket)
 
       if (_isEmpty(period) || _isEmpty(timeBucket)) {
         if (_isEmpty(pid)) {

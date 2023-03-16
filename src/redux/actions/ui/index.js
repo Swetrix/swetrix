@@ -124,7 +124,7 @@ const setProjectCache = (pid, data, key) => ({
 })
 
 const setCaptchaProjectCache = (pid, data, key) => ({
-  type: types.SET_CAPTCHA_PROJECT_CHACHE,
+  type: types.SET_CAPTCHA_PROJECT_CACHE,
   payload: {
     pid, data, key,
   },
