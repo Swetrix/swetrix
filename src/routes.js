@@ -5,6 +5,7 @@ const routes = Object.freeze({
   new_password_form: '/password-reset/:id',
   confirm_share: '/share/:id',
   main: '/',
+  captchaMain: '/captcha',
   dashboard: '/dashboard',
   user_settings: '/settings',
   verify: '/verify/:id',
