@@ -109,8 +109,11 @@ export class ProjectController {
       const where = Object()
       where.admin = userId
 
-      where.isCaptchaProject = isCaptcha
-      where.isAnalyticsProject = !isCaptcha
+      if (isCaptcha) {
+        where.isCaptchaProject = true
+      } else {
+        where.isAnalyticsProject = true
+      }
 
       const paginated = await this.projectService.paginate(
         { take, skip },
@@ -500,7 +503,7 @@ export class ProjectController {
         const captchaProjects = _filter(user.projects, (project: Project) => project.isCaptchaProject)
         const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
 
-
+        console.log('asd')
         if (_size(captchaProjects >= (maxProjects || PROJECTS_MAXIMUM))) {
           throw new ForbiddenException(
             `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
