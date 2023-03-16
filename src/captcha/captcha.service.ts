@@ -74,7 +74,7 @@ const captchaDTO = (
     os,
     cc,
     isManual ? 1 : 0,
-    dayjs.utc(timestamp).format('YYYY-MM-DD HH:mm:ss'),
+    dayjs.unix(timestamp).format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
 
