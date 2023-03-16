@@ -311,7 +311,39 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_QUARTER)
   async handleQuarterlyReports(): Promise<void> {
-    // TODO: Implement
+    const subscribers = await this.projectService.getSubscribersForReports(
+      ReportFrequency.QUARTERLY,
+    )
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const quarterAgo = dayjs.utc().subtract(3, 'M').format('DD.MM.YYYY')
+    const date = `${quarterAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (const subscriber of subscribers) {
+      const projects = await this.projectService.getSubscriberProjects(
+        subscriber.id,
+      )
+
+      const ids = projects.map(project => project.id)
+      const data = await this.analyticsService.getSummary(ids, 'M')
+
+      const result = {
+        type: 'Q', // quarter
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        subscriber.email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
   }
 
   // ON THE FIRST DAY OF EVERY MONTH AT 3 AM
