@@ -107,7 +107,7 @@ const getColumns = (chart, activeChartMetrics) => {
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType) => {
+const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType) => {
   const xAxisSize = _size(chart.x)
   const lines = []
   const modifiedChart = { ...chart }
