@@ -67,10 +67,7 @@ const ModalMessage = ({
               />
               <div className='ml-3 flex flex-col'>
                 <span className={cx('block text-sm font-medium', { 'text-indigo-900 dark:text-white': form.reportFrequency === item.value, 'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value })}>
-                  {t(`project.settings.reportFrequency.${item.value}`)}
-                </span>
-                <span className={cx('block text-sm', { 'text-indigo-700 dark:text-gray-100': form.reportFrequency === item.value, 'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value })}>
-                  {t(`project.settings.reportFrequency.${item.value}.desc`)}
+                  {t(`profileSettings.${item.value}`)}
                 </span>
               </div>
             </label>
@@ -351,10 +348,10 @@ const Emails = ({
       <div className='flex justify-between items-center mb-3'>
         <div>
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-            {t('user.emails.title')}
+            {t('project.emails.title')}
           </h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>
-            {t('user.emails.description')}
+            {t('project.emails.description')}
           </p>
         </div>
         <Button
@@ -365,7 +362,7 @@ const Emails = ({
           onClick={() => setShowModal(true)}
         >
           <InboxStackIcon className='w-5 h-5 mr-1' />
-          {t('user.emails.add')}
+          {t('project.emails.add')}
         </Button>
       </div>
       <div>
@@ -424,7 +421,7 @@ const Emails = ({
             className='w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm bg-indigo-600 hover:bg-indigo-700'
             onClick={handleSubmit}
           >
-            {t('common.add')}
+            {t('project.emails.add')}
           </button>
         )}
         closeText={t('common.cancel')}

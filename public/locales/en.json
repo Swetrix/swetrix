@@ -365,6 +365,7 @@
     "weekly": "Weekly",
     "monthly": "Monthly",
     "never": "Never",
+    "quarterly": "Quarterly",
     "reportSent": "The GDPR data report has been sent to your email address.",
     "tryAgainInXDays": "Please, try again later. You can request a GDPR Export only once per {{amount}} days.",
     "updated": "Your account settings have been updated",
@@ -604,6 +605,11 @@
       "errorNoRole": "Please select a role.",
       "ipBlacklist": "IP's to blacklist",
       "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
+    },
+    "emails": {
+      "title": "Email reports",
+      "description": "Send regular email reports to as many recipients as you want.",
+      "add": "Add a recipient"
     }
   },
   "billing": {
