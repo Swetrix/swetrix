@@ -6,7 +6,7 @@ import {
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import {
-  area, spline, bar,
+  area, bar,
 } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
@@ -21,7 +21,6 @@ import JSZip from 'jszip'
 import {
   TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h,
 } from 'redux/constants'
-import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import countries from 'utils/isoCountries'
 
 const getExportFilename = (prefix) => {

@@ -11,7 +11,6 @@ const mapStateToProps = (state) => ({
   captchaProjects: state.ui.projects.captchaProjects,
   user: state.auth.user,
   isLoading: state.ui.projects.isLoading,
-  isLoadingCaptcha: state.ui.projects.isLoadingCaptcha,
   total: state.ui.projects.total,
   sharedTotal: state.ui.projects.sharedTotal,
   captchaTotal: state.ui.projects.captchaTotal,

@@ -1,7 +1,6 @@
 import { connect } from 'react-redux'
 import { errorsActions } from 'redux/actions/errors'
 import UIActions from 'redux/actions/ui'
-import { alertsActions } from 'redux/actions/alerts'
 
 import ViewProject from './ViewCaptcha'
 
@@ -25,9 +24,6 @@ const mapDispatchToProps = (dispatch) => ({
   },
   setProjects: (project) => {
     dispatch(UIActions.setCaptchaProjects(project))
-  },
-  generateAlert: (message, type) => {
-    dispatch(alertsActions.generateAlerts(message, type))
   },
   setProjectViewPrefs: (pid, period, timeBucket, rangeDate) => {
     dispatch(UIActions.setCaptchaProjectsViewPrefs(pid, period, timeBucket, rangeDate))

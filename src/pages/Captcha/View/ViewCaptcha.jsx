@@ -50,7 +50,7 @@ import {
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
+  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, CHART_METRICS_MAPPING,
 } from './ViewCaptcha.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -59,7 +59,7 @@ import Filters from './components/Filters'
 import './styles.css'
 
 const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, generateAlert, setProjects,
+  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, setProjects,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
