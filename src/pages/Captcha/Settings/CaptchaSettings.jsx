@@ -244,7 +244,7 @@ const CaptchaSettings = ({
   }
 
   const onCancel = () => {
-    history.push(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
+    history.push(isSettings ? _replace(routes.captcha, ':id', id) : routes.dashboard)
   }
 
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
