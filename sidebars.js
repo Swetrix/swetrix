@@ -19,5 +19,10 @@ module.exports = {
     'API': [
       'api/stats',
     ],
+    'CAPTCHA': [
+      'captcha/introduction',
+      'captcha/client-side-usage',
+      'captcha/server-side-validation',
+    ]
   },
 }
