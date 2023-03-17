@@ -35,7 +35,7 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -1487,7 +1487,10 @@ const ViewProject = ({
                     hidden: isPanelsDataEmpty || analyticsLoading,
                   })}
                 >
-                  <div className='mt-14 xs:mt-0' />
+                  <div className={cx('xs:mt-0', {
+                    'mt-14': !((project.isPublic && !project.isOwner) || (isSharedProject && project.role !== roleAdmin)),
+                  })}
+                  />
                   <div className='relative'>
                     <div className={cx('absolute right-0 z-10 -top-2  max-sm:top-6', {
                       'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
@@ -1548,7 +1551,7 @@ const ViewProject = ({
               <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
             )}
             {activeTab === PROJECT_TABS.traffic && (
-              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+              <div className={cx('pt-4 md:pt-0 ', { hidden: isPanelsDataEmpty || analyticsLoading })}>
                 <div
                   className={cx('h-80', {
                     hidden: checkIfAllMetricsAreDisabled,
