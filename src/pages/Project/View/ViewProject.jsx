@@ -1551,7 +1551,7 @@ const ViewProject = ({
               <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
             )}
             {activeTab === PROJECT_TABS.traffic && (
-              <div className={cx('pt-4 md:pt-0 ', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
                 <div
                   className={cx('h-80', {
                     hidden: checkIfAllMetricsAreDisabled,
