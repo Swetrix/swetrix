@@ -359,6 +359,17 @@ export const getOverallStats = (pids) =>
         : error.response.data.message
     })
 
+export const getOverallStatsCaptcha = (pids) =>
+  api
+    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const getLiveVisitors = (pids) =>
   api
     .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)

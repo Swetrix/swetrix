@@ -40,6 +40,7 @@ const ProjectCart = ({
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
+  console.log(overall)
 
   const onAccept = async () => {
     const pid = _find(sharedProjects, item => item.project.id === id).id

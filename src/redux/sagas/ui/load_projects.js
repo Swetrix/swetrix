@@ -7,7 +7,7 @@ import UIActions from 'redux/actions/ui'
 
 import { ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
 import {
-  getProjects, getOverallStats, getLiveVisitors,
+  getProjects, getOverallStats, getLiveVisitors, getOverallStatsCaptcha,
 } from '../../../api'
 
 const debug = Debug('swetrix:rx:s:load-projects')
@@ -29,12 +29,11 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
     let overall
 
     if (isCaptcha) {
-      // try {
-      //   overall = yield call(getOverallStats, pids, true)
-      // } catch (e) {
-      //   debug('failed to overall stats: %s', e)
-      // }
-      overall = {}
+      try {
+        overall = yield call(getOverallStatsCaptcha, pids)
+      } catch (e) {
+        debug('failed to overall stats: %s', e)
+      }
     } else {
       try {
         overall = yield call(getOverallStats, pids)
