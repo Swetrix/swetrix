@@ -132,6 +132,7 @@ export const BLOG_URL = 'https://blog.swetrix.com'
 export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
 export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
 export const DOCS_URL = 'https://docs.swetrix.com'
+export const DOCS_CAPTCHA_URL = `${DOCS_URL}/captcha/introduction`
 export const CDN_URL = process.env.REACT_APP_CDN_URL
 
 // Swetrix vs ...

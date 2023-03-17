@@ -522,6 +522,7 @@
     "trendlineUnique": "Unique visitors trendline",
     "trendlineTotal": "Pageviews trendline",
     "noEvContent": "No events have been captured for the specified timeframe.\nIf you haven't tracked any events yet, you can check out our <url>Docs</url> to easily integrate tracking into your app.",
+    "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {
       "cc": "Country",
       "pg": "Page",

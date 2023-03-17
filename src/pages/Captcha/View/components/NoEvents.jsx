@@ -6,7 +6,7 @@ import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
 
 import Button from 'ui/Button'
-import { DOCS_URL } from 'redux/constants'
+import { DOCS_CAPTCHA_URL } from 'redux/constants'
 
 /**
  * This component is used to display text if the data is not available.
@@ -30,10 +30,10 @@ const NoEvents = ({
         <h2 className='text-2xl mb-8 text-center leading-snug'>
           <Trans
             t={t}
-            i18nKey='project.noEvContent'
+            i18nKey='project.noCaptchaEv'
             components={{
               // eslint-disable-next-line jsx-a11y/anchor-has-content
-              url: <a href={DOCS_URL} className='hover:underline text-blue-600' target='_blank' rel='noreferrer noopener' />,
+              url: <a href={DOCS_CAPTCHA_URL} className='hover:underline text-blue-600' target='_blank' rel='noreferrer noopener' />,
             }}
           />
         </h2>
