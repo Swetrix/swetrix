@@ -81,7 +81,7 @@ const ViewProject = ({
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
-  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
+  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {}, [projects, id, sharedProjects])
   const isSharedProject = useMemo(() => {
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
@@ -1488,7 +1488,7 @@ const ViewProject = ({
                   })}
                 >
                   <div className={cx('xs:mt-0', {
-                    'mt-14': !((project.isPublic && !project.isOwner) || (isSharedProject && project.role !== roleAdmin)),
+                    'mt-14': project.public || (isSharedProject && project.role === roleAdmin.role) || project.isOwner,
                   })}
                   />
                   <div className='relative'>
