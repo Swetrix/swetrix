@@ -471,6 +471,55 @@ export class AnalyticsService {
     return result
   }
 
+  async getCaptchaSummary(pids: string[], period: 'w' | 'M' = 'w'): Promise<Object> {
+    const result = {}
+
+    for (let i = 0; i < _size(pids); ++i) {
+      const pid = pids[i]
+      if (!isValidPID(pid))
+        throw new BadRequestException(
+          `The provided Project ID (${pid}) is incorrect`,
+        )
+
+      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+      const oneWRaw = dayjs.utc().subtract(1, period)
+      const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
+      const twoWeeks = oneWRaw.subtract(1, period).format('YYYY-MM-DD HH:mm:ss')
+
+      const query1 = `SELECT count() FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {oneWeek:String} AND {now:String}`
+      const query2 = `SELECT count() FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {twoWeeks:String} AND {oneWeek:String}`
+
+      const paramsData = {
+        params: {
+          pid,
+          oneWeek,
+          twoWeeks,
+          now,
+        },
+      }
+
+      try {
+        const q1res = await clickhouse.query(query1, paramsData).toPromise()
+        const q2res = await clickhouse.query(query2, paramsData).toPromise()
+
+        const thisWeek = q1res?.['count()'] || 0
+        const lastWeek = q2res?.['count()'] || 0
+
+        result[pid] = {
+          thisWeek,
+          lastWeek,
+          percChange: calculateRelativePercentage(lastWeek, thisWeek),
+        }
+      } catch {
+        throw new InternalServerErrorException(
+          "Can't process the provided PID. Please, try again later.",
+        )
+      }
+    }
+
+    return result
+  }
+
   async groupByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,

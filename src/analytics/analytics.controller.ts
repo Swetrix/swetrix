@@ -624,6 +624,24 @@ export class AnalyticsController {
     return this.analyticsService.getSummary(pidsArray, 'w')
   }
 
+  @Get('/captcha/birdseye')
+  @Auth([], true, true)
+  // returns overall short statistics per CAPTCHA project
+  async getCaptchaOverallStats(
+    @Query() data,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const { pids, pid } = data
+    const pidsArray = getPIDsArray(pids, pid)
+
+    for (let i = 0; i < _size(pidsArray); ++i) {
+      this.analyticsService.validatePID(pidsArray[i])
+      await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
+    }
+
+    return this.analyticsService.getCaptchaSummary(pidsArray, 'w')
+  }
+
   @UseGuards(SelfhostedGuard)
   @Public()
   @Get('/generalStats')
