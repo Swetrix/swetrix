@@ -372,6 +372,7 @@ export class ProjectController {
           project.isCaptchaProject = true
           project.isAnalyticsProject = false
           project.isCaptchaEnabled = true
+          project.captchaSecretKey = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
         }
 
         const newProject = await this.projectService.create(project)
