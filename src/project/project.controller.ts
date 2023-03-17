@@ -453,6 +453,58 @@ export class ProjectController {
     }
   }
 
+  @Delete('/captcha/reset/:id')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async resetCAPTCHA(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, id }, 'DELETE /project/captcha/reset/:id')
+    if (!isValidPID(id)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const query = `ALTER table captcha DELETE WHERE pid='${id}'`
+
+    if (isSelfhosted) {
+      try {
+        await clickhouse.query(query).toPromise()
+        return 'CAPTCHA project resetted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while resetting your CAPTCHA project'
+      }
+    } else {
+      const user = await this.userService.findOne(uid)
+      const project = await this.projectService.findOneWhere(
+        { id },
+        {
+          relations: ['admin'],
+          select: ['id'],
+        },
+      )
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      try {
+        await clickhouse.query(query).toPromise()
+        return 'CAPTCHA project resetted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while resetting your CAPTCHA project'
+      }
+    }
+  }
+
   @Put('/:id')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -626,20 +678,80 @@ export class ProjectController {
 
       this.projectService.allowedToManage(project, uid, user.roles)
 
-      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+      if (!project.isCaptchaProject) {
+        const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+        const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
 
-      try {
-        await this.projectService.deleteMultipleShare(`project = "${id}"`)
-        await this.projectService.delete(id)
-        await deleteProjectRedis(id)
-        await clickhouse.query(query1).toPromise()
-        await clickhouse.query(query2).toPromise()
-        return 'Project deleted successfully'
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while deleting your project'
+        try {
+          await this.projectService.deleteMultipleShare(`project = "${id}"`)
+          await this.projectService.delete(id)
+          await deleteProjectRedis(id)
+          await clickhouse.query(query1).toPromise()
+          await clickhouse.query(query2).toPromise()
+          return 'Project deleted successfully'
+        } catch (e) {
+          this.logger.error(e)
+          return 'Error while deleting your project'
+        }
       }
+
+      return await this.deleteCAPTCHA(id, uid)
+    }
+  }
+
+  @Delete('/captcha/:id')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async deleteCAPTCHA(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, id }, 'DELETE /project/captcha/:id')
+    if (!isValidPID(id)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    if (isSelfhosted) {
+      // TODO
+    } else {
+      const user = await this.userService.findOne(uid)
+      const project = await this.projectService.findOneWhere(
+        { id },
+        {
+          relations: ['admin'],
+          select: ['id'],
+        },
+      )
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      if (!project.isAnalyticsProject) {
+        const query = `ALTER table captcha DELETE WHERE pid='${id}'`
+
+        try {
+          await clickhouse.query(query).toPromise()
+
+          project.captchaSecretKey = null
+          project.isCaptchaEnabled = false
+
+          await this.projectService.update(id, project)
+
+          return 'CAPTCHA project deleted successfully'
+        } catch (e) {
+          this.logger.error(e)
+          return 'Error while deleting your CAPTCHA project'
+        }
+      }
+
+      return await this.delete(id, uid)
     }
   }
 
