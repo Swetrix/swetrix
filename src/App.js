@@ -52,7 +52,6 @@ const ProjectAlertsSettings = lazy(() => import('pages/Project/Alerts/Settings')
 const CookiePolicy = lazy(() => import('pages/CookiePolicy'))
 const CaptchaSettings = lazy(() => import('pages/Captcha/Settings'))
 const CaptchaView = lazy(() => import('pages/Captcha/View'))
-const CaptchaMainPage = lazy(() => import('pages/Captcha/MainPage'))
 
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
@@ -213,7 +212,6 @@ const App = () => {
                 <Route path={routes.captcha_settings} component={CaptchaSettings} exact />
                 <Route path={routes.new_captcha} component={CaptchaSettings} exact />
                 <Route path={routes.captcha} component={CaptchaView} exact />
-                <Route path={routes.captchaMain} component={CaptchaMainPage} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>
