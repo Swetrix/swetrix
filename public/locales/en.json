@@ -22,7 +22,8 @@
     "integrationRemovalError": "Error occurred while removing the integration",
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
-    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency"
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
+    "invalidToken": "Invalid token"
   },
   "common": {
     "features": "Features",
