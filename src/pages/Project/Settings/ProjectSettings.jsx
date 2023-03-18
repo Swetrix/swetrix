@@ -33,6 +33,7 @@ import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
 
 import People from './People'
+import Emails from './Emails'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -315,6 +316,8 @@ const ProjectSettings = ({
                   </div>
                 )}
               </div>
+              <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+              <Emails projectId={id} projectName={project.name} />
               <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
               {
                 !project.shared && (

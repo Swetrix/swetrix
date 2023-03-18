@@ -34,6 +34,17 @@ const authReducer = (state = initialState, { type, payload }) => {
     case types.EMAIL_VERIFY_SUCCESSFUL:
       return { ...state, user: { ...state.user, isActive: true } }
 
+    case types.SET_USER: {
+      const { user } = payload
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          ...user,
+        },
+      }
+    }
+
     case types.SAVE_PATH:
       return { ...state, redirectPath: payload.path }
 
