@@ -23,65 +23,11 @@ $ npm run start:prod
 
 ## Selfhosted Deployment
 
-### Prerequisites
+### For development purposes
+If you want to try out Swetrix on a local machine for the development purposes (e.g. to create a new feature), please refer to our [CONTRIBUTING.MD](CONTRIBUTING.MD) file - it contains all the needed information on how to start with Swetrix.
 
-To run Swetrix-API on your own servers you need to setup 3 databases.
-
-> Why we need three databases?
->
-> - MYSQL for projects, users and tokens
-> - Clickhouse for Analytics and Custom Events
-> - Redis for Caching
-
-We recommend using the Docker-Compose file we provided.
-
-Setup MySQL, Clickhouse and Redis databases as Docker Containers.
-Then fill out the Environment Variables below accordingly.
-
-### Environment Variables
-
-Below you will find the Environment Variables that are required to run the API. The values next to them are their default values. You can change them to your own values or just not set them if they suit you anyway. (e.g. Ports, Username, etc.)
-
-
-#### MySQL Database
-
-`MYSQL_HOST`=localhost\
-`MYSQL_USER`=root\
-`MYSQL_ROOT_PASSWORD`=password\
-`MYSQL_DATABASE`=analytics
-
-#### Redis Database
-
-`REDIS_HOST`=localhost\
-`REDIS_PORT`=6379\
-`REDIS_USER`=default\
-`REDIS_PASSWORD`=password
-
-#### Clickhouse Database
-
-`CLICKHOUSE_HOST`=http://localhost \
-`CLICKHOUSE_USER`=default\
-`CLICKHOUSE_PORT`=8123\
-`CLICKHOUSE_PASSWORD`=password\
-`CLICKHOUSE_DATABASE`=analytics
-
-#### Swetrix Admin Account
-
-`EMAIL`=test@test.com\
-`PASSWORD`=12345678
-
-#### 2FA
-`TWO_FACTOR_AUTHENTICATION_APP_NAME`=Swetrix Selfhosted
-
-#### Authorisation
-`JWT_ACCESS_TOKEN_SECRET`='jwt-access-token-secret'\
-`JWT_REFRESH_TOKEN_SECRET`='jwt-refresh-token-secret'
-
-### Running Swetrix-API behind a Reverse Proxy
-
-Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.\
-The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.\
-The production swetrix.com API is covered by the Cloudflare proxying.
+### For production purposes
+If you want to self-host Swetrix to use it in production, please refer to our official [self-host documentation](https://docs.swetrix.com/selfhosting/how-to).
 
 ## Donate
 You can support the project by donating us at https://ko-fi.com/andriir \
