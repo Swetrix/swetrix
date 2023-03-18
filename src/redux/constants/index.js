@@ -104,7 +104,7 @@ export const FREE_TIER_KEY = 'free'
 
 // a dedicated variable is needed for paid tier checking
 export const WEEKLY_REPORT_FREQUENCY = 'weekly'
-export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'never']
+export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
 
 export const reportFrequencyForEmailsOptions = [
   { value: 'quarterly', label: 'Quarterly' },
