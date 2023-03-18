@@ -35,7 +35,7 @@ import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin,
 } from 'redux/constants'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -81,7 +81,7 @@ const ViewProject = ({
   const dashboardRef = useRef(null)
   const { id } = useParams()
   const history = useHistory()
-  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {}, [projects, id, sharedProjects])
+  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {}, [projects, id, sharedProjects])
   const isSharedProject = useMemo(() => {
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
@@ -423,6 +423,13 @@ const ViewProject = ({
       }
 
       if (_isEmpty(dataPerf)) {
+        setIsPanelsDataEmptyPerf(true)
+        setDataLoading(false)
+        setAnalyticsLoading(false)
+        return
+      }
+
+      if (_isEmpty(dataPerf.params)) {
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
@@ -1480,9 +1487,12 @@ const ViewProject = ({
                     hidden: isPanelsDataEmpty || analyticsLoading,
                   })}
                 >
-                  <div className='mt-14 xs:mt-0' />
+                  <div className={cx('xs:mt-0', {
+                    'mt-14': project.public || (isSharedProject && project.role === roleAdmin.role) || project.isOwner,
+                  })}
+                  />
                   <div className='relative'>
-                    <div className={cx('absolute right-0 z-10 -top-2', {
+                    <div className={cx('absolute right-0 z-10 -top-2  max-sm:top-6', {
                       'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
                       'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
                     })}
@@ -1534,7 +1544,10 @@ const ViewProject = ({
             {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
               <Loader />
             )}
-            {(isPanelsDataEmpty && activeTab !== PROJECT_TABS.alerts) && (
+            {(isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic) && (
+              <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
+            )}
+            {(isPanelsDataEmptyPerf && activeTab === PROJECT_TABS.performance) && (
               <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
             )}
             {activeTab === PROJECT_TABS.traffic && (
@@ -1544,7 +1557,7 @@ const ViewProject = ({
                     hidden: checkIfAllMetricsAreDisabled,
                   })}
                 >
-                  <div className='h-80' id='dataChart' />
+                  <div className='h-80 mt-8' id='dataChart' />
                 </div>
                 <Filters
                   filters={filters}
@@ -1654,7 +1667,7 @@ const ViewProject = ({
               </div>
             )}
             {activeTab === PROJECT_TABS.performance && (
-              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
                 <div
                   className={cx('h-80', {
                     hidden: checkIfAllMetricsAreDisabled,

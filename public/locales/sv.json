@@ -604,7 +604,9 @@
       "errorNoRole": "Please select a role.",
       "ipBlacklist": "IP's to blacklist",
       "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
-    }
+    },
+    "results": "Results",
+    "page": "Page"
   },
   "billing": {
     "title": "Fakturering och planer",

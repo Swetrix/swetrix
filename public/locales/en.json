@@ -611,7 +611,9 @@
       "description": "Send regular email reports to as many recipients as you want",
       "add": "Add a recipient",
       "reportFrequency": "Report frequency"
-    }
+    },
+    "results": "Results",
+    "page": "Page"
   },
   "billing": {
     "title": "Billing & Plans",

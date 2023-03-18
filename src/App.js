@@ -92,7 +92,7 @@ const App = () => {
   const { theme } = useSelector(state => state.ui.theme)
   const { error } = useSelector(state => state.errors)
   const { message, type } = useSelector(state => state.alerts)
-  const themeType = useSelector(state => state.ui.theme.type)
+  // const themeType = useSelector(state => state.ui.theme.type)
   const accessToken = getAccessToken()
   const refreshToken = getRefreshToken()
 
@@ -132,7 +132,7 @@ const App = () => {
       if ((accessToken && refreshToken) && !authenticated) {
         try {
           const me = await authMe()
-          dispatch(UIActions.setThemeType(me.theme))
+          // dispatch(UIActions.setThemeType(me.theme))
           dispatch(authActions.loginSuccess(me))
           dispatch(authActions.finishLoading())
         } catch (e) {
@@ -172,7 +172,7 @@ const App = () => {
         <Header
           authenticated={authenticated}
           theme={theme}
-          themeType={themeType}
+          // themeType={themeType}
           user={user}
         />
         {/* {location.pathname === routes.main && (

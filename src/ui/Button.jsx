@@ -2,21 +2,21 @@
 import React, { memo } from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
-import { THEME_TYPE } from 'redux/constants'
+// import { useSelector } from 'react-redux'
+// import { THEME_TYPE } from 'redux/constants'
 import Spin from './icons/Spin'
 import './ButtonChristmas.css'
 
 const Button = ({
-  text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading, semiSmall, semiDanger, noBorder,
+  text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading, semiSmall, semiDanger, noBorder, focus,
 }) => {
-  const themeType = useSelector((state) => state.ui.theme.type)
+  // const themeType = useSelector((state) => state.ui.theme.type)
 
   return (
     <button
       type={type}
       onClick={onClick}
-      className={cx('relative inline-flex select-none items-center border leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', {
+      className={cx('relative inline-flex select-none items-center border leading-4 font-medium rounded-md', {
         'shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent': primary,
         'text-indigo-700 bg-indigo-100 hover:bg-indigo-200 border-transparent': secondary,
         'text-gray-700 bg-white hover:bg-gray-50 border-transparent': white,
@@ -29,9 +29,10 @@ const Button = ({
         'px-6 py-3 text-base': giant,
         'px-3 py-2 text-sm': regular,
         'cursor-not-allowed': loading,
+        'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500': focus,
       }, className)}
     >
-      {themeType === THEME_TYPE.christmas ? (
+      {/* {themeType === THEME_TYPE.christmas ? (
         <span className={cx('inline-flex items-center', {
           button3: text,
           button2: semiSmall || regular || large || giant,
@@ -49,7 +50,11 @@ const Button = ({
           )}
           {text || children}
         </>
+      )} */}
+      {loading && (
+      <Spin />
       )}
+      {text || children}
     </button>
   )
 }
@@ -71,6 +76,7 @@ Button.propTypes = {
   type: PropTypes.string,
   className: PropTypes.string,
   loading: PropTypes.bool,
+  focus: PropTypes.bool,
 }
 
 Button.defaultProps = {
@@ -90,6 +96,7 @@ Button.defaultProps = {
   type: 'button',
   className: '',
   children: null,
+  focus: true,
 }
 
 export default memo(Button)
