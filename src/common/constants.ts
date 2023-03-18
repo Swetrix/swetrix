@@ -41,6 +41,7 @@ const clickhouse = new ClickHouse({
 const isSelfhosted = Boolean(process.env.SELFHOSTED)
 const isDevelopment = process.env.NODE_ENV === 'development'
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
+const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
 const CLICKHOUSE_INIT_QUERIES = [
   'CREATE DATABASE IF NOT EXISTS analytics',
@@ -193,8 +194,6 @@ const GDPR_EXPORT_TIMEFRAME = 14
 const SEND_WARNING_AT_PERC = 85
 
 const PROJECT_INVITE_EXPIRE = 48
-
-const PRODUCTION_ORIGIN = 'https://swetrix.com'
 
 export {
   clickhouse,
