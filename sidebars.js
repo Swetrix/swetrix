@@ -19,5 +19,9 @@ module.exports = {
     'API': [
       'api/stats',
     ],
+    'Self-hosting': [
+      'selfhosting/how-to',
+      'selfhosting/configuring',
+    ],
   },
 }
