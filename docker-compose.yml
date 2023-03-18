@@ -63,11 +63,10 @@ services:
   clickhouse:
     image: yandex/clickhouse-server:latest-alpine
     environment:
-      - CLICKHOUSE_DB=analytics
+      - CLICKHOUSE_DATABASE=analytics
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PORT=8123
       - CLICKHOUSE_PASSWORD=password
-      - CLICKHOUSE_DATABASE=analytics
     restart: always
     volumes:
       - '/opt/clickhouse-volume:/var/lib/clickhouse'
