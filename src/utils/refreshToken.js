@@ -1,5 +1,5 @@
 import { REFRESH_TOKEN } from 'redux/constants'
-import { getCookie, setCookie } from './cookie'
+import { getCookie, setCookie, deleteCookie } from './cookie'
 
 // 14 weeks in seconds
 const STORE_REFRESH_TOKEN_FOR = 8467200
@@ -13,5 +13,5 @@ export const setRefreshToken = (token) => {
 }
 
 export const removeRefreshToken = () => {
-  setCookie(REFRESH_TOKEN, '', 0)
+  deleteCookie(REFRESH_TOKEN)
 }
