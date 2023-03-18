@@ -15,6 +15,13 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-03-18',
+    changes: [
+      'Added new email report frequency: quarterly.',
+      'Added project email reports subscription to multiple email addresses.',
+    ],
+  },
+  {
     date: '2023-03-11',
     changes: [
       'Redesigned Dashboard page panel pages layout (now it\'s more user friendly, the total count of items and pages are displayed as well).',
