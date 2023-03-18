@@ -46,6 +46,8 @@ import {
   isSelfhosted,
   SELFHOSTED_UUID,
   SELFHOSTED_EMAIL,
+  isDevelopment,
+  PRODUCTION_ORIGIN,
 } from '../common/constants'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
@@ -388,7 +390,7 @@ export class UserController {
       ActionTokenType.EMAIL_VERIFICATION,
       user.email,
     )
-    const url = `${request.headers.origin}/verify/${token.id}`
+    const url = `${isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN}/verify/${token.id}`
 
     await this.userService.update(id, { emailRequests: 1 + user.emailRequests })
     await this.mailerService.sendEmail(user.email, LetterTemplate.SignUp, {
@@ -490,7 +492,7 @@ export class UserController {
           ActionTokenType.EMAIL_CHANGE,
           userDTO.email,
         )
-        const url = `${request.headers.origin}/change-email/${token.id}`
+        const url = `${isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN}/change-email/${token.id}`
         await this.mailerService.sendEmail(
           user.email,
           LetterTemplate.MailAddressChangeConfirmation,

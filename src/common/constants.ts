@@ -39,6 +39,7 @@ const clickhouse = new ClickHouse({
 })
 
 const isSelfhosted = Boolean(process.env.SELFHOSTED)
+const isDevelopment = process.env.NODE_ENV === 'development'
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 
 const CLICKHOUSE_INIT_QUERIES = [
@@ -193,6 +194,8 @@ const SEND_WARNING_AT_PERC = 85
 
 const PROJECT_INVITE_EXPIRE = 48
 
+const PRODUCTION_ORIGIN = 'https://swetrix.com'
+
 export {
   clickhouse,
   JWT_LIFE_TIME,
@@ -226,4 +229,6 @@ export {
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
   REDIS_PERFORMANCE_COUNT_KEY,
+  isDevelopment,
+  PRODUCTION_ORIGIN,
 }
