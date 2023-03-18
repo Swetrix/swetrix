@@ -19,5 +19,5 @@ export const setCookie = (key, value, maxAge = 3600, sameSite = 'strict') => {
 }
 
 export const deleteCookie = (key) => {
-  document.cookie = `${key}=; max-age=0; path=/; SameSite=strict`
+  document.cookie = `${key}=; max-age=0; path=/; SameSite=strict${COOKIE_SUFFIX}`
 }
