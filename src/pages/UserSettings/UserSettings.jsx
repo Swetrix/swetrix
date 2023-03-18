@@ -416,9 +416,6 @@ const UserSettings = ({
           {/* Integrations setup */}
           <h3 id='integrations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.integrations')}
-            <div className='ml-5'>
-              <Beta />
-            </div>
           </h3>
           <Integrations
             user={user}
