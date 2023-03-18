@@ -65,3 +65,10 @@ Then restart the container:
 ```bash
 docker-compose restart
 ```
+
+## Reverse proxy
+Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.
+
+The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too. The Swetrix Cloud API is covered by the Cloudflare proxying.
+
+You can also find some `nginx` configuration examples [here](https://github.com/Swetrix/swetrix-api/blob/main/meta/nginx/swetrix).
