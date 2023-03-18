@@ -48,6 +48,8 @@ import {
   clickhouse,
   isSelfhosted,
   PROJECT_INVITE_EXPIRE,
+  isDevelopment,
+  PRODUCTION_ORIGIN,
 } from '../common/constants'
 import {
   getProjectsClickhouse,
@@ -695,7 +697,7 @@ export class ProjectController {
         ActionTokenType.PROJECT_SHARE,
         share.id,
       )
-      const url = `${headers.origin}/share/${actionToken.id}`
+      const url = `${isDevelopment ? headers.origin : PRODUCTION_ORIGIN}/share/${actionToken.id}`
       await this.mailerService.sendEmail(
         invitee.email,
         LetterTemplate.ProjectInvitation,
@@ -838,7 +840,7 @@ export class ProjectController {
       projectName: project.name,
       email: body.email,
       reportFrequency: body.reportFrequency,
-      origin: headers.origin,
+      origin: isDevelopment ? headers.origin : PRODUCTION_ORIGIN,
     })
   }
 
