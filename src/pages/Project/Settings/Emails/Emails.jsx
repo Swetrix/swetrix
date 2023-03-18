@@ -23,6 +23,7 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Loader from 'ui/Loader'
+import Beta from 'ui/Beta'
 import cx from 'clsx'
 import { WarningPin } from 'ui/Pin'
 
@@ -217,7 +218,7 @@ EmailList.defaultProps = {
   data: {},
 }
 
-const NoEvents = ({ t }) => (
+const NoSubscribers = ({ t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
       <h2 className='text-2xl mb-8 text-center leading-snug'>
@@ -350,6 +351,9 @@ const Emails = ({
         <div>
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('project.emails.title')}
+            <div className='ml-5'>
+              <Beta />
+            </div>
           </h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>
             {t('project.emails.description')}
@@ -405,7 +409,7 @@ const Emails = ({
                 </div>
               )}
               {_isEmpty(emails) && (
-                <NoEvents t={t} />
+                <NoSubscribers t={t} />
               )}
               {loading && (
                 <Loader />
