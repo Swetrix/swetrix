@@ -61,7 +61,7 @@ services:
   #   volumes:
   #    - '/opt/mysql-volume:/var/lib/mysql'
   clickhouse:
-    image: yandex/clickhouse-server:latest-alpine
+    image: clickhouse/clickhouse-server:22.8-alpine
     environment:
       - CLICKHOUSE_DATABASE=analytics
       - CLICKHOUSE_USER=default
