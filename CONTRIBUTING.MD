@@ -52,3 +52,6 @@ When you are done with your task you should submit a pull request. Pull request 
 - `(fix)` - for bug fixes
 - `(improvement)` - for improvements to existing features
 - `(feature)` - for new features
+
+## Issues
+If you run into a problem when deploying or developing something for Swetrix, feel free to open an issue on the [Issues tab](https://github.com/Swetrix/swetrix-api/issues).
