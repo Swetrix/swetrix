@@ -22,7 +22,8 @@
     "integrationRemovalError": "Error occurred while removing the integration",
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
-    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency"
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
+    "invalidToken": "Invalid token"
   },
   "common": {
     "features": "Χαρακτηριστικά",
@@ -287,7 +288,8 @@
       "email": "E-mail",
       "signin": "Σύνδεση",
       "checkLeakedPassword": "Ελέγξτε αν ο κωδικός πρόσβασης έχει διαρρεύσει",
-      "checkLeakedPasswordDesc": "Όταν είναι ενεργοποιημένο, ελέγχουμε τον κωδικό πρόσβασής σας με τη βάση δεδομένων <db>{{database}}</db>. Δεν στέλνουμε τον κωδικό πρόσβασής σας στην υπηρεσία. Πρώτα κατακερµατίζουµε τον κωδικό σας (χρησιµοποιώντας SHA1) και στέλνουµε µόνο τους 5 πρώτους χαρακτήρες αυτού του κατακερµατισµού στην υπηρεσία. Η υπηρεσία επιστρέφει όλους τους διαρρεύσαντες κωδικούς πρόσβασης που ξεκινούν με αυτούς τους 5 χαρακτήρες. Στο τέλος μας ελέγχουμε αν ένας από αυτούς ταιριάζει με τον κωδικό πρόσβασής σας. Σας εμφανίζουμε μια προειδοποίηση εάν έχει διαρρεύσει ξανά. Ποτέ δεν αποθηκεύουμε τον κωδικό πρόσβασής σας σε απλό κείμενο."
+      "checkLeakedPasswordDesc": "Όταν είναι ενεργοποιημένο, ελέγχουμε τον κωδικό πρόσβασής σας με τη βάση δεδομένων <db>{{database}}</db>. Δεν στέλνουμε τον κωδικό πρόσβασής σας στην υπηρεσία. Πρώτα κατακερµατίζουµε τον κωδικό σας (χρησιµοποιώντας SHA1) και στέλνουµε µόνο τους 5 πρώτους χαρακτήρες αυτού του κατακερµατισµού στην υπηρεσία. Η υπηρεσία επιστρέφει όλους τους διαρρεύσαντες κωδικούς πρόσβασης που ξεκινούν με αυτούς τους 5 χαρακτήρες. Στο τέλος μας ελέγχουμε αν ένας από αυτούς ταιριάζει με τον κωδικό πρόσβασής σας. Σας εμφανίζουμε μια προειδοποίηση εάν έχει διαρρεύσει ξανά. Ποτέ δεν αποθηκεύουμε τον κωδικό πρόσβασής σας σε απλό κείμενο.",
+      "addedOn": "Added on"
     }
   },
   "features": {
@@ -365,6 +367,7 @@
     "weekly": "Εβδομαδιαία",
     "monthly": "Μηνιαία",
     "never": "Ποτέ",
+    "quarterly": "Quarterly",
     "reportSent": "Η αναφορά δεδομένων GDPR έχει σταλεί στη διεύθυνση ηλεκτρονικού ταχυδρομείου σας.",
     "tryAgainInXDays": "Παρακαλώ, προσπαθήστε ξανά αργότερα. Μπορείτε να ζητήσετε εξαγωγή GDPR μόνο μία φορά ανά {{amount}} ημέρες.",
     "updated": "Οι ρυθμίσεις του λογαριασμού σας έχουν ενημερωθεί",
@@ -581,6 +584,7 @@
       "noPeople": "No people have been added to this project yet.",
       "removeMember": "Remove member",
       "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
       "removeUser": "Remove {{user}}?",
       "people": "People",
       "inviteCoworkers": "Invite your coworkers",
@@ -604,6 +608,12 @@
       "errorNoRole": "Παρακαλώ επιλέξτε έναν ρόλο.",
       "ipBlacklist": "IP στη μαύρη λίστα",
       "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
+    },
+    "emails": {
+      "title": "Email reports",
+      "description": "Send regular email reports to as many recipients as you want",
+      "add": "Add a recipient",
+      "reportFrequency": "Report frequency"
     },
     "results": "Results",
     "page": "Page"
