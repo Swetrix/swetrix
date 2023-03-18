@@ -81,6 +81,11 @@ const metaInfoJson = {
       en: () => 'Your free Swetrix trial ends tomorrow',
     },
   },
+  [LetterTemplate.ProjectSubscriberInvitation]: {
+    subject: {
+      en: () => 'You have been invited to join the project.',
+    },
+  },
 }
 
 interface Params {

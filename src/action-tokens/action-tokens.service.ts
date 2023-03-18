@@ -59,4 +59,12 @@ export class ActionTokensService {
   public async deleteActionToken(token: string) {
     await this.actionTokensRepository.delete(token)
   }
+
+  async getActionToken(token: string) {
+    return await this.actionTokensRepository.findOne({
+      where: {
+        id: token,
+      },
+    })
+  }
 }
