@@ -307,6 +307,51 @@ export class TaskManagerService {
     }
   }
 
+  @Cron(CronExpression.EVERY_QUARTER)
+  async quarterlyReportsHandler(): Promise<void> {
+    if (isSelfhosted) {
+      return
+    }
+
+    const users = await this.userService.find({
+      where: {
+        reportFrequency: ReportFrequency.QUARTERLY,
+      },
+      relations: ['projects'],
+      select: ['email'],
+    })
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const quarterAgo = dayjs.utc().subtract(3, 'M').format('DD.MM.YYYY')
+    const date = `${quarterAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (let i = 0; i < _size(users); ++i) {
+      if (_isEmpty(users[i]?.projects) || _isNull(users[i]?.projects)) {
+        continue
+      }
+
+      const ids = _map(users[i].projects, p => p.id)
+      const data = await this.analyticsService.getSummary(ids, 'M')
+
+      const result = {
+        type: 'Q', // quarterly
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: users[i].projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        users[i].email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
+  }
+
   // EMAIL REPORTS, BUT FOR MULTIPLE PROJECT SUBSCRIBERS
 
   @Cron(CronExpression.EVERY_QUARTER)

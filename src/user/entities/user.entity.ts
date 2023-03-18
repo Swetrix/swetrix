@@ -108,6 +108,7 @@ export enum ReportFrequency {
   Never = 'never',
   Weekly = 'weekly',
   Monthly = 'monthly',
+  Quarterly = 'quarterly',
 }
 
 export enum BillingFrequency {
