@@ -287,7 +287,8 @@
       "email": "Email",
       "signin": "Sign in",
       "checkLeakedPassword": "Check if password is leaked",
-      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text."
+      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text.",
+      "addedOn": "Added on"
     }
   },
   "features": {
@@ -582,6 +583,7 @@
       "noPeople": "No people have been added to this project yet.",
       "removeMember": "Remove member",
       "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
       "removeUser": "Remove {{user}}?",
       "people": "People",
       "inviteCoworkers": "Invite your coworkers",

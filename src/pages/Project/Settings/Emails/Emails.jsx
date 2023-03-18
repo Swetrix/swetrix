@@ -193,8 +193,8 @@ const EmailList = ({
           submitText={t('common.yes')}
           type='confirmed'
           closeText={t('common.no')}
-          title={t('project.settings.removeUser', { user: reportFrequency })}
-          message={t('project.settings.removeConfirm')}
+          title={t('project.settings.removeUser', { user: email })}
+          message={t('project.settings.removeReportConfirm')}
           isOpened={showDeleteModal}
         />
       </td>
@@ -378,7 +378,7 @@ const Emails = ({
                           {t('auth.common.email')}
                         </th>
                         <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
-                          {t('auth.common.email.addOn')}
+                          {t('auth.common.addedOn')}
                         </th>
                         <th scope='col' />
                         <th scope='col' />
