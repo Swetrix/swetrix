@@ -68,6 +68,20 @@ export class CaptchaController {
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
+    const timestamp = dayjs.utc().unix()
+
+    // For dummy (test) PIDs
+    if (pid === DUMMY_PIDS.MANUAL_PASS) {
+      const dummyToken = this.captchaService.generateDummyToken()
+      return {
+        success: true,
+        token: dummyToken,
+        timestamp,
+        hash,
+        pid,
+      }
+    }
+
     if (pid === DUMMY_PIDS.ALWAYS_FAIL || !this.captchaService.verifyCaptcha(code, hash)) {
       throw new ForbiddenException('Incorrect captcha')
     }
@@ -83,19 +97,7 @@ export class CaptchaController {
       }
     }
 
-    const timestamp = dayjs.utc().unix()
     const token = await this.captchaService.generateToken(pid, hash, timestamp, false)
-
-    // For dummy (test) PIDs
-    if (pid === DUMMY_PIDS.MANUAL_PASS) {
-      return {
-        success: true,
-        token,
-        timestamp,
-        hash,
-        pid,
-      }
-    }
 
     const {
       manuallyVerified, automaticallyVerified,

@@ -151,9 +151,13 @@ export class CaptchaService {
     }
   }
 
+  async generateDummyToken() {
+    return encryptString('DUMMY_TOKEN00000111112222233333444445555566666777778888899999', DUMMY_SECRETS.ALWAYS_PASS)
+  }
+
   async generateToken(pid: string, hash: string, timestamp: number, autoVerified: boolean): Promise<string> {
     if (isDummyPID(pid)) {
-      return encryptString('DUMMY_TOKEN00000111112222233333444445555566666777778888899999', DUMMY_SECRETS.ALWAYS_PASS)
+      return this.generateDummyToken()
     }
 
     const project = await this.projectService.getRedisProject(pid)
