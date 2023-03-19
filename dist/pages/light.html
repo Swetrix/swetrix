@@ -28,10 +28,9 @@
       /* 300 - 20px (padding) */
       width: 280px;
 
-      /* bg-gray-800 */
-      background-color: #1f2937;
-      /* bg-gray-900 */
-      border: 1px solid #374151;
+      /* bg-gray-100 */
+      background-color: #f9fafb;
+      border: 1px solid #e9e9e9;
       height: 65px;
       user-select: none;
       padding-left: 10px;
@@ -42,7 +41,7 @@
 
     #swetrix-captcha:hover {
       /* bg-gray-200 */
-      background-color: #374151;
+      background-color: #f3f4f6;
     }
 
     #challenge {
@@ -59,9 +58,8 @@
     }
 
     #checkbox {
-      /* bg-gray-900 */
-      background-color: #111827;
-      border: 1px solid #374151;
+      background-color: #fff;
+      border: 1px solid #e9e9e9;
       height: 25px;
       width: 25px;
       border-radius: 3px;
@@ -69,8 +67,7 @@
 
     #status {
       font-size: 16px;
-      /* bg-gray-50 */
-      color: #f9fafb;
+      color: #0f0f0f;
     }
 
     .hidden {
@@ -89,7 +86,7 @@
     }
 
     #legal>a {
-      color: #f9fafb;
+      color: #0f0f0f;
       text-decoration: none;
       cursor: pointer;
     }
@@ -101,8 +98,7 @@
     #legal>.separator::before {
       content: "-";
       margin: 0 2px;
-      /* bg-gray-50 */
-      color: #f9fafb;
+      color: #0f0f0f;
     }
 
     #action svg {
@@ -141,10 +137,8 @@
       border-radius: 50%;
       width: 17px;
       height: 17px;
-      /* bg-gray-900 */
-      border: 4px solid #111827;
-      /* bg-gray-600 */
-      border-top-color: #4b5563;
+      border: 4px solid #b4b4b4;
+      border-top-color: #fff;
       animation: spin 2s infinite linear;
     }
 
@@ -153,9 +147,7 @@
       justify-content: center;
       align-items: center;
       flex-direction: row;
-      border: 1px solid #374151;
-      /* bg-gray-800 */
-      background-color: #1f2937;
+      border: 1px solid #e9e9e9;
       border-top: none;
       height: 130px;
       width: 280px;
@@ -174,20 +166,11 @@
 
     #input-n-captcha > input {
       width: 100%;
-      /* bg-gray-900 */
-      background-color: #374151;
-      /* bg-gray-50 */
-      color: #f9fafb;
-      border: 2px solid #374151;
-      border-radius: 3px;
     }
 
     #manual-submit-btn {
-      /* bg-gray-900 */
-      background-color: #374151;
-      border: 1px solid #374151;
-      /* bg-gray-50 */
-      color: #f9fafb;
+      background-color: #fff;
+      border: 1px solid #e9e9e9;
       padding-left: 5px;
       padding-right: 5px;
       border-radius: 3px;
@@ -200,7 +183,7 @@
     }
   </style>
   <script>
-    window.__SWETRIX_CAPTCHA_THEME = 'dark'
+    window.__SWETRIX_CAPTCHA_THEME = 'light'
     const urlParams = new URLSearchParams(window.location.search)
     const pid = urlParams.get('pid')
     const cid = urlParams.get('cid')
@@ -208,7 +191,7 @@
     window.__SWETRIX_CAPTCHA_ID = cid
     window.__SWETRIX_PROJECT_ID = pid
   </script>
-  <script src="captcha.js" defer></script>
+  <script src="../captcha.js" defer></script>
 </head>
 
 <body>
@@ -236,7 +219,7 @@
     </div>
     <div id="branding">
       <a href="https://swetrix.com" target="_blank">
-        <img src="logo_white.svg" alt="Swetrix" height="25" />
+        <img src="../assets/logo_blue.svg" alt="Swetrix" height="25" />
       </a>
       <div id="legal">
         <a href="https://swetrix.com/privacy" target="_blank">Privacy</a>

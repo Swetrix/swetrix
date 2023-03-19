@@ -1,5 +1,5 @@
 const API_URL = 'http://localhost:5005/v1/captcha'
-const MESSAGE_IDENTIFIER = 'swetrix-captcha'
+const MSG_IDENTIFIER = 'swetrix-captcha'
 const DEFAULT_THEME = 'light'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 let TOKEN = ''
@@ -11,20 +11,28 @@ const ENDPOINTS = {
   VERIFY_MANUAL: '/verify-manual',
 }
 
-const IFRAME_MESSAGE_TYPES = {
-  SUCCESS: 'success',
-  FAILURE: 'failure',
-  TOKEN_EXPIRED: 'tokenExpired',
-  MANUAL_STARTED: 'manualStarted',
-  MANUAL_FINISHED: 'manualFinished',
+enum IFRAME_MESSAGE_TYPES {
+  SUCCESS = 'success',
+  FAILURE = 'failure',
+  TOKEN_EXPIRED = 'tokenExpired',
+  MANUAL_STARTED = 'manualStarted',
+  MANUAL_FINISHED = 'manualFinished',
 }
 
-let activeAction = 'checkbox'
+enum ACTION {
+  checkbox = 'checkbox',
+  failure = 'failure',
+  completed = 'completed',
+  loading = 'loading',
+}
 
-const postMessage = (event, data = {}) => {
+let activeAction: ACTION = ACTION.checkbox
+
+const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
   window.parent.postMessage({
     event,
-    type: MESSAGE_IDENTIFIER,
+    type: MSG_IDENTIFIER,
+    // @ts-ignore
     cid: window.__SWETRIX_CAPTCHA_ID,
     ...data,
   }, '*')
@@ -34,7 +42,7 @@ const postMessage = (event, data = {}) => {
  * Sets the provided action visible and the rest hidden
  * @param {*} action checkbox | failure | completed | loading
  */
-const activateAction = (action) => {
+const activateAction = (action: ACTION) => {
   activeAction = action
 
   const statusDefault = document.querySelector('#status-default')
@@ -48,55 +56,63 @@ const activateAction = (action) => {
   }
 
   // Apply hidden class to all actions
-  actions.checkbox.classList.add('hidden')
-  actions.failure.classList.add('hidden')
-  actions.completed.classList.add('hidden')
-  actions.loading.classList.add('hidden')
+  actions.checkbox?.classList.add('hidden')
+  actions.failure?.classList.add('hidden')
+  actions.completed?.classList.add('hidden')
+  actions.loading?.classList.add('hidden')
 
   // Change the status text
   if (action === 'failure') {
-    statusDefault.classList.add('hidden')
-    statusFailure.classList.remove('hidden')
+    statusDefault?.classList.add('hidden')
+    statusFailure?.classList.remove('hidden')
   } else {
-    statusDefault.classList.remove('hidden')
-    statusFailure.classList.add('hidden')
+    statusDefault?.classList.remove('hidden')
+    statusFailure?.classList.add('hidden')
   }
 
   // Remove hidden class from the provided action
-  actions[action].classList.remove('hidden')
+  actions[action]?.classList.remove('hidden')
 }
 
 const setLifetimeTimeout = () => {
   setTimeout(() => {
-    postMessage(IFRAME_MESSAGE_TYPES.TOKEN_EXPIRED)
-    activateAction('checkbox')
+    sendMessageToLoader(IFRAME_MESSAGE_TYPES.TOKEN_EXPIRED)
+    activateAction(ACTION.checkbox)
   }, CAPTCHA_TOKEN_LIFETIME * 1000)
 }
 
-const enableManualChallenge = (svg) => {
+const enableManualChallenge = (svg: string) => {
   const manualChallenge = document.querySelector('#manual-challenge')
   const svgCaptcha = document.querySelector('#svg-captcha')
+
+  if (!svgCaptcha) {
+    return
+  }
 
   if (!svg) {
     const error = document.createElement('p')
     error.innerText = 'Error loading captcha'
     error.style.color = '#d6292a'
-    svgCaptcha.appendChild(error)
+    svgCaptcha?.appendChild(error)
   } else {
     svgCaptcha.innerHTML = svg
   }
 
-  postMessage(IFRAME_MESSAGE_TYPES.MANUAL_STARTED)
-  manualChallenge.classList.remove('hidden')
+  sendMessageToLoader(IFRAME_MESSAGE_TYPES.MANUAL_STARTED)
+  manualChallenge?.classList.remove('hidden')
 }
 
 const disableManualChallenge = () => {
   const manualChallenge = document.querySelector('#manual-challenge')
   const svgCaptcha = document.querySelector('#svg-captcha')
 
-  postMessage(IFRAME_MESSAGE_TYPES.MANUAL_FINISHED)
+  if (!svgCaptcha) {
+    return
+  }
+
+  sendMessageToLoader(IFRAME_MESSAGE_TYPES.MANUAL_FINISHED)
   svgCaptcha.innerHTML = ''
-  manualChallenge.classList.add('hidden')
+  manualChallenge?.classList.add('hidden')
 }
 
 const generateCaptcha = async () => {
@@ -107,7 +123,9 @@ const generateCaptcha = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        // @ts-ignore
         theme: window.__SWETRIX_CAPTCHA_THEME || DEFAULT_THEME,
+        // @ts-ignore
         pid: window.__SWETRIX_PROJECT_ID,
       }),
     })
@@ -119,8 +137,8 @@ const generateCaptcha = async () => {
     const data = await response.json()
     return data
   } catch (e) {
-    postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
-    activateAction('failure')
+    sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+    activateAction(ACTION.failure)
     return {}
   }
 }
@@ -133,6 +151,7 @@ const verify = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        // @ts-ignore
         pid: window.__SWETRIX_PROJECT_ID,
       }),
     })
@@ -144,8 +163,8 @@ const verify = async () => {
     const data = await response.json()
     return data
   } catch (e) {
-    postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
-    activateAction('failure')
+    sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+    activateAction(ACTION.failure)
     return {}
   }
 }
@@ -156,13 +175,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const svgCaptchaInput = document.querySelector('#svg-captcha-input')
   const manualSubmitBtn = document.querySelector('#manual-submit-btn')
 
-  branding.addEventListener('click', (e) => {
+  branding?.addEventListener('click', (e: Event) => {
     e.stopPropagation()
   })
 
-  manualSubmitBtn.addEventListener('click', async (e) => {
+  manualSubmitBtn?.addEventListener('click', async (e: Event) => {
     e.stopPropagation()
 
+    if (!svgCaptchaInput) {
+      return
+    }
+
+    // @ts-ignore
     const code = svgCaptchaInput.value
 
     if (!code) {
@@ -177,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({
           hash: HASH,
           code,
+          // @ts-ignore
           pid: window.__SWETRIX_PROJECT_ID,
         }),
         headers: {
@@ -185,16 +210,18 @@ document.addEventListener('DOMContentLoaded', () => {
       })
     } catch (e) {
       disableManualChallenge()
-      postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
-      activateAction('failure')
+      sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+      activateAction(ACTION.failure)
+      // @ts-ignore
       svgCaptchaInput.value = ''
       return
     }
 
     if (!response.ok) {
       disableManualChallenge()
-      postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
-      activateAction('failure')
+      sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+      activateAction(ACTION.failure)
+      // @ts-ignore
       svgCaptchaInput.value = ''
       return
     }
@@ -203,31 +230,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!success) {
       disableManualChallenge()
-      postMessage(IFRAME_MESSAGE_TYPES.FAILURE)
-      activateAction('failure')
+      sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+      activateAction(ACTION.failure)
+      // @ts-ignore
       svgCaptchaInput.value = ''
       return
     }
 
+    // @ts-ignore
     svgCaptchaInput.value = ''
 
-    postMessage(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
+    sendMessageToLoader(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
     setLifetimeTimeout()
-    activateAction('completed')
+    activateAction(ACTION.completed)
     disableManualChallenge()
   })
 
-  captchaComponent.addEventListener('click', async () => {
-    if (activeAction === 'loading' || activeAction === 'completed') {
+  captchaComponent?.addEventListener('click', async () => {
+    if (activeAction === ACTION.loading || activeAction === ACTION.completed) {
       return
     }
 
-    if (activeAction === 'failure') {
-      activateAction('checkbox')
+    if (activeAction === ACTION.failure) {
+      activateAction(ACTION.checkbox)
       return
     }
 
-    activateAction('loading')
+    activateAction(ACTION.loading)
 
     try {
       const { token } = await verify()
@@ -237,9 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       TOKEN = token
-      postMessage(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
+      sendMessageToLoader(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
       setLifetimeTimeout()
-      activateAction('completed')
+      activateAction(ACTION.completed)
       return
     } catch (e) {
       const { data, hash } = await generateCaptcha()

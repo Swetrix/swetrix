@@ -7,22 +7,33 @@ const ID_PREFIX = 'swetrix-captcha-'
 const THEMES = ['light', 'dark']
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
 
-const isValidPID = (pid) => PID_REGEX.test(pid)
+enum LOG_ACTIONS {
+  log = 'log',
+  error = 'error',
+  warn = 'warn',
+  info = 'info',
+}
+
+const DUMMY_PIDS = [
+  'AP00000000000', 'MP00000000000', 'FAIL000000000',
+]
+
+const isValidPID = (pid: string) => DUMMY_PIDS.includes(pid) || PID_REGEX.test(pid)
 
 const FRAME_HEIGHT_MAPPING = {
   default: '66px',
   manual: '200px',
 }
 
-const getFrameID = (cid) => `${cid}-frame`
+const getFrameID = (cid: string) => `${cid}-frame`
 
-const ids = []
+const ids: string[] = []
 
-const log = (status, text) => {
+const log = (status: LOG_ACTIONS, text: string) => {
   console[status](`[Swetrix Captcha] ${text}`)
 }
 
-const appendParamsToURL = (url, params) => {
+const appendParamsToURL = (url: string, params: any) => {
   const queryString = Object.keys(params).map((key) => {
     return `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
   }).join('&')
@@ -30,7 +41,7 @@ const appendParamsToURL = (url, params) => {
   return `${url}?${queryString}`
 }
 
-const renderCaptcha = (container, params) => {
+const renderCaptcha = (container: Element, params: any) => {
   const cid = generateRandomID()
   const cParams = {
     ...params,
@@ -44,7 +55,7 @@ const renderCaptcha = (container, params) => {
   container.appendChild(input)
 }
 
-const generateRandomID = () => {
+const generateRandomID = (): string => {
   const randomID = ID_PREFIX + Math.random().toString(36).substr(2, 6)
 
   if (ids.includes(randomID)) {
@@ -56,7 +67,7 @@ const generateRandomID = () => {
   return randomID
 }
 
-const postMessageCallback = (pmEvent) => {
+const postMessageCallback = (pmEvent: MessageEvent) => {
   // TODO: Validate origin
 
   const { data } = pmEvent
@@ -85,10 +96,11 @@ const postMessageCallback = (pmEvent) => {
       const { token } = data
 
       if (!inputExists) {
-        log('error', '[PM -> success] Input element does not exist.')
+        log(LOG_ACTIONS.error, '[PM -> success] Input element does not exist.')
         return
       }
 
+      // @ts-ignore
       input.value = token
 
       break
@@ -96,10 +108,11 @@ const postMessageCallback = (pmEvent) => {
 
     case 'failure': {
       if (!inputExists) {
-        log('error', '[PM -> failure] Input element does not exist.')
+        log(LOG_ACTIONS.error, '[PM -> failure] Input element does not exist.')
         return
       }
 
+      // @ts-ignore
       input.value = ''
 
       break
@@ -107,10 +120,11 @@ const postMessageCallback = (pmEvent) => {
 
     case 'tokenExpired': {
       if (!inputExists) {
-        log('error', '[PM -> failure] Input element does not exist.')
+        log(LOG_ACTIONS.error, '[PM -> failure] Input element does not exist.')
         return
       }
 
+      // @ts-ignore
       input.value = ''
 
       break
@@ -120,7 +134,7 @@ const postMessageCallback = (pmEvent) => {
       const frame = document.getElementById(getFrameID(cid))
 
       if (!frame) {
-        log('error', '[PM -> manualStarted] Frame does not exist.')
+        log(LOG_ACTIONS.error, '[PM -> manualStarted] Frame does not exist.')
         return
       }
 
@@ -133,7 +147,7 @@ const postMessageCallback = (pmEvent) => {
       const frame = document.getElementById(getFrameID(cid))
 
       if (!frame) {
-        log('error', '[PM -> manualFinished] Frame does not exist.')
+        log(LOG_ACTIONS.error, '[PM -> manualFinished] Frame does not exist.')
         return
       }
 
@@ -144,7 +158,7 @@ const postMessageCallback = (pmEvent) => {
   }
 }
 
-const generateCaptchaFrame = (params) => {
+const generateCaptchaFrame = (params: any) => {
   const { theme } = params
   const captchaFrame = document.createElement('iframe')
 
@@ -161,35 +175,35 @@ const generateCaptchaFrame = (params) => {
   return captchaFrame
 }
 
-const generateHiddenInput = (params) => {
+const generateHiddenInput = (params: any) => {
   const { cid } = params
   const input = document.createElement('input')
 
   input.type = 'hidden'
-  input.name = params.respName,
-    input.value = ''
+  input.name = params.respName
+  input.value = ''
   input.id = cid
 
   return input
 }
 
-const validateParams = (params) => {
+const validateParams = (params: any) => {
   const { theme, pid } = params
 
   if (theme && !THEMES.includes(theme)) {
-    log('error', `Invalid data-theme parameter: ${theme}`)
+    log(LOG_ACTIONS.error, `Invalid data-theme parameter: ${theme}`)
     return false
   }
 
   if (!pid || !isValidPID(pid)) {
-    log('error', `Invalid data-project-id parameter: ${pid}`)
+    log(LOG_ACTIONS.error, `Invalid data-project-id parameter: ${pid}`)
     return false
   }
 
   return true
 }
 
-const parseParams = (container) => ({
+const parseParams = (container: Element): object => ({
   pid: container.getAttribute('data-project-id'),
   respName: container.getAttribute('data-response-input-name') || DEFAULT_RESPONSE_INPUT_NAME,
   theme: container.getAttribute('data-theme'),
@@ -197,20 +211,21 @@ const parseParams = (container) => ({
 
 const main = () => {
   if ('swecaptcha' in window) {
-    log('warn', 'Captcha is already loaded.')
+    log(LOG_ACTIONS.warn, 'Captcha is already loaded.')
   }
 
   // TODO: Add some callbacks here
+  // @ts-ignore
   window.swecaptcha = true
   window.addEventListener('message', postMessageCallback)
 
-  const containers = document.querySelectorAll(CAPTCHA_SELECTOR)
+  const containers = Array.from(document.querySelectorAll(CAPTCHA_SELECTOR))
 
   for (const container of containers) {
     const params = parseParams(container)
 
     if (!validateParams(params)) {
-      log('error', 'Aborting captcha rendering due to invalid parameters.')
+      log(LOG_ACTIONS.error, 'Aborting captcha rendering due to invalid parameters.')
       return
     }
 

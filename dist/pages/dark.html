@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Swetrix Captcha</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <style>
+    html {
+      font-family: '-apple-system', 'system-ui', 'BlinkMacSystemFont', 'Inter', 'Cantarell', 'Helvetica Neue', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: auto;
+      overflow: auto;
+    }
+
+    #swetrix-captcha {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      /* 300 - 20px (padding) */
+      width: 280px;
+
+      /* bg-gray-800 */
+      background-color: #1f2937;
+      /* bg-gray-900 */
+      border: 1px solid #374151;
+      height: 65px;
+      user-select: none;
+      padding-left: 10px;
+      padding-right: 10px;
+
+      cursor: pointer;
+    }
+
+    #swetrix-captcha:hover {
+      /* bg-gray-200 */
+      background-color: #374151;
+    }
+
+    #challenge {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+
+      /* divide the space between #challenge and #branding as a proportion of 5 to 1 using flex */
+      flex: 5;
+    }
+
+    #action {
+      margin-right: 10px;
+    }
+
+    #checkbox {
+      /* bg-gray-900 */
+      background-color: #111827;
+      border: 1px solid #374151;
+      height: 25px;
+      width: 25px;
+      border-radius: 3px;
+    }
+
+    #status {
+      font-size: 16px;
+      /* bg-gray-50 */
+      color: #f9fafb;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    #branding {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex: 1;
+    }
+
+    #legal {
+      font-size: 10px;
+    }
+
+    #legal>a {
+      color: #f9fafb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    #legal>a:hover {
+      text-decoration: underline;
+    }
+
+    #legal>.separator::before {
+      content: "-";
+      margin: 0 2px;
+      /* bg-gray-50 */
+      color: #f9fafb;
+    }
+
+    #action svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    #failure>svg {
+      /* bg-red-500 */
+      color: #d6292a;
+    }
+
+    #completed>svg {
+      /* bg-green-600 */
+      color: #16a24c;
+    }
+
+    #completed, #failure {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Loading indicator */
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #loading {
+      border-radius: 50%;
+      width: 17px;
+      height: 17px;
+      /* bg-gray-900 */
+      border: 4px solid #111827;
+      /* bg-gray-600 */
+      border-top-color: #4b5563;
+      animation: spin 2s infinite linear;
+    }
+
+    #manual-challenge {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: row;
+      border: 1px solid #374151;
+      /* bg-gray-800 */
+      background-color: #1f2937;
+      border-top: none;
+      height: 130px;
+      width: 280px;
+      padding-left: 10px;
+      padding-right: 10px;
+      gap: 10px;
+    }
+
+    #input-n-captcha {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      flex: 5;
+    }
+
+    #input-n-captcha > input {
+      width: 100%;
+      /* bg-gray-900 */
+      background-color: #374151;
+      /* bg-gray-50 */
+      color: #f9fafb;
+      border: 2px solid #374151;
+      border-radius: 3px;
+    }
+
+    #manual-submit-btn {
+      /* bg-gray-900 */
+      background-color: #374151;
+      border: 1px solid #374151;
+      /* bg-gray-50 */
+      color: #f9fafb;
+      padding-left: 5px;
+      padding-right: 5px;
+      border-radius: 3px;
+      height: 75px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex: 1;
+    }
+  </style>
+  <script>
+    window.__SWETRIX_CAPTCHA_THEME = 'dark'
+    const urlParams = new URLSearchParams(window.location.search)
+    const pid = urlParams.get('pid')
+    const cid = urlParams.get('cid')
+
+    window.__SWETRIX_CAPTCHA_ID = cid
+    window.__SWETRIX_PROJECT_ID = pid
+  </script>
+  <script src="../captcha.js" defer></script>
+</head>
+
+<body>
+  <div id="swetrix-captcha">
+    <div id="challenge">
+      <div id="action">
+        <!-- Can contain a checkbox itself / a red cross (with a retry action) / a green check mark -->
+        <div id="checkbox"></div>
+        <div id="failure" class="hidden">
+          <svg fill="transparent" fill-opacity="0" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <div id="completed" class="hidden">
+          <svg fill="transparent" fill-opacity="0" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+        <div id="loading" class="hidden"></div>
+      </div>
+      <div id="status">
+        <span id="status-default">I am human</span>
+        <span id="status-failure" class="hidden">Failure, please retry</span>
+      </div>
+    </div>
+    <div id="branding">
+      <a href="https://swetrix.com" target="_blank">
+        <img src="../assets/logo_white.svg" alt="Swetrix" height="25" />
+      </a>
+      <div id="legal">
+        <a href="https://swetrix.com/privacy" target="_blank">Privacy</a>
+        <span class="separator"></span>
+        <a href="https://swetrix.com/terms" target="_blank">Terms</a>
+      </div>
+    </div>
+  </div>
+  <div id="manual-challenge" class="hidden">
+    <div id="input-n-captcha">
+      <div id="svg-captcha"></div>
+      <input type="text" id="svg-captcha-input" autocomplete="off" />
+    </div>
+    <div id="manual-submit-btn">
+      Submit
+    </div>
+  </div>
+</body>
+
+</html>
