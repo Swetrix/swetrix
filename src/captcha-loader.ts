@@ -14,7 +14,11 @@ enum LOG_ACTIONS {
   info = 'info',
 }
 
-const isValidPID = (pid: string) => PID_REGEX.test(pid)
+const DUMMY_PIDS = [
+  'AP00000000000', 'MP00000000000', 'FAIL000000000',
+]
+
+const isValidPID = (pid: string) => DUMMY_PIDS.includes(pid) || PID_REGEX.test(pid)
 
 const FRAME_HEIGHT_MAPPING = {
   default: '66px',
