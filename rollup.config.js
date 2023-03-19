@@ -2,9 +2,8 @@
 // import commonjs from '@rollup/plugin-commonjs'
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import typescript from 'rollup-plugin-typescript2'
-import { uglify } from 'rollup-plugin-uglify'
+import { uglify } from '@blaumaus/rollup-plugin-uglify'
 import copy from 'rollup-plugin-copy'
-import { rollupPluginHTML as html } from '@web/rollup-plugin-html'
 import pkg from './package.json'
 
 const CAPTCHA_PATH = 'src/captcha.ts'
