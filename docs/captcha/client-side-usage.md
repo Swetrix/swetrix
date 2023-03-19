@@ -13,7 +13,7 @@ You can use the CAPTCHA widget on any page of your website by using our CAPTCHA 
 The easiest way to add the CAPTCHA script to your website is to edit the HTML code of your website. To do this, paste the following code snippet into the header section (`<head>` tag) of your website:
 
 ```html
-<script src="https://swetrix.org/captcha.js" defer></script>
+<script src="https://cap.swetrix.com/captcha-loader.js" defer></script>
 ```
 
 ### Using NPM
