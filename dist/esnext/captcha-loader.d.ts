@@ -12,6 +12,7 @@ declare enum LOG_ACTIONS {
     warn = "warn",
     info = "info"
 }
+declare const DUMMY_PIDS: string[];
 declare const isValidPID: (pid: string) => boolean;
 declare const FRAME_HEIGHT_MAPPING: {
     default: string;

@@ -14,7 +14,10 @@ var LOG_ACTIONS;
     LOG_ACTIONS["warn"] = "warn";
     LOG_ACTIONS["info"] = "info";
 })(LOG_ACTIONS || (LOG_ACTIONS = {}));
-const isValidPID = (pid) => PID_REGEX.test(pid);
+const DUMMY_PIDS = [
+    'AP00000000000', 'MP00000000000', 'FAIL000000000',
+];
+const isValidPID = (pid) => DUMMY_PIDS.includes(pid) || PID_REGEX.test(pid);
 const FRAME_HEIGHT_MAPPING = {
     default: '66px',
     manual: '200px',
@@ -56,7 +59,7 @@ const postMessageCallback = (pmEvent) => {
         return;
     }
     const { type, cid, event, } = data;
-    if (type !== MSG_IDENTIFIER) {
+    if (type !== MESSAGE_IDENTIFIER) {
         return;
     }
     if (!cid || !ids.includes(cid)) {
