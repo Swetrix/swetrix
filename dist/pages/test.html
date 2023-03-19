@@ -1,0 +1,33 @@
+<!-- Generate a form with several inputs -->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Test</title>
+  <style>
+    .form {
+      display: flex;
+      flex-direction: column;
+      width: 400px;
+      margin: 0 auto;
+    }
+
+    .form>* {
+      margin-top: 10px;
+    }
+  </style>
+
+  <script src="../captcha-loader.js" defer></script>
+</head>
+
+<body>
+  <form class="form" action="test.html" method="post">
+    <input type="text" name="name" value="name">
+    <input type="text" name="email" value="email">
+    <input type="number" name="number" value="number">
+    <div class="swecaptcha" data-project-id="MP00000000000" data-theme="dark"></div>
+    <input type="submit" value="Submit">
+  </form>
+</body>
+
+</html>
