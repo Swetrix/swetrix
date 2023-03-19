@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsOptional, IsNotEmpty, Matches } from 'class-validator'
-
-import { PID_REGEX } from '../../common/constants'
+import { IsOptional, IsNotEmpty, IsString } from 'class-validator'
 
 export const DEFAULT_THEME = 'light'
 
@@ -12,7 +10,7 @@ export class GenerateDTO {
     description: 'A unique project ID',
   })
   @IsNotEmpty()
-  @Matches(PID_REGEX)
+  @IsString()
   pid: string
 
   @ApiProperty({
