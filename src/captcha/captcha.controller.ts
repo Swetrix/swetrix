@@ -42,7 +42,7 @@ export class CaptchaController {
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    return await this.captchaService.generateCaptcha(theme, pid)
+    return await this.captchaService.generateCaptcha(theme)
   }
 
   @Post('/verify-manual')
@@ -68,7 +68,7 @@ export class CaptchaController {
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    if (pid === DUMMY_PIDS.ALWAYS_FAIL || !this.captchaService.verifyCaptcha(code, hash, pid)) {
+    if (pid === DUMMY_PIDS.ALWAYS_FAIL || !this.captchaService.verifyCaptcha(code, hash)) {
       throw new ForbiddenException('Incorrect captcha')
     }
 

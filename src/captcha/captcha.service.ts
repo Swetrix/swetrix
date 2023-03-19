@@ -220,7 +220,7 @@ export class CaptchaService {
     return hash(captchaString(text)).toString('hex')
   }
 
-  async generateCaptcha(theme: string, pid: string): Promise<GeneratedCaptcha> {
+  async generateCaptcha(theme: string): Promise<GeneratedCaptcha> {
     const themeParams = theme === 'light' ? {} : {
       background: '#1f2937',
       color: true,
@@ -242,7 +242,7 @@ export class CaptchaService {
     }
   }
 
-  verifyCaptcha(text: string, hash: string, pid: string): boolean {
+  verifyCaptcha(text: string, hash: string): boolean {
     return hash === this.hashCaptcha(text)
   }
 
