@@ -80,7 +80,7 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
     type, cid, event,
   } = data
 
-  if (type !== MSG_IDENTIFIER) {
+  if (type !== MESSAGE_IDENTIFIER) {
     return
   }
 
