@@ -26,7 +26,7 @@ export class Project {
   id: string
 
   @ApiProperty()
-  @Column('varchar', { length: CAPTCHA_SECRET_KEY_LENGTH })
+  @Column('varchar', { length: 50 })
   name: string
 
   @ApiProperty()
@@ -64,7 +64,7 @@ export class Project {
   isCaptchaEnabled: boolean
 
   @ApiProperty()
-  @Column('varchar', { default: null, length: 50 })
+  @Column('varchar', { default: null, length: CAPTCHA_SECRET_KEY_LENGTH })
   captchaSecretKey: string
 
   @ApiProperty({ type: () => User })
