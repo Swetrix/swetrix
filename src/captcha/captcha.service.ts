@@ -7,6 +7,8 @@ import * as CryptoJS from 'crypto-js'
 import * as _toLower from 'lodash/toLower'
 import * as UAParser from 'ua-parser-js'
 import * as _map from 'lodash/map'
+import * as _values from 'lodash/values'
+import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 
@@ -25,6 +27,22 @@ import {
 } from '../common/constants'
 
 dayjs.extend(utc)
+
+export const DUMMY_PIDS = {
+  AUTO_PASS: 'AP00000000000',
+  MANUAL_PASS: 'MP00000000000',
+  ALWAYS_FAIL: 'FAIL000000000',
+}
+
+const DUMMY_SECRETS = {
+  ALWAYS_PASS: 'PASS000000000000000000',
+  ALWAYS_FAIL: 'FAIL000000000000000000',
+  TOKEN_USED_FAIL: 'USED000000000000000000',
+}
+
+export const isDummyPID = (pid: string): boolean => {
+  return _includes(_values(DUMMY_PIDS), pid)
+}
 
 const encryptString = (text: string, key: string): string => {
   return CryptoJS.Rabbit.encrypt(text, key).toString()
@@ -98,6 +116,10 @@ export class CaptchaService {
 
   // validates pid, checks if captcha is enabled and throws an error otherwise
   async validatePIDForCAPTCHA(pid: string): Promise<void> {
+    if (isDummyPID(pid)) {
+      return
+    }
+
     if (!isValidPID(pid)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
@@ -130,6 +152,10 @@ export class CaptchaService {
   }
 
   async generateToken(pid: string, hash: string, timestamp: number, autoVerified: boolean): Promise<string> {
+    if (isDummyPID(pid)) {
+      return encryptString('DUMMY_TOKEN00000111112222233333444445555566666777778888899999', DUMMY_SECRETS.ALWAYS_PASS)
+    }
+
     const project = await this.projectService.getRedisProject(pid)
 
     if (!project) {
@@ -153,6 +179,23 @@ export class CaptchaService {
   async validateToken(token: string, secretKey: string): Promise<object> {
     let parsed
 
+    if (secretKey === DUMMY_SECRETS.ALWAYS_FAIL) {
+      throw new BadRequestException('Could not decrypt token')
+    }
+
+    if (secretKey === DUMMY_SECRETS.TOKEN_USED_FAIL) {
+      throw new BadRequestException('Token already used')
+    }
+
+    if (secretKey === DUMMY_SECRETS.ALWAYS_PASS) {
+      return {
+        hash: 'DUMMY_HASH00000111112222233333444445555566666777778888899999',
+        timestamp: dayjs().unix(),
+        autoVerified: false,
+        pid: DUMMY_PIDS.AUTO_PASS,
+      }
+    }
+
     try {
       const decrypted = decryptString(token, secretKey)
       parsed = JSON.parse(decrypted)
@@ -173,7 +216,7 @@ export class CaptchaService {
     return parsed
   }
 
-  hashCaptcha(text: string, pid: string): string {
+  hashCaptcha(text: string): string {
     return hash(captchaString(text)).toString('hex')
   }
 
@@ -190,7 +233,7 @@ export class CaptchaService {
       ...themeParams,
     })
     const hash = this.hashCaptcha(
-      _toLower(captcha.text), pid,
+      _toLower(captcha.text),
     )
 
     return {
@@ -200,7 +243,7 @@ export class CaptchaService {
   }
 
   verifyCaptcha(text: string, hash: string, pid: string): boolean {
-    return hash === this.hashCaptcha(text, pid)
+    return hash === this.hashCaptcha(text)
   }
 
   incrementManuallyVerified(tokenCaptcha: TokenCaptcha): TokenCaptcha {
@@ -251,7 +294,11 @@ export class CaptchaService {
     return encryptedTokenCaptcha
   }
 
-  async autoVerifiable(tokenCookie: string | undefined): Promise<boolean> {
+  async autoVerifiable(pid: string, tokenCookie: string | undefined): Promise<boolean> {
+    if (pid === DUMMY_PIDS.AUTO_PASS) {
+      return true
+    }
+
     if (!tokenCookie) {
       throw new Error('No JWT captcha cookie')
     }

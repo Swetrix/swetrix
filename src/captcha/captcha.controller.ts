@@ -7,7 +7,7 @@ import * as utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
 import { CAPTCHA_COOKIE_KEY } from '../common/constants'
-import { CaptchaService } from './captcha.service'
+import { CaptchaService, DUMMY_PIDS, isDummyPID } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { ManualDTO } from './dtos/manual.dto'
@@ -68,7 +68,7 @@ export class CaptchaController {
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    if (!this.captchaService.verifyCaptcha(code, hash, pid)) {
+    if (pid === DUMMY_PIDS.ALWAYS_FAIL || !this.captchaService.verifyCaptcha(code, hash, pid)) {
       throw new ForbiddenException('Incorrect captcha')
     }
 
@@ -83,16 +83,26 @@ export class CaptchaController {
       }
     }
 
+    const timestamp = dayjs.utc().unix()
+    const token = await this.captchaService.generateToken(pid, hash, timestamp, false)
+
+    // For dummy (test) PIDs
+    if (pid === DUMMY_PIDS.MANUAL_PASS) {
+      return {
+        success: true,
+        token,
+        timestamp,
+        hash,
+        pid,
+      }
+    }
+
     const {
       manuallyVerified, automaticallyVerified,
     } = this.captchaService.incrementManuallyVerified(decrypted)
 
     const newTokenCookie = this.captchaService.getTokenCaptcha(manuallyVerified, automaticallyVerified)
     this.captchaService.setTokenCookie(response, newTokenCookie)
-
-    const timestamp = dayjs.utc().unix()
-
-    const token = await this.captchaService.generateToken(pid, hash, timestamp, false)
 
     await this.captchaService.logCaptchaPass(pid, userAgent, headers, timestamp, true)
 
@@ -130,10 +140,14 @@ export class CaptchaController {
     let verifiable
 
     try {
-      verifiable = await this.captchaService.autoVerifiable(tokenCookie)
+      verifiable = await this.captchaService.autoVerifiable(pid, tokenCookie)
     } catch (e) {
       // Either there was no cookie or the cookie was invalid
       let newTokenCookie
+
+      if (isDummyPID(pid) && (pid !== DUMMY_PIDS.AUTO_PASS || pid === DUMMY_PIDS.ALWAYS_FAIL)) {
+        throw new ForbiddenException('Captcha required')
+      }
 
       // Set a new cookie
       try {
@@ -160,6 +174,18 @@ export class CaptchaController {
       throw new InternalServerErrorException('Could not decrypt captcha cookie')
     }
 
+    const timestamp = dayjs.utc().unix()
+    const token = await this.captchaService.generateToken(pid, null, timestamp, true)
+
+    if (pid === DUMMY_PIDS.AUTO_PASS) {
+      return {
+        success: true,
+        token,
+        timestamp,
+        hash: null,
+      }
+    }
+
     const {
       manuallyVerified, automaticallyVerified,
     } = this.captchaService.incrementAutomaticallyVerified(decrypted)
@@ -167,10 +193,6 @@ export class CaptchaController {
     const newTokenCookie = this.captchaService.getTokenCaptcha(manuallyVerified, automaticallyVerified)
 
     this.captchaService.setTokenCookie(response, newTokenCookie)
-
-    const timestamp = dayjs.utc().unix()
-
-    const token = await this.captchaService.generateToken(pid, null, timestamp, true)
 
     await this.captchaService.logCaptchaPass(pid, userAgent, headers, timestamp, false)
 
