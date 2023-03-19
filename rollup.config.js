@@ -3,6 +3,8 @@
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import typescript from 'rollup-plugin-typescript2'
 import { uglify } from 'rollup-plugin-uglify'
+import copy from 'rollup-plugin-copy'
+import { rollupPluginHTML as html } from '@web/rollup-plugin-html'
 import pkg from './package.json'
 
 const CAPTCHA_PATH = 'src/captcha.ts'
@@ -22,10 +24,16 @@ export default [
     ],
     plugins: [
       typescript(),
-      // nodeResolve(),
-      // commonjs(),
       uglify(),
-    ]
+
+      // copying assets
+      copy({
+        targets: [
+          { src: 'src/assets/*', dest: 'dist/assets' },
+          { src: 'src/pages/*', dest: 'dist/pages' },
+        ],
+      }),
+    ],
   },
   {
     input: CAPTCHA_LOADER_PATH,
@@ -38,10 +46,8 @@ export default [
     ],
     plugins: [
       typescript(),
-      // nodeResolve(),
-      // commonjs(),
       sourceMaps(),
       uglify(),
-    ]
-  }
+    ],
+  },
 ]

@@ -33,6 +33,7 @@
   "homepage": "https://swetrix.com/docs",
   "dependencies": {
     "@types/node": "^18.13.0",
+    "rollup-plugin-copy": "^3.4.0",
     "tslib": "^2.5.0"
   },
   "devDependencies": {
