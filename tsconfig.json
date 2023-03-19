@@ -10,6 +10,7 @@
     "emitDecoratorMetadata": true,
     "sourceMap": true,
     "declaration": false,
+    "skipLibCheck": true,
     "outDir": "dist/lib",
     "typeRoots": ["node_modules/@types"]
   },
