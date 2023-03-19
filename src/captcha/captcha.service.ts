@@ -322,6 +322,7 @@ export class CaptchaService {
         secure: true,
         sameSite: 'none',
         maxAge: COOKIE_MAX_AGE,
+        domain: '.swetrix.com',
       })
     }
   }
