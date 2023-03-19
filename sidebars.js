@@ -23,6 +23,7 @@ module.exports = {
       'captcha/introduction',
       'captcha/client-side-usage',
       'captcha/server-side-validation',
+      'captcha/testing',
     ]
   },
 }
