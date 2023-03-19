@@ -766,64 +766,64 @@ export class TaskManagerService {
     }
   }
 
-  @Cron('0 * * * *')
-  async handleNewExtensions() {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-    const extensions = await this.extensionsService.find({
-      where: {
-        createdAt: MoreThan(twoWeeksAgo),
-      },
-    })
-    for (const extension of extensions) {
-      if (!extension.tags.includes('New')) {
-        extension.tags.push('New')
-        await this.extensionsService.save(extension)
-      }
-    }
-    const oldExtensions = await this.extensionsService.find({
-      where: {
-        createdAt: LessThan(twoWeeksAgo),
-        tags: Like('%New%'),
-      },
-    })
-    for (const extension of oldExtensions) {
-      extension.tags = extension.tags.filter(tag => tag !== 'New')
-      await this.extensionsService.save(extension)
-    }
-  }
+  // @Cron('0 * * * *')
+  // async handleNewExtensions() {
+  //   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+  //   const extensions = await this.extensionsService.find({
+  //     where: {
+  //       createdAt: MoreThan(twoWeeksAgo),
+  //     },
+  //   })
+  //   for (const extension of extensions) {
+  //     if (!extension.tags.includes('New')) {
+  //       extension.tags.push('New')
+  //       await this.extensionsService.save(extension)
+  //     }
+  //   }
+  //   const oldExtensions = await this.extensionsService.find({
+  //     where: {
+  //       createdAt: LessThan(twoWeeksAgo),
+  //       tags: Like('%New%'),
+  //     },
+  //   })
+  //   for (const extension of oldExtensions) {
+  //     extension.tags = extension.tags.filter(tag => tag !== 'New')
+  //     await this.extensionsService.save(extension)
+  //   }
+  // }
 
-  @Cron('0 * * * *')
-  async handleTrendingExtensions() {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-    const extensions = await this.extensionsService.find({
-      where: {
-        createdAt: MoreThan(twoWeeksAgo),
-      },
-    })
-    for (const extension of extensions) {
-      const currentInstalls =
-        await this.extensionsService.getExtensionInstallCount(extension.id)
-      const twoWeeksBeforeInstalls =
-        await this.extensionsService.getExtensionInstallCount(
-          extension.id,
-          twoWeeksAgo,
-        )
-      if (
-        currentInstalls > twoWeeksBeforeInstalls * 2 &&
-        currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
-      ) {
-        if (!extension.tags.includes('Trending')) {
-          extension.tags.push('Trending')
-          await this.extensionsService.save(extension)
-        }
-      } else {
-        if (extension.tags.includes('Trending')) {
-          extension.tags = extension.tags.filter(tag => tag !== 'Trending')
-          await this.extensionsService.save(extension)
-        }
-      }
-    }
-  }
+  // @Cron('0 * * * *')
+  // async handleTrendingExtensions() {
+  //   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+  //   const extensions = await this.extensionsService.find({
+  //     where: {
+  //       createdAt: MoreThan(twoWeeksAgo),
+  //     },
+  //   })
+  //   for (const extension of extensions) {
+  //     const currentInstalls =
+  //       await this.extensionsService.getExtensionInstallCount(extension.id)
+  //     const twoWeeksBeforeInstalls =
+  //       await this.extensionsService.getExtensionInstallCount(
+  //         extension.id,
+  //         twoWeeksAgo,
+  //       )
+  //     if (
+  //       currentInstalls > twoWeeksBeforeInstalls * 2 &&
+  //       currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
+  //     ) {
+  //       if (!extension.tags.includes('Trending')) {
+  //         extension.tags.push('Trending')
+  //         await this.extensionsService.save(extension)
+  //       }
+  //     } else {
+  //       if (extension.tags.includes('Trending')) {
+  //         extension.tags = extension.tags.filter(tag => tag !== 'Trending')
+  //         await this.extensionsService.save(extension)
+  //       }
+  //     }
+  //   }
+  // }
 
   private async getAverageInstalls(
     extensions: Extension[],
