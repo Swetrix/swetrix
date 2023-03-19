@@ -168,12 +168,6 @@ export class CaptchaController {
 
     let decrypted
 
-    try {
-      decrypted = await this.captchaService.decryptTokenCaptcha(tokenCookie)
-    } catch (e) {
-      throw new InternalServerErrorException('Could not decrypt captcha cookie')
-    }
-
     const timestamp = dayjs.utc().unix()
     const token = await this.captchaService.generateToken(pid, null, timestamp, true)
 
@@ -184,6 +178,12 @@ export class CaptchaController {
         timestamp,
         hash: null,
       }
+    }
+
+    try {
+      decrypted = await this.captchaService.decryptTokenCaptcha(tokenCookie)
+    } catch (e) {
+      throw new InternalServerErrorException('Could not decrypt captcha cookie')
     }
 
     const {
