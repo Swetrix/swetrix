@@ -7,7 +7,12 @@ import PropTypes from 'prop-types'
 
 import { TITLE_SUFFIX, whitelist } from 'redux/constants'
 
-const Title = ({ title, children }) => {
+interface ITitle {
+  title?: string
+  children: React.ReactNode
+}
+
+const Title: React.FC<ITitle> = ({ title, children }) => {
   const { i18n: { language } } = useTranslation('common')
 
   if (_isEmpty(title)) {
