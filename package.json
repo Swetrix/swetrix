@@ -107,7 +107,8 @@
         {
           "extensions": [
             ".js",
-            ".jsx"
+            ".jsx",
+            ".tsx"
           ]
         }
       ],
