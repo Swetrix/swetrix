@@ -23,7 +23,7 @@ import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted } from 'redux/constants'
 import {
-  createProject, updateProject, deleteProject, resetProject, reGenerateCaptchaSecretKey,
+  createProject, updateProject, deleteCaptchaProject, resetCaptchaProject, reGenerateCaptchaSecretKey,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -155,7 +155,7 @@ const CaptchaSettings = ({
     if (!projectDeleting) {
       setProjectDeleting(true)
       try {
-        await deleteProject(id)
+        await deleteCaptchaProject(id)
         removeProject(id)
         projectDeleted(t('project.settings.deleted'))
         history.push(routes.dashboard)
@@ -172,7 +172,7 @@ const CaptchaSettings = ({
     if (!projectResetting) {
       setProjectResetting(true)
       try {
-        await resetProject(id)
+        await resetCaptchaProject(id)
         deleteProjectCache(id)
         projectDeleted(t('project.settings.resetted'))
         history.push(routes.dashboard)

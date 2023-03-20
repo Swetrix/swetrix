@@ -275,9 +275,31 @@ export const deleteProject = (id) =>
         : error.response.data.message
     })
 
+export const deleteCaptchaProject = (id) =>
+  api
+    .delete(`project/captcha/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const resetProject = (id) =>
   api
     .delete(`/project/reset/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const resetCaptchaProject = (id) =>
+  api
+    .delete(`project/captcha/reset/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
