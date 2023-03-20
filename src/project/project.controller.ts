@@ -78,7 +78,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-  ) {}
+  ) { }
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -678,24 +678,33 @@ export class ProjectController {
 
       this.projectService.allowedToManage(project, uid, user.roles)
 
-      if (!project.isCaptchaProject) {
-        const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-        const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
 
-        try {
-          await this.projectService.deleteMultipleShare(`project = "${id}"`)
-          await this.projectService.delete(id)
-          await deleteProjectRedis(id)
-          await clickhouse.query(query1).toPromise()
-          await clickhouse.query(query2).toPromise()
-          return 'Project deleted successfully'
-        } catch (e) {
-          this.logger.error(e)
-          return 'Error while deleting your project'
-        }
+      try {
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        await deleteProjectRedis(id)
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
       }
 
-      return await this.deleteCAPTCHA(id, uid)
+      try {
+        if (project.isCaptchaProject) {
+          project.isAnalyticsProject = false
+          await this.projectService.update(id, project)
+        } else {
+          await this.projectService.deleteMultipleShare(`project = "${id}"`)
+          await this.projectService.delete(id)
+          await this.deleteCAPTCHA(id, uid)
+        }
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
+
+      return 'Project deleted successfully'
     }
   }
 
@@ -733,26 +742,22 @@ export class ProjectController {
 
       this.projectService.allowedToManage(project, uid, user.roles)
 
-      if (project.isAnalyticsProject && project.isCaptchaProject) {
-        const query = `ALTER table captcha DELETE WHERE pid='${id}'`
+      const query = `ALTER table captcha DELETE WHERE pid='${id}'`
 
-        try {
-          await clickhouse.query(query).toPromise()
+      try {
+        await clickhouse.query(query).toPromise()
 
-          project.captchaSecretKey = null
-          project.isCaptchaEnabled = false
-          project.isCaptchaProject = false
+        project.captchaSecretKey = null
+        project.isCaptchaEnabled = false
+        project.isCaptchaProject = false
 
-          await this.projectService.update(id, project)
+        await this.projectService.update(id, project)
 
-          return 'CAPTCHA project deleted successfully'
-        } catch (e) {
-          this.logger.error(e)
-          return 'Error while deleting your CAPTCHA project'
-        }
+        return 'CAPTCHA project deleted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while deleting your CAPTCHA project'
       }
-
-      return await this.delete(id, uid)
     }
   }
 
