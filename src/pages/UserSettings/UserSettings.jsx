@@ -561,7 +561,7 @@ const UserSettings = ({
           {!user.isActive && (
             <div
               href='#'
-              className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800'
+              className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800 dark:hover:text-indigo-600'
               onClick={() => onEmailConfirm(setError)}
             >
               <EnvelopeIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
