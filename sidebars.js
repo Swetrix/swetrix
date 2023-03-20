@@ -25,5 +25,9 @@ module.exports = {
       'captcha/server-side-validation',
       'captcha/testing',
     ]
+    'Self-hosting': [
+      'selfhosting/how-to',
+      'selfhosting/configuring',
+    ],
   },
 }
