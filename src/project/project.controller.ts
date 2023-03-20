@@ -733,7 +733,7 @@ export class ProjectController {
 
       this.projectService.allowedToManage(project, uid, user.roles)
 
-      if (!project.isAnalyticsProject) {
+      if (project.isAnalyticsProject && project.isCaptchaProject) {
         const query = `ALTER table captcha DELETE WHERE pid='${id}'`
 
         try {
@@ -741,6 +741,7 @@ export class ProjectController {
 
           project.captchaSecretKey = null
           project.isCaptchaEnabled = false
+          project.isCaptchaProject = false
 
           await this.projectService.update(id, project)
 
