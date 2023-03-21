@@ -20,7 +20,7 @@ import { AlertModule } from './alert/alert.module'
 import { I18nModule } from 'nestjs-i18n'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
-import { isDevelopment, isTgTokenPresent } from './common/constants'
+import { CaptchaModule, isDevelopment, isTgTokenPresent } from './captcha/captcha.module'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
@@ -50,6 +50,7 @@ const modules = [
   MarketplaceModule,
   AlertModule,
   AuthModule,
+  CaptchaModule,
 ]
 
 if (isTgTokenPresent) {

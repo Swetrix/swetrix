@@ -6,7 +6,6 @@ import { UserModule } from '../user/user.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 import { TaskManagerModule } from '../task-manager/task-manager.module'
-import { TypeOrmModule } from '@nestjs/typeorm'
 
 @Module({
   imports: [

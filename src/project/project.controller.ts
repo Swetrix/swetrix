@@ -24,6 +24,7 @@ import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
+import * as _filter from 'lodash/filter'
 
 import { ProjectService, processProjectUser, deleteProjectRedis } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
@@ -48,6 +49,7 @@ import {
   clickhouse,
   isSelfhosted,
   PROJECT_INVITE_EXPIRE,
+  CAPTCHA_SECRET_KEY_LENGTH,
   isDevelopment,
   PRODUCTION_ORIGIN,
 } from '../common/constants'
@@ -56,6 +58,7 @@ import {
   createProjectClickhouse,
   updateProjectClickhouse,
   deleteProjectClickhouse,
+  generateRandomString,
 } from '../common/utils'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
@@ -90,11 +93,12 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-  ) {}
+  ) { }
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
+  @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
@@ -102,8 +106,10 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
+    @Query('isCaptcha') isCaptchaStr: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
+    const isCaptcha = isCaptchaStr === 'true'
 
     if (isSelfhosted) {
       const results = await getProjectsClickhouse()
@@ -118,10 +124,17 @@ export class ProjectController {
       const where = Object()
       where.admin = userId
 
+      if (isCaptcha) {
+        where.isCaptchaProject = true
+      } else {
+        where.isAnalyticsProject = true
+      }
+
       const paginated = await this.projectService.paginate(
         { take, skip },
         where,
       )
+
       const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
 
       paginated.results = _map(paginated.results, p => ({
@@ -347,10 +360,18 @@ export class ProjectController {
         )
       }
 
-      if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
-        throw new ForbiddenException(
-          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-        )
+      if (projectDTO.isCaptcha) {
+        if (_size(_filter(user.projects, (project: Project) => project.isCaptchaProject) >= (maxProjects || PROJECTS_MAXIMUM))) {
+          throw new ForbiddenException(
+            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          )
+        }
+      } else {
+        if (_size(_filter(user.projects, (project: Project) => project.isAnalyticsProject) >= (maxProjects || PROJECTS_MAXIMUM))) {
+          throw new ForbiddenException(
+            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          )
+        }
       }
 
       this.projectService.validateProject(projectDTO)
@@ -361,6 +382,13 @@ export class ProjectController {
         const project = new Project()
         Object.assign(project, projectDTO)
         project.origins = _map(projectDTO.origins, _trim)
+
+        if (projectDTO.isCaptcha) {
+          project.isCaptchaProject = true
+          project.isAnalyticsProject = false
+          project.isCaptchaEnabled = true
+          project.captchaSecretKey = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+        }
 
         const newProject = await this.projectService.create(project)
         user.projects.push(project)
@@ -440,6 +468,58 @@ export class ProjectController {
     }
   }
 
+  @Delete('/captcha/reset/:id')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async resetCAPTCHA(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, id }, 'DELETE /project/captcha/reset/:id')
+    if (!isValidPID(id)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const query = `ALTER table captcha DELETE WHERE pid='${id}'`
+
+    if (isSelfhosted) {
+      try {
+        await clickhouse.query(query).toPromise()
+        return 'CAPTCHA project resetted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while resetting your CAPTCHA project'
+      }
+    } else {
+      const user = await this.userService.findOne(uid)
+      const project = await this.projectService.findOneWhere(
+        { id },
+        {
+          relations: ['admin'],
+          select: ['id'],
+        },
+      )
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      try {
+        await clickhouse.query(query).toPromise()
+        return 'CAPTCHA project resetted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while resetting your CAPTCHA project'
+      }
+    }
+  }
+
   @Put('/:id')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -487,6 +567,21 @@ export class ProjectController {
       project.name = projectDTO.name
       project.public = projectDTO.public
 
+      if (project.isAnalyticsProject && projectDTO.isCaptcha) {
+        const captchaProjects = _filter(user.projects, (project: Project) => project.isCaptchaProject)
+        const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+
+        console.log('asd')
+        if (_size(captchaProjects >= (maxProjects || PROJECTS_MAXIMUM))) {
+          throw new ForbiddenException(
+            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          )
+        }
+
+        project.isCaptchaProject = true
+        project.isCaptchaEnabled = true
+      }
+
       await this.projectService.update(id, _omit(project, ['share', 'admin']))
     }
 
@@ -494,6 +589,61 @@ export class ProjectController {
     await deleteProjectRedis(id)
 
     return project
+  }
+
+  @Post('/secret-gen/:pid')
+  @HttpCode(200)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 200, description: 'A regenerated CAPTCHA secret key' })
+  async secretGen(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, pid }, 'POST /project/secret-gen/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    let secret: string = null
+
+    if (isSelfhosted) {
+      const project = await getProjectsClickhouse(pid)
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+      secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+
+      project.captchaSecretKey = secret
+
+      await updateProjectClickhouse(
+        this.projectService.formatToClickhouse(project),
+      )
+    } else {
+      const project = await this.projectService.findOne(pid, {
+        relations: ['admin'],
+      })
+      const user = await this.userService.findOne(uid)
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+
+      // @ts-ignore
+      await this.projectService.update(pid, { captchaSecretKey: secret })
+    }
+
+    await deleteProjectRedis(pid)
+
+    return secret
   }
 
   @Delete('/:id')
@@ -547,15 +697,81 @@ export class ProjectController {
       const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
 
       try {
-        await this.projectService.deleteMultipleShare(`project = "${id}"`)
-        await this.projectService.delete(id)
-        await deleteProjectRedis(id)
         await clickhouse.query(query1).toPromise()
         await clickhouse.query(query2).toPromise()
-        return 'Project deleted successfully'
+        await deleteProjectRedis(id)
       } catch (e) {
         this.logger.error(e)
         return 'Error while deleting your project'
+      }
+
+      try {
+        if (project.isCaptchaProject) {
+          project.isAnalyticsProject = false
+          await this.projectService.update(id, project)
+        } else {
+          await this.projectService.deleteMultipleShare(`project = "${id}"`)
+          await this.projectService.delete(id)
+          await this.deleteCAPTCHA(id, uid)
+        }
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
+
+      return 'Project deleted successfully'
+    }
+  }
+
+  @Delete('/captcha/:id')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async deleteCAPTCHA(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, id }, 'DELETE /project/captcha/:id')
+    if (!isValidPID(id)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    if (isSelfhosted) {
+      // TODO
+    } else {
+      const user = await this.userService.findOne(uid)
+      const project = await this.projectService.findOneWhere(
+        { id },
+        {
+          relations: ['admin'],
+          select: ['id'],
+        },
+      )
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      const query = `ALTER table captcha DELETE WHERE pid='${id}'`
+
+      try {
+        await clickhouse.query(query).toPromise()
+
+        project.captchaSecretKey = null
+        project.isCaptchaEnabled = false
+        project.isCaptchaProject = false
+
+        await this.projectService.update(id, project)
+
+        return 'CAPTCHA project deleted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while deleting your CAPTCHA project'
       }
     }
   }

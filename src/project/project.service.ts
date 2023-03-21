@@ -40,7 +40,11 @@ import {
   IP_REGEX,
   ORIGINS_REGEX,
   getRedisProjectKey,
+  redisProjectCacheTimeout,
 } from '../common/constants'
+import {
+  getProjectsClickhouse,
+} from '../common/utils'
 import { ProjectSubscriber } from './entity'
 import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
 import { ActionTokenType } from 'src/action-tokens/action-token.entity'
@@ -116,6 +120,57 @@ export class ProjectService {
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
   ) {}
+  ) { }
+
+  async getRedisProject(pid: string): Promise<Project | null> {
+    const pidKey = getRedisProjectKey(pid)
+    let project: string | Project = await redis.get(pidKey)
+
+    if (_isEmpty(project)) {
+      if (isSelfhosted) {
+        project = await getProjectsClickhouse(pid)
+      } else {
+        // todo: optimise the relations - select
+        // select only required columns
+        // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
+        project = await this.findOne(pid, {
+          relations: ['admin'],
+          select: ['origins', 'active', 'admin', 'public', 'ipBlacklist', 'captchaSecretKey', 'isCaptchaEnabled'],
+        })
+      }
+      if (_isEmpty(project))
+        throw new BadRequestException(
+          'The provided Project ID (pid) is incorrect',
+        )
+
+      if (!isSelfhosted) {
+        const share = await this.findShare({
+          where: {
+            project: pid,
+          },
+          relations: ['user'],
+        })
+        // @ts-ignore
+        project = { ...project, share }
+      }
+
+      await redis.set(
+        pidKey,
+        JSON.stringify(project),
+        'EX',
+        redisProjectCacheTimeout,
+      )
+    } else {
+      try {
+        project = JSON.parse(project)
+      } catch {
+        throw new InternalServerErrorException('Error while processing project')
+      }
+    }
+
+    // @ts-ignore
+    return project
+  }
 
   async paginate(
     options: PaginationOptionsInterface,
@@ -168,7 +223,7 @@ export class ProjectService {
 
   async update(
     id: string,
-    projectDTO: ProjectDTO,
+    projectDTO: ProjectDTO | Project,
   ): Promise<any> {
     return this.projectsRepository.update(id, projectDTO)
   }
@@ -436,8 +491,8 @@ export class ProjectService {
 
     await this.clearProjectsRedisCache(user.id)
   }
-
-  async getProject(projectId: string, userId: string) {
+  
+    async getProject(projectId: string, userId: string) {
     return await this.projectsRepository.findOne({
       where: {
         id: projectId,
@@ -445,23 +500,18 @@ export class ProjectService {
       },
     })
   }
-
   async getSubscriberByEmail(projectId: string, email: string) {
     return await this.projectSubscriberRepository.findOne({
       where: { projectId, email },
     })
   }
-
   async addSubscriber(data: AddSubscriberType) {
     const subscriber = await this.projectSubscriberRepository.save({ ...data })
-
     await this.sendSubscriberInvite(
       data, subscriber.id,
     )
-
     return subscriber
   }
-
   async sendSubscriberInvite(
     data: AddSubscriberType,
     subscriberId: string,
@@ -469,15 +519,12 @@ export class ProjectService {
     const {
       userId, projectId, projectName, email, origin 
     } = data
-
     const actionToken = await this.actionTokens.createActionToken(
       userId,
       ActionTokenType.ADDING_PROJECT_SUBSCRIBER,
       `${projectId}:${subscriberId}`,
     )
-
     const url = `${origin}/projects/${projectId}/subscribers/invite?token=${actionToken.id}`
-
     await this.mailerService.sendEmail(
       email,
       LetterTemplate.ProjectSubscriberInvitation,
@@ -486,19 +533,16 @@ export class ProjectService {
       },
     )
   }
-
   async getProjectById(projectId: string) {
     return await this.projectsRepository.findOne({
       where: { id: projectId },
     })
   }
-
   async getSubscriber(projectId: string, subscriberId: string) {
     return await this.projectSubscriberRepository.findOne({
       where: { id: subscriberId, projectId },
     })
   }
-
   async confirmSubscriber(
     projectId: string,
     subscriberId: string,
@@ -510,7 +554,6 @@ export class ProjectService {
     )
     await this.actionTokens.deleteActionToken(token)
   }
-
   async getSubscribers(projectId: string, queries: GetSubscribersQueriesDto) {
     const [subscribers, count] =
       await this.projectSubscriberRepository.findAndCount({
@@ -518,10 +561,8 @@ export class ProjectService {
         take: Number(queries.limit) > 100 ? 100 : Number(queries.limit) || 100,
         where: { projectId },
       })
-
     return { subscribers, count }
   }
-
   async updateSubscriber(
     projectId: string,
     subscriberId: string,
@@ -531,30 +572,25 @@ export class ProjectService {
       { id: subscriberId, projectId },
       data,
     )
-
     return await this.getSubscriber(projectId, subscriberId)
   }
-
   async removeSubscriber(projectId: string, subscriberId: string) {
     await this.projectSubscriberRepository.delete({
       id: subscriberId,
       projectId,
     })
   }
-
   async getSubscribersForReports(reportFrequency: ReportFrequency) {
     return await this.projectSubscriberRepository.find({
       relations: ['project'],
       where: { reportFrequency, isConfirmed: true },
     })
   }
-
   async getSubscriberProjects(subscriberId: string) {
     const projects = await this.projectSubscriberRepository.find({
       relations: ['project'],
       where: { id: subscriberId },
     })
-
     return projects.map(project => project.project)
   }
 }

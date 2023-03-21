@@ -179,11 +179,10 @@ const customLogDTO = (
   ]
 }
 
-const getElValue = el => {
+export const getElValue = el => {
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
   return mysql.escape(el)
 }
-
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -261,6 +260,7 @@ export class AnalyticsController {
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
+    isCaptcha: boolean = false,
   ): Promise<any> {
     const {
       pid,
@@ -287,11 +287,12 @@ export class AnalyticsController {
 
     let queryCustoms =
       `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    // TODO: Refactor
+    let subQuery = `FROM ${isCaptcha ? 'captcha' : 'analytics'} WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     let customEVFilterApplied = false
 
     // @ts-ignore
-    if (filtersParams?.ev) {
+    if (filtersParams?.ev && !isCaptcha) {
       customEVFilterApplied = true
       // @ts-ignore
       queryCustoms = `SELECT ev, count() FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
@@ -395,21 +396,30 @@ export class AnalyticsController {
       groupTo,
     }
 
-    const result = await this.analyticsService.groupByTimeBucket(
-      timeBucket,
-      groupFrom,
-      groupTo,
-      subQuery,
-      filtersQuery,
-      paramsData,
-      timezone,
-      customEVFilterApplied,
-    )
+    let result: object | void
 
-    const customs = await this.analyticsService.processCustomEV(
-      queryCustoms,
-      paramsData,
-    )
+    if (isCaptcha) {
+      result = await this.analyticsService.groupCaptchaByTimeBucket(
+        timeBucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        filtersQuery,
+        paramsData,
+        timezone,
+      )
+    } else {
+      result = await this.analyticsService.groupByTimeBucket(
+        timeBucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        filtersQuery,
+        paramsData,
+        timezone,
+        customEVFilterApplied,
+      )
+    }
 
     let appliedFilters = filters
 
@@ -418,6 +428,18 @@ export class AnalyticsController {
         appliedFilters = JSON.parse(filters)
       } catch { }
     }
+
+    if (isCaptcha) {
+      return {
+        ...result,
+        appliedFilters,
+      }
+    }
+
+    const customs = await this.analyticsService.processCustomEV(
+      queryCustoms,
+      paramsData,
+    )
 
     return {
       ...result,
@@ -575,6 +597,15 @@ export class AnalyticsController {
     }
   }
 
+  @Get('/captcha')
+  @Auth([], true, true)
+  async getCaptchaData(
+    @Query() data: AnalyticsGET_DTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    return await this.getData(data, uid, true)
+  }
+
   @Get('/birdseye')
   @Auth([], true, true)
   // returns overall short statistics per project
@@ -591,6 +622,24 @@ export class AnalyticsController {
     }
 
     return this.analyticsService.getSummary(pidsArray, 'w')
+  }
+
+  @Get('/captcha/birdseye')
+  @Auth([], true, true)
+  // returns overall short statistics per CAPTCHA project
+  async getCaptchaOverallStats(
+    @Query() data,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const { pids, pid } = data
+    const pidsArray = getPIDsArray(pids, pid)
+
+    for (let i = 0; i < _size(pidsArray); ++i) {
+      this.analyticsService.validatePID(pidsArray[i])
+      await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
+    }
+
+    return this.analyticsService.getCaptchaSummary(pidsArray, 'w')
   }
 
   @UseGuards(SelfhostedGuard)

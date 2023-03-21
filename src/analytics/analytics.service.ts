@@ -31,15 +31,12 @@ import { ACCOUNT_PLANS, DEFAULT_TIMEZONE, PlanCode } from '../user/entities/user
 import {
   redis,
   isValidPID,
-  getRedisProjectKey,
-  redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
   clickhouse,
   isSelfhosted,
   REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import {
-  getProjectsClickhouse,
   calculateRelativePercentage,
   millisecondsToSeconds,
 } from '../common/utils'
@@ -59,16 +56,11 @@ export const getSessionDurationKey = (hash: string, pid: string) =>
   `sd:${hash}:${pid}`
 
 export const cols = [
-  'cc',
-  'pg',
-  'lc',
-  'br',
-  'os',
-  'dv',
-  'ref',
-  'so',
-  'me',
-  'ca',
+  'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca',
+]
+
+export const captchaColumns = [
+  'cc', 'br', 'os', 'dv',
 ]
 
 export const perfCols = ['cc', 'pg', 'dv', 'br']
@@ -167,59 +159,9 @@ export const checkIfTBAllowed = (
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) { }
 
-  async getRedisProject(pid: string): Promise<Project | null> {
-    const pidKey = getRedisProjectKey(pid)
-    let project: string | Project = await redis.get(pidKey)
-
-    if (_isEmpty(project)) {
-      if (isSelfhosted) {
-        project = await getProjectsClickhouse(pid)
-      } else {
-        // todo: optimise the relations - select
-        // select only required columns
-        // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
-        project = await this.projectService.findOne(pid, {
-          relations: ['admin'],
-          select: ['origins', 'active', 'admin', 'public', 'ipBlacklist'],
-        })
-      }
-      if (_isEmpty(project))
-        throw new BadRequestException(
-          'The provided Project ID (pid) is incorrect',
-        )
-
-      if (!isSelfhosted) {
-        const share = await this.projectService.findShare({
-          where: {
-            project: pid,
-          },
-          relations: ['user'],
-        })
-        // @ts-ignore
-        project = { ...project, share }
-      }
-
-      await redis.set(
-        pidKey,
-        JSON.stringify(project),
-        'EX',
-        redisProjectCacheTimeout,
-      )
-    } else {
-      try {
-        project = JSON.parse(project)
-      } catch {
-        throw new InternalServerErrorException('Error while processing project')
-      }
-    }
-
-    // @ts-ignore
-    return project
-  }
-
   async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
     if (!isSelfhosted) {
-      const project = await this.getRedisProject(pid)
+      const project = await this.projectService.getRedisProject(pid)
       this.projectService.allowedToView(project, uid)
     }
   }
@@ -312,7 +254,7 @@ export class AnalyticsService {
       }
     }
 
-    const project = await this.getRedisProject(pid)
+    const project = await this.projectService.getRedisProject(pid)
 
     this.checkIpBlacklist(project, ip)
 
@@ -394,6 +336,7 @@ export class AnalyticsService {
 
   // returns SQL filters query in a format like 'AND col=value AND ...'
   getFiltersQuery(filters: string): GetFiltersQuery {
+    // TODO: Use captchaColumns for validation of CAPTCHA filters
     let parsed = []
     let query = ''
     let params = {}
@@ -517,6 +460,55 @@ export class AnalyticsService {
             lastWeekUnique,
             thisWeekUnique,
           ),
+        }
+      } catch {
+        throw new InternalServerErrorException(
+          "Can't process the provided PID. Please, try again later.",
+        )
+      }
+    }
+
+    return result
+  }
+
+  async getCaptchaSummary(pids: string[], period: 'w' | 'M' = 'w'): Promise<Object> {
+    const result = {}
+
+    for (let i = 0; i < _size(pids); ++i) {
+      const pid = pids[i]
+      if (!isValidPID(pid))
+        throw new BadRequestException(
+          `The provided Project ID (${pid}) is incorrect`,
+        )
+
+      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+      const oneWRaw = dayjs.utc().subtract(1, period)
+      const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
+      const twoWeeks = oneWRaw.subtract(1, period).format('YYYY-MM-DD HH:mm:ss')
+
+      const query1 = `SELECT count() FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {oneWeek:String} AND {now:String}`
+      const query2 = `SELECT count() FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {twoWeeks:String} AND {oneWeek:String}`
+
+      const paramsData = {
+        params: {
+          pid,
+          oneWeek,
+          twoWeeks,
+          now,
+        },
+      }
+
+      try {
+        const q1res = await clickhouse.query(query1, paramsData).toPromise()
+        const q2res = await clickhouse.query(query2, paramsData).toPromise()
+
+        const thisWeek = q1res?.['count()'] || 0
+        const lastWeek = q2res?.['count()'] || 0
+
+        result[pid] = {
+          thisWeek,
+          lastWeek,
+          percChange: calculateRelativePercentage(lastWeek, thisWeek),
         }
       } catch {
         throw new InternalServerErrorException(
@@ -722,6 +714,114 @@ export class AnalyticsService {
         sdur,
       },
       avgSdur,
+    })
+  }
+
+  async groupCaptchaByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    timezone: string,
+  ): Promise<object | void> {
+    const params = {}
+
+    for (const i of captchaColumns) {
+      const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+      const res = await clickhouse.query(query1, paramsData).toPromise()
+
+      params[i] = {}
+
+      const size = _size(res)
+      for (let j = 0; j < size; ++j) {
+        const key = res[j][i]
+        const value = res[j]['count()']
+        params[i][key] = value
+      }
+    }
+
+    if (!_some(_values(params), val => !_isEmpty(val))) {
+      return Promise.resolve()
+    }
+
+    let groupDateIterator
+    const now = dayjs.utc().endOf(timeBucket)
+    const djsTo = dayjs.utc(to).endOf(timeBucket)
+    const iterateTo = djsTo > now ? now : djsTo
+
+    switch (timeBucket) {
+      case TimeBucketType.HOUR:
+        groupDateIterator = dayjs.utc(from).startOf('hour')
+        break
+
+      case TimeBucketType.DAY:
+      case TimeBucketType.WEEK:
+      case TimeBucketType.MONTH:
+        groupDateIterator = dayjs.utc(from).startOf('day')
+        break
+
+      default:
+        return Promise.reject()
+    }
+
+    let x = []
+
+    while (groupDateIterator < iterateTo) {
+      const nextIteration = groupDateIterator.add(1, timeBucket)
+      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
+      groupDateIterator = nextIteration
+    }
+
+    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery}`
+    }
+
+    // @ts-ignore
+    const result: Array<chartCHResponse> = (
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+      // @ts-ignore
+      .sort((a, b) => a.index - b.index)
+    const results = []
+
+    let idx = 0
+    const resSize = _size(result)
+
+    while (idx < resSize) {
+      const index = result[idx].index
+      const v = result[idx]['count()']
+      results[index] = v
+      idx++
+    }
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (!results[i]) {
+        results[i] = 0
+      }
+    }
+
+    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+      x = _map(x, el =>
+        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+      )
+    }
+
+    return Promise.resolve({
+      params,
+      chart: {
+        x,
+        results,
+      },
     })
   }
 
