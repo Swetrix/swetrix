@@ -6,7 +6,9 @@ import dayjs from 'dayjs'
 import { HashLink } from 'react-router-hash-link'
 import { Link } from 'react-router-dom'
 
-import { SWETRIX_VS_GOOGLE, DOCS_URL } from 'redux/constants'
+import {
+  SWETRIX_VS_GOOGLE, DOCS_URL, CAPTCHA_URL, DOCS_CAPTCHA_URL,
+} from 'redux/constants'
 import Title from 'components/Title'
 import routes from 'routes'
 
@@ -14,6 +16,37 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
 // Date format: YYYY-MM-DD
 const changelog = [
+  {
+    date: '2023-03-20',
+    changes: [
+      <>
+        Introducing a new service:
+        {' '}
+        <a
+          href={CAPTCHA_URL}
+          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+          target='_blank'
+          rel='noopener noreferrer'
+        >
+          Swetrix CAPTCHA
+        </a>
+        .
+        This is a privacy-focused and fully opensource CAPTCHA service that you can use on your website to protect it from bots.
+        {' '}
+        Read more about it in our
+        {' '}
+        <a
+          href={DOCS_CAPTCHA_URL}
+          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+          target='_blank'
+          rel='noopener noreferrer'
+        >
+          documentation page
+        </a>
+        .
+      </>,
+    ],
+  },
   {
     date: '2023-03-18',
     changes: [
