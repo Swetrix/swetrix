@@ -1,5 +1,3 @@
-import { Extension } from '../../extensions/entities/extension.entity'
-import { User } from '../../../user/entities/user.entity'
 import {
   Column,
   CreateDateColumn,
@@ -8,6 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
+import { Extension } from '../../extensions/entities/extension.entity'
+import { User } from '../../../user/entities/user.entity'
 
 @Entity()
 export class Comment {

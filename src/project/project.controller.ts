@@ -26,6 +26,8 @@ import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
 import * as _filter from 'lodash/filter'
 
+import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { Auth, Public } from 'src/auth/decorators'
 import {
   ProjectService,
   processProjectUser,
@@ -64,8 +66,6 @@ import {
   deleteProjectClickhouse,
   generateRandomString,
 } from '../common/utils'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth, Public } from 'src/auth/decorators'
 import {
   AddSubscriberParamsDto,
   AddSubscriberBodyDto,
@@ -124,32 +124,28 @@ export class ProjectController {
         total: _size(formatted),
         totalMonthlyEvents: 0, // not needed as it's selfhosed
       }
+    }
+    const where = Object()
+    where.admin = userId
+
+    if (isCaptcha) {
+      where.isCaptchaProject = true
     } else {
-      const where = Object()
-      where.admin = userId
+      where.isAnalyticsProject = true
+    }
 
-      if (isCaptcha) {
-        where.isCaptchaProject = true
-      } else {
-        where.isAnalyticsProject = true
-      }
+    const paginated = await this.projectService.paginate({ take, skip }, where)
 
-      const paginated = await this.projectService.paginate(
-        { take, skip },
-        where,
-      )
+    const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
 
-      const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
+    paginated.results = _map(paginated.results, p => ({
+      ...p,
+      isOwner: true,
+    }))
 
-      paginated.results = _map(paginated.results, p => ({
-        ...p,
-        isOwner: true,
-      }))
-
-      return {
-        ...paginated,
-        totalMonthlyEvents,
-      }
+    return {
+      ...paginated,
+      totalMonthlyEvents,
     }
   }
 
@@ -199,7 +195,7 @@ export class ProjectController {
     this.logger.log({ take, skip }, 'GET /all')
 
     const where = Object()
-    return await this.projectService.paginate({ take, skip }, where)
+    return this.projectService.paginate({ take, skip }, where)
   }
 
   @Get('/user/:id')
@@ -348,85 +344,82 @@ export class ProjectController {
       await createProjectClickhouse(project)
 
       return project
-    } else {
-      const user = await this.userService.findOneWithRelations(userId, [
-        'projects',
-      ])
-      const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+    }
+    const user = await this.userService.findOneWithRelations(userId, [
+      'projects',
+    ])
+    const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
 
-      if (!user.isActive) {
-        throw new ForbiddenException('Please, verify your email address first')
-      }
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
 
-      if (user.planCode === PlanCode.none) {
+    if (user.planCode === PlanCode.none) {
+      throw new ForbiddenException(
+        'You cannot create new projects due to no active subscription. Please upgrade your account plan to continue.',
+      )
+    }
+
+    if (projectDTO.isCaptcha) {
+      if (
+        _size(
+          _filter(
+            user.projects,
+            (project: Project) => project.isCaptchaProject,
+          ) >= (maxProjects || PROJECTS_MAXIMUM),
+        )
+      ) {
         throw new ForbiddenException(
-          'You cannot create new projects due to no active subscription. Please upgrade your account plan to continue.',
+          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+        )
+      }
+    } else if (
+      _size(
+        _filter(
+          user.projects,
+          (project: Project) => project.isAnalyticsProject,
+        ) >= (maxProjects || PROJECTS_MAXIMUM),
+      )
+    ) {
+      throw new ForbiddenException(
+        `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+      )
+    }
+
+    this.projectService.validateProject(projectDTO)
+
+    await this.projectService.checkIfIDUnique(projectDTO.id)
+
+    try {
+      const project = new Project()
+      Object.assign(project, projectDTO)
+      project.origins = _map(projectDTO.origins, _trim)
+
+      if (projectDTO.isCaptcha) {
+        project.isCaptchaProject = true
+        project.isAnalyticsProject = false
+        project.isCaptchaEnabled = true
+        project.captchaSecretKey = generateRandomString(
+          CAPTCHA_SECRET_KEY_LENGTH,
         )
       }
 
-      if (projectDTO.isCaptcha) {
-        if (
-          _size(
-            _filter(
-              user.projects,
-              (project: Project) => project.isCaptchaProject,
-            ) >= (maxProjects || PROJECTS_MAXIMUM),
-          )
-        ) {
-          throw new ForbiddenException(
-            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-          )
-        }
-      } else {
-        if (
-          _size(
-            _filter(
-              user.projects,
-              (project: Project) => project.isAnalyticsProject,
-            ) >= (maxProjects || PROJECTS_MAXIMUM),
-          )
-        ) {
-          throw new ForbiddenException(
-            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+      const newProject = await this.projectService.create(project)
+      user.projects.push(project)
+
+      await this.userService.create(user)
+
+      return newProject
+    } catch (e) {
+      if (e.code === 'ER_DUP_ENTRY') {
+        if (e.sqlMessage.includes(projectDTO.id)) {
+          throw new BadRequestException(
+            'Project with selected ID already exists',
           )
         }
       }
 
-      this.projectService.validateProject(projectDTO)
-
-      await this.projectService.checkIfIDUnique(projectDTO.id)
-
-      try {
-        const project = new Project()
-        Object.assign(project, projectDTO)
-        project.origins = _map(projectDTO.origins, _trim)
-
-        if (projectDTO.isCaptcha) {
-          project.isCaptchaProject = true
-          project.isAnalyticsProject = false
-          project.isCaptchaEnabled = true
-          project.captchaSecretKey = generateRandomString(
-            CAPTCHA_SECRET_KEY_LENGTH,
-          )
-        }
-
-        const newProject = await this.projectService.create(project)
-        user.projects.push(project)
-
-        await this.userService.create(user)
-
-        return newProject
-      } catch (e) {
-        if (e.code === 'ER_DUP_ENTRY') {
-          if (e.sqlMessage.includes(projectDTO.id)) {
-            throw new BadRequestException(
-              'Project with selected ID already exists',
-            )
-          }
-        }
-
-        throw new BadRequestException(e)
-      }
+      throw new BadRequestException(e)
     }
   }
 
@@ -1004,7 +997,7 @@ export class ProjectController {
     })
 
     await deleteProjectRedis(share.project.id)
-    return await this.projectService.findOneShare(shareId)
+    return this.projectService.findOneShare(shareId)
   }
 
   @HttpCode(204)
@@ -1075,7 +1068,7 @@ export class ProjectController {
       throw new BadRequestException('Subscriber already exists.')
     }
 
-    return await this.projectService.addSubscriber({
+    return this.projectService.addSubscriber({
       userId,
       projectId: params.projectId,
       projectName: project.name,
@@ -1141,7 +1134,7 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    return await this.projectService.getSubscribers(params.projectId, queries)
+    return this.projectService.getSubscribers(params.projectId, queries)
   }
 
   @Patch(':projectId/subscribers/:subscriberId')
@@ -1169,7 +1162,7 @@ export class ProjectController {
       throw new NotFoundException('Subscriber not found.')
     }
 
-    return await this.projectService.updateSubscriber(
+    return this.projectService.updateSubscriber(
       params.projectId,
       params.subscriberId,
       body,

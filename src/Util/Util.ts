@@ -5,6 +5,7 @@ import { Project } from 'src/project/entity/project.entity'
 import { User, UserType } from 'src/user/entities/user.entity'
 import { ProjectShare } from '../project/entity/project-share.entity'
 import { ProjectDTO } from '../project/dto/project.dto'
+
 @Injectable()
 export class Util {
   getString(): string {

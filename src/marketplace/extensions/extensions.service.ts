@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common'
 import * as _pick from 'lodash/pick'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Like, Repository } from 'typeorm'
+import { UserService } from 'src/user/user.service'
 import { ExtensionToProject } from './entities/extension-to-project.entity'
 import { ExtensionToUser } from './entities/extension-to-user.entity'
 import { Extension } from './entities/extension.entity'
@@ -12,7 +13,6 @@ import { IUpdateExtension } from './interfaces/update-extension.interface'
 import { CreateExtensionType, UpdateExtensionType } from './types'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { CdnService } from '../cdn/cdn.service'
-import { UserService } from 'src/user/user.service'
 import { ExtensionVersionType } from './dtos'
 import { VersionTypes } from './interfaces'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
@@ -34,7 +34,7 @@ export class ExtensionsService {
   ) {}
 
   async findOne(options: FindOneOptions<Extension>): Promise<Extension> {
-    return await this.extensionRepository.findOne({ ...options })
+    return this.extensionRepository.findOne({ ...options })
   }
 
   create(extension: ICreateExtension): Extension {
@@ -44,7 +44,7 @@ export class ExtensionsService {
   async findOneExtensionToProject(
     options: FindOneOptions<ExtensionToProject>,
   ): Promise<ExtensionToProject> {
-    return await this.extensionToProjectRepository.findOne({ ...options })
+    return this.extensionToProjectRepository.findOne({ ...options })
   }
 
   async createExtensionToProject(
@@ -52,7 +52,7 @@ export class ExtensionsService {
   ): Promise<
     Pick<ExtensionToProject, 'extensionId' | 'projectId'> & ExtensionToProject
   > {
-    return await this.extensionToProjectRepository.save(extensionToProject)
+    return this.extensionToProjectRepository.save(extensionToProject)
   }
 
   async deleteExtensionToProject(
@@ -66,7 +66,7 @@ export class ExtensionsService {
     options: FindManyOptions<ExtensionToProject>,
     relations: string[] = [],
   ): Promise<[ExtensionToProject[], number]> {
-    return await this.extensionToProjectRepository.findAndCount({
+    return this.extensionToProjectRepository.findAndCount({
       ...options,
       relations,
     })
@@ -76,7 +76,7 @@ export class ExtensionsService {
     options: FindManyOptions<ExtensionToUser>,
     relations: string[] = [],
   ): Promise<[ExtensionToUser[], number]> {
-    return await this.extensionToUserRepository.findAndCount({
+    return this.extensionToUserRepository.findAndCount({
       ...options,
       relations,
     })
@@ -85,7 +85,7 @@ export class ExtensionsService {
   async findOneExtensionToUser(
     options: FindOneOptions<ExtensionToUser>,
   ): Promise<ExtensionToUser> {
-    return await this.extensionToUserRepository.findOne({ ...options })
+    return this.extensionToUserRepository.findOne({ ...options })
   }
 
   async createExtensionToUser(
@@ -93,7 +93,7 @@ export class ExtensionsService {
   ): Promise<
     Pick<ExtensionToUser, 'extensionId' | 'userId'> & ExtensionToUser
   > {
-    return await this.extensionToUserRepository.save(extensionToUser)
+    return this.extensionToUserRepository.save(extensionToUser)
   }
 
   async deleteExtensionToUser(
@@ -152,11 +152,11 @@ export class ExtensionsService {
   }
 
   async save(extension: ISaveExtension): Promise<ISaveExtension & Extension> {
-    return await this.extensionRepository.save(extension)
+    return this.extensionRepository.save(extension)
   }
 
   async findById(id: string): Promise<Extension> {
-    return await this.findOne({ where: { id } })
+    return this.findOne({ where: { id } })
   }
 
   async update(id: string, extension: IUpdateExtension) {
@@ -171,14 +171,14 @@ export class ExtensionsService {
     options: FindManyOptions<Extension>,
     relations: string[] = [],
   ): Promise<[Extension[], number]> {
-    return await this.extensionRepository.findAndCount({
+    return this.extensionRepository.findAndCount({
       ...options,
       relations,
     })
   }
 
   async createExtension(extension: CreateExtensionType) {
-    return await this.extensionRepository.save({
+    return this.extensionRepository.save({
       owner: { id: extension.ownerId },
       name: extension.name,
       description: extension.description,
@@ -190,9 +190,7 @@ export class ExtensionsService {
       companyLink: extension.companyLink,
       mainImage:
         extension.mainImage &&
-        (
-          await this.cdnService.uploadFile(extension.mainImage)
-        ).filename,
+        (await this.cdnService.uploadFile(extension.mainImage)).filename,
       additionalImages: extension.additionalImages
         ? [
             ...(await Promise.all(
@@ -207,9 +205,7 @@ export class ExtensionsService {
         : [],
       fileURL:
         extension.extensionScript &&
-        (
-          await this.cdnService.uploadFile(extension.extensionScript)
-        ).filename,
+        (await this.cdnService.uploadFile(extension.extensionScript)).filename,
       version: DEFAULT_EXTENSION_VERSION,
       tags: ['New'],
     })
@@ -221,12 +217,12 @@ export class ExtensionsService {
     if (!user) return null
 
     if (user.roles.includes(UserType.ADMIN)) {
-      return await this.extensionRepository.findOne({
+      return this.extensionRepository.findOne({
         where: { id: extensionId },
       })
     }
 
-    return await this.extensionRepository.findOne({
+    return this.extensionRepository.findOne({
       where: { id: extensionId, owner: { id: userId } },
     })
   }
@@ -296,7 +292,7 @@ export class ExtensionsService {
       },
     )
 
-    return await this.extensionRepository.findOne({
+    return this.extensionRepository.findOne({
       where: { id: extensionId },
     })
   }
@@ -324,7 +320,7 @@ export class ExtensionsService {
   }
 
   async searchExtension(data: SearchExtensionQueries) {
-    return await this.extensionRepository.findAndCount({
+    return this.extensionRepository.findAndCount({
       skip: data.offset || 0,
       take: data.limit > 100 ? 100 : data.limit || 10,
       where: {
@@ -342,7 +338,7 @@ export class ExtensionsService {
   }
 
   async getExtensions(data: GetAllExtensionsQueries) {
-    return await this.extensionRepository.findAndCount({
+    return this.extensionRepository.findAndCount({
       skip: data.offset || 0,
       take: data.limit > 100 ? 100 : data.limit || 10,
       where: {
@@ -353,7 +349,7 @@ export class ExtensionsService {
   }
 
   async find(options: FindManyOptions<Extension>): Promise<Extension[]> {
-    return await this.extensionRepository.find(options)
+    return this.extensionRepository.find(options)
   }
 
   async getExtensionInstallCount(
@@ -370,6 +366,6 @@ export class ExtensionsService {
       })
     }
 
-    return await query.getCount()
+    return query.getCount()
   }
 }

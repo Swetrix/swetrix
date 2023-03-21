@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { TwoFactorAuthService } from './twoFactorAuth.service'
 import { UserService } from '../user/user.service'
 import { AuthService } from '../auth/auth.service'
@@ -24,7 +25,6 @@ import { TwoFaNotRequired } from '../auth/decorators/two-fa-not-required.decorat
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { TwoFactorAuthDTO } from './dto/2fa-auth.dto'
 import { generateRecoveryCode, checkRateLimit } from '../common/utils'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 @ApiTags('2fa')
 @Controller('2fa')
@@ -45,9 +45,7 @@ export class TwoFactorAuthController {
   async register(@CurrentUserId() id: string) {
     const user = await this.userService.findOneWhere({ id })
 
-    return await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(
-      user,
-    )
+    return this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(user)
   }
 
   @Post('enable')

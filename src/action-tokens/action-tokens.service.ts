@@ -43,7 +43,7 @@ export class ActionTokensService {
     action: ActionTokenType,
     newValue?: string,
   ) {
-    return await this.actionTokensRepository.save({
+    return this.actionTokensRepository.save({
       user: { id: userId },
       action,
       newValue,
@@ -51,7 +51,7 @@ export class ActionTokensService {
   }
 
   public async findActionToken(token: string) {
-    return await this.actionTokensRepository.findOne(token, {
+    return this.actionTokensRepository.findOne(token, {
       relations: ['user'],
     })
   }
@@ -61,7 +61,7 @@ export class ActionTokensService {
   }
 
   async getActionToken(token: string) {
-    return await this.actionTokensRepository.findOne({
+    return this.actionTokensRepository.findOne({
       where: {
         id: token,
       },

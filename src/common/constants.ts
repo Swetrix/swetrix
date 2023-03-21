@@ -153,8 +153,7 @@ const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
 
 const SELFHOSTED_UUID = isSelfhosted ? getSelfhostedUUID() : ''
 
-const TWO_FACTOR_AUTHENTICATION_APP_NAME =
-  process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME
+const { TWO_FACTOR_AUTHENTICATION_APP_NAME } = process.env
 
 const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
@@ -182,8 +181,8 @@ const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
 const REDIS_PERFORMANCE_COUNT_KEY = 'stats:performance'
 
 // Captcha service
-const CAPTCHA_SALT = process.env.CAPTCHA_SALT
-const CAPTCHA_ENCRYPTION_KEY = process.env.CAPTCHA_ENCRYPTION_KEY
+const { CAPTCHA_SALT } = process.env
+const { CAPTCHA_ENCRYPTION_KEY } = process.env
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600

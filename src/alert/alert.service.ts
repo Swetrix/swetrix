@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import { Pagination, PaginationOptionsInterface } from 'src/common/pagination'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO } from './dto/alert.dto'
-import { Pagination, PaginationOptionsInterface } from 'src/common/pagination'
 
 @Injectable()
 export class AlertService {
@@ -40,7 +40,7 @@ export class AlertService {
   }
 
   async count(options: object = {}): Promise<number> {
-    return await this.alertsReporsitory.count(options)
+    return this.alertsReporsitory.count(options)
   }
 
   findOne(id: string, params: Object = {}): Promise<Alert | null> {

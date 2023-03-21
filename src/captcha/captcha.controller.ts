@@ -48,7 +48,7 @@ export class CaptchaController {
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    return await this.captchaService.generateCaptcha(theme)
+    return this.captchaService.generateCaptcha(theme)
   }
 
   @Post('/verify-manual')

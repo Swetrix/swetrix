@@ -1,8 +1,8 @@
 import { Module, forwardRef } from '@nestjs/common'
 
+import { ProjectModule } from 'src/project/project.module'
 import { WebhookController } from './webhook.controller'
 import { UserModule } from '../user/user.module'
-import { ProjectModule } from 'src/project/project.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { WebhookService } from './webhook.service'
 

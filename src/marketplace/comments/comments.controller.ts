@@ -91,7 +91,7 @@ export class CommentsController {
       throw new NotFoundException('Comment already exists.')
     }
 
-    return await this.commentsService.save({
+    return this.commentsService.save({
       ...body,
       extensionId: Number(body.extensionId),
       userId: Number(queries.userId),

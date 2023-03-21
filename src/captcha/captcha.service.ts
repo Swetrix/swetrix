@@ -10,6 +10,7 @@ import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 
+import { ProjectService } from 'src/project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isDevelopment,
@@ -17,18 +18,14 @@ import {
   REDIS_LOG_CAPTCHA_CACHE_KEY,
   isValidPID,
   getRedisCaptchaKey,
-} from '../common/constants'
-import { getElValue } from '../analytics/analytics.controller'
-import { ProjectService } from 'src/project/project.service'
-import { GeneratedCaptcha } from './interfaces/generated-captcha'
-import { TokenCaptcha } from './interfaces/token-captcha'
-
-import {
   CAPTCHA_SALT,
   CAPTCHA_ENCRYPTION_KEY,
   CAPTCHA_COOKIE_KEY,
   CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
+import { getElValue } from '../analytics/analytics.controller'
+import { GeneratedCaptcha } from './interfaces/generated-captcha'
+import { TokenCaptcha } from './interfaces/token-captcha'
 
 dayjs.extend(utc)
 

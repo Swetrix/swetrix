@@ -186,7 +186,7 @@ export class AnalyticsService {
           )
         }
       } else {
-        const hostname = new URL(origin).hostname
+        const { hostname } = new URL(origin)
         if (!_includes(project.origins, hostname)) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
@@ -411,7 +411,7 @@ export class AnalyticsService {
   async isUnique(hash: string) {
     const session = await redis.get(hash)
     await redis.set(hash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    return !Boolean(session)
+    return !session
   }
 
   async isSessionOpen(hash: string) {
@@ -673,7 +673,7 @@ export class AnalyticsService {
     const resSize = _size(result)
 
     while (idx < resSize) {
-      const index = result[idx].index
+      const { index } = result[idx]
       const v = result[idx]['count()']
 
       if (index === result[1 + idx]?.index) {
@@ -686,7 +686,7 @@ export class AnalyticsService {
         continue
       }
 
-      const unique = result[idx].unique
+      const { unique } = result[idx]
 
       if (unique) {
         visits[index] = v
@@ -816,7 +816,7 @@ export class AnalyticsService {
     const resSize = _size(result)
 
     while (idx < resSize) {
-      const index = result[idx].index
+      const { index } = result[idx]
       const v = result[idx]['count()']
       results[index] = v
       idx++
@@ -935,7 +935,7 @@ export class AnalyticsService {
 
     while (idx < resSize) {
       const res = result[idx]
-      const index = res.index
+      const { index } = res
 
       dns[index] = _round(millisecondsToSeconds(res['avg(dns)']), 2)
       tls[index] = _round(millisecondsToSeconds(res['avg(tls)']), 2)

@@ -11,6 +11,7 @@ import {
 import { ApiTags } from '@nestjs/swagger'
 import * as _find from 'lodash/find'
 
+import { ProjectService } from 'src/project/project.service'
 import {
   PlanCode,
   ACCOUNT_PLANS,
@@ -18,7 +19,6 @@ import {
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
-import { ProjectService } from 'src/project/project.service'
 import { WebhookService } from './webhook.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 
@@ -154,7 +154,5 @@ export class WebhookController {
       default:
         throw new BadRequestException('Unexpected event type')
     }
-
-    return
   }
 }

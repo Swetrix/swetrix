@@ -12,11 +12,18 @@ import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
 import * as _find from 'lodash/find'
 
+import { AlertService } from 'src/alert/alert.service'
+import { InjectBot } from 'nestjs-telegraf'
+import { TelegrafContext } from 'src/user/user.controller'
+import { Telegraf } from 'telegraf'
+import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
+import { ExtensionsService } from 'src/marketplace/extensions/extensions.service'
+import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
+import { ReportFrequency } from 'src/project/enums'
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
-import { AlertService } from 'src/alert/alert.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
@@ -43,13 +50,6 @@ import {
   REDIS_LOG_CAPTCHA_CACHE_KEY,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
-import { InjectBot } from 'nestjs-telegraf'
-import { TelegrafContext } from 'src/user/user.controller'
-import { Telegraf } from 'telegraf'
-import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
-import { ExtensionsService } from 'src/marketplace/extensions/extensions.service'
-import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
-import { ReportFrequency } from 'src/project/enums'
 
 dayjs.extend(utc)
 

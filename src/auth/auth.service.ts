@@ -68,7 +68,7 @@ export class AuthService {
 
   public async hashPassword(password: string): Promise<string> {
     const salt = await genSalt(10)
-    return await hash(password, salt)
+    return hash(password, salt)
   }
 
   public async sendVerificationEmail(userId: string, email: string) {
@@ -114,7 +114,7 @@ export class AuthService {
     userId: string,
     isSecondFactorAuthenticated = false,
   ) {
-    return await this.jwtService.signAsync(
+    return this.jwtService.signAsync(
       {
         sub: userId,
         isSecondFactorAuthenticated,
@@ -157,7 +157,7 @@ export class AuthService {
     password: string,
     hashedPassword: string,
   ): Promise<boolean> {
-    return await compare(password, hashedPassword)
+    return compare(password, hashedPassword)
   }
 
   public async sendTelegramNotification(
@@ -408,6 +408,6 @@ export class AuthService {
   }
 
   async validateApiKey(apiKey: string): Promise<User | null> {
-    return await this.userService.findUserByApiKey(apiKey)
+    return this.userService.findUserByApiKey(apiKey)
   }
 }

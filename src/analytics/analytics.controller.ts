@@ -33,6 +33,8 @@ import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
+import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
+import { Auth, Public } from 'src/auth/decorators'
 import {
   AnalyticsService,
   getSessionKey,
@@ -64,8 +66,6 @@ import {
 } from '../common/constants'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
-import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth, Public } from 'src/auth/decorators'
 
 const mysql = require('mysql2')
 
@@ -282,8 +282,8 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
-    let groupFrom = from,
-      groupTo = to
+    let groupFrom = from
+    let groupTo = to
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     // TODO: Refactor
@@ -477,8 +477,8 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
-    let groupFrom = from,
-      groupTo = to
+    let groupFrom = from
+    let groupTo = to
 
     const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
@@ -607,7 +607,7 @@ export class AnalyticsController {
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    return await this.getData(data, uid, true)
+    return this.getData(data, uid, true)
   }
 
   @Get('/birdseye')
@@ -673,7 +673,7 @@ export class AnalyticsController {
       }
     }
 
-    return await this.taskManagerService.getGeneralStats()
+    return this.taskManagerService.getGeneralStats()
   }
 
   @Get('/hb')
@@ -823,7 +823,6 @@ export class AnalyticsController {
 
     await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME)
     this.analyticsService.processInteractionSD(sessionID, pid)
-    return
   }
 
   // Log pageview event
