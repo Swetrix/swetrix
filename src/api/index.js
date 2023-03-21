@@ -209,9 +209,9 @@ export const verifyShare = ({ path, id }) =>
         : error.response.data.message
     })
 
-export const getProjects = (take = 0, skip = 0) =>
+export const getProjects = (take = 0, skip = 0, isCaptcha = false) =>
   api
-    .get(`/project?take=${take}&skip=${skip}`)
+    .get(`/project?take=${take}&skip=${skip}&isCaptcha=${isCaptcha}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -231,9 +231,9 @@ export const getSharedProjects = (take = 0, skip = 0) =>
         : error.response.data.message
     })
 
-export const getProject = (pid) =>
+export const getProject = (pid, isCaptcha = false) =>
   api
-    .get(`/project/${pid}`)
+    .get(`/project/${pid}&isCaptcha=${isCaptcha}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -275,9 +275,31 @@ export const deleteProject = (id) =>
         : error.response.data.message
     })
 
+export const deleteCaptchaProject = (id) =>
+  api
+    .delete(`project/captcha/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const resetProject = (id) =>
   api
     .delete(`/project/reset/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const resetCaptchaProject = (id) =>
+  api
+    .delete(`project/captcha/reset/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -328,9 +350,40 @@ export const getPerfData = (
         : error.response.data.message
     })
 
+export const getCaptchaData = (
+  pid,
+  tb = 'hour',
+  period = '3d',
+  filters = [],
+  from = '',
+  to = '',
+) =>
+  api
+    .get(
+      `log/captcha?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}`,
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const getOverallStats = (pids) =>
   api
     .get(`log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getOverallStatsCaptcha = (pids) =>
+  api
+    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -573,6 +626,17 @@ export const deleteAlert = (id) =>
 export const setTimeFormat = (timeFormat) =>
   api
     .put('user/change-time-format', { timeFormat })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const reGenerateCaptchaSecretKey = (pid) =>
+  api
+    .post(`project/secret-gen/${pid}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

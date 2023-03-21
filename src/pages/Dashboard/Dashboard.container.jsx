@@ -8,13 +8,16 @@ import Dashboard from './Dashboard'
 const mapStateToProps = (state) => ({
   projects: state.ui.projects.projects,
   sharedProjects: state.ui.projects.sharedProjects,
+  captchaProjects: state.ui.projects.captchaProjects,
   user: state.auth.user,
   isLoading: state.ui.projects.isLoading,
   total: state.ui.projects.total,
   sharedTotal: state.ui.projects.sharedTotal,
+  captchaTotal: state.ui.projects.captchaTotal,
   error: state.ui.projects.error,
   dashboardPaginationPage: state.ui.projects.dashboardPaginationPage,
   dashboardPaginationPageShared: state.ui.projects.dashboardPaginationPageShared,
+  dashboardPaginationPageCaptcha: state.ui.projects.dashboardPaginationPageCaptcha,
   dashboardTabs: state.ui.projects.dashboardTabs,
 })
 
@@ -48,6 +51,12 @@ const mapDispatchToProps = (dispatch) => ({
   },
   setDashboardTabs: (tab) => {
     dispatch(UIActions.setDashboardTabs(tab))
+  },
+  loadProjectsCaptcha: (take, skip) => {
+    dispatch(UIActions.loadProjectsCaptcha(take, skip))
+  },
+  setDashboardPaginationPageCaptcha: (page) => {
+    dispatch(UIActions.setDashboardPaginationPageCaptcha(page))
   },
 })
 

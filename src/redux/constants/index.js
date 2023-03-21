@@ -121,6 +121,7 @@ export const TITLE_SUFFIX = '| Swetrix'
 
 export const LS_THEME_SETTING = 'colour-theme'
 export const LS_VIEW_PREFS_SETTING = 'proj-view-preferences'
+export const LS_CAPTCHA_VIEW_PREFS_SETTING = 'captcha-view-preferences'
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
@@ -138,6 +139,7 @@ export const BLOG_URL = 'https://blog.swetrix.com'
 export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
 export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
 export const DOCS_URL = 'https://docs.swetrix.com'
+export const DOCS_CAPTCHA_URL = `${DOCS_URL}/captcha/introduction`
 export const CDN_URL = process.env.REACT_APP_CDN_URL
 
 // Swetrix vs ...
@@ -159,6 +161,7 @@ export const GENERAL_STATS_UPDATE_INTERVAL = 60000
 
 // Functions
 export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
+export const getProjectCaptchaCacheKey = (period, timeBucket) => `${period}${timeBucket}captcha`
 export const getProjectForcastCacheKey = (period, timeBucket, periodToForecast) => `${period}${timeBucket}${periodToForecast}forecast`
 export const getProjectCacheCustomKey = (from, to, timeBucket) => `${from}-${to}-${timeBucket}`
 
@@ -220,6 +223,7 @@ export const roleAdmin = {
 
 export const tabForOwnedProject = 'owned'
 export const tabForSharedProject = 'shared'
+export const tabForCaptchaProject = 'captcha'
 
 export const tabsForDashboard = [
   {
@@ -229,6 +233,10 @@ export const tabsForDashboard = [
   {
     name: tabForSharedProject,
     label: 'profileSettings.shared',
+  },
+  {
+    name: tabForCaptchaProject,
+    label: 'profileSettings.captcha',
   },
 ]
 
