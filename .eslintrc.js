@@ -29,6 +29,7 @@ module.exports = {
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     'lodash/prefer-lodash-method': 'off', // disabled because lodash considers some of the typeorm methods as unsafe
+    // 'lodash/prefer-lodash-method': 'warn',
     'no-restricted-syntax': 'off',
     'class-methods-use-this': 'off',
     'arrow-body-style': 'off',
@@ -39,7 +40,6 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'linebreak-style': 'off',
     'lines-between-class-members': 'off',
-    'lodash/prefer-lodash-method': 'warn',
     'max-len': 'off',
     'no-console': 'off',
     'no-bitwise': 'off',
