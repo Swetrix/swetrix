@@ -26,6 +26,7 @@ const routes = Object.freeze({
   about: '/about',
   create_alert: '/projects/:pid/alerts/create',
   alert_settings: '/projects/:pid/alerts/settings/:id',
+  press: '/press',
 })
 
 export default routes
