@@ -233,7 +233,7 @@ export const getSharedProjects = (take = 0, skip = 0) =>
 
 export const getProject = (pid, isCaptcha = false) =>
   api
-    .get(`/project/${pid}&isCaptcha=${isCaptcha}`)
+    .get(`/project/${pid}?isCaptcha=${isCaptcha}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
