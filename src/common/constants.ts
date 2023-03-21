@@ -1,8 +1,9 @@
 import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import { hash } from 'blake3'
-import { v5 as uuidv5 } from 'uuid'
 import * as _toNumber from 'lodash/toNumber'
+
+import { getSelfhostedUUID } from './utils'
 
 require('dotenv').config()
 
@@ -148,9 +149,12 @@ initialiseClickhouse()
 const SELFHOSTED_EMAIL = process.env.EMAIL
 const SELFHOSTED_PASSWORD = process.env.PASSWORD
 const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
+const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
+
 const SELFHOSTED_UUID = isSelfhosted
-  ? uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE)
+  ? getSelfhostedUUID()
   : ''
+
 const TWO_FACTOR_AUTHENTICATION_APP_NAME =
   process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME
 
@@ -251,4 +255,5 @@ export {
   CAPTCHA_SECRET_KEY_LENGTH,
   PRODUCTION_ORIGIN,
   isTgTokenPresent,
+  DEFAULT_SELFHOSTED_UUID,
 }

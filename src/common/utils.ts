@@ -1,5 +1,6 @@
-import { ForbiddenException, NotFoundException, HttpException } from '@nestjs/common'
+import { NotFoundException, HttpException } from '@nestjs/common'
 import { hash } from 'blake3'
+import { v5 as uuidv5 } from 'uuid'
 import * as randomstring from 'randomstring'
 import * as _sample from 'lodash/sample'
 import * as _join from 'lodash/join'
@@ -14,8 +15,10 @@ import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
-import { redis } from './constants'
-import { clickhouse } from './constants'
+
+import {
+  clickhouse, redis, DEFAULT_SELFHOSTED_UUID, SELFHOSTED_EMAIL, UUIDV5_NAMESPACE,
+} from './constants'
 import { Project } from '../project/entity/project.entity'
 
 dayjs.extend(utc)
@@ -203,6 +206,14 @@ const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
 const generateRandomString = (length: number): string => randomstring.generate(length)
 
+const getSelfhostedUUID = (): string => {
+  try {
+    return uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE)
+  } catch {
+    return DEFAULT_SELFHOSTED_UUID
+  }
+}
+
 export {
   getRandomTip,
   checkRateLimit,
@@ -216,4 +227,5 @@ export {
   calculateRelativePercentage,
   millisecondsToSeconds,
   generateRandomString,
+  getSelfhostedUUID,
 }
