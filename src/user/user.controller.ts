@@ -156,7 +156,7 @@ export class UserController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
-  async create(@Body() userDTO: UserProfileDTO): Promise<User> {
+  async create(@Body() userDTO: UserProfileDTO): Promise<User | null> {
     this.logger.log({ userDTO }, 'POST /user')
     this.userService.validatePassword(userDTO.password)
     userDTO.password = await this.authService.hashPassword(userDTO.password)
@@ -171,6 +171,8 @@ export class UserController {
         }
       }
     }
+
+    return null
   }
 
   @Post('/api-key')
