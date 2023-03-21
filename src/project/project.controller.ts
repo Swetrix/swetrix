@@ -26,7 +26,11 @@ import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
 import * as _filter from 'lodash/filter'
 
-import { ProjectService, processProjectUser, deleteProjectRedis } from './project.service'
+import {
+  ProjectService,
+  processProjectUser,
+  deleteProjectRedis,
+} from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -93,7 +97,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-  ) { }
+  ) {}
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -361,13 +365,27 @@ export class ProjectController {
       }
 
       if (projectDTO.isCaptcha) {
-        if (_size(_filter(user.projects, (project: Project) => project.isCaptchaProject) >= (maxProjects || PROJECTS_MAXIMUM))) {
+        if (
+          _size(
+            _filter(
+              user.projects,
+              (project: Project) => project.isCaptchaProject,
+            ) >= (maxProjects || PROJECTS_MAXIMUM),
+          )
+        ) {
           throw new ForbiddenException(
             `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
           )
         }
       } else {
-        if (_size(_filter(user.projects, (project: Project) => project.isAnalyticsProject) >= (maxProjects || PROJECTS_MAXIMUM))) {
+        if (
+          _size(
+            _filter(
+              user.projects,
+              (project: Project) => project.isAnalyticsProject,
+            ) >= (maxProjects || PROJECTS_MAXIMUM),
+          )
+        ) {
           throw new ForbiddenException(
             `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
           )
@@ -387,7 +405,9 @@ export class ProjectController {
           project.isCaptchaProject = true
           project.isAnalyticsProject = false
           project.isCaptchaEnabled = true
-          project.captchaSecretKey = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+          project.captchaSecretKey = generateRandomString(
+            CAPTCHA_SECRET_KEY_LENGTH,
+          )
         }
 
         const newProject = await this.projectService.create(project)
@@ -568,7 +588,10 @@ export class ProjectController {
       project.public = projectDTO.public
 
       if (project.isAnalyticsProject && projectDTO.isCaptcha) {
-        const captchaProjects = _filter(user.projects, (project: Project) => project.isCaptchaProject)
+        const captchaProjects = _filter(
+          user.projects,
+          (project: Project) => project.isCaptchaProject,
+        )
         const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
 
         console.log('asd')
@@ -913,7 +936,9 @@ export class ProjectController {
         ActionTokenType.PROJECT_SHARE,
         share.id,
       )
-      const url = `${isDevelopment ? headers.origin : PRODUCTION_ORIGIN}/share/${actionToken.id}`
+      const url = `${
+        isDevelopment ? headers.origin : PRODUCTION_ORIGIN
+      }/share/${actionToken.id}`
       await this.mailerService.sendEmail(
         invitee.email,
         LetterTemplate.ProjectInvitation,

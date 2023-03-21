@@ -6,7 +6,7 @@ import { UserService } from './user.service'
 
 describe('UserService', () => {
   let service: UserService
-  let util = new Util()
+  const util = new Util()
   const USER_REPOSITORY_TOKEN = getRepositoryToken(User)
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -55,12 +55,12 @@ describe('UserService', () => {
       expect(service.findWhereWithRelations).toBeDefined()
     })
     it("should be defined omitSensitiveData and don't return null", () => {
-      let user = util.getUser()
+      const user = util.getUser()
       expect(service.omitSensitiveData(user)).not.toBeNull()
       expect(service.omitSensitiveData).toBeDefined()
     })
     it("should be defined paginate and don't return null", () => {
-      let options = util.getPaginationOptionsInterface()
+      const options = util.getPaginationOptionsInterface()
       expect(service.paginate(options)).rejects.not.toBeNull()
       expect(service.paginate).toBeDefined()
     })
@@ -68,20 +68,20 @@ describe('UserService', () => {
       expect(service.search).toBeDefined()
     })
     it("should be defined update and don't return null", () => {
-      let id = util.getString()
-      let update = util.getRecordStringUnknown()
+      const id = util.getString()
+      const update = util.getRecordStringUnknown()
       expect(service.update(id, update)).rejects.not.toBeNull()
       expect(service.update).toBeDefined()
     })
     it("should be defined updateByEmail and don't return null", () => {
-      let email = util.getString()
-      let update = util.getRecordStringUnknown()
+      const email = util.getString()
+      const update = util.getRecordStringUnknown()
       expect(service.updateByEmail(email, update)).rejects.not.toBeNull()
       expect(service.updateByEmail).toBeDefined()
     })
     it("should be defined updateBySubID and don't return null", () => {
-      let subId = util.getString()
-      let update = util.getRecordStringUnknown()
+      const subId = util.getString()
+      const update = util.getRecordStringUnknown()
       expect(service.updateBySubID(subId, update)).rejects.not.toBeNull()
       expect(service.updateBySubID).toBeDefined()
     })

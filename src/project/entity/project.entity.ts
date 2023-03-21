@@ -49,7 +49,7 @@ export class Project {
     default: false,
   })
   public: boolean
-  
+
   // Swetrix CAPTCHA related stuff
   @ApiProperty()
   @Column('boolean', { default: true })

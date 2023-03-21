@@ -1,6 +1,4 @@
-import {
-  Injectable, BadRequestException,
-} from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import { hash } from 'blake3'
 import * as svgCaptcha from 'svg-captcha'
 import * as CryptoJS from 'crypto-js'
@@ -14,7 +12,11 @@ import * as utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  isDevelopment, redis, REDIS_LOG_CAPTCHA_CACHE_KEY, isValidPID, getRedisCaptchaKey,
+  isDevelopment,
+  redis,
+  REDIS_LOG_CAPTCHA_CACHE_KEY,
+  isValidPID,
+  getRedisCaptchaKey,
 } from '../common/constants'
 import { getElValue } from '../analytics/analytics.controller'
 import { ProjectService } from 'src/project/project.service'
@@ -22,7 +24,9 @@ import { GeneratedCaptcha } from './interfaces/generated-captcha'
 import { TokenCaptcha } from './interfaces/token-captcha'
 
 import {
-  CAPTCHA_SALT, CAPTCHA_ENCRYPTION_KEY, CAPTCHA_COOKIE_KEY,
+  CAPTCHA_SALT,
+  CAPTCHA_ENCRYPTION_KEY,
+  CAPTCHA_COOKIE_KEY,
   CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
 
@@ -83,7 +87,7 @@ const captchaDTO = (
   os: string,
   cc: string,
   isManual: boolean,
-  timestamp: number
+  timestamp: number,
 ): Array<string | number> => {
   return [
     pid,
@@ -101,12 +105,12 @@ export class CaptchaService {
   constructor(
     private readonly logger: AppLoggerService,
     private readonly projectService: ProjectService,
-  ) { }
+  ) {}
 
   // checks if captcha is enabled for pid
   async _isCaptchaEnabledForPID(pid: string): Promise<boolean> {
     const project = await this.projectService.getRedisProject(pid)
-    
+
     if (!project) {
       return false
     }
@@ -127,18 +131,23 @@ export class CaptchaService {
     }
 
     if (!(await this._isCaptchaEnabledForPID(pid))) {
-      throw new BadRequestException(
-        'CAPTCHA is not enabled for this Project',
-      )
+      throw new BadRequestException('CAPTCHA is not enabled for this Project')
     }
   }
 
-  async logCaptchaPass(pid: string, userAgent: string, headers: any, timestamp: number, isManual: boolean): Promise<void> {
+  async logCaptchaPass(
+    pid: string,
+    userAgent: string,
+    headers: any,
+    timestamp: number,
+    isManual: boolean,
+  ): Promise<void> {
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
-    const cc = headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
+    const cc =
+      headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
 
     const dto = captchaDTO(pid, dv, br, os, cc, isManual, timestamp)
 
@@ -152,10 +161,18 @@ export class CaptchaService {
   }
 
   async generateDummyToken() {
-    return encryptString('DUMMY_TOKEN00000111112222233333444445555566666777778888899999', DUMMY_SECRETS.ALWAYS_PASS)
+    return encryptString(
+      'DUMMY_TOKEN00000111112222233333444445555566666777778888899999',
+      DUMMY_SECRETS.ALWAYS_PASS,
+    )
   }
 
-  async generateToken(pid: string, hash: string, timestamp: number, autoVerified: boolean): Promise<string> {
+  async generateToken(
+    pid: string,
+    hash: string,
+    timestamp: number,
+    autoVerified: boolean,
+  ): Promise<string> {
     if (isDummyPID(pid)) {
       return this.generateDummyToken()
     }
@@ -174,7 +191,10 @@ export class CaptchaService {
     }
 
     const token = {
-      hash, timestamp, autoVerified, pid,
+      hash,
+      timestamp,
+      autoVerified,
+      pid,
     }
 
     return encryptString(JSON.stringify(token), secretKey)
@@ -225,10 +245,13 @@ export class CaptchaService {
   }
 
   async generateCaptcha(theme: string): Promise<GeneratedCaptcha> {
-    const themeParams = theme === 'light' ? {} : {
-      background: '#1f2937',
-      color: true,
-    }
+    const themeParams =
+      theme === 'light'
+        ? {}
+        : {
+            background: '#1f2937',
+            color: true,
+          }
 
     const captcha = svgCaptcha.create({
       size: 6,
@@ -236,9 +259,7 @@ export class CaptchaService {
       noise: 2,
       ...themeParams,
     })
-    const hash = this.hashCaptcha(
-      _toLower(captcha.text),
-    )
+    const hash = this.hashCaptcha(_toLower(captcha.text))
 
     return {
       data: captcha.data,
@@ -264,20 +285,28 @@ export class CaptchaService {
     }
   }
 
-  private async canPassWithoutVerification(tokenCaptcha: TokenCaptcha): Promise<boolean> {
+  private async canPassWithoutVerification(
+    tokenCaptcha: TokenCaptcha,
+  ): Promise<boolean> {
     const { manuallyVerified, automaticallyVerified } = tokenCaptcha
 
     // Calculate the weighted average of the manual and automatic verifications
-    const weightedAverage = (MANUAL_WEIGHT * manuallyVerified + AUTO_WEIGHT * automaticallyVerified) /
+    const weightedAverage =
+      (MANUAL_WEIGHT * manuallyVerified + AUTO_WEIGHT * automaticallyVerified) /
       (MANUAL_WEIGHT + AUTO_WEIGHT)
 
     // If the weighted average is above a certain threshold, the user can pass without verification
     return weightedAverage >= THRESHOLD
   }
 
-  async decryptTokenCaptcha(jwtCookie: string | undefined): Promise<TokenCaptcha> {
+  async decryptTokenCaptcha(
+    jwtCookie: string | undefined,
+  ): Promise<TokenCaptcha> {
     try {
-      const decryptedtokenCaptcha = decryptString(jwtCookie, CAPTCHA_ENCRYPTION_KEY)
+      const decryptedtokenCaptcha = decryptString(
+        jwtCookie,
+        CAPTCHA_ENCRYPTION_KEY,
+      )
 
       // @ts-ignore
       return JSON.parse(decryptedtokenCaptcha)
@@ -286,19 +315,25 @@ export class CaptchaService {
     }
   }
 
-  getTokenCaptcha(manuallyVerified: number = 0, automaticallyVerified: number = 0): string {
+  getTokenCaptcha(manuallyVerified = 0, automaticallyVerified = 0): string {
     const tokenCaptcha: TokenCaptcha = {
       manuallyVerified,
       automaticallyVerified,
     }
 
     // @ts-ignore
-    const encryptedTokenCaptcha: string = encryptString(JSON.stringify(tokenCaptcha), CAPTCHA_ENCRYPTION_KEY)
+    const encryptedTokenCaptcha: string = encryptString(
+      JSON.stringify(tokenCaptcha),
+      CAPTCHA_ENCRYPTION_KEY,
+    )
 
     return encryptedTokenCaptcha
   }
 
-  async autoVerifiable(pid: string, tokenCookie: string | undefined): Promise<boolean> {
+  async autoVerifiable(
+    pid: string,
+    tokenCookie: string | undefined,
+  ): Promise<boolean> {
     if (pid === DUMMY_PIDS.AUTO_PASS) {
       return true
     }
@@ -307,7 +342,9 @@ export class CaptchaService {
       throw new Error('No JWT captcha cookie')
     }
 
-    const tokenCaptcha: TokenCaptcha = await this.decryptTokenCaptcha(tokenCookie)
+    const tokenCaptcha: TokenCaptcha = await this.decryptTokenCaptcha(
+      tokenCookie,
+    )
 
     return this.canPassWithoutVerification(tokenCaptcha)
   }

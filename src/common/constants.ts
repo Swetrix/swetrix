@@ -151,9 +151,7 @@ const SELFHOSTED_PASSWORD = process.env.PASSWORD
 const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
 const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
 
-const SELFHOSTED_UUID = isSelfhosted
-  ? getSelfhostedUUID()
-  : ''
+const SELFHOSTED_UUID = isSelfhosted ? getSelfhostedUUID() : ''
 
 const TWO_FACTOR_AUTHENTICATION_APP_NAME =
   process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME

@@ -9,7 +9,7 @@ import { WebhookService } from './webhook.service'
 
 describe('WebhookService', () => {
   let service: WebhookService
-  let util = new Util()
+  const util = new Util()
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

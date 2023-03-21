@@ -1,6 +1,4 @@
-import {
-  Injectable,
-} from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Alert } from './entity/alert.entity'
@@ -36,7 +34,9 @@ export class AlertService {
   }
 
   findOneWithRelations(id: string): Promise<Alert | null> {
-    return this.alertsReporsitory.findOne(id, { relations: ['project', 'project.admin'] })
+    return this.alertsReporsitory.findOne(id, {
+      relations: ['project', 'project.admin'],
+    })
   }
 
   async count(options: object = {}): Promise<number> {
@@ -69,10 +69,7 @@ export class AlertService {
     return this.alertsReporsitory.save(project)
   }
 
-  async update(
-    id: string,
-    alertDTO: AlertDTO | Alert,
-  ): Promise<any> {
+  async update(id: string, alertDTO: AlertDTO | Alert): Promise<any> {
     return this.alertsReporsitory.update(id, alertDTO)
   }
 

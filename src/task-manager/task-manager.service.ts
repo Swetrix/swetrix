@@ -117,7 +117,9 @@ export class TaskManagerService {
       try {
         await clickhouse.query(query).toPromise()
       } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving CAPTCHA log data: ${e}`)
+        console.error(
+          `[CRON WORKER] Error whilst saving CAPTCHA log data: ${e}`,
+        )
       }
     }
 

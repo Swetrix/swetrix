@@ -12,58 +12,58 @@ export class Util {
   }
 
   getUser(): User {
-    let user = new User()
+    const user = new User()
     return user
   }
 
   getLetterTemplate(): LetterTemplate {
-    let letterTemplate = LetterTemplate.ConfirmPasswordChange
+    const letterTemplate = LetterTemplate.ConfirmPasswordChange
     return letterTemplate
   }
 
   getProject(): Project {
-    let proj = new Project()
+    const proj = new Project()
     return proj
   }
 
   getUserType(): UserType {
-    let userType = UserType.CUSTOMER
+    const userType = UserType.CUSTOMER
     return userType
   }
 
   getUserTypeArray(): Array<UserType> {
-    let arrayOfUserType = new Array<UserType>()
+    const arrayOfUserType = new Array<UserType>()
     arrayOfUserType.push(this.getUserType())
     return arrayOfUserType
   }
 
   getProjectShare(): ProjectShare {
-    let projectShare = new ProjectShare()
+    const projectShare = new ProjectShare()
     return projectShare
   }
 
   getObjectArray(): Array<Object> {
-    let arrayOfObjects = new Array<Object>()
+    const arrayOfObjects = new Array<Object>()
     return arrayOfObjects
   }
 
   getStringArray(): Array<string> {
-    let arrayOfSrtings = new Array<string>()
+    const arrayOfSrtings = new Array<string>()
     return arrayOfSrtings
   }
 
   getObject(): Object {
-    let object = new Object()
+    const object = new Object()
     return object
   }
 
   getRecordStringUnknown(): Record<string, unknown> {
-    let record: Record<string, unknown> = {}
+    const record: Record<string, unknown> = {}
     return record
   }
 
   getPaginationOptionsInterface(): PaginationOptionsInterface {
-    let paginationOptionsInterface: PaginationOptionsInterface = {
+    const paginationOptionsInterface: PaginationOptionsInterface = {
       take: 1,
       skip: 2,
     }
@@ -71,7 +71,7 @@ export class Util {
   }
 
   getProjectDTO(): ProjectDTO {
-    let projectDTO = new ProjectDTO()
+    const projectDTO = new ProjectDTO()
     return projectDTO
   }
 }

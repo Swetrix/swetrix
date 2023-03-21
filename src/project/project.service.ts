@@ -42,9 +42,7 @@ import {
   getRedisProjectKey,
   redisProjectCacheTimeout,
 } from '../common/constants'
-import {
-  getProjectsClickhouse,
-} from '../common/utils'
+import { getProjectsClickhouse } from '../common/utils'
 import { ProjectSubscriber } from './entity'
 import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
 import { ActionTokenType } from 'src/action-tokens/action-token.entity'
@@ -134,7 +132,15 @@ export class ProjectService {
         // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
         project = await this.findOne(pid, {
           relations: ['admin'],
-          select: ['origins', 'active', 'admin', 'public', 'ipBlacklist', 'captchaSecretKey', 'isCaptchaEnabled'],
+          select: [
+            'origins',
+            'active',
+            'admin',
+            'public',
+            'ipBlacklist',
+            'captchaSecretKey',
+            'isCaptchaEnabled',
+          ],
         })
       }
       if (_isEmpty(project))
@@ -220,10 +226,7 @@ export class ProjectService {
     return this.projectsRepository.save(project)
   }
 
-  async update(
-    id: string,
-    projectDTO: ProjectDTO | Project,
-  ): Promise<any> {
+  async update(id: string, projectDTO: ProjectDTO | Project): Promise<any> {
     return this.projectsRepository.update(id, projectDTO)
   }
 
@@ -315,7 +318,7 @@ export class ProjectService {
     project: Project,
     uid: string,
     roles: Array<UserType> = [],
-    message: string = 'You are not allowed to manage this project'
+    message = 'You are not allowed to manage this project',
   ): void {
     if (
       uid === project.admin?.id ||
@@ -490,8 +493,8 @@ export class ProjectService {
 
     await this.clearProjectsRedisCache(user.id)
   }
-  
-    async getProject(projectId: string, userId: string) {
+
+  async getProject(projectId: string, userId: string) {
     return await this.projectsRepository.findOne({
       where: {
         id: projectId,
@@ -506,18 +509,11 @@ export class ProjectService {
   }
   async addSubscriber(data: AddSubscriberType) {
     const subscriber = await this.projectSubscriberRepository.save({ ...data })
-    await this.sendSubscriberInvite(
-      data, subscriber.id,
-    )
+    await this.sendSubscriberInvite(data, subscriber.id)
     return subscriber
   }
-  async sendSubscriberInvite(
-    data: AddSubscriberType,
-    subscriberId: string,
-  ) {
-    const {
-      userId, projectId, projectName, email, origin 
-    } = data
+  async sendSubscriberInvite(data: AddSubscriberType, subscriberId: string) {
+    const { userId, projectId, projectName, email, origin } = data
     const actionToken = await this.actionTokens.createActionToken(
       userId,
       ActionTokenType.ADDING_PROJECT_SUBSCRIBER,
@@ -528,7 +524,8 @@ export class ProjectService {
       email,
       LetterTemplate.ProjectSubscriberInvitation,
       {
-        url, projectName,
+        url,
+        projectName,
       },
     )
   }

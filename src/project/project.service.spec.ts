@@ -7,7 +7,7 @@ import { Util } from '../Util/Util'
 
 describe('ProjectService', () => {
   let service: ProjectService
-  let util = new Util()
+  const util = new Util()
   const PROJECT_REPOSITORY_TOKEN = getRepositoryToken(Project)
   const PROJECTSHARE_REPOSITORY_TOKEN = getRepositoryToken(ProjectShare)
   beforeEach(async () => {
@@ -40,7 +40,7 @@ describe('ProjectService', () => {
       expect(service.allowedToView).toBeDefined()
     })
     it("should be defined checkIfIDUnique and don't return null", () => {
-      let projectId = util.getString()
+      const projectId = util.getString()
       const spy = jest.spyOn(service, 'checkIfIDUnique')
       const isCheckIfIDUnique = service.checkIfIDUnique(projectId)
       expect(spy).toHaveBeenCalled()
@@ -78,26 +78,26 @@ describe('ProjectService', () => {
       expect(service.find).toBeDefined()
     })
     it('should be defined findOne ', () => {
-      let params = util.getObject()
-      let id = util.getString()
+      const params = util.getObject()
+      const id = util.getString()
       expect(service.findOne(id, params)).not.toBeNull()
       expect(service.findOne).toBeDefined()
     })
     it("should be defined findOneShare and don't return null", () => {
-      let params = util.getObject()
-      let id = util.getString()
+      const params = util.getObject()
+      const id = util.getString()
       expect(service.findOneShare(id, params)).not.toBeNull()
       expect(service.findOneShare).toBeDefined()
     })
     it("should be defined findOneWhere and don't return null", () => {
-      let where = util.getRecordStringUnknown()
+      const where = util.getRecordStringUnknown()
 
       expect(service.findOneWhere(where)).not.toBeNull()
       expect(service.findOneWhere).toBeDefined()
     })
 
     it("should be defined findOneWithRelations and don't return null", () => {
-      let id = util.getString()
+      const id = util.getString()
 
       expect(service.findOneWithRelations(id)).not.toBeNull()
       expect(service.findOneWithRelations).toBeDefined()
@@ -111,13 +111,13 @@ describe('ProjectService', () => {
     })
 
     it("should be defined formatFromClickhouse and don't return null", () => {
-      let project = util.getObject()
+      const project = util.getObject()
       expect(service.formatFromClickhouse(project)).not.toBeNull()
       expect(service.formatFromClickhouse).toBeDefined()
     })
 
     it("should be defined getRedisCount and don't return null", () => {
-      let uid = util.getString()
+      const uid = util.getString()
 
       expect(service.getRedisCount(uid)).not.toBeNull()
       expect(service.getRedisCount).toBeDefined()

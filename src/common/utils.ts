@@ -17,7 +17,11 @@ import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
 
 import {
-  clickhouse, redis, DEFAULT_SELFHOSTED_UUID, SELFHOSTED_EMAIL, UUIDV5_NAMESPACE,
+  clickhouse,
+  redis,
+  DEFAULT_SELFHOSTED_UUID,
+  SELFHOSTED_EMAIL,
+  UUIDV5_NAMESPACE,
 } from './constants'
 import { Project } from '../project/entity/project.entity'
 
@@ -204,7 +208,8 @@ const generateRecoveryCode = () =>
 
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
-const generateRandomString = (length: number): string => randomstring.generate(length)
+const generateRandomString = (length: number): string =>
+  randomstring.generate(length)
 
 const getSelfhostedUUID = (): string => {
   try {

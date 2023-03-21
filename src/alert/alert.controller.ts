@@ -1,5 +1,16 @@
 import {
-  Controller, Get, Put, Delete, UseGuards, Query, Param, Body, NotFoundException, Post, ForbiddenException, BadRequestException,
+  Controller,
+  Get,
+  Put,
+  Delete,
+  UseGuards,
+  Query,
+  Param,
+  Body,
+  NotFoundException,
+  Post,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common'
 import { In } from 'typeorm'
 import { ApiTags, ApiResponse } from '@nestjs/swagger'
@@ -32,7 +43,7 @@ export class AlertController {
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
-  ) { }
+  ) {}
 
   @Get('/')
   @UseGuards(SelfhostedGuard)
@@ -52,11 +63,15 @@ export class AlertController {
       return []
     }
 
-    const pids = _map(projects, (project) => project.id)
+    const pids = _map(projects, project => project.id)
 
-    const result = await this.alertService.paginate({ take, skip }, { project: In(pids) }, ['project'])
+    const result = await this.alertService.paginate(
+      { take, skip },
+      { project: In(pids) },
+      ['project'],
+    )
 
-    result.results = _map(result.results, (alert) => ({
+    result.results = _map(result.results, alert => ({
       ..._omit(alert, ['project']),
       pid: alert.project.id,
     }))
@@ -75,9 +90,7 @@ export class AlertController {
   ) {
     this.logger.log({ uid }, 'POST /alert')
 
-    const user = await this.userService.findOneWithRelations(uid, [
-      'projects',
-    ])
+    const user = await this.userService.findOneWithRelations(uid, ['projects'])
 
     const maxAlerts = ACCOUNT_PLANS[user.planCode]?.maxAlerts
 
@@ -85,19 +98,27 @@ export class AlertController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOneWhere({
-      id: alertDTO.pid,
-    }, {
-      relations: ['alerts', 'admin'],
-    })
+    const project = await this.projectService.findOneWhere(
+      {
+        id: alertDTO.pid,
+      },
+      {
+        relations: ['alerts', 'admin'],
+      },
+    )
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
     }
 
-    this.projectService.allowedToManage(project, uid, user.roles, 'You are not allowed to add alerts to this project')
+    this.projectService.allowedToManage(
+      project,
+      uid,
+      user.roles,
+      'You are not allowed to add alerts to this project',
+    )
 
-    const pids = _map(user.projects, (project) => project.id)
+    const pids = _map(user.projects, project => project.id)
     const alertsCount = await this.alertService.count({ project: In(pids) })
 
     if (user.planCode === PlanCode.none) {
@@ -133,7 +154,6 @@ export class AlertController {
     }
   }
 
-
   @Put('/:id')
   @UseGuards(SelfhostedGuard)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -154,14 +174,29 @@ export class AlertController {
 
     const user = await this.userService.findOne(uid)
 
-    this.projectService.allowedToManage(alert.project, uid, user.roles, 'You are not allowed to manage this alert')
+    this.projectService.allowedToManage(
+      alert.project,
+      uid,
+      user.roles,
+      'You are not allowed to manage this alert',
+    )
 
     alert = {
       ...alert,
-      ..._pick(alertDTO, ['queryMetric', 'queryCondition', 'queryValue', 'queryTime', 'active', 'name']),
+      ..._pick(alertDTO, [
+        'queryMetric',
+        'queryCondition',
+        'queryValue',
+        'queryTime',
+        'active',
+        'name',
+      ]),
     }
 
-    await this.alertService.update(id, _omit(alert, ['project', 'lastTriggered']))
+    await this.alertService.update(
+      id,
+      _omit(alert, ['project', 'lastTriggered']),
+    )
 
     return {
       ..._omit(alert, ['project']),
@@ -174,13 +209,10 @@ export class AlertController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 204, description: 'Empty body' })
-  async deleteAlert(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ) {
+  async deleteAlert(@Param('id') id: string, @CurrentUserId() uid: string) {
     this.logger.log({ id, uid }, 'DELETE /alert/:id')
 
-    let alert = await this.alertService.findOneWithRelations(id)
+    const alert = await this.alertService.findOneWithRelations(id)
 
     if (_isEmpty(alert)) {
       throw new NotFoundException()
@@ -188,7 +220,12 @@ export class AlertController {
 
     const user = await this.userService.findOne(uid)
 
-    this.projectService.allowedToManage(alert.project, uid, user.roles, 'You are not allowed to manage this alert')
+    this.projectService.allowedToManage(
+      alert.project,
+      uid,
+      user.roles,
+      'You are not allowed to manage this alert',
+    )
 
     await this.alertService.delete(id)
   }

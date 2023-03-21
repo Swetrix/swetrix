@@ -15,7 +15,7 @@ import { TaskManagerService } from './task-manager.service'
 
 describe('TaskManagerService', () => {
   let service: TaskManagerService
-  let util = new Util()
+  const util = new Util()
   const USER_REPOSITORY_TOKEN = getRepositoryToken(User)
   const ACRIONTOKENS_REPOSITORY_TOKEN = getRepositoryToken(ActionToken)
   const PROJECT_REPOSITORY_TOKEN = getRepositoryToken(Project)

@@ -36,7 +36,9 @@ export class CdnService {
       return data
     } catch (error) {
       console.error(error)
-      throw new InternalServerErrorException('Failed to upload extension to the CDN.')
+      throw new InternalServerErrorException(
+        'Failed to upload extension to the CDN.',
+      )
     }
   }
 

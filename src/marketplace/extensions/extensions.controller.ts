@@ -84,18 +84,29 @@ export class ExtensionsController {
     this.logger.debug({ queries })
 
     if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
+      throw new ForbiddenException(
+        'You must be logged in to access this route.',
+      )
     }
 
-    const [extensionsToUser, count] = await this.extensionsService.findAndCountExtensionToUser({
+    const [extensionsToUser, count] =
+      await this.extensionsService.findAndCountExtensionToUser(
+        {
           where: {
             userId,
           },
           skip: queries.offset || 0,
           take: queries.limit > 100 ? 25 : queries.limit || 25,
-    }, ['extension', 'extension.owner', 'extension.category', 'extension.users'])
+        },
+        [
+          'extension',
+          'extension.owner',
+          'extension.category',
+          'extension.users',
+        ],
+      )
 
-    let extensions = _map(extensionsToUser, (extensionToUser) => {
+    let extensions = _map(extensionsToUser, extensionToUser => {
       return extensionToUser.extension
     })
 
@@ -159,7 +170,9 @@ export class ExtensionsController {
   @Auth([UserType.ADMIN])
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin')
-  async getAllExtensionsAdmin(@Query() queries: GetAllExtensionsQueries): Promise<{
+  async getAllExtensionsAdmin(
+    @Query() queries: GetAllExtensionsQueries,
+  ): Promise<{
     extensions: Extension[]
     count: number
   }> {
@@ -232,16 +245,21 @@ export class ExtensionsController {
     count: number
   }> {
     if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
+      throw new ForbiddenException(
+        'You must be logged in to access this route.',
+      )
     }
 
-    let [extensions, count] = await this.extensionsService.findAndCount({
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 100 : queries.limit || 10,
+    let [extensions, count] = await this.extensionsService.findAndCount(
+      {
+        skip: queries.offset || 0,
+        take: queries.limit > 100 ? 100 : queries.limit || 10,
         where: {
           owner: userId,
         },
-    }, ['owner', 'users', 'category'], )
+      },
+      ['owner', 'users', 'category'],
+    )
 
     extensions = _map(extensions, extension => {
       extension.usersQuantity = _size(extension.users)
@@ -326,7 +344,9 @@ export class ExtensionsController {
   @Roles(UserType.ADMIN)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin/search')
-  async searchExtensionAdmin(@Query() queries: SearchExtensionQueries): Promise<{
+  async searchExtensionAdmin(
+    @Query() queries: SearchExtensionQueries,
+  ): Promise<{
     extensions: Extension[]
     count: number
   }> {
@@ -452,7 +472,9 @@ export class ExtensionsController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':extensionId/approve')
-  async approveExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
+  async approveExtension(
+    @Param() params: UpdateExtensionParams,
+  ): Promise<Extension> {
     const { extensionId } = params
 
     const extension = await this.extensionsService.findOne({
@@ -477,7 +499,9 @@ export class ExtensionsController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':extensionId/reject')
-  async rejectExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
+  async rejectExtension(
+    @Param() params: UpdateExtensionParams,
+  ): Promise<Extension> {
     const { extensionId } = params
 
     const extension = await this.extensionsService.findOne({
@@ -520,7 +544,9 @@ export class ExtensionsController {
   ): Promise<any> {
     this.logger.debug({ params, body })
     if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
+      throw new ForbiddenException(
+        'You must be logged in to access this route.',
+      )
     }
 
     const extension = await this.extensionsService.findOne({
@@ -586,7 +612,9 @@ export class ExtensionsController {
   ): Promise<void> {
     this.logger.debug({ params, body })
     if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
+      throw new ForbiddenException(
+        'You must be logged in to access this route.',
+      )
     }
 
     const extension = await this.extensionsService.findOne({
