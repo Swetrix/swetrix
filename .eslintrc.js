@@ -28,6 +28,8 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
+    'no-restricted-syntax': 'off',
+    'class-methods-use-this': 'off',
     'arrow-body-style': 'off',
     'arrow-parens': 'off',
     'import/no-cycle': 'off',

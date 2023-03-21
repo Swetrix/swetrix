@@ -53,11 +53,11 @@ export class WebhookController {
         const {
           passthrough,
           email,
-          subscription_id,
-          subscription_plan_id,
-          cancel_url,
-          update_url,
-          next_bill_date,
+          subscription_id: subID,
+          subscription_plan_id: subscriptionPlanId,
+          cancel_url: subCancelURL,
+          update_url: subUpdateURL,
+          next_bill_date: nextBillDate,
         } = body
         let uid
 
@@ -72,31 +72,25 @@ export class WebhookController {
         }
 
         let monthlyBilling = true
-        let plan = _find(
-          ACCOUNT_PLANS,
-          ({ pid }) => pid === subscription_plan_id,
-        )
+        let plan = _find(ACCOUNT_PLANS, ({ pid }) => pid === subscriptionPlanId)
 
         if (!plan) {
           monthlyBilling = false
-          plan = _find(
-            ACCOUNT_PLANS,
-            ({ ypid }) => ypid === subscription_plan_id,
-          )
+          plan = _find(ACCOUNT_PLANS, ({ ypid }) => ypid === subscriptionPlanId)
         }
 
         if (!plan) {
           throw new NotFoundException(
-            `The selected account plan (${subscription_plan_id}) is not available`,
+            `The selected account plan (${subscriptionPlanId}) is not available`,
           )
         }
 
         const updateParams = {
           planCode: plan.id,
-          subID: subscription_id,
-          subUpdateURL: update_url,
-          subCancelURL: cancel_url,
-          nextBillDate: next_bill_date,
+          subID,
+          subUpdateURL,
+          subCancelURL,
+          nextBillDate,
           billingFrequency: monthlyBilling
             ? BillingFrequency.Monthly
             : BillingFrequency.Yearly,
@@ -114,21 +108,24 @@ export class WebhookController {
       }
 
       case 'subscription_cancelled': {
-        const { subscription_id, cancellation_effective_date } = body
+        const {
+          subscription_id: subID,
+          cancellation_effective_date: cancellationEffectiveDate,
+        } = body
 
-        await this.userService.updateBySubID(subscription_id, {
+        await this.userService.updateBySubID(subID, {
           billingFrequency: BillingFrequency.Monthly,
           nextBillDate: null,
-          cancellationEffectiveDate: cancellation_effective_date,
+          cancellationEffectiveDate,
         })
 
         break
       }
 
       case 'subscription_payment_refunded': {
-        const { subscription_id } = body
+        const { subscription_id: subID } = body
 
-        await this.userService.updateBySubID(subscription_id, {
+        await this.userService.updateBySubID(subID, {
           planCode: PlanCode.none,
           billingFrequency: BillingFrequency.Monthly,
           nextBillDate: null,
@@ -138,10 +135,10 @@ export class WebhookController {
       }
 
       case 'subscription_payment_failed': {
-        const { subscription_id, attempt_number } = body
+        const { subscription_id: subID, attempt_number: attemptNumber } = body
 
-        if (parseInt(attempt_number) >= MAX_PAYMENT_ATTEMPTS) {
-          await this.userService.updateBySubID(subscription_id, {
+        if (parseInt(attemptNumber, 10) >= MAX_PAYMENT_ATTEMPTS) {
+          await this.userService.updateBySubID(subID, {
             planCode: PlanCode.none,
             billingFrequency: BillingFrequency.Monthly,
             nextBillDate: null,

@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign, no-prototype-builtins */
 import {
   Injectable,
   BadRequestException,
@@ -6,6 +7,8 @@ import {
 import * as crypto from 'crypto'
 import * as Serialize from 'php-serialize'
 import * as _includes from 'lodash/includes'
+import * as _keys from 'lodash/keys'
+import * as _isArray from 'lodash/isArray'
 import { AppLoggerService } from '../logger/logger.service'
 
 const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
@@ -38,16 +41,18 @@ const paddleWhitelistIPs = [
 export class WebhookService {
   constructor(private readonly logger: AppLoggerService) {}
 
-  ksort(obj) {
-    const keys = Object.keys(obj).sort()
-    const sortedObj = {}
-    for (const i in keys) {
-      sortedObj[keys[i]] = obj[keys[i]]
+  public ksort(obj: Record<string, unknown>): Record<string, unknown> {
+    const keys = _keys(obj).sort()
+    const sortedObj: Record<string, unknown> = {}
+
+    for (const key of keys) {
+      sortedObj[key] = obj[key]
     }
+
     return sortedObj
   }
 
-  validateWebhook(data) {
+  public validateWebhook(data: any) {
     // Grab p_signature
     const mySig = Buffer.from(data.p_signature, 'base64')
     // Remove p_signature from object - not included in array of fields used in verification.
@@ -56,7 +61,7 @@ export class WebhookService {
     data = this.ksort(data)
     for (const property in data) {
       if (data.hasOwnProperty(property) && typeof data[property] !== 'string') {
-        if (Array.isArray(data[property])) {
+        if (_isArray(data[property])) {
           // is it an array
           data[property] = data[property].toString()
         } else {
@@ -80,7 +85,7 @@ export class WebhookService {
     }
   }
 
-  verifyIP(reqIP: string) {
+  public verifyIP(reqIP: string) {
     if (!_includes(paddleWhitelistIPs, reqIP)) {
       throw new ForbiddenException('You have no access to this endpoint')
     }
