@@ -556,13 +556,14 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deletePartially(
     @Body() deleteDTO: PartialDeleteDTO,
+    @Param('id') id: string,
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ deleteDTO, uid }, 'DELETE /partially/:id')
 
-    let { pid, from, to } = deleteDTO
+    let { from, to } = deleteDTO
 
-    if (!isValidPID(pid)) {
+    if (!isValidPID(id)) {
       throw new BadRequestException('The provided Project ID (pid) is incorrect')
     }
 
@@ -580,7 +581,7 @@ export class ProjectController {
     from = dayjs(from).format('YYYY-MM-DD')
     to = dayjs(to).format('YYYY-MM-DD 23:59:59')
 
-    const project = await this.projectService.findOne(pid, {
+    const project = await this.projectService.findOne(id, {
       relations: ['admin', 'share'],
     })
 
@@ -595,7 +596,7 @@ export class ProjectController {
     const queryP = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
-        pid, from, to,
+        id, from, to,
       },
     }
 
