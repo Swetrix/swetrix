@@ -53,6 +53,7 @@ const CookiePolicy = lazy(() => import('pages/CookiePolicy'))
 const CaptchaSettings = lazy(() => import('pages/Captcha/Settings'))
 const CaptchaView = lazy(() => import('pages/Captcha/View'))
 const ConfirmReportsShare = lazy(() => import('pages/Project/Settings/Emails/ConfirmReportsShare'))
+const MediaAndPress = lazy(() => import('pages/Press'))
 
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
@@ -214,6 +215,7 @@ const App = () => {
                 <Route path={routes.new_captcha} component={CaptchaSettings} exact />
                 <Route path={routes.captcha} component={CaptchaView} exact />
                 <Route path={routes.confirm_subcription} component={ConfirmReportsShare} exact />
+                <Route path={routes.press} component={MediaAndPress} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>

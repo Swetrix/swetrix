@@ -723,6 +723,17 @@
     "title": "Beta",
     "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
   },
+  "press": {
+    "description": "Our assets for use in your articles and other media. If you use any of the assets below, we'd be grateful if you'd leave a link to one of our pages on your website. If you need other assets or have any questions, please <url>contact us</url>.",
+    "logos": "Logos",
+    "logo": "Logo",
+    "logoNoText": "Logo without text",
+    "logoWhiteText": "Logo with white text",
+    "font": {
+      "title": "Font",
+      "description": "We use {{font}} font on Swetrix websites. See more information about it on it's <url>official website</url>."
+    }
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
@@ -736,7 +747,8 @@
     "billing": "Billing",
     "contact": "Contact",
     "changelog": "Changelog",
-    "main": "Ultimate open-source analytics to satisfy all your needs"
+    "main": "Ultimate open-source analytics to satisfy all your needs",
+    "press": "Media & Press"
   },
   "footer": {
     "slogan": "The best apps need the best services.",
