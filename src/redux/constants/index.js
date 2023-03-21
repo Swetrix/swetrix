@@ -104,7 +104,14 @@ export const FREE_TIER_KEY = 'free'
 
 // a dedicated variable is needed for paid tier checking
 export const WEEKLY_REPORT_FREQUENCY = 'weekly'
-export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'never']
+export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
+
+export const reportFrequencyForEmailsOptions = [
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'never', label: 'Never' },
+]
 
 export const GDPR_EXPORT_TIMEFRAME = 14 // days
 
@@ -126,7 +133,7 @@ export const LINKEDIN_URL = 'https://www.linkedin.com/company/swetrix/'
 export const GITHUB_URL = 'https://github.com/Swetrix'
 export const TWITTER_URL = 'https://twitter.com/intent/user?screen_name=swetrix'
 export const TWITTER_USERNAME = '@swetrix'
-export const DISCORD_URL = 'https://discord.gg/35jHATy65F'
+export const DISCORD_URL = 'https://discord.gg/tVxGxU3s4B'
 export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const BLOG_URL = 'https://blog.swetrix.com'
 export const UTM_GENERATOR_URL = 'https://url.swetrix.com'

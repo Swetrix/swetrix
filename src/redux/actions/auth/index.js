@@ -154,4 +154,11 @@ export const authActions = {
       payload: { apiKey },
     }
   },
+
+  setUser(user) {
+    return {
+      type: types.SET_USER,
+      payload: { user },
+    }
+  },
 }

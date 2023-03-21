@@ -22,7 +22,8 @@
     "integrationRemovalError": "Error occurred while removing the integration",
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
-    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency"
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
+    "invalidToken": "Invalid token"
   },
   "common": {
     "features": "Features",
@@ -287,7 +288,8 @@
       "email": "Email",
       "signin": "Sign in",
       "checkLeakedPassword": "Check if password is leaked",
-      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text."
+      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text.",
+      "addedOn": "Added on"
     }
   },
   "features": {
@@ -365,6 +367,7 @@
     "weekly": "Weekly",
     "monthly": "Monthly",
     "never": "Never",
+    "quarterly": "Quarterly",
     "reportSent": "The GDPR data report has been sent to your email address.",
     "tryAgainInXDays": "Please, try again later. You can request a GDPR Export only once per {{amount}} days.",
     "updated": "Your account settings have been updated",
@@ -581,6 +584,7 @@
       "noPeople": "No people have been added to this project yet.",
       "removeMember": "Remove member",
       "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
       "removeUser": "Remove {{user}}?",
       "people": "People",
       "inviteCoworkers": "Invite your coworkers",
@@ -604,7 +608,15 @@
       "errorNoRole": "Please select a role.",
       "ipBlacklist": "IP's to blacklist",
       "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
-    }
+    },
+    "emails": {
+      "title": "Email reports",
+      "description": "Send regular email reports to as many recipients as you want",
+      "add": "Add a recipient",
+      "reportFrequency": "Report frequency"
+    },
+    "results": "Results",
+    "page": "Page"
   },
   "billing": {
     "title": "Billing & Plans",

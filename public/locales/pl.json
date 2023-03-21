@@ -22,7 +22,8 @@
     "integrationRemovalError": "Wystąpił błąd podczas usuwania integracji",
     "enterACorrectNumber": "Wprowadź poprawną liczbę",
     "numberCantBeNegative": "Liczba nie może być ujemna",
-    "forecastNumberCantBeBigger": "Liczba prognozy nie może być większa niż {{max}} dla wybranej częstotliwości"
+    "forecastNumberCantBeBigger": "Liczba prognozy nie może być większa niż {{max}} dla wybranej częstotliwości",
+    "invalidToken": "Invalid token"
   },
   "common": {
     "features": "Funkcje",
@@ -287,7 +288,8 @@
       "email": "Email",
       "signin": "Zaloguj się",
       "checkLeakedPassword": "Sprawdź, czy Twoje hasło wyciekło",
-      "checkLeakedPasswordDesc": "Po włączeniu sprawdzamy hasło z bazą danych <db>{{database}}</db>. Nie wysyłamy twojego hasła do usługi. Najpierw hashujemy twoje hasło (używając SHA1) i wysyłamy tylko pierwsze 5 znaków tego hasha do usługi. Serwis zwraca wszystkie wyciekłe hasła, które zaczynają się od tych 5 znaków. Na naszym końcu sprawdzamy, czy jedno z nich pasuje do Twojego hasła. Pokażemy Ci ostrzeżenie, jeśli został on wyciekły wcześniej. Nigdy nie przechowujemy Twojego hasła w postaci zwykłego tekstu."
+      "checkLeakedPasswordDesc": "Po włączeniu sprawdzamy hasło z bazą danych <db>{{database}}</db>. Nie wysyłamy twojego hasła do usługi. Najpierw hashujemy twoje hasło (używając SHA1) i wysyłamy tylko pierwsze 5 znaków tego hasha do usługi. Serwis zwraca wszystkie wyciekłe hasła, które zaczynają się od tych 5 znaków. Na naszym końcu sprawdzamy, czy jedno z nich pasuje do Twojego hasła. Pokażemy Ci ostrzeżenie, jeśli został on wyciekły wcześniej. Nigdy nie przechowujemy Twojego hasła w postaci zwykłego tekstu.",
+      "addedOn": "Added on"
     }
   },
   "features": {
@@ -365,6 +367,7 @@
     "weekly": "Co tydzień",
     "monthly": "Co miesiąc",
     "never": "Nigdy",
+    "quarterly": "Quarterly",
     "reportSent": "Raport danych GDPR został wysłany na Twój adres e-mail.",
     "tryAgainInXDays": "Spróbuj ponownie później. Możesz wnioskować o eksport GDPR tylko raz na {{amount}} dni.",
     "updated": "Ustawienia konta zostały zaktualizowane",
@@ -581,6 +584,7 @@
       "noPeople": "Do tego projektu nie dodano jeszcze żadnych osób.",
       "removeMember": "Usuń użytkownika",
       "removeConfirm": "Czy na pewno chcesz przestać udostępniać swój projekt temu użytkownikowi?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
       "removeUser": "Usunąć {{user}}?",
       "people": "Użytkownicy",
       "inviteCoworkers": "Zaproś swoich współpracowników",
@@ -604,7 +608,15 @@
       "errorNoRole": "Wybierz rolę.",
       "ipBlacklist": "Dodaj adresy IP do czarnej listy",
       "ipBlacklistHint": "Lista adresów IP, z których nie będzie zbierana analityka na tym projekcie.\nTa funkcjonalność jest przydatna, jeśli chcesz na przykład zignorować analitykę z Twojego IP.\nPrzykład: 172.126.10.16, 192.168.0.1/32, ::1"
-    }
+    },
+    "emails": {
+      "title": "Email reports",
+      "description": "Send regular email reports to as many recipients as you want",
+      "add": "Add a recipient",
+      "reportFrequency": "Report frequency"
+    },
+    "results": "Results",
+    "page": "Strona"
   },
   "billing": {
     "title": "Cennik i plany",

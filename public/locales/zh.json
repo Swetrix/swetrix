@@ -22,7 +22,8 @@
     "integrationRemovalError": "Error occurred while removing the integration",
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
-    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency"
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
+    "invalidToken": "Invalid token"
   },
   "common": {
     "features": "功能",
@@ -287,7 +288,8 @@
       "email": "电子邮件",
       "signin": "登录",
       "checkLeakedPassword": "检查密码是否泄露",
-      "checkLeakedPasswordDesc": "当启用时，我们使用 <db> {{database}} </db> 数据库检查您的密码。我们不会把你的密码直接上传至服务器。首先，我们对密码进行哈希处理(使用SHA1)，并将该哈希的前5个字符发送给服务器。服务器将返回所有以这5个字符开头的泄露密码。在我们的服务器中，我们会检查其中一个是否与您的密码匹配。如果之前泄露过，我们会给您一个警告。我们从不以纯文本存储您的密码。"
+      "checkLeakedPasswordDesc": "当启用时，我们使用 <db> {{database}} </db> 数据库检查您的密码。我们不会把你的密码直接上传至服务器。首先，我们对密码进行哈希处理(使用SHA1)，并将该哈希的前5个字符发送给服务器。服务器将返回所有以这5个字符开头的泄露密码。在我们的服务器中，我们会检查其中一个是否与您的密码匹配。如果之前泄露过，我们会给您一个警告。我们从不以纯文本存储您的密码。",
+      "addedOn": "Added on"
     }
   },
   "features": {
@@ -365,6 +367,7 @@
     "weekly": "每周",
     "monthly": "每月",
     "never": "从不",
+    "quarterly": "Quarterly",
     "reportSent": " 《一般数据保护条例》数据报告已发送至您的电子邮件地址。",
     "tryAgainInXDays": "请稍后再试。您每 {{amount}} 天只能请求一次 《一般数据保护条例》导出。",
     "updated": "您的账户设置已更新",
@@ -581,6 +584,7 @@
       "noPeople": "No people have been added to this project yet.",
       "removeMember": "Remove member",
       "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
       "removeUser": "Remove {{user}}?",
       "people": "People",
       "inviteCoworkers": "Invite your coworkers",
@@ -604,7 +608,15 @@
       "errorNoRole": "Please select a role.",
       "ipBlacklist": "IP's to blacklist",
       "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
-    }
+    },
+    "emails": {
+      "title": "Email reports",
+      "description": "Send regular email reports to as many recipients as you want",
+      "add": "Add a recipient",
+      "reportFrequency": "Report frequency"
+    },
+    "results": "Results",
+    "page": "Page"
   },
   "billing": {
     "title": "账单和计划",

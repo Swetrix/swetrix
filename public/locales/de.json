@@ -22,7 +22,8 @@
     "integrationRemovalError": "Beim Entfernen der Integration ist ein Fehler aufgetreten",
     "enterACorrectNumber": "Bitte geben Sie eine korrekte Zahl ein",
     "numberCantBeNegative": "Die Zahl darf nicht negativ sein",
-    "forecastNumberCantBeBigger": "Die prognostizierte Zahl kann nicht größer sein als {{max}} für die gewählte Frequenz"
+    "forecastNumberCantBeBigger": "Die prognostizierte Zahl kann nicht größer sein als {{max}} für die gewählte Frequenz",
+    "invalidToken": "Invalid token"
   },
   "common": {
     "features": "Funktionen",
@@ -287,7 +288,8 @@
       "email": "E-Mail",
       "signin": "Anmelden",
       "checkLeakedPassword": "Prüfen, ob das Passwort geleakt worden ist",
-      "checkLeakedPasswordDesc": "Bei Aktivierung überprüfen wir Ihr Passwort mit der <db>{{database}}</db> Datenbank. Wir senden Ihr Passwort nicht an den Dienst. Zuerst hashen wir Ihr Passwort (mittels SHA1) und senden nur die ersten 5 Zeichen dieses Hashs an den Dienst. Der Dienst gibt alle geleakten Passwörter zurück, die mit diesen 5 Zeichen beginnen. An unserem Ende überprüfen wir, ob eines dieser Passwörter mit Ihrem Passwort übereinstimmt. Wir zeigen Ihnen eine Warnung, wenn es vorher geleakt wurde. Wir speichern Ihr Passwort nie im Klartext."
+      "checkLeakedPasswordDesc": "Bei Aktivierung überprüfen wir Ihr Passwort mit der <db>{{database}}</db> Datenbank. Wir senden Ihr Passwort nicht an den Dienst. Zuerst hashen wir Ihr Passwort (mittels SHA1) und senden nur die ersten 5 Zeichen dieses Hashs an den Dienst. Der Dienst gibt alle geleakten Passwörter zurück, die mit diesen 5 Zeichen beginnen. An unserem Ende überprüfen wir, ob eines dieser Passwörter mit Ihrem Passwort übereinstimmt. Wir zeigen Ihnen eine Warnung, wenn es vorher geleakt wurde. Wir speichern Ihr Passwort nie im Klartext.",
+      "addedOn": "Added on"
     }
   },
   "features": {
@@ -365,6 +367,7 @@
     "weekly": "Wöchentlich",
     "monthly": "Monatlich",
     "never": "Nie",
+    "quarterly": "Quarterly",
     "reportSent": "Der GDPR-Datenbericht wurde an Ihre E-Mail-Adresse gesendet.",
     "tryAgainInXDays": "Bitte versuchen Sie es später noch einmal. Sie können einen GDPR-Datenbericht nur einmal innerhalb von {{amount}} Tagen anfordern.",
     "updated": "Ihre Kontoeinstellungen wurden aktualisiert",
@@ -581,6 +584,7 @@
       "noPeople": "Zu diesem Projekt wurden noch keine Personen hinzugefügt.",
       "removeMember": "Mitglied entfernen",
       "removeConfirm": "Sind Sie sicher, dass Sie das Teilen Ihres Projekts mit diesem Benutzer beenden möchten?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
       "removeUser": "{{user}} entfernen?",
       "people": "Personen",
       "inviteCoworkers": "Laden Sie Ihre Kollegen ein",
@@ -604,7 +608,15 @@
       "errorNoRole": "Bitte wählen Sie eine Rolle.",
       "ipBlacklist": "IP-Adressen für die Sperrliste",
       "ipBlacklistHint": "Eine Liste von IP-Adressen, von denen keine Metriken für dieses Projekt gesammelt werden.\nDiese Funktion ist praktisch, wenn Sie z.B. Analysen von Ihrer eigenen IP-Adresse ignorieren möchten.\nBeispiel: 172.126.10.16, 192.168.0.1/32, ::1"
-    }
+    },
+    "emails": {
+      "title": "Email reports",
+      "description": "Send regular email reports to as many recipients as you want",
+      "add": "Add a recipient",
+      "reportFrequency": "Report frequency"
+    },
+    "results": "Results",
+    "page": "Seite"
   },
   "billing": {
     "title": "Rechnung & Abonnement",

@@ -22,7 +22,8 @@
     "integrationRemovalError": "Error occurred while removing the integration",
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
-    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency"
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
+    "invalidToken": "Invalid token"
   },
   "common": {
     "features": "Funktioner",
@@ -287,7 +288,8 @@
       "email": "E-post",
       "signin": "Logga in",
       "checkLeakedPassword": "Kontrollera om lösenordet är läckt",
-      "checkLeakedPasswordDesc": "När aktiverad kontrollerar vi ditt lösenord med <db>{{database}}</db>databasen. Vi skickar inte ditt lösenord till tjänsten. Först hashar vi ditt lösenord ( med SHA1) och skickar endast de första fem tecknen i hashen till tjänsten. Tjänsten returnerar alla läckta lösenord som börjar med dessa 5 tecken. I vår del kontrollerar vi om något av dessa tecken stämmer överens med ditt lösenord. Vi visar dig en varning om det har läckt ut tidigare. Vi lagrar aldrig ditt lösenord i klartext."
+      "checkLeakedPasswordDesc": "När aktiverad kontrollerar vi ditt lösenord med <db>{{database}}</db>databasen. Vi skickar inte ditt lösenord till tjänsten. Först hashar vi ditt lösenord ( med SHA1) och skickar endast de första fem tecknen i hashen till tjänsten. Tjänsten returnerar alla läckta lösenord som börjar med dessa 5 tecken. I vår del kontrollerar vi om något av dessa tecken stämmer överens med ditt lösenord. Vi visar dig en varning om det har läckt ut tidigare. Vi lagrar aldrig ditt lösenord i klartext.",
+      "addedOn": "Added on"
     }
   },
   "features": {
@@ -365,6 +367,7 @@
     "weekly": "Veckovis",
     "monthly": "Månadsvis",
     "never": "Aldrig",
+    "quarterly": "Quarterly",
     "reportSent": "GDPR datarapporten har skickats till din e-postadress.",
     "tryAgainInXDays": "Försök igen senare. Du kan begära GDPR-export endast en gång per {{amount}} dagar.",
     "updated": "Dina kontoinställningar har uppdaterats",
@@ -581,6 +584,7 @@
       "noPeople": "No people have been added to this project yet.",
       "removeMember": "Remove member",
       "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
       "removeUser": "Remove {{user}}?",
       "people": "People",
       "inviteCoworkers": "Invite your coworkers",
@@ -604,7 +608,15 @@
       "errorNoRole": "Please select a role.",
       "ipBlacklist": "IP's to blacklist",
       "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
-    }
+    },
+    "emails": {
+      "title": "Email reports",
+      "description": "Send regular email reports to as many recipients as you want",
+      "add": "Add a recipient",
+      "reportFrequency": "Report frequency"
+    },
+    "results": "Results",
+    "page": "Page"
   },
   "billing": {
     "title": "Fakturering och planer",
