@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types */
 import React, {
-  memo, useState, useEffect,
+  memo, useState, useEffect, useMemo,
 } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import cx from 'clsx'
@@ -18,6 +18,9 @@ import { EyeIcon, CalendarIcon, FolderPlusIcon } from '@heroicons/react/24/outli
 import { ArrowSmallUpIcon, ArrowSmallDownIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 import Modal from 'ui/Modal'
+import Select from 'ui/Select'
+import _includes from 'lodash/includes'
+import _values from 'lodash/values'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
@@ -25,13 +28,15 @@ import { ActivePin, InactivePin, WarningPin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
 import {
-  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabsForDashboard, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject,
+  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject, DASHBOARD_TABS,
 } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
 import { acceptShareProject } from 'api'
 
 import Pagination from 'ui/Pagination'
+
+const DASHBOARD_TABS_VALUES = _values(DASHBOARD_TABS)
 
 const ProjectCart = ({
   name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
@@ -40,7 +45,7 @@ const ProjectCart = ({
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
-  console.log(overall)
+  // console.log(overall)
 
   const onAccept = async () => {
     const pid = _find(sharedProjects, item => item.project.id === id).id
@@ -181,7 +186,7 @@ const Dashboard = ({
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
   setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
-  loadProjectsCaptcha,
+  loadProjectsCaptcha, projectTab,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
@@ -225,6 +230,40 @@ const Dashboard = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage, dashboardPaginationPageShared])
 
+  const [activeDashTab, setActiveDashTab] = useState(() => {
+    const url = new URL(window.location)
+    const { searchParams } = url
+    const tab = searchParams.get('tab')
+
+    if (_includes(DASHBOARD_TABS_VALUES, tab)) {
+      return tab
+    }
+
+    return projectTab || DASHBOARD_TABS.owned
+  })
+
+  const dashboardLocTabs = useMemo(() => {
+    return [
+      {
+        id: DASHBOARD_TABS.owned,
+        name: tabForOwnedProject,
+        label: t('profileSettings.owned'),
+      },
+      {
+        id: DASHBOARD_TABS.shared,
+        name: tabForSharedProject,
+        label: t('profileSettings.shared'),
+      },
+      {
+        id: DASHBOARD_TABS.captcha,
+        name: tabForCaptchaProject,
+        label: t('profileSettings.captcha'),
+      },
+    ]
+  }, [t])
+
+  const activeDashTabLabel = useMemo(() => _find(dashboardLocTabs, tab => tab.id === activeDashTab)?.label, [dashboardLocTabs, activeDashTab])
+
   if (error && !isLoading) {
     return (
       <Title title={t('titles.dashboard')}>
@@ -260,43 +299,23 @@ const Dashboard = ({
               </span>
             </div>
             <div className='mt-6'>
-              <nav className='-mb-px flex space-x-8'>
-                {_map(tabsForDashboard, (tab) => {
-                  if (tab.name === tabForSharedProject) {
-                    if (sharedTotal > 0) {
-                      return (
-                        <button
-                          key={tab.name}
-                          type='button'
-                          onClick={() => setTabProjects(tab.name)}
-                          className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                            'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
-                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
-                          })}
-                          aria-current={tab.name === tabProjects ? 'page' : undefined}
-                        >
-                          {t(tab.label)}
-                        </button>
-                      )
-                    }
-                    return null
-                  }
-                  return (
-                    <button
-                      key={tab.name}
-                      type='button'
-                      onClick={() => setTabProjects(tab.name)}
-                      className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                        'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
-                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
-                      })}
-                      aria-current={tab.name === tabProjects ? 'page' : undefined}
-                    >
-                      {t(tab.label)}
-                    </button>
-                  )
-                })}
-              </nav>
+              {/* Dashboard tabs selector */}
+              <div>
+                <div className='sm:hidden'>
+                  <Select
+                    items={dashboardLocTabs}
+                    keyExtractor={(item) => item.id}
+                    labelExtractor={(item) => t(item.label)}
+                    onSelect={(label) => {
+                      const selected = _find(dashboardLocTabs, (tab) => t(tab.label) === label)
+                      setTabProjects(selected.name)
+                      setActiveDashTab(selected.id)
+                    }}
+                    title={activeDashTabLabel}
+                  />
+                  {console.log(activeDashTabLabel)}
+                </div>
+              </div>
             </div>
             {isLoading ? (
               <Title title={t('titles.dashboard')}>

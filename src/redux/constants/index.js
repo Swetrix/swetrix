@@ -246,6 +246,12 @@ export const PROJECT_TABS = {
   alerts: 'alerts',
 }
 
+export const DASHBOARD_TABS = {
+  owned: 'owned',
+  shared: 'shared',
+  captcha: 'captcha',
+}
+
 export const QUERY_METRIC = {
   PAGE_VIEWS: 'page_views',
   UNIQUE_PAGE_VIEWS: 'unique_page_views',
