@@ -7,6 +7,7 @@ import { UserModule } from '../user/user.module'
 import { ProjectModule } from '../project/project.module'
 import { AnalyticsModule } from '../analytics/analytics.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
+import { AppLoggerModule } from '../logger/logger.module'
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ActionTokensModule } from '../action-tokens/action-tokens.module'
     AlertModule,
     forwardRef(() => AnalyticsModule),
     ExtensionsModule,
+    AppLoggerModule,
   ],
   providers: [TaskManagerService],
   exports: [TaskManagerService],

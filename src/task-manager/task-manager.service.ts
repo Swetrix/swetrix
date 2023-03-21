@@ -50,6 +50,7 @@ import {
   REDIS_LOG_CAPTCHA_CACHE_KEY,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
+import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
 
@@ -92,6 +93,7 @@ export class TaskManagerService {
     private readonly alertService: AlertService,
     @InjectBot() private bot: Telegraf<TelegrafContext>,
     private readonly extensionsService: ExtensionsService,
+    private readonly logger: AppLoggerService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -173,11 +175,11 @@ export class TaskManagerService {
       url: 'https://swetrix.com/billing',
     }
 
-    for (let i = 0; i < _size(users); ++i) {
-      const { id, email, planCode, projects } = users[i]
+    const promises = _map(users, async (user) => {
+      const { id, email, planCode, projects } = user
 
       if (_isEmpty(projects) || _isNull(projects)) {
-        continue
+        return
       }
 
       const maxEventsCount = ACCOUNT_PLANS[planCode].monthlyUsageLimit || 0
@@ -196,7 +198,13 @@ export class TaskManagerService {
           evWarningSentOn: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
         })
       }
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](checkLeftEvents) Error occured: ${reason}`)
+      })
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)
@@ -780,64 +788,64 @@ export class TaskManagerService {
     }
   }
 
-  // @Cron('0 * * * *')
-  // async handleNewExtensions() {
-  //   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-  //   const extensions = await this.extensionsService.find({
-  //     where: {
-  //       createdAt: MoreThan(twoWeeksAgo),
-  //     },
-  //   })
-  //   for (const extension of extensions) {
-  //     if (!extension.tags.includes('New')) {
-  //       extension.tags.push('New')
-  //       await this.extensionsService.save(extension)
-  //     }
-  //   }
-  //   const oldExtensions = await this.extensionsService.find({
-  //     where: {
-  //       createdAt: LessThan(twoWeeksAgo),
-  //       tags: Like('%New%'),
-  //     },
-  //   })
-  //   for (const extension of oldExtensions) {
-  //     extension.tags = extension.tags.filter(tag => tag !== 'New')
-  //     await this.extensionsService.save(extension)
-  //   }
-  // }
+  @Cron('0 * * * *')
+  async handleNewExtensions() {
+    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    const extensions = await this.extensionsService.find({
+      where: {
+        createdAt: MoreThan(twoWeeksAgo),
+      },
+    })
+    for (const extension of extensions) {
+      if (!extension.tags.includes('New')) {
+        extension.tags.push('New')
+        await this.extensionsService.save(extension)
+      }
+    }
+    const oldExtensions = await this.extensionsService.find({
+      where: {
+        createdAt: LessThan(twoWeeksAgo),
+        tags: Like('%New%'),
+      },
+    })
+    for (const extension of oldExtensions) {
+      extension.tags = extension.tags.filter(tag => tag !== 'New')
+      await this.extensionsService.save(extension)
+    }
+  }
 
-  // @Cron('0 * * * *')
-  // async handleTrendingExtensions() {
-  //   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-  //   const extensions = await this.extensionsService.find({
-  //     where: {
-  //       createdAt: MoreThan(twoWeeksAgo),
-  //     },
-  //   })
-  //   for (const extension of extensions) {
-  //     const currentInstalls =
-  //       await this.extensionsService.getExtensionInstallCount(extension.id)
-  //     const twoWeeksBeforeInstalls =
-  //       await this.extensionsService.getExtensionInstallCount(
-  //         extension.id,
-  //         twoWeeksAgo,
-  //       )
-  //     if (
-  //       currentInstalls > twoWeeksBeforeInstalls * 2 &&
-  //       currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
-  //     ) {
-  //       if (!extension.tags.includes('Trending')) {
-  //         extension.tags.push('Trending')
-  //         await this.extensionsService.save(extension)
-  //       }
-  //     } else {
-  //       if (extension.tags.includes('Trending')) {
-  //         extension.tags = extension.tags.filter(tag => tag !== 'Trending')
-  //         await this.extensionsService.save(extension)
-  //       }
-  //     }
-  //   }
-  // }
+  @Cron('0 * * * *')
+  async handleTrendingExtensions() {
+    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    const extensions = await this.extensionsService.find({
+      where: {
+        createdAt: MoreThan(twoWeeksAgo),
+      },
+    })
+    for (const extension of extensions) {
+      const currentInstalls =
+        await this.extensionsService.getExtensionInstallCount(extension.id)
+      const twoWeeksBeforeInstalls =
+        await this.extensionsService.getExtensionInstallCount(
+          extension.id,
+          twoWeeksAgo,
+        )
+      if (
+        currentInstalls > twoWeeksBeforeInstalls * 2 &&
+        currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
+      ) {
+        if (!extension.tags.includes('Trending')) {
+          extension.tags.push('Trending')
+          await this.extensionsService.save(extension)
+        }
+      } else {
+        if (extension.tags.includes('Trending')) {
+          extension.tags = extension.tags.filter(tag => tag !== 'Trending')
+          await this.extensionsService.save(extension)
+        }
+      }
+    }
+  }
 
   private async getAverageInstalls(
     extensions: Extension[],
