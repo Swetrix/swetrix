@@ -43,7 +43,6 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { ShareDTO } from './dto/share.dto'
 import { ShareUpdateDTO } from './dto/share-update.dto'
-import { PartialDeleteDTO } from './dto/delete-partially.dto'
 import { isValidDate } from 'src/analytics/analytics.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
@@ -550,20 +549,21 @@ export class ProjectController {
     }
   }
 
-  @Delete('/partially/:id')
+  @Delete('/partially/:pid')
+  @ApiQuery({ name: 'from', required: true, description: 'Date in ISO format', example: '2020-01-01T00:00:00.000Z', type: 'string' })
+  @ApiQuery({ name: 'to', required: true, description: 'Date in ISO format', example: '2020-01-01T00:00:00.000Z', type: 'string' })
   @ApiResponse({ status: 201 })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deletePartially(
-    @Body() deleteDTO: PartialDeleteDTO,
-    @Param('id') id: string,
+    @Param('pid') pid: string,
+    @Query('from') from: string,
+    @Query('to') to: string,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    this.logger.log({ deleteDTO, uid }, 'DELETE /partially/:id')
+    this.logger.log({ from, to, pid }, 'DELETE /partially/:id')
 
-    let { from, to } = deleteDTO
-
-    if (!isValidPID(id)) {
+    if (!isValidPID(pid)) {
       throw new BadRequestException('The provided Project ID (pid) is incorrect')
     }
 
@@ -581,7 +581,7 @@ export class ProjectController {
     from = dayjs(from).format('YYYY-MM-DD')
     to = dayjs(to).format('YYYY-MM-DD 23:59:59')
 
-    const project = await this.projectService.findOne(id, {
+    const project = await this.projectService.findOne(pid, {
       relations: ['admin', 'share'],
     })
 
@@ -596,7 +596,7 @@ export class ProjectController {
     const queryP = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
-        id, from, to,
+        pid, from, to,
       },
     }
 
