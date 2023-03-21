@@ -120,7 +120,6 @@ export class ProjectService {
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
   ) {}
-  ) { }
 
   async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
