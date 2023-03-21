@@ -20,7 +20,7 @@ import { AlertModule } from './alert/alert.module'
 import { I18nModule } from 'nestjs-i18n'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
-import { CaptchaModule } from './captcha/captcha.module'
+import { CaptchaModule, isDevelopment, isTgTokenPresent } from './captcha/captcha.module'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
@@ -31,7 +31,7 @@ const modules = [
     username: process.env.MYSQL_USER,
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
-    synchronize: process.env.NODE_ENV === 'development',
+    synchronize: isDevelopment,
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
   }),
   I18nModule.forRootAsync(getI18nConfig()),
@@ -53,7 +53,7 @@ const modules = [
   CaptchaModule,
 ]
 
-if (process.env.TG_BOT_TOKEN) {
+if (isTgTokenPresent) {
   modules.push(
     TelegrafModule.forRoot({
       token: process.env.TG_BOT_TOKEN,

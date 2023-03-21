@@ -21,7 +21,6 @@ import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import {
-  ReportFrequency,
   ACCOUNT_PLANS,
   PlanCode,
   BillingFrequency,
@@ -50,6 +49,7 @@ import { Telegraf } from 'telegraf'
 import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
 import { ExtensionsService } from 'src/marketplace/extensions/extensions.service'
 import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
+import { ReportFrequency } from 'src/project/enums'
 
 dayjs.extend(utc)
 
@@ -236,7 +236,7 @@ export class TaskManagerService {
 
     const users = await this.userService.find({
       where: {
-        reportFrequency: ReportFrequency.Weekly,
+        reportFrequency: ReportFrequency.WEEKLY,
       },
       relations: ['projects'],
       select: ['email'],
@@ -282,7 +282,7 @@ export class TaskManagerService {
 
     const users = await this.userService.find({
       where: {
-        reportFrequency: ReportFrequency.Monthly,
+        reportFrequency: ReportFrequency.MONTHLY,
       },
       relations: ['projects'],
       select: ['email'],
@@ -312,6 +312,166 @@ export class TaskManagerService {
 
       await this.mailerService.sendEmail(
         users[i].email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
+  }
+
+  @Cron(CronExpression.EVERY_QUARTER)
+  async quarterlyReportsHandler(): Promise<void> {
+    if (isSelfhosted) {
+      return
+    }
+
+    const users = await this.userService.find({
+      where: {
+        reportFrequency: ReportFrequency.QUARTERLY,
+      },
+      relations: ['projects'],
+      select: ['email'],
+    })
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const quarterAgo = dayjs.utc().subtract(3, 'M').format('DD.MM.YYYY')
+    const date = `${quarterAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (let i = 0; i < _size(users); ++i) {
+      if (_isEmpty(users[i]?.projects) || _isNull(users[i]?.projects)) {
+        continue
+      }
+
+      const ids = _map(users[i].projects, p => p.id)
+      const data = await this.analyticsService.getSummary(ids, 'M')
+
+      const result = {
+        type: 'Q', // quarterly
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: users[i].projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        users[i].email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
+  }
+
+  // EMAIL REPORTS, BUT FOR MULTIPLE PROJECT SUBSCRIBERS
+
+  @Cron(CronExpression.EVERY_QUARTER)
+  async handleQuarterlyReports(): Promise<void> {
+    const subscribers = await this.projectService.getSubscribersForReports(
+      ReportFrequency.QUARTERLY,
+    )
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const quarterAgo = dayjs.utc().subtract(3, 'M').format('DD.MM.YYYY')
+    const date = `${quarterAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (const subscriber of subscribers) {
+      const projects = await this.projectService.getSubscriberProjects(
+        subscriber.id,
+      )
+
+      const ids = projects.map(project => project.id)
+      const data = await this.analyticsService.getSummary(ids, 'M')
+
+      const result = {
+        type: 'Q', // quarter
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        subscriber.email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
+  }
+
+  // ON THE FIRST DAY OF EVERY MONTH AT 3 AM
+  @Cron('0 03 1 * *')
+  async handleMonthlyReports(): Promise<void> {
+    const subscribers = await this.projectService.getSubscribersForReports(
+      ReportFrequency.MONTHLY,
+    )
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const weekAgo = dayjs.utc().subtract(1, 'M').format('DD.MM.YYYY')
+    const date = `${weekAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (const subscriber of subscribers) {
+      const projects = await this.projectService.getSubscriberProjects(
+        subscriber.id,
+      )
+
+      const ids = projects.map(project => project.id)
+      const data = await this.analyticsService.getSummary(ids, 'M')
+
+      const result = {
+        type: 'M', // month
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        subscriber.email,
+        LetterTemplate.ProjectReport,
+        result,
+        'broadcast',
+      )
+    }
+  }
+
+  // EVERY SUNDAY AT 3 AM
+  @Cron('0 03 * * 0')
+  async handleWeeklyReports(): Promise<void> {
+    const subscribers = await this.projectService.getSubscribersForReports(
+      ReportFrequency.WEEKLY,
+    )
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const weekAgo = dayjs.utc().subtract(1, 'w').format('DD.MM.YYYY')
+    const date = `${weekAgo} - ${now}`
+    const tip = getRandomTip()
+
+    for (const subscriber of subscribers) {
+      const projects = await this.projectService.getSubscriberProjects(
+        subscriber.id,
+      )
+
+      const ids = projects.map(project => project.id)
+      const data = await this.analyticsService.getSummary(ids, 'w')
+
+      const result = {
+        type: 'w', // week
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+      }
+
+      await this.mailerService.sendEmail(
+        subscriber.email,
         LetterTemplate.ProjectReport,
         result,
         'broadcast',
@@ -618,64 +778,64 @@ export class TaskManagerService {
     }
   }
 
-  @Cron('0 * * * *')
-  async handleNewExtensions() {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-    const extensions = await this.extensionsService.find({
-      where: {
-        createdAt: MoreThan(twoWeeksAgo),
-      },
-    })
-    for (const extension of extensions) {
-      if (!extension.tags.includes('New')) {
-        extension.tags.push('New')
-        await this.extensionsService.save(extension)
-      }
-    }
-    const oldExtensions = await this.extensionsService.find({
-      where: {
-        createdAt: LessThan(twoWeeksAgo),
-        tags: Like('%New%'),
-      },
-    })
-    for (const extension of oldExtensions) {
-      extension.tags = extension.tags.filter(tag => tag !== 'New')
-      await this.extensionsService.save(extension)
-    }
-  }
+  // @Cron('0 * * * *')
+  // async handleNewExtensions() {
+  //   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+  //   const extensions = await this.extensionsService.find({
+  //     where: {
+  //       createdAt: MoreThan(twoWeeksAgo),
+  //     },
+  //   })
+  //   for (const extension of extensions) {
+  //     if (!extension.tags.includes('New')) {
+  //       extension.tags.push('New')
+  //       await this.extensionsService.save(extension)
+  //     }
+  //   }
+  //   const oldExtensions = await this.extensionsService.find({
+  //     where: {
+  //       createdAt: LessThan(twoWeeksAgo),
+  //       tags: Like('%New%'),
+  //     },
+  //   })
+  //   for (const extension of oldExtensions) {
+  //     extension.tags = extension.tags.filter(tag => tag !== 'New')
+  //     await this.extensionsService.save(extension)
+  //   }
+  // }
 
-  @Cron('0 * * * *')
-  async handleTrendingExtensions() {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-    const extensions = await this.extensionsService.find({
-      where: {
-        createdAt: MoreThan(twoWeeksAgo),
-      },
-    })
-    for (const extension of extensions) {
-      const currentInstalls =
-        await this.extensionsService.getExtensionInstallCount(extension.id)
-      const twoWeeksBeforeInstalls =
-        await this.extensionsService.getExtensionInstallCount(
-          extension.id,
-          twoWeeksAgo,
-        )
-      if (
-        currentInstalls > twoWeeksBeforeInstalls * 2 &&
-        currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
-      ) {
-        if (!extension.tags.includes('Trending')) {
-          extension.tags.push('Trending')
-          await this.extensionsService.save(extension)
-        }
-      } else {
-        if (extension.tags.includes('Trending')) {
-          extension.tags = extension.tags.filter(tag => tag !== 'Trending')
-          await this.extensionsService.save(extension)
-        }
-      }
-    }
-  }
+  // @Cron('0 * * * *')
+  // async handleTrendingExtensions() {
+  //   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+  //   const extensions = await this.extensionsService.find({
+  //     where: {
+  //       createdAt: MoreThan(twoWeeksAgo),
+  //     },
+  //   })
+  //   for (const extension of extensions) {
+  //     const currentInstalls =
+  //       await this.extensionsService.getExtensionInstallCount(extension.id)
+  //     const twoWeeksBeforeInstalls =
+  //       await this.extensionsService.getExtensionInstallCount(
+  //         extension.id,
+  //         twoWeeksAgo,
+  //       )
+  //     if (
+  //       currentInstalls > twoWeeksBeforeInstalls * 2 &&
+  //       currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
+  //     ) {
+  //       if (!extension.tags.includes('Trending')) {
+  //         extension.tags.push('Trending')
+  //         await this.extensionsService.save(extension)
+  //       }
+  //     } else {
+  //       if (extension.tags.includes('Trending')) {
+  //         extension.tags = extension.tags.filter(tag => tag !== 'Trending')
+  //         await this.extensionsService.save(extension)
+  //       }
+  //     }
+  //   }
+  // }
 
   private async getAverageInstalls(
     extensions: Extension[],

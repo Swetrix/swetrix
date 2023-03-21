@@ -2,7 +2,9 @@
 <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <title>Swetrix {{#ifEquals type "w"}}Weekly{{/ifEquals}}{{#ifEquals type "M"}}Monthly{{/ifEquals}}{{#ifEquals type "Q"}}Quarterly{{/ifEquals}} Project Report</title>
+      <title>
+        You have been invited to subscribe to the {{projectName}} reports.
+      </title>
       <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet" />
    </head>
    <body style="margin: 0; padding: 0; background-color: #f0f4f7;">
@@ -42,22 +44,7 @@
                                        align="center"
                                        style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; font-size: 44px; color: #1a1a1a;"
                                     >
-                                       Your {{#ifEquals type "w"}}Weekly{{/ifEquals}}{{#ifEquals type "M"}}Monthly{{/ifEquals}}{{#ifEquals type "Q"}}Quarterly{{/ifEquals}} Report
-                                    </span>
-                                 </font>
-                                 <div style="height: 10px; line-height: 10px; font-size: 9px;">&nbsp;</div>
-                                 <font style="font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;">
-                                    <span
-                                       style="
-                                          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-                                          color: #5e5e5e;
-                                          font-size: 30px;
-                                          line-height: 45px;
-                                          font-weight: 300;
-                                          letter-spacing: -1px;
-                                       "
-                                    >
-                                       For {{date}} period
+                                      You have been invited to subscribe to the {{projectName}} reports.
                                     </span>
                                  </font>
                                  <div style="height: 38px; line-height: 38px; font-size: 36px;">&nbsp;</div>
@@ -73,26 +60,82 @@
                                                    line-height: 23px;
                                                 "
                                              >
-                                                {{#each projects}}
-                                                  <h3 style="margin-bottom: 5px;">{{name}}</h3>
-                                                  <b>Unique visitors:</b> {{data.thisWeekUnique}} ({{#greater data.percChangeUnique 0}}<span style="color: #059669;">+{{data.percChangeUnique}}%</span>{{else}}<span style="color: #DC2626;">{{data.percChangeUnique}}%</span>{{/greater}})<br />
-                                                  <b>Pageviews:</b> {{data.thisWeek}} ({{#greater data.percChange 0}}<span style="color: #059669;">+{{data.percChange}}%</span>{{else}}<span style="color: #DC2626;">{{data.percChange}}%</span>{{/greater}})<br /><br />
-                                                {{/each}}
-
-                                                <i style="white-space: pre-line;">
-                                                   <span style="font-style: normal;">&#128161;</span>
-                                                   {{tip}}
-                                                </i>
-
-                                                <br /><br />
-
-                                                You can manage email reports preferences in your <a href="https://swetrix.com/settings" target="_blank">account settings</a>.
+                                                Hey!<br /><br />
+                                                A Swetrix user has invited you to join the <b>{{projectName}}</b> website analytics reports email subscription.<br />
+                                                Click the button below to accept the invitation or ignore this email if you do not want to receive updates from this project.
                                              </span>
                                           </font>
                                           <div style="height: 30px; line-height: 30px; font-size: 28px;">&nbsp;</div>
                                        </td>
                                     </tr>
                                  </table>
+                              </td>
+                           </tr>
+                        </table>
+
+                        <table cellpadding="0" cellspacing="0" border="0" width="88%" style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                           <tr>
+                              <td align="center" valign="top">
+                                 <table cellpadding="0" cellspacing="0" border="0" style="background: #4f46e5; border-radius: 4px;">
+                                    <tr>
+                                       <td align="center" valign="top">
+                                          <a
+                                             href="{{url}}"
+                                             target="_blank"
+                                             style="
+                                                display: block;
+                                                border: 1px solid #4f46e5;
+                                                border-radius: 4px;
+                                                padding: 19px 26px;
+                                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                color: #ffffff;
+                                                font-size: 20px;
+                                                line-height: 30px;
+                                                text-decoration: none;
+                                                white-space: nowrap;
+                                                font-weight: 600;
+                                             "
+                                          >
+                                             <font face="'Source Sans Pro', sans-serif" color="#ffffff" style="font-size: 26px; line-height: 30px; text-decoration: none; white-space: nowrap; font-weight: 600;">
+                                                <span
+                                                   style="
+                                                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                      color: #ffffff;
+                                                      font-size: 26px;
+                                                      line-height: 30px;
+                                                      text-decoration: none;
+                                                      white-space: nowrap;
+                                                      font-weight: 600;
+                                                   "
+                                                >
+                                                   Accept invitation
+                                                </span>
+                                             </font>
+                                          </a>
+                                       </td>
+                                    </tr>
+                                 </table>
+                                 <div style="height: 30px; line-height: 30px; font-size: 28px;">&nbsp;</div>
+                                 <table cellpadding="0" cellspacing="0" border="0" width="88%" style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                                    <tr>
+                                       <td align="left" valign="top">
+                                          <font face="'Source Sans Pro', sans-serif" color="#6d6d6d" style="font-size: 17px; line-height: 23px;">
+                                             <span
+                                                style="
+                                                   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                   color: #6d6d6d;
+                                                   font-size: 17px;
+                                                   line-height: 23px;
+                                                "
+                                             >
+                                                If you&apos;re having trouble with the button above, copy and paste the URL below directly into your web browser:<br />
+                                                {{url}}
+                                             </span>
+                                          </font>
+                                       </td>
+                                    </tr>
+                                 </table>
+                                 <div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
                               </td>
                            </tr>
                         </table>

@@ -40,8 +40,11 @@ const clickhouse = new ClickHouse({
 })
 
 const isSelfhosted = Boolean(process.env.SELFHOSTED)
+const isTgTokenPresent = Boolean(process.env.TG_BOT_TOKEN)
+const isDevelopment = process.env.NODE_ENV === 'development'
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 const isDevelopment = process.env.NODE_ENV === 'development'
+const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
 const CLICKHOUSE_INIT_QUERIES = [
   'CREATE DATABASE IF NOT EXISTS analytics',
@@ -247,4 +250,6 @@ export {
   CAPTCHA_TOKEN_LIFETIME,
   PID_REGEX,
   CAPTCHA_SECRET_KEY_LENGTH,
+  PRODUCTION_ORIGIN,
+  isTgTokenPresent,
 }

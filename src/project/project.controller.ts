@@ -14,6 +14,8 @@ import {
   ForbiddenException,
   Headers,
   NotImplementedException,
+  Patch,
+  HttpStatus,
 } from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -48,6 +50,8 @@ import {
   isSelfhosted,
   PROJECT_INVITE_EXPIRE,
   CAPTCHA_SECRET_KEY_LENGTH,
+  isDevelopment,
+  PRODUCTION_ORIGIN,
 } from '../common/constants'
 import {
   getProjectsClickhouse,
@@ -58,6 +62,17 @@ import {
 } from '../common/utils'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
+import {
+  AddSubscriberParamsDto,
+  AddSubscriberBodyDto,
+  ConfirmSubscriberInviteParamsDto,
+  ConfirmSubscriberInviteQueriesDto,
+  GetSubscribersParamsDto,
+  GetSubscribersQueriesDto,
+  UpdateSubscriberParamsDto,
+  UpdateSubscriberBodyDto,
+  RemoveSubscriberParamsDto,
+} from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 
@@ -898,7 +913,7 @@ export class ProjectController {
         ActionTokenType.PROJECT_SHARE,
         share.id,
       )
-      const url = `${headers.origin}/share/${actionToken.id}`
+      const url = `${isDevelopment ? headers.origin : PRODUCTION_ORIGIN}/share/${actionToken.id}`
       await this.mailerService.sendEmail(
         invitee.email,
         LetterTemplate.ProjectInvitation,
@@ -1001,5 +1016,168 @@ export class ProjectController {
       await this.projectService.updateShare(shareId, share)
       await this.actionTokensService.delete(id)
     }
+  }
+
+  @Post(':projectId/subscribers')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async addSubscriber(
+    @Param() params: AddSubscriberParamsDto,
+    @Body() body: AddSubscriberBodyDto,
+    @Headers() headers: { origin: string },
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.getUser(userId)
+
+    if (user.email === body.email) {
+      throw new BadRequestException('You cannot subscribe to your own project.')
+    }
+
+    const subscriber = await this.projectService.getSubscriberByEmail(
+      params.projectId,
+      body.email,
+    )
+
+    if (subscriber) {
+      throw new BadRequestException('Subscriber already exists.')
+    }
+
+    return await this.projectService.addSubscriber({
+      userId,
+      projectId: params.projectId,
+      projectName: project.name,
+      email: body.email,
+      reportFrequency: body.reportFrequency,
+      origin: isDevelopment ? headers.origin : PRODUCTION_ORIGIN,
+    })
+  }
+
+  @Get(':projectId/subscribers/invite')
+  @HttpCode(HttpStatus.OK)
+  async confirmSubscriberInvite(
+    @Param() params: ConfirmSubscriberInviteParamsDto,
+    @Query() queries: ConfirmSubscriberInviteQueriesDto,
+  ): Promise<void> {
+    const project = await this.projectService.getProjectById(params.projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const actionToken = await this.actionTokensService.getActionToken(
+      queries.token,
+    )
+
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.ADDING_PROJECT_SUBSCRIBER
+    ) {
+      throw new BadRequestException('Invalid token.')
+    }
+
+    const [projectId, subscriberId] = actionToken.newValue.split(':')
+    const subscriber = await this.projectService.getSubscriber(
+      projectId,
+      subscriberId,
+    )
+
+    if (!subscriber) {
+      throw new NotFoundException('Subscriber not found.')
+    }
+
+    await this.projectService.confirmSubscriber(
+      projectId,
+      subscriberId,
+      actionToken.id,
+    )
+  }
+
+  @Get(':projectId/subscribers')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async getSubscribers(
+    @Param() params: GetSubscribersParamsDto,
+    @Query() queries: GetSubscribersQueriesDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    return await this.projectService.getSubscribers(params.projectId, queries)
+  }
+
+  @Patch(':projectId/subscribers/:subscriberId')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async updateSubscriber(
+    @Param() params: UpdateSubscriberParamsDto,
+    @Body() body: UpdateSubscriberBodyDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const subscriber = await this.projectService.getSubscriber(
+      params.projectId,
+      params.subscriberId,
+    )
+
+    if (!subscriber) {
+      throw new NotFoundException('Subscriber not found.')
+    }
+
+    return await this.projectService.updateSubscriber(
+      params.projectId,
+      params.subscriberId,
+      body,
+    )
+  }
+
+  @Delete(':projectId/subscribers/:subscriberId')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async removeSubscriber(
+    @Param() params: RemoveSubscriberParamsDto,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const subscriber = await this.projectService.getSubscriber(
+      params.projectId,
+      params.subscriberId,
+    )
+
+    if (!subscriber) {
+      throw new NotFoundException('Subscriber not found.')
+    }
+
+    await this.projectService.removeSubscriber(
+      params.projectId,
+      params.subscriberId,
+    )
   }
 }

@@ -13,4 +13,5 @@ export enum LetterTemplate {
   TwoFAOff = '2fa-turned-off',
   TrialExpired = 'trial-expired',
   TrialEndsTomorrow = 'trial-ends-tomorrow',
+  ProjectSubscriberInvitation = 'project-subscriber-invitation',
 }

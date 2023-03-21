@@ -45,6 +45,14 @@ import {
 import {
   getProjectsClickhouse,
 } from '../common/utils'
+import { ProjectSubscriber } from './entity'
+import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
+import { ActionTokenType } from 'src/action-tokens/action-token.entity'
+import { MailerService } from 'src/mailer/mailer.service'
+import { LetterTemplate } from 'src/mailer/letter'
+import { AddSubscriberType } from './types'
+import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
+import { ReportFrequency } from './enums'
 
 dayjs.extend(utc)
 
@@ -107,6 +115,11 @@ export class ProjectService {
     @InjectRepository(ProjectShare)
     private projectShareRepository: Repository<ProjectShare>,
     private userService: UserService,
+    @InjectRepository(ProjectSubscriber)
+    private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
+    private readonly actionTokens: ActionTokensService,
+    private readonly mailerService: MailerService,
+  ) {}
   ) { }
 
   async getRedisProject(pid: string): Promise<Project | null> {
@@ -477,5 +490,107 @@ export class ProjectService {
     }
 
     await this.clearProjectsRedisCache(user.id)
+  }
+  
+    async getProject(projectId: string, userId: string) {
+    return await this.projectsRepository.findOne({
+      where: {
+        id: projectId,
+        admin: { id: userId },
+      },
+    })
+  }
+  async getSubscriberByEmail(projectId: string, email: string) {
+    return await this.projectSubscriberRepository.findOne({
+      where: { projectId, email },
+    })
+  }
+  async addSubscriber(data: AddSubscriberType) {
+    const subscriber = await this.projectSubscriberRepository.save({ ...data })
+    await this.sendSubscriberInvite(
+      data, subscriber.id,
+    )
+    return subscriber
+  }
+  async sendSubscriberInvite(
+    data: AddSubscriberType,
+    subscriberId: string,
+  ) {
+    const {
+      userId, projectId, projectName, email, origin 
+    } = data
+    const actionToken = await this.actionTokens.createActionToken(
+      userId,
+      ActionTokenType.ADDING_PROJECT_SUBSCRIBER,
+      `${projectId}:${subscriberId}`,
+    )
+    const url = `${origin}/projects/${projectId}/subscribers/invite?token=${actionToken.id}`
+    await this.mailerService.sendEmail(
+      email,
+      LetterTemplate.ProjectSubscriberInvitation,
+      {
+        url, projectName,
+      },
+    )
+  }
+  async getProjectById(projectId: string) {
+    return await this.projectsRepository.findOne({
+      where: { id: projectId },
+    })
+  }
+  async getSubscriber(projectId: string, subscriberId: string) {
+    return await this.projectSubscriberRepository.findOne({
+      where: { id: subscriberId, projectId },
+    })
+  }
+  async confirmSubscriber(
+    projectId: string,
+    subscriberId: string,
+    token: string,
+  ) {
+    await this.projectSubscriberRepository.update(
+      { id: subscriberId, projectId },
+      { isConfirmed: true },
+    )
+    await this.actionTokens.deleteActionToken(token)
+  }
+  async getSubscribers(projectId: string, queries: GetSubscribersQueriesDto) {
+    const [subscribers, count] =
+      await this.projectSubscriberRepository.findAndCount({
+        skip: Number(queries.offset) || 0,
+        take: Number(queries.limit) > 100 ? 100 : Number(queries.limit) || 100,
+        where: { projectId },
+      })
+    return { subscribers, count }
+  }
+  async updateSubscriber(
+    projectId: string,
+    subscriberId: string,
+    data: UpdateSubscriberBodyDto,
+  ) {
+    await this.projectSubscriberRepository.update(
+      { id: subscriberId, projectId },
+      data,
+    )
+    return await this.getSubscriber(projectId, subscriberId)
+  }
+  async removeSubscriber(projectId: string, subscriberId: string) {
+    await this.projectSubscriberRepository.delete({
+      id: subscriberId,
+      projectId,
+    })
+  }
+  async getSubscribersForReports(reportFrequency: ReportFrequency) {
+    return await this.projectSubscriberRepository.find({
+      relations: ['project'],
+      where: { reportFrequency, isConfirmed: true },
+    })
+  }
+  async getSubscriberProjects(subscriberId: string) {
+    const projects = await this.projectSubscriberRepository.find({
+      relations: ['project'],
+      where: { id: subscriberId },
+    })
+    return projects.map(project => project.project)
   }
 }
