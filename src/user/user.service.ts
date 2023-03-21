@@ -7,9 +7,14 @@ import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { User, ACCOUNT_PLANS, TRIAL_DURATION } from './entities/user.entity'
+import {
+  User, ACCOUNT_PLANS, TRIAL_DURATION, PlanCode, UserType,
+} from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
+import {
+  SELFHOSTED_EMAIL, SELFHOSTED_UUID,
+} from 'src/common/constants'
 
 @Injectable()
 export class UserService {
@@ -206,5 +211,18 @@ export class UserService {
 
   async getUser(id: string) {
     return await this.usersRepository.findOne({ id })
+  }
+
+  public generateSelfhostedUserEntity(): User {
+    // @ts-ignore
+    return {
+      id: SELFHOSTED_UUID,
+      email: SELFHOSTED_EMAIL,
+      planCode: PlanCode.enterprise,
+      roles: [
+        UserType.ADMIN, UserType.CUSTOMER,
+      ],
+      isActive: true,
+    }
   }
 }

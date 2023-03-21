@@ -43,6 +43,7 @@ import {
   RequestChangeEmailDto,
 } from './dtos'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
+import { isSelfhosted } from 'src/common/constants'
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -137,7 +138,10 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.invalidCredentials'))
     }
 
-    await this.authService.sendTelegramNotification(user.id, headers, ip)
+    // Notifications are temporarily disabled for self-hosted instances
+    if (!isSelfhosted) {
+      await this.authService.sendTelegramNotification(user.id, headers, ip)
+    }
 
     const jwtTokens = await this.authService.generateJwtTokens(
       user.id,

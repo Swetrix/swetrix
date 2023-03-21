@@ -7,6 +7,7 @@ import { getCountry } from 'countries-and-timezones'
 import { createHash } from 'crypto'
 import * as dayjs from 'dayjs'
 import { InjectBot } from 'nestjs-telegraf'
+
 import {
   ActionToken,
   ActionTokenType,
@@ -20,6 +21,12 @@ import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
 import { Telegraf } from 'telegraf'
 import { UAParser } from 'ua-parser-js'
+import {
+  SELFHOSTED_EMAIL, SELFHOSTED_PASSWORD, isSelfhosted,
+} from 'src/common/constants'
+
+const ACCESS_TOKEN_EXPIRATION_TIME = 60 * 30
+const ACCESS_TOKEN_EXPIRATION_TIME_SELFHOSTED = 60 * 60 * 24 * 10 // 10 days
 
 @Injectable()
 export class AuthService {
@@ -31,7 +38,7 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly projectService: ProjectService,
-  ) {}
+  ) { }
 
   private async createSha1Hash(password: string): Promise<string> {
     return new Promise(resolve => {
@@ -85,9 +92,7 @@ export class AuthService {
       })
     }
 
-    const verificationLink = `${this.configService.get('CLIENT_URL')}/verify/${
-      actionToken.id
-    }`
+    const verificationLink = `${this.configService.get('CLIENT_URL')}/verify/${actionToken.id}`
 
     await this.mailerService.sendEmail(email, LetterTemplate.SignUp, {
       url: verificationLink,
@@ -121,16 +126,32 @@ export class AuthService {
       },
       {
         algorithm: 'HS256',
-        expiresIn: 60 * 30,
+        expiresIn: isSelfhosted ? ACCESS_TOKEN_EXPIRATION_TIME_SELFHOSTED : ACCESS_TOKEN_EXPIRATION_TIME,
         secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
       },
     )
   }
 
+  public validateUserSelfhosted(
+    email: string,
+    password: string,
+  ): User {
+    if (email === SELFHOSTED_EMAIL && password === SELFHOSTED_PASSWORD) {
+      return this.userService.generateSelfhostedUserEntity()
+    }
+
+    return null
+  }
+
+
   public async validateUser(
     email: string,
     password: string,
   ): Promise<User | null> {
+    if (isSelfhosted) {
+      return this.validateUserSelfhosted(email, password)
+    }
+
     const user = await this.userService.findUser(email)
 
     if (user && (await this.comparePassword(password, user.password))) {
@@ -362,6 +383,11 @@ export class AuthService {
     userId: string,
     isSecondFactorAuthenticated = false,
   ) {
+    // TODO: Add refresh token for self-hosted users
+    if (isSelfhosted) {
+      return null
+    }
+
     const refreshToken = await this.jwtService.signAsync(
       {
         sub: userId,
