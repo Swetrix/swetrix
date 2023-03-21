@@ -301,7 +301,7 @@ const Dashboard = ({
             <div className='mt-6'>
               {/* Dashboard tabs selector */}
               <div>
-                <div className='sm:hidden'>
+                <div className='sm:hidden mb-2'>
                   <Select
                     items={dashboardLocTabs}
                     keyExtractor={(item) => item.id}
