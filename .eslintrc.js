@@ -30,6 +30,7 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 'off',
     'lodash/prefer-lodash-method': 'off', // disabled because lodash considers some of the typeorm methods as unsafe
     // 'lodash/prefer-lodash-method': 'warn',
+    'no-param-reassign': 'off',
     'no-restricted-syntax': 'off',
     'class-methods-use-this': 'off',
     'arrow-body-style': 'off',
