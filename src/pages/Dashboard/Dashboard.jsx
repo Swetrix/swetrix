@@ -45,7 +45,6 @@ const ProjectCart = ({
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
-  // console.log(overall)
 
   const onAccept = async () => {
     const pid = _find(sharedProjects, item => item.project.id === id).id
@@ -313,7 +312,6 @@ const Dashboard = ({
                     }}
                     title={activeDashTabLabel}
                   />
-                  {console.log(activeDashTabLabel)}
                 </div>
                 <div className='hidden sm:block'>
                   {sharedTotal > 0 && (
