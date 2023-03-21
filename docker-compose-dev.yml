@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   redis:
-    image: redis:alpine
+    image: redis:7.0.10-alpine
     ports:
       - 6379:6379
   mysql:
@@ -12,8 +12,8 @@ services:
     ports:
       - 3306:3306
   clickhouse:
-    image: clickhouse/clickhouse-server:22.8-alpine
+    image: clickhouse/clickhouse-server:22.8.15.23-alpine
     environment:
-      CLICKHOUSE_DATABASE: 'analytics'
+      CLICKHOUSE_DB: 'analytics'
     ports:
       - 8123:8123
