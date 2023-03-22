@@ -822,7 +822,7 @@ export class AnalyticsController {
     )
 
     await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME)
-    this.analyticsService.processInteractionSD(sessionID, pid)
+    await this.analyticsService.processInteractionSD(sessionID, pid)
   }
 
   // Log pageview event
