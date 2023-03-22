@@ -232,11 +232,11 @@ export class ExtensionsService {
     extension: UpdateExtensionType,
     extensionVersion: string,
   ) {
-    const _extension = await this.extensionRepository.findOne({
+    const oldExtension = await this.extensionRepository.findOne({
       where: { id: extensionId },
     })
 
-    const additionalImages = [..._extension.additionalImages]
+    const additionalImages = [...oldExtension.additionalImages]
 
     if (extension.additionalImages) {
       additionalImages.push(
@@ -265,30 +265,30 @@ export class ExtensionsService {
     await this.extensionRepository.update(
       { id: extensionId },
       {
-        name: extension.name ? extension.name : _extension.name,
+        name: extension.name ? extension.name : oldExtension.name,
         description: extension.description
           ? extension.description
-          : _extension.description,
+          : oldExtension.description,
         version: extension.version
           ? this.extensionVersion(extensionVersion, extension.version)
-          : _extension.version,
+          : oldExtension.version,
         status: extension.extensionScript
           ? ExtensionStatus.PENDING
-          : _extension.status,
-        price: extension.price ? Number(extension.price) : _extension.price,
+          : oldExtension.status,
+        price: extension.price ? Number(extension.price) : oldExtension.price,
         category: { id: extension.categoryId && Number(extension.categoryId) },
         companyLink: extension.companyLink,
         mainImage: extension.mainImage
           ? (
               await this.cdnService.uploadFile(extension.mainImage)
             ).filename
-          : _extension.mainImage,
+          : oldExtension.mainImage,
         additionalImages,
         fileURL: extension.extensionScript
           ? (
               await this.cdnService.uploadFile(extension.extensionScript)
             ).filename
-          : _extension.fileURL,
+          : oldExtension.fileURL,
       },
     )
 

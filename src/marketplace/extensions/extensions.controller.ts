@@ -17,7 +17,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { getRepository, Like } from 'typeorm'
+import { Like } from 'typeorm'
 import * as _map from 'lodash/map'
 import * as _size from 'lodash/size'
 import { CurrentUserId } from 'src/auth/decorators/current-user-id.decorator'
@@ -32,7 +32,6 @@ import { UserService } from '../../user/user.service'
 import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { CategoriesService } from '../categories/categories.service'
-import { SortByExtension } from './enums/sort-by-extension.enum'
 import { CdnService } from '../cdn/cdn.service'
 import { Extension } from './entities/extension.entity'
 import { GetInstalledExtensionsQueriesDto } from './dtos/queries/get-installed-extensions.dto'
@@ -139,6 +138,7 @@ export class ExtensionsController {
   })
   @Get()
   async getExtensions(@Query() queries: GetAllExtensionsQueries) {
+    // eslint-disable-next-line prefer-const
     let [extensions, count] = await this.extensionsService.getExtensions(
       queries,
     )
@@ -176,6 +176,7 @@ export class ExtensionsController {
     extensions: Extension[]
     count: number
   }> {
+    // eslint-disable-next-line prefer-const
     let [extensions, count] = await this.extensionsService.findAndCount(
       {
         skip: queries.offset || 0,
@@ -250,6 +251,7 @@ export class ExtensionsController {
       )
     }
 
+    // eslint-disable-next-line prefer-const
     let [extensions, count] = await this.extensionsService.findAndCount(
       {
         skip: queries.offset || 0,
@@ -307,6 +309,7 @@ export class ExtensionsController {
   })
   @Get('search')
   async searchExtension(@Query() queries: SearchExtensionQueries) {
+    // eslint-disable-next-line prefer-const
     let [extensions, count] = await this.extensionsService.searchExtension(
       queries,
     )
