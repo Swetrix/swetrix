@@ -1,0 +1,33 @@
+name: Pull request validation workflow
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, labeled, synchronize, ready_for_review]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.19.x]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Setup NodeJS ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        run: npm install
+
+      - name: Lint validation
+        run: npm run lint
