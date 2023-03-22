@@ -9,6 +9,11 @@ FROM node:lts-alpine as run
 ENV TZ=UTC \
     MYSQL_HOST=localhost \
     MYSQL_USER=root \
+    TWO_FACTOR_AUTHENTICATION_APP_NAME=Swetrix \
+    CLIENT_URL=https://swetrix.com \
+    JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret \
+    JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret \
+    TG_BOT_TOKEN= \
     MYSQL_ROOT_PASSWORD=password \
     MYSQL_DATABASE=analytics \
     REDIS_HOST=localhost \

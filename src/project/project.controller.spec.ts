@@ -89,7 +89,7 @@ describe('ProjectController', () => {
     })
 
     it('reset should be defined', () => {
-      expect(controller.reset).toBeDefined()
+      expect(controller.resetCAPTCHA).toBeDefined()
     })
 
     it('share should be defined', () => {

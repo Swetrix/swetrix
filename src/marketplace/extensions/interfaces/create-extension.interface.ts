@@ -1,5 +1,6 @@
 import { User } from 'src/user/entities/user.entity'
 import { Category } from '../../categories/category.entity'
+import { ExtensionStatus } from '../enums/extension-status.enum'
 
 export interface ICreateExtension {
   name: string
@@ -9,7 +10,7 @@ export interface ICreateExtension {
   price?: number
   mainImage?: string | null
   additionalImages?: string[] | []
-  status?: string
+  status?: ExtensionStatus
   fileURL?: string
   category?: Category
 }

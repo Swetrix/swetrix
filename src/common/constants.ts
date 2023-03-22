@@ -1,7 +1,9 @@
 import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
-import { v5 as uuidv5 } from 'uuid'
+import { hash } from 'blake3'
 import * as _toNumber from 'lodash/toNumber'
+
+import { getSelfhostedUUID } from './utils'
 
 require('dotenv').config()
 
@@ -39,7 +41,10 @@ const clickhouse = new ClickHouse({
 })
 
 const isSelfhosted = Boolean(process.env.SELFHOSTED)
+const isTgTokenPresent = Boolean(process.env.TG_BOT_TOKEN)
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
+const isDevelopment = process.env.NODE_ENV === 'development'
+const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
 const CLICKHOUSE_INIT_QUERIES = [
   'CREATE DATABASE IF NOT EXISTS analytics',
@@ -144,9 +149,12 @@ initialiseClickhouse()
 const SELFHOSTED_EMAIL = process.env.EMAIL
 const SELFHOSTED_PASSWORD = process.env.PASSWORD
 const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
+const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
+
 const SELFHOSTED_UUID = isSelfhosted
-  ? uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE)
+  ? getSelfhostedUUID()
   : ''
+
 const TWO_FACTOR_AUTHENTICATION_APP_NAME =
   process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME
 
@@ -163,8 +171,10 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
+const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
+const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
 const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
 const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v2'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
@@ -172,6 +182,10 @@ const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
 const REDIS_PERFORMANCE_COUNT_KEY = 'stats:performance'
+
+// Captcha service
+const CAPTCHA_SALT = process.env.CAPTCHA_SALT
+const CAPTCHA_ENCRYPTION_KEY = process.env.CAPTCHA_ENCRYPTION_KEY
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -193,6 +207,10 @@ const SEND_WARNING_AT_PERC = 85
 
 const PROJECT_INVITE_EXPIRE = 48
 
+const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
+const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
+const CAPTCHA_SECRET_KEY_LENGTH = 50
+
 export {
   clickhouse,
   JWT_LIFE_TIME,
@@ -203,6 +221,7 @@ export {
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
   REDIS_LOG_DATA_CACHE_KEY,
+  REDIS_LOG_CAPTCHA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
@@ -226,4 +245,15 @@ export {
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
   REDIS_PERFORMANCE_COUNT_KEY,
+  CAPTCHA_SALT,
+  CAPTCHA_ENCRYPTION_KEY,
+  isDevelopment,
+  getRedisCaptchaKey,
+  CAPTCHA_COOKIE_KEY,
+  CAPTCHA_TOKEN_LIFETIME,
+  PID_REGEX,
+  CAPTCHA_SECRET_KEY_LENGTH,
+  PRODUCTION_ORIGIN,
+  isTgTokenPresent,
+  DEFAULT_SELFHOSTED_UUID,
 }

@@ -1,38 +1,31 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Controller,
   Delete,
   ForbiddenException,
   Get,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
   Param,
   Patch,
   Post,
   Query,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { FileFieldsInterceptor } from '@nestjs/platform-express'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { getRepository, Like } from 'typeorm'
 import * as _map from 'lodash/map'
 import * as _size from 'lodash/size'
-import * as _isEmpty from 'lodash/isEmpty'
-import { CreateExtension } from './dtos/create-extension.dto'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 import { ExtensionsService } from './extensions.service'
 import { UserService } from '../../user/user.service'
-import { ISaveExtension } from './interfaces/save-extension.interface'
 import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
-import { UpdateExtension } from './dtos/update-extension.dto'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { CategoriesService } from '../categories/categories.service'
 import { SortByExtension } from './enums/sort-by-extension.enum'
@@ -51,6 +44,12 @@ import { UserType } from '../../user/entities/user.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth } from 'src/auth/decorators'
+import {
+  CreateExtensionBodyDto,
+  UpdateExtensionBodyDto,
+  UpdateExtensionParamsDto,
+} from './dtos'
+import { FormDataRequest } from 'nestjs-form-data'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -89,15 +88,22 @@ export class ExtensionsController {
     }
 
     const [extensionsToUser, count] = await this.extensionsService.findAndCountExtensionToUser({
-      where: {
-        userId,
-      },
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
-    }, ['extension'])
+          where: {
+            userId,
+          },
+          skip: queries.offset || 0,
+          take: queries.limit > 100 ? 25 : queries.limit || 25,
+    }, ['extension', 'extension.owner', 'extension.category', 'extension.users'])
 
-    const extensions = _map(extensionsToUser, (extensionToUser) => {
+    let extensions = _map(extensionsToUser, (extensionToUser) => {
       return extensionToUser.extension
+    })
+
+    extensions = _map(extensions, extension => {
+      extension.usersQuantity = _size(extension.users)
+      extension.users = undefined
+      extension.owner = this.extensionsService.filterOwner(extension.owner)
+      return extension
     })
 
     // todo: also return projectExtensions - via findAndCountExtensionToProject
@@ -121,22 +127,11 @@ export class ExtensionsController {
     type: String,
   })
   @Get()
-  async getAllExtensions(@Query() queries: GetAllExtensionsQueries): Promise<{
-    extensions: Extension[]
-    count: number
-  }> {
-    let [extensions, count] = await this.extensionsService.findAndCount(
-      {
-        skip: queries.offset || 0,
-        take: queries.limit > 100 ? 25 : queries.limit || 25,
-        where: {
-          status: ExtensionStatus.ACCEPTED,
-        },
-      },
-      ['owner', 'users', 'category'],
+  async getExtensions(@Query() queries: GetAllExtensionsQueries) {
+    let [extensions, count] = await this.extensionsService.getExtensions(
+      queries,
     )
 
-    // temporary fix; the usersQuantity should be counted via .count() method of typeorm
     extensions = _map(extensions, extension => {
       extension.usersQuantity = _size(extension.users)
       extension.users = undefined
@@ -242,11 +237,18 @@ export class ExtensionsController {
 
     let [extensions, count] = await this.extensionsService.findAndCount({
       skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
-      where: {
-        owner: userId,
-      },
-    }, ['category'])
+      take: queries.limit > 100 ? 100 : queries.limit || 10,
+        where: {
+          owner: userId,
+        },
+    }, ['owner', 'users', 'category'], )
+
+    extensions = _map(extensions, extension => {
+      extension.usersQuantity = _size(extension.users)
+      extension.users = undefined
+      extension.owner = this.extensionsService.filterOwner(extension.owner)
+      return extension
+    })
 
     return { extensions, count }
   }
@@ -286,65 +288,16 @@ export class ExtensionsController {
     type: String,
   })
   @Get('search')
-  async searchExtension(@Query() queries: SearchExtensionQueries): Promise<{
-    extensions: Extension[]
-    count: number
-  }> {
-    if (queries.category) {
-      const [extensions, count] = await getRepository(Extension)
-        .createQueryBuilder('extension')
-        .leftJoin('extension.category', 'category')
-        .where('extension.name LIKE :term', { term: `%${queries.term}%` })
-        .andWhere('category.name = :category', { category: queries.category })
-        .andWhere('extension.status = :status', {
-          status: ExtensionStatus.ACCEPTED,
-        })
-        .skip(queries.offset || 0)
-        .take(queries.limit > 100 ? 25 : queries.limit || 25)
-        .getManyAndCount()
+  async searchExtension(@Query() queries: SearchExtensionQueries) {
+    let [extensions, count] = await this.extensionsService.searchExtension(
+      queries,
+    )
 
-      return { extensions, count }
-    }
-
-    if (queries.sortBy) {
-      if (queries.sortBy === SortByExtension.CREATED_AT) {
-        const [extensions, count] = await getRepository(Extension)
-          .createQueryBuilder('extension')
-          .where('extension.name LIKE :term', { term: `%${queries.term}%` })
-          .andWhere('extension.status = :status', {
-            status: ExtensionStatus.ACCEPTED,
-          })
-          .orderBy('extension.createdAt', 'DESC')
-          .skip(queries.offset || 0)
-          .take(queries.limit > 100 ? 25 : queries.limit || 25)
-          .getManyAndCount()
-
-        return { extensions, count }
-      }
-
-      if (queries.sortBy === SortByExtension.UPDATED_AT) {
-        const [extensions, count] = await getRepository(Extension)
-          .createQueryBuilder('extension')
-          .where('extension.name LIKE :term', { term: `%${queries.term}%` })
-          .andWhere('extension.status = :status', {
-            status: ExtensionStatus.ACCEPTED,
-          })
-          .orderBy('extension.updatedAt', 'DESC')
-          .skip(queries.offset || 0)
-          .take(queries.limit > 100 ? 25 : queries.limit || 25)
-          .getManyAndCount()
-
-        return { extensions, count }
-      }
-    }
-
-    const [extensions, count] = await this.extensionsService.findAndCount({
-      where: {
-        name: Like(`%${queries.term}%`),
-        status: ExtensionStatus.ACCEPTED,
-      },
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
+    extensions = _map(extensions, extension => {
+      extension.usersQuantity = _size(extension.users)
+      extension.users = undefined
+      extension.owner = this.extensionsService.filterOwner(extension.owner)
+      return extension
     })
 
     return { extensions, count }
@@ -412,218 +365,82 @@ export class ExtensionsController {
 
   @Post()
   @Auth([UserType.CUSTOMER, UserType.ADMIN])
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'mainImage', maxCount: 1 },
-      { name: 'additionalImages', maxCount: 5 },
-      { name: 'file', maxCount: 1 },
-    ]),
-  )
+  @FormDataRequest()
   async createExtension(
-    @Body() body: CreateExtension,
+    @Body() body: CreateExtensionBodyDto,
     @CurrentUserId() userId: string,
-    @UploadedFiles()
-    files: {
-      mainImage?: Express.Multer.File
-      additionalImages?: Express.Multer.File[]
-      file?: Express.Multer.File
-    },
-  ): Promise<ISaveExtension & Extension> {
-    if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
-    }
-
-    const additionalImageFilenames = []
-
-    if (files.additionalImages) {
-      Promise.all(
-        files.additionalImages.map(async additionalImage => {
-          additionalImageFilenames.push(
-            (await this.cdnService.uploadFile(additionalImage))?.filename,
-          )
-        }),
+  ): Promise<Extension> {
+    if (body.categoryId) {
+      const category = await this.categoriesService.getCategoryById(
+        Number(body.categoryId),
       )
+
+      if (!category) {
+        throw new BadRequestException('Category not found.')
+      }
     }
 
-    let fileURL
-    let mainImageURL
-    let statusInfo
-
-    try {
-      fileURL = files.file && (await this.cdnService.uploadFile(files.file[0]))?.filename
-    } catch (e) {
-      throw new InternalServerErrorException('Failed to upload extension to the CDN.')
-    }
-
-    try {
-      mainImageURL = files.mainImage && (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
-    } catch (e) {
-      throw new InternalServerErrorException('Failed to upload main image to the CDN.')
-    }
-
-    if (fileURL) {
-      statusInfo = ExtensionStatus.PENDING
-    } else {
-      statusInfo = ExtensionStatus.NO_EXTENSION_UPLOADED
-    }
-
-    const user = await this.userService.findOne(userId)
-    const extensionInstance = this.extensionsService.create({
-      name: body.name,
-      description: body.description,
-      version: '0.0.1',
-      price: body.price,
-      owner: user,
-      mainImage: mainImageURL,
-      status: statusInfo,
-      additionalImages: additionalImageFilenames,
-      fileURL,
-      category: body.categoryID
-        ? await this.categoriesService.findById(body.categoryID)
-        : undefined,
+    return await this.extensionsService.createExtension({
+      ownerId: userId,
+      ...body,
     })
-
-    return await this.extensionsService.save(extensionInstance)
   }
 
-  @ApiParam({
-    name: 'extensionId',
-    description: 'Extension ID',
-    example: 'de025965-3221-4d09-ba35-a09da59793a6',
-    type: String,
-  })
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'mainImage', maxCount: 1 },
-      { name: 'additionalImages', maxCount: 5 },
-      { name: 'file', maxCount: 1 },
-    ]),
-  )
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @Patch(':extensionId')
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @FormDataRequest()
   async updateExtension(
-    @Param() params: UpdateExtensionParams,
-    @Body() body: UpdateExtension,
+    @Param() params: UpdateExtensionParamsDto,
+    @Body() body: UpdateExtensionBodyDto,
     @CurrentUserId() userId: string,
-    @UploadedFiles()
-    files: {
-      mainImage?: Express.Multer.File
-      additionalImages?: Express.Multer.File[]
-      file?: Express.Multer.File
-    },
-  ): Promise<ISaveExtension & Extension> {
-    this.extensionsService.allowedToManage(userId, params.extensionId)
-    const extension = await this.extensionsService.findOne({
-      where: {
-        id: params.extensionId,
-        owner: userId,
-      },
-    })
+  ): Promise<Extension> {
+    const extension = await this.extensionsService.findUserExtension(
+      params.extensionId,
+      userId,
+    )
 
     if (!extension) {
       throw new NotFoundException('Extension not found.')
     }
 
-    const additionalImagesConcat = [
-      ...(files.additionalImages || []),
-      ...(body.additionalImagesCdn || []),
-    ]
+    if (body.categoryId) {
+      const category = await this.categoriesService.getCategoryById(
+        Number(body.categoryId),
+      )
 
-    const additionalImageFilenames = []
-
-    try {
-      if (additionalImagesConcat) {
-        await Promise.all(
-          additionalImagesConcat.map(async additionalImage => {
-            if (typeof additionalImage === 'string') {
-              additionalImageFilenames.push(additionalImage)
-            } else {
-              additionalImageFilenames.push(
-                (await this.cdnService.uploadFile(additionalImage))?.filename,
-              )
-            }
-          }),
-        )
+      if (!category) {
+        throw new BadRequestException('Category not found.')
       }
-    } catch (e) {
-      throw new InternalServerErrorException(
-        'Failed to upload additional images to the CDN.',
+    }
+
+    if (Object.keys(body).length === 0) {
+      throw new BadRequestException('Extension body is required.')
+    }
+
+    const extensionBodyAdditionalImagesCount = body.additionalImages
+      ? body.additionalImages.length
+      : 0
+    const extensionAdditionalImagesCount = extension.additionalImages.length
+    const maxAdditionalImagesCount = 5
+    const additionalImagesToDelete = body.additionalImagesToDelete
+      ? body.additionalImagesToDelete.length
+      : 0
+    const sum =
+      extensionAdditionalImagesCount +
+      extensionBodyAdditionalImagesCount -
+      additionalImagesToDelete
+
+    if (sum > maxAdditionalImagesCount || sum < 0) {
+      throw new BadRequestException(
+        `You can upload maximum ${maxAdditionalImagesCount} additional images.`,
       )
     }
 
-    let fileURL
-    let mainImageURL
-    let statusInfo
-
-    try {
-      fileURL =
-        files.file &&
-        (await this.cdnService.uploadFile(files.file[0]))?.filename
-    } catch (e) {
-      throw new InternalServerErrorException(
-        'Failed to upload extension to the CDN.',
-      )
-    }
-
-    try {
-      mainImageURL =
-        files.mainImage &&
-        (await this.cdnService.uploadFile(files.mainImage[0]))?.filename
-    } catch (e) {
-      throw new InternalServerErrorException(
-        'Failed to upload main image to the CDN.',
-      )
-    }
-
-    let updateVersion
-
-    if (body.version && fileURL) {
-      switch (body.version) {
-        case 'major':
-          updateVersion = extension.version.split('.')
-          updateVersion[0] = (parseInt(updateVersion[0]) + 1).toString()
-          updateVersion[1] = '0'
-          updateVersion[2] = '0'
-          break
-        case 'minor':
-          updateVersion = extension.version.split('.')
-          updateVersion[1] = (parseInt(updateVersion[1]) + 1).toString()
-          updateVersion[2] = '0'
-          break
-        case 'patch':
-          updateVersion = extension.version.split('.')
-          updateVersion[2] = (parseInt(updateVersion[2]) + 1).toString()
-          break
-        default:
-          updateVersion = extension.version.split('.')
-          updateVersion[2] = (parseInt(updateVersion[2]) + 1).toString()
-      }
-      updateVersion = updateVersion.join('.')
-    }
-
-    if (fileURL) {
-      statusInfo = ExtensionStatus.PENDING
-    }
-
-    const extensionInstance = this.extensionsService.create({
-      ...extension,
-      name: body.name || extension.name,
-      description: body.description || extension.description,
-      version: updateVersion || extension.version,
-      price: body.price || extension.price,
-      status: statusInfo,
-      mainImage: mainImageURL || extension.mainImage,
-      additionalImages: _isEmpty(additionalImageFilenames)
-        ? extension.additionalImages
-        : additionalImageFilenames,
-      fileURL: fileURL || extension.fileURL,
-      category: body.categoryID
-        ? await this.categoriesService.findById(body.categoryID)
-        : extension.category,
-    })
-
-    return await this.extensionsService.save(extensionInstance)
+    return await this.extensionsService.updateExtension(
+      params.extensionId,
+      body,
+      extension.version,
+    )
   }
 
   @ApiParam({

@@ -4,7 +4,7 @@ import * as cookieParser from 'cookie-parser'
 import * as bodyParser from 'body-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
-import { isNewRelicEnabled } from './common/constants'
+import { isNewRelicEnabled, isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
 import { NewrelicInterceptor } from './common/interceptors/newrelic.interceptor'
 
@@ -17,7 +17,7 @@ async function bootstrap() {
     type: VersioningType.URI,
   })
 
-  if (process.env.NODE_ENV === 'development') {
+  if (isDevelopment) {
     const config = new DocumentBuilder()
       .setTitle('Swetrix API')
       .setDescription('Swetrix Analytics & Marketplace API')

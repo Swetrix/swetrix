@@ -30,15 +30,11 @@ export class Extension {
   @Column({ type: 'text', nullable: true, default: null })
   description: string | null
 
-  @Column('varchar')
+  @Column('varchar', { default: '0.0.1' })
   version: string
 
-  @Column({
-    type: 'enum',
-    enum: ExtensionStatus,
-    default: ExtensionStatus.PENDING,
-  })
-  status: string
+  @Column({ type: 'enum', enum: ExtensionStatus })
+  status: ExtensionStatus
 
   @Column({ type: 'int', default: 0 })
   price: number
@@ -51,6 +47,9 @@ export class Extension {
 
   @Column({ type: 'varchar', nullable: true, default: null })
   fileURL: string | null
+
+  @Column('varchar', { default: null, nullable: true })
+  companyLink: string | null
 
   @CreateDateColumn()
   createdAt: Date
@@ -82,4 +81,7 @@ export class Extension {
   @OneToMany(() => Complaint, complaint => complaint.extension)
   @JoinTable()
   complaints: Complaint[]
+
+  @Column({ type: 'simple-array' })
+  tags: string[]
 }

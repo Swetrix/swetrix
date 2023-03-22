@@ -50,4 +50,8 @@ export class CategoriesService {
   async findByIds(ids: number[]): Promise<Category[]> {
     return await this.categoryRepository.findByIds(ids)
   }
+
+  async getCategoryById(id: number) {
+    return await this.categoryRepository.findOne({ where: { id } })
+  }
 }

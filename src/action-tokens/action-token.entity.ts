@@ -13,6 +13,7 @@ export enum ActionTokenType {
   PASSWORD_RESET,
   EMAIL_CHANGE,
   PROJECT_SHARE,
+  ADDING_PROJECT_SUBSCRIBER,
 }
 
 @Entity()

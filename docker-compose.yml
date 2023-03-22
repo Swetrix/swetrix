@@ -1,19 +1,76 @@
-version: '3.8'
+version: '3.9'
 services:
+  # This is the frontend, you can remove it if you want
+  swetrix:
+    image: swetrix/swetrix-fe:latest
+    restart: always
+    depends_on:
+      - swetrix-api
+    ports:
+      - '80:80'
+    environment:
+      - API_URL=http://localhost:8080/
+      - REACT_APP_AIAPI_URL=https://aiapi.swetrix.com/
+      - REACT_APP_SELFHOSTED=true
+
+  # This is the analytics API
+  swetrix-api:
+    image: swetrix/swetrix-api:latest
+    restart: always
+    ports:
+      - '8080:5005'
+    environment:
+      - TWO_FACTOR_AUTHENTICATION_APP_NAME=Swetrix
+      - CLIENT_URL=https://swetrix.com
+      - JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret
+      - JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret
+      - REDIS_HOST=redis
+      - MYSQL_HOST=mariadb
+      - CLICKHOUSE_HOST=http://clickhouse
+      - API_ORIGINS=
+      - SMTP_MOCK=true
+      - EMAIL=test@test.com
+      - PASSWORD=12345678
+      - TG_BOT_TOKEN=
+      - SELFHOSTED=true
+    links:
+      - 'redis'
+      - 'mariadb'
+      - 'clickhouse'
+    depends_on:
+      - 'redis'
+      - 'mariadb'
+      - 'clickhouse'
   redis:
-    image: redis:7.0.8
-    ports:
-      - 6379:6379
-  mysql:
-    image: mysql:8.0.32
+    image: redis:alpine
+    restart: always
     environment:
-      MYSQL_DATABASE: 'analytics'
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-    ports:
-      - 3306:3306
+      - REDIS_PASSWORD=password
+      - REDIS_PORT=6379
+      - REDIS_USER=default
+  #   volumes:
+  #     - '/opt/redis-volume:/data'
+  mariadb:
+    image: linuxserver/mariadb:alpine
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=analytics
+      - MYSQL_USER=swetrix
+      - MYSQL_PASSWORD=password
+  #   volumes:
+  #    - '/opt/mysql-volume:/var/lib/mysql'
   clickhouse:
-    image: clickhouse/clickhouse-server:23.1.3.5
+    image: clickhouse/clickhouse-server:22.8-alpine
     environment:
-      CLICKHOUSE_DB: 'analytics'
-    ports:
-      - 8123:8123
+      - CLICKHOUSE_DATABASE=analytics
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PORT=8123
+      - CLICKHOUSE_PASSWORD=password
+    restart: always
+    volumes:
+      - '/opt/clickhouse-volume:/var/lib/clickhouse'
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
