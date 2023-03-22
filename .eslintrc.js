@@ -50,6 +50,7 @@ module.exports = {
     'no-plusplus': 'off',
     'no-underscore-dangle': 'off',
     'max-classes-per-file': 'off',
+    '@typescript-eslint/no-unused-vars': 'off', // disabled in favour of no-unused-vars
     'no-unused-vars': 'warn',
     'semi': [
       'error',
