@@ -43,7 +43,7 @@ export class AlertService {
     return this.alertsReporsitory.count(options)
   }
 
-  findOne(id: string, params: Object = {}): Promise<Alert | null> {
+  findOne(id: string, params: object = {}): Promise<Alert | null> {
     return this.alertsReporsitory.findOne(id, params)
   }
 

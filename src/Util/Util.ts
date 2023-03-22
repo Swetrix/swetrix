@@ -43,8 +43,8 @@ export class Util {
     return projectShare
   }
 
-  getObjectArray(): Array<Object> {
-    const arrayOfObjects = new Array<Object>()
+  getObjectArray(): Array<object> {
+    const arrayOfObjects = new Array<object>()
     return arrayOfObjects
   }
 
@@ -53,8 +53,8 @@ export class Util {
     return arrayOfSrtings
   }
 
-  getObject(): Object {
-    const object = new Object()
+  getObject(): object {
+    const object = {}
     return object
   }
 

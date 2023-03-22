@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { User } from 'src/user/entities/user.entity'
-import { Repository } from 'typeorm'
-import { ActionToken, ActionTokenType } from './action-token.entity'
+import { ActionToken } from './action-token.entity'
 import { ActionTokensService } from './action-tokens.service'
 
 describe('ActionTokensService', () => {
@@ -26,23 +24,25 @@ describe('ActionTokensService', () => {
 
     service = module.get<ActionTokensService>(ActionTokensService)
   })
+
   describe('root', () => {
     it('should be defined with service1', () => {
       expect(service).toBeDefined()
     })
-  }),
-    describe('activation-token.service definding', () => {
-      it('should be defined deleteMultiple()', () => {
-        expect(service.deleteMultiple).toBeDefined()
-      }),
-        it('should be defined createForUser()', () => {
-          expect(service.createForUser).toBeDefined()
-        })
-      it('should be defined find()', () => {
-        expect(service.find).toBeDefined()
-      }),
-        it('should be defined delete()', () => {
-          expect(service.delete).toBeDefined()
-        })
+  })
+
+  describe('activation-token.service definding', () => {
+    it('should be defined deleteMultiple()', () => {
+      expect(service.deleteMultiple).toBeDefined()
     })
+    it('should be defined createForUser()', () => {
+      expect(service.createForUser).toBeDefined()
+    })
+    it('should be defined find()', () => {
+      expect(service.find).toBeDefined()
+    })
+    it('should be defined delete()', () => {
+      expect(service.delete).toBeDefined()
+    })
+  })
 })

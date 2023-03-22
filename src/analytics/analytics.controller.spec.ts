@@ -90,44 +90,44 @@ describe('AnalyticsController', () => {
   describe('root', () => {
     it('should be defined controller', () => {
       expect(controller).toBeDefined()
-    }),
-      it('should be defined userRepository', () => {
-        expect(userRepository).toBeDefined()
-      }),
-      it('should be defined actionTokenRepository', () => {
-        expect(actionTokenRepository).toBeDefined()
-      }),
-      it('should be defined projectShareRepository', () => {
-        expect(projectShareRepository).toBeDefined()
-      }),
-      it('should be defined projectsRepository', () => {
-        expect(projectsRepository).toBeDefined()
-      })
+    })
+    it('should be defined userRepository', () => {
+      expect(userRepository).toBeDefined()
+    })
+    it('should be defined actionTokenRepository', () => {
+      expect(actionTokenRepository).toBeDefined()
+    })
+    it('should be defined projectShareRepository', () => {
+      expect(projectShareRepository).toBeDefined()
+    })
+    it('should be defined projectsRepository', () => {
+      expect(projectsRepository).toBeDefined()
+    })
   })
   describe('analytics.controller', () => {
     it('should be defined with getData()', () => {
       expect(controller.getData).toBeDefined()
-    }),
-      it('should be defined with getGeneralStats()', () => {
-        expect(controller.getGeneralStats).toBeDefined()
-      }),
-      it('should be defined with getHeartBeatStats()', () => {
-        expect(controller.getHeartBeatStats).toBeDefined()
-      }),
-      it('should be defined with getOverallStats()', () => {
-        expect(controller.getOverallStats).toBeDefined()
-      }),
-      it('should be defined with heartbeat()', () => {
-        expect(controller.heartbeat).toBeDefined()
-      }),
-      it('should be defined with log()', () => {
-        expect(controller.log).toBeDefined()
-      }),
-      it('should be defined with logCustom()', () => {
-        expect(controller.logCustom).toBeDefined()
-      }),
-      it('should be defined with noscript()', () => {
-        expect(controller.noscript).toBeDefined()
-      })
+    })
+    it('should be defined with getGeneralStats()', () => {
+      expect(controller.getGeneralStats).toBeDefined()
+    })
+    it('should be defined with getHeartBeatStats()', () => {
+      expect(controller.getHeartBeatStats).toBeDefined()
+    })
+    it('should be defined with getOverallStats()', () => {
+      expect(controller.getOverallStats).toBeDefined()
+    })
+    it('should be defined with heartbeat()', () => {
+      expect(controller.heartbeat).toBeDefined()
+    })
+    it('should be defined with log()', () => {
+      expect(controller.log).toBeDefined()
+    })
+    it('should be defined with logCustom()', () => {
+      expect(controller.logCustom).toBeDefined()
+    })
+    it('should be defined with noscript()', () => {
+      expect(controller.noscript).toBeDefined()
+    })
   })
 })

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
 import { ProjectShare } from '../project/entity/project-share.entity'
 import { Project } from '../project/entity/project.entity'
 import { ProjectService } from '../project/project.service'
@@ -50,52 +49,49 @@ describe('AnalyticsService', () => {
     it('should be defined', () => {
       expect(service).toBeDefined()
     })
-  }),
-    describe('analytics.service definding', () => {
-      it('should be defined with checkIpBlacklist()', () => {
-        expect(service.checkIpBlacklist).toBeDefined()
-      }),
-        it('should be defined with checkOrigin()', () => {
-          expect(service.checkOrigin).toBeDefined()
-        }),
-        it('should be defined with checkProjectAccess()', () => {
-          expect(service.checkProjectAccess).toBeDefined()
-        }),
-        it('should be defined with getFiltersQuery()', () => {
-          expect(service.getFiltersQuery).toBeDefined()
-        }),
-        it('should be defined with getRedisProject()', () => {
-          expect(service.getRedisProject).toBeDefined()
-        }),
-        it('should be defined with getSummary()', () => {
-          expect(service.getSummary).toBeDefined()
-        }),
-        it('should be defined with groupByTimeBucket()', () => {
-          expect(service.groupByTimeBucket).toBeDefined()
-        }),
-        it('should be defined with isSessionOpen()', () => {
-          expect(service.isSessionOpen).toBeDefined()
-        }),
-        it('should be defined with isUnique()', () => {
-          expect(service.isUnique).toBeDefined()
-        }),
-        it('should be defined with processCustomEV()', () => {
-          expect(service.processCustomEV).toBeDefined()
-        }),
-        it('should be defined with validate()', () => {
-          expect(service.validate).toBeDefined()
-        }),
-        it('should be defined with validateHB()', () => {
-          expect(service.validateHB).toBeDefined()
-        }),
-        it('should be defined with validatePID()', () => {
-          expect(service.validatePID).toBeDefined()
-        }),
-        it('should be defined with validatePeriod()', () => {
-          expect(service.validatePeriod).toBeDefined()
-        }),
-        it('should be defined with validateTimebucket()', () => {
-          expect(service.validateTimebucket).toBeDefined()
-        })
+  })
+  describe('analytics.service definding', () => {
+    it('should be defined with checkIpBlacklist()', () => {
+      expect(service.checkIpBlacklist).toBeDefined()
     })
+    it('should be defined with checkOrigin()', () => {
+      expect(service.checkOrigin).toBeDefined()
+    })
+    it('should be defined with checkProjectAccess()', () => {
+      expect(service.checkProjectAccess).toBeDefined()
+    })
+    it('should be defined with getFiltersQuery()', () => {
+      expect(service.getFiltersQuery).toBeDefined()
+    })
+    it('should be defined with getSummary()', () => {
+      expect(service.getSummary).toBeDefined()
+    })
+    it('should be defined with groupByTimeBucket()', () => {
+      expect(service.groupByTimeBucket).toBeDefined()
+    })
+    it('should be defined with isSessionOpen()', () => {
+      expect(service.isSessionOpen).toBeDefined()
+    })
+    it('should be defined with isUnique()', () => {
+      expect(service.isUnique).toBeDefined()
+    })
+    it('should be defined with processCustomEV()', () => {
+      expect(service.processCustomEV).toBeDefined()
+    })
+    it('should be defined with validate()', () => {
+      expect(service.validate).toBeDefined()
+    })
+    it('should be defined with validateHB()', () => {
+      expect(service.validateHB).toBeDefined()
+    })
+    it('should be defined with validatePID()', () => {
+      expect(service.validatePID).toBeDefined()
+    })
+    it('should be defined with validatePeriod()', () => {
+      expect(service.validatePeriod).toBeDefined()
+    })
+    it('should be defined with validateTimebucket()', () => {
+      expect(service.validateTimebucket).toBeDefined()
+    })
+  })
 })

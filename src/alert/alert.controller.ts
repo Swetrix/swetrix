@@ -121,7 +121,7 @@ export class AlertController {
       'You are not allowed to add alerts to this project',
     )
 
-    const pids = _map(user.projects, project => project.id)
+    const pids = _map(user.projects, userProject => userProject.id)
     const alertsCount = await this.alertService.count({ project: In(pids) })
 
     if (user.planCode === PlanCode.none) {
