@@ -55,7 +55,7 @@ export class SwetrixUpdate {
   ): Promise<void> {
     // TODO: REMOVE THE TS IGNORE AND INVESTIGATE THIS ISSUE
     // @ts-ignore
-    const [action, entityId] = ctx.callbackQuery?.data.split(':')
+    const [action, entityId] = ctx.callbackQuery.data.split(':') // eslint-disable-line
 
     if (action === 'unlinkTelegramAccount') {
       await ctx.editMessageText(
