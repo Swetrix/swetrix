@@ -15,9 +15,10 @@ describe('AppLoggerService', () => {
   describe('root', () => {
     it('should be defined service', () => {
       expect(service).toBeDefined()
-    }),
-      it('should be defined log()', () => {
-        expect(service.log).toBeDefined()
-      })
+    })
+
+    it('should be defined log()', () => {
+      expect(service.log).toBeDefined()
+    })
   })
 })

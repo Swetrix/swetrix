@@ -92,11 +92,12 @@ interface Params {
   [name: string]: any
 }
 
-handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
+handlebars.registerHelper('ifEquals', function ifEquals(arg1, arg2, options) {
+  // eslint-disable-next-line eqeqeq
   return arg1 == arg2 ? options.fn(this) : options.inverse(this)
 })
 
-handlebars.registerHelper('greater', function (v1, v2, options) {
+handlebars.registerHelper('greater', function greater(v1, v2, options) {
   if (v1 > v2) {
     return options.fn(this)
   }

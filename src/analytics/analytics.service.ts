@@ -419,7 +419,11 @@ export class AnalyticsService {
     return Boolean(session)
   }
 
-  async getSummary(pids: string[], period: 'w' | 'M' = 'w', amountToSubtract = 1): Promise<Object> {
+  async getSummary(
+    pids: string[],
+    period: 'w' | 'M' = 'w',
+    amountToSubtract = 1,
+  ): Promise<Object> {
     const result = {}
 
     for (let i = 0; i < _size(pids); ++i) {
@@ -432,7 +436,9 @@ export class AnalyticsService {
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       const oneWRaw = dayjs.utc().subtract(amountToSubtract, period)
       const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
-      const twoWeeks = oneWRaw.subtract(amountToSubtract, period).format('YYYY-MM-DD HH:mm:ss')
+      const twoWeeks = oneWRaw
+        .subtract(amountToSubtract, period)
+        .format('YYYY-MM-DD HH:mm:ss')
 
       const query1 = `SELECT unique, count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {oneWeek:String} AND {now:String} GROUP BY unique`
       const query2 = `SELECT unique, count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {twoWeeks:String} AND {oneWeek:String} GROUP BY unique`
@@ -998,6 +1004,6 @@ export class AnalyticsService {
 
   async getOnlineUserCount(pid: string): Promise<number> {
     // @ts-ignore
-    return await redis.countKeysByPattern(`hb:${pid}:*`)
+    return redis.countKeysByPattern(`hb:${pid}:*`)
   }
 }

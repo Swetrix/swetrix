@@ -166,7 +166,7 @@ export class CaptchaService {
 
   async generateToken(
     pid: string,
-    hash: string,
+    captchaHash: string,
     timestamp: number,
     autoVerified: boolean,
   ): Promise<string> {
@@ -188,7 +188,7 @@ export class CaptchaService {
     }
 
     const token = {
-      hash,
+      hash: captchaHash,
       timestamp,
       autoVerified,
       pid,
@@ -256,16 +256,16 @@ export class CaptchaService {
       noise: 2,
       ...themeParams,
     })
-    const hash = this.hashCaptcha(_toLower(captcha.text))
+    const captchaHash = this.hashCaptcha(_toLower(captcha.text))
 
     return {
       data: captcha.data,
-      hash,
+      hash: captchaHash,
     }
   }
 
-  verifyCaptcha(text: string, hash: string): boolean {
-    return hash === this.hashCaptcha(text)
+  verifyCaptcha(text: string, captchaHash: string): boolean {
+    return captchaHash === this.hashCaptcha(text)
   }
 
   incrementManuallyVerified(tokenCaptcha: TokenCaptcha): TokenCaptcha {

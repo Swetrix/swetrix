@@ -177,8 +177,8 @@ export class CaptchaController {
       // Set a new cookie
       try {
         newTokenCookie = this.captchaService.getTokenCaptcha()
-      } catch (e) {
-        console.error(e)
+      } catch (reason) {
+        console.error(reason)
         throw new InternalServerErrorException(
           'Could not generate a captcha cookie',
         )

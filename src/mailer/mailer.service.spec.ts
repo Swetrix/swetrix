@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { AppLoggerService } from 'src/logger/logger.service'
 import { Util } from 'src/Util/Util'
-import { LetterTemplate } from './letter'
 import { MailerService } from './mailer.service'
 
 describe('MailerService', () => {

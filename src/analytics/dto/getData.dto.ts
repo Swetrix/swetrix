@@ -9,6 +9,7 @@ export enum TimeBucketType {
   MONTH = 'month',
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class AnalyticsGET_DTO {
   @ApiProperty()
   @IsNotEmpty()

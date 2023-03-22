@@ -31,6 +31,7 @@ async function bootstrap() {
     app.useGlobalInterceptors(new NewrelicInterceptor())
   }
 
+  // eslint-disable-next-line consistent-return
   app.use(async (req, res, next) => {
     res.header(
       'Cross-Origin-Embedder-Policy',
@@ -48,6 +49,8 @@ async function bootstrap() {
     res.header('Access-Control-Allow-Headers', '*')
 
     if (req.method === 'OPTIONS') {
+      // TODO: INVESTIGATE
+      // eslint-disable-next-line @typescript-eslint/return-await
       return await res.sendStatus(204)
     }
 

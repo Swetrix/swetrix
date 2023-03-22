@@ -54,7 +54,7 @@ const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
 const allowedToUpdateKeys = ['name', 'origins', 'active', 'public']
 
-const _getRateLimitHash = (ipOrApiKey: string, salt = '') =>
+const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
   `rl:${hash(`${ipOrApiKey}${salt}`).toString('hex')}`
 
 const splitAt = (x, index): Array<Array<any> | string> => [
@@ -73,7 +73,7 @@ const checkRateLimit = async (
   reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
   reqTimeout: number = RATE_LIMIT_TIMEOUT,
 ): Promise<void> => {
-  const rlHash = _getRateLimitHash(ip, action)
+  const rlHash = getRateLimitHash(ip, action)
   const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
 
   if (rlCount >= reqAmount) {
@@ -87,7 +87,7 @@ export const checkRateLimitForApiKey = async (
   apiKey: string,
   reqAmount: number,
 ): Promise<boolean> => {
-  const rlHash = _getRateLimitHash(apiKey)
+  const rlHash = getRateLimitHash(apiKey)
   const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
 
   if (rlCount >= reqAmount) {

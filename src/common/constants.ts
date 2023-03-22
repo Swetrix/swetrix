@@ -2,9 +2,11 @@ import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import { hash } from 'blake3'
 import * as _toNumber from 'lodash/toNumber'
+import * as _map from 'lodash/map'
 
 import { getSelfhostedUUID } from './utils'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
 const redis = new Redis(
@@ -134,11 +136,18 @@ const CLICKHOUSE_INIT_QUERIES = [
 const initialiseClickhouse = async () => {
   console.log('Initialising Clickhouse')
 
-  for (const query of CLICKHOUSE_INIT_QUERIES) {
+  const promises = _map(CLICKHOUSE_INIT_QUERIES, async query => {
     if (query) {
-      await clickhouse.query(query).toPromise()
+      return clickhouse.query(query).toPromise()
     }
-  }
+
+    return 1
+  })
+
+  await Promise.all(promises).catch(reason => {
+    console.error('Initialising Clickhouse: FAILED')
+    console.error(reason)
+  })
 
   console.log('Initialising Clickhouse: DONE')
   console.log(`Swetrix API version is: ${process.env.npm_package_version}`)
@@ -159,7 +168,7 @@ const JWT_LIFE_TIME = 7 * 24 * 60 * 60
 const HISTORY_LIFE_TIME_DAYS = 30
 
 const ORIGINS_REGEX =
-  /^(?=.{1,255}$)[0-9A-Za-z\:](?:(?:[0-9A-Za-z\:]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z\:](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/
+  /^(?=.{1,255}$)[0-9A-Za-z:](?:(?:[0-9A-Za-z:]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z:](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/
 const IP_REGEX =
   /^(([12]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\.|\/)){4}([1-2]?[0-9]|3[0-2])$/
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/

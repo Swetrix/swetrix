@@ -12,6 +12,7 @@ export class ApiKeyStrategy extends PassportStrategy(
     super(
       { header: 'X-Api-Key', prefix: '' },
       true,
+      // eslint-disable-next-line consistent-return
       async (apiKey: string, done: any) => {
         const user = await this.authService.validateApiKey(apiKey)
         if (!user) return done(new UnauthorizedException(), false)

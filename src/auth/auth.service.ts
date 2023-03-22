@@ -43,12 +43,12 @@ export class AuthService {
     })
   }
 
-  private getFirstFiveChars(hash: string): string {
-    return hash.slice(0, 5)
+  private getFirstFiveChars(passwordHash: string): string {
+    return passwordHash.slice(0, 5)
   }
 
-  private async sendRequestToApi(hash: string) {
-    const url = `https://api.pwnedpasswords.com/range/${hash}`
+  private async sendRequestToApi(passwordHash: string) {
+    const url = `https://api.pwnedpasswords.com/range/${passwordHash}`
     const response = await axios.get(url)
 
     if (response.status !== 200) {
