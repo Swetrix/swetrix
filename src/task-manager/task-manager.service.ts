@@ -94,7 +94,7 @@ export class TaskManagerService {
     @InjectBot() private bot: Telegraf<TelegrafContext>,
     private readonly extensionsService: ExtensionsService,
     private readonly logger: AppLoggerService,
-  ) {}
+  ) { }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async saveLogData(): Promise<void> {
@@ -256,12 +256,14 @@ export class TaskManagerService {
     const date = `${weekAgo} - ${now}`
     const tip = getRandomTip()
 
-    for (let i = 0; i < _size(users); ++i) {
-      if (_isEmpty(users[i]?.projects) || _isNull(users[i]?.projects)) {
-        continue
+    const promises = _map(users, async (user) => {
+      const { id, email, projects } = user
+
+      if (_isEmpty(projects) || _isNull(projects)) {
+        return
       }
 
-      const ids = _map(users[i].projects, p => p.id)
+      const ids = _map(projects, p => p.id)
       const data = await this.analyticsService.getSummary(ids, 'w')
 
       const result = {
@@ -269,18 +271,24 @@ export class TaskManagerService {
         date,
         projects: _map(ids, (pid, index) => ({
           data: data[pid],
-          name: users[i].projects[index].name,
+          name: projects[index].name,
         })),
         tip,
       }
 
       await this.mailerService.sendEmail(
-        users[i].email,
+        email,
         LetterTemplate.ProjectReport,
         result,
         'broadcast',
       )
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](weeklyReportsHandler) Error occured: ${reason}`)
+      })
   }
 
   // ON THE FIRST DAY OF EVERY MONTH AT 2 AM
@@ -302,12 +310,14 @@ export class TaskManagerService {
     const date = `${weekAgo} - ${now}`
     const tip = getRandomTip()
 
-    for (let i = 0; i < _size(users); ++i) {
-      if (_isEmpty(users[i]?.projects) || _isNull(users[i]?.projects)) {
-        continue
+    const promises = _map(users, async (user) => {
+      const { id, email, projects } = user
+
+      if (_isEmpty(projects) || _isNull(projects)) {
+        return
       }
 
-      const ids = _map(users[i].projects, p => p.id)
+      const ids = _map(projects, p => p.id)
       const data = await this.analyticsService.getSummary(ids, 'M')
 
       const result = {
@@ -315,18 +325,24 @@ export class TaskManagerService {
         date,
         projects: _map(ids, (pid, index) => ({
           data: data[pid],
-          name: users[i].projects[index].name,
+          name: projects[index].name,
         })),
         tip,
       }
 
       await this.mailerService.sendEmail(
-        users[i].email,
+        email,
         LetterTemplate.ProjectReport,
         result,
         'broadcast',
       )
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](monthlyReportsHandler) Error occured: ${reason}`)
+      })
   }
 
   @Cron(CronExpression.EVERY_QUARTER)
@@ -347,12 +363,14 @@ export class TaskManagerService {
     const date = `${quarterAgo} - ${now}`
     const tip = getRandomTip()
 
-    for (let i = 0; i < _size(users); ++i) {
-      if (_isEmpty(users[i]?.projects) || _isNull(users[i]?.projects)) {
-        continue
+    const promises = _map(users, async (user) => {
+      const { id, email, projects } = user
+
+      if (_isEmpty(projects) || _isNull(projects)) {
+        return
       }
 
-      const ids = _map(users[i].projects, p => p.id)
+      const ids = _map(projects, p => p.id)
       const data = await this.analyticsService.getSummary(ids, 'M')
 
       const result = {
@@ -360,18 +378,24 @@ export class TaskManagerService {
         date,
         projects: _map(ids, (pid, index) => ({
           data: data[pid],
-          name: users[i].projects[index].name,
+          name: projects[index].name,
         })),
         tip,
       }
 
       await this.mailerService.sendEmail(
-        users[i].email,
+        email,
         LetterTemplate.ProjectReport,
         result,
         'broadcast',
       )
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](quarterlyReportsHandler) Error occured: ${reason}`)
+      })
   }
 
   // EMAIL REPORTS, BUT FOR MULTIPLE PROJECT SUBSCRIBERS
@@ -386,9 +410,10 @@ export class TaskManagerService {
     const date = `${quarterAgo} - ${now}`
     const tip = getRandomTip()
 
-    for (const subscriber of subscribers) {
+    const promises = _map(subscribers, async (subscriber) => {
+      const { id, email } = subscriber
       const projects = await this.projectService.getSubscriberProjects(
-        subscriber.id,
+        id,
       )
 
       const ids = projects.map(project => project.id)
@@ -405,12 +430,18 @@ export class TaskManagerService {
       }
 
       await this.mailerService.sendEmail(
-        subscriber.email,
+        email,
         LetterTemplate.ProjectReport,
         result,
         'broadcast',
       )
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](handleQuarterlyReports) Error occured: ${reason}`)
+      })
   }
 
   // ON THE FIRST DAY OF EVERY MONTH AT 3 AM
@@ -424,9 +455,10 @@ export class TaskManagerService {
     const date = `${weekAgo} - ${now}`
     const tip = getRandomTip()
 
-    for (const subscriber of subscribers) {
+    const promises = _map(subscribers, async (subscriber) => {
+      const { id, email } = subscriber
       const projects = await this.projectService.getSubscriberProjects(
-        subscriber.id,
+        id,
       )
 
       const ids = projects.map(project => project.id)
@@ -443,12 +475,18 @@ export class TaskManagerService {
       }
 
       await this.mailerService.sendEmail(
-        subscriber.email,
+        email,
         LetterTemplate.ProjectReport,
         result,
         'broadcast',
       )
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](handleMonthlyReports) Error occured: ${reason}`)
+      })
   }
 
   // EVERY SUNDAY AT 3 AM
@@ -462,9 +500,10 @@ export class TaskManagerService {
     const date = `${weekAgo} - ${now}`
     const tip = getRandomTip()
 
-    for (const subscriber of subscribers) {
+    const promises = _map(subscribers, async (subscriber) => {
+      const { id, email } = subscriber
       const projects = await this.projectService.getSubscriberProjects(
-        subscriber.id,
+        id,
       )
 
       const ids = projects.map(project => project.id)
@@ -481,12 +520,18 @@ export class TaskManagerService {
       }
 
       await this.mailerService.sendEmail(
-        subscriber.email,
+        email,
         LetterTemplate.ProjectReport,
         result,
         'broadcast',
       )
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](handleMonthlyReports) Error occured: ${reason}`)
+      })
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -562,11 +607,19 @@ export class TaskManagerService {
       select: ['id', 'telegramChatId'],
     })
 
-    for (let i = 0; i < _size(users); ++i) {
-      await this.userService.update(users[i].id, {
+    const promises = _map(users, async (user) => {
+      const { id } = user
+
+      await this.userService.update(id, {
         telegramChatId: null,
       })
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](checkIsTelegramChatIdConfirmed) Error occured: ${reason}`)
+      })
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)
@@ -577,8 +630,7 @@ export class TaskManagerService {
       },
     })
 
-    for (let i = 0; i < _size(users); ++i) {
-      const user = users[i]
+    const promises = _map(users, async (user) => {
       const cancellationEffectiveDate = new Date(user.cancellationEffectiveDate)
       const now = new Date()
 
@@ -591,7 +643,13 @@ export class TaskManagerService {
         })
         await this.projectService.clearProjectsRedisCache(user.id)
       }
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](cleanUpUnpaidSubUsers) Error occured: ${reason}`)
+      })
   }
 
   @Cron(CronExpression.EVERY_4_HOURS)
@@ -608,15 +666,23 @@ export class TaskManagerService {
       },
     })
 
-    for (let i = 0; i < _size(users); ++i) {
-      await this.userService.update(users[i].id, {
+    const promises = _map(users, async (user) => {
+      const { id, email } = user
+
+      await this.userService.update(id, {
         trialReminderSent: true,
       })
       await this.mailerService.sendEmail(
-        users[i].email,
+        email,
         LetterTemplate.TrialEndsTomorrow,
       )
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](trialReminder) Error occured: ${reason}`)
+      })
   }
 
   // A temporary fix for a bug that was causing trialEndDate to be null
@@ -633,7 +699,7 @@ export class TaskManagerService {
       await this.userService.update(users[i].id, {
         trialEndDate: new Date(
           new Date(users[i].created).getTime() +
-            TRIAL_DURATION * 24 * 60 * 60 * 1000,
+          TRIAL_DURATION * 24 * 60 * 60 * 1000,
         ),
       })
     }
@@ -654,8 +720,8 @@ export class TaskManagerService {
       ],
     })
 
-    for (let i = 0; i < _size(users); ++i) {
-      const { id, email } = users[i]
+    const promises = _map(users, async (user) => {
+      const { id, email } = user
 
       await this.userService.update(id, {
         planCode: PlanCode.none,
@@ -663,7 +729,13 @@ export class TaskManagerService {
       })
       await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired)
       await this.projectService.clearProjectsRedisCache(id)
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](trialEnd) Error occured: ${reason}`)
+      })
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
@@ -688,8 +760,7 @@ export class TaskManagerService {
       ['project'],
     )
 
-    for (let i = 0; i < _size(alerts); ++i) {
-      const alert = alerts[i]
+    const promises = _map(alerts, async (alert) => {
       const project = _find(projects, { id: alert.project.id })
 
       if (alert.lastTriggered !== null) {
@@ -717,7 +788,13 @@ export class TaskManagerService {
           },
         )
       }
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](checkOnlineUsersAlerts) Error occured: ${reason}`)
+      })
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
@@ -742,8 +819,7 @@ export class TaskManagerService {
       ['project'],
     )
 
-    for (let i = 0; i < _size(alerts); ++i) {
-      const alert = alerts[i]
+    const promises = _map(alerts, async (alert) => {
       const project = _find(projects, { id: alert.project.id })
 
       if (alert.lastTriggered !== null) {
@@ -775,17 +851,22 @@ export class TaskManagerService {
           alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
             ? 'unique page views'
             : 'page views'
-        const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${
-          project.name
-        }* has had *${count}* ${queryMetric} in the last ${getQueryTimeString(
-          alert.queryTime,
-        )}!`
+        const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name
+          }* has had *${count}* ${queryMetric} in the last ${getQueryTimeString(
+            alert.queryTime,
+          )}!`
 
         this.bot.telegram.sendMessage(project.admin.telegramChatId, text, {
           parse_mode: 'Markdown',
         })
       }
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](checkMetricAlerts) Error occured: ${reason}`)
+      })
   }
 
   @Cron('0 * * * *')
@@ -822,18 +903,12 @@ export class TaskManagerService {
         createdAt: MoreThan(twoWeeksAgo),
       },
     })
-    for (const extension of extensions) {
-      const currentInstalls =
-        await this.extensionsService.getExtensionInstallCount(extension.id)
-      const twoWeeksBeforeInstalls =
-        await this.extensionsService.getExtensionInstallCount(
-          extension.id,
-          twoWeeksAgo,
-        )
-      if (
-        currentInstalls > twoWeeksBeforeInstalls * 2 &&
-        currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
-      ) {
+
+    const promises = _map(extensions, async (extension) => {
+      const currentInstalls = await this.extensionsService.getExtensionInstallCount(extension.id)
+      const twoWeeksBeforeInstalls = await this.extensionsService.getExtensionInstallCount(extension.id, twoWeeksAgo)
+
+      if (currentInstalls > twoWeeksBeforeInstalls * 2 && currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))) {
         if (!extension.tags.includes('Trending')) {
           extension.tags.push('Trending')
           await this.extensionsService.save(extension)
@@ -844,7 +919,13 @@ export class TaskManagerService {
           await this.extensionsService.save(extension)
         }
       }
-    }
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](handleTrendingExtensions) Error occured: ${reason}`)
+      })
   }
 
   private async getAverageInstalls(
@@ -852,12 +933,18 @@ export class TaskManagerService {
     twoWeeksAgo?: Date,
   ) {
     let totalInstalls = 0
-    for (const extension of extensions) {
-      totalInstalls += await this.extensionsService.getExtensionInstallCount(
-        extension.id,
-        twoWeeksAgo,
-      )
-    }
+
+    const promises = _map(extensions, async (extension) => {
+      totalInstalls += await this.extensionsService.getExtensionInstallCount(extension.id, twoWeeksAgo)
+    })
+
+    await Promise
+      .all(promises)
+      .catch(reason => {
+        this.logger.error(`[CRON WORKER](getAverageInstalls) Error occured: ${reason}`)
+        return 0
+      })
+
     return totalInstalls / extensions.length
   }
 }
