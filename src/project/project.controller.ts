@@ -548,19 +548,19 @@ export class ProjectController {
     let project
 
     if (isSelfhosted) {
-      const project = await getProjectsClickhouse(id)
+      const chProject = await getProjectsClickhouse(id)
 
-      if (_isEmpty(project)) {
+      if (_isEmpty(chProject)) {
         throw new NotFoundException()
       }
-      project.active = projectDTO.active
-      project.origins = _map(projectDTO.origins, _trim)
-      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
-      project.name = projectDTO.name
-      project.public = projectDTO.public
+      chProject.active = projectDTO.active
+      chProject.origins = _map(projectDTO.origins, _trim)
+      chProject.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+      chProject.name = projectDTO.name
+      chProject.public = projectDTO.public
 
       await updateProjectClickhouse(
-        this.projectService.formatToClickhouse(project),
+        this.projectService.formatToClickhouse(chProject),
       )
     } else {
       project = await this.projectService.findOne(id, {
@@ -583,11 +583,10 @@ export class ProjectController {
       if (project.isAnalyticsProject && projectDTO.isCaptcha) {
         const captchaProjects = _filter(
           user.projects,
-          (project: Project) => project.isCaptchaProject,
+          (fProject: Project) => fProject.isCaptchaProject,
         )
         const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
 
-        console.log('asd')
         if (_size(captchaProjects >= (maxProjects || PROJECTS_MAXIMUM))) {
           throw new ForbiddenException(
             `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
@@ -749,6 +748,7 @@ export class ProjectController {
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ uid, id }, 'DELETE /project/captcha/:id')
+
     if (!isValidPID(id)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
@@ -790,6 +790,8 @@ export class ProjectController {
         return 'Error while deleting your CAPTCHA project'
       }
     }
+
+    return null
   }
 
   // The routes related to sharing projects feature
@@ -1018,7 +1020,7 @@ export class ProjectController {
     }
 
     if (actionToken.action === ActionTokenType.PROJECT_SHARE) {
-      const { newValue: shareId, id } = actionToken
+      const { newValue: shareId, id: tokenID } = actionToken
 
       const share = await this.projectService.findOneShare(shareId)
       share.confirmed = true
@@ -1032,7 +1034,7 @@ export class ProjectController {
       // }
 
       await this.projectService.updateShare(shareId, share)
-      await this.actionTokensService.delete(id)
+      await this.actionTokensService.delete(tokenID)
     }
   }
 

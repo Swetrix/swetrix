@@ -260,7 +260,7 @@ export class ProjectService {
     return this.projectShareRepository.delete(id)
   }
 
-  async updateShare(id: string, share: ProjectShare | Object): Promise<any> {
+  async updateShare(id: string, share: ProjectShare | object): Promise<any> {
     return this.projectShareRepository.update(id, share)
   }
 
@@ -270,7 +270,7 @@ export class ProjectService {
 
   async findOneShare(
     id: string,
-    params: Object = {},
+    params: object = {},
   ): Promise<ProjectShare | null> {
     return this.projectShareRepository.findOne(id, params)
   }
@@ -279,7 +279,7 @@ export class ProjectService {
     return this.projectsRepository.findOne(id, { relations: ['admin'] })
   }
 
-  findOne(id: string, params: Object = {}): Promise<Project | null> {
+  findOne(id: string, params: object = {}): Promise<Project | null> {
     return this.projectsRepository.findOne(id, params)
   }
 
@@ -307,9 +307,10 @@ export class ProjectService {
       uid === project.admin?.id ||
       _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
     ) {
-    } else {
-      throw new ForbiddenException('You are not allowed to view this project')
+      return null
     }
+
+    throw new ForbiddenException('You are not allowed to view this project')
   }
 
   allowedToManage(
@@ -326,9 +327,10 @@ export class ProjectService {
         share => share.user?.id === uid && share.role === Role.admin,
       ) !== -1
     ) {
-    } else {
-      throw new ForbiddenException(message)
+      return null
     }
+
+    throw new ForbiddenException(message)
   }
 
   async checkIfIDUnique(projectID: string): Promise<void> {
@@ -410,13 +412,11 @@ export class ProjectService {
         .format('YYYY-MM-DD HH:mm:ss')
       const monthEnd = dayjs.utc().endOf('month').format('YYYY-MM-DD HH:mm:ss')
 
-      let pids
-
       if (isSelfhosted) {
         // selfhosted has no limits
         return 0
       }
-      pids = await this.find({
+      const pids = await this.find({
         where: {
           admin: uid,
         },
@@ -427,20 +427,20 @@ export class ProjectService {
         return 0
       }
 
-      const count_ev_query = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(
+      const countEVQuery = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(
         _map(pids, el => `'${el.id}'`),
         ',',
       )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
-      const count_custom_ev_query = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(
+      const countCustomEVQuery = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(
         _map(pids, el => `'${el.id}'`),
         ',',
       )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
 
-      const pageviews = (await clickhouse.query(count_ev_query).toPromise())[0][
+      const pageviews = (await clickhouse.query(countEVQuery).toPromise())[0][
         'count()'
       ]
       const customEvents = (
-        await clickhouse.query(count_custom_ev_query).toPromise()
+        await clickhouse.query(countCustomEVQuery).toPromise()
       )[0]['count()']
 
       count = pageviews + customEvents
