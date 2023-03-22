@@ -7,7 +7,5 @@ export class PingController {
   constructor() {}
 
   @Get('/')
-  async get(): Promise<any> {
-    return
-  }
+  async get(): Promise<any> {}
 }

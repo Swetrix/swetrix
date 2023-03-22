@@ -33,6 +33,8 @@ import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
+import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
+import { Auth, Public } from 'src/auth/decorators'
 import {
   AnalyticsService,
   getSessionKey,
@@ -64,8 +66,6 @@ import {
 } from '../common/constants'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
-import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth, Public } from 'src/auth/decorators'
 
 const mysql = require('mysql2')
 
@@ -253,14 +253,14 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly taskManagerService: TaskManagerService,
-  ) { }
+  ) {}
 
   @Get('/')
   @Auth([], true, true)
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
-    isCaptcha: boolean = false,
+    isCaptcha = false,
   ): Promise<any> {
     const {
       pid,
@@ -282,23 +282,26 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
-    let groupFrom = from,
-      groupTo = to
+    let groupFrom = from
+    let groupTo = to
 
-    let queryCustoms =
-      `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
+    let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     // TODO: Refactor
-    let subQuery = `FROM ${isCaptcha ? 'captcha' : 'analytics'} WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    let subQuery = `FROM ${
+      isCaptcha ? 'captcha' : 'analytics'
+    } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     let customEVFilterApplied = false
 
     // @ts-ignore
     if (filtersParams?.ev && !isCaptcha) {
       customEVFilterApplied = true
-      // @ts-ignore
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
+      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${
+        filtersParams.ev_exclusive ? 'NOT' : ''
+      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
 
-      // @ts-ignore
-      subQuery = `FROM customEV WHERE ${filtersParams.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+      subQuery = `FROM customEV WHERE ${
+        filtersParams.ev_exclusive ? 'NOT' : ''
+      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
     const paramsData = {
@@ -426,7 +429,7 @@ export class AnalyticsController {
     if (filters) {
       try {
         appliedFilters = JSON.parse(filters)
-      } catch { }
+      } catch {}
     }
 
     if (isCaptcha) {
@@ -470,11 +473,12 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(filters)
+    const [filtersQuery, filtersParams] =
+      this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
-    let groupFrom = from,
-      groupTo = to
+    let groupFrom = from
+    let groupTo = to
 
     const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
@@ -588,7 +592,7 @@ export class AnalyticsController {
     if (filters) {
       try {
         appliedFilters = JSON.parse(filters)
-      } catch { }
+      } catch {}
     }
 
     return {
@@ -603,7 +607,7 @@ export class AnalyticsController {
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    return await this.getData(data, uid, true)
+    return this.getData(data, uid, true)
   }
 
   @Get('/birdseye')
@@ -657,7 +661,9 @@ export class AnalyticsController {
       const users = _toNumber(await redis.get(REDIS_USERS_COUNT_KEY))
       const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
       const pageviews = _toNumber(await redis.get(REDIS_PAGEVIEWS_COUNT_KEY))
-      const performance = _toNumber(await redis.get(REDIS_PERFORMANCE_COUNT_KEY))
+      const performance = _toNumber(
+        await redis.get(REDIS_PERFORMANCE_COUNT_KEY),
+      )
 
       return {
         users,
@@ -667,7 +673,7 @@ export class AnalyticsController {
       }
     }
 
-    return await this.taskManagerService.getGeneralStats()
+    return this.taskManagerService.getGeneralStats()
   }
 
   @Get('/hb')
@@ -713,11 +719,15 @@ export class AnalyticsController {
       return []
     }
 
-    const sids = _map(keys, (key) => key.split(':')[1])
+    const sids = _map(keys, key => key.split(':')[1])
 
-    const query = `SELECT sid, dv, br, os, cc FROM analytics WHERE sid IN (${sids.map(el => `'${el}'`).join(',')})`
+    const query = `SELECT sid, dv, br, os, cc FROM analytics WHERE sid IN (${sids
+      .map(el => `'${el}'`)
+      .join(',')})`
     const result = await clickhouse.query(query).toPromise()
-    const processed = _map(_uniqBy(result, 'sid'), (el) => _pick(el, ['dv', 'br', 'os', 'cc']))
+    const processed = _map(_uniqBy(result, 'sid'), el =>
+      _pick(el, ['dv', 'br', 'os', 'cc']),
+    )
 
     return processed
   }
@@ -762,7 +772,9 @@ export class AnalyticsController {
     const br = ua.browser.name
     const os = ua.os.name
     // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
-    const cc = ct.getCountryForTimezone(eventsDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+    const cc =
+      ct.getCountryForTimezone(eventsDTO.tz)?.id ||
+      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const dto = customLogDTO(
       eventsDTO.pid,
@@ -811,7 +823,6 @@ export class AnalyticsController {
 
     await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME)
     this.analyticsService.processInteractionSD(sessionID, pid)
-    return
   }
 
   // Log pageview event
@@ -894,15 +905,16 @@ export class AnalyticsController {
       }
 
       if (!cc) {
-        cc = ct.getCountryForTimezone(logDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+        cc =
+          ct.getCountryForTimezone(logDTO.tz)?.id ||
+          (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
       }
 
       const dv = ua.device.type || 'desktop'
       const br = ua.browser.name
 
-      const {
-        dns, tls, conn, response, render, dom_load, page_load, ttfb,
-      } = logDTO.perf
+      const { dns, tls, conn, response, render, dom_load, page_load, ttfb } =
+        logDTO.perf
 
       perfDTO = performanceDTO(
         logDTO.pid,

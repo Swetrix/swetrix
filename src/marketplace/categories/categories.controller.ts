@@ -14,6 +14,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Roles } from '../../auth/decorators/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles.guard'
 import { UserType } from '../../user/entities/user.entity'
@@ -27,7 +28,6 @@ import { UpdateCategoryParams } from './dtos/update-category-params.dto'
 import { UpdateCategory } from './dtos/update-category.dto'
 import { ISaveCategory } from './interfaces/save-category.interface'
 import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 @ApiTags('categories')
 @UsePipes(
@@ -105,7 +105,7 @@ export class CategoriesController {
 
     const categoryInstance = this.categoriesService.create(body)
 
-    return await this.categoriesService.save(categoryInstance)
+    return this.categoriesService.save(categoryInstance)
   }
 
   @ApiParam({

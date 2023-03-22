@@ -21,7 +21,7 @@ export class UserService {
   ) {}
 
   async create(userDTO: UserProfileDTO | User): Promise<User> {
-    return await this.usersRepository.save(userDTO)
+    return this.usersRepository.save(userDTO)
   }
 
   async paginate(
@@ -61,7 +61,7 @@ export class UserService {
   }
 
   async count(): Promise<number> {
-    return await this.usersRepository.count()
+    return this.usersRepository.count()
   }
 
   omitSensitiveData(user: User): User {
@@ -159,33 +159,36 @@ export class UserService {
   }
 
   public async findUser(email: string) {
-    return await this.usersRepository.findOne({ email })
+    return this.usersRepository.findOne({ email })
   }
 
   public async createUser(user: Pick<User, 'email' | 'password'>) {
-    return await this.usersRepository.save({
+    return this.usersRepository.save({
       ...user,
-      trialEndDate: dayjs.utc().add(TRIAL_DURATION, 'day').format('YYYY-MM-DD HH:mm:ss'),
+      trialEndDate: dayjs
+        .utc()
+        .add(TRIAL_DURATION, 'day')
+        .format('YYYY-MM-DD HH:mm:ss'),
     })
   }
 
   public async findUserById(id: string) {
-    return await this.usersRepository.findOne({ id })
+    return this.usersRepository.findOne({ id })
   }
 
   public async updateUser(id: string, user: Partial<Omit<User, 'id'>>) {
-    return await this.usersRepository.update({ id }, user)
+    return this.usersRepository.update({ id }, user)
   }
 
   public async saveRefreshToken(userId: string, refreshToken: string) {
-    return await this.refreshTokenRepository.save({
+    return this.refreshTokenRepository.save({
       userId,
       refreshToken,
     })
   }
 
   public async findRefreshToken(userId: string, refreshToken: string) {
-    return await this.refreshTokenRepository.findOne({
+    return this.refreshTokenRepository.findOne({
       where: {
         userId,
         refreshToken,
@@ -201,10 +204,10 @@ export class UserService {
   }
 
   public async findUserByApiKey(apiKey: string) {
-    return await this.usersRepository.findOne({ where: { apiKey } })
+    return this.usersRepository.findOne({ where: { apiKey } })
   }
 
   async getUser(id: string) {
-    return await this.usersRepository.findOne({ id })
+    return this.usersRepository.findOne({ id })
   }
 }

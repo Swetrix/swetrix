@@ -53,7 +53,9 @@ export class SwetrixUpdate {
     @Ctx() ctx: Context,
     @Sender('id') chatId: string,
   ): Promise<void> {
-    const [action, entityId] = ctx.callbackQuery?.['data'].split(':')
+    // TODO: REMOVE THE TS IGNORE AND INVESTIGATE THIS ISSUE
+    // @ts-ignore
+    const [action, entityId] = ctx.callbackQuery?.data.split(':')
 
     if (action === 'unlinkTelegramAccount') {
       await ctx.editMessageText(
@@ -73,7 +75,7 @@ export class SwetrixUpdate {
       if (!user) {
         await ctx.telegram.editMessageText(
           ctx.chat.id,
-          ctx.callbackQuery?.['message'].message_id,
+          ctx.callbackQuery?.message.message_id,
           undefined,
           '❌ Your Telegram account is not connected to your Swetrix account.',
         )
@@ -87,7 +89,7 @@ export class SwetrixUpdate {
 
       await ctx.telegram.editMessageText(
         ctx.chat.id,
-        ctx.callbackQuery?.['message'].message_id,
+        ctx.callbackQuery?.message.message_id,
         undefined,
         '✅ Your Telegram account is unlinked from your Swetrix account.',
       )
@@ -96,7 +98,7 @@ export class SwetrixUpdate {
     if (action === 'unlinkTelegramAccountCancel') {
       await ctx.telegram.editMessageText(
         ctx.chat.id,
-        ctx.callbackQuery?.['message'].message_id,
+        ctx.callbackQuery?.message.message_id,
         undefined,
         '❌ Canceled unlinking of this Telegram account from your Swetrix account.',
       )
@@ -105,7 +107,7 @@ export class SwetrixUpdate {
     if (action === 'confirmTelegramChatId') {
       await ctx.telegram.deleteMessage(
         ctx.chat.id,
-        ctx.callbackQuery?.['message'].message_id,
+        ctx.callbackQuery?.message.message_id,
       )
       await ctx.telegram.sendMessage(
         ctx.chat.id,
@@ -127,7 +129,7 @@ export class SwetrixUpdate {
     if (action === 'cancelTelegramChatId') {
       await ctx.telegram.editMessageText(
         ctx.chat.id,
-        ctx.callbackQuery?.['message'].message_id,
+        ctx.callbackQuery?.message.message_id,
         undefined,
         '❌ Your Telegram account is not connected to your Swetrix account.',
       )
@@ -171,31 +173,30 @@ export class SwetrixUpdate {
 
       const text =
         `📊 *${project.name}*` +
-        '\n\n' +
-        '*Information*' +
-        '\n' +
+        `\n\n` +
+        `*Information*` +
+        `\n` +
         `ID: \`${project.id}\`` +
-        '\n' +
+        `\n` +
         `Active: \`${project.active ? 'yes' : 'no'}\`` +
-        '\n' +
+        `\n` +
         `Public: \`${project.public ? 'yes' : 'no'}\`` +
-        '\n' +
+        `\n` +
         `Created: \`${dayjs
           .utc(project.created)
           .tz(user.timezone)
           .format('YYYY-MM-DD HH:mm:ss')}\`` +
-        '\n\n' +
-        '*Analytics (last 7 days)*' +
-        '\n' +
+        `\n\n` +
+        `*Analytics (last 7 days)*` +
+        `\n` +
         `Online users: \`${online}\`` +
-        '\n' +
+        `\n` +
         `Page views: \`${stats[project.id].thisWeek}\`` +
-        '\n' +
+        `\n` +
         `Unique page views: \`${stats[project.id].thisWeekUnique}\`` +
-        '\n\n' +
-        '*Alerts*' +
-        '\n' +
-        alertsString
+        `\n\n` +
+        `*Alerts*` +
+        `\n${alertsString}`
       await ctx.editMessageText(text, {
         parse_mode: 'Markdown',
         reply_markup: {

@@ -6,10 +6,7 @@ import { CaptchaService } from './captcha.service'
 import { ProjectModule } from '../project/project.module'
 
 @Module({
-  imports: [
-    AppLoggerModule,
-    ProjectModule,
-  ],
+  imports: [AppLoggerModule, ProjectModule],
   providers: [CaptchaService],
   exports: [CaptchaService],
   controllers: [CaptchaController],

@@ -2,11 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
 import { UserModule } from 'src/user/user.module'
 import { Repository } from 'typeorm'
+import { User } from 'src/user/entities/user.entity'
 import { CategoriesController } from './categories.controller'
 import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'
 import { UserService } from '../../user/user.service'
-import { User } from 'src/user/entities/user.entity'
 
 describe('CategoriesController', () => {
   let controller: CategoriesController

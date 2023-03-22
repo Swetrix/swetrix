@@ -17,7 +17,11 @@ import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
 
 import {
-  clickhouse, redis, DEFAULT_SELFHOSTED_UUID, SELFHOSTED_EMAIL, UUIDV5_NAMESPACE,
+  clickhouse,
+  redis,
+  DEFAULT_SELFHOSTED_UUID,
+  SELFHOSTED_EMAIL,
+  UUIDV5_NAMESPACE,
 } from './constants'
 import { Project } from '../project/entity/project.entity'
 
@@ -96,7 +100,7 @@ export const checkRateLimitForApiKey = async (
 const getProjectsClickhouse = async (id = null) => {
   if (!id) {
     const query = 'SELECT * FROM project;'
-    return await clickhouse.query(query).toPromise()
+    return clickhouse.query(query).toPromise()
   }
 
   const paramsData = {
@@ -132,7 +136,7 @@ const updateProjectClickhouse = async (project: object) => {
     ', ',
     // @ts-ignore
   )} WHERE id='${project.id}'`
-  return await clickhouse.query(query).toPromise()
+  return clickhouse.query(query).toPromise()
 }
 
 /**
@@ -147,9 +151,8 @@ const getPercentageChange = (oldVal: number, newVal: number, round = 2) => {
   if (oldVal === 0) {
     if (newVal === 0) {
       return 0
-    } else {
-      return _round(-100 * newVal, round)
     }
+    return _round(-100 * newVal, round)
   }
 
   const decrease = oldVal - newVal
@@ -180,7 +183,7 @@ const calculateRelativePercentage = (
 
 const deleteProjectClickhouse = async id => {
   const query = `ALTER table project DELETE WHERE WHERE id='${id}'`
-  return await clickhouse.query(query).toPromise()
+  return clickhouse.query(query).toPromise()
 }
 
 const createProjectClickhouse = async (project: Project) => {
@@ -192,7 +195,7 @@ const createProjectClickhouse = async (project: Project) => {
   const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'',1,0,'${dayjs
     .utc()
     .format('YYYY-MM-DD HH:mm:ss')}')`
-  return await clickhouse.query(query, paramsData).toPromise()
+  return clickhouse.query(query, paramsData).toPromise()
 }
 
 const generateRecoveryCode = () =>
@@ -204,7 +207,8 @@ const generateRecoveryCode = () =>
 
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
-const generateRandomString = (length: number): string => randomstring.generate(length)
+const generateRandomString = (length: number): string =>
+  randomstring.generate(length)
 
 const getSelfhostedUUID = (): string => {
   try {

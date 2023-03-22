@@ -1,4 +1,3 @@
-import { Project } from '../../../project/entity/project.entity'
 import {
   Column,
   CreateDateColumn,
@@ -7,6 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
+import { Project } from '../../../project/entity/project.entity'
 import { Extension } from './extension.entity'
 
 @Entity()

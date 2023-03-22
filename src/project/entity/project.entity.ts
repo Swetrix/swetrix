@@ -8,9 +8,9 @@ import {
 } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
+import { Alert } from 'src/alert/entity/alert.entity'
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
-import { Alert } from 'src/alert/entity/alert.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
 import { ProjectSubscriber } from './project-subscriber.entity'
 import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
@@ -49,7 +49,7 @@ export class Project {
     default: false,
   })
   public: boolean
-  
+
   // Swetrix CAPTCHA related stuff
   @ApiProperty()
   @Column('boolean', { default: true })

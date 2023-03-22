@@ -23,13 +23,16 @@ import * as utc from 'dayjs/plugin/utc'
 // @ts-ignore
 import * as validateIP from 'validate-ip-node'
 
+import { UserService } from 'src/user/user.service'
+import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
+import { ActionTokenType } from 'src/action-tokens/action-token.entity'
+import { MailerService } from 'src/mailer/mailer.service'
+import { LetterTemplate } from 'src/mailer/letter'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
-import { ProjectShare } from './entity/project-share.entity'
+import { ProjectShare, Role } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
-import { UserService } from 'src/user/user.service'
-import { Role } from '../project/entity/project-share.entity'
 import {
   isValidPID,
   redisProjectCountCacheTimeout,
@@ -42,14 +45,8 @@ import {
   getRedisProjectKey,
   redisProjectCacheTimeout,
 } from '../common/constants'
-import {
-  getProjectsClickhouse,
-} from '../common/utils'
+import { getProjectsClickhouse } from '../common/utils'
 import { ProjectSubscriber } from './entity'
-import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
-import { ActionTokenType } from 'src/action-tokens/action-token.entity'
-import { MailerService } from 'src/mailer/mailer.service'
-import { LetterTemplate } from 'src/mailer/letter'
 import { AddSubscriberType } from './types'
 import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
 import { ReportFrequency } from './enums'
@@ -134,7 +131,15 @@ export class ProjectService {
         // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
         project = await this.findOne(pid, {
           relations: ['admin'],
-          select: ['origins', 'active', 'admin', 'public', 'ipBlacklist', 'captchaSecretKey', 'isCaptchaEnabled'],
+          select: [
+            'origins',
+            'active',
+            'admin',
+            'public',
+            'ipBlacklist',
+            'captchaSecretKey',
+            'isCaptchaEnabled',
+          ],
         })
       }
       if (_isEmpty(project))
@@ -213,17 +218,14 @@ export class ProjectService {
   }
 
   async count(): Promise<number> {
-    return await this.projectsRepository.count()
+    return this.projectsRepository.count()
   }
 
   async create(project: ProjectDTO | Project): Promise<Project> {
     return this.projectsRepository.save(project)
   }
 
-  async update(
-    id: string,
-    projectDTO: ProjectDTO | Project,
-  ): Promise<any> {
+  async update(id: string, projectDTO: ProjectDTO | Project): Promise<any> {
     return this.projectsRepository.update(id, projectDTO)
   }
 
@@ -305,7 +307,6 @@ export class ProjectService {
       uid === project.admin?.id ||
       _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
     ) {
-      return
     } else {
       throw new ForbiddenException('You are not allowed to view this project')
     }
@@ -315,7 +316,7 @@ export class ProjectService {
     project: Project,
     uid: string,
     roles: Array<UserType> = [],
-    message: string = 'You are not allowed to manage this project'
+    message = 'You are not allowed to manage this project',
   ): void {
     if (
       uid === project.admin?.id ||
@@ -325,7 +326,6 @@ export class ProjectService {
         share => share.user?.id === uid && share.role === Role.admin,
       ) !== -1
     ) {
-      return
     } else {
       throw new ForbiddenException(message)
     }
@@ -415,14 +415,13 @@ export class ProjectService {
       if (isSelfhosted) {
         // selfhosted has no limits
         return 0
-      } else {
-        pids = await this.find({
-          where: {
-            admin: uid,
-          },
-          select: ['id'],
-        })
       }
+      pids = await this.find({
+        where: {
+          admin: uid,
+        },
+        select: ['id'],
+      })
 
       if (_isEmpty(pids)) {
         return 0
@@ -490,34 +489,30 @@ export class ProjectService {
 
     await this.clearProjectsRedisCache(user.id)
   }
-  
-    async getProject(projectId: string, userId: string) {
-    return await this.projectsRepository.findOne({
+
+  async getProject(projectId: string, userId: string) {
+    return this.projectsRepository.findOne({
       where: {
         id: projectId,
         admin: { id: userId },
       },
     })
   }
+
   async getSubscriberByEmail(projectId: string, email: string) {
-    return await this.projectSubscriberRepository.findOne({
+    return this.projectSubscriberRepository.findOne({
       where: { projectId, email },
     })
   }
+
   async addSubscriber(data: AddSubscriberType) {
     const subscriber = await this.projectSubscriberRepository.save({ ...data })
-    await this.sendSubscriberInvite(
-      data, subscriber.id,
-    )
+    await this.sendSubscriberInvite(data, subscriber.id)
     return subscriber
   }
-  async sendSubscriberInvite(
-    data: AddSubscriberType,
-    subscriberId: string,
-  ) {
-    const {
-      userId, projectId, projectName, email, origin 
-    } = data
+
+  async sendSubscriberInvite(data: AddSubscriberType, subscriberId: string) {
+    const { userId, projectId, projectName, email, origin } = data
     const actionToken = await this.actionTokens.createActionToken(
       userId,
       ActionTokenType.ADDING_PROJECT_SUBSCRIBER,
@@ -528,20 +523,24 @@ export class ProjectService {
       email,
       LetterTemplate.ProjectSubscriberInvitation,
       {
-        url, projectName,
+        url,
+        projectName,
       },
     )
   }
+
   async getProjectById(projectId: string) {
-    return await this.projectsRepository.findOne({
+    return this.projectsRepository.findOne({
       where: { id: projectId },
     })
   }
+
   async getSubscriber(projectId: string, subscriberId: string) {
-    return await this.projectSubscriberRepository.findOne({
+    return this.projectSubscriberRepository.findOne({
       where: { id: subscriberId, projectId },
     })
   }
+
   async confirmSubscriber(
     projectId: string,
     subscriberId: string,
@@ -553,6 +552,7 @@ export class ProjectService {
     )
     await this.actionTokens.deleteActionToken(token)
   }
+
   async getSubscribers(projectId: string, queries: GetSubscribersQueriesDto) {
     const [subscribers, count] =
       await this.projectSubscriberRepository.findAndCount({
@@ -562,6 +562,7 @@ export class ProjectService {
       })
     return { subscribers, count }
   }
+
   async updateSubscriber(
     projectId: string,
     subscriberId: string,
@@ -571,20 +572,23 @@ export class ProjectService {
       { id: subscriberId, projectId },
       data,
     )
-    return await this.getSubscriber(projectId, subscriberId)
+    return this.getSubscriber(projectId, subscriberId)
   }
+
   async removeSubscriber(projectId: string, subscriberId: string) {
     await this.projectSubscriberRepository.delete({
       id: subscriberId,
       projectId,
     })
   }
+
   async getSubscribersForReports(reportFrequency: ReportFrequency) {
-    return await this.projectSubscriberRepository.find({
+    return this.projectSubscriberRepository.find({
       relations: ['project'],
       where: { reportFrequency, isConfirmed: true },
     })
   }
+
   async getSubscriberProjects(subscriberId: string) {
     const projects = await this.projectSubscriberRepository.find({
       relations: ['project'],

@@ -20,6 +20,10 @@ import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { getRepository, Like } from 'typeorm'
 import * as _map from 'lodash/map'
 import * as _size from 'lodash/size'
+import { CurrentUserId } from 'src/auth/decorators/current-user-id.decorator'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { Auth } from 'src/auth/decorators'
+import { FormDataRequest } from 'nestjs-form-data'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
@@ -30,7 +34,6 @@ import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { CategoriesService } from '../categories/categories.service'
 import { SortByExtension } from './enums/sort-by-extension.enum'
 import { CdnService } from '../cdn/cdn.service'
-import { CurrentUserId } from 'src/auth/decorators/current-user-id.decorator'
 import { Extension } from './entities/extension.entity'
 import { GetInstalledExtensionsQueriesDto } from './dtos/queries/get-installed-extensions.dto'
 import { InstallExtensionParamsDto } from './dtos/params/install-extension.dto'
@@ -42,14 +45,11 @@ import { Roles } from '../../auth/decorators/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles.guard'
 import { UserType } from '../../user/entities/user.entity'
 import { ExtensionStatus } from './enums/extension-status.enum'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth } from 'src/auth/decorators'
 import {
   CreateExtensionBodyDto,
   UpdateExtensionBodyDto,
   UpdateExtensionParamsDto,
 } from './dtos'
-import { FormDataRequest } from 'nestjs-form-data'
 
 @ApiTags('extensions')
 @UsePipes(
@@ -84,18 +84,29 @@ export class ExtensionsController {
     this.logger.debug({ queries })
 
     if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
+      throw new ForbiddenException(
+        'You must be logged in to access this route.',
+      )
     }
 
-    const [extensionsToUser, count] = await this.extensionsService.findAndCountExtensionToUser({
+    const [extensionsToUser, count] =
+      await this.extensionsService.findAndCountExtensionToUser(
+        {
           where: {
             userId,
           },
           skip: queries.offset || 0,
           take: queries.limit > 100 ? 25 : queries.limit || 25,
-    }, ['extension', 'extension.owner', 'extension.category', 'extension.users'])
+        },
+        [
+          'extension',
+          'extension.owner',
+          'extension.category',
+          'extension.users',
+        ],
+      )
 
-    let extensions = _map(extensionsToUser, (extensionToUser) => {
+    let extensions = _map(extensionsToUser, extensionToUser => {
       return extensionToUser.extension
     })
 
@@ -159,7 +170,9 @@ export class ExtensionsController {
   @Auth([UserType.ADMIN])
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin')
-  async getAllExtensionsAdmin(@Query() queries: GetAllExtensionsQueries): Promise<{
+  async getAllExtensionsAdmin(
+    @Query() queries: GetAllExtensionsQueries,
+  ): Promise<{
     extensions: Extension[]
     count: number
   }> {
@@ -232,16 +245,21 @@ export class ExtensionsController {
     count: number
   }> {
     if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
+      throw new ForbiddenException(
+        'You must be logged in to access this route.',
+      )
     }
 
-    let [extensions, count] = await this.extensionsService.findAndCount({
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 100 : queries.limit || 10,
+    let [extensions, count] = await this.extensionsService.findAndCount(
+      {
+        skip: queries.offset || 0,
+        take: queries.limit > 100 ? 100 : queries.limit || 10,
         where: {
           owner: userId,
         },
-    }, ['owner', 'users', 'category'], )
+      },
+      ['owner', 'users', 'category'],
+    )
 
     extensions = _map(extensions, extension => {
       extension.usersQuantity = _size(extension.users)
@@ -326,7 +344,9 @@ export class ExtensionsController {
   @Roles(UserType.ADMIN)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin/search')
-  async searchExtensionAdmin(@Query() queries: SearchExtensionQueries): Promise<{
+  async searchExtensionAdmin(
+    @Query() queries: SearchExtensionQueries,
+  ): Promise<{
     extensions: Extension[]
     count: number
   }> {
@@ -380,7 +400,7 @@ export class ExtensionsController {
       }
     }
 
-    return await this.extensionsService.createExtension({
+    return this.extensionsService.createExtension({
       ownerId: userId,
       ...body,
     })
@@ -436,7 +456,7 @@ export class ExtensionsController {
       )
     }
 
-    return await this.extensionsService.updateExtension(
+    return this.extensionsService.updateExtension(
       params.extensionId,
       body,
       extension.version,
@@ -452,7 +472,9 @@ export class ExtensionsController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':extensionId/approve')
-  async approveExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
+  async approveExtension(
+    @Param() params: UpdateExtensionParams,
+  ): Promise<Extension> {
     const { extensionId } = params
 
     const extension = await this.extensionsService.findOne({
@@ -465,7 +487,7 @@ export class ExtensionsController {
 
     extension.status = ExtensionStatus.ACCEPTED
 
-    return await this.extensionsService.save(extension)
+    return this.extensionsService.save(extension)
   }
 
   @ApiParam({
@@ -477,7 +499,9 @@ export class ExtensionsController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Patch(':extensionId/reject')
-  async rejectExtension(@Param() params: UpdateExtensionParams): Promise<Extension> {
+  async rejectExtension(
+    @Param() params: UpdateExtensionParams,
+  ): Promise<Extension> {
     const { extensionId } = params
 
     const extension = await this.extensionsService.findOne({
@@ -490,7 +514,7 @@ export class ExtensionsController {
 
     extension.status = ExtensionStatus.REJECTED
 
-    return await this.extensionsService.save(extension)
+    return this.extensionsService.save(extension)
   }
 
   @ApiParam({
@@ -520,7 +544,9 @@ export class ExtensionsController {
   ): Promise<any> {
     this.logger.debug({ params, body })
     if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
+      throw new ForbiddenException(
+        'You must be logged in to access this route.',
+      )
     }
 
     const extension = await this.extensionsService.findOne({
@@ -547,7 +573,7 @@ export class ExtensionsController {
         throw new ConflictException('Extension already installed.')
       }
 
-      return await this.extensionsService.createExtensionToUser({
+      return this.extensionsService.createExtensionToUser({
         extensionId: extension.id,
         userId: user.id,
       })
@@ -571,7 +597,7 @@ export class ExtensionsController {
       await this.extensionsService.deleteExtensionToUser(extension.id, user.id)
     }
 
-    return await this.extensionsService.createExtensionToProject({
+    return this.extensionsService.createExtensionToProject({
       extensionId: extension.id,
       projectId: project.id,
     })
@@ -586,7 +612,9 @@ export class ExtensionsController {
   ): Promise<void> {
     this.logger.debug({ params, body })
     if (!userId) {
-      throw new ForbiddenException('You must be logged in to access this route.')
+      throw new ForbiddenException(
+        'You must be logged in to access this route.',
+      )
     }
 
     const extension = await this.extensionsService.findOne({
@@ -613,10 +641,7 @@ export class ExtensionsController {
         throw new NotFoundException('Extension not installed.')
       }
 
-      return await this.extensionsService.deleteExtensionToUser(
-        extension.id,
-        user.id,
-      )
+      return this.extensionsService.deleteExtensionToUser(extension.id, user.id)
     }
 
     const project = await this.projectService.findOne(body.projectId)
@@ -637,7 +662,7 @@ export class ExtensionsController {
       throw new NotFoundException('Extension not installed.')
     }
 
-    return await this.extensionsService.deleteExtensionToProject(
+    return this.extensionsService.deleteExtensionToProject(
       extension.id,
       project.id,
     )

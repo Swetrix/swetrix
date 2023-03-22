@@ -9,6 +9,10 @@ import {
   Query,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { UserType } from 'src/user/entities/user.entity'
+import { RolesGuard } from 'src/auth/guards/roles.guard'
+import { Roles } from 'src/auth/decorators/roles.decorator'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { UserService } from '../../user/user.service'
 import { ExtensionsService } from '../extensions/extensions.service'
 import { ComplaintsService } from './complaints.service'
@@ -19,10 +23,6 @@ import { ResolveComplaintParamDto } from './dtos/params/resolve-complaint.dto'
 import { CreateComplaintQueryDto } from './dtos/queries/create-complaint.dto'
 import { GetComplaintsQueryDto } from './dtos/queries/get-complaints.dto'
 import { Complaint } from './entities/complaint.entity'
-import { UserType } from 'src/user/entities/user.entity'
-import { RolesGuard } from 'src/auth/guards/roles.guard'
-import { Roles } from 'src/auth/decorators/roles.decorator'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 @ApiTags('complaints')
 @Controller('complaints')

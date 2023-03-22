@@ -1,11 +1,9 @@
-import {
-  Injectable,
-} from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import { Pagination, PaginationOptionsInterface } from 'src/common/pagination'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO } from './dto/alert.dto'
-import { Pagination, PaginationOptionsInterface } from 'src/common/pagination'
 
 @Injectable()
 export class AlertService {
@@ -36,11 +34,13 @@ export class AlertService {
   }
 
   findOneWithRelations(id: string): Promise<Alert | null> {
-    return this.alertsReporsitory.findOne(id, { relations: ['project', 'project.admin'] })
+    return this.alertsReporsitory.findOne(id, {
+      relations: ['project', 'project.admin'],
+    })
   }
 
   async count(options: object = {}): Promise<number> {
-    return await this.alertsReporsitory.count(options)
+    return this.alertsReporsitory.count(options)
   }
 
   findOne(id: string, params: Object = {}): Promise<Alert | null> {
@@ -69,10 +69,7 @@ export class AlertService {
     return this.alertsReporsitory.save(project)
   }
 
-  async update(
-    id: string,
-    alertDTO: AlertDTO | Alert,
-  ): Promise<any> {
+  async update(id: string, alertDTO: AlertDTO | Alert): Promise<any> {
     return this.alertsReporsitory.update(id, alertDTO)
   }
 

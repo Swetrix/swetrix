@@ -13,15 +13,15 @@ export class ComplaintsService {
   async findAndCount(
     options: FindManyOptions<Complaint>,
   ): Promise<[Complaint[], number]> {
-    return await this.complaintsRepository.findAndCount({ ...options })
+    return this.complaintsRepository.findAndCount({ ...options })
   }
 
   async findOne(options: FindOneOptions<Complaint>): Promise<Complaint> {
-    return await this.complaintsRepository.findOne({ ...options })
+    return this.complaintsRepository.findOne({ ...options })
   }
 
   async save(complaint: Partial<Complaint>): Promise<Complaint> {
-    return await this.complaintsRepository.save(complaint)
+    return this.complaintsRepository.save(complaint)
   }
 
   async update(id: number, complaint: Partial<Complaint>): Promise<void> {

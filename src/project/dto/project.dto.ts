@@ -49,7 +49,8 @@ export class ProjectDTO {
 
   @ApiProperty({
     required: false,
-    description: 'When true, created a new Captcha Project without Analytics Projects.'
+    description:
+      'When true, created a new Captcha Project without Analytics Projects.',
   })
   isCaptcha: boolean
 }

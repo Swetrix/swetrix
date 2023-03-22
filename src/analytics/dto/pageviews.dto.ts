@@ -73,13 +73,13 @@ export class PageviewsDTO {
     description: 'Performance metrics',
   })
   perf?: {
-    dns: number,
-    tls: number,
-    conn: number,
-    response: number,
-    render: number,
-    dom_load: number,
-    page_load: number,
-    ttfb: number,
+    dns: number
+    tls: number
+    conn: number
+    response: number
+    render: number
+    dom_load: number
+    page_load: number
+    ttfb: number
   }
 }

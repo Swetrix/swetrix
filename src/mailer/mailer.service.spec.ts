@@ -6,7 +6,7 @@ import { MailerService } from './mailer.service'
 
 describe('MailerService', () => {
   let service: MailerService
-  let util = new Util()
+  const util = new Util()
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [MailerService, AppLoggerService],
@@ -20,8 +20,8 @@ describe('MailerService', () => {
       expect(service).toBeDefined()
     })
     it('should be sendEmail function not null', () => {
-      let email = util.getString()
-      let template = util.getLetterTemplate()
+      const email = util.getString()
+      const template = util.getLetterTemplate()
       const spy = jest.spyOn(service, 'sendEmail')
       const isSandingEmail = service.sendEmail(email, template)
       expect(spy).toHaveBeenCalled()

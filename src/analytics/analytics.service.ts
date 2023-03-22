@@ -27,7 +27,11 @@ import {
   PreconditionFailedException,
 } from '@nestjs/common'
 
-import { ACCOUNT_PLANS, DEFAULT_TIMEZONE, PlanCode } from '../user/entities/user.entity'
+import {
+  ACCOUNT_PLANS,
+  DEFAULT_TIMEZONE,
+  PlanCode,
+} from '../user/entities/user.entity'
 import {
   redis,
   isValidPID,
@@ -56,12 +60,19 @@ export const getSessionDurationKey = (hash: string, pid: string) =>
   `sd:${hash}:${pid}`
 
 export const cols = [
-  'cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca',
+  'cc',
+  'pg',
+  'lc',
+  'br',
+  'os',
+  'dv',
+  'ref',
+  'so',
+  'me',
+  'ca',
 ]
 
-export const captchaColumns = [
-  'cc', 'br', 'os', 'dv',
-]
+export const captchaColumns = ['cc', 'br', 'os', 'dv']
 
 export const perfCols = ['cc', 'pg', 'dv', 'br']
 
@@ -107,7 +118,7 @@ const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 interface GetFiltersQuery extends Array<string | object> {
   0: string
-  1: object
+  1: any
 }
 
 export const isValidTimezone = (timezone: string): boolean => {
@@ -157,7 +168,7 @@ export const checkIfTBAllowed = (
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) { }
+  constructor(private readonly projectService: ProjectService) {}
 
   async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
     if (!isSelfhosted) {
@@ -175,7 +186,7 @@ export class AnalyticsService {
           )
         }
       } else {
-        const hostname = new URL(origin).hostname
+        const { hostname } = new URL(origin)
         if (!_includes(project.origins, hostname)) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
@@ -400,7 +411,7 @@ export class AnalyticsService {
   async isUnique(hash: string) {
     const session = await redis.get(hash)
     await redis.set(hash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    return !Boolean(session)
+    return !session
   }
 
   async isSessionOpen(hash: string) {
@@ -471,7 +482,10 @@ export class AnalyticsService {
     return result
   }
 
-  async getCaptchaSummary(pids: string[], period: 'w' | 'M' = 'w'): Promise<Object> {
+  async getCaptchaSummary(
+    pids: string[],
+    period: 'w' | 'M' = 'w',
+  ): Promise<Object> {
     const result = {}
 
     for (let i = 0; i < _size(pids); ++i) {
@@ -526,7 +540,7 @@ export class AnalyticsService {
     to: string,
     subQuery: string,
     filtersQuery: string,
-    paramsData: object,
+    paramsData: any,
     timezone: string,
     customEVFilterApplied: boolean,
   ): Promise<object | void> {
@@ -551,7 +565,7 @@ export class AnalyticsService {
     }
 
     // Average session duration calculation
-    let avgSdur = 0
+    const avgSdur = 0
     if (!customEVFilterApplied) {
       const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
       let avgSdur = await clickhouse.query(avgSdurQuery, paramsData).toPromise()
@@ -594,12 +608,14 @@ export class AnalyticsService {
         if (i > 0) {
           query += ' UNION ALL '
         }
-  
-        // @ts-ignore
-        query += `select count() from customEV where ${paramsData.params.ev_exclusive ? 'NOT' : ''} ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${xM[i]
-          }' and '${xM[1 + i]}' ${filtersQuery}`
+
+        query += `select count() from customEV where ${
+          paramsData.params.ev_exclusive ? 'NOT' : ''
+        } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${
+          xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery}`
       }
-  
+
       // @ts-ignore
       const result: Array<chartCHResponse> = (
         await clickhouse.query(query, paramsData).toPromise()
@@ -608,19 +624,19 @@ export class AnalyticsService {
         .sort((a, b) => a.index - b.index)
 
       const uniques = []
-      let sdur = []
+      const sdur = []
 
       for (let i = 0; i < _size(x); ++i) {
         uniques[i] = result[i]['count()']
         sdur[i] = 0
       }
-  
+
       if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
         x = _map(x, el =>
           dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
         )
       }
-  
+
       return Promise.resolve({
         params,
         chart: {
@@ -638,8 +654,9 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
+      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
     // @ts-ignore
@@ -656,7 +673,7 @@ export class AnalyticsService {
     const resSize = _size(result)
 
     while (idx < resSize) {
-      const index = result[idx].index
+      const { index } = result[idx]
       const v = result[idx]['count()']
 
       if (index === result[1 + idx]?.index) {
@@ -669,7 +686,7 @@ export class AnalyticsService {
         continue
       }
 
-      const unique = result[idx].unique
+      const { unique } = result[idx]
 
       if (unique) {
         visits[index] = v
@@ -782,8 +799,9 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery}`
+      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery}`
     }
 
     // @ts-ignore
@@ -798,7 +816,7 @@ export class AnalyticsService {
     const resSize = _size(result)
 
     while (idx < resSize) {
-      const index = result[idx].index
+      const { index } = result[idx]
       const v = result[idx]['count()']
       results[index] = v
       idx++
@@ -892,8 +910,9 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
+      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
     }
 
     // @ts-ignore
@@ -916,7 +935,7 @@ export class AnalyticsService {
 
     while (idx < resSize) {
       const res = result[idx]
-      const index = res.index
+      const { index } = res
 
       dns[index] = _round(millisecondsToSeconds(res['avg(dns)']), 2)
       tls[index] = _round(millisecondsToSeconds(res['avg(tls)']), 2)

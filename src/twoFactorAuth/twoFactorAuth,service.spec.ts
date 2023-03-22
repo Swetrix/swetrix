@@ -7,7 +7,7 @@ import { TwoFactorAuthService } from './twoFactorAuth.service'
 
 describe('TwoFactorAuthController', () => {
   let service: TwoFactorAuthService
-  let util = new Util()
+  const util = new Util()
   const USER_REPOSITORY_TOKEN = getRepositoryToken(User)
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,7 +29,7 @@ describe('TwoFactorAuthController', () => {
       expect(service).toBeDefined()
     })
     it("should be defined generateTwoFactorAuthenticationSecret and don't return null", () => {
-      let user = util.getUser()
+      const user = util.getUser()
       expect(
         service.generateTwoFactorAuthenticationSecret(user),
       ).rejects.not.toBeNull()

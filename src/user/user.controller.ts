@@ -29,6 +29,9 @@ import * as _isString from 'lodash/isString'
 import * as _omit from 'lodash/omit'
 import { v4 as uuidv4 } from 'uuid'
 
+import { InjectBot } from 'nestjs-telegraf'
+import { Scenes, Telegraf } from 'telegraf'
+import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { UserService } from './user.service'
 import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import {
@@ -62,9 +65,6 @@ import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
 import { checkRateLimit } from '../common/utils'
-import { InjectBot } from 'nestjs-telegraf'
-import { Scenes, Telegraf } from 'telegraf'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
 
 dayjs.extend(utc)
 
@@ -126,7 +126,7 @@ export class UserController {
     @Query('skip') skip: number | undefined,
   ): Promise<Pagination<User> | User[]> {
     this.logger.log({ take, skip }, 'GET /user')
-    return await this.userService.paginate({ take, skip })
+    return this.userService.paginate({ take, skip })
   }
 
   @Put('/theme')
@@ -137,7 +137,7 @@ export class UserController {
     @CurrentUserId() userId: string,
     @Body('theme') theme: Theme,
   ): Promise<User> {
-    return await this.userService.update(userId, { theme })
+    return this.userService.update(userId, { theme })
   }
 
   @Get('/search')
@@ -149,14 +149,14 @@ export class UserController {
     @Query('query') query: string | undefined,
   ): Promise<User[]> {
     this.logger.log({ query }, 'GET /user/search')
-    return await this.userService.search(query)
+    return this.userService.search(query)
   }
 
   @Post('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
-  async create(@Body() userDTO: UserProfileDTO): Promise<User> {
+  async create(@Body() userDTO: UserProfileDTO): Promise<User | null> {
     this.logger.log({ userDTO }, 'POST /user')
     this.userService.validatePassword(userDTO.password)
     userDTO.password = await this.authService.hashPassword(userDTO.password)
@@ -171,6 +171,8 @@ export class UserController {
         }
       }
     }
+
+    return null
   }
 
   @Post('/api-key')
@@ -390,7 +392,9 @@ export class UserController {
       ActionTokenType.EMAIL_VERIFICATION,
       user.email,
     )
-    const url = `${isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN}/verify/${token.id}`
+    const url = `${
+      isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN
+    }/verify/${token.id}`
 
     await this.userService.update(id, { emailRequests: 1 + user.emailRequests })
     await this.mailerService.sendEmail(user.email, LetterTemplate.SignUp, {
@@ -492,7 +496,9 @@ export class UserController {
           ActionTokenType.EMAIL_CHANGE,
           userDTO.email,
         )
-        const url = `${isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN}/change-email/${token.id}`
+        const url = `${
+          isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN
+        }/change-email/${token.id}`
         await this.mailerService.sendEmail(
           user.email,
           LetterTemplate.MailAddressChangeConfirmation,

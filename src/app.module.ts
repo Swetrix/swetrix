@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule'
 import { TelegrafModule } from 'nestjs-telegraf'
 import { NestjsFormDataModule } from 'nestjs-form-data'
 
+import { I18nModule } from 'nestjs-i18n'
 import { UserModule } from './user/user.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { ProjectModule } from './project/project.module'
@@ -17,7 +18,6 @@ import { PingModule } from './ping/ping.module'
 import { TGModule } from './tg-integration/tg.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
-import { I18nModule } from 'nestjs-i18n'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { CaptchaModule } from './captcha/captcha.module'
@@ -33,7 +33,7 @@ const modules = [
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
     synchronize: isDevelopment,
-    entities: [__dirname + '/**/*.entity{.ts,.js}'],
+    entities: [`${__dirname}/**/*.entity{.ts,.js}`],
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),

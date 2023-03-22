@@ -12,17 +12,17 @@ export class CommentsService {
   async findAndCount(
     options: FindManyOptions<Comment>,
   ): Promise<[Comment[], number]> {
-    return await this.commentsRepository.findAndCount({ ...options })
+    return this.commentsRepository.findAndCount({ ...options })
   }
 
   async findOne(options: FindOneOptions<Comment>): Promise<Comment> {
-    return await this.commentsRepository.findOne({ ...options })
+    return this.commentsRepository.findOne({ ...options })
   }
 
   async save(
     comment: Omit<Comment, 'id' | 'addedAt' | 'extension' | 'user'>,
   ): Promise<Comment> {
-    return await this.commentsRepository.save(comment)
+    return this.commentsRepository.save(comment)
   }
 
   async delete(id: string): Promise<void> {

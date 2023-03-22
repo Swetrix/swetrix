@@ -10,12 +10,10 @@ import { Project } from 'src/project/entity/project.entity'
 import { ProjectService } from 'src/project/project.service'
 import { User } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
-import { Util } from 'src/Util/Util'
 import { TaskManagerService } from './task-manager.service'
 
 describe('TaskManagerService', () => {
   let service: TaskManagerService
-  let util = new Util()
   const USER_REPOSITORY_TOKEN = getRepositoryToken(User)
   const ACRIONTOKENS_REPOSITORY_TOKEN = getRepositoryToken(ActionToken)
   const PROJECT_REPOSITORY_TOKEN = getRepositoryToken(Project)
@@ -76,10 +74,6 @@ describe('TaskManagerService', () => {
     it("should be defined monthlyReportsHandler and don't return null", () => {
       expect(service.monthlyReportsHandler()).rejects.not.toBeNull()
       expect(service.monthlyReportsHandler).toBeDefined()
-    })
-    it("should be defined saveLogData and don't return null", () => {
-      expect(service.saveCapthcaLogData()).not.toBeNull()
-      expect(service.saveCapthcaLogData).toBeDefined()
     })
     it("should be defined weeklyReportsHandler and don't return null", () => {
       expect(service.weeklyReportsHandler()).rejects.not.toBeNull()

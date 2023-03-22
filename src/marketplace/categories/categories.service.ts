@@ -14,7 +14,7 @@ export class CategoriesService {
   ) {}
 
   async findOne(options: FindOneOptions<Category>): Promise<Category> {
-    return await this.categoryRepository.findOne({ ...options })
+    return this.categoryRepository.findOne({ ...options })
   }
 
   create(category: ICreateCategory): Category {
@@ -22,11 +22,11 @@ export class CategoriesService {
   }
 
   async save(category: ISaveCategory): Promise<ISaveCategory & Category> {
-    return await this.categoryRepository.save(category)
+    return this.categoryRepository.save(category)
   }
 
   async findById(id: number): Promise<Category> {
-    return await this.findOne({ where: { id } })
+    return this.findOne({ where: { id } })
   }
 
   async update(id: number, category: IUpdateCategory): Promise<void> {
@@ -40,18 +40,18 @@ export class CategoriesService {
   async findAndCount(
     options: FindManyOptions<Category>,
   ): Promise<[Category[], number]> {
-    return await this.categoryRepository.findAndCount({ ...options })
+    return this.categoryRepository.findAndCount({ ...options })
   }
 
   async findByName(name: string): Promise<Category> {
-    return await this.findOne({ where: { name }, select: ['name'] })
+    return this.findOne({ where: { name }, select: ['name'] })
   }
 
   async findByIds(ids: number[]): Promise<Category[]> {
-    return await this.categoryRepository.findByIds(ids)
+    return this.categoryRepository.findByIds(ids)
   }
 
   async getCategoryById(id: number) {
-    return await this.categoryRepository.findOne({ where: { id } })
+    return this.categoryRepository.findOne({ where: { id } })
   }
 }
