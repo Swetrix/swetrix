@@ -49,6 +49,7 @@ module.exports = {
     'no-nested-ternary': 'off',
     'no-plusplus': 'off',
     'no-underscore-dangle': 'off',
+    'max-classes-per-file': 'off',
     'no-unused-vars': 'warn',
     'semi': [
       'error',
