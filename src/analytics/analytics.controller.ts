@@ -1,7 +1,6 @@
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
-import * as _size from 'lodash/size'
 import * as _last from 'lodash/last'
 import * as _pick from 'lodash/pick'
 import * as _map from 'lodash/map'
@@ -9,7 +8,7 @@ import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
-import * as timezone from 'dayjs/plugin/timezone'
+import * as dayjsTimezone from 'dayjs/plugin/timezone'
 import { hash } from 'blake3'
 import ct from 'countries-and-timezones'
 import {
@@ -67,10 +66,11 @@ import {
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
 
 dayjs.extend(utc)
-dayjs.extend(timezone)
+dayjs.extend(dayjsTimezone)
 
 const getSessionKeyCustom = (
   ip: string,
@@ -381,7 +381,7 @@ export class AnalyticsController {
       } else {
         groupFrom = dayjs
           .utc()
-          .subtract(parseInt(period), _last(period))
+          .subtract(parseInt(period, 10), _last(period))
           .format('YYYY-MM-DD')
         groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
 
@@ -429,6 +429,7 @@ export class AnalyticsController {
     if (filters) {
       try {
         appliedFilters = JSON.parse(filters)
+        // eslint-disable-next-line no-empty
       } catch {}
     }
 
@@ -559,7 +560,7 @@ export class AnalyticsController {
       } else {
         groupFrom = dayjs
           .utc()
-          .subtract(parseInt(period), _last(period))
+          .subtract(parseInt(period, 10), _last(period))
           .format('YYYY-MM-DD')
         groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
 
@@ -592,6 +593,7 @@ export class AnalyticsController {
     if (filters) {
       try {
         appliedFilters = JSON.parse(filters)
+        // eslint-disable-next-line no-empty
       } catch {}
     }
 
@@ -620,10 +622,12 @@ export class AnalyticsController {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
 
-    for (let i = 0; i < _size(pidsArray); ++i) {
-      this.analyticsService.validatePID(pidsArray[i])
-      await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
-    }
+    const validationPromises = _map(pidsArray, async currentPID => {
+      this.analyticsService.validatePID(currentPID)
+      await this.analyticsService.checkProjectAccess(currentPID, uid)
+    })
+
+    await Promise.all(validationPromises)
 
     return this.analyticsService.getSummary(pidsArray, 'w')
   }
@@ -638,10 +642,12 @@ export class AnalyticsController {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
 
-    for (let i = 0; i < _size(pidsArray); ++i) {
-      this.analyticsService.validatePID(pidsArray[i])
-      await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
-    }
+    const validationPromises = _map(pidsArray, async currentPID => {
+      this.analyticsService.validatePID(currentPID)
+      await this.analyticsService.checkProjectAccess(currentPID, uid)
+    })
+
+    await Promise.all(validationPromises)
 
     return this.analyticsService.getCaptchaSummary(pidsArray, 'w')
   }
@@ -683,21 +689,25 @@ export class AnalyticsController {
   ): Promise<object> {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
-    const pidsSize = _size(pidsArray)
 
-    for (let i = 0; i < pidsSize; ++i) {
-      this.analyticsService.validatePID(pidsArray[i])
-      await this.analyticsService.checkProjectAccess(pidsArray[i], uid)
-    }
+    const validationPromises = _map(pidsArray, async currentPID => {
+      this.analyticsService.validatePID(currentPID)
+      await this.analyticsService.checkProjectAccess(currentPID, uid)
+    })
+
+    await Promise.all(validationPromises)
 
     const result = {}
 
-    for (let i = 0; i < pidsSize; ++i) {
-      const currentPID = pidsArray[i]
+    const keyCountPromises = _map(pidsArray, async currentPID => {
       // @ts-ignore
       const keysAmout = await redis.countKeysByPattern(`hb:${currentPID}:*`)
       result[currentPID] = keysAmout
-    }
+    })
+
+    await Promise.all(keyCountPromises).catch(reason => {
+      this.logger.error(`[@Get('/hb')] ${reason}`)
+    })
 
     return result
   }
@@ -913,8 +923,16 @@ export class AnalyticsController {
       const dv = ua.device.type || 'desktop'
       const br = ua.browser.name
 
-      const { dns, tls, conn, response, render, dom_load, page_load, ttfb } =
-        logDTO.perf
+      const {
+        dns,
+        tls,
+        conn,
+        response,
+        render,
+        dom_load: domLoad,
+        page_load: pageLoad,
+        ttfb,
+      } = logDTO.perf
 
       perfDTO = performanceDTO(
         logDTO.pid,
@@ -927,8 +945,8 @@ export class AnalyticsController {
         conn,
         response,
         render,
-        dom_load,
-        page_load,
+        domLoad,
+        pageLoad,
         ttfb,
       )
     }
