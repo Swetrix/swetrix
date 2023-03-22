@@ -10,11 +10,9 @@ import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
-import * as _pick from 'lodash/pick'
-import * as _uniqBy from 'lodash/uniqBy'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
-import * as timezone from 'dayjs/plugin/timezone'
+import * as dayjsTimezone from 'dayjs/plugin/timezone'
 import * as ipRangeCheck from 'ip-range-check'
 import validator from 'validator'
 import { hash } from 'blake3'
@@ -51,13 +49,13 @@ import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
 
 dayjs.extend(utc)
-dayjs.extend(timezone)
+dayjs.extend(dayjsTimezone)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
-export const getSessionDurationKey = (hash: string, pid: string) =>
-  `sd:${hash}:${pid}`
+export const getSessionDurationKey = (sessionHash: string, pid: string) =>
+  `sd:${sessionHash}:${pid}`
 
 export const cols = [
   'cc',
@@ -76,13 +74,13 @@ export const captchaColumns = ['cc', 'br', 'os', 'dv']
 
 export const perfCols = ['cc', 'pg', 'dv', 'br']
 
-interface chartCHResponse {
+interface ChartCHResponse {
   index: number
   unique: number
   'count()': number
 }
 
-interface customsCHResponse {
+interface CustomsCHResponse {
   ev: string
   'count()': number
 }
@@ -114,6 +112,7 @@ const timeBucketToDays = [
 ]
 
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
+// eslint-disable-next-line no-useless-escape
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 interface GetFiltersQuery extends Array<string | object> {
@@ -408,14 +407,14 @@ export class AnalyticsService {
     }
   }
 
-  async isUnique(hash: string) {
-    const session = await redis.get(hash)
-    await redis.set(hash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
+  async isUnique(sessionHash: string) {
+    const session = await redis.get(sessionHash)
+    await redis.set(sessionHash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
     return !session
   }
 
-  async isSessionOpen(hash: string) {
-    const session = await redis.get(hash)
+  async isSessionOpen(sessionHash: string) {
+    const session = await redis.get(sessionHash)
     return Boolean(session)
   }
 
@@ -423,15 +422,15 @@ export class AnalyticsService {
     pids: string[],
     period: 'w' | 'M' = 'w',
     amountToSubtract = 1,
-  ): Promise<Object> {
+  ): Promise<object> {
     const result = {}
 
-    for (let i = 0; i < _size(pids); ++i) {
-      const pid = pids[i]
-      if (!isValidPID(pid))
+    const promises = _map(pids, async pid => {
+      if (!isValidPID(pid)) {
         throw new BadRequestException(
           `The provided Project ID (${pid}) is incorrect`,
         )
+      }
 
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       const oneWRaw = dayjs.utc().subtract(amountToSubtract, period)
@@ -483,7 +482,9 @@ export class AnalyticsService {
           "Can't process the provided PID. Please, try again later.",
         )
       }
-    }
+    })
+
+    await Promise.all(promises)
 
     return result
   }
@@ -491,15 +492,15 @@ export class AnalyticsService {
   async getCaptchaSummary(
     pids: string[],
     period: 'w' | 'M' = 'w',
-  ): Promise<Object> {
+  ): Promise<object> {
     const result = {}
 
-    for (let i = 0; i < _size(pids); ++i) {
-      const pid = pids[i]
-      if (!isValidPID(pid))
+    const promises = _map(pids, async pid => {
+      if (!isValidPID(pid)) {
         throw new BadRequestException(
           `The provided Project ID (${pid}) is incorrect`,
         )
+      }
 
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       const oneWRaw = dayjs.utc().subtract(1, period)
@@ -535,7 +536,9 @@ export class AnalyticsService {
           "Can't process the provided PID. Please, try again later.",
         )
       }
-    }
+    })
+
+    await Promise.all(promises)
 
     return result
   }
@@ -552,30 +555,34 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const params = {}
 
-    for (const i of cols) {
-      const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+    const paramsPromises = _map(cols, async col => {
+      const query1 = `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
-      params[i] = {}
+      params[col] = {}
 
       const size = _size(res)
       for (let j = 0; j < size; ++j) {
-        const key = res[j][i]
+        const key = res[j][col]
         const value = res[j]['count()']
-        params[i][key] = value
+        params[col][key] = value
       }
-    }
+    })
+
+    await Promise.all(paramsPromises)
 
     if (!_some(_values(params), val => !_isEmpty(val))) {
       return Promise.resolve()
     }
 
     // Average session duration calculation
-    const avgSdur = 0
+    let avgSdur = 0
     if (!customEVFilterApplied) {
       const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
-      let avgSdur = await clickhouse.query(avgSdurQuery, paramsData).toPromise()
-      avgSdur = _round(avgSdur[0]['avg(sdur)'])
+      const avgSdurObject = await clickhouse
+        .query(avgSdurQuery, paramsData)
+        .toPromise()
+      avgSdur = _round(avgSdurObject[0]['avg(sdur)'])
     }
 
     let groupDateIterator
@@ -623,7 +630,7 @@ export class AnalyticsService {
       }
 
       // @ts-ignore
-      const result: Array<chartCHResponse> = (
+      const result: Array<ChartCHResponse> = (
         await clickhouse.query(query, paramsData).toPromise()
       )
         // @ts-ignore
@@ -666,7 +673,7 @@ export class AnalyticsService {
     }
 
     // @ts-ignore
-    const result: Array<chartCHResponse> = (
+    const result: Array<ChartCHResponse> = (
       await clickhouse.query(query, paramsData).toPromise()
     )
       // @ts-ignore
@@ -751,19 +758,21 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const params = {}
 
-    for (const i of captchaColumns) {
-      const query1 = `SELECT ${i}, count(*) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+    const paramsPromises = _map(captchaColumns, async captchaColumn => {
+      const query1 = `SELECT ${captchaColumn}, count(*) ${subQuery} AND ${captchaColumn} IS NOT NULL GROUP BY ${captchaColumn}`
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
-      params[i] = {}
+      params[captchaColumn] = {}
 
       const size = _size(res)
       for (let j = 0; j < size; ++j) {
-        const key = res[j][i]
+        const key = res[j][captchaColumn]
         const value = res[j]['count()']
-        params[i][key] = value
+        params[captchaColumn][key] = value
       }
-    }
+    })
+
+    await Promise.all(paramsPromises)
 
     if (!_some(_values(params), val => !_isEmpty(val))) {
       return Promise.resolve()
@@ -811,7 +820,7 @@ export class AnalyticsService {
     }
 
     // @ts-ignore
-    const result: Array<chartCHResponse> = (
+    const result: Array<ChartCHResponse> = (
       await clickhouse.query(query, paramsData).toPromise()
     )
       // @ts-ignore
@@ -860,21 +869,23 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const params = {}
 
-    for (const i of perfCols) {
-      const query = `SELECT ${i}, avg(pageLoad) ${subQuery} AND ${i} IS NOT NULL GROUP BY ${i}`
+    const paramsPromises = _map(perfCols, async perfColumn => {
+      const query = `SELECT ${perfColumn}, avg(pageLoad) ${subQuery} AND ${perfColumn} IS NOT NULL GROUP BY ${perfColumn}`
       const res = await clickhouse.query(query, paramsData).toPromise()
 
-      params[i] = {}
+      params[perfColumn] = {}
 
       const size = _size(res)
       for (let j = 0; j < size; ++j) {
-        const key = res[j][i]
-        params[i][key] = _round(
+        const key = res[j][perfColumn]
+        params[perfColumn][key] = _round(
           millisecondsToSeconds(res[j]['avg(pageLoad)']),
           2,
         )
       }
-    }
+    })
+
+    await Promise.all(paramsPromises)
 
     if (!_some(_values(params), val => !_isEmpty(val))) {
       return Promise.resolve()
@@ -922,7 +933,7 @@ export class AnalyticsService {
     }
 
     // @ts-ignore
-    const result: Array<chartCHResponse> = (
+    const result: Array<ChartCHResponse> = (
       await clickhouse.query(query, paramsData).toPromise()
     )
       // @ts-ignore
@@ -989,7 +1000,7 @@ export class AnalyticsService {
     const result = {}
 
     // @ts-ignore
-    const rawCustoms: Array<customsCHResponse> = await clickhouse
+    const rawCustoms: Array<CustomsCHResponse> = await clickhouse
       .query(query, params)
       .toPromise()
     const size = _size(rawCustoms)
