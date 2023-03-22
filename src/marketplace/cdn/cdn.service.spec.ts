@@ -1,5 +1,3 @@
-import { HttpService } from '@nestjs/axios'
-import { ConfigService } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import { CdnService } from './cdn.service'
 

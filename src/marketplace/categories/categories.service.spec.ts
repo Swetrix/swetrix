@@ -6,6 +6,7 @@ import { Category } from './category.entity'
 
 describe('CategoriesService', () => {
   let service: CategoriesService
+  // eslint-disable-next-line no-unused-vars
   let repository: Repository<Category>
 
   const CATEGORY_REPOSITORY_TOKEN = getRepositoryToken(Category)

@@ -1,7 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm'
-import { UserModule } from 'src/user/user.module'
-import { Repository } from 'typeorm'
+import { getRepositoryToken } from '@nestjs/typeorm'
 import { User } from 'src/user/entities/user.entity'
 import { CategoriesController } from './categories.controller'
 import { CategoriesService } from './categories.service'
