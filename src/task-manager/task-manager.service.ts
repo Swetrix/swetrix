@@ -371,7 +371,7 @@ export class TaskManagerService {
       }
 
       const ids = _map(projects, p => p.id)
-      const data = await this.analyticsService.getSummary(ids, 'M')
+      const data = await this.analyticsService.getSummary(ids, 'M', 3)
 
       const result = {
         type: 'Q', // quarterly
@@ -415,7 +415,7 @@ export class TaskManagerService {
       const projects = await this.projectService.getSubscriberProjects(id)
 
       const ids = projects.map(project => project.id)
-      const data = await this.analyticsService.getSummary(ids, 'M')
+      const data = await this.analyticsService.getSummary(ids, 'M', 3)
 
       const result = {
         type: 'Q', // quarter
