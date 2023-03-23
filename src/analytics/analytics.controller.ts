@@ -707,6 +707,7 @@ export class AnalyticsController {
 
     await Promise.all(keyCountPromises).catch(reason => {
       this.logger.error(`[@Get('/hb')] ${reason}`)
+      throw new InternalServerErrorException('An error occured while calculating heartbeat statistics')
     })
 
     return result

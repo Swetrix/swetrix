@@ -200,7 +200,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](checkLeftEvents) Error occured: ${reason}`,
       )
@@ -284,7 +284,7 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](weeklyReportsHandler) Error occured: ${reason}`,
       )
@@ -338,7 +338,7 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](monthlyReportsHandler) Error occured: ${reason}`,
       )
@@ -391,7 +391,7 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](quarterlyReportsHandler) Error occured: ${reason}`,
       )
@@ -435,7 +435,7 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](handleQuarterlyReports) Error occured: ${reason}`,
       )
@@ -478,7 +478,7 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](handleMonthlyReports) Error occured: ${reason}`,
       )
@@ -521,9 +521,9 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
-        `[CRON WORKER](handleMonthlyReports) Error occured: ${reason}`,
+        `[CRON WORKER](handleWeeklyReports) Error occured: ${reason}`,
       )
     })
   }
@@ -576,7 +576,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](processSessionDuration) Error occured: ${reason}`,
       )
@@ -615,7 +615,7 @@ export class TaskManagerService {
       })
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](checkIsTelegramChatIdConfirmed) Error occured: ${reason}`,
       )
@@ -645,7 +645,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](cleanUpUnpaidSubUsers) Error occured: ${reason}`,
       )
@@ -678,7 +678,7 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(`[CRON WORKER](trialReminder) Error occured: ${reason}`)
     })
   }
@@ -703,7 +703,7 @@ export class TaskManagerService {
       })
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](fixAFuckingTrialEndDateNullBug) Error occured: ${reason}`,
       )
@@ -736,7 +736,7 @@ export class TaskManagerService {
       await this.projectService.clearProjectsRedisCache(id)
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(`[CRON WORKER](trialEnd) Error occured: ${reason}`)
     })
   }
@@ -793,7 +793,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](checkOnlineUsersAlerts) Error occured: ${reason}`,
       )
@@ -866,7 +866,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](checkMetricAlerts) Error occured: ${reason}`,
       )
@@ -889,7 +889,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.all(newExtensionsPromise).catch(reason => {
+    await Promise.allSettled(newExtensionsPromise).catch(reason => {
       this.logger.error(
         `[CRON WORKER](handleNewExtensions) Error occured: ${reason}`,
       )
@@ -907,7 +907,7 @@ export class TaskManagerService {
       await this.extensionsService.save(extension)
     })
 
-    await Promise.all(oldExtensionsPromise).catch(reason => {
+    await Promise.allSettled(oldExtensionsPromise).catch(reason => {
       this.logger.error(
         `[CRON WORKER](handleNewExtensions) Error occured: ${reason}`,
       )
@@ -946,7 +946,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](handleTrendingExtensions) Error occured: ${reason}`,
       )
@@ -966,7 +966,7 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.all(promises).catch(reason => {
+    await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](getAverageInstalls) Error occured: ${reason}`,
       )
