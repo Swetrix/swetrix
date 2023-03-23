@@ -827,9 +827,6 @@ export class ProjectController {
       throw new BadRequestException('The provided \'to\' date is incorrect',)
     }
 
-    from = dayjs(from).format('YYYY-MM-DD')
-    to = dayjs(to).format('YYYY-MM-DD 23:59:59')
-
     const project = await this.projectService.findOne(pid, {
       relations: ['admin', 'share'],
     })
@@ -840,20 +837,10 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid)
 
-    const queryAnalytics = 'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryCustomEvents = 'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryPerformance = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const params = {
-      params: {
-        pid, from, to,
-      },
-    }
+    from = dayjs(from).format('YYYY-MM-DD')
+    to = dayjs(to).format('YYYY-MM-DD 23:59:59')
 
-    await Promise.all([
-      clickhouse.query(queryAnalytics, params).toPromise(),
-      clickhouse.query(queryCustomEvents, params).toPromise(),
-      clickhouse.query(queryPerformance, params).toPromise(),
-    ])
+    await this.projectService.removeDataFromClickhouse(pid, from, to)
   }
 
   // The routes related to sharing projects feature

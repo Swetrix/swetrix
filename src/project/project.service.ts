@@ -347,6 +347,23 @@ export class ProjectService {
     }
   }
 
+  async removeDataFromClickhouse(pid: string, from: string, to: string): Promise<void> {
+    const queryAnalytics = 'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryCustomEvents = 'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryPerformance = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const params = {
+      params: {
+        pid, from, to,
+      },
+    }
+
+    await Promise.all([
+      clickhouse.query(queryAnalytics, params).toPromise(),
+      clickhouse.query(queryCustomEvents, params).toPromise(),
+      clickhouse.query(queryPerformance, params).toPromise(),
+    ])
+  }
+
   formatToClickhouse(project: Project): object {
     const updProject = { ...project }
     // @ts-ignore
