@@ -783,15 +783,15 @@ export class ProjectController {
   @Delete('/partially/:pid')
   @ApiQuery({ name: 'from', required: true, description: 'Date in ISO format', example: '2020-01-01T00:00:00.000Z', type: 'string' })
   @ApiQuery({ name: 'to', required: true, description: 'Date in ISO format', example: '2020-01-01T00:00:00.000Z', type: 'string' })
-  @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 200 })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async deletePartially(
     @Param('pid') pid: string,
     @Query('from') from: string,
     @Query('to') to: string,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
+  ): Promise<void> {
     this.logger.log({ from, to, pid }, 'DELETE /partially/:id')
 
     if (!isValidPID(pid)) {
@@ -822,18 +822,20 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid)
 
-    const queryA = 'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryCE = 'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryP = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryAnalytics = 'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryCustomEvents = 'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryPerformance = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
         pid, from, to,
       },
     }
 
-    await clickhouse.query(queryA, params).toPromise()
-    await clickhouse.query(queryCE, params).toPromise()
-    await clickhouse.query(queryP, params).toPromise()
+    await Promise.all([
+      clickhouse.query(queryAnalytics, params).toPromise(),
+      clickhouse.query(queryCustomEvents, params).toPromise(),
+      clickhouse.query(queryPerformance, params).toPromise(),
+    ])
   }
 
   // The routes related to sharing projects feature
