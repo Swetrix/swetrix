@@ -10,6 +10,11 @@ const loadSharedProjects = (take, skip) => ({
   payload: { take, skip },
 })
 
+const loadProjectsCaptcha = (take, skip) => ({
+  type: types.LOAD_PROJECTS,
+  payload: { take, skip, isCaptcha: true },
+})
+
 const setProjects = (projects, shared) => ({
   type: types.SET_PROJECTS,
   payload: {
@@ -118,6 +123,13 @@ const setProjectCache = (pid, data, key) => ({
   },
 })
 
+const setCaptchaProjectCache = (pid, data, key) => ({
+  type: types.SET_CAPTCHA_PROJECT_CACHE,
+  payload: {
+    pid, data, key,
+  },
+})
+
 const setProjectCachePerf = (pid, data, key) => ({
   type: types.SET_PROJECT_CACHE_PERF,
   payload: {
@@ -139,6 +151,13 @@ const deleteProjectCache = (pid, period, timeBucket) => ({
   },
 })
 
+const deleteCaptchaProjectCache = (pid, period, timeBucket) => ({
+  type: types.DELETE_CAPTCHA_PROJECT_CACHE,
+  payload: {
+    pid, period, timeBucket,
+  },
+})
+
 const deleteProjectCachePerf = (pid, period, timeBucket) => ({
   type: types.DELETE_PROJECT_CACHE_PERF,
   payload: {
@@ -148,6 +167,13 @@ const deleteProjectCachePerf = (pid, period, timeBucket) => ({
 
 const setProjectViewPrefs = (pid, period, timeBucket, rangeDate) => ({
   type: types.SET_PROJECT_VIEW_PREFS,
+  payload: {
+    pid, period, timeBucket, rangeDate,
+  },
+})
+
+const setCaptchaProjectsViewPrefs = (pid, period, timeBucket, rangeDate) => ({
+  type: types.SET_CAPTCHA_PROJECTS_VIEW_PREFS,
   payload: {
     pid, period, timeBucket, rangeDate,
   },
@@ -228,6 +254,35 @@ const loadProjectAlerts = (take, skip) => ({
   payload: { take, skip },
 })
 
+const setCaptchaProjects = (captchaProjects) => ({
+  type: types.SET_CAPTCHA_PROJECTS,
+  payload: { captchaProjects },
+})
+
+const removeCaptchProject = (pid) => ({
+  type: types.REMOVE_CAPTCHA_PROJECT,
+  payload: { pid },
+})
+
+const setTotalCaptcha = (total) => ({
+  type: types.SET_CAPTCHA_PROJECTS_TOTAL,
+  payload: { total },
+})
+
+const setDashboardPaginationPageCaptcha = (page) => ({
+  type: types.SET_DASHBOARD_PAGINATION_PAGE_CAPTCHA,
+  payload: {
+    page,
+  },
+})
+
+const setCaptchaLoading = (isLoading) => ({
+  type: types.SET_CAPTCHA_PROJECTS_LOADING,
+  payload: {
+    isLoading,
+  },
+})
+
 const UIActions = {
   loadProjects,
   loadSharedProjects,
@@ -264,6 +319,15 @@ const UIActions = {
   setProjectAlertsLoading,
   loadProjectAlerts,
   setProjectForcastCache,
+  setCaptchaProjects,
+  setTotalCaptcha,
+  setDashboardPaginationPageCaptcha,
+  loadProjectsCaptcha,
+  setCaptchaLoading,
+  removeCaptchProject,
+  setCaptchaProjectsViewPrefs,
+  setCaptchaProjectCache,
+  deleteCaptchaProjectCache,
 }
 
 export default UIActions

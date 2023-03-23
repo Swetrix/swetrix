@@ -11,8 +11,11 @@ const routes = Object.freeze({
   verify: '/verify/:id',
   change_email: '/change-email/:id',
   new_project: '/projects/new',
+  new_captcha: '/captchas/new',
   project_settings: '/projects/settings/:id',
+  captcha_settings: '/captchas/settings/:id',
   project: '/projects/:id',
+  captcha: '/captchas/:id',
   features: '/features',
   billing: '/billing',
   privacy: '/privacy',
@@ -23,6 +26,7 @@ const routes = Object.freeze({
   about: '/about',
   create_alert: '/projects/:pid/alerts/create',
   alert_settings: '/projects/:pid/alerts/settings/:id',
+  press: '/press',
 })
 
 export default routes

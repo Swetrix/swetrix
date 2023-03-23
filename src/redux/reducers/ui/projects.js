@@ -9,14 +9,18 @@ const getInitialState = () => {
   return {
     projects: [],
     sharedProjects: [],
+    captchaProjects: [],
     isLoading: true,
     isLoadingShared: true,
+    isLoadingCaptcha: true,
     error: null,
     totalMonthlyEvents: null,
     total: 0,
     sharedTotal: 0,
+    captchaTotal: 0,
     dashboardPaginationPage: 1,
     dashboardPaginationPageShared: 1,
+    dashboardPaginationPageCaptcha: 1,
     dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
     projectTab: PROJECT_TABS.traffic,
     alerts: [],
@@ -44,6 +48,15 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       }
     }
 
+    case types.SET_CAPTCHA_PROJECTS: {
+      const { captchaProjects } = payload
+      return {
+        ...state,
+        captchaProjects,
+        isLoadingCaptcha: false,
+      }
+    }
+
     case types.SET_DASHBOARD_PAGINATION_PAGE: {
       const { page } = payload
       return {
@@ -57,6 +70,14 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       return {
         ...state,
         dashboardPaginationPageShared: page,
+      }
+    }
+
+    case types.SET_DASHBOARD_PAGINATION_PAGE_CAPTCHA: {
+      const { page } = payload
+      return {
+        ...state,
+        dashboardPaginationPageCaptcha: page,
       }
     }
 
@@ -81,6 +102,30 @@ const projectsReducer = (state = getInitialState(), { type, payload }) => {
       return {
         ...state,
         total,
+      }
+    }
+
+    case types.SET_CAPTCHA_PROJECTS_TOTAL: {
+      const { total } = payload
+      return {
+        ...state,
+        captchaTotal: total,
+      }
+    }
+
+    case types.SET_CAPTCHA_PROJECTS_LOADING: {
+      const { isLoading } = payload
+      return {
+        ...state,
+        isLoadingCaptcha: isLoading,
+      }
+    }
+
+    case types.REMOVE_CAPTCHA_PROJECT: {
+      const { id } = payload
+      return {
+        ...state,
+        captchaProjects: _filter(state.captchaProjects, (el) => el.id !== id),
       }
     }
 

@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types */
 import React, {
-  memo, useState, useMemo, useEffect,
+  memo, useState, useEffect, useMemo,
 } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import cx from 'clsx'
@@ -13,12 +13,14 @@ import _map from 'lodash/map'
 import _isUndefined from 'lodash/isUndefined'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
-import _ceil from 'lodash/ceil'
 import { useTranslation } from 'react-i18next'
 import { EyeIcon, CalendarIcon, FolderPlusIcon } from '@heroicons/react/24/outline'
 import { ArrowSmallUpIcon, ArrowSmallDownIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 import Modal from 'ui/Modal'
+import Select from 'ui/Select'
+import _includes from 'lodash/includes'
+import _values from 'lodash/values'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
@@ -26,7 +28,7 @@ import { ActivePin, InactivePin, WarningPin } from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
 import {
-  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabsForDashboard, tabForOwnedProject, tabForSharedProject,
+  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard,
 } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
@@ -34,9 +36,12 @@ import { acceptShareProject } from 'api'
 
 import Pagination from 'ui/Pagination'
 
+const DASHBOARD_TABS_VALUES = _values(DASHBOARD_TABS)
+
 const ProjectCart = ({
   name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
   sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
+  captcha,
 }) => {
   const statsDidGrowUp = overall?.percChange >= 0
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -122,12 +127,14 @@ const ProjectCart = ({
                   </dd>
                 </div>
               )}
-              <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300 sm:mt-0'>
-                <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
-                {t('dashboard.liveVisitors')}
-                :&nbsp;
-                {live}
-              </div>
+              {!captcha && (
+                <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300 sm:mt-0'>
+                  <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
+                  {t('dashboard.liveVisitors')}
+                  :&nbsp;
+                  {live}
+                </div>
+              )}
             </div>
             <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300'>
               <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300' />
@@ -177,24 +184,31 @@ const Dashboard = ({
   projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData,
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
-  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared,
+  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
+  loadProjectsCaptcha, projectTab,
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const history = useHistory()
   const [tabProjects, setTabProjects] = useState(dashboardTabs)
-  const pageAmount = useMemo(() => (dashboardTabs === tabForSharedProject ? _ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD) : _ceil(total / ENTRIES_PER_PAGE_DASHBOARD)), [total, sharedTotal, dashboardTabs])
+  const pageAmountShared = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
+  const pageAmount = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
+  const pageAmountCaptcha = Math.ceil(captchaTotal / ENTRIES_PER_PAGE_DASHBOARD)
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
-      history.push(routes.new_project)
+      if (dashboardTabs === tabForCaptchaProject) {
+        history.push(routes.new_captcha)
+      } else {
+        history.push(routes.new_project)
+      }
     } else {
       setShowActivateEmailModal(true)
     }
   }
 
   useEffect(() => {
-    if (sharedTotal <= 0) {
+    if (sharedTotal <= 0 && tabProjects === tabForSharedProject) {
       setDashboardTabs(tabForOwnedProject)
       setTabProjects(tabForOwnedProject)
     }
@@ -209,8 +223,45 @@ const Dashboard = ({
     if (tabProjects === tabForSharedProject) {
       loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageShared - 1) * ENTRIES_PER_PAGE_DASHBOARD)
     }
+    if (tabProjects === tabForCaptchaProject) {
+      loadProjectsCaptcha(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageCaptcha - 1) * ENTRIES_PER_PAGE_DASHBOARD)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage, dashboardPaginationPageShared])
+
+  const [activeDashTab, setActiveDashTab] = useState(() => {
+    const url = new URL(window.location)
+    const { searchParams } = url
+    const tab = searchParams.get('tab')
+
+    if (_includes(DASHBOARD_TABS_VALUES, tab)) {
+      return tab
+    }
+
+    return projectTab || DASHBOARD_TABS.owned
+  })
+
+  const dashboardLocTabs = useMemo(() => {
+    return [
+      {
+        id: DASHBOARD_TABS.owned,
+        name: tabForOwnedProject,
+        label: t('profileSettings.owned'),
+      },
+      {
+        id: DASHBOARD_TABS.shared,
+        name: tabForSharedProject,
+        label: t('profileSettings.shared'),
+      },
+      {
+        id: DASHBOARD_TABS.captcha,
+        name: tabForCaptchaProject,
+        label: t('profileSettings.captcha'),
+      },
+    ]
+  }, [t])
+
+  const activeDashTabLabel = useMemo(() => _find(dashboardLocTabs, tab => tab.id === activeDashTab)?.label, [dashboardLocTabs, activeDashTab])
 
   if (error && !isLoading) {
     return (
@@ -243,28 +294,46 @@ const Dashboard = ({
               </h2>
               <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm'>
                 <FolderPlusIcon className='w-5 h-5 mr-1' />
-                {t('dashboard.newProject')}
+                {tabProjects === tabForCaptchaProject ? t('dashboard.newCaptchaProject') : t('dashboard.newProject')}
               </span>
             </div>
             <div className='mt-6'>
-              {sharedTotal > 0 && (
-              <nav className='-mb-px flex space-x-8'>
-                {_map(tabsForDashboard, (tab) => (
-                  <button
-                    key={tab.name}
-                    type='button'
-                    onClick={() => setTabProjects(tab.name)}
-                    className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                      'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
-                      'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
-                    })}
-                    aria-current={tab.name === tabProjects ? 'page' : undefined}
-                  >
-                    {t(tab.label)}
-                  </button>
-                ))}
-              </nav>
-              )}
+              {/* Dashboard tabs selector */}
+              <div>
+                <div className='sm:hidden mb-2'>
+                  <Select
+                    items={dashboardLocTabs}
+                    keyExtractor={(item) => item.id}
+                    labelExtractor={(item) => t(item.label)}
+                    onSelect={(label) => {
+                      const selected = _find(dashboardLocTabs, (tab) => t(tab.label) === label)
+                      setTabProjects(selected.name)
+                      setActiveDashTab(selected.id)
+                    }}
+                    title={activeDashTabLabel}
+                  />
+                </div>
+                <div className='hidden sm:block'>
+                  {sharedTotal > 0 && (
+                  <nav className='-mb-px flex space-x-8'>
+                    {_map(tabsForDashboard, (tab) => (
+                      <button
+                        key={tab.name}
+                        type='button'
+                        onClick={() => setTabProjects(tab.name)}
+                        className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                          'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
+                          'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
+                        })}
+                        aria-current={tab.name === tabProjects ? 'page' : undefined}
+                      >
+                        {t(tab.label)}
+                      </button>
+                    ))}
+                  </nav>
+                  )}
+                </div>
+              </div>
             </div>
             {isLoading ? (
               <Title title={t('titles.dashboard')}>
@@ -293,6 +362,39 @@ const Dashboard = ({
                                 name={name}
                                 created={created}
                                 shared={shared}
+                                active={active}
+                                isPublic={isPublic}
+                                confirmed={confirmed}
+                                overall={overall}
+                                live={_isNumber(live) ? live : 'N/A'}
+                              />
+                            </Link>
+                          </div>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                )}
+                {tabProjects === tabForCaptchaProject && (
+                <div>
+                  {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
+                    <NoProjects t={t} />
+                  ) : (
+                    <div className='shadow overflow-hidden sm:rounded-md'>
+                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                        {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
+                          name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
+                        }) => (
+                          <div key={confirmed ? `${id}-confirmed` : id}>
+                            <Link to={_replace(routes.captcha, ':id', id)}>
+                              <ProjectCart
+                                t={t}
+                                language={language}
+                                name={name}
+                                created={created}
+                                shared={shared}
+                                captcha
                                 active={active}
                                 isPublic={isPublic}
                                 confirmed={confirmed}
@@ -366,12 +468,15 @@ const Dashboard = ({
                 )}
               </>
             )}
-
-            {
-                pageAmount > 1 && (
-                  <Pagination page={tabProjects === tabForSharedProject ? dashboardPaginationPageShared : dashboardPaginationPage} setPage={tabProjects === tabForSharedProject ? (page) => setDashboardPaginationPageShared(page) : (page) => setDashboardPaginationPage(page)} pageAmount={pageAmount || 0} total={tabProjects === tabForSharedProject ? sharedTotal : total} />
-                )
-              }
+            {(tabProjects === tabForOwnedProject && pageAmount > 1) && (
+              <Pagination page={dashboardPaginationPage} pageAmount={pageAmount} setPage={setDashboardPaginationPage} total={total} />
+            )}
+            {(tabProjects === tabForSharedProject && pageAmountShared > 1) && (
+              <Pagination page={dashboardPaginationPageShared} pageAmount={pageAmountShared} setPage={setDashboardPaginationPageShared} total={sharedTotal} />
+            )}
+            {(tabProjects === tabForCaptchaProject && pageAmountCaptcha > 1) && (
+              <Pagination page={dashboardPaginationPageCaptcha} pageAmount={pageAmountCaptcha} setPage={setDashboardPaginationPageCaptcha} total={captchaTotal} />
+            )}
           </div>
         </div>
       </div>
