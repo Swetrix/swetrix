@@ -1586,7 +1586,7 @@ const ViewProject = ({
                       projectId={id}
                     />
                   )}
-                  {_map(TRAFFIC_PANELS_ORDER, (type) => {
+                  {!_isEmpty(panelsData.types) && _map(TRAFFIC_PANELS_ORDER, (type) => {
                     const panelName = tnMapping[type]
                     const panelIcon = panelIconMapping[type]
                     const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
@@ -1691,7 +1691,7 @@ const ViewProject = ({
                   </div>
                 )}
                 <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                  {_map(PERFORMANCE_PANELS_ORDER, (type) => {
+                  {!_isEmpty(panelsDataPerf.types) && _map(PERFORMANCE_PANELS_ORDER, (type) => {
                     const panelName = tnMapping[type]
                     const panelIcon = panelIconMapping[type]
                     const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
