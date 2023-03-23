@@ -776,6 +776,8 @@
     "status": "Status",
     "donate": "Donate",
     "changelog": "Changelog",
+    "captcha": "CAPTCHA",
+    "press":"Media & Press",
     "about": "About us",
     "comparisons": "Comparisons"
   }
