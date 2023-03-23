@@ -69,6 +69,10 @@ export const tbPeriodPairs = (t, tbs, dates) => [{
   access: 'free',
 }]
 
+// the order of panels in the project view
+export const TRAFFIC_PANELS_ORDER = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
+export const PERFORMANCE_PANELS_ORDER = ['cc', 'pg', 'br', 'dv']
+
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
 export const MAX_MONTHS_IN_PAST = 24
 export const MAX_MONTHS_IN_PAST_FREE = 3
