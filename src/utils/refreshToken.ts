@@ -8,7 +8,7 @@ export const getRefreshToken = () => {
   return getCookie(REFRESH_TOKEN)
 }
 
-export const setRefreshToken = (token) => {
+export const setRefreshToken = (token: string) => {
   setCookie(REFRESH_TOKEN, token, STORE_REFRESH_TOKEN_FOR)
 }
 

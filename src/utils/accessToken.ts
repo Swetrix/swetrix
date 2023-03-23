@@ -16,7 +16,7 @@ export const getAccessToken = () => {
   return accessToken
 }
 
-export const setAccessToken = (token, temporary = false) => {
+export const setAccessToken = (token: string, temporary: boolean = false) => {
   if (temporary) {
     sessionStorage.setItem(TOKEN, token)
     return

@@ -13,14 +13,14 @@ const formatterLookup = [
   { value: 1e9, symbol: 'B' },
 ]
 
-export const nFormatter = (num, digits = 1) => {
+export const nFormatter = (num: any, digits = 1) => {
   const item = _find(formatterLookup.slice().reverse(), ({ value }) => num >= value)
 
   return item ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol : '0'
 }
 
 // returns something like [123, 'k'], [5.5, 'M'], [425, null]
-export const nFormatterSeparated = (num, digits = 1) => {
+export const nFormatterSeparated = (num: any, digits = 1) => {
   const item = _find(formatterLookup.slice().reverse(), ({ value }) => num >= value)
 
   if (item) {
@@ -31,8 +31,8 @@ export const nFormatterSeparated = (num, digits = 1) => {
 }
 
 export const secondsTillNextMonth = () => {
-  const now = new Date()
-  const date = new Date()
+  const now: any = new Date()
+  const date: any = new Date()
 
   date.setMonth(date.getMonth() + 1)
   date.setDate(1)
@@ -41,12 +41,12 @@ export const secondsTillNextMonth = () => {
   return 0 | (date - now) / 1000
 }
 
-export const convertMsToSeconds = (ms) => {
+export const convertMsToSeconds = (ms: any) => {
   return ms / 1000
 }
 
 // Returns an object like { h: 0, m: 0, s: 0 } based on the seconds parameter provided
-export const getTimeFromSeconds = (seconds) => {
+export const getTimeFromSeconds = (seconds: any) => {
   const h = 0 | seconds / 3600
   const m = 0 | (seconds % 3600) / 60
   const s = 0 | seconds % 60
@@ -57,7 +57,7 @@ export const getTimeFromSeconds = (seconds) => {
   }
 }
 
-export const getStringFromTime = (time, showMS) => {
+export const getStringFromTime = (time: any, showMS: any) => {
   const {
     h, m, s, ms,
   } = time
@@ -69,7 +69,7 @@ export const getStringFromTime = (time, showMS) => {
   return `${h ? `${h}h ` : ''}${m ? `${m}m ` : ''}${s || (showMS && ms > 0) ? `${showMS ? _round(s + ms / 1000, 2) : s}s` : ''}`
 }
 
-export const sumArrays = (...arrays) => {
+export const sumArrays = (...arrays: any) => {
   return _map(arrays[0], (_, index) => {
     return _reduce(arrays, (sum, array) => sum + array[index], 0)
   })

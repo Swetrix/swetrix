@@ -4,19 +4,25 @@
  * to save performance on JSON-parsing and instead remember
  * how any localStorage item was modified after first access
  */
-const currentLocalStorage = {}
 
-export const setItem = (key, value) => {
+type currentLocalStorageType = { [key: string]: string | null }
+const currentLocalStorage: currentLocalStorageType = {}
+
+type setItemType = (key: string, value: string) => void
+
+export const setItem: setItemType = (key, value) => {
   currentLocalStorage[key] = value
   localStorage.setItem(key, value)
 }
 
-export const getItem = (key) => {
+type getItemType = (key: string) => string | null
+
+export const getItem: getItemType = (key) => {
   if (currentLocalStorage[key]) {
     return currentLocalStorage[key]
   }
 
-  const storedValue = localStorage.getItem(key)
+  const storedValue: any = localStorage.getItem(key)
 
   try {
     return JSON.parse(storedValue)
@@ -25,7 +31,9 @@ export const getItem = (key) => {
   }
 }
 
-export const removeItem = (key) => {
+type removeItemType = (key: string) => void
+
+export const removeItem: removeItemType = (key) => {
   delete currentLocalStorage[key]
   localStorage.removeItem(key)
 }

@@ -1,10 +1,10 @@
-import { isDevelopment } from '../redux/constants'
+import { isDevelopment } from 'redux/constants'
 
 const COOKIE_DOMAIN = 'swetrix.com'
 
 const COOKIE_SUFFIX = isDevelopment ? '' : `; domain=${COOKIE_DOMAIN}; secure`
 
-export const getCookie = key => {
+export const getCookie = (key: string) => {
   const match = document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`))
 
   if (match) {
@@ -14,11 +14,11 @@ export const getCookie = key => {
   return null
 }
 
-export const setCookie = (key, value, maxAge = 3600, sameSite = 'strict') => {
+export const setCookie = (key: string, value: string, maxAge = 3600, sameSite = 'strict') => {
   document.cookie = `${key}=${value}; max-age=${maxAge}; path=/; SameSite=${sameSite}${COOKIE_SUFFIX}`
 }
 
-export const deleteCookie = (key) => {
+export const deleteCookie = (key: string) => {
   document.cookie = `${key}=; max-age=0; path=/; SameSite=strict`
   document.cookie = `${key}=; max-age=0; path=/; SameSite=strict${COOKIE_SUFFIX}`
 }
