@@ -24,7 +24,10 @@ import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
+import * as _split from 'lodash/split'
+import * as _head from 'lodash/head'
 import * as _filter from 'lodash/filter'
+import * as dayjs from 'dayjs'
 
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
@@ -49,6 +52,7 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { ShareDTO } from './dto/share.dto'
 import { ShareUpdateDTO } from './dto/share-update.dto'
+import { isValidDate } from 'src/analytics/analytics.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isValidPID,
@@ -792,6 +796,64 @@ export class ProjectController {
     }
 
     return null
+  }
+
+  @Delete('/partially/:pid')
+  @ApiQuery({ name: 'from', required: true, description: 'Date in ISO format', example: '2020-01-01T00:00:00.000Z', type: 'string' })
+  @ApiQuery({ name: 'to', required: true, description: 'Date in ISO format', example: '2020-01-01T00:00:00.000Z', type: 'string' })
+  @ApiResponse({ status: 200 })
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async deletePartially(
+    @Param('pid') pid: string,
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @CurrentUserId() uid: string,
+  ): Promise<void> {
+    this.logger.log({ from, to, pid }, 'DELETE /partially/:id')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException('The provided Project ID (pid) is incorrect')
+    }
+
+    from = _head(_split(from, 'T'))
+    to = _head(_split(to, 'T'))
+
+    if (!isValidDate(from)) {
+      throw new BadRequestException('The provided \'from\' date is incorrect',)
+    }
+
+    if (!isValidDate(to)) {
+      throw new BadRequestException('The provided \'to\' date is incorrect',)
+    }
+
+    from = dayjs(from).format('YYYY-MM-DD')
+    to = dayjs(to).format('YYYY-MM-DD 23:59:59')
+
+    const project = await this.projectService.findOne(pid, {
+      relations: ['admin', 'share'],
+    })
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    const queryAnalytics = 'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryCustomEvents = 'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryPerformance = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const params = {
+      params: {
+        pid, from, to,
+      },
+    }
+
+    await Promise.all([
+      clickhouse.query(queryAnalytics, params).toPromise(),
+      clickhouse.query(queryCustomEvents, params).toPromise(),
+      clickhouse.query(queryPerformance, params).toPromise(),
+    ])
   }
 
   // The routes related to sharing projects feature
