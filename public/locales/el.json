@@ -32,7 +32,7 @@
     "billing": "Χρέωση",
     "pricing": "Τιμολογηση",
     "faqs": "Συχνές Ερωτήσεις",
-    "you": "Εσείς",
+    "accountSettings": "Account settings",
     "explore": "Εξερευνήστε",
     "liveDemo": "Ζωντανή επίδειξη",
     "dashboard": "Πίνακας ελέγχου",
@@ -420,10 +420,19 @@
     "12-hour": "12 hour",
     "24-hour": "24 hour",
     "timeFormat": "Time notation",
-    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format."
+    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format.",
+    "captcha": "CAPTCHA",
+    "selectProject": "Select project",
+    "captchaSecretKey": "CAPTCHA secret key",
+    "generateSecretKey": "Generate secret key",
+    "regenerateSecretKey": "Regenerate secret key",
+    "regenerateSecretKeyTitle": "Regenerate secret key?",
+    "regenerateSecretKeyMessage": "Are you sure you want to regenerate your secret key?\nAll the existing CAPTCHA widgets will stop working and you will need to update them with the new secret key.",
+    "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone."
   },
   "dashboard": {
     "newProject": "Νέο έργο",
+    "newCaptchaProject": "New CAPTCHA project",
     "verifyEmailTitle": "Παρακαλώ, επαληθεύστε πρώτα τη διεύθυνση email",
     "verifyEmailDesc": "Για να αρχίσετε να χρησιμοποιείτε την υπηρεσία μας και να δημιουργείτε τα έργα σας, πρέπει πρώτα να επιβεβαιώσετε τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας.\n\nΈνας σύνδεσμος για την επιβεβαίωση του λογαριασμού σας εστάλη στη διεύθυνση ηλεκτρονικού ταχυδρομείου που δηλώσατε κατά την εγγραφή σας, εάν δεν παραδόθηκε - μπορείτε να ζητήσετε ξανά τον σύνδεσμο στις ρυθμίσεις του λογαριασμού σας.",
     "lowEventsTitle": "You are running out of events!",
@@ -516,6 +525,7 @@
     "trendlineUnique": "Unique visitors trendline",
     "trendlineTotal": "Pageviews trendline",
     "noEvContent": "Δεν έχουν καταγραφεί συμβάντα για το καθορισμένο χρονικό διάστημα.\nΑν δεν έχετε ακόμη παρακολουθήσει συμβάντα, μπορείτε να δείτε τα <url>Docs</url> για να ενσωματώσετε εύκολα την παρακολούθηση στην εφαρμογή σας.",
+    "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {
       "cc": "Χώρα",
       "pg": "Σελίδα",
@@ -539,6 +549,7 @@
     "prev": "Προηγούμενο",
     "next": "Επόμενο",
     "unique": "Μοναδικοί επισκέπτες",
+    "results": "Results",
     "total": "Συνολικές προβολές σελίδας",
     "today": "Σήμερα",
     "yesterday": "Χθες",
@@ -609,13 +620,22 @@
       "ipBlacklist": "IP στη μαύρη λίστα",
       "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
     },
+    "captcha": {
+      "settings": {
+        "general": "General settings",
+        "inheritance": "Inheritance",
+        "name": "CAPTCHA project name",
+        "pid": "CAPTCHA project ID",
+        "enabled": "CAPTCHA enabled",
+        "enabledHint": "Disabled CAPTCHA projects will not count any newly incoming events.\nYou will still be able to access the analytics in dashboard."
+      }
+    },
     "emails": {
       "title": "Email reports",
       "description": "Send regular email reports to as many recipients as you want",
       "add": "Add a recipient",
       "reportFrequency": "Report frequency"
     },
-    "results": "Results",
     "page": "Page"
   },
   "billing": {
@@ -702,6 +722,17 @@
     "title": "Βήτα",
     "description": "Αυτή η λειτουργία βρίσκεται στη φάση Beta. Χρησιμοποιήστε το με προσοχή, καθώς ενδέχεται να υπάρξουν παρενέργειες."
   },
+  "press": {
+    "description": "Our assets for use in your articles and other media. If you use any of the assets below, we'd be grateful if you'd leave a link to one of our pages on your website. If you need other assets or have any questions, please <url>contact us</url>.",
+    "logos": "Logos",
+    "logo": "Logo",
+    "logoNoText": "Logo without text",
+    "logoWhiteText": "Logo with white text",
+    "font": {
+      "title": "Font",
+      "description": "We use {{font}} font on Swetrix websites. See more information about it on it's <url>official website</url>."
+    }
+  },
   "titles": {
     "recovery": "Ανάκτηση λογαριασμού",
     "signin": "Σύνδεση",
@@ -715,7 +746,14 @@
     "billing": "Χρέωση",
     "contact": "Επικοινωνία",
     "changelog": "Changelog",
-    "main": "Απόλυτα analytics ανοιχτού κώδικα για να ικανοποιήσετε όλες τις ανάγκες σας"
+    "main": "Απόλυτα analytics ανοιχτού κώδικα για να ικανοποιήσετε όλες τις ανάγκες σας",
+    "press": "Media & Press"
+  },
+  "header": {
+    "switchTheme": "Switch theme",
+    "dark": "Dark",
+    "light": "Light",
+    "signedInAs": "Signed in as"
   },
   "footer": {
     "slogan": "Οι καλύτερες εφαρμογές χρειάζονται τις καλύτερες υπηρεσίες.",
@@ -743,6 +781,8 @@
     "status": "Κατάσταση",
     "donate": "Δωρεά",
     "changelog": "Changelog",
+    "captcha": "CAPTCHA",
+    "press": "Media & Press",
     "about": "Σχετικά με εμάς",
     "comparisons": "Comparisons"
   }
