@@ -309,7 +309,7 @@ const AuthedHeader = ({
               <DocumentTextIcon className='w-5 h-5 mr-1' />
               {t('common.docs')}
             </a>
-            <Link to={routes.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
+            <Link to={routes.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md'>
               <PresentationChartLineIcon className='w-5 h-5 mr-1' />
               {t('common.dashboard')}
             </Link>
@@ -353,14 +353,14 @@ const AuthedHeader = ({
           <RssIcon className='w-5 h-5 mr-1' />
           {t('footer.blog')}
         </a>
-        <NavLink to={routes.billing} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Billing'>
-          <CreditCardIcon className='w-5 h-5 mr-1' />
-          {t('common.billing')}
-        </NavLink>
         <a href={DOCS_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
           <DocumentTextIcon className='w-5 h-5 mr-1' />
           {t('common.docs')}
         </a>
+        <Link to={routes.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md'>
+          <PresentationChartLineIcon className='w-5 h-5 mr-1' />
+          {t('common.dashboard')}
+        </Link>
       </div>
     </nav>
   </header>
@@ -635,13 +635,23 @@ const Header = ({
                         {status}
                       </Link>
                     )}
-                    {user?.planCode === 'none' && (
+                    {!isSelfhosted && user?.planCode === 'none' && (
                       <Link
                         to={routes.billing}
                         className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
                         key='NoSubscription'
                       >
                         {t('billing.inactive')}
+                      </Link>
+                    )}
+                    {/* Temporarily put it here until the header is fully redesigned */}
+                    {!isSelfhosted && user?.planCode !== 'none' && user?.planCode !== 'trial' && (
+                      <Link
+                        to={routes.billing}
+                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'
+                        key='Billing'
+                      >
+                        {t('common.billing')}
                       </Link>
                     )}
                     <div onClick={() => buttonRef.current?.click()}>
