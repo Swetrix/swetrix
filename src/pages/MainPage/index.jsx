@@ -31,7 +31,6 @@ import Ghost from 'ui/icons/Ghost'
 import Gatsby from 'ui/icons/Gatsby'
 import Wix from 'ui/icons/Wix'
 
-import { withAuthentication, auth } from '../../hoc/protected'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
 
@@ -712,4 +711,4 @@ const Main = () => {
   )
 }
 
-export default memo(withAuthentication(Main, auth.notAuthenticated))
+export default memo(Main)
