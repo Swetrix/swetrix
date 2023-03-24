@@ -21,6 +21,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import duration from 'dayjs/plugin/duration'
 import _map from 'lodash/map'
+import _includes from 'lodash/includes'
 import cx from 'clsx'
 
 import routes from 'routes'
@@ -28,8 +29,7 @@ import { authActions } from 'redux/actions/auth'
 import UIActions from 'redux/actions/ui'
 import {
   whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
-  // THEME_TYPE,
-  DOCS_URL,
+  DOCS_URL, SUPPORTED_THEMES,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 
@@ -530,8 +530,9 @@ const Header = ({
     dispatch(authActions.logout())
   }
 
-  const switchTheme = (switchTo = theme === 'dark' ? 'light' : 'dark') => {
-    dispatch(UIActions.setTheme(switchTo))
+  const switchTheme = (_theme) => {
+    const newTheme = (_includes(SUPPORTED_THEMES, _theme) && _theme) || (theme === 'dark' ? 'light' : 'dark')
+    dispatch(UIActions.setTheme(newTheme))
   }
 
   const onLanguageChange = (id) => {
