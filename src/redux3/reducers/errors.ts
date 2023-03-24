@@ -1,6 +1,10 @@
 import { types } from 'redux/actions/errors/types'
 
-const initialState = {
+interface initialStateInterface {
+  error: string | null
+}
+
+const initialState: initialStateInterface = {
   error: null,
 }
 
