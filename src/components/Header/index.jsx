@@ -68,7 +68,7 @@ const ThemeMenu = ({
       leaveFrom='transform opacity-100 scale-100'
       leaveTo='transform opacity-0 scale-95'
     >
-      <Menu.Items className='absolute right-0 z-10 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
+      <Menu.Items className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
         <Menu.Item>
           {({ active }) => (
             <div
@@ -106,7 +106,9 @@ const ProfileMenu = ({
   <Menu as='div' className='relative ml-3'>
     <div>
       <Menu.Button className='flex justify-center items-center text-base font-medium text-white focus:outline-none hover:text-indigo-100 hover:dark:text-gray-200'>
-        <span>Account</span>
+        <span>
+          {t('common.account')}
+        </span>
         <ChevronDownIcon className='h-4 w-4 ml-1' aria-hidden='true' />
       </Menu.Button>
     </div>
@@ -119,7 +121,7 @@ const ProfileMenu = ({
       leaveFrom='transform opacity-100 scale-100'
       leaveTo='transform opacity-0 scale-95'
     >
-      <Menu.Items className='absolute right-0 z-10 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
+      <Menu.Items className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
         <div className='border-gray-200 dark:border-gray-700 border-b-[1px]'>
           <Menu.Item>
             <p className='truncate py-2 px-4' role='none'>
