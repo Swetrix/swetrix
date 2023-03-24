@@ -5,6 +5,7 @@ import { store } from 'redux/store'
 import { Provider } from 'react-redux'
 import { I18nextProvider } from 'react-i18next'
 import { HelmetProvider } from 'react-helmet-async'
+// @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import 'billboard.js/dist/billboard.min.css'
 import 'prismjs/themes/prism-tomorrow.css'
@@ -46,7 +47,7 @@ const removeObsoleteAuthTokens = () => {
 
 removeObsoleteAuthTokens()
 
-const container = document.getElementById('root')
+const container = document.getElementById('root') as HTMLElement
 const root = createRoot(container)
 
 // Disabled StrictMode until I fix issues related to navigation issues
@@ -59,6 +60,7 @@ root.render(
         <HelmetProvider>
           <BrowserRouter>
             <I18nextProvider i18n={i18next}>
+              {/* @ts-ignore */}
               <App />
             </I18nextProvider>
           </BrowserRouter>
