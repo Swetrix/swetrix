@@ -1304,7 +1304,7 @@ const ViewProject = ({
                   <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
                     {name}
                   </h2>
-                  <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
+                  <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap sm:flex-nowrap items-center sm:max-w-none justify-center sm:justify-between w-full sm:w-auto mx-auto sm:mx-0'>
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                       <button
                         type='button'
@@ -1318,7 +1318,7 @@ const ViewProject = ({
                     </div>
                     <div
                       className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
-                        hidden: activeTab !== PROJECT_TABS.traffic,
+                        hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
                       })}
                     >
                       <button
