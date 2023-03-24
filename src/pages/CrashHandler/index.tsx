@@ -3,8 +3,19 @@ import _toString from 'lodash/toString'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { CONTACT_EMAIL } from 'redux/constants'
 
-class CrashHandler extends React.Component {
-  constructor(props) {
+interface CrashHandlerProps {
+  children: React.ReactNode
+}
+
+interface CrashHandlerState {
+  appCrashed: boolean
+  crashStack: string
+  errorMessage: string
+  crashStackShown: boolean
+}
+
+class CrashHandler extends React.Component<CrashHandlerProps, CrashHandlerState> {
+  constructor(props: CrashHandlerProps) {
     super(props)
     this.state = {
       appCrashed: false,
@@ -14,7 +25,7 @@ class CrashHandler extends React.Component {
     }
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error) {
     return {
       errorMessage: _toString(error),
       crashStack: error?.stack,
@@ -24,6 +35,7 @@ class CrashHandler extends React.Component {
 
   onCrashStackClick = () => {
     this.setState((prevState) => ({
+      // @ts-ignore
       crashStackShown: !prevState.crashStackShown,
     }))
   }

@@ -75,6 +75,16 @@
       "import/no-named-as-default": "off",
       "import/no-named-as-default-member": "off",
       "import/prefer-default-export": "off",
+      "import/extensions": [
+        "error",
+        "ignorePackages",
+        {
+          "js": "never",
+          "jsx": "never",
+          "ts": "never",
+          "tsx": "never"
+        }
+      ],
       "jsx-a11y/click-events-have-key-events": "off",
       "jsx-a11y/control-has-associated-label": "off",
       "jsx-a11y/label-has-for": "off",
