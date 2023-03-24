@@ -32,7 +32,7 @@
     "billing": "Billing",
     "pricing": "Pricing",
     "faqs": "FAQs",
-    "you": "You",
+    "accountSettings": "Account settings",
     "explore": "Explore",
     "liveDemo": "Live demo",
     "dashboard": "Dashboard",
@@ -749,6 +749,12 @@
     "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs",
     "press": "Media & Press"
+  },
+  "header": {
+    "switchTheme": "Switch theme",
+    "dark": "Dark",
+    "light": "Light",
+    "signedInAs": "Signed in as"
   },
   "footer": {
     "slogan": "The best apps need the best services.",
