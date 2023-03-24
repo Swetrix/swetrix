@@ -1,4 +1,4 @@
-const getCustomLabel = (dates, t) => {
+const getCustomLabel = (dates: Date[], t: Function) => {
   if (dates) {
     const from = dates[0].toLocaleDateString()
     const to = dates[1].toLocaleDateString()
@@ -20,7 +20,7 @@ export const FORECAST_MAX_MAPPING = {
   month: 12,
 }
 
-export const tbPeriodPairs = (t, tbs, dates) => [{
+export const tbPeriodPairs = (t: Function, tbs: String[] | null, dates: Date[]) => [{
   label: t('project.today'),
   period: 'today',
   tbs: ['hour'],
@@ -165,10 +165,10 @@ export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
 export const GENERAL_STATS_UPDATE_INTERVAL = 60000
 
 // Functions
-export const getProjectCacheKey = (period, timeBucket) => `${period}${timeBucket}`
-export const getProjectCaptchaCacheKey = (period, timeBucket) => `${period}${timeBucket}captcha`
-export const getProjectForcastCacheKey = (period, timeBucket, periodToForecast) => `${period}${timeBucket}${periodToForecast}forecast`
-export const getProjectCacheCustomKey = (from, to, timeBucket) => `${from}-${to}-${timeBucket}`
+export const getProjectCacheKey = (period: string, timeBucket: string) => `${period}${timeBucket}`
+export const getProjectCaptchaCacheKey = (period: string, timeBucket: string) => `${period}${timeBucket}captcha`
+export const getProjectForcastCacheKey = (period: string, timeBucket: string, periodToForecast: string) => `${period}${timeBucket}${periodToForecast}forecast`
+export const getProjectCacheCustomKey = (from: string, to: string, timeBucket: string) => `${from}-${to}-${timeBucket}`
 
 // Cookies
 export const GDPR_REQUEST = 'gdpr_request'
