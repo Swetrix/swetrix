@@ -7,4 +7,5 @@ export interface ISharedProject {
     created: string
     updated: string
     project: IProject
+    uiHidden: boolean
 }
