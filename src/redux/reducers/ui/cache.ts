@@ -84,21 +84,25 @@ const cacheSlice = createSlice({
       const {
         pid, period, timeBucket, rangeDate,
       } = payload
-      state.projectViewPrefs[pid] = rangeDate ? {
+      const viewPrefs = rangeDate ? {
         period, timeBucket, rangeDate,
       } : {
         period, timeBucket,
       }
+      window.localStorage.setItem(LS_VIEW_PREFS_SETTING, JSON.stringify(viewPrefs))
+      state.projectViewPrefs[pid] = viewPrefs
     },
     setCaptchaProjectViewPrefs(state, { payload }: PayloadAction<{ pid: string, period: string, timeBucket: string, rangeDate: string }>) {
       const {
         pid, period, timeBucket, rangeDate,
       } = payload
-      state.captchaProjectsViewPrefs[pid] = rangeDate ? {
+      const viewPrefs = rangeDate ? {
         period, timeBucket, rangeDate,
       } : {
         period, timeBucket,
       }
+      window.localStorage.setItem(LS_CAPTCHA_VIEW_PREFS_SETTING, JSON.stringify(viewPrefs))
+      state.captchaProjectsViewPrefs[pid] = viewPrefs
     },
     setProjectCachePerf(state, { payload }: PayloadAction<{ pid: string, key: string, data: any }>) {
       state.analyticsPerf[payload.pid][payload.key] = payload.data

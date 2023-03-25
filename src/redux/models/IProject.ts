@@ -1,8 +1,12 @@
-export interface IOverall {
+interface IOvervallObject {
     thisWeek: number
     lastWeek: number
     thisWeekUnique: number
     lastWeekUnique: number
+}
+
+export interface IOverall {
+    [key: string]: IOvervallObject
 }
 
 export interface IUserShareProject {

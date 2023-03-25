@@ -1,30 +1,36 @@
 /* eslint-disable no-unused-vars */
 import types from 'redux/sagas/actions/types'
-import { getRefreshToken } from 'utils/refreshToken'
+import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { logoutApi } from 'api'
+import { removeAccessToken } from 'utils/accessToken'
+import { removeItem } from 'utils/localstorage'
+import { LS_VIEW_PREFS_SETTING } from 'redux/constants'
 import { IUser } from '../../models/IUser'
 
-const loadProjects = (take: string, skip: string) => ({
+const loadProjects = (take?: number, skip?: number) => ({
   type: types.LOAD_PROJECTS,
   payload: { take, skip },
 })
 
-const loadSharedProjects = (take: string, skip: string) => ({
+const loadSharedProjects = (take?: number, skip?: number) => ({
   type: types.LOAD_SHARED_PROJECTS,
   payload: { take, skip },
 })
 
-const loadProjectsCaptcha = (take: string, skip: string) => ({
+const loadProjectsCaptcha = (take?: number, skip?: number) => ({
   type: types.LOAD_PROJECTS,
   payload: { take, skip, isCaptcha: true },
 })
+
 const loadExtensions = () => ({
   type: types.LOAD_EXTENSIONS,
 })
-const loadProjectAlerts = (take: string, skip: string) => ({
+
+const loadProjectAlerts = (take?: number, skip?: number) => ({
   type: types.LOAD_PROJECT_ALERTS,
   payload: { take, skip },
 })
+
 const loginAsync = (credentials: {
     email: string,
     password: string,
@@ -38,7 +44,7 @@ const loginAsync = (credentials: {
 const signupAsync = (data: {
     email: string,
     password: string,
-}, t: (string: string) => {}, callback = () => { }) => ({
+}, t?: (string: string) => {}, callback = () => { }) => ({
   type: types.SIGNUP_ASYNC,
   payload: {
     data, callback, t,
@@ -46,9 +52,8 @@ const signupAsync = (data: {
 })
 
 const emailVerifyAsync = (data: {
-    email: string,
-    code: string,
-}, successfulCallback: () => {}, errorCallback: () => {}) => ({
+    id: string,
+}, successfulCallback?: () => {}, errorCallback?: () => {}) => ({
   type: types.EMAIL_VERIFY_ASYNC,
   payload: { data, successfulCallback, errorCallback },
 })
@@ -58,7 +63,7 @@ const updateUserProfileAsync = (data: IUser, callback = () => { }) => ({
   payload: { data, callback },
 })
 
-const deleteAccountAsync = (errorCallback: (e: string) => {}, successCallback: (str: string) => {}, t: (str: string) => {}) => {
+const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?: (str: string) => {}, t?: (str: string) => {}) => {
   const refreshToken = getRefreshToken()
   logoutApi(refreshToken)
 
@@ -67,6 +72,19 @@ const deleteAccountAsync = (errorCallback: (e: string) => {}, successCallback: (
     payload: {
       errorCallback, successCallback, t,
     },
+  }
+}
+
+const logout = (basedOn401Error: string) => {
+  const refreshToken = getRefreshToken()
+  logoutApi(refreshToken)
+  removeAccessToken()
+  removeRefreshToken()
+  removeItem(LS_VIEW_PREFS_SETTING)
+
+  return {
+    type: types.LOGOUT,
+    payload: { basedOn401Error },
   }
 }
 
@@ -81,6 +99,7 @@ const sagaActions = {
   emailVerifyAsync,
   updateUserProfileAsync,
   deleteAccountAsync,
+  logout,
 }
 
 export default sagaActions

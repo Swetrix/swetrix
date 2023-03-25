@@ -76,7 +76,7 @@ const projectsSlice = createSlice({
   reducers: {
     setProjects(state, { payload }: PayloadAction<{
             projects: IProject[] | ISharedProject[]
-            shared: boolean
+            shared?: boolean
         }>) {
       if (payload.shared) {
         state.isLoadingShared = false
@@ -102,17 +102,17 @@ const projectsSlice = createSlice({
     setTotalMonthlyEvents(state, { payload }: PayloadAction<number>) {
       state.totalMonthlyEvents = payload
     },
-    setTotal(state, { payload }: PayloadAction<{ total: number, shared: boolean }>) {
+    setTotal(state, { payload }: PayloadAction<{ total: number, shared?: boolean }>) {
       if (payload.shared) {
         state.sharedTotal = payload.total
       } else {
         state.total = payload.total
       }
     },
-    setCaptchaProjectsTotal(state, { payload }: PayloadAction<number>) {
+    setCaptchaTotal(state, { payload }: PayloadAction<number>) {
       state.captchaTotal = payload
     },
-    setCaptchaProjectsLoading(state, { payload }: PayloadAction<boolean>) {
+    setCaptchaLoading(state, { payload }: PayloadAction<boolean>) {
       state.isLoadingCaptcha = payload
     },
     removeCaptchaProject(state, { payload }: PayloadAction<string>) {
@@ -224,7 +224,7 @@ const projectsSlice = createSlice({
         state.total -= 1
       }
     },
-    setProjectsLoading(state, { payload }: PayloadAction<{ isLoading: boolean, shared: boolean }>) {
+    setProjectsLoading(state, { payload }: PayloadAction<{ isLoading: boolean, shared?: boolean }>) {
       const { isLoading, shared = false } = payload
 
       if (shared) {

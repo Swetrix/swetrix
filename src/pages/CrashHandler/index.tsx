@@ -35,7 +35,6 @@ class CrashHandler extends React.Component<CrashHandlerProps, CrashHandlerState>
 
   onCrashStackClick = () => {
     this.setState((prevState) => ({
-      // @ts-ignore
       crashStackShown: !prevState.crashStackShown,
     }))
   }

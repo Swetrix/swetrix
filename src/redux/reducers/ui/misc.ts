@@ -2,12 +2,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { LOW_EVENTS_WARNING } from 'redux/constants'
 import { setCookie } from 'utils/cookie'
 import { secondsTillNextMonth } from 'utils/generic'
+import { IStats } from 'redux/models/IStats'
 
-interface IStats {
-    users: number
-    projects: number
-    pageviews: number
-}
 interface IInitialState {
     stats: IStats
     paddle: any
@@ -38,7 +34,7 @@ const miscSlice = createSlice({
     setPaddleLastEvent(state, { payload }: PayloadAction<any>) {
       state.paddle = { ...state.paddle, lastEvent: payload }
     },
-    setShowNoEventsLeft(state, { payload }: PayloadAction<boolean>) {
+    setShowNoEventsLeftBanner(state, { payload }: PayloadAction<boolean>) {
       if (!payload) {
         const maxAge = secondsTillNextMonth() + 86400
         setCookie(LOW_EVENTS_WARNING, 1, maxAge)

@@ -9,7 +9,7 @@ const initialState: IInitialState = {
   error: null,
 }
 
-const errorsCreate = (state: IInitialState, { payload }: PayloadAction<{ message: string, type: string }>) => {
+const errorsCreate = (state: IInitialState, { payload }: PayloadAction<{ message: string }>) => {
   state.error = payload.message
 }
 
@@ -18,6 +18,7 @@ const errorsSlice = createSlice({
   initialState,
   reducers: {
     genericError: errorsCreate,
+    setError: errorsCreate,
     loginFailed: errorsCreate,
     signUpFailed: errorsCreate,
     updateUserProfileFailed: errorsCreate,
@@ -34,5 +35,5 @@ const errorsSlice = createSlice({
   },
 })
 
-export const alertsActions = errorsSlice.actions
+export const errorsActions = errorsSlice.actions
 export default errorsSlice.reducer
