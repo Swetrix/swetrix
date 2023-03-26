@@ -249,7 +249,7 @@ const Pricing = ({ t, language }) => {
           try {
             const me = await authMe()
 
-            dispatch(authActions.loginSuccess(me))
+            dispatch(authActions.loginSuccessful(me))
             dispatch(authActions.finishLoading())
           } catch (e) {
             dispatch(authActions.logout())

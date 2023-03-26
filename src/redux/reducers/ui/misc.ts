@@ -18,7 +18,7 @@ const initialState: IInitialState = {
     projects: 0,
     pageviews: 0,
   },
-  paddle: null,
+  paddle: {},
   showNoEventsLeftBanner: false,
   lastBlogPost: null,
   extensions: [],
