@@ -6,7 +6,7 @@ import Debug from 'debug'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
-import { authActions } from 'redux/actions/auth'
+import { authActions } from 'redux/reducers/auth'
 
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'

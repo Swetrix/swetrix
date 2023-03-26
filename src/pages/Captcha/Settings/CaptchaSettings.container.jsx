@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
-import UIActions from 'redux/actions/ui'
-import { alertsActions } from 'redux/actions/alerts'
-import { errorsActions } from 'redux/actions/errors'
+import UIActions from 'redux/reducers/ui'
+import { alertsActions } from 'redux/reducers/alerts'
+import { errorsActions } from 'redux/reducers/errors'
 
 import CaptchaSettings from './CaptchaSettings'
 

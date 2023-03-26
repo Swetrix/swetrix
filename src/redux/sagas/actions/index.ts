@@ -75,6 +75,13 @@ const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?:
   }
 }
 
+const shareVerifyAsync = (data: {
+    id: string,
+}, successfulCallback?: () => {}, errorCallback?: () => {}) => ({
+  type: types.SHARE_VERIFY_ASYNC,
+  payload: { data, successfulCallback, errorCallback },
+})
+
 const logout = (basedOn401Error: string) => {
   const refreshToken = getRefreshToken()
   logoutApi(refreshToken)
@@ -100,6 +107,7 @@ const sagaActions = {
   updateUserProfileAsync,
   deleteAccountAsync,
   logout,
+  shareVerifyAsync,
 }
 
 export default sagaActions

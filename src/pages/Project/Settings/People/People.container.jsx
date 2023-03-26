@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
-import UIActions from 'redux/actions/ui'
-import { errorsActions } from 'redux/actions/errors'
-import { alertsActions } from 'redux/actions/alerts'
+import UIActions from 'redux/reducers/ui'
+import { errorsActions } from 'redux/reducers/errors'
+import { alertsActions } from 'redux/reducers/alerts'
 
 import People from './People'
 

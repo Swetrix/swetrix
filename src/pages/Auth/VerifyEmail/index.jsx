@@ -7,7 +7,7 @@ import _split from 'lodash/split'
 import _isString from 'lodash/isString'
 
 import Title from 'components/Title'
-import { authActions } from 'redux/actions/auth'
+import { authActions } from 'redux/reducers/auth'
 import Loader from 'ui/Loader'
 import routes from 'routes'
 

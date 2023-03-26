@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
-import { errorsActions } from 'redux/actions/errors'
-import UIActions from 'redux/actions/ui'
+import { errorsActions } from 'redux/reducers/errors'
+import UIActions from 'redux/reducers/ui'
 
 import ViewProject from './ViewCaptcha'
 

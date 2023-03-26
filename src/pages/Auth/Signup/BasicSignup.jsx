@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { authActions } from 'redux/actions/auth'
+import { authActions } from 'redux/reducers/auth'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'

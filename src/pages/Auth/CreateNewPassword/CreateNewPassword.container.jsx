@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
-import { errorsActions } from 'redux/actions/errors'
-import { alertsActions } from 'redux/actions/alerts'
+import { errorsActions } from 'redux/reducers/errors'
+import { alertsActions } from 'redux/reducers/alerts'
 import CreateNewPassword from './CreateNewPassword'
 
 const mapDispatchToProps = (dispatch) => ({

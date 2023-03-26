@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 
 import Modal from 'ui/Modal'
-import UIActions from 'redux/actions/ui'
+import UIActions from 'redux/reducers/ui'
 import { SHOW_BANNER_AT_PERC } from 'redux/constants'
 
 const EventsRunningOutBanner = () => {

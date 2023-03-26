@@ -21,9 +21,9 @@ import {
   isSelfhosted, // THEME_TYPE,
 } from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
-import authActions from 'redux/reducers/auth'
-import errorsActions from 'redux/reducers/errors'
-import alertsActions from 'redux/reducers/alerts'
+import { authActions } from 'redux/reducers/auth'
+import { errorsActions } from 'redux/reducers/errors'
+import { alertsActions } from 'redux/reducers/alerts'
 import UIActions from 'redux/reducers/ui'
 import routes from 'routes'
 import { getRefreshToken } from 'utils/refreshToken'

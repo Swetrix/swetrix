@@ -1,8 +1,8 @@
 import { connect } from 'react-redux'
 
-import { authActions } from 'redux/actions/auth'
-import { errorsActions } from 'redux/actions/errors'
-import UIActions from 'redux/actions/ui'
+import { authActions } from 'redux/reducers/auth'
+import { errorsActions } from 'redux/reducers/errors'
+import UIActions from 'redux/reducers/ui'
 import Signin from './Signin'
 
 const mapDispatchToProps = (dispatch) => ({

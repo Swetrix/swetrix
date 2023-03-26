@@ -20,8 +20,8 @@ import duration from 'dayjs/plugin/duration'
 import cx from 'clsx'
 
 import routes from 'routes'
-import { authActions } from 'redux/actions/auth'
-import UIActions from 'redux/actions/ui'
+import { authActions } from 'redux/reducers/auth'
+import UIActions from 'redux/reducers/ui'
 import {
   whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
   // THEME_TYPE,

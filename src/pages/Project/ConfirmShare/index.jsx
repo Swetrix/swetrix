@@ -6,7 +6,7 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _split from 'lodash/split'
 
 import Title from 'components/Title'
-import UIActions from 'redux/actions/ui'
+import UIActions from 'redux/reducers/ui'
 import Loader from 'ui/Loader'
 import routes from 'routes'
 
