@@ -60,7 +60,6 @@ root.render(
         <HelmetProvider>
           <BrowserRouter>
             <I18nextProvider i18n={i18next}>
-              {/* @ts-ignore */}
               <App />
             </I18nextProvider>
           </BrowserRouter>

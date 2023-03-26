@@ -65,6 +65,9 @@
       "eslint:recommended",
       "plugin:react/recommended"
     ],
+    "globals": {
+      "JSX": "readonly"
+    },
     "plugins": [
       "lodash",
       "react-hooks"
