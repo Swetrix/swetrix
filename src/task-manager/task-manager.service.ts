@@ -161,10 +161,12 @@ export class TaskManagerService {
         {
           evWarningSentOn: IsNull(),
           isActive: true,
+          planCode: Not(PlanCode.none),
         },
         {
           evWarningSentOn: LessThan(thisMonth),
           isActive: true,
+          planCode: Not(PlanCode.none),
         },
       ],
       relations: ['projects'],
