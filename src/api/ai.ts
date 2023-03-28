@@ -17,7 +17,7 @@ const api = axios.create({
  * @param {*} frequency The frequency of the chart data, e.g. h | w | m
  * @returns The prediction for the given data.
  */
-export const getChartPrediction = (chart, periodToForecast, frequency) =>
+export const getChartPrediction = (chart: any, periodToForecast: any, frequency: any) =>
   api
     .post('/', {
       ...chart,
