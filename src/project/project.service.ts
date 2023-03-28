@@ -653,4 +653,16 @@ export class ProjectService {
       name,
     })
   }
+
+  async confirmTransferProject(
+    projectId: string,
+    userId: string,
+    token: string,
+  ) {
+    await this.projectsRepository.update(
+      { id: projectId },
+      { admin: { id: userId } },
+    )
+    await this.actionTokens.deleteActionToken(token)
+  }
 }

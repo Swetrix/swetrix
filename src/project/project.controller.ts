@@ -32,6 +32,7 @@ import * as dayjs from 'dayjs'
 
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
+import { isValidDate } from 'src/analytics/analytics.service'
 import {
   ProjectService,
   processProjectUser,
@@ -53,7 +54,6 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { ShareDTO } from './dto/share.dto'
 import { ShareUpdateDTO } from './dto/share-update.dto'
-import { isValidDate } from 'src/analytics/analytics.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isValidPID,
@@ -83,6 +83,8 @@ import {
   RemoveSubscriberParamsDto,
   TransferProjectParamsDto,
   TransferProjectBodyDto,
+  ConfirmTransferProjectParamsDto,
+  ConfirmTransferProjectQueriesDto,
 } from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
@@ -1300,6 +1302,36 @@ export class ProjectController {
       user.id,
       user.email,
       headers.origin,
+    )
+  }
+
+  @Get(':projectId/transfer')
+  async confirmTransferProject(
+    @Param() params: ConfirmTransferProjectParamsDto,
+    @Query() queries: ConfirmTransferProjectQueriesDto,
+  ) {
+    const project = await this.projectService.getProjectById(params.projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const actionToken = await this.actionTokensService.getActionToken(
+      queries.token,
+    )
+
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.TRANSFER_PROJECT ||
+      actionToken.newValue !== params.projectId
+    ) {
+      throw new BadRequestException('Invalid token.')
+    }
+
+    await this.projectService.confirmTransferProject(
+      params.projectId,
+      actionToken.user.id,
+      actionToken.id,
     )
   }
 }
