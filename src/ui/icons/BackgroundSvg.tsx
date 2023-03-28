@@ -3,7 +3,11 @@ import cx from 'clsx'
 import PropTypes from 'prop-types'
 import { getItem } from 'utils/localstorage'
 
-const BackgroundSvg = ({ className, type, children }) => {
+const BackgroundSvg = ({ className, type, children }: {
+  className?: string,
+  type: 'shapes' | 'circle' | 'semicircle' | 'twolinecircle' | 'threecircle' | 'twolinecircle2',
+  children?: React.ReactNode,
+}): React.ReactNode => {
   const theme = getItem('colour-theme') || 'light'
 
   if (type === 'shapes') {

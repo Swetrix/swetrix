@@ -2,7 +2,11 @@ import React from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 
-const Quote = ({ theme, className, color }) => (
+const Quote = ({ theme, className, color }: {
+  theme: 'light' | 'dark',
+  className?: string,
+  color: 'black' | 'indigo',
+}): React.ReactNode => (
   <svg
     className={cx(className, {
       'fill-[#232536]': color === 'black' && theme === 'light',

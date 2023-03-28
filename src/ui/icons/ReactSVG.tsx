@@ -1,7 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-const ReactSVG = ({ className }) => (
+const ReactSVG = ({ className }: {
+  className?: string,
+}): React.ReactNode => (
   <svg className={className} viewBox='175.7 78 490.6 436.9'>
     <title>
       React.js

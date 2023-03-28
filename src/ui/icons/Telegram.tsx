@@ -1,7 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-const Telegram = ({ className }) => (
+const Telegram = ({ className }: {
+  className?: string,
+}): React.ReactNode => (
   <svg className={className} viewBox='0 0 1000 1000'>
     <title>
       Telegram

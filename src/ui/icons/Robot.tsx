@@ -4,7 +4,10 @@ import PropTypes from 'prop-types'
 
 const Robot = ({
   className, containerClassName, // theme,
-}) => {
+}: {
+  className?: string,
+  containerClassName?: string,
+}): React.ReactNode => {
   const cn = cx(className, {
     // 'fill-white': theme === 'dark',
     // 'fill-slate-800': theme === 'light',
@@ -23,11 +26,13 @@ const Robot = ({
 
 Robot.propTypes = {
   className: PropTypes.string,
+  containerClassName: PropTypes.string,
   // theme: PropTypes.string.isRequired,
 }
 
 Robot.defaultProps = {
   className: '',
+  containerClassName: '',
 }
 
 export default Robot

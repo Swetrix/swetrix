@@ -1,7 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-const Angular = ({ className }) => (
+const Angular = ({ className }: {
+  className?: string,
+}): React.ReactNode => (
   <svg
     className={className}
     x='0px'

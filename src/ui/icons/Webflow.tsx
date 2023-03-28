@@ -2,7 +2,10 @@ import React from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 
-const Webflow = ({ theme, className }) => (
+const Webflow = ({ theme, className }: {
+  theme: 'dark' | 'light',
+  className?: string,
+}): React.ReactNode => (
   <svg
     className={className}
     x='0px'
