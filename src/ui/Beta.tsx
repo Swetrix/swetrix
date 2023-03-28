@@ -7,7 +7,9 @@ import { WarningPin } from './Pin'
 
 const Beta = ({
   className,
-}) => {
+}: {
+  className?: string,
+}): JSX.Element => {
   const { t } = useTranslation('common')
 
   return (

@@ -7,7 +7,7 @@ const Robot = ({
 }: {
   className?: string,
   containerClassName?: string,
-}): React.ReactNode => {
+}): JSX.Element => {
   const cn = cx(className, {
     // 'fill-white': theme === 'dark',
     // 'fill-slate-800': theme === 'light',

@@ -7,7 +7,21 @@ import Beta from 'ui/Beta'
 
 const Input = ({
   label, hint, placeholder, type, id, name, className, onChange, error, value, disabled, onKeyDown, isBeta,
-}) => {
+}: {
+  label: string | JSX.Element,
+  hint?: string | JSX.Element,
+  placeholder?: string,
+  type?: string,
+  id?: string,
+  name?: string,
+  className?: string,
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  error?: string | null,
+  value?: string | number,
+  disabled?: boolean,
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void,
+  isBeta?: boolean,
+}): JSX.Element => {
   const identifier = id || name || type
   const isError = !_isEmpty(error)
 

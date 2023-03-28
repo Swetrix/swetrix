@@ -4,7 +4,7 @@ import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroic
 import { CONTACT_EMAIL } from 'redux/constants'
 
 interface CrashHandlerProps {
-  children: React.ReactNode
+  children: JSX.Element
 }
 
 interface CrashHandlerState {

@@ -12,7 +12,7 @@ import Select from './Select'
 
 const options = _reduce(
   Object.entries(allTimezones),
-  (selectOptions, zone) => {
+  (selectOptions: any[], zone) => {
     const now = spacetime.now(zone[0])
     const tz = now.timezone()
     const tzStrings = soft(zone[0])
@@ -41,18 +41,33 @@ const options = _reduce(
 
 const TimezoneSelect = ({
   value, onChange,
-}) => {
-  const { t } = useTranslation('common')
-  const labelExtractor = (option) => option?.label
-  const keyExtractor = (option) => option?.value
+}: {
+  value: string | {
+    value: string,
+    label: string,
+  },
+  onChange: (item: string) => void,
+}): JSX.Element => {
+  const { t }: {
+    t: (key: string) => string,
+  } = useTranslation('common')
+  const labelExtractor = (option: {
+    label: string,
+  }) => option?.label
+  const keyExtractor = (option: {
+    value: string,
+  }) => option?.value
 
-  const handleChange = (label) => {
+  const handleChange = (label: string) => {
     const tz = _find(options, timezone => labelExtractor(timezone) === label)
     const key = keyExtractor(tz)
     onChange(key)
   }
 
-  const parseTimezone = (zone) => {
+  const parseTimezone = (zone: string | {
+    value: string,
+    label: string,
+  }) => {
     if (typeof zone === 'object' && zone.value && zone.label) {
       return zone
     }

@@ -3,8 +3,12 @@ import bb from 'billboard.js'
 import 'billboard.js/dist/theme/datalab.css'
 import 'billboard.js/dist/billboard.css'
 
-const Chart = ({ current, children, options }) => {
-  let chartInstance = {}
+const Chart = ({ current, children, options }: {
+  current: string,
+  children: React.ReactNode,
+  options: any,
+}): JSX.Element => {
+  let chartInstance: any = {}
 
   const destroy = () => {
     if (chartInstance !== null) {

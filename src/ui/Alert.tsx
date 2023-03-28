@@ -8,7 +8,14 @@ import {
 
 const AlertTemplate = ({
   message, options, className, close,
-}) => {
+}: {
+  message: string,
+  options: {
+    type: 'info' | 'success' | 'error',
+  },
+  className: string,
+  close: () => void,
+}): JSX.Element => {
   const { type } = options
   const isInfo = type === 'info'
   const isSuccess = type === 'success'

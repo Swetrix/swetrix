@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 const ReactSVG = ({ className }: {
   className?: string,
-}): React.ReactNode => (
+}): JSX.Element => (
   <svg className={className} viewBox='175.7 78 490.6 436.9'>
     <title>
       React.js

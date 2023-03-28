@@ -8,7 +8,18 @@ import PropTypes from 'prop-types'
 
 const Dropdown = ({
   title, desc, className, items, labelExtractor, keyExtractor, onSelect, aside, buttonClassName, selectItemClassName,
-}) => (
+}: {
+  title: string | number | React.ReactNode,
+  desc?: string | number | React.ReactNode,
+  className?: string,
+  items: any[],
+  labelExtractor: (item: any) => string | number | React.ReactNode,
+  keyExtractor: (item: any) => string | number | React.ReactNode,
+  onSelect: (item: any) => void,
+  aside?: boolean,
+  buttonClassName?: string,
+  selectItemClassName?: string,
+}): JSX.Element => (
   <Menu as='div' className={cx('relative inline-block text-left', className)}>
     {({ open }) => (
       <>
@@ -44,6 +55,7 @@ const Dropdown = ({
                   <span
                     className={selectItemClassName || 'text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'}
                     role='menuitem'
+                    // @ts-ignore
                     tabIndex='-1'
                     id='menu-item-0'
                     onClick={() => onSelect(item)}

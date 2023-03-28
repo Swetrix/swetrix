@@ -7,7 +7,17 @@ import _map from 'lodash/map'
 
 const Select = ({
   title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect,
-}) => (
+}: {
+  title: string,
+  label: string,
+  className?: string,
+  items: any[],
+  labelExtractor?: (item: any, index: number) => string,
+  keyExtractor?: (item: any, index: number) => string,
+  iconExtractor?: (item: any, index: number) => JSX.Element,
+  onSelect: (item: any) => void,
+}): JSX.Element => (
+  // @ts-ignore
   <Listbox className={className} value={title} onChange={onSelect}>
     {({ open }) => (
       <>

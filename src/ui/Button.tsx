@@ -9,7 +9,26 @@ import './ButtonChristmas.css'
 
 const Button = ({
   text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading, semiSmall, semiDanger, noBorder, focus,
-}) => {
+}: {
+  text?: string,
+  children?: JSX.Element,
+  primary?: boolean,
+  secondary?: boolean,
+  danger?: boolean,
+  onClick?: () => void,
+  white?: boolean,
+  small?: boolean,
+  regular?: boolean,
+  large?: boolean,
+  giant?: boolean,
+  type?: 'button' | 'submit' | 'reset',
+  className?: string,
+  loading?: boolean,
+  semiSmall?: boolean,
+  semiDanger?: boolean,
+  focus?: boolean,
+  noBorder?: boolean,
+}): JSX.Element => {
   // const themeType = useSelector((state) => state.ui.theme.type)
 
   return (
@@ -77,6 +96,7 @@ Button.propTypes = {
   className: PropTypes.string,
   loading: PropTypes.bool,
   focus: PropTypes.bool,
+  noBorder: PropTypes.bool,
 }
 
 Button.defaultProps = {
@@ -97,6 +117,7 @@ Button.defaultProps = {
   className: '',
   children: null,
   focus: true,
+  noBorder: false,
 }
 
 export default memo(Button)

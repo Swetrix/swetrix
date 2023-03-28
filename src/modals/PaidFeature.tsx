@@ -9,8 +9,10 @@ import routes from 'routes'
 const PaidFeature = ({ onClose, isOpened }: {
   onClose: () => void,
   isOpened: boolean,
-}): React.ReactNode => {
-  const { t } = useTranslation('common')
+}): JSX.Element => {
+  const { t }: {
+    t: (key: string, options?: { [key: string]: string | number }) => string,
+  } = useTranslation('common')
   const history = useHistory()
 
   const onSubmit = () => {

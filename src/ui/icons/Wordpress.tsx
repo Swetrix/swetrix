@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 const Wordpress = ({ theme, className }: {
   theme: 'dark' | 'light',
   className?: string,
-}): React.ReactNode => (
+}): JSX.Element => (
   <svg
     className={cx(className, {
       'fill-white': theme === 'dark',

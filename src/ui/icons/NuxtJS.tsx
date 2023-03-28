@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 const NuxtJS = ({ theme, className }: {
   theme: 'dark' | 'light',
   className?: string,
-}): React.ReactNode => {
+}): JSX.Element => {
   const cn = cx({
     'fill-white': theme === 'dark',
     'fill-slate-800': theme === 'light',

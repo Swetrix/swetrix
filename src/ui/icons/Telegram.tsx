@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 const Telegram = ({ className }: {
   className?: string,
-}): React.ReactNode => (
+}): JSX.Element => (
   <svg className={className} viewBox='0 0 1000 1000'>
     <title>
       Telegram

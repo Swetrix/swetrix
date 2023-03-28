@@ -8,7 +8,12 @@ import { usePagination, DOTS } from 'hooks/usePagination'
 
 const Pagination = ({
   page, setPage, pageAmount, total,
-}) => {
+}: {
+  page: number,
+  setPage: (item: number) => void,
+  pageAmount: number,
+  total: number,
+}): JSX.Element => {
   const { t } = useTranslation('common')
   const paginationRange = usePagination(total, page)
 

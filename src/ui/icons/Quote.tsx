@@ -6,7 +6,7 @@ const Quote = ({ theme, className, color }: {
   theme: 'light' | 'dark',
   className?: string,
   color: 'black' | 'indigo',
-}): React.ReactNode => (
+}): JSX.Element => (
   <svg
     className={cx(className, {
       'fill-[#232536]': color === 'black' && theme === 'light',

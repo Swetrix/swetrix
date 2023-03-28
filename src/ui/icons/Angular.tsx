@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 const Angular = ({ className }: {
   className?: string,
-}): React.ReactNode => (
+}): JSX.Element => (
   <svg
     className={className}
     x='0px'

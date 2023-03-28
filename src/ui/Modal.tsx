@@ -9,7 +9,21 @@ import Beta from 'ui/Beta'
 
 const Modal = ({
   className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons, isBeta,
-}) => (
+}: {
+  className?: string,
+  type: 'error' | 'success' | 'info' | 'warning' | 'confirmed',
+  title: string,
+  message: React.ReactNode | string,
+  isOpened: boolean,
+  onClose: () => void,
+  onSubmit?: () => void,
+  closeText?: string,
+  submitText?: string,
+  submitType?: 'regular' | 'danger',
+  size?: 'regular' | 'large',
+  customButtons?: JSX.Element,
+  isBeta?: boolean,
+}): JSX.Element => (
   <Transition.Root show={isOpened} as={Fragment}>
     <Dialog
       as='div'

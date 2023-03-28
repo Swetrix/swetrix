@@ -17,7 +17,7 @@ const Forecast = ({
   isOpened: boolean,
   activeTB: string,
   tb: string,
-}): React.ReactNode => {
+}): JSX.Element => {
   const { t }: {
     t: (key: string, options?: { [key: string]: string | number }) => string,
   } = useTranslation('common')

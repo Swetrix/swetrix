@@ -5,7 +5,11 @@ import cx from 'clsx'
 
 const Tooltip = ({
   text, className, tooltipNode,
-}) => (
+}: {
+  text: string | number | React.ReactNode,
+  className?: string,
+  tooltipNode?: JSX.Element,
+}): JSX.Element => (
   <div className={cx('w-5 h-5 relative flex flex-col group items-center', className)}>
     {tooltipNode || (
       <QuestionMarkCircleIcon className='w-5 h-5 text-gray-700 dark:text-gray-300' />

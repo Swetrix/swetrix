@@ -4,7 +4,17 @@ import PropTypes from 'prop-types'
 
 const Checkbox = ({
   label, hint, id, name, className, onChange, checked, hintClassName, disabled,
-}) => {
+}: {
+  label: string | JSX.Element,
+  hint?: string | JSX.Element,
+  id?: string,
+  name?: string,
+  className?: string,
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  checked?: boolean,
+  hintClassName?: string,
+  disabled?: boolean,
+}): JSX.Element => {
   const identifier = id || name
 
   return (

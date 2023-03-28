@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 const Webflow = ({ theme, className }: {
   theme: 'dark' | 'light',
   className?: string,
-}): React.ReactNode => (
+}): JSX.Element => (
   <svg
     className={className}
     x='0px'
