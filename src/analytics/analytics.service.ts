@@ -622,7 +622,7 @@ export class AnalyticsService {
           query += ' UNION ALL '
         }
 
-        query += `select count() from customEV where ${
+        query += `select ${i} index, count() from customEV where ${
           paramsData.params.ev_exclusive ? 'NOT' : ''
         } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${
           xM[i]
