@@ -672,4 +672,8 @@ export class ProjectService {
     })
     await this.actionTokens.deleteActionToken(token)
   }
+
+  async cancelTransferProject(token: string) {
+    await this.actionTokens.deleteActionToken(token)
+  }
 }

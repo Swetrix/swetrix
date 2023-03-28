@@ -85,6 +85,8 @@ import {
   TransferProjectBodyDto,
   ConfirmTransferProjectParamsDto,
   ConfirmTransferProjectQueriesDto,
+  CancelTransferProjectParamsDto,
+  CancelTransferProjectQueriesDto,
 } from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
@@ -1334,5 +1336,32 @@ export class ProjectController {
       project.admin.id,
       actionToken.id,
     )
+  }
+
+  @Delete(':projectId/transfer')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async cancelTransferProject(
+    @Param() params: CancelTransferProjectParamsDto,
+    @Query() queries: CancelTransferProjectQueriesDto,
+  ) {
+    const project = await this.projectService.getProjectById(params.projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const actionToken = await this.actionTokensService.getActionToken(
+      queries.token,
+    )
+
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.TRANSFER_PROJECT ||
+      actionToken.newValue !== params.projectId
+    ) {
+      throw new BadRequestException('Invalid token.')
+    }
+
+    await this.projectService.cancelTransferProject(actionToken.id)
   }
 }
