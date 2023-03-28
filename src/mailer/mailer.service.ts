@@ -86,6 +86,11 @@ const metaInfoJson = {
       en: () => 'You have been invited to join the project.',
     },
   },
+  [LetterTemplate.ProjectTransfer]: {
+    subject: {
+      en: () => 'You have been invited to join the project.',
+    },
+  },
 }
 
 interface Params {

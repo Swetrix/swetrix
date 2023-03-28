@@ -210,4 +210,8 @@ export class UserService {
   async getUser(id: string) {
     return this.usersRepository.findOne({ id })
   }
+
+  async getUserByEmail(email: string) {
+    return this.usersRepository.findOne({ where: { email } })
+  }
 }
