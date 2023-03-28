@@ -1,5 +1,5 @@
 /* eslint-disable implicit-arrow-linebreak */
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import createAuthRefreshInterceptor from 'axios-auth-refresh'
 import { store } from 'redux/store'
 import Debug from 'debug'
@@ -10,17 +10,24 @@ import { authActions } from 'redux/reducers/auth'
 
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
-import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
+import { DEFAULT_ALERTS_TAKE, isSelfhosted, reportFrequencies } from 'redux/constants'
+import { IUser } from 'redux/models/IUser'
+import { IAuth } from 'redux/models/IAuth'
+import { IProject, IOverall } from 'redux/models/IProject'
+import { IAlerts } from 'redux/models/IAlerts'
+import { ISharedProject } from 'redux/models/ISharedProject'
+import { ISubscribers } from 'redux/models/ISubscribers'
 
 const debug = Debug('swetrix:api')
-const baseURL = isSelfhosted ? window.env.API_URL : process.env.REACT_APP_API_URL
+// @ts-ignore
+const baseURL = isSelfhosted ? window.env.API_URL : (process.env.REACT_APP_API_URL as string)
 
 const api = axios.create({
   baseURL,
 })
 
 // Function that will be called to refresh authorization
-const refreshAuthLogic = (failedRequest) =>
+const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
   axios
     .post(`${baseURL}v1/auth/refresh-token`, null, {
       headers: {
@@ -61,7 +68,7 @@ api.interceptors.request.use(
 export const authMe = () =>
   api
     .get('user/me')
-    .then((response) => response.data)
+    .then((response): IUser => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -69,14 +76,14 @@ export const authMe = () =>
         : error.response.data.message
     })
 
-export const logoutApi = (refreshToken) =>
+export const logoutApi = (refreshToken: string) =>
   axios
     .post(`${baseURL}v1/auth/logout`, null, {
       headers: {
         Authorization: `Bearer ${refreshToken}`,
       },
     })
-    .then((response) => {
+    .then((response): {} => {
       removeAccessToken()
       removeRefreshToken()
       return response.data
@@ -91,7 +98,10 @@ export const logoutApi = (refreshToken) =>
 export const refreshToken = () =>
   api
     .post('v1/auth/refresh-token')
-    .then((response) => response.data)
+    .then((response): {
+      access_token: string
+      refreshToken: string
+    } => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -99,10 +109,13 @@ export const refreshToken = () =>
         : error.response.data.message
     })
 
-export const login = (credentials) =>
+export const login = (credentials: {
+  email: string
+  password: string
+}) =>
   api
     .post('v1/auth/login', credentials)
-    .then((response) => response.data)
+    .then((response): IAuth => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -110,10 +123,14 @@ export const login = (credentials) =>
         : error.response.data.message
     })
 
-export const signup = (data) =>
+export const signup = (data: {
+  email: string,
+  password: string
+  repeat: string
+}) =>
   api
     .post('v1/auth/register', data)
-    .then((response) => response.data)
+    .then((response): IAuth => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -125,15 +142,15 @@ export const signup = (data) =>
 export const deleteUser = () =>
   api
     .delete('/user')
-    .then((response) => response.data)
+    .then((response): {} => response.data)
     .catch((error) => {
       throw new Error(JSON.stringify(error.response.data))
     })
 
-export const changeUserDetails = (data) =>
+export const changeUserDetails = (data: IUser) =>
   api
     .put('/user', data)
-    .then((response) => response.data)
+    .then((response): IUser => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -142,7 +159,7 @@ export const changeUserDetails = (data) =>
       throw new Error(errorsArray)
     })
 
-export const forgotPassword = (email) =>
+export const forgotPassword = (email: string) =>
   api
     .post('v1/auth/reset-password', email)
     .then((response) => response.data)
@@ -175,7 +192,7 @@ export const exportUserData = () =>
         : error.response.data.message
     })
 
-export const createNewPassword = (id, password) =>
+export const createNewPassword = (id: string, password: string) =>
   api
     .post(`v1/auth/reset-password/confirm/${id}`, { newPassword: password })
     .then((response) => response.data)
@@ -187,7 +204,7 @@ export const createNewPassword = (id, password) =>
       throw new Error(errorsArray)
     })
 
-export const verifyEmail = ({ id }) =>
+export const verifyEmail = ({ id }: { id: string }) =>
   api
     .get(`v1/auth/verify-email/${id}`)
     .then((response) => response.data)
@@ -198,7 +215,7 @@ export const verifyEmail = ({ id }) =>
         : error.response.data.message
     })
 
-export const verifyShare = ({ path, id }) =>
+export const verifyShare = ({ path, id }: { path: string, id: string }) =>
   api
     .get(`/project/${path}/${id}`)
     .then((response) => response.data)
@@ -209,10 +226,15 @@ export const verifyShare = ({ path, id }) =>
         : error.response.data.message
     })
 
-export const getProjects = (take = 0, skip = 0, isCaptcha = false) =>
+export const getProjects = (take: number = 0, skip: number = 0, isCaptcha: boolean = false) =>
   api
     .get(`/project?take=${take}&skip=${skip}&isCaptcha=${isCaptcha}`)
-    .then((response) => response.data)
+    .then((response): {
+      results: IProject[]
+      total: number
+      page_total: number
+      totalMonthlyEvents: number
+    } => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -220,10 +242,14 @@ export const getProjects = (take = 0, skip = 0, isCaptcha = false) =>
         : error.response.data.message
     })
 
-export const getSharedProjects = (take = 0, skip = 0) =>
+export const getSharedProjects = (take: number = 0, skip: number = 0) =>
   api
     .get(`/project/shared?take=${take}&skip=${skip}`)
-    .then((response) => response.data)
+    .then((response): {
+      results: ISharedProject[]
+      total: number
+      page_total: number
+    } => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -231,10 +257,10 @@ export const getSharedProjects = (take = 0, skip = 0) =>
         : error.response.data.message
     })
 
-export const getProject = (pid, isCaptcha = false) =>
+export const getProject = (pid: string, isCaptcha: boolean = false) =>
   api
     .get(`/project/${pid}?isCaptcha=${isCaptcha}`)
-    .then((response) => response.data)
+    .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -242,10 +268,13 @@ export const getProject = (pid, isCaptcha = false) =>
         : error.response.data.message
     })
 
-export const createProject = (data) =>
+export const createProject = (data: {
+  id: string
+  name: string
+}) =>
   api
     .post('/project', data)
-    .then((response) => response.data)
+    .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -253,10 +282,10 @@ export const createProject = (data) =>
         : error.response.data.message
     })
 
-export const updateProject = (id, data) =>
+export const updateProject = (id: string, data: IProject) =>
   api
     .put(`/project/${id}`, data)
-    .then((response) => response.data)
+    .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -264,7 +293,7 @@ export const updateProject = (id, data) =>
         : error.response.data.message
     })
 
-export const deleteProject = (id) =>
+export const deleteProject = (id: string) =>
   api
     .delete(`/project/${id}`)
     .then((response) => response.data)
@@ -275,7 +304,7 @@ export const deleteProject = (id) =>
         : error.response.data.message
     })
 
-export const deleteCaptchaProject = (id) =>
+export const deleteCaptchaProject = (id: string) =>
   api
     .delete(`project/captcha/${id}`)
     .then((response) => response.data)
@@ -286,7 +315,7 @@ export const deleteCaptchaProject = (id) =>
         : error.response.data.message
     })
 
-export const resetProject = (id) =>
+export const resetProject = (id: string) =>
   api
     .delete(`/project/reset/${id}`)
     .then((response) => response.data)
@@ -297,7 +326,7 @@ export const resetProject = (id) =>
         : error.response.data.message
     })
 
-export const resetCaptchaProject = (id) =>
+export const resetCaptchaProject = (id: string) =>
   api
     .delete(`project/captcha/reset/${id}`)
     .then((response) => response.data)
@@ -309,13 +338,13 @@ export const resetCaptchaProject = (id) =>
     })
 
 export const getProjectData = (
-  pid,
-  tb = 'hour',
-  period = '3d',
-  filters = [],
-  from = '',
-  to = '',
-  timezone = '',
+  pid: string,
+  tb: string = 'hour',
+  period: string = '3d',
+  filters: string[] = [],
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
 ) =>
   api
     .get(
@@ -330,13 +359,13 @@ export const getProjectData = (
     })
 
 export const getPerfData = (
-  pid,
-  tb = 'hour',
-  period = '3d',
-  filters = [],
-  from = '',
-  to = '',
-  timezone = '',
+  pid: string,
+  tb: string = 'hour',
+  period: string = '3d',
+  filters: string[] = [],
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
 ) =>
   api
     .get(
@@ -351,12 +380,12 @@ export const getPerfData = (
     })
 
 export const getCaptchaData = (
-  pid,
-  tb = 'hour',
-  period = '3d',
-  filters = [],
-  from = '',
-  to = '',
+  pid: string,
+  tb: string = 'hour',
+  period: string = '3d',
+  filters: string[] = [],
+  from: string = '',
+  to: string = '',
 ) =>
   api
     .get(
@@ -370,10 +399,10 @@ export const getCaptchaData = (
         : error.response.data.message
     })
 
-export const getOverallStats = (pids) =>
+export const getOverallStats = (pids: string[]) =>
   api
     .get(`log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
-    .then((response) => response.data)
+    .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -381,10 +410,10 @@ export const getOverallStats = (pids) =>
         : error.response.data.message
     })
 
-export const getOverallStatsCaptcha = (pids) =>
+export const getOverallStatsCaptcha = (pids: string[]) =>
   api
     .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
-    .then((response) => response.data)
+    .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -392,10 +421,10 @@ export const getOverallStatsCaptcha = (pids) =>
         : error.response.data.message
     })
 
-export const getLiveVisitors = (pids) =>
+export const getLiveVisitors = (pids: string[]) =>
   api
     .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
-    .then((response) => response.data)
+    .then((response): { [key: string]: number } => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -414,10 +443,13 @@ export const getGeneralStats = () =>
         : error.response.data.message
     })
 
-export const shareProject = (pid, data) =>
+export const shareProject = (pid: string, data: {
+  email: string
+  role: string
+}) =>
   api
     .post(`/project/${pid}/share`, data)
-    .then((response) => response.data)
+    .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -425,7 +457,7 @@ export const shareProject = (pid, data) =>
         : error.response.data.message
     })
 
-export const deleteShareProjectUsers = (pid, userId) =>
+export const deleteShareProjectUsers = (pid: string, userId: string) =>
   api
     .delete(`/project/${pid}/${userId}`)
     .then((response) => response.data)
@@ -436,7 +468,7 @@ export const deleteShareProjectUsers = (pid, userId) =>
         : error.response.data.message
     })
 
-export const deleteShareProject = (pid) =>
+export const deleteShareProject = (pid: string) =>
   api
     .delete(`user/share/${pid}`)
     .then((response) => response.data)
@@ -447,7 +479,7 @@ export const deleteShareProject = (pid) =>
         : error.response.data.message
     })
 
-export const acceptShareProject = (id) =>
+export const acceptShareProject = (id: string) =>
   api
     .get(`user/share/${id}`)
     .then((response) => response.data)
@@ -458,7 +490,9 @@ export const acceptShareProject = (id) =>
         : error.response.data.message
     })
 
-export const changeShareRole = (id, data) =>
+export const changeShareRole = (id: string, data: {
+  role: string
+}) =>
   api
     .put(`project/share/${id}`, data)
     .then((response) => response.data)
@@ -480,7 +514,7 @@ export const generate2FA = () =>
         : error.response.data.message
     })
 
-export const enable2FA = (twoFactorAuthenticationCode) =>
+export const enable2FA = (twoFactorAuthenticationCode: string) =>
   api
     .post('2fa/enable', { twoFactorAuthenticationCode })
     .then((response) => response.data)
@@ -491,7 +525,7 @@ export const enable2FA = (twoFactorAuthenticationCode) =>
         : error.response.data.message
     })
 
-export const disable2FA = (twoFactorAuthenticationCode) =>
+export const disable2FA = (twoFactorAuthenticationCode: string) =>
   api
     .post('2fa/disable', { twoFactorAuthenticationCode })
     .then((response) => response.data)
@@ -502,7 +536,7 @@ export const disable2FA = (twoFactorAuthenticationCode) =>
         : error.response.data.message
     })
 
-export const submit2FA = (twoFactorAuthenticationCode) =>
+export const submit2FA = (twoFactorAuthenticationCode: string) =>
   api
     .post('2fa/authenticate', { twoFactorAuthenticationCode })
     .then((response) => response.data)
@@ -516,7 +550,9 @@ export const submit2FA = (twoFactorAuthenticationCode) =>
 export const generateApiKey = () =>
   api
     .post('user/api-key')
-    .then((response) => response.data)
+    .then((response): {
+      apiKey: string
+    } => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -546,7 +582,7 @@ export const getInstalledExtensions = (limit = 100, offset = 0) =>
         : error.response.data.message
     })
 
-export const setTheme = (theme) =>
+export const setTheme = (theme: string) =>
   api
     .put('user/theme', { theme })
     .then((response) => response.data)
@@ -557,10 +593,17 @@ export const setTheme = (theme) =>
         : error.response.data.message
     })
 
-export const getLiveVisitorsInfo = (pid) =>
+interface IGetLiveVisitorsInfo {
+  dv: string
+  br: string
+  os: string
+  cc: string
+}
+
+export const getLiveVisitorsInfo = (pid: string) =>
   api
     .get(`log/liveVisitors?pid=${pid}`)
-    .then((response) => response.data)
+    .then((response): IGetLiveVisitorsInfo[] => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -568,7 +611,7 @@ export const getLiveVisitorsInfo = (pid) =>
         : error.response.data.message
     })
 
-export const removeTgIntegration = (tgID) =>
+export const removeTgIntegration = (tgID: string) =>
   api
     .delete(`user/tg/${tgID}`)
     .then((response) => response.data)
@@ -579,10 +622,14 @@ export const removeTgIntegration = (tgID) =>
         : error.response.data.message
     })
 
-export const getAlerts = (take = DEFAULT_ALERTS_TAKE, skip = 0) =>
+export const getAlerts = (take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) =>
   api
     .get(`alert?take=${take}&skip=${skip}`)
-    .then((response) => response.data)
+    .then((response): {
+      results: IAlerts[]
+      total: number
+      page_total: number
+    } => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -590,10 +637,12 @@ export const getAlerts = (take = DEFAULT_ALERTS_TAKE, skip = 0) =>
         : error.response.data.message
     })
 
-export const createAlert = (data) =>
+interface ICreateAlert extends Omit<IAlerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> {}
+
+export const createAlert = (data: ICreateAlert) =>
   api
     .post('alert', data)
-    .then((response) => response.data)
+    .then((response): IAlerts => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -601,10 +650,10 @@ export const createAlert = (data) =>
         : error.response.data.message
     })
 
-export const updateAlert = (id, data) =>
+export const updateAlert = (id: string, data: IAlerts) =>
   api
     .put(`alert/${id}`, data)
-    .then((response) => response.data)
+    .then((response): IAlerts => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -612,7 +661,7 @@ export const updateAlert = (id, data) =>
         : error.response.data.message
     })
 
-export const deleteAlert = (id) =>
+export const deleteAlert = (id: string) =>
   api
     .delete(`alert/${id}`)
     .then((response) => response.data)
@@ -623,18 +672,7 @@ export const deleteAlert = (id) =>
         : error.response.data.message
     })
 
-export const setTimeFormat = (timeFormat) =>
-  api
-    .put('user/change-time-format', { timeFormat })
-    .then((response) => response.data)
-    .catch((error) => {
-      debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
-    })
-
-export const reGenerateCaptchaSecretKey = (pid) =>
+export const reGenerateCaptchaSecretKey = (pid: string) =>
   api
     .post(`project/secret-gen/${pid}`)
     .then((response) => response.data)
@@ -645,10 +683,13 @@ export const reGenerateCaptchaSecretKey = (pid) =>
         : error.response.data.message
     })
 
-export const addSubscriber = (id, data) =>
+export const addSubscriber = (id: string, data: {
+  email: string
+  reportFrequency: keyof typeof reportFrequencies
+}) =>
   api
     .post(`project/${id}/subscribers`, data)
-    .then((response) => response.data)
+    .then((response): ISubscribers => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -656,10 +697,13 @@ export const addSubscriber = (id, data) =>
         : error.response.data.message
     })
 
-export const getSubscribers = (id, offset, limit) =>
+export const getSubscribers = (id: string, offset: number, limit: number) =>
   api
     .get(`project/${id}/subscribers?offset=${offset}&limit=${limit}`)
-    .then((response) => response.data)
+    .then((response): {
+      subscribers: ISubscribers[]
+      count: number
+    } => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -667,10 +711,12 @@ export const getSubscribers = (id, offset, limit) =>
         : error.response.data.message
     })
 
-export const updateSubscriber = (id, subscriberId, data) =>
+export const updateSubscriber = (id: string, subscriberId: string, data: {
+  reportFrequency: keyof typeof reportFrequencies
+}) =>
   api
     .patch(`project/${id}/subscribers/${subscriberId}`, data)
-    .then((response) => response.data)
+    .then((response): ISubscribers => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
@@ -678,7 +724,7 @@ export const updateSubscriber = (id, subscriberId, data) =>
         : error.response.data.message
     })
 
-export const removeSubscriber = (id, subscriberId) =>
+export const removeSubscriber = (id: string, subscriberId: string) =>
   api
     .delete(`project/${id}/subscribers/${subscriberId}`)
     .then((response) => response.data)
@@ -689,7 +735,7 @@ export const removeSubscriber = (id, subscriberId) =>
         : error.response.data.message
     })
 
-export const confirmSubscriberInvite = (id, token) =>
+export const confirmSubscriberInvite = (id: string, token: string) =>
   api
     .get(`project/${id}/subscribers/invite?token=${token}`)
     .then((response) => response.data)

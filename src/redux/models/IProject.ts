@@ -13,6 +13,10 @@ export interface IUserShareProject {
     email: string
 }
 
+export interface ILiveStats {
+    [key: string]: number
+}
+
 export interface IShareOwnerProject {
     id: string
     confirmed: boolean
@@ -36,9 +40,9 @@ export interface IProject {
     created: string
     share: IShareOwnerProject[]
     isOwner: boolean
-    overall: IOverall
-    live: number
-    uiHidden: boolean
+    overall?: IOverall
+    live?: number
+    uiHidden?: boolean
 }
 
 export interface ICaptchaProject {
