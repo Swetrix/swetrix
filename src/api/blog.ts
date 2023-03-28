@@ -12,7 +12,10 @@ const api = axios.create({
 export const getLastPost = () =>
   api
     .get('last-post?format=json')
-    .then((response) => response.data)
+    .then((response): {
+      title: string
+      url_path: string
+    } => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)

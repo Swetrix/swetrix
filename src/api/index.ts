@@ -735,7 +735,6 @@ export const removeSubscriber = (id: string, subscriberId: string) =>
         : error.response.data.message
     })
 
-
 export const confirmSubscriberInvite = (id: string, token: string) =>
   api
     .get(`project/${id}/subscribers/invite?token=${token}`)
