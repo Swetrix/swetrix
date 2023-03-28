@@ -1331,6 +1331,7 @@ export class ProjectController {
     await this.projectService.confirmTransferProject(
       params.projectId,
       actionToken.user.id,
+      project.admin.id,
       actionToken.id,
     )
   }
