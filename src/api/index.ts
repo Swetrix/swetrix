@@ -637,7 +637,7 @@ export const getAlerts = (take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) 
         : error.response.data.message
     })
 
-interface ICreateAlert extends Omit<IAlerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> {}
+interface ICreateAlert extends Omit<IAlerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> { }
 
 export const createAlert = (data: ICreateAlert) =>
   api
