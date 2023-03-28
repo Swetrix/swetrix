@@ -11,12 +11,20 @@ const DEFAULT_PERIOD = 3
 
 const Forecast = ({
   onClose, onSubmit, isOpened, activeTB, tb,
-}) => {
-  const { t } = useTranslation('common')
-  const [period, setPeriod] = useState(DEFAULT_PERIOD)
-  const [error, setError] = useState(null)
+}: {
+  onClose: () => void,
+  onSubmit: (period: number) => void,
+  isOpened: boolean,
+  activeTB: string,
+  tb: string,
+}): React.ReactNode => {
+  const { t }: {
+    t: (key: string, options?: { [key: string]: string | number }) => string,
+  } = useTranslation('common')
+  const [period, setPeriod] = useState<string | number>(DEFAULT_PERIOD)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleInput = (e) => {
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
 
     setPeriod(value)

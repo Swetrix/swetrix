@@ -6,7 +6,10 @@ import PropTypes from 'prop-types'
 import Modal from 'ui/Modal'
 import routes from 'routes'
 
-const PaidFeature = ({ onClose, isOpened }) => {
+const PaidFeature = ({ onClose, isOpened }: {
+  onClose: () => void,
+  isOpened: boolean,
+}): React.ReactNode => {
   const { t } = useTranslation('common')
   const history = useHistory()
 
