@@ -76,7 +76,7 @@ export const authMe = () =>
         : error.response.data.message
     })
 
-export const logoutApi = (refreshToken: string) =>
+export const logoutApi = (refreshToken: string | null) =>
   axios
     .post(`${baseURL}v1/auth/logout`, null, {
       headers: {
