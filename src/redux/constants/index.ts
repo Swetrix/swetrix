@@ -1,4 +1,4 @@
-const getCustomLabel = (dates: Date[], t: Function) => {
+const getCustomLabel = (dates: Date[], t: Function): string => {
   if (dates) {
     const from = dates[0].toLocaleDateString()
     const to = dates[1].toLocaleDateString()
@@ -13,7 +13,9 @@ const getCustomLabel = (dates: Date[], t: Function) => {
   return t('project.custom')
 }
 
-export const FORECAST_MAX_MAPPING = {
+export const FORECAST_MAX_MAPPING: {
+  [key: string]: number
+} = {
   hour: 72,
   day: 21,
   week: 21,
@@ -70,14 +72,17 @@ export const tbPeriodPairs = (t: Function, tbs: String[] | null, dates: Date[]) 
 }]
 
 // the order of panels in the project view
-export const TRAFFIC_PANELS_ORDER = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
-export const PERFORMANCE_PANELS_ORDER = ['cc', 'pg', 'br', 'dv']
+export const TRAFFIC_PANELS_ORDER: string[] = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
+export const PERFORMANCE_PANELS_ORDER: string[] = ['cc', 'pg', 'br', 'dv']
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
-export const MAX_MONTHS_IN_PAST = 24
-export const MAX_MONTHS_IN_PAST_FREE = 3
+export const MAX_MONTHS_IN_PAST: number = 24
+export const MAX_MONTHS_IN_PAST_FREE: number = 3
 
-export const timeBucketToDays = [
+export const timeBucketToDays: {
+  lt: number
+  tb: string[]
+}[] = [
   { lt: 1, tb: ['hour'] }, // 1 days
   { lt: 7, tb: ['hour', 'day'] }, // 7 days
   { lt: 28, tb: ['day', 'week'] }, // 4 weeks
@@ -85,102 +90,113 @@ export const timeBucketToDays = [
   { lt: 732, tb: ['month'] }, // 24 months
 ]
 
-export const tbsFormatMapper = {
+export const tbsFormatMapper: {
+  [key: string]: string
+} = {
   hour: '%d %b %H:%M',
   day: '%d %b',
   week: '%d %b',
   month: '%d %b %Y',
 }
 
-export const tbsFormatMapper24h = {
+export const tbsFormatMapper24h: {
+  [key: string]: string
+} = {
   hour: '%H:%M',
   day: '%d %b',
   week: '%d %b',
   month: '%d %b %Y',
 }
 
-export const TimeFormat = {
+export const TimeFormat: {
+  [key: string]: string
+} = {
   '12-hour': '12-hour',
   '24-hour': '24-hour',
 }
 
-export const FREE_TIER_KEY = 'free'
+export const FREE_TIER_KEY: string = 'free'
 
 // a dedicated variable is needed for paid tier checking
-export const WEEKLY_REPORT_FREQUENCY = 'weekly'
-export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
+export const WEEKLY_REPORT_FREQUENCY: string = 'weekly'
+export const reportFrequencies: string[] = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
 
-export const reportFrequencyForEmailsOptions = [
+export const reportFrequencyForEmailsOptions: {
+  value: string
+  label: string
+}[] = [
   { value: 'quarterly', label: 'Quarterly' },
   { value: 'monthly', label: 'Monthly' },
   { value: 'weekly', label: 'Weekly' },
   { value: 'never', label: 'Never' },
 ]
 
-export const GDPR_EXPORT_TIMEFRAME = 14 // days
+export const GDPR_EXPORT_TIMEFRAME: number = 14 // days
 
-export const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier are used
+export const SHOW_BANNER_AT_PERC: number = 85 // show banner when 85% of events in tier are used
 
-export const TITLE_SUFFIX = '| Swetrix'
+export const TITLE_SUFFIX: string = '| Swetrix'
 
-export const LS_THEME_SETTING = 'colour-theme'
-export const LS_VIEW_PREFS_SETTING = 'proj-view-preferences'
-export const LS_CAPTCHA_VIEW_PREFS_SETTING = 'captcha-view-preferences'
+export const LS_THEME_SETTING: string = 'colour-theme'
+export const LS_VIEW_PREFS_SETTING: string = 'proj-view-preferences'
+export const LS_CAPTCHA_VIEW_PREFS_SETTING: string = 'captcha-view-preferences'
 
-export const DEFAULT_TIMEZONE = 'Etc/GMT'
+export const DEFAULT_TIMEZONE: string = 'Etc/GMT'
 
-export const DONATE_URL = 'https://ko-fi.com/andriir'
-export const FIREFOX_ADDON_URL = 'https://addons.mozilla.org/en-US/firefox/addon/swetrix/'
-export const CHROME_EXTENSION_URL = 'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
-export const HAVE_I_BEEN_PWNED_URL = 'https://haveibeenpwned.com/passwords'
-export const LINKEDIN_URL = 'https://www.linkedin.com/company/swetrix/'
-export const GITHUB_URL = 'https://github.com/Swetrix'
-export const TWITTER_URL = 'https://twitter.com/intent/user?screen_name=swetrix'
-export const TWITTER_USERNAME = '@swetrix'
-export const DISCORD_URL = 'https://discord.gg/tVxGxU3s4B'
-export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
-export const BLOG_URL = 'https://blog.swetrix.com'
-export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
-export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
-export const DOCS_URL = 'https://docs.swetrix.com'
-export const CAPTCHA_URL = 'https://captcha.swetrix.com'
-export const DOCS_CAPTCHA_URL = `${DOCS_URL}/captcha/introduction`
-export const CDN_URL = process.env.REACT_APP_CDN_URL
+export const DONATE_URL: string = 'https://ko-fi.com/andriir'
+export const FIREFOX_ADDON_URL: string = 'https://addons.mozilla.org/en-US/firefox/addon/swetrix/'
+export const CHROME_EXTENSION_URL: string = 'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
+export const HAVE_I_BEEN_PWNED_URL: string = 'https://haveibeenpwned.com/passwords'
+export const LINKEDIN_URL: string = 'https://www.linkedin.com/company/swetrix/'
+export const GITHUB_URL: string = 'https://github.com/Swetrix'
+export const TWITTER_URL: string = 'https://twitter.com/intent/user?screen_name=swetrix'
+export const TWITTER_USERNAME: string = '@swetrix'
+export const DISCORD_URL: string = 'https://discord.gg/tVxGxU3s4B'
+export const STATUSPAGE_URL: string = 'https://stats.uptimerobot.com/33rvmiXXEz'
+export const BLOG_URL: string = 'https://blog.swetrix.com'
+export const UTM_GENERATOR_URL: string = 'https://url.swetrix.com'
+export const MARKETPLACE_URL: string = 'https://marketplace.swetrix.com'
+export const DOCS_URL: string = 'https://docs.swetrix.com'
+export const CAPTCHA_URL: string = 'https://captcha.swetrix.com'
+export const DOCS_CAPTCHA_URL: string = `${DOCS_URL}/captcha/introduction`
+export const CDN_URL: string | undefined = process.env.REACT_APP_CDN_URL
 
 // Swetrix vs ...
-export const SWETRIX_VS_GOOGLE = 'https://blog.swetrix.com/post/vs-google-analytics/'
-export const SWETRIX_VS_CLOUDFLARE = 'https://blog.swetrix.com/post/vs-cloudflare-analytics/'
-export const SWETRIX_VS_SIMPLE_ANALYTICS = 'https://blog.swetrix.com/post/vs-simple-analytics/'
+export const SWETRIX_VS_GOOGLE: string = 'https://blog.swetrix.com/post/vs-google-analytics/'
+export const SWETRIX_VS_CLOUDFLARE: string = 'https://blog.swetrix.com/post/vs-cloudflare-analytics/'
+export const SWETRIX_VS_SIMPLE_ANALYTICS: string = 'https://blog.swetrix.com/post/vs-simple-analytics/'
 
-export const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
+export const isDevelopment: boolean = !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
 
-export const SUPPORTED_THEMES = ['light', 'dark']
+export const SUPPORTED_THEMES: string[] = ['light', 'dark']
 
-export const CONTACT_EMAIL = 'contact@swetrix.com'
-export const SECURITY_EMAIL = 'security@swetrix.com'
+export const CONTACT_EMAIL: string = 'contact@swetrix.com'
+export const SECURITY_EMAIL: string = 'security@swetrix.com'
 
-export const isSelfhosted = Boolean(process.env.REACT_APP_SELFHOSTED)
+export const isSelfhosted: boolean = Boolean(process.env.REACT_APP_SELFHOSTED)
 
-export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
-export const GENERAL_STATS_UPDATE_INTERVAL = 60000
+export const LIVE_VISITORS_UPDATE_INTERVAL: number = 40000
+export const GENERAL_STATS_UPDATE_INTERVAL: number = 60000
 
 // Functions
-export const getProjectCacheKey = (period: string, timeBucket: string) => `${period}${timeBucket}`
-export const getProjectCaptchaCacheKey = (period: string, timeBucket: string) => `${period}${timeBucket}captcha`
-export const getProjectForcastCacheKey = (period: string, timeBucket: string, periodToForecast: string) => `${period}${timeBucket}${periodToForecast}forecast`
-export const getProjectCacheCustomKey = (from: string, to: string, timeBucket: string) => `${from}-${to}-${timeBucket}`
+export const getProjectCacheKey = (period: string, timeBucket: string): string => `${period}${timeBucket}`
+export const getProjectCaptchaCacheKey = (period: string, timeBucket: string): string => `${period}${timeBucket}captcha`
+export const getProjectForcastCacheKey = (period: string, timeBucket: string, periodToForecast: string): string => `${period}${timeBucket}${periodToForecast}forecast`
+export const getProjectCacheCustomKey = (from: string, to: string, timeBucket: string): string => `${from}-${to}-${timeBucket}`
 
 // Cookies
-export const GDPR_REQUEST = 'gdpr_request'
-export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
-export const LOW_EVENTS_WARNING = 'low_events_warning'
-export const TOKEN = 'access_token'
-export const REFRESH_TOKEN = 'refresh_token'
+export const GDPR_REQUEST: string = 'gdpr_request'
+export const CONFIRMATION_TIMEOUT: string = 'confirmation_timeout'
+export const LOW_EVENTS_WARNING: string = 'low_events_warning'
+export const TOKEN: string = 'access_token'
+export const REFRESH_TOKEN: string = 'refresh_token'
 
 // List of languages with translations available
-export const whitelist = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
-export const defaultLanguage = 'en'
-export const languages = {
+export const whitelist: string[] = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
+export const defaultLanguage: string = 'en'
+export const languages: {
+  [key: string]: string
+} = {
   en: 'English',
   uk: 'Українська',
   pl: 'Polski',
@@ -192,7 +208,9 @@ export const languages = {
   zh: '中文简体',
 }
 
-export const languageFlag = {
+export const languageFlag: {
+  [key: string]: string
+} = {
   en: 'GB',
   uk: 'UA',
   pl: 'PL',
@@ -204,7 +222,9 @@ export const languageFlag = {
   zh: 'CN',
 }
 
-export const paddleLanguageMapping = {
+export const paddleLanguageMapping: {
+  [key: string]: string
+} = {
   zh: 'zh-Hans',
   uk: 'ru',
   el: 'en',
@@ -212,25 +232,36 @@ export const paddleLanguageMapping = {
 
 // dashboard && projects
 
-export const roles = ['admin', 'viewer']
+export const roles: string[] = ['admin', 'viewer']
 
-export const roleViewer = {
+export const roleViewer: {
+  name: string
+  role: string
+  description: string
+} = {
   name: 'Viewer',
   role: 'viewer',
   description: 'Can view the project',
 }
 
-export const roleAdmin = {
+export const roleAdmin: {
+  name: string
+  role: string
+  description: string
+} = {
   name: 'Admin',
   role: 'admin',
   description: 'Can manage the project',
 }
 
-export const tabForOwnedProject = 'owned'
-export const tabForSharedProject = 'shared'
-export const tabForCaptchaProject = 'captcha'
+export const tabForOwnedProject: string = 'owned'
+export const tabForSharedProject: string = 'shared'
+export const tabForCaptchaProject: string = 'captcha'
 
-export const tabsForDashboard = [
+export const tabsForDashboard: {
+  name: string
+  label: string
+}[] = [
   {
     name: tabForOwnedProject,
     label: 'profileSettings.owned',
@@ -245,32 +276,42 @@ export const tabsForDashboard = [
   },
 ]
 
-export const PROJECT_TABS = {
+export const PROJECT_TABS: {
+  [key: string]: string
+} = {
   traffic: 'traffic',
   performance: 'performance',
   alerts: 'alerts',
 }
 
-export const DASHBOARD_TABS = {
+export const DASHBOARD_TABS: {
+  [key: string]: string
+} = {
   owned: 'owned',
   shared: 'shared',
   captcha: 'captcha',
 }
 
-export const QUERY_METRIC = {
+export const QUERY_METRIC: {
+  [key: string]: string
+} = {
   PAGE_VIEWS: 'page_views',
   UNIQUE_PAGE_VIEWS: 'unique_page_views',
   ONLINE_USERS: 'online_users',
 }
 
-export const QUERY_CONDITION = {
+export const QUERY_CONDITION: {
+  [key: string]: string
+} = {
   GREATER_THAN: 'greater_than',
   GREATER_EQUAL_THAN: 'greater_equal_than',
   LESS_THAN: 'less_than',
   LESS_EQUAL_THAN: 'less_equal_than',
 }
 
-export const QUERY_TIME = {
+export const QUERY_TIME: {
+  [key: string]: string
+} = {
   LAST_15_MINUTES: 'last_15_minutes',
   LAST_30_MINUTES: 'last_30_minutes',
   LAST_1_HOUR: 'last_1_hour',
@@ -279,18 +320,29 @@ export const QUERY_TIME = {
   LAST_48_HOURS: 'last_48_hours',
 }
 
-export const INVITATION_EXPIRES_IN = 48 // hours
-export const ENTRIES_PER_PAGE_DASHBOARD = 10
+export const INVITATION_EXPIRES_IN: number = 48 // hours
+export const ENTRIES_PER_PAGE_DASHBOARD: number = 10
 
-export const THEME_TYPE = {
+export const THEME_TYPE: {
+  [key: string]: string
+} = {
   classic: 'classic',
   christmas: 'christmas',
 }
 
-export const DEFAULT_ALERTS_TAKE = 100
+export const DEFAULT_ALERTS_TAKE: number = 100
 
 // TODO: Eventually this should be fetched from the API, e.g. GET /config route
-export const PLAN_LIMITS = {
+export const PLAN_LIMITS: {
+  [key: string]: {
+    monthlyUsageLimit: number
+    maxProjects: number
+    maxAlerts: number
+    legacy: boolean
+    priceMonthly: number
+    priceYearly: number
+  }
+} = {
   free: {
     priceMonthly: 0,
     priceYearly: 0,
@@ -341,9 +393,11 @@ export const PLAN_LIMITS = {
   },
 }
 
-export const TRIAL_DAYS = 14
+export const TRIAL_DAYS: number = 14
 
-export const chartTypes = {
+export const chartTypes: {
+  [key: string]: string
+} = {
   line: 'line',
   bar: 'bar',
 }

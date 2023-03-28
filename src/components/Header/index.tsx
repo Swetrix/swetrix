@@ -28,6 +28,7 @@ import {
   DOCS_URL,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
+import { IUser } from 'redux/models/IUser'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -43,8 +44,16 @@ const Header = ({
   authenticated, theme,
   // themeType,
   user,
-}) => {
-  const { t, i18n: { language } } = useTranslation('common')
+}: {
+  authenticated: boolean,
+  theme: string,
+  // themeType: string,
+  user: IUser,
+}): JSX.Element => {
+  const { t, i18n: { language } }: {
+    t: (key: string, options?: { [key: string]: string | number }) => string,
+    i18n: { language: string },
+  } = useTranslation('common')
   const dispatch = useDispatch()
   const buttonRef = useRef()
 
@@ -90,7 +99,7 @@ const Header = ({
     dispatch(UIActions.setTheme(theme === 'dark' ? 'light' : 'dark'))
   }
 
-  const onLanguageChange = (id) => {
+  const onLanguageChange = (id: string) => {
     i18next.changeLanguage(id)
   }
 
@@ -205,7 +214,7 @@ const Header = ({
                     {languages[language]}
                   </>
                 )}
-                labelExtractor={(lng) => (
+                labelExtractor={(lng: string) => (
                   <div className='flex'>
                     <div className='pt-1'>
                       <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
