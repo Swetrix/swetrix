@@ -1,6 +1,7 @@
 import React, { memo, useState } from 'react'
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { useAppDispatch, StateType } from 'redux/store'
 import { useTranslation } from 'react-i18next'
 
 import Modal from 'ui/Modal'
@@ -9,8 +10,8 @@ import { SHOW_BANNER_AT_PERC } from 'redux/constants'
 
 const EventsRunningOutBanner = () => {
   const { t } = useTranslation('common')
-  const dispatch = useDispatch()
-  const showNoEventsLeftBanner = useSelector(state => state.ui.misc.showNoEventsLeftBanner)
+  const dispatch = useAppDispatch()
+  const showNoEventsLeftBanner = useSelector((state: StateType) => state.ui.misc.showNoEventsLeftBanner)
   const [showModeInfoModal, setShowModeInfoModal] = useState(false)
 
   const closeHandler = () => {
