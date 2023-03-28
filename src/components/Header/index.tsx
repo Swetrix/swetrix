@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react/no-unstable-nested-components */
 import React, {
-  memo, Fragment, useRef, useMemo,
+  memo, Fragment, useRef, useMemo, MutableRefObject,
 } from 'react'
 import PropTypes from 'prop-types'
 import { Link, NavLink } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
-import { useDispatch } from 'react-redux'
+import { useAppDispatch } from 'redux/store'
 import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
@@ -54,8 +54,9 @@ const Header = ({
     t: (key: string, options?: { [key: string]: string | number }) => string,
     i18n: { language: string },
   } = useTranslation('common')
-  const dispatch = useDispatch()
-  const buttonRef = useRef()
+  const dispatch = useAppDispatch()
+  // @ts-ignore
+  const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
 
   const [rawStatus, status] = useMemo(() => {
     const { trialEndDate } = (user || {})
