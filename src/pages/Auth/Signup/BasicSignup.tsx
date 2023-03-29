@@ -1,6 +1,5 @@
 import React, { memo, useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
@@ -15,12 +14,24 @@ import {
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
+import { useAppDispatch } from 'redux/store'
 import _omit from 'lodash/omit'
 
-const BasicSignup = () => {
-  const { t } = useTranslation('common')
-  const dispatch = useDispatch()
-  const [form, setForm] = useState({
+const BasicSignup = (): JSX.Element => {
+  const { t }: {
+    t: (key: string, optinions?: {
+      [key: string]: string | number,
+    }) => string,
+  } = useTranslation('common')
+  const dispatch = useAppDispatch()
+  const [form, setForm] = useState<{
+    email: string,
+    password: string,
+    repeat: string,
+    tos: boolean,
+    dontRemember: boolean,
+    checkIfLeaked: boolean,
+  }>({
     email: '',
     password: '',
     repeat: '',
@@ -28,15 +39,27 @@ const BasicSignup = () => {
     dontRemember: false,
     checkIfLeaked: true,
   })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    email?: string,
+    password?: string,
+    repeat?: string,
+    tos?: string,
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: {
+    email: string,
+    password: string,
+    repeat: string,
+    tos: boolean,
+    dontRemember: boolean,
+    checkIfLeaked: boolean,
+  }) => {
     if (!isLoading) {
       setIsLoading(true)
-      dispatch(authActions.signupAsync(_omit(data, 'tos'), t, (result) => {
+      dispatch(sagaActions.signupAsync(_omit(data, 'tos'), t, (result) => {
         if (result) {
           trackCustom('SIGNUP_BASIC')
         } else {
@@ -47,7 +70,11 @@ const BasicSignup = () => {
   }
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors = {} as {
+      email?: string,
+      password?: string,
+      repeat?: string,
+    }
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -75,7 +102,7 @@ const BasicSignup = () => {
     validate()
   }, [form]) // eslint-disable-line
 
-  const handleInput = (event) => {
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
@@ -85,7 +112,7 @@ const BasicSignup = () => {
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
@@ -138,6 +165,7 @@ const BasicSignup = () => {
           className='ml-2'
           text={(
             <Trans
+              // @ts-ignore
               t={t}
               i18nKey='auth.common.checkLeakedPasswordDesc'
               components={{

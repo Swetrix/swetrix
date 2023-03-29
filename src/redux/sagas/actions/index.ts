@@ -44,7 +44,7 @@ const loginAsync = (credentials: {
 const signupAsync = (data: {
     email: string,
     password: string,
-}, t?: (string: string) => {}, callback = () => { }) => ({
+}, t?: (string: string) => {}, callback = (res: any) => { }) => ({
   type: types.SIGNUP_ASYNC,
   payload: {
     data, callback, t,

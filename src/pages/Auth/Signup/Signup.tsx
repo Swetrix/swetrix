@@ -20,9 +20,30 @@ import { HAVE_I_BEEN_PWNED_URL, TRIAL_DAYS } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
 import _omit from 'lodash/omit'
 
-const Signup = ({ signup }) => {
-  const { t } = useTranslation('common')
-  const [form, setForm] = useState({
+const Signup = ({ signup }: {
+  signup: (data: {
+    email: string,
+    password: string,
+    repeat: string,
+    dontRemember: boolean,
+    checkIfLeaked: boolean,
+  }, t: (key: string, optinions?: {
+    [key: string]: string | number,
+  }) => string, callback: (res: any) => void) => void,
+}): JSX.Element => {
+  const { t }: {
+    t: (key: string, optinions?: {
+      [key: string]: string | number,
+    }) => string,
+  } = useTranslation('common')
+  const [form, setForm] = useState<{
+    email: string,
+    password: string,
+    repeat: string,
+    tos: boolean,
+    dontRemember: boolean,
+    checkIfLeaked: boolean,
+  }>({
     email: '',
     password: '',
     repeat: '',
@@ -30,13 +51,23 @@ const Signup = ({ signup }) => {
     dontRemember: false,
     checkIfLeaked: true,
   })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    email?: string,
+    password?: string,
+    repeat?: string,
+    tos?: string,
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors = {} as {
+      email?: string,
+      password?: string,
+      repeat?: string,
+      tos?: string,
+    }
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -68,7 +99,14 @@ const Signup = ({ signup }) => {
     validate()
   }, [form]) // eslint-disable-line
 
-  const onSubmit = data => {
+  const onSubmit = (data: {
+    email: string,
+    password: string,
+    repeat: string,
+    tos: boolean,
+    dontRemember: boolean,
+    checkIfLeaked: boolean,
+  }) => {
     if (!isLoading) {
       setIsLoading(true)
       signup(_omit(data, 'tos'), t, (result) => {
@@ -81,7 +119,7 @@ const Signup = ({ signup }) => {
     }
   }
 
-  const handleInput = event => {
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
@@ -91,7 +129,7 @@ const Signup = ({ signup }) => {
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
@@ -156,6 +194,7 @@ const Signup = ({ signup }) => {
             label={(
               <span>
                 <Trans
+                  // @ts-ignore
                   t={t}
                   i18nKey='auth.signup.tos'
                   components={{
@@ -180,6 +219,7 @@ const Signup = ({ signup }) => {
               className='ml-2'
               text={(
                 <Trans
+                  // @ts-ignore
                   t={t}
                   i18nKey='auth.common.checkLeakedPasswordDesc'
                   components={{
