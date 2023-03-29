@@ -5,7 +5,9 @@ import _map from 'lodash/map'
 import { CONTACT_EMAIL, GITHUB_URL } from 'redux/constants'
 import Title from 'components/Title'
 
-const socialIcons = {
+const socialIcons: {
+  [key: string]: JSX.Element
+} = {
   LinkedIn: (
     <img className='h-6 w-6 opacity-75 hover:opacity-90 bg-white rounded' aria-hidden='true' src='/assets/linkedin.svg' alt='LinkedIn' />
   ),
@@ -31,7 +33,15 @@ const socialIcons = {
 
 const Teammate = ({
   photo, name, role, socials, desc,
-}) => (
+}: {
+  photo: string
+  name: string
+  role: string
+  socials: {
+    [key: string]: string
+  }
+  desc: string
+}): JSX.Element => (
   <div className='flex flex-col lg:flex-row mt-6'>
     <img alt={name} src={photo} className='rounded-xl shadow-lg w-80' />
     <div className='ml-0 lg:ml-2'>
@@ -56,7 +66,15 @@ const Teammate = ({
   </div>
 )
 
-const team = [
+const team: {
+  name: string
+  role: string
+  photo: string
+  desc: string
+  socials: {
+    [key: string]: string
+  }
+}[] = [
   {
     name: '🇺🇦 Andrii Romasiun',
     role: 'Founder; Product Developer.',
@@ -82,7 +100,7 @@ const team = [
     name: '🇺🇦 Maxim Mrug',
     role: 'Co-Founder; Frontend Engineer.',
     photo: '/assets/maxim.jpg',
-    desc: 'A great frontend developer.\nKnows JavaScript like his native language.',
+    desc: 'A great frontend developer.\nKnows JavaScript and TypeScript like his native language.',
     socials: {
       LinkedIn: 'https://www.linkedin.com/in/maksim-mrug-047b52235/',
       Github: 'https://github.com/kruzhambus',
@@ -108,7 +126,7 @@ const team = [
   },
 ]
 
-const About = () => (
+const About = (): JSX.Element => (
   <Title title='About us'>
     <div className='bg-gray-50 dark:bg-gray-800 min-h-min-footer'>
       <div className='max-w-prose md:max-w-none md:w-8/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
