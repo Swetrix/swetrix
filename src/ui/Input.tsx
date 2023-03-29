@@ -16,7 +16,7 @@ const Input = ({
   name?: string,
   className?: string,
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  error?: string | null,
+  error?: string | null | boolean,
   value?: string | number,
   disabled?: boolean,
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void,

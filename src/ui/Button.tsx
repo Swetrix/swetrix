@@ -11,7 +11,7 @@ const Button = ({
   text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading, semiSmall, semiDanger, noBorder, focus,
 }: {
   text?: string,
-  children?: JSX.Element,
+  children?: JSX.Element | string,
   primary?: boolean,
   secondary?: boolean,
   danger?: boolean,

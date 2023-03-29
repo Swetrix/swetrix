@@ -13,23 +13,41 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
 
+interface FormSubmitData {
+  password: string,
+  repeat: string,
+}
+
 const CreateNewPassword = ({
   createNewPasswordFailed, newPassword,
-}) => {
-  const { t } = useTranslation('common')
+}: {
+  createNewPasswordFailed: (e: string) => void,
+  newPassword: (message: string) => void,
+}): JSX.Element => {
+  const { t }: {
+    t: (key: string, options?: { [key: string]: string | number }) => string,
+  } = useTranslation('common')
   const history = useHistory()
-  const { id } = useParams()
-  const [form, setForm] = useState({
+  const { id }: {
+    id: string,
+  } = useParams()
+  const [form, setForm] = useState<FormSubmitData>({
     password: '',
     repeat: '',
   })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    password?: string,
+    repeat?: string,
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors = {} as {
+      password?: string,
+      repeat?: string,
+    }
 
     if (!isValidPassword(form.password)) {
       allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
@@ -53,7 +71,7 @@ const CreateNewPassword = ({
     validate()
   }, [form]) // eslint-disable-line
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: FormSubmitData) => {
     if (!isLoading) {
       setIsLoading(true)
       try {
@@ -62,7 +80,7 @@ const CreateNewPassword = ({
 
         newPassword(t('auth.recovery.updated'))
         history.push(routes.signin)
-      } catch (e) {
+      } catch (e: any) {
         createNewPasswordFailed(e.toString())
       } finally {
         setIsLoading(false)
@@ -70,7 +88,9 @@ const CreateNewPassword = ({
     }
   }
 
-  const handleInput = ({ target }) => {
+  const handleInput = ({ target }: {
+    target: HTMLInputElement,
+  }) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
 
     setForm(oldForm => ({
@@ -79,7 +99,7 @@ const CreateNewPassword = ({
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
