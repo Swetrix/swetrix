@@ -159,7 +159,9 @@ export const changeUserDetails = (data: IUser) =>
       throw new Error(errorsArray)
     })
 
-export const forgotPassword = (email: string) =>
+export const forgotPassword = (email: {
+  email: string
+}) =>
   api
     .post('v1/auth/reset-password', email)
     .then((response) => response.data)

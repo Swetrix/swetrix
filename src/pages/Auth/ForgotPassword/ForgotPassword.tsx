@@ -14,19 +14,30 @@ import { isValidEmail } from 'utils/validator'
 
 const ForgotPassword = ({
   createNewPasswordFailed, newPassword,
-}) => {
-  const { t } = useTranslation('common')
+}: {
+  createNewPasswordFailed: (e: string) => void,
+  newPassword: (message: string) => void,
+}): JSX.Element => {
+  const { t }: {
+    t: (key: string) => string,
+  } = useTranslation('common')
   const history = useHistory()
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    email: string,
+  }>({
     email: '',
   })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    email?: string,
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors = {} as {
+      email?: string,
+    }
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -42,7 +53,9 @@ const ForgotPassword = ({
     validate()
   }, [form]) // eslint-disable-line
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: {
+    email: string,
+  }) => {
     if (!isLoading) {
       setIsLoading(true)
 
@@ -51,7 +64,7 @@ const ForgotPassword = ({
 
         newPassword(t('auth.forgot.sent'))
         history.push(routes.main)
-      } catch (e) {
+      } catch (e: any) {
         createNewPasswordFailed(e.toString())
       } finally {
         setIsLoading(false)
@@ -59,7 +72,9 @@ const ForgotPassword = ({
     }
   }
 
-  const handleInput = ({ target }) => {
+  const handleInput = ({ target }: {
+    target: HTMLInputElement,
+  }) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
 
     setForm(oldForm => ({
@@ -68,7 +83,7 @@ const ForgotPassword = ({
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
