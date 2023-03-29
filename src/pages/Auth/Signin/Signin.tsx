@@ -16,27 +16,50 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 import { isSelfhosted } from 'redux/constants'
+import { IUser } from 'redux/models/IUser'
 import { submit2FA } from 'api'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
 
-const Signin = ({ login, loginSuccess, loginFailed }) => {
-  const { t } = useTranslation('common')
-  const [form, setForm] = useState({
+const Signin = ({ login, loginSuccess, loginFailed }: {
+  login: (data: {
+    email: string,
+    password: string,
+    dontRemember: boolean
+  }, callback: (result: boolean, twoFARequired: boolean) => void) => void,
+  loginSuccess: (user: IUser) => void,
+  loginFailed: (error: string) => void,
+}): JSX.Element => {
+  const { t }: {
+    t: (key: string, optinions?: {
+      [key: string]: string | number,
+    }) => string,
+  } = useTranslation('common')
+  const [form, setForm] = useState<{
+    email: string,
+    password: string,
+    dontRemember: boolean,
+  }>({
     email: '',
     password: '',
     dontRemember: false,
   })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isTwoFARequired, setIsTwoFARequired] = useState(false)
-  const [twoFACode, setTwoFACode] = useState('')
-  const [twoFACodeError, setTwoFACodeError] = useState(null)
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    email?: string,
+    password?: string,
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isTwoFARequired, setIsTwoFARequired] = useState<boolean>(false)
+  const [twoFACode, setTwoFACode] = useState<string>('')
+  const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors = {} as {
+      email?: string,
+      password?: string,
+    }
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -56,13 +79,17 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
     validate()
   }, [form]) // eslint-disable-line
 
-  const handle2FAInput = event => {
+  const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target: { value } } = event
     setTwoFACode(value)
     setTwoFACodeError(null)
   }
 
-  const onSubmit = data => {
+  const onSubmit = (data: {
+    email: string,
+    password: string,
+    dontRemember: boolean
+  }) => {
     if (!isLoading) {
       setIsLoading(true)
       login(data, (result, twoFARequired) => {
@@ -74,7 +101,7 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
     }
   }
 
-  const _submit2FA = async (e) => {
+  const _submit2FA = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -99,7 +126,9 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
     }
   }
 
-  const handleInput = ({ target }) => {
+  const handleInput = ({ target }: {
+    target: HTMLInputElement,
+  }) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
 
     setForm(oldForm => ({
@@ -108,7 +137,7 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
@@ -143,6 +172,7 @@ const Signin = ({ login, loginSuccess, loginFailed }) => {
               <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
                 {!isSelfhosted && (
                   <Trans
+                    // @ts-ignore
                     t={t}
                     i18nKey='auth.signin.2faUnavailable'
                     components={{
