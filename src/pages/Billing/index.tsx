@@ -11,22 +11,33 @@ import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import Modal from 'ui/Modal'
+import { IUser } from 'redux/models/IUser'
+import { StateType } from 'redux/store/index'
 import Pricing from '../MainPage/Pricing'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
 
-const Billing = () => {
-  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
-  const { user } = useSelector(state => state.auth)
-  const { theme } = useSelector(state => state.ui.theme)
-  const { t, i18n: { language } } = useTranslation('common')
+const Billing = (): JSX.Element => {
+  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
+  const { user }: {
+    user: IUser
+  } = useSelector((state: StateType) => state.auth)
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { t, i18n: { language } }: {
+    t: (key: string, optinions?: {
+      [key: string]: string | number,
+    }) => string,
+    i18n: {
+      language: string,
+    },
+  } = useTranslation('common')
   const {
     nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat, cancellationEffectiveDate, subCancelURL,
   } = user
 
-  const isTrial = planCode === 'trial'
-  const isNoSub = planCode === 'none'
+  const isTrial: boolean = planCode === 'trial'
+  const isNoSub: boolean = planCode === 'none'
 
   const isTrialEnded = useMemo(() => {
     if (!trialEndDate) {
@@ -69,11 +80,13 @@ const Billing = () => {
   }, [language, trialEndDate, isTrial, timeFormat, isTrialEnded, t])
 
   const onSubscriptionCancel = () => {
+    // @ts-ignore
     if (!window.Paddle) {
-      window.location.replace(subCancelURL)
+      if (subCancelURL) window.location.replace(subCancelURL)
       return
     }
 
+    // @ts-ignore
     window.Paddle.Checkout.open({
       override: subCancelURL,
       method: 'inline',
@@ -84,16 +97,19 @@ const Billing = () => {
       displayModeTheme: theme,
     })
     setTimeout(() => {
+      // @ts-ignore
       document.querySelector('#checkout-container').scrollIntoView()
     }, 500)
   }
 
   const onUpdatePaymentDetails = () => {
+    // @ts-ignore
     if (!window.Paddle) {
-      window.location.replace(subUpdateURL)
+      if (subUpdateURL) window.location.replace(subUpdateURL)
       return
     }
 
+    // @ts-ignore
     window.Paddle.Checkout.open({
       override: subUpdateURL,
       method: 'inline',
@@ -104,6 +120,7 @@ const Billing = () => {
       displayModeTheme: theme,
     })
     setTimeout(() => {
+      // @ts-ignore
       document.querySelector('#checkout-container').scrollIntoView()
     }, 500)
   }
@@ -176,9 +193,11 @@ const Billing = () => {
           <Pricing t={t} language={language} />
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
             <Trans
+              // @ts-ignore
               t={t}
               i18nKey='billing.contact'
               values={{ email: CONTACT_EMAIL }}
+              // @ts-ignore
               components={{
                 mail: <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
                 amount: 5,
@@ -201,6 +220,7 @@ const Billing = () => {
           type='error'
           message={(
             <Trans
+              // @ts-ignore
               t={t}
               i18nKey='pricing.cancelDesc'
               values={{
