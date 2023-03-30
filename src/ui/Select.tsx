@@ -8,7 +8,7 @@ import _map from 'lodash/map'
 const Select = ({
   title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect,
 }: {
-  title: string,
+  title?: string,
   label: string,
   className?: string,
   items: any[],

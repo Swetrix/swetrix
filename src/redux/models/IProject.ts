@@ -29,17 +29,17 @@ export interface IShareOwnerProject {
 export interface IProject {
     id: string
     name: string
-    origins: string[]
-    ipBlacklist: string[] | null
-    active: boolean
-    public: boolean
-    isAnalyticsProject: boolean
-    isCaptchaProject: boolean
-    isCaptchaEnabled: boolean
-    captchaSecretKey: string | null
-    created: string
-    share: IShareOwnerProject[]
-    isOwner: boolean
+    origins?: string[] | string | null
+    ipBlacklist?: string[] | null | string
+    active?: boolean
+    public?: boolean
+    isAnalyticsProject?: boolean
+    isCaptchaProject?: boolean
+    isCaptchaEnabled?: boolean
+    captchaSecretKey?: string | null
+    created?: string
+    share?: IShareOwnerProject[]
+    isOwner?: boolean
     overall?: IOverall
     live?: number
     uiHidden?: boolean
@@ -48,16 +48,17 @@ export interface IProject {
 export interface ICaptchaProject {
     id: string
     name: string
-    origins: string[]
-    ipBlacklist: string[] | null
-    active: boolean
-    public: boolean
-    isAnalyticsProject: boolean
-    isCaptchaProject: boolean
-    isCaptchaEnabled: boolean
-    captchaSecretKey: string | null
-    created: string
-    isOwner: boolean
-    overall: IOverall
-    live: number
+    origins?: string[] | string | null
+    ipBlacklist?: string[] | null | string
+    active?: boolean
+    public?: boolean
+    isAnalyticsProject?: boolean
+    isCaptchaProject?: boolean
+    isCaptchaEnabled?: boolean
+    captchaSecretKey?: string | null
+    created?: string
+    isOwner?: boolean
+    overall?: IOverall
+    live?: number
+    uiHidden?: boolean
 }

@@ -16,6 +16,7 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
+import _omit from 'lodash/omit'
 import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 
@@ -33,6 +34,8 @@ import Select from 'ui/Select'
 import { nanoid } from 'utils/random'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
+import { ICaptchaProject, IProject } from 'redux/models/IProject'
+import { IUser } from 'redux/models/IUser'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -49,37 +52,72 @@ const tabForCreateCaptcha = [{
 const tabForNew = 'new'
 const tabForInheritance = 'inheritance'
 
+// add to interface IProject new fields isCaptcha
+interface IForm extends ICaptchaProject {
+  isCaptcha?: boolean
+  public?: boolean
+  id: string
+  name: string
+  origins?: string
+  ipBlacklist?: string
+}
+
 const CaptchaSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user,
   deleteProjectCache, analyticsProjects,
-}) => {
-  const { t } = useTranslation('common')
+}: {
+  updateProjectFailed: (error: string) => void,
+  createNewProjectFailed: (error: string) => void,
+  newProject: (message: string) => void,
+  projectDeleted: (message: string) => void,
+  deleteProjectFailed: (error: string) => void,
+  loadProjects: () => void,
+  isLoading: boolean,
+  projects: ICaptchaProject[],
+  showError: (error: string) => void,
+  removeProject: (pid: string) => void,
+  user: IUser,
+  deleteProjectCache: (pid: string) => void,
+  analyticsProjects: IProject[],
+}): JSX.Element => {
+  const { t }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | boolean | undefined
+    }) => string,
+  } = useTranslation('common')
   const { pathname } = useLocation()
-  const { id } = useParams()
-  const project = useMemo(() => _find([...projects, ...analyticsProjects], p => p.id === id) || {}, [projects, analyticsProjects, id])
-  const isSettings = !_isEmpty(id) && (_replace(routes.captcha_settings, ':id', id) === pathname)
+  const { id }: {
+    id: string,
+  } = useParams()
+  const project: ICaptchaProject | IProject = useMemo(() => _find([...projects, ...analyticsProjects], p => p.id === id) || {} as IProject | ICaptchaProject, [projects, analyticsProjects, id])
+  const isSettings: boolean = !_isEmpty(id) && (_replace(routes.captcha_settings, ':id', id) === pathname)
   const history = useHistory()
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<IForm>({
     name: '',
     id: id || nanoid(),
     public: false,
     isCaptcha: true,
   })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [showDelete, setShowDelete] = useState(false)
-  const [showReset, setShowReset] = useState(false)
-  const [projectDeleting, setProjectDeleting] = useState(false)
-  const [projectResetting, setProjectResetting] = useState(false)
-  const [projectSaving, setProjectSaving] = useState(false)
-  const [tab, setTab] = useState(tabForCreateCaptcha[0].name)
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    name?: string,
+    id?: string,
+    origins?: string,
+    ipBlacklist?: string
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [showDelete, setShowDelete] = useState<boolean>(false)
+  const [showReset, setShowReset] = useState<boolean>(false)
+  const [projectDeleting, setProjectDeleting] = useState<boolean>(false)
+  const [projectResetting, setProjectResetting] = useState<boolean>(false)
+  const [projectSaving, setProjectSaving] = useState<boolean>(false)
+  const [tab, setTab] = useState<string>(tabForCreateCaptcha[0].name)
   const [reuseProjectId, setReuseProjectId] = useState()
   const [copied, setCopied] = useState(false)
-  const [captchaSecretKey, setCaptchaSecretKey] = useState(project.captchaSecretKey)
+  const [captchaSecretKey, setCaptchaSecretKey] = useState(project?.captchaSecretKey)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
-  const copyTimerRef = useRef(null)
+  const copyTimerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
@@ -101,13 +139,13 @@ const CaptchaSettings = ({
     }
   }, [user, project, isLoading, isSettings, history, showError, projectDeleting, t])
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
       setProjectSaving(true)
       try {
-        const formalisedData = {
+        const formalisedData: IProject = {
           ...data,
-          origins: _isEmpty(data.origins) ? null : _map(_split(data.origins, ','), (origin) => {
+          origins: _isEmpty(data.origins) ? null : _map(_split(data.origins as string, ','), (origin) => {
             try {
               if (_includes(origin, 'localhost')) {
                 return origin
@@ -117,7 +155,7 @@ const CaptchaSettings = ({
               return origin
             }
           }),
-          ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
+          ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist as string, ','),
         }
         if (isSettings) {
           await updateProject(id, formalisedData)
@@ -130,7 +168,10 @@ const CaptchaSettings = ({
             }
             await updateProject(formalisedData.id, formalisedData)
           } else {
-            await createProject(formalisedData)
+            await createProject({
+              id: formalisedData.id,
+              name: formalisedData.name,
+            })
           }
           trackCustom('PROJECT_CREATED')
           newProject(t('project.settings.created'))
@@ -140,9 +181,9 @@ const CaptchaSettings = ({
         history.push(routes.dashboard)
       } catch (e) {
         if (isSettings) {
-          updateProjectFailed(e)
+          updateProjectFailed(e as string)
         } else {
-          createNewProjectFailed(e)
+          createNewProjectFailed(e as string)
         }
       } finally {
         setProjectSaving(false)
@@ -160,7 +201,7 @@ const CaptchaSettings = ({
         projectDeleted(t('project.settings.deleted'))
         history.push(routes.dashboard)
       } catch (e) {
-        deleteProjectFailed(e)
+        deleteProjectFailed(e as string)
       } finally {
         setProjectDeleting(false)
       }
@@ -177,7 +218,7 @@ const CaptchaSettings = ({
         projectDeleted(t('project.settings.resetted'))
         history.push(routes.dashboard)
       } catch (e) {
-        deleteProjectFailed(e)
+        deleteProjectFailed(e as string)
       } finally {
         setProjectResetting(false)
       }
@@ -185,7 +226,11 @@ const CaptchaSettings = ({
   }
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors = {} as {
+      name?: string,
+      origins?: string,
+      ipBlacklist?: string
+    }
 
     if (_isEmpty(form.name) && tabForInheritance !== tab) {
       allErrors.name = t('project.settings.noNameError')
@@ -212,7 +257,7 @@ const CaptchaSettings = ({
     validate()
   }, [form]) // eslint-disable-line
 
-  const handleInput = event => {
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
@@ -222,7 +267,7 @@ const CaptchaSettings = ({
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
@@ -234,7 +279,7 @@ const CaptchaSettings = ({
         showError('Select project or select corect project')
       }
 
-      onSubmit({ ...data, isCaptcha: true })
+      onSubmit({ ...data as IForm, isCaptcha: true })
       return
     }
 
@@ -254,14 +299,15 @@ const CaptchaSettings = ({
       const res = await reGenerateCaptchaSecretKey(id)
       setCaptchaSecretKey(res)
     } catch (e) {
-      showError(e)
+      showError(e as string)
     }
   }
 
-  const setToClipboard = (value) => {
+  const setToClipboard = (value: string) => {
     if (!copied) {
       navigator.clipboard.writeText(value)
       setCopied(true)
+      // @ts-ignore
       copyTimerRef.current = setTimeout(() => {
         setCopied(false)
       }, 2000)
@@ -394,12 +440,14 @@ const CaptchaSettings = ({
                             className='opacity-70 hover:opacity-100'
                             noBorder
                           >
-                            <ClipboardDocumentIcon className='w-6 h-6' />
-                            {copied && (
+                            <>
+                              <ClipboardDocumentIcon className='w-6 h-6' />
+                              {copied && (
                               <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
                                 {t('common.copied')}
                               </div>
-                            )}
+                              )}
+                            </>
                           </Button>
                         </div>
                       </div>
@@ -448,18 +496,20 @@ const CaptchaSettings = ({
                     {t('common.save')}
                   </Button>
                 </div>
-                {!project.shared && (
-                  <div className='flex flex-wrap items-center justify-end'>
-                    <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
+                <div className='flex flex-wrap items-center justify-end'>
+                  <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
+                    <>
                       <TrashIcon className='w-5 h-5 mr-1' />
                       {t('project.settings.reset')}
-                    </Button>
-                    <Button className='ml-2' onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                    </>
+                  </Button>
+                  <Button className='ml-2' onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                    <>
                       <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
                       {t('project.settings.delete')}
-                    </Button>
-                  </div>
-                )}
+                    </>
+                  </Button>
+                </div>
               </div>
               <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
             </>
