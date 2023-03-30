@@ -595,7 +595,7 @@ export const setTheme = (theme: string) =>
         : error.response.data.message
     })
 
-interface IGetLiveVisitorsInfo {
+export interface IGetLiveVisitorsInfo {
   dv: string
   br: string
   os: string

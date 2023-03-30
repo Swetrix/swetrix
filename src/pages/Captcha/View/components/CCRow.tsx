@@ -10,7 +10,10 @@ import PropTypes from 'prop-types'
  * @param {string} language - Language to use for country name.
  * @returns {JSX.Element}
  */
-const CCRow = ({ rowName, language }) => (
+const CCRow = ({ rowName, language }: {
+  rowName: string
+  language: string
+}): JSX.Element => (
   <>
     <Flag
       className='rounded-sm'

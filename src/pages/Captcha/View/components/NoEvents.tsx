@@ -18,8 +18,17 @@ import { DOCS_CAPTCHA_URL } from 'redux/constants'
  */
 const NoEvents = ({
   filters, resetFilters,
-}) => {
-  const { t } = useTranslation('common')
+}: {
+  filters: {
+    column: string
+    filter: string
+    isExclusive: boolean
+  }[]
+  resetFilters: () => void
+}): JSX.Element => {
+  const { t }: {
+    t: (key: string) => string
+  } = useTranslation('common')
 
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
@@ -29,6 +38,7 @@ const NoEvents = ({
         </h2>
         <h2 className='text-2xl mb-8 text-center leading-snug'>
           <Trans
+            // @ts-ignore
             t={t}
             i18nKey='project.noCaptchaEv'
             components={{
