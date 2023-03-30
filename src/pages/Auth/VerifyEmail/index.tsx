@@ -3,30 +3,38 @@ import { useDispatch } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
-import _split from 'lodash/split'
 import _isString from 'lodash/isString'
 
 import Title from 'components/Title'
-import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 import Loader from 'ui/Loader'
 import routes from 'routes'
 
-const VerifyEmail = () => {
-  const { t } = useTranslation('common')
+const VerifyEmail = (): JSX.Element => {
+  const { t }: {
+    t: (key: string, optinions?: {
+      [key: string]: string | number,
+    }) => string,
+  } = useTranslation('common')
   const dispatch = useDispatch()
-  const { id } = useParams()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const { id }: {
+    id: string,
+  } = useParams()
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string>('')
 
   useEffect(() => {
     setLoading(true)
-    const path = _split(window.location.pathname, '/')[1]
 
     dispatch(
-      authActions.emailVerifyAsync(
-        { path, id },
-        () => setLoading(false),
-        (verifyError) => {
+      sagaActions.emailVerifyAsync(
+        {
+          id,
+        },
+        () => {
+          setLoading(false)
+        },
+        (verifyError: string | { message: string }) => {
           setError(_isString(verifyError) ? verifyError : verifyError.message)
           setLoading(false)
         },

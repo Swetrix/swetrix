@@ -53,7 +53,7 @@ const signupAsync = (data: {
 
 const emailVerifyAsync = (data: {
     id: string,
-}, successfulCallback?: () => {}, errorCallback?: () => {}) => ({
+}, successfulCallback?: () => void, errorCallback?: (e: string) => void) => ({
   type: types.EMAIL_VERIFY_ASYNC,
   payload: { data, successfulCallback, errorCallback },
 })
