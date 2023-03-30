@@ -81,11 +81,8 @@ import {
   UpdateSubscriberParamsDto,
   UpdateSubscriberBodyDto,
   RemoveSubscriberParamsDto,
-  TransferProjectParamsDto,
   TransferProjectBodyDto,
-  ConfirmTransferProjectParamsDto,
   ConfirmTransferProjectQueriesDto,
-  CancelTransferProjectParamsDto,
   CancelTransferProjectQueriesDto,
 } from './dto'
 
@@ -1271,16 +1268,15 @@ export class ProjectController {
     )
   }
 
-  @Post(':projectId/transfer')
+  @Post('transfer')
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async transferProject(
-    @Param() params: TransferProjectParamsDto,
     @Body() body: TransferProjectBodyDto,
     @CurrentUserId() userId: string,
     @Headers() headers: { origin: string },
   ) {
     const project = await this.projectService.getOwnProject(
-      params.projectId,
+      body.projectId,
       userId,
     )
 
@@ -1299,7 +1295,7 @@ export class ProjectController {
     }
 
     await this.projectService.transferProject(
-      params.projectId,
+      body.projectId,
       project.name,
       user.id,
       user.email,
@@ -1307,59 +1303,59 @@ export class ProjectController {
     )
   }
 
-  @Get(':projectId/transfer')
+  @Get('transfer')
   async confirmTransferProject(
-    @Param() params: ConfirmTransferProjectParamsDto,
     @Query() queries: ConfirmTransferProjectQueriesDto,
   ) {
-    const project = await this.projectService.getProjectById(params.projectId)
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
     const actionToken = await this.actionTokensService.getActionToken(
       queries.token,
     )
 
     if (
       !actionToken ||
-      actionToken.action !== ActionTokenType.TRANSFER_PROJECT ||
-      actionToken.newValue !== params.projectId
+      actionToken.action !== ActionTokenType.TRANSFER_PROJECT
     ) {
       throw new BadRequestException('Invalid token.')
     }
 
+    const project = await this.projectService.getProjectById(
+      actionToken.newValue,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
     await this.projectService.confirmTransferProject(
-      params.projectId,
+      actionToken.newValue,
       actionToken.user.id,
       project.admin.id,
       actionToken.id,
     )
   }
 
-  @Delete(':projectId/transfer')
+  @Delete('transfer')
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async cancelTransferProject(
-    @Param() params: CancelTransferProjectParamsDto,
     @Query() queries: CancelTransferProjectQueriesDto,
   ) {
-    const project = await this.projectService.getProjectById(params.projectId)
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
     const actionToken = await this.actionTokensService.getActionToken(
       queries.token,
     )
 
     if (
       !actionToken ||
-      actionToken.action !== ActionTokenType.TRANSFER_PROJECT ||
-      actionToken.newValue !== params.projectId
+      actionToken.action !== ActionTokenType.TRANSFER_PROJECT
     ) {
       throw new BadRequestException('Invalid token.')
+    }
+
+    const project = await this.projectService.getProjectById(
+      actionToken.newValue,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
     }
 
     await this.projectService.cancelTransferProject(actionToken.id)

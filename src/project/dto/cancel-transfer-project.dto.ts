@@ -1,9 +1,4 @@
-import { IsUUID, Matches } from 'class-validator'
-
-export class CancelTransferProjectParamsDto {
-  @Matches(/^(?!.*--)[a-zA-Z0-9-]{12}$/)
-  readonly projectId: string
-}
+import { IsUUID } from 'class-validator'
 
 export class CancelTransferProjectQueriesDto {
   @IsUUID('4')
