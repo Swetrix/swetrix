@@ -5,8 +5,10 @@ import { useTranslation } from 'react-i18next'
 import routes from 'routes'
 import Title from 'components/Title'
 
-const NotFound = () => {
-  const { t } = useTranslation('common')
+const NotFound = (): JSX.Element => {
+  const { t }: {
+    t: (key: string) => string
+  } = useTranslation('common')
 
   return (
     <Title title={t('notFoundPage.title')}>
