@@ -16,7 +16,7 @@ const setTheme = (theme: string): string => {
   return theme
 }
 
-const getInitialTheme = (): string => {
+const getInitialTheme = (): 'light' | 'dark' => {
   if (typeof window !== 'undefined' && window.localStorage) {
     const lsTheme: any = window.localStorage.getItem(LS_THEME_SETTING)
     if (_includes(SUPPORTED_THEMES, lsTheme)) {
@@ -36,7 +36,7 @@ const getInitialTheme = (): string => {
 }
 
 interface IInitialState {
-    theme: string
+    theme: 'light' | 'dark'
     type: string
 }
 
@@ -51,7 +51,7 @@ const themeSlice = createSlice({
   name: 'theme',
   initialState: getInitialState(),
   reducers: {
-    setTheme(state, { payload }: PayloadAction<string>) {
+    setTheme(state, { payload }: PayloadAction<'light' | 'dark'>) {
       setTheme(payload)
       state.theme = payload
     },

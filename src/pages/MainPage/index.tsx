@@ -16,6 +16,7 @@ import routes from 'routes'
 import { nFormatterSeparated } from 'utils/generic'
 import Title from 'components/Title'
 import { GITHUB_URL, MARKETPLACE_URL } from 'redux/constants'
+import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
 import NextJS from 'ui/icons/NextJS'
@@ -42,14 +43,18 @@ const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 const COMPETITORS_LIST = ['Google Analytics', 'Fathom', 'Plausible', 'Simple Analytics']
 const SWETRIX_AND_COMPETITORS_LIST = ['Swetrix', ...COMPETITORS_LIST]
 const COMPETITOR_SEQUENCE_DELAY = 5000 // in milliseconds
-const processedList = _reduce(COMPETITORS_LIST, (acc, curr) => {
+const processedList = _reduce(COMPETITORS_LIST, (acc: any[], curr: any) => {
   acc.push(curr)
   acc.push(COMPETITOR_SEQUENCE_DELAY)
   return acc
 }, [])
 
 // The order in the table is defined by the Swetrix object
-const COMPETITOR_FEATURE_TABLE = {
+const COMPETITOR_FEATURE_TABLE: {
+  [key: string]: {
+    [key: string]: boolean | null
+  }
+} = {
   Swetrix: {
     'main.competitiveFeatures.gdpr': true, // GDPR-compatible
     'main.competitiveFeatures.open': true, // Open-source
@@ -112,7 +117,7 @@ const COMPETITOR_FEATURE_TABLE = {
   },
 }
 
-const Lines = () => (
+const Lines = (): JSX.Element => (
   <div className='relative pointer-events-none'>
     {/* 1 */}
     <div className='absolute rotate-12 -right-0 bottom-[4.2rem] xl:bottom-20 h-px w-[400%] bg-gradient-to-l from-slate-400 opacity-20' />
@@ -128,10 +133,17 @@ const Lines = () => (
   </div>
 )
 
-const Main = () => {
-  const { t, i18n: { language } } = useTranslation('common')
-  const { theme } = useSelector(state => state.ui.theme)
-  const { stats, lastBlogPost } = useSelector(state => state.ui.misc)
+const Main = (): JSX.Element => {
+  const { t, i18n: { language } }: {
+    t: (key: string, options?: {
+      [key: string]: any
+    }) => string,
+    i18n: {
+      language: string
+    },
+  } = useTranslation('common')
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
 
   const events = nFormatterSeparated(Number(stats.pageviews), 0)
   const users = nFormatterSeparated(Number(stats.users), 0)
@@ -164,6 +176,7 @@ const Main = () => {
                   <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
                     <h1 className='max-w-2xl text-3xl sm:text-5xl md:text-5xl font-extrabold text-white sm:leading-none lg:text-5xl xl:text-6xl xl:leading-[110%]'>
                       <Trans
+                        // @ts-ignore
                         t={t}
                         i18nKey='main.slogan'
                         components={{
@@ -296,7 +309,10 @@ const Main = () => {
                   <h2 className='font-extrabold mb-6 text-4xl text-gray-800 dark:text-white'>
                     {t('main.privacy.title')}
                   </h2>
-                  {_map(t('main.privacy.list', { returnObjects: true }), (item) => (
+                  {_map(t('main.privacy.list', { returnObjects: true }), (item: {
+                    label: string
+                    desc: string
+                  }) => (
                     <div key={item.label} className='mb-4 flex items-center'>
                       <div className='mr-3'>
                         <CheckCircleIcon className='fill-indigo-500 w-[24px] h-[24px]' />
@@ -333,6 +349,7 @@ const Main = () => {
                       <div className='py-6 bg-gray-50 dark:bg-gray-800  border-t-2 border-gray-200 dark:border-gray-500'>
                         <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
                           <Trans
+                            // @ts-ignore
                             t={t}
                             i18nKey='main.signupTerms'
                             components={{
@@ -371,7 +388,10 @@ const Main = () => {
                 <BackgroundSvg className='absolute right-0 sm:-right-16 top-9 z-10 opacity-30' type='semicircle' />
               </div>
               <div className='mt-[60px] flex items-center max-w-7xl w-full mx-auto flex-wrap justify-center xl:justify-between'>
-                {_map(t('main.features', { returnObjects: true }), (item, index) => (
+                {_map(t('main.features', { returnObjects: true }), (item: {
+                  name: string
+                  desc: string
+                }, index: number) => (
                   <div key={item.name} className='w-[416px] h-64 px-7 py-11 text-center'>
                     <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
                     <div className='mt-2'>
@@ -390,7 +410,7 @@ const Main = () => {
                 {t('main.supports')}
               </h2>
               <div className='mt-20 grid sm:grid-cols-4 md:grid-cols-6 grid-cols-3 gap-x-4 gap-y-10 justify-items-center items-center lg:gap-x-10 lg:gap-y-16 max-w-7xl w-full mx-auto justify-between'>
-                <Telegram theme={theme} className='max-w-[64px] sm:max-w-[150px] max-h-16' />
+                <Telegram className='max-w-[64px] sm:max-w-[150px] max-h-16' />
                 <NuxtJS theme={theme} className='max-w-[106px] sm:max-w-[150px] max-h-12' />
                 <Webflow theme={theme} className='max-w-[106px] sm:max-w-[150px] max-h-12' />
                 <NextJS theme={theme} className='max-w-[78px] sm:max-w-[80px] max-h-12' />
@@ -420,7 +440,10 @@ const Main = () => {
                     {t('main.marketplaceBlock')}
                   </h2>
                   <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-24 justify-between justify-items-center text-white pt-20 pb-36'>
-                    {_map(t('main.mFeatures', { returnObjects: true }), (item, index) => (
+                    {_map(t('main.mFeatures', { returnObjects: true }), (item: {
+                      name: string
+                      desc: string
+                    }, index: number) => (
                       <div key={item.name} className='max-w-[310px] w-full'>
                         <div className='flex items-center'>
                           <span className='text-gray-200 font-bold text-[26px] mr-[18px]'>{1 + index}</span>
@@ -456,6 +479,7 @@ const Main = () => {
                 <section className='relative z-20 px-3'>
                   <h1 className='mt-20 text-center text-3xl sm:text-5xl text-white font-extrabold max-w-prose w-full mx-auto'>
                     <Trans
+                      // @ts-ignore
                       t={t}
                       i18nKey='main.whyUseSwetrix'
                       components={{
@@ -551,7 +575,11 @@ const Main = () => {
                   {t('main.testimonials')}
                 </h2>
                 <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
-                  {_map(t('main.lTestimonials', { returnObjects: true }), (item, index) => (
+                  {_map(t('main.lTestimonials', { returnObjects: true }), (item: {
+                    name: string;
+                    role: string;
+                    desc: string;
+                  }, index: number) => (
                     <div
                       key={item.name}
                       className={cx('max-w-xs w-full dark:bg-gray-800', {
@@ -585,6 +613,7 @@ const Main = () => {
                   <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
                     <h2 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px] text-white mb-3'>
                       <Trans
+                        // @ts-ignore
                         t={t}
                         i18nKey='main.os'
                         components={{
@@ -602,6 +631,7 @@ const Main = () => {
                     </Link>
                   </div>
                   <div className='max-w-md xl:max-w-lg block h-[450px] md:shadow-[8px_8px_10px_3px] md:rounded-md '>
+                    {/* @ts-ignore */}
                     <img className='rounded-xl' style={{ minheight: '600px', minWidth: '880px' }} src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                   </div>
                 </div>
@@ -617,6 +647,7 @@ const Main = () => {
               <div className='max-w-lg w-full lg:ml-5'>
                 <h2 className='text-3xl md:text-4xl text-white font-extrabold'>
                   <Trans
+                    // @ts-ignore
                     t={t}
                     i18nKey='main.opensourceAdv'
                     components={{
@@ -627,7 +658,9 @@ const Main = () => {
                 </h2>
                 <hr className='border-gray-600 border-1 max-w-[346px] my-6' />
                 <div className='max-w-md w-full lg:mb-0 mb-9'>
-                  {_map(t('main.opensource', { returnObjects: true }), (item) => (
+                  {_map(t('main.opensource', { returnObjects: true }), (item: {
+                    desc: string
+                  }) => (
                     <p key={item.desc} className='text-gray-300 text-sm leading-6 flex items-center mb-3'>
                       <span>
                         <CheckCircleIcon className='w-6 h-6 text-indigo-500 mr-4' />
