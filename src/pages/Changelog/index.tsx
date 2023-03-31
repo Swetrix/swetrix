@@ -165,8 +165,10 @@ const changelog = [
   },
 ]
 
-const Changelog = () => {
-  const { t } = useTranslation('common')
+const Changelog = (): JSX.Element => {
+  const { t }: {
+    t: (key: string) => string
+  } = useTranslation('common')
 
   return (
     <Title title={t('titles.changelog')}>
@@ -202,6 +204,7 @@ const Changelog = () => {
                     <div className='relative'>
                       <ul className='list-disc text-gray-900 dark:text-gray-50 relative top-7 lg:top-0 lg:block text-base mt-2 mb-4 prose prose-slate prose-a:relative prose-a:z-10 dark:prose-dark line-clamp-2'>
                         {_map(item.changes, (change) => (
+                          // @ts-ignore
                           <li key={change} className='whitespace-pre-line'>{change}</li>
                         ))}
                       </ul>
