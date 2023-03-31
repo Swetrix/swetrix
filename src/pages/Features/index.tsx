@@ -10,8 +10,12 @@ import {
 } from 'redux/constants'
 import routes from 'routes'
 
-const Features = () => {
-  const { t } = useTranslation('common')
+const Features = (): JSX.Element => {
+  const { t }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | boolean | undefined
+    }) => string
+  } = useTranslation('common')
 
   return (
     <Title title={t('titles.features')}>
@@ -26,6 +30,7 @@ const Features = () => {
           </h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             <Trans
+              // @ts-ignore
               t={t}
               i18nKey='features.feature1Content'
               components={{
@@ -40,6 +45,7 @@ const Features = () => {
           </h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             <Trans
+              // @ts-ignore
               t={t}
               i18nKey='features.feature2Content'
               components={{
@@ -48,8 +54,10 @@ const Features = () => {
               }}
             />
           </p>
-
-          {_map(t('features.list', { returnObjects: true }), (feature) => (
+          {_map(t('features.list', { returnObjects: true }), (feature: {
+            name: string
+            content: string
+          }) => (
             <Fragment key={feature.name}>
               <h3 className='text-2xl font-normal text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
                 {feature.name}
