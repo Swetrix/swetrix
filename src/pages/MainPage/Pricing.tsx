@@ -18,8 +18,12 @@ import { alertsActions } from 'redux/reducers/alerts'
 import { authActions } from 'redux/reducers/auth'
 import { authMe } from 'api'
 import routes from 'routes'
+import { IUser } from 'redux/models/IUser'
+import { AppDispatch, StateType } from 'redux/store'
 
-const getNonStandardTiers = (t) => ({
+const getNonStandardTiers = (t: (key: string, options?: {
+  [key: string]: any
+}) => string) => ({
   free: {
     name: t('pricing.free'),
     planCode: 'free',
@@ -50,7 +54,9 @@ const getNonStandardTiers = (t) => ({
   },
 })
 
-const getTiers = (t) => [
+const getTiers = (t: (key: string, options?: {
+  [key: string]: any
+}) => string) => [
   {
     name: t('pricing.tiers.hobby'),
     planCode: 'hobby',
@@ -126,6 +132,25 @@ const BillingFrequency = {
 const PricingItem = ({
   tier, user, t, authenticated, billingFrequency, onPlanChange, downgradeHandler, downgrade,
   planCodeLoading, planCodeID, userPlancodeID,
+}: {
+  tier: any
+  user: IUser
+  t: (key: string, options?: {
+    [key: string]: any
+  }) => string
+  authenticated: boolean
+  billingFrequency: string
+  onPlanChange: (planCode: {
+    planCode: string,
+    name: string,
+    pid: string,
+    ypid: string,
+  }) => void
+  downgradeHandler: (item: any) => void
+  downgrade: boolean
+  planCodeLoading: boolean | string | null
+  planCodeID: string | number
+  userPlancodeID: string | number
 }) => {
   let action
 
@@ -224,21 +249,35 @@ const PricingItem = ({
   )
 }
 
-const Pricing = ({ t, language }) => {
-  const dispatch = useDispatch()
-  const { authenticated, user } = useSelector(state => state.auth)
-  const { theme } = useSelector(state => state.ui.theme)
-  const { lastEvent } = useSelector(state => state.ui.misc.paddle)
-  const [planCodeLoading, setPlanCodeLoading] = useState(null)
-  const [downgradeTo, setDowngradeTo] = useState(null)
-  const [showDowngradeModal, setShowDowngradeModal] = useState(false)
+const Pricing = ({ t, language }: {
+  t: (key: string) => string,
+  language: string,
+}) => {
+  const dispatch: AppDispatch = useDispatch()
+  const { authenticated, user } = useSelector((state: StateType) => state.auth)
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { lastEvent } = useSelector((state: StateType) => state.ui.misc.paddle)
+  const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
+  const [downgradeTo, setDowngradeTo] = useState<{
+    planCode: string,
+    name: string,
+    pid: string,
+    ypid: string,
+  } | null>(null)
+  const [showDowngradeModal, setShowDowngradeModal] = useState<boolean>(false)
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
   const tiers = getTiers(t)
-  const nonStandardTiers = getNonStandardTiers(t)
+  const nonStandardTiers: {
+    [key: string]: {
+      [key: string]: any,
+    },
+  } = getNonStandardTiers(t)
   const isNonStandardTier = authenticated && !_isEmpty(nonStandardTiers[user.planCode])
 
   useEffect(() => {
-    const lastEventHandler = async (data) => {
+    const lastEventHandler = async (data: {
+      event: string,
+    }) => {
       if (_isNil(data)) {
         return
       }
@@ -255,7 +294,9 @@ const Pricing = ({ t, language }) => {
             dispatch(authActions.logout())
           }
 
-          dispatch(alertsActions.accountUpdated(t('apiNotifications.subscriptionUpdated')))
+          dispatch(alertsActions.accountUpdated({
+            message: t('apiNotifications.subscriptionUpdated'),
+          }))
         }, 3000)
         setPlanCodeLoading(null)
         setDowngradeTo(null)
@@ -268,17 +309,26 @@ const Pricing = ({ t, language }) => {
     lastEventHandler(lastEvent)
   }, [lastEvent, dispatch, t])
 
-  const onPlanChange = (tier) => {
+  const onPlanChange = (tier: {
+    planCode: string,
+    name: string,
+    pid: string,
+    ypid: string,
+  }) => {
     if (planCodeLoading === null && (user.planCode !== tier.planCode || (user.billingFrequency !== billingFrequency && user.planCode !== 'free' && user.planCode !== 'trial'))) {
       setPlanCodeLoading(tier.planCode)
 
+      // @ts-ignore
       if (!window.Paddle) {
-        dispatch(errorsActions.genericError('Payment script has not yet loaded! Please, try again.'))
+        dispatch(errorsActions.genericError({
+          message: 'Payment script has not yet loaded! Please, try again.',
+        }))
         setPlanCodeLoading(null)
         return
       }
 
       if (tier.planCode === 'free') {
+        // @ts-ignore
         window.Paddle.Checkout.open({
           override: user.subCancelURL,
           method: 'inline',
@@ -289,11 +339,13 @@ const Pricing = ({ t, language }) => {
           displayModeTheme: theme,
         })
         setTimeout(() => {
+          // @ts-ignore
           document.querySelector('#checkout-container').scrollIntoView()
         }, 500)
         return
       }
 
+      // @ts-ignore
       window.Paddle.Checkout.open({
         product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
         email: user.email,
@@ -307,7 +359,12 @@ const Pricing = ({ t, language }) => {
     }
   }
 
-  const downgradeHandler = (tier) => {
+  const downgradeHandler = (tier: {
+    planCode: string,
+    name: string,
+    pid: string,
+    ypid: string,
+  }) => {
     if (planCodeLoading === null && user.planCode !== tier.planCode) {
       setDowngradeTo(tier)
       setShowDowngradeModal(true)
@@ -403,7 +460,9 @@ const Pricing = ({ t, language }) => {
         }}
         onSubmit={() => {
           setShowDowngradeModal(false)
-          onPlanChange(downgradeTo)
+          if (downgradeTo) {
+            onPlanChange(downgradeTo)
+          }
         }}
         submitText={t('common.yes')}
         closeText={t('common.no')}
@@ -411,6 +470,7 @@ const Pricing = ({ t, language }) => {
         type='warning'
         message={(
           <Trans
+            // @ts-ignore
             t={t}
             i18nKey='pricing.downgradeDesc'
             values={{
