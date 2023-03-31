@@ -7,8 +7,10 @@ import {
 } from 'redux/constants'
 import Title from 'components/Title'
 
-const Contact = () => {
-  const { t } = useTranslation('common')
+const Contact = (): JSX.Element => {
+  const { t }: {
+    t: (key: string) => string
+  } = useTranslation('common')
 
   return (
     <Title title={t('titles.contact')}>
@@ -23,6 +25,7 @@ const Contact = () => {
             <ol className='list-decimal ml-5 sm:ml-10'>
               <li className='mt-1'>
                 <Trans
+                  // @ts-ignore
                   t={t}
                   i18nKey='contact.ways.email'
                   values={{ email: CONTACT_EMAIL }}
@@ -33,6 +36,7 @@ const Contact = () => {
               </li>
               <li className='mt-1'>
                 <Trans
+                  // @ts-ignore
                   t={t}
                   i18nKey='contact.ways.twitter'
                   values={{ twitter: TWITTER_USERNAME }}
@@ -43,6 +47,7 @@ const Contact = () => {
               </li>
               <li className='mt-1'>
                 <Trans
+                  // @ts-ignore
                   t={t}
                   i18nKey='contact.ways.discord'
                   components={{
