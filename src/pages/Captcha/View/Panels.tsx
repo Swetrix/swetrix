@@ -33,14 +33,23 @@ const ENTRIES_PER_PANEL = 5
 
 const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv']
 
-const checkIfBarsNeeded = (panelID) => {
+const checkIfBarsNeeded = (panelID: string) => {
   return _includes(panelsWithBars, panelID)
 }
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
   name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment,
-}) => (
+}: {
+  name: string,
+  children?: React.ReactNode,
+  noSwitch?: boolean,
+  icon?: React.ReactNode,
+  type: string,
+  openModal?: () => void,
+  activeFragment: number | string,
+  setActiveFragment: (arg: number) => void,
+}): JSX.Element => (
   <div
     className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
       'pb-12': !noSwitch,
@@ -112,6 +121,7 @@ PanelContainer.propTypes = {
   activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   setActiveFragment: PropTypes.func,
   icon: PropTypes.node,
+  openModal: PropTypes.func,
 }
 
 PanelContainer.defaultProps = {
@@ -119,11 +129,20 @@ PanelContainer.defaultProps = {
   noSwitch: false,
   activeFragment: 0,
   setActiveFragment: () => { },
+  openModal: () => { },
 }
 
 // First tab with stats
 const Overview = ({
   overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId,
+}: {
+  overall: any
+  chartData: any
+  activePeriod: any
+  t: (arg: string) => string
+  live: number
+  sessionDurationAVG: number
+  projectId: string
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
@@ -136,7 +155,7 @@ const Overview = ({
   }
 
   return (
-    <PanelContainer name={t('project.overview')} noSwitch>
+    <PanelContainer name={t('project.overview')} noSwitch type='' openModal={() => {}}>
       <div className='flex text-lg justify-between'>
         <div className='flex items-center dark:text-gray-50'>
           <PulsatingCircle className='mr-1.5' type='big' />
@@ -275,7 +294,7 @@ const Overview = ({
 }
 
 // Options for circle chart showing the stats of data
-const getPieOptions = (customs, uniques, t) => {
+const getPieOptions = (customs: any, uniques: number, t: any) => {
   const tQuantity = t('project.quantity')
   const tConversion = t('project.conversion')
   const tRatio = t('project.ratio')
@@ -319,11 +338,16 @@ const getPieOptions = (customs, uniques, t) => {
 // Tabs with custom events like submit form, press button, go to the link rate etc.
 const CustomEvents = ({
   customs, chartData, onFilter, t,
+}: {
+  customs: any
+  chartData: any
+  onFilter: any
+  t: (arg0: string) => string
 }) => {
   const keys = _keys(customs)
   const uniques = _sum(chartData.uniques)
-  const [chartOptions, setChartOptions] = useState({})
-  const [activeFragment, setActiveFragment] = useState(0)
+  const [chartOptions, setChartOptions] = useState<any>({})
+  const [activeFragment, setActiveFragment] = useState<number>(0)
 
   useEffect(() => {
     if (!_isEmpty(chartData)) {
@@ -411,7 +435,19 @@ CustomEvents.propTypes = {
 
 const Panel = ({
   name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
-}) => {
+}: {
+  name: string
+  data: any
+  rowMapper: any
+  valueMapper: any
+  capitalize: boolean
+  linkContent: boolean
+  t: (arg0: string) => string
+  icon: any
+  id: string
+  hideFilters: boolean
+  onFilter: any
+}): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
   const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])

@@ -4,7 +4,9 @@ import React, {
 } from 'react'
 import useSize from 'hooks/useSize'
 import { useHistory, useParams, Link } from 'react-router-dom'
+// @ts-ignore
 import domToImage from 'dom-to-image'
+// @ts-ignore
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
@@ -35,6 +37,8 @@ import {
   tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
   MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, TimeFormat, chartTypes,
 } from 'redux/constants'
+import { ICaptchaProject, IProject } from 'redux/models/IProject'
+import { IUser } from 'redux/models/IUser'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -58,49 +62,83 @@ import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import './styles.css'
 
+interface IProjectView extends ICaptchaProject {
+  isPublicVisitors?: boolean,
+}
+
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, setProjects,
-}) => {
-  const { t, i18n: { language } } = useTranslation('common')
+}: {
+  projects: IProjectView[],
+  isLoading: boolean,
+  showError: (message: string) => void,
+  cache: any,
+  setProjectCache: (pid: string, data: any, key: string) => void,
+  projectViewPrefs: any,
+  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null) => void,
+  authenticated: boolean,
+  user: IUser,
+  isPaidTierUsed: boolean,
+  // eslint-disable-next-line no-unused-vars, no-shadow
+  setProjects: (projects: ICaptchaProject[]) => void,
+}): JSX.Element => {
+  const { t, i18n: { language } }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | boolean | undefined | null,
+    }) => string,
+    i18n: { language: string },
+  } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
   const dashboardRef = useRef(null)
-  const { id } = useParams()
+  const { id }: {
+    id: string,
+  } = useParams()
   const history = useHistory()
-  const project = useMemo(() => _find(projects, p => p.id === id) || {}, [projects, id])
-  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
-  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
-  const [arePeriodParsed, setArePeriodParsed] = useState(false)
-  const [panelsData, setPanelsData] = useState({})
-  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
-  const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
-  const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
-  const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period, periodPairs])
-  const [chartData, setChartData] = useState({})
-  const [mainChart, setMainChart] = useState(null)
-  const [dataLoading, setDataLoading] = useState(false)
-  const [activeChartMetrics, setActiveChartMetrics] = useState({
+  const project: IProjectView = useMemo(() => _find(projects, p => p.id === id) || {} as IProjectView, [projects, id])
+  const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
+  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
+  const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
+  const [panelsData, setPanelsData] = useState<any>({})
+  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
+  const [period, setPeriod] = useState<string>(projectViewPrefs[id]?.period || periodPairs[3].period)
+  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
+  const activePeriod: {
+    period: string,
+    label: string,
+    tbs: string[],
+  } = useMemo(() => _find(periodPairs, p => p.period === period) || {
+    period: periodPairs[3].period,
+    tbs: periodPairs[3].tbs,
+    label: periodPairs[3].label,
+  }, [period, periodPairs])
+  const [chartData, setChartData] = useState<any>({})
+  const [mainChart, setMainChart] = useState<any>(null)
+  const [dataLoading, setDataLoading] = useState<boolean>(false)
+  const [activeChartMetrics, setActiveChartMetrics] = useState<{
+    [key: string]: boolean,
+  }>({
     [CHART_METRICS_MAPPING.results]: true,
   })
-  const [sessionDurationAVG, setSessionDurationAVG] = useState(null)
+  const [sessionDurationAVG, setSessionDurationAVG] = useState<any>(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
-  const [filters, setFilters] = useState([])
+  const [filters, setFilters] = useState<any[]>([])
   // That is needed when using 'Export as image' feature,
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
-  const [showIcons, setShowIcons] = useState(true)
+  const [showIcons, setShowIcons] = useState<boolean>(true)
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs[id]?.rangeDate
-  const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
+  const [dateRange, setDateRange] = useState<Date[] | null>(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
 
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
-  const [ref, size] = useSize()
+  const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
   const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
 
-  const { name } = project
+  const { name } = project as IProject
 
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
 
@@ -131,7 +169,7 @@ const ViewProject = ({
   }
 
   // this function is used for requesting the data from the API
-  const loadAnalytics = async (forced = false, newFilters = null) => {
+  const loadAnalytics = async (forced: boolean = false, newFilters: any = null) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
     }
@@ -185,7 +223,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
+        const bbSettings: any = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
         setChartData(chart)
 
         setPanelsData({
@@ -223,7 +261,7 @@ const ViewProject = ({
   }, [chartType])
 
   // this funtion is used for requesting the data from the API when the filter is changed
-  const filterHandler = (column, filter, isExclusive = false) => {
+  const filterHandler = (column: any, filter: any, isExclusive: boolean = false) => {
     let newFilters
 
     // eslint-disable-next-line no-lonely-if
@@ -234,6 +272,7 @@ const ViewProject = ({
       setFilters(newFilters)
 
       // removing filter from the page URL
+      // @ts-ignore
       const url = new URL(window.location)
       url.searchParams.delete(column)
       const { pathname, search } = url
@@ -254,6 +293,7 @@ const ViewProject = ({
       setFilters(newFilters)
 
       // storing filter in the page URL
+      // @ts-ignore
       const url = new URL(window.location)
       url.searchParams.append(column, filter)
       const { pathname, search } = url
@@ -270,7 +310,7 @@ const ViewProject = ({
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
-  const onChangeExclusive = (column, filter, isExclusive) => {
+  const onChangeExclusive = (column: any, filter: any, isExclusive: boolean) => {
     const newFilters = _map(filters, (f) => {
       if (f.column === column && f.filter === filter) {
         return {
@@ -285,6 +325,7 @@ const ViewProject = ({
     loadAnalytics(true, newFilters)
 
     // storing exclusive filter in the page URL
+    // @ts-ignore
     const url = new URL(window.location)
 
     url.searchParams.delete(column)
@@ -310,9 +351,10 @@ const ViewProject = ({
   useEffect(() => {
     // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
     try {
+      // @ts-ignore
       const url = new URL(window.location)
       const { searchParams } = url
-      const initialFilters = []
+      const initialFilters: any[] = []
       // eslint-disable-next-line lodash/prefer-lodash-method
       searchParams.forEach((value, key) => {
         if (!_includes(validFilters, key)) {
@@ -335,14 +377,19 @@ const ViewProject = ({
   useEffect(() => {
     if (arePeriodParsed) {
       try {
+        // @ts-ignore
         const url = new URL(window.location)
         const { searchParams } = url
-        const intialTimeBucket = searchParams.get('timeBucket')
+        const intialTimeBucket: string = searchParams.get('timeBucket') || ''
         // eslint-disable-next-line lodash/prefer-lodash-method
         if (!_includes(validTimeBacket, intialTimeBucket)) {
           return
         }
-        const newPeriodFull = _find(periodPairs, (el) => el.period === period)
+        const newPeriodFull = _find(periodPairs, (el) => el.period === period) || {
+          period: '',
+          tbs: [],
+          label: '',
+        }
         if (!_includes(newPeriodFull.tbs, intialTimeBucket)) {
           return
         }
@@ -354,8 +401,9 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arePeriodParsed])
 
-  const onRangeDateChange = (dates, onRender) => {
+  const onRangeDateChange = (dates: Date[], onRender?: any) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
+    // @ts-ignore
     const url = new URL(window.location)
 
     // setting allowed time buckets for the specified date range (period)
@@ -398,7 +446,7 @@ const ViewProject = ({
 
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates))
         setPeriod('custom')
-        setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], dates)
+        setProjectViewPrefs(id, 'custom', timeBucketToDays[4].tb[0], dates)
 
         break
       }
@@ -424,7 +472,7 @@ const ViewProject = ({
           if (!_isEmpty(projectRes)) {
             getOverallStats([id])
               .then(res => {
-                setProjects([...projects, {
+                setProjects([...(projects as any[]), {
                   ...projectRes,
                   overall: res[id],
                   live: 'N/A',
@@ -448,9 +496,10 @@ const ViewProject = ({
     }
   }, [isLoading, project, id]) // eslint-disable-line
 
-  const updatePeriod = (newPeriod) => {
+  const updatePeriod = (newPeriod: any) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
-    let tb = timeBucket
+    let tb: any = timeBucket
+    // @ts-ignore
     const url = new URL(window.location)
     if (_isEmpty(newPeriodFull)) return
 
@@ -480,7 +529,8 @@ const ViewProject = ({
     })
   }
 
-  const updateTimebucket = (newTimebucket) => {
+  const updateTimebucket = (newTimebucket: string) => {
+    // @ts-ignore
     const url = new URL(window.location)
     url.searchParams.delete('timeBucket')
     url.searchParams.append('timeBucket', newTimebucket)
@@ -516,6 +566,7 @@ const ViewProject = ({
 
   useEffect(() => {
     try {
+      // @ts-ignore
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = searchParams.get('period')
@@ -524,7 +575,9 @@ const ViewProject = ({
       }
 
       if (intialPeriod === 'custom') {
+        // @ts-ignore
         const from = new Date(searchParams.get('from'))
+        // @ts-ignore
         const to = new Date(searchParams.get('to'))
         if (from.getDate() && to.getDate()) {
           onRangeDateChange([from, to], true)
@@ -543,7 +596,8 @@ const ViewProject = ({
   }, [])
 
   const resetFilters = () => {
-    const url = new URL(window.location)
+    // @ts-ignore
+    const url: URL = new URL(window.location)
     const { searchParams } = url
     // eslint-disable-next-line lodash/prefer-lodash-method
     searchParams.forEach((value, key) => {
@@ -575,7 +629,7 @@ const ViewProject = ({
   ]
 
   // function set chart type and save to local storage
-  const setChartTypeOnClick = (type) => {
+  const setChartTypeOnClick = (type: string) => {
     setItem('chartType', type)
     setChartType(type)
   }
@@ -668,6 +722,7 @@ const ViewProject = ({
 
                     if (pair.isCustomDate) {
                       setTimeout(() => {
+                        // @ts-ignore
                         refCalendar.current.openCalendar()
                       }, 100)
                     } else {
@@ -680,7 +735,7 @@ const ViewProject = ({
                 <FlatPicker
                   ref={refCalendar}
                   onChange={(date) => setDateRange(date)}
-                  value={dateRange}
+                  value={dateRange || []}
                   maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
                 />
               </div>
@@ -730,8 +785,10 @@ const ViewProject = ({
                   className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
                   secondary
                 >
-                  <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                  {t('common.settings')}
+                  <>
+                    <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                    {t('common.settings')}
+                  </>
                 </Button>
                 )}
               </div>
@@ -743,11 +800,7 @@ const ViewProject = ({
             >
               <div className='mt-14 xs:mt-0' />
               <div className='relative'>
-                <div className={cx('absolute right-0 z-10 -top-2', {
-                  'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
-                  'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
-                })}
-                >
+                <div className='absolute right-0 z-10 -top-2'>
                   <button
                     type='button'
                     onClick={() => setChartTypeOnClick(chartTypes.bar)}
@@ -775,7 +828,7 @@ const ViewProject = ({
               <Loader />
             )}
             {(isPanelsDataEmpty) && (
-              <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
+              <NoEvents filters={filters} resetFilters={resetFilters} />
             )}
             <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <div
@@ -807,12 +860,13 @@ const ViewProject = ({
                   chartData={chartData}
                   activePeriod={activePeriod}
                   sessionDurationAVG={sessionDurationAVG}
-                  live={project.live}
+                  live={project.live || 0}
                   projectId={id}
                 />
                 )}
-                {_map(panelsData.types, (type) => {
+                {_map(panelsData.types, (type: keyof typeof tnMapping) => {
                   const panelName = tnMapping[type]
+                  // @ts-ignore
                   const panelIcon = panelIconMapping[type]
 
                   if (type === 'cc') {

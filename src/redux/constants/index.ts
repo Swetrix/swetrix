@@ -22,7 +22,14 @@ export const FORECAST_MAX_MAPPING: {
   month: 12,
 }
 
-export const tbPeriodPairs = (t: Function, tbs: String[] | null, dates: Date[]) => [{
+export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]): {
+  label: string
+  period: string
+  tbs: string[]
+  access: string
+  dropdownLabel?: string
+  isCustomDate?: boolean
+}[] => [{
   label: t('project.today'),
   period: 'today',
   tbs: ['hour'],
@@ -63,7 +70,7 @@ export const tbPeriodPairs = (t: Function, tbs: String[] | null, dates: Date[]) 
   tbs: ['month'],
   access: 'paid',
 }, {
-  label: getCustomLabel(dates, t),
+  label: dates ? getCustomLabel(dates, t) : t('project.custom'),
   dropdownLabel: t('project.custom'),
   isCustomDate: true,
   period: 'custom',

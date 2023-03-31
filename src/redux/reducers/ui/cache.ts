@@ -96,7 +96,7 @@ const cacheSlice = createSlice({
       window.localStorage.setItem(LS_VIEW_PREFS_SETTING, JSON.stringify(viewPrefs))
       state.projectViewPrefs[pid] = viewPrefs
     },
-    setCaptchaProjectViewPrefs(state, { payload }: PayloadAction<{ pid: string, period: string, timeBucket: string, rangeDate: string }>) {
+    setCaptchaProjectViewPrefs(state, { payload }: PayloadAction<{ pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null }>) {
       const {
         pid, period, timeBucket, rangeDate,
       } = payload

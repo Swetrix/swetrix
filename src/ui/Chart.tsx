@@ -3,9 +3,8 @@ import bb from 'billboard.js'
 import 'billboard.js/dist/theme/datalab.css'
 import 'billboard.js/dist/billboard.css'
 
-const Chart = ({ current, children, options }: {
+const Chart = ({ current, options }: {
   current: string,
-  children: React.ReactNode,
   options: any,
 }): JSX.Element => {
   let chartInstance: any = {}
@@ -39,7 +38,6 @@ const Chart = ({ current, children, options }: {
   return (
     <div>
       <div id={current} />
-      {children}
     </div>
   )
 }

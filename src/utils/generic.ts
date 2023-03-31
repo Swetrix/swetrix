@@ -57,7 +57,7 @@ export const getTimeFromSeconds = (seconds: any) => {
   }
 }
 
-export const getStringFromTime = (time: any, showMS: any) => {
+export const getStringFromTime = (time: any, showMS?: boolean) => {
   const {
     h, m, s, ms,
   } = time

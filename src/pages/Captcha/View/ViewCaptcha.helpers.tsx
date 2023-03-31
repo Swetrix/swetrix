@@ -1,8 +1,10 @@
+// @ts-ignore
 import { saveAs } from 'file-saver'
 import {
   GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon,
   ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon,
 } from '@heroicons/react/24/outline'
+// @ts-ignore
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import {
@@ -23,13 +25,13 @@ import {
 } from 'redux/constants'
 import countries from 'utils/isoCountries'
 
-const getExportFilename = (prefix) => {
+const getExportFilename = (prefix: string) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
   const date = _split(_replace(_split(new Date().toISOString(), '.')[0], /:/g, '-'), 'T')[0]
   return `${prefix}-${date}.zip`
 }
 
-const convertToCSV = (array) => {
+const convertToCSV = (array: any[]) => {
   let str = 'name,value,perc\r\n'
 
   for (let i = 0; i < _size(array); ++i) {
@@ -46,7 +48,12 @@ const convertToCSV = (array) => {
   return str
 }
 
-const onCSVExportClick = (data, pid, tnMapping, language) => {
+const onCSVExportClick = (data: {
+  data: any,
+  types: any,
+}, pid: string, tnMapping: {
+  [key: string]: string,
+}, language: string) => {
   const { data: rowData, types } = data
   const zip = new JSZip()
 
@@ -86,7 +93,12 @@ const CHART_METRICS_MAPPING = {
 }
 
 // function to filter the data for the chart
-const getColumns = (chart, activeChartMetrics) => {
+const getColumns = (chart: {
+  x: string[],
+  results: string[],
+}, activeChartMetrics: {
+  [key: string]: boolean,
+}) => {
   const {
     results,
   } = activeChartMetrics
@@ -106,9 +118,11 @@ const getColumns = (chart, activeChartMetrics) => {
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType) => {
+const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
+  [key: string]: boolean,
+}, applyRegions: boolean, timeFormat: string, rotateXAxias: boolean, chartType: string) => {
   const xAxisSize = _size(chart.x)
-  const lines = []
+  const lines: any[] = []
   const modifiedChart = { ...chart }
   let regions
 
@@ -156,7 +170,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: any) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -164,7 +178,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
     },
     tooltip: {
       format: {
-        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+        title: (x: any) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
       },
       contents: {
         template: `
@@ -204,7 +218,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
       linearGradient: true,
     },
     padding: {
-      right: (rotateXAxias && !(activeChartMetrics.bounce || activeChartMetrics.sessionDuration)) && 35,
+      right: rotateXAxias && 35,
       left: 40,
     },
     bindto: '#dataChart',
@@ -216,7 +230,7 @@ const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '1
 const paidPeriods = ['12M', '24M']
 const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt', 'ev']
 
-const typeNameMapping = (t) => ({
+const typeNameMapping = (t: (key: string) => string) => ({
   cc: t('project.mapping.cc'),
   pg: t('project.mapping.pg'),
   lc: t('project.mapping.lc'),
@@ -243,10 +257,10 @@ const panelIconMapping = {
 }
 
 // This function return date using the same format as the backend
-const getFormatDate = (date) => {
+const getFormatDate = (date: Date) => {
   const yyyy = date.getFullYear()
-  let mm = date.getMonth() + 1
-  let dd = date.getDate()
+  let mm: string | number = date.getMonth() + 1
+  let dd: string | number = date.getDate()
   if (dd < 10) dd = `0${dd}`
   if (mm < 10) mm = `0${mm}`
   return `${yyyy}-${mm}-${dd}`
