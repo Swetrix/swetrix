@@ -27,7 +27,7 @@ export const umdBuildExample = `<!-- Put this at the end of the <head> tag -->
 </noscript>
 `
 
-export const getUMDBuildExample = (pid) => `<!-- Put this at the end of the <body> tag -->
+export const getUMDBuildExample = (pid: string) => `<!-- Put this at the end of the <body> tag -->
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
