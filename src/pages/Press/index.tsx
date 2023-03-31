@@ -9,7 +9,11 @@ import routes from 'routes'
 const FONT_INTER_URL = 'https://rsms.me/inter/'
 const FONT_NAME = 'Inter'
 
-const LogoComponent = ({ description, logoSVG, logoPNG }) => (
+const LogoComponent = ({ description, logoSVG, logoPNG }: {
+  description: string
+  logoSVG: string | null
+  logoPNG: string
+}): JSX.Element => (
   <p>
     <b className='font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
       {description}
@@ -45,8 +49,10 @@ const LogoComponent = ({ description, logoSVG, logoPNG }) => (
   </p>
 )
 
-const Press = () => {
-  const { t } = useTranslation('common')
+const Press = (): JSX.Element => {
+  const { t }: {
+    t: (key: string) => string
+  } = useTranslation('common')
 
   return (
     <Title title={t('titles.press')}>
@@ -84,6 +90,7 @@ const Press = () => {
             <LogoComponent
               description={t('press.logoNoText')}
               logoPNG='/logo512.png'
+              logoSVG={null}
             />
           </div>
 
