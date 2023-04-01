@@ -21,7 +21,7 @@ const ProjectList = ({
   setUserShareData: (data: Partial<ISharedProject>, id: string) => void,
   userSharedUpdate: (message: string) => void,
   sharedProjectError: (message: string) => void,
-}) => {
+}): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number,

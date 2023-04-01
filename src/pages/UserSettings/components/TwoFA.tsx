@@ -21,7 +21,7 @@ const TwoFA = ({
   dontRemember: boolean,
   updateUserData: (data: Partial<IUser>) => void,
   genericError: (message: string) => void,
-}) => {
+}): JSX.Element => {
   const { t }: {
     t: (key: string, options?: {
       [key: string]: string | number,
