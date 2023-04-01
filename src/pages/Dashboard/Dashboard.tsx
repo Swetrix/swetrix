@@ -56,8 +56,8 @@ interface IProjectCart {
   id?: string
   deleteProjectFailed: (message: string) => void
   sharedProjects: ISharedProject[]
-  setProjectsShareData: (data: ISharedProject, id: string, shared?: boolean) => void
-  setUserShareData: (data: ISharedProject, id: string) => void
+  setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
+  setUserShareData: (data: Partial<ISharedProject>, id: string) => void
   shared?: boolean
   userSharedUpdate: (message: string) => void
   sharedProjectError: (message: string) => void
@@ -236,8 +236,8 @@ interface DashboardProps {
   error: string
   user: IUser
   deleteProjectFailed: (error: string) => void
-  setProjectsShareData: (data: ISharedProject) => void
-  setUserShareData: (data: ISharedProject) => void
+  setProjectsShareData: (data: Partial<ISharedProject>) => void
+  setUserShareData: (data: Partial<ISharedProject>) => void
   userSharedUpdate: (message: string) => void
   sharedProjectError: (error: string) => void
   loadProjects: (take: number, skip: number) => void

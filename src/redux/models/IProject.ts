@@ -32,36 +32,36 @@ export interface IShareOwnerProject {
 export interface IProject {
     id: string
     name: string
-    origins?: string[] | string | null
-    ipBlacklist?: string[] | null | string
-    active?: boolean
-    public?: boolean
-    isAnalyticsProject?: boolean
-    isCaptchaProject?: boolean
-    isCaptchaEnabled?: boolean
-    captchaSecretKey?: string | null
-    created?: string
+    origins: string[] | string | null
+    ipBlacklist: string[] | null | string
+    active: boolean
+    public: boolean
+    isAnalyticsProject: boolean
+    isCaptchaProject: boolean
+    isCaptchaEnabled: boolean
+    captchaSecretKey: string | null
+    created: string
     share?: IShareOwnerProject[]
-    isOwner?: boolean
-    overall?: IOvervallObject
-    live?: number
-    uiHidden?: boolean
+    isOwner: boolean
+    overall: IOvervallObject
+    live: number
+    uiHidden: boolean
 }
 
 export interface ICaptchaProject {
     id: string
     name: string
-    origins?: string[] | string | null
-    ipBlacklist?: string[] | null | string
-    active?: boolean
-    public?: boolean
-    isAnalyticsProject?: boolean
-    isCaptchaProject?: boolean
-    isCaptchaEnabled?: boolean
-    captchaSecretKey?: string | null
-    created?: string
-    isOwner?: boolean
-    overall?: IOvervallObject
-    live?: number
-    uiHidden?: boolean
+    origins: string[] | string | null
+    ipBlacklist: string[] | null | string
+    active: boolean
+    public: boolean
+    isAnalyticsProject: boolean
+    isCaptchaProject: boolean
+    isCaptchaEnabled: boolean
+    captchaSecretKey: string | null
+    created: string
+    isOwner: boolean
+    overall: IOvervallObject
+    live: number
+    uiHidden: boolean
 }

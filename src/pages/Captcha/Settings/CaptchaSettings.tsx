@@ -53,13 +53,12 @@ const tabForNew = 'new'
 const tabForInheritance = 'inheritance'
 
 // add to interface IProject new fields isCaptcha
-interface IForm extends ICaptchaProject {
+interface IForm extends Partial<ICaptchaProject> {
   isCaptcha?: boolean
-  public?: boolean
   id: string
   name: string
-  origins?: string
-  ipBlacklist?: string
+  origins?: string | null | string[]
+  ipBlacklist?: string | null | string[]
 }
 
 const CaptchaSettings = ({
@@ -143,7 +142,7 @@ const CaptchaSettings = ({
     if (!projectSaving) {
       setProjectSaving(true)
       try {
-        const formalisedData: IProject = {
+        const formalisedData: IForm = {
           ...data,
           origins: _isEmpty(data.origins) ? null : _map(_split(data.origins as string, ','), (origin) => {
             try {
@@ -158,7 +157,7 @@ const CaptchaSettings = ({
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist as string, ','),
         }
         if (isSettings) {
-          await updateProject(id, formalisedData)
+          await updateProject(id, formalisedData as ICaptchaProject)
           newProject(t('project.settings.updated'))
         } else {
           if (tab === tabForInheritance) {
@@ -166,7 +165,7 @@ const CaptchaSettings = ({
               showError('Select projects')
               return
             }
-            await updateProject(formalisedData.id, formalisedData)
+            await updateProject(formalisedData.id, formalisedData as ICaptchaProject)
           } else {
             await createProject({
               id: formalisedData.id,
@@ -392,7 +391,7 @@ const CaptchaSettings = ({
                 type='text'
                 label={t('project.settings.origins')}
                 hint={t('project.settings.originsHint')}
-                value={form.origins || ''}
+                value={form.origins as string || ''}
                 className='mt-4'
                 onChange={handleInput}
                 error={beenSubmitted ? errors.origins : null}
@@ -403,7 +402,7 @@ const CaptchaSettings = ({
                 type='text'
                 label={t('project.settings.ipBlacklist')}
                 hint={t('project.settings.ipBlacklistHint')}
-                value={form.ipBlacklist || ''}
+                value={form.ipBlacklist as string || ''}
                 className='mt-4'
                 onChange={handleInput}
                 error={beenSubmitted ? errors.ipBlacklist : null}
