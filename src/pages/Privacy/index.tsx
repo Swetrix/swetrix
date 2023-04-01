@@ -7,7 +7,12 @@ import {
   CONTACT_EMAIL, SECURITY_EMAIL, DOCS_URL,
 } from 'redux/constants'
 
-const serviceProviders = [
+const serviceProviders: {
+  company: string
+  purpose: string
+  dataSubjects: string
+  location: string
+}[] = [
   {
     company: 'Paddle.com Market Limited',
     purpose: 'Payment and subscriptions',
@@ -40,7 +45,7 @@ const serviceProviders = [
   },
 ]
 
-const Features = () => {
+const Features = (): JSX.Element => {
   return (
     <Title title='Privacy Policy'>
       <div className='bg-gray-50 dark:bg-gray-800'>
