@@ -4,7 +4,7 @@ import React from 'react'
 import Title from 'components/Title'
 import { CONTACT_EMAIL } from 'redux/constants'
 
-const Features = () => {
+const Features = (): JSX.Element => {
   return (
     <Title title='Terms and Conditions'>
       <div className='bg-gray-50 dark:bg-gray-800'>
