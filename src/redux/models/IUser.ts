@@ -25,7 +25,7 @@ export interface IUser {
     nextBillDate: string | null
     cancellationEffectiveDate: string | null
     apiKey: string | null
-    telegramChatId: string
+    telegramChatId: string | null
     isTelegramChatIdConfirmed: boolean
     timeFormat: string
     sharedProjects: ISharedProject[]

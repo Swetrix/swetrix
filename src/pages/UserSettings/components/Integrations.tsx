@@ -10,8 +10,14 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Telegram from 'ui/icons/Telegram'
 import { removeTgIntegration } from 'api'
+import { IUser } from 'redux/models/IUser'
 
-const getAvailableIntegrations = t => ([
+const getAvailableIntegrations = (t: (key: string) => string): {
+  name: string,
+  key: string,
+  description: string,
+  Icon: React.FC<React.SVGProps<SVGSVGElement>>,
+}[] => ([
   {
     name: 'Telegram',
     key: 'telegram',
@@ -20,24 +26,31 @@ const getAvailableIntegrations = t => ([
   },
 ])
 
-const TG_BOT_URL = 'https://t.me/swetrixbot'
-const TG_BOT_USERNAME = '@swetrixbot'
+const TG_BOT_URL: string = 'https://t.me/swetrixbot'
+const TG_BOT_USERNAME: string = '@swetrixbot'
 
 const Integrations = ({
   user, updateUserData, handleIntegrationSave, genericError,
+}: {
+  user: IUser,
+  updateUserData: (data: Partial<IUser>) => void,
+  handleIntegrationSave: (data: Partial<IUser>, cb: () => void) => void,
+  genericError: (message: string) => void,
 }) => {
-  const { t } = useTranslation('common')
+  const { t }: {
+    t: (key: string) => string,
+  } = useTranslation('common')
   const available = getAvailableIntegrations(t)
-  const [integrationConfigurating, setIntegrationConfigurating] = useState(null)
-  const [tgChatId, setTgChatId] = useState(null)
-  const [isIntegrationLoading, setIsIntegrationLoading] = useState(false)
-  const [isRemovalLoading, setIsRemovalLoading] = useState(false)
+  const [integrationConfigurating, setIntegrationConfigurating] = useState<string | null>(null)
+  const [tgChatId, setTgChatId] = useState<string | null>(null)
+  const [isIntegrationLoading, setIsIntegrationLoading] = useState<boolean>(false)
+  const [isRemovalLoading, setIsRemovalLoading] = useState<boolean>(false)
 
-  const setupIntegration = (key) => () => {
+  const setupIntegration = (key: string) => () => {
     setIntegrationConfigurating(key)
   }
 
-  const addIntegration = (key) => () => {
+  const addIntegration = (key: string) => () => {
     if (isIntegrationLoading) {
       return
     }
@@ -53,7 +66,7 @@ const Integrations = ({
     }
   }
 
-  const getIntegrationStatus = (key) => {
+  const getIntegrationStatus = (key: string) => {
     if (key === 'telegram') {
       return {
         connected: user.telegramChatId,
@@ -65,7 +78,7 @@ const Integrations = ({
     return {}
   }
 
-  const removeIntegration = async (key) => {
+  const removeIntegration = async (key: string) => {
     if (isRemovalLoading) {
       return
     }
@@ -74,7 +87,11 @@ const Integrations = ({
       setIsRemovalLoading(true)
 
       try {
-        await removeTgIntegration(user.telegramChatId)
+        if (user.telegramChatId) {
+          await removeTgIntegration(user.telegramChatId)
+        } else {
+          throw new Error('No chat ID')
+        }
         updateUserData({
           isTelegramChatIdConfirmed: false,
           telegramChatId: null,
@@ -105,6 +122,7 @@ const Integrations = ({
           </Button>
           <p className='text-base max-w-prose text-gray-900 dark:text-gray-50'>
             <Trans
+              // @ts-ignore
               t={t}
               i18nKey='profileSettings.integrationsList.tgHint'
               components={{
@@ -120,7 +138,7 @@ const Integrations = ({
             <Input
               type='text'
               label={t('profileSettings.chatID')}
-              value={tgChatId}
+              value={tgChatId || ''}
               placeholder={t('profileSettings.chatID')}
               className='sm:col-span-3'
               onChange={(e) => setTgChatId(e.target.value)}

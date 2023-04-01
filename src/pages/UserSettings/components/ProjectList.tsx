@@ -8,19 +8,35 @@ import Modal from 'ui/Modal'
 import {
   deleteShareProject, acceptShareProject,
 } from 'api'
+import { ISharedProject } from 'redux/models/ISharedProject'
 
 const ProjectList = ({
   item, removeShareProject, removeProject, setProjectsShareData, setUserShareData,
   userSharedUpdate, sharedProjectError,
+}: {
+  item: ISharedProject,
+  removeShareProject: (id: string) => void,
+  removeProject: (id: string) => void,
+  setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void,
+  setUserShareData: (data: Partial<ISharedProject>, id: string) => void,
+  userSharedUpdate: (message: string) => void,
+  sharedProjectError: (message: string) => void,
 }) => {
-  const { t, i18n: { language } } = useTranslation('common')
+  const { t, i18n: { language } }: {
+    t: (key: string, options?: {
+      [key: string]: string | number,
+    }) => string,
+    i18n: {
+      language: string,
+    },
+  } = useTranslation('common')
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const {
     created, confirmed, id, role, project,
   } = item
 
-  const deleteProject = async (pid) => {
+  const deleteProject = async (pid: string) => {
     try {
       await deleteShareProject(pid)
       removeShareProject(pid)

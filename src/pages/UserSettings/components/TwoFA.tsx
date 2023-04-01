@@ -12,21 +12,34 @@ import {
 } from 'api'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
+import { IUser } from 'redux/models/IUser'
 
 const TwoFA = ({
   user, dontRemember, updateUserData, genericError,
+}: {
+  user: IUser,
+  dontRemember: boolean,
+  updateUserData: (data: Partial<IUser>) => void,
+  genericError: (message: string) => void,
 }) => {
-  const { t } = useTranslation('common')
-  const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)
-  const [twoFADisabling, setTwoFADisabling] = useState(false)
-  const [twoFAConfigData, setTwoFAConfigData] = useState({}) // { secret, otpauthUrl }
-  const [isTwoFaLoading, setIsTwoFaLoading] = useState(false)
+  const { t }: {
+    t: (key: string, options?: {
+      [key: string]: string | number,
+    }) => string,
+  } = useTranslation('common')
+  const [twoFAConfigurating, setTwoFAConfigurating] = useState<boolean>(false)
+  const [twoFADisabling, setTwoFADisabling] = useState<boolean>(false)
+  const [twoFAConfigData, setTwoFAConfigData] = useState<{
+    secret?: string,
+    otpauthUrl?: string,
+  }>({}) // { secret, otpauthUrl }
+  const [isTwoFaLoading, setIsTwoFaLoading] = useState<boolean>(false)
   const [twoFACode, setTwoFACode] = useState('')
-  const [twoFACodeError, setTwoFACodeError] = useState(null)
-  const [twoFARecovery, setTwoFARecovery] = useState(null)
+  const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
+  const [twoFARecovery, setTwoFARecovery] = useState<string | null>(null)
   const { isTwoFactorAuthenticationEnabled } = user
 
-  const handle2FAInput = (event) => {
+  const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target: { value } } = event
     setTwoFACode(value)
     setTwoFACodeError(null)
@@ -96,7 +109,7 @@ const TwoFA = ({
     }
   }
 
-  const callFnOnKeyPress = (fn, key = 'Enter') => (e) => {
+  const callFnOnKeyPress = (fn: (e: any) => void, key = 'Enter') => (e: any) => {
     e.stopPropagation()
     if (e.key === key) {
       fn(e)
@@ -177,10 +190,10 @@ const TwoFA = ({
           {t('profileSettings.2faDesc')}
         </p>
         <div className='mt-4 p-4 bg-white w-max'>
-          <QRCode value={twoFAConfigData.otpauthUrl} />
+          <QRCode value={twoFAConfigData?.otpauthUrl || ''} />
         </div>
         <p className='text-base whitespace-pre-line mt-2 text-gray-900 dark:text-gray-50'>
-          {t('profileSettings.2faQRAlt', { key: twoFAConfigData.secret })}
+          {t('profileSettings.2faQRAlt', { key: twoFAConfigData?.secret || '' })}
         </p>
         <div className='flex items-center mt-4'>
           <Input
