@@ -64,7 +64,6 @@ const projectsSlice = createSlice({
         state.sharedProjects = payload.projects as ISharedProject[]
       } else {
         state.isLoading = false
-        console.log('payload.projects', payload.projects)
         state.projects = payload.projects as IProject[]
       }
     },

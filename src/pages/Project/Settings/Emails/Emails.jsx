@@ -335,7 +335,6 @@ const Emails = ({
   const onRemove = async (email) => {
     try {
       await removeSubscriber(projectId, email)
-      console.log('email', emails)
       const results = _filter(emails, s => s.id !== email)
       setEmails(results)
       removeEmail(t('apiNotifications.emailDelete'))
