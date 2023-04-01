@@ -67,7 +67,7 @@ const authSlice = createSlice({
       const projects = _filter(state.user?.sharedProjects, (item) => item.id !== payload)
       state.user = { ...state.user, sharedProjects: projects }
     },
-    setUserShareData: (state, { payload }: PayloadAction<{ data: ISharedProject, id: string }>) => {
+    setUserShareData: (state, { payload }: PayloadAction<{ data: Partial<ISharedProject>, id: string }>) => {
       const projects = _map(state.user?.sharedProjects, (item) => {
         if (item.id === payload.id) {
           return { ...item, ...payload.data }

@@ -14,7 +14,7 @@ const Select = ({
   items: any[],
   labelExtractor?: (item: any, index: number) => string,
   keyExtractor?: (item: any, index: number) => string,
-  iconExtractor?: (item: any, index: number) => JSX.Element,
+  iconExtractor?: (item: any, index: number) => JSX.Element | null,
   onSelect: (item: any) => void,
 }): JSX.Element => (
   // @ts-ignore

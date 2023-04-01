@@ -56,9 +56,13 @@ const cacheSlice = createSlice({
     setCaptchaProjectCache(state, { payload }: PayloadAction<{ pid: string, key: string, data: any }>) {
       state.captchaAnalytics[payload.pid][payload.key] = payload.data
     },
-    deleteProjectCache(state, { payload }: PayloadAction<{ pid: string, period: string, timeBucket: string }>) {
+    deleteProjectCache(state, { payload }: PayloadAction<{ pid?: string, period?: string, timeBucket?: string }>) {
       const { pid, period, timeBucket } = payload
-      const key = getProjectCacheKey(period, timeBucket)
+      let key: string
+
+      if (period && timeBucket) {
+        key = getProjectCacheKey(period, timeBucket)
+      }
 
       if (_isEmpty(period) || _isEmpty(timeBucket)) {
         if (_isEmpty(pid)) {
@@ -66,7 +70,9 @@ const cacheSlice = createSlice({
         }
         state.analytics = _filter(state.analytics, (project) => project !== pid)
       }
-      state.analytics[pid] = _filter(state.analytics[pid], (ckey) => ckey !== key)
+      if (pid) {
+        state.analytics[pid] = _filter(state.analytics[pid], (ckey) => ckey !== key)
+      }
     },
     deleteCaptchaProjectCache(state, { payload }: PayloadAction<{ pid: string, period?: string, timeBucket?: string }>) {
       const { pid, period, timeBucket } = payload

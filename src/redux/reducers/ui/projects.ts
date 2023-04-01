@@ -167,7 +167,7 @@ const projectsSlice = createSlice({
           ]
       }
     },
-    setProjectsShareData(state, { payload }: PayloadAction<{ data: IProject | ISharedProject, id: string, shared?: boolean }>) {
+    setProjectsShareData(state, { payload }: PayloadAction<{ data: Partial<IProject> | Partial<ISharedProject>, id: string, shared?: boolean }>) {
       const { data, id, shared = false } = payload
 
       if (shared) {

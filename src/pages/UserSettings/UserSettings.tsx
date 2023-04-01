@@ -21,6 +21,8 @@ import {
   reportFrequencies, DEFAULT_TIMEZONE, WEEKLY_REPORT_FREQUENCY, CONFIRMATION_TIMEOUT,
   GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, TimeFormat,
 } from 'redux/constants'
+import { IUser } from 'redux/models/IUser'
+import { ISharedProject } from 'redux/models/ISharedProject'
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
 import Input from 'ui/Input'
@@ -46,40 +48,78 @@ dayjs.extend(utc)
 
 const timeFormatArray = _map(TimeFormat, (key) => key)
 
+interface IProps {
+  onDelete: (t: (key: string) => string, callback: () => void) => void,
+  onDeleteProjectCache: () => void,
+  removeProject: (id: string) => void,
+  removeShareProject: (id: string) => void,
+  setUserShareData: (data: Partial<ISharedProject>, id: string) => void,
+  setProjectsShareData: (data: Partial<ISharedProject>, id: string) => void,
+  userSharedUpdate: (message: string) => void,
+  sharedProjectError: (message: string) => void,
+  updateUserData: (data: Partial<IUser>) => void,
+  genericError: (message: string) => void,
+  onGDPRExportFailed: (message: string) => void,
+  updateProfileFailed: (message: string) => void,
+  updateUserProfileAsync: (data: IUser, onSuccess: () => void, onError: () => void) => void,
+  accountUpdated: (t: string) => void,
+  setAPIKey: (key: string | null) => void,
+  user: IUser,
+  dontRemember: boolean,
+  isPaidTierUsed: boolean,
+}
+
+interface IForm extends Partial<IUser> {
+  repeat: string,
+  password: string,
+  email: string
+}
+
 const UserSettings = ({
   onDelete, onDeleteProjectCache, removeProject, removeShareProject, setUserShareData,
   setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData,
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
   accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
-}) => {
+}: IProps): JSX.Element => {
   const history = useHistory()
-  const { t, i18n: { language } } = useTranslation('common')
+  const { t, i18n: { language } }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | null,
+    }) => string,
+    i18n: {
+      language: string,
+    },
+  } = useTranslation('common')
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<IForm>({
     email: user.email || '',
     password: '',
     repeat: '',
     timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
-  const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
-  const [timezoneChanged, setTimezoneChanged] = useState(false)
-  const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [showModal, setShowModal] = useState(false)
-  const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
-  const [showExportModal, setShowExportModal] = useState(false)
-  const [error, setError] = useState(null)
-  const [copied, setCopied] = useState(false)
-  const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
-  const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
+  const [timezone, setTimezone] = useState<string>(user.timezone || DEFAULT_TIMEZONE)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const [timezoneChanged, setTimezoneChanged] = useState<boolean>(false)
+  const [reportFrequency, setReportFrequency] = useState<string>(user.reportFrequency)
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    [key: string]: string,
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [showModal, setShowModal] = useState<boolean>(false)
+  const [showAPIDeleteModal, setShowAPIDeleteModal] = useState<boolean>(false)
+  const [showExportModal, setShowExportModal] = useState<boolean>(false)
+  const [error, setError] = useState<null | string>(null)
+  const [copied, setCopied] = useState<boolean>(false)
+  const translatedFrequencies: string[] = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedTimeFormat: string[] = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
 
   const copyTimerRef = useRef(null)
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors = {} as {
+      [key: string]: string,
+    }
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -99,7 +139,7 @@ const UserSettings = ({
     setValidated(valid)
   }
 
-  const onSubmit = (data, callback = () => { }) => {
+  const onSubmit = (data: any, callback = () => { }) => {
     delete data.repeat
     // eslint-disable-next-line no-restricted-syntax
     for (const key in data) {
@@ -108,7 +148,7 @@ const UserSettings = ({
       }
     }
 
-    updateUserProfileAsync(data, t('profileSettings.updated'), callback)
+    updateUserProfileAsync(data, () => t('profileSettings.updated'), callback)
   }
 
   useEffect(() => {
@@ -117,16 +157,17 @@ const UserSettings = ({
 
   useEffect(() => {
     return () => {
+      // @ts-ignore
       clearTimeout(copyTimerRef.current)
     }
   }, [])
 
-  const _setTimezone = (value) => {
+  const _setTimezone = (value: string) => {
     setTimezoneChanged(true)
     setTimezone(value)
   }
 
-  const handleInput = event => {
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
@@ -136,7 +177,7 @@ const UserSettings = ({
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
@@ -162,7 +203,7 @@ const UserSettings = ({
     }
   }
 
-  const handleIntegrationSave = (data, callback = () => {}) => {
+  const handleIntegrationSave = (data: any, callback = () => {}) => {
     setBeenSubmitted(true)
 
     if (validated) {
@@ -184,7 +225,7 @@ const UserSettings = ({
     }
   }
 
-  const _setReportFrequency = (value) => {
+  const _setReportFrequency = (value: string) => {
     if (!isPaidTierUsed && value === WEEKLY_REPORT_FREQUENCY) {
       setIsPaidFeatureOpened(true)
       return
@@ -193,7 +234,7 @@ const UserSettings = ({
     setReportFrequency(value)
   }
 
-  const reportIconExtractor = (_, index) => {
+  const reportIconExtractor = (_: any, index: number) => {
     if (!isPaidTierUsed && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY) {
       return (
         <CurrencyDollarIcon className='w-5 h-5 mr-1' />
@@ -203,10 +244,11 @@ const UserSettings = ({
     return null
   }
 
-  const setToClipboard = (value) => {
+  const setToClipboard = (value: string) => {
     if (!copied) {
       navigator.clipboard.writeText(value)
       setCopied(true)
+      // @ts-ignore
       copyTimerRef.current = setTimeout(() => {
         setCopied(false)
       }, 2000)
@@ -219,7 +261,7 @@ const UserSettings = ({
     })
   }
 
-  const onExport = async (exportedAt) => {
+  const onExport = async (exportedAt: string) => {
     try {
       if (getCookie(GDPR_REQUEST) || (!_isNull(exportedAt) && !dayjs().isAfter(dayjs.utc(exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'), 'day'))) {
         onGDPRExportFailed(t('profileSettings.tryAgainInXDays', { amount: GDPR_EXPORT_TIMEFRAME }))
@@ -231,11 +273,11 @@ const UserSettings = ({
       accountUpdated(t('profileSettings.reportSent'))
       setCookie(GDPR_REQUEST, true, 1209600) // setting cookie for 14 days
     } catch (e) {
-      updateProfileFailed(e)
+      updateProfileFailed(e as string)
     }
   }
 
-  const onEmailConfirm = async (errorCallback) => {
+  const onEmailConfirm = async (errorCallback: any) => {
     if (getCookie(CONFIRMATION_TIMEOUT)) {
       updateProfileFailed(t('profileSettings.confTimeout'))
       return
@@ -251,7 +293,7 @@ const UserSettings = ({
         errorCallback(t('profileSettings.noConfLeft'))
       }
     } catch (e) {
-      updateProfileFailed(e)
+      updateProfileFailed(e as string)
     }
   }
 
@@ -260,7 +302,7 @@ const UserSettings = ({
       const res = await generateApiKey()
       setAPIKey(res.apiKey)
     } catch (e) {
-      updateProfileFailed(e)
+      updateProfileFailed(e as string)
     }
   }
 
@@ -269,7 +311,7 @@ const UserSettings = ({
       await deleteApiKey()
       setAPIKey(null)
     } catch (e) {
-      updateProfileFailed(e)
+      updateProfileFailed(e as string)
     }
   }
 
@@ -455,16 +497,18 @@ const UserSettings = ({
                     <div className='group relative'>
                       <Button
                         type='button'
-                        onClick={() => setToClipboard(user.apiKey)}
+                        onClick={() => setToClipboard(user.apiKey || '')}
                         className='opacity-70 hover:opacity-100'
                         noBorder
                       >
-                        <ClipboardDocumentIcon className='w-6 h-6' />
-                        {copied && (
-                          <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
-                            {t('common.copied')}
-                          </div>
-                        )}
+                        <>
+                          <ClipboardDocumentIcon className='w-6 h-6' />
+                          {copied && (
+                            <div className='animate-appear bg-white dark:bg-gray-700 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
+                              {t('common.copied')}
+                            </div>
+                          )}
+                        </>
                       </Button>
                     </div>
                   </div>
@@ -537,8 +581,6 @@ const UserSettings = ({
                             <ProjectList
                               key={item.id}
                               item={item}
-                              language={language}
-                              t={t}
                               removeProject={removeProject}
                               removeShareProject={removeShareProject}
                               setUserShareData={setUserShareData}
@@ -560,7 +602,6 @@ const UserSettings = ({
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           {!user.isActive && (
             <div
-              href='#'
               className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800 dark:hover:text-indigo-600'
               onClick={() => onEmailConfirm(setError)}
             >
@@ -570,12 +611,16 @@ const UserSettings = ({
           )}
           <div className='flex justify-between mt-4'>
             <Button onClick={() => setShowExportModal(true)} semiSmall primary>
-              <ArrowDownTrayIcon className='w-5 h-5 mr-1' />
-              {t('profileSettings.requestExport')}
+              <>
+                <ArrowDownTrayIcon className='w-5 h-5 mr-1' />
+                {t('profileSettings.requestExport')}
+              </>
             </Button>
             <Button className='ml-3' onClick={() => setShowModal(true)} semiSmall danger>
-              <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-              {t('profileSettings.delete')}
+              <>
+                <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                {t('profileSettings.delete')}
+              </>
             </Button>
           </div>
         </form>
@@ -624,7 +669,7 @@ const UserSettings = ({
         />
         <Modal
           onClose={() => {
-            setError('')
+            setError(null)
           }}
           closeText={t('common.gotIt')}
           type='error'

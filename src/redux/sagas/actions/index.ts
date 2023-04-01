@@ -58,12 +58,12 @@ const emailVerifyAsync = (data: {
   payload: { data, successfulCallback, errorCallback },
 })
 
-const updateUserProfileAsync = (data: IUser, callback = () => { }) => ({
+const updateUserProfileAsync = (data: Partial<IUser>, callback = (item: any) => {}) => ({
   type: types.UPDATE_USER_PROFILE_ASYNC,
   payload: { data, callback },
 })
 
-const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?: (str: string) => {}, t?: (str: string) => {}) => {
+const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?: (str?: string) => void, t?: (str: string) => {}) => {
   const refreshToken = getRefreshToken()
   logoutApi(refreshToken)
 
