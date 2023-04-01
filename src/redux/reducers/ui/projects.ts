@@ -9,25 +9,6 @@ import { ISharedProject } from 'redux/models/ISharedProject'
 import { IAlerts } from 'redux/models/IAlerts'
 import { toNumber } from 'lodash'
 
-// projects: [],
-// sharedProjects: [],
-// captchaProjects: [],
-// isLoading: true,
-// isLoadingShared: true,
-// isLoadingCaptcha: true,
-// error: null,
-// totalMonthlyEvents: null,
-// total: 0,
-// sharedTotal: 0,
-// captchaTotal: 0,
-// dashboardPaginationPage: 1,
-// dashboardPaginationPageShared: 1,
-// dashboardPaginationPageCaptcha: 1,
-// dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
-// projectTab: PROJECT_TABS.traffic,
-// alerts: [],
-// subscribers: [],
-
 interface IInitialState {
     projects: IProject[]
     sharedProjects: ISharedProject[]
@@ -75,14 +56,15 @@ const projectsSlice = createSlice({
   initialState,
   reducers: {
     setProjects(state, { payload }: PayloadAction<{
-            projects: IProject[] | ISharedProject[]
-            shared?: boolean
-        }>) {
+      projects: IProject[] | ISharedProject[]
+      shared?: boolean
+    }>) {
       if (payload.shared) {
         state.isLoadingShared = false
         state.sharedProjects = payload.projects as ISharedProject[]
       } else {
         state.isLoading = false
+        console.log('payload.projects', payload.projects)
         state.projects = payload.projects as IProject[]
       }
     },
@@ -121,11 +103,12 @@ const projectsSlice = createSlice({
     setLiveStats(state, { payload }: PayloadAction<{ data: any[], shared: boolean }>) {
       const { data, shared = false } = payload
       if (shared) {
+        // @ts-ignore
         state.sharedProjects = _map(state.sharedProjects, (res) => ({
           ...res,
           project: {
             ...res.project,
-            live: data[toNumber(res.project.id)],
+            live: res.project && data[toNumber(res.project.id)],
           },
         }))
       } else {
@@ -185,12 +168,12 @@ const projectsSlice = createSlice({
           ]
       }
     },
-    setProjectsShareData(state, { payload }: PayloadAction<{ data: IProject[] | ISharedProject[], id: string, shared: boolean }>) {
+    setProjectsShareData(state, { payload }: PayloadAction<{ data: IProject | ISharedProject, id: string, shared?: boolean }>) {
       const { data, id, shared = false } = payload
 
       if (shared) {
         state.sharedProjects = _map(state.sharedProjects, (res) => {
-          if (res.project.id === id) {
+          if (res.project && res.project.id === id) {
             return {
               ...res,
               ...data,

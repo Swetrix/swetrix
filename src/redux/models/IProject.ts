@@ -1,8 +1,11 @@
-interface IOvervallObject {
-    thisWeek: number
-    lastWeek: number
-    thisWeekUnique: number
-    lastWeekUnique: number
+export interface IOvervallObject {
+    thisWeek?: number
+    lastWeek?: number
+    thisWeekUnique?: number
+    lastWeekUnique?: number
+    percChange?: number
+    total?: number
+    percChangeUnique?: number
 }
 
 export interface IOverall {
@@ -40,7 +43,7 @@ export interface IProject {
     created?: string
     share?: IShareOwnerProject[]
     isOwner?: boolean
-    overall?: IOverall
+    overall?: IOvervallObject
     live?: number
     uiHidden?: boolean
 }
@@ -58,7 +61,7 @@ export interface ICaptchaProject {
     captchaSecretKey?: string | null
     created?: string
     isOwner?: boolean
-    overall?: IOverall
+    overall?: IOvervallObject
     live?: number
     uiHidden?: boolean
 }

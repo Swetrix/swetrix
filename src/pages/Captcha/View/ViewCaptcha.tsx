@@ -140,6 +140,7 @@ const ViewProject = ({
 
   const { name } = project as IProject
 
+  // @ts-ignore
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
 
   const chartMetrics = useMemo(() => {

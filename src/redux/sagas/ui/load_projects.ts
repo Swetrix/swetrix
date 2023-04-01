@@ -25,7 +25,7 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
     }
 
     let {
-      // eslint-disable-next-line prefer-const
+      // eslint-disable-next-line prefer-const, camelcase
       results, totalMonthlyEvents, total,
     } = yield call(getProjects, take, skip, isCaptcha)
 
@@ -56,9 +56,13 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
       yield put(UIActions.setCaptchaProjects(results))
       yield put(UIActions.setCaptchaTotal(total))
     } else {
-      yield put(UIActions.setProjects(results))
+      yield put(UIActions.setProjects({
+        projects: results,
+      }))
       yield put(UIActions.setTotalMonthlyEvents(totalMonthlyEvents))
-      yield put(UIActions.setTotal(total))
+      yield put(UIActions.setTotal({
+        total,
+      }))
     }
 
     const liveStats: any[] = yield call(getLiveVisitors, pids)

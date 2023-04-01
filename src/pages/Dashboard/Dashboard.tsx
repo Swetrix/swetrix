@@ -35,27 +35,58 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import { acceptShareProject } from 'api'
 
 import Pagination from 'ui/Pagination'
+import { ISharedProject } from 'redux/models/ISharedProject'
+import { IProject, IOvervallObject, ICaptchaProject } from 'redux/models/IProject'
+import { IUser } from 'redux/models/IUser'
 
 const DASHBOARD_TABS_VALUES = _values(DASHBOARD_TABS)
+
+interface IProjectCart {
+  name?: string
+  created?: string
+  active?: boolean
+  overall?: IOvervallObject
+  t: (key: string, options?: {
+    [key: string]: string | number | null | undefined
+  }) => string
+  language: string
+  live?: string | number
+  isPublic?: boolean
+  confirmed?: boolean
+  id?: string
+  deleteProjectFailed: (message: string) => void
+  sharedProjects: ISharedProject[]
+  setProjectsShareData: (data: ISharedProject, id: string, shared?: boolean) => void
+  setUserShareData: (data: ISharedProject, id: string) => void
+  shared?: boolean
+  userSharedUpdate: (message: string) => void
+  sharedProjectError: (message: string) => void
+  captcha?: boolean
+}
 
 const ProjectCart = ({
   name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
   sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
   captcha,
-}) => {
-  const statsDidGrowUp = overall?.percChange >= 0
+}: IProjectCart): JSX.Element => {
+  const statsDidGrowUp = overall?.percChange ? overall?.percChange >= 0 : false
   const [showInviteModal, setShowInviteModal] = useState(false)
 
   const onAccept = async () => {
-    const pid = _find(sharedProjects, item => item.project.id === id).id
+    // @ts-ignore
+    const pid: string = _find(sharedProjects, (item: ISharedProject) => item.project && item.project.id === id)?.id
 
     try {
+      if (!pid || !id) {
+        throw new Error('Project not found')
+      }
       await acceptShareProject(pid)
       setProjectsShareData({ confirmed: true }, id, true)
       setUserShareData({ confirmed: true }, pid)
       userSharedUpdate(t('apiNotifications.acceptInvitation'))
     } catch (e) {
       sharedProjectError(t('apiNotifications.acceptInvitationError'))
+      // @ts-ignore
       deleteProjectFailed(e)
     }
   }
@@ -169,7 +200,26 @@ const ProjectCart = ({
   )
 }
 
-const NoProjects = ({ t }) => (
+ProjectCart.defaultProps = {
+  isPublic: false,
+  created: '',
+  overall: {
+    percChange: 0,
+    total: 0,
+    thisWeek: 0,
+  },
+  active: false,
+  shared: false,
+  captcha: false,
+  confirmed: false,
+  id: '',
+  name: '',
+  live: 'N/A',
+}
+
+const NoProjects = ({ t }: {
+  t: (key: string) => string
+}): JSX.Element => (
   <div className='mt-5'>
     <h3 className='text-center dark:text-gray-50'>
       {t('dashboard.noProjects')}
@@ -180,20 +230,56 @@ const NoProjects = ({ t }) => (
   </div>
 )
 
+interface DashboardProps {
+  projects: IProject[]
+  isLoading: boolean
+  error: string
+  user: IUser
+  deleteProjectFailed: (error: string) => void
+  setProjectsShareData: (data: ISharedProject) => void
+  setUserShareData: (data: ISharedProject) => void
+  userSharedUpdate: (message: string) => void
+  sharedProjectError: (error: string) => void
+  loadProjects: (take: number, skip: number) => void
+  loadSharedProjects: (take: number, skip: number) => void
+  total: number
+  setDashboardPaginationPage: (page: number) => void
+  dashboardPaginationPage: number
+  sharedProjects: ISharedProject[]
+  dashboardTabs: string
+  setDashboardTabs: (tab: string) => void
+  sharedTotal: number
+  setDashboardPaginationPageShared: (page: number) => void
+  dashboardPaginationPageShared: number
+  captchaProjects: ICaptchaProject[]
+  captchaTotal: number
+  dashboardPaginationPageCaptcha: number
+  setDashboardPaginationPageCaptcha: (page: number) => void
+  loadProjectsCaptcha: (take: number, skip: number) => void
+  projectTab: string
+}
+
 const Dashboard = ({
   projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData,
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
   setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
   loadProjectsCaptcha, projectTab,
-}) => {
-  const { t, i18n: { language } } = useTranslation('common')
-  const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
+}: DashboardProps): JSX.Element => {
+  const { t, i18n: { language } }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | null | undefined
+    }) => string
+    i18n: {
+      language: string
+    }
+  } = useTranslation('common')
+  const [showActivateEmailModal, setShowActivateEmailModal] = useState<boolean>(false)
   const history = useHistory()
-  const [tabProjects, setTabProjects] = useState(dashboardTabs)
-  const pageAmountShared = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
-  const pageAmount = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
-  const pageAmountCaptcha = Math.ceil(captchaTotal / ENTRIES_PER_PAGE_DASHBOARD)
+  const [tabProjects, setTabProjects] = useState<string>(dashboardTabs)
+  const pageAmountShared: number = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
+  const pageAmount: number = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
+  const pageAmountCaptcha: number = Math.ceil(captchaTotal / ENTRIES_PER_PAGE_DASHBOARD)
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
@@ -229,7 +315,8 @@ const Dashboard = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage, dashboardPaginationPageShared])
 
-  const [activeDashTab, setActiveDashTab] = useState(() => {
+  const [activeDashTab, setActiveDashTab] = useState<string | null>(() => {
+    // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
     const tab = searchParams.get('tab')
@@ -307,8 +394,8 @@ const Dashboard = ({
                     labelExtractor={(item) => t(item.label)}
                     onSelect={(label) => {
                       const selected = _find(dashboardLocTabs, (tab) => t(tab.label) === label)
-                      setTabProjects(selected.name)
-                      setActiveDashTab(selected.id)
+                      setTabProjects(selected?.name ? selected.name : tabForOwnedProject)
+                      setActiveDashTab(selected?.id ? selected.id : DASHBOARD_TABS.owned)
                     }}
                     title={activeDashTabLabel}
                   />
@@ -352,21 +439,26 @@ const Dashboard = ({
                     <div className='shadow overflow-hidden sm:rounded-md'>
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
+                          name, id, created, active, overall, live, public: isPublic,
                         }) => (
-                          <div key={confirmed ? `${id}-confirmed` : id}>
+                          <div key={id}>
                             <Link to={_replace(routes.project, ':id', id)}>
                               <ProjectCart
                                 t={t}
                                 language={language}
                                 name={name}
                                 created={created}
-                                shared={shared}
                                 active={active}
                                 isPublic={isPublic}
-                                confirmed={confirmed}
+                                confirmed={false}
                                 overall={overall}
                                 live={_isNumber(live) ? live : 'N/A'}
+                                setUserShareData={() => {}}
+                                deleteProjectFailed={() => {}}
+                                userSharedUpdate={() => {}}
+                                sharedProjects={[]}
+                                setProjectsShareData={() => {}}
+                                sharedProjectError={() => {}}
                               />
                             </Link>
                           </div>
@@ -384,22 +476,26 @@ const Dashboard = ({
                     <div className='shadow overflow-hidden sm:rounded-md'>
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, live, public: isPublic, confirmed, shared = false,
+                          name, id, created, active, overall, live, public: isPublic,
                         }) => (
-                          <div key={confirmed ? `${id}-confirmed` : id}>
+                          <div key={id}>
                             <Link to={_replace(routes.captcha, ':id', id)}>
                               <ProjectCart
                                 t={t}
                                 language={language}
                                 name={name}
                                 created={created}
-                                shared={shared}
                                 captcha
                                 active={active}
                                 isPublic={isPublic}
-                                confirmed={confirmed}
                                 overall={overall}
                                 live={_isNumber(live) ? live : 'N/A'}
+                                deleteProjectFailed={() => {}}
+                                sharedProjects={[]}
+                                setProjectsShareData={() => {}}
+                                setUserShareData={() => {}}
+                                userSharedUpdate={() => {}}
+                                sharedProjectError={() => {}}
                               />
                             </Link>
                           </div>
@@ -418,41 +514,47 @@ const Dashboard = ({
                     <div className='shadow overflow-hidden sm:rounded-md'>
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
-                          project, confirmed, shared = true,
+                          project, confirmed,
                         }) => (
-                          <div key={confirmed ? `${project.id}-confirmed` : project.id}>
+                          <div key={confirmed ? `${project?.id}-confirmed` : project?.id}>
                             {
                                 (_isUndefined(confirmed) || confirmed) ? (
-                                  <Link to={_replace(routes.project, ':id', project.id)}>
+                                  <Link to={_replace(routes.project, ':id', project?.id ? project?.id : '')}>
                                     <ProjectCart
                                       t={t}
                                       language={language}
-                                      name={project.name}
-                                      created={project.created}
-                                      shared={shared}
-                                      active={project.active}
-                                      isPublic={project.public}
+                                      name={project?.name}
+                                      created={project?.created}
+                                      shared
+                                      active={project?.active}
+                                      isPublic={project?.public}
                                       confirmed={confirmed}
-                                      overall={project.overall}
-                                      live={_isNumber(project.live) ? project.live : 'N/A'}
+                                      overall={project?.overall}
+                                      live='N/A'
+                                      setUserShareData={() => {}}
+                                      deleteProjectFailed={() => {}}
+                                      sharedProjects={[]}
+                                      setProjectsShareData={() => {}}
+                                      userSharedUpdate={() => {}}
+                                      sharedProjectError={() => {}}
                                     />
                                   </Link>
                                 ) : (
                                   <ProjectCart
                                     t={t}
-                                    id={project.id}
+                                    id={project?.id}
                                     language={language}
-                                    name={project.name}
-                                    created={project.created}
-                                    shared={shared}
-                                    active={project.active}
-                                    isPublic={project.public}
-                                    overall={project.overall}
+                                    name={project?.name}
+                                    created={project?.created}
+                                    shared
+                                    active={project?.active}
+                                    isPublic={project?.public}
+                                    overall={project?.overall}
                                     confirmed={confirmed}
                                     sharedProjects={user.sharedProjects}
                                     setProjectsShareData={setProjectsShareData}
                                     setUserShareData={setUserShareData}
-                                    live={_isNumber(project.live) ? project.live : 'N/A'}
+                                    live={_isNumber(project?.live) ? project?.live : 'N/A'}
                                     userSharedUpdate={userSharedUpdate}
                                     sharedProjectError={sharedProjectError}
                                     deleteProjectFailed={deleteProjectFailed}

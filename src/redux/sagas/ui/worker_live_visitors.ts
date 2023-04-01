@@ -23,7 +23,7 @@ export default function* liveVisitors() {
         continue
       }
 
-      const pids = _map(_filter(sharedProjects, ({ project }) => !project.uiHidden), item => item.project.id)
+      const pids = _map(_filter(sharedProjects, ({ project }) => !project?.uiHidden), item => (item?.project?.id ? item.project.id : ''))
 
       if (_isEmpty(pids)) {
         continue
