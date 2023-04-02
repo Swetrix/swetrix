@@ -26,23 +26,43 @@ import Modal from 'ui/Modal'
 import {
   PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME,
 } from 'redux/constants'
-import { createAlert, updateAlert, deleteAlert } from 'api'
+import {
+  createAlert, updateAlert, deleteAlert, ICreateAlert,
+} from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Select from 'ui/Select'
+import { IAlerts } from 'redux/models/IAlerts'
+import { IUser } from 'redux/models/IUser'
 
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
 const ProjectAlertsSettings = ({
   alerts, setProjectAlerts, showError, user, setProjectAlertsTotal, total,
+}: {
+  alerts: IAlerts[]
+  setProjectAlerts: (item: IAlerts[]) => void
+  showError: (message: string) => void
+  user: IUser
+  setProjectAlertsTotal: (num: number) => void
+  total: number
 }) => {
   const history = useHistory()
-  const { id, pid } = useParams()
-  const { pathname } = useLocation()
-  const { t } = useTranslation('common')
-  const isSettings = !_isEmpty(id) && (_replace(_replace(routes.alert_settings, ':id', id), ':pid', pid) === pathname)
+  const { id, pid }: {
+    id: string
+    pid: string
+  } = useParams()
+  const { pathname }: {
+    pathname: string
+  } = useLocation()
+  const { t }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | null | undefined
+    }) => string
+  } = useTranslation('common')
+  const isSettings: boolean = !_isEmpty(id) && (_replace(_replace(routes.alert_settings, ':id', id), ':pid', pid) === pathname)
   const alert = useMemo(() => _find(alerts, { id }), [alerts, id])
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Partial<IAlerts>>({
     pid,
     name: '',
     queryTime: QUERY_TIME.LAST_1_HOUR,
@@ -50,16 +70,20 @@ const ProjectAlertsSettings = ({
     queryMetric: QUERY_METRIC.PAGE_VIEWS,
     active: true,
   })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [showModal, setShowModal] = useState(false)
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    [key: string]: string
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [showModal, setShowModal] = useState<boolean>(false)
 
   const isIntegrationLinked = useMemo(() => {
     return !_isEmpty(user) && user.telegramChatId && user.isTelegramChatIdConfirmed
   }, [user])
 
-  const queryTimeTMapping = useMemo(() => {
+  const queryTimeTMapping: {
+    [key: string]: string
+  } = useMemo(() => {
     const values = _values(QUERY_TIME)
 
     return _reduce(values, (prev, curr) => {
@@ -85,7 +109,9 @@ const ProjectAlertsSettings = ({
     }, {})
   }, [t])
 
-  const queryConditionTMapping = useMemo(() => {
+  const queryConditionTMapping: {
+    [key: string]: string
+  } = useMemo(() => {
     const values = _values(QUERY_CONDITION)
 
     return _reduce(values, (prev, curr) => ({
@@ -94,7 +120,9 @@ const ProjectAlertsSettings = ({
     }), {})
   }, [t])
 
-  const queryMetricTMapping = useMemo(() => {
+  const queryMetricTMapping: {
+    [key: string]: string
+  } = useMemo(() => {
     const values = _values(QUERY_METRIC)
 
     return _reduce(values, (prev, curr) => ({
@@ -110,7 +138,9 @@ const ProjectAlertsSettings = ({
   }, [alert])
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors: {
+      [key: string]: string
+    } = {}
 
     if (_isEmpty(form.name) || _size(form.name) < 3) {
       allErrors.name = t('profileSettings.nameError')
@@ -126,7 +156,7 @@ const ProjectAlertsSettings = ({
     setValidated(valid)
   }
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: Partial<IAlerts>) => {
     if (isSettings) {
       updateAlert(id, data)
         .then((res) => {
@@ -137,7 +167,7 @@ const ProjectAlertsSettings = ({
           showError(err.message || err || 'Something went wrong')
         })
     } else {
-      createAlert(data)
+      createAlert(data as ICreateAlert)
         .then((res) => {
           history.push(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setProjectAlerts([...alerts, res])
@@ -169,7 +199,7 @@ const ProjectAlertsSettings = ({
     validate()
   }, [form]) // eslint-disable-line
 
-  const handleInput = event => {
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
@@ -179,7 +209,7 @@ const ProjectAlertsSettings = ({
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setBeenSubmitted(true)
@@ -208,6 +238,7 @@ const ProjectAlertsSettings = ({
             <div className='flex items-center bg-blue-50 dark:text-gray-50 dark:bg-gray-700 rounded px-5 py-3 mt-2 whitespace-pre-wrap text-base'>
               <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
               <Trans
+                // @ts-ignore
                 t={t}
                 i18nKey='alert.noIntegration'
                 components={{
@@ -238,11 +269,10 @@ const ProjectAlertsSettings = ({
           />
           <div className='mt-4'>
             <Select
-              name='queryMetric'
               id='queryMetric'
               label={t('alert.metric')}
               items={_values(queryMetricTMapping)}
-              title={queryMetricTMapping[form.queryMetric]}
+              title={form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''}
               onSelect={(item) => {
                 const key = _findKey(queryMetricTMapping, predicate => predicate === item)
 
@@ -255,11 +285,10 @@ const ProjectAlertsSettings = ({
           </div>
           <div className='mt-4'>
             <Select
-              name='queryCondition'
               id='queryCondition'
               label={t('alert.condition')}
               items={_values(queryConditionTMapping)}
-              title={queryConditionTMapping[form.queryCondition]}
+              title={form.queryCondition ? queryConditionTMapping[form.queryCondition] : ''}
               onSelect={(item) => {
                 const key = _findKey(queryConditionTMapping, predicate => predicate === item)
 
@@ -283,11 +312,10 @@ const ProjectAlertsSettings = ({
           />
           <div className='mt-4'>
             <Select
-              name='queryTime'
               id='queryTime'
               label={t('alert.time')}
               items={_values(queryTimeTMapping)}
-              title={queryTimeTMapping[form.queryTime]}
+              title={form.queryTime ? queryTimeTMapping[form.queryTime] : ''}
               onSelect={(item) => {
                 const key = _findKey(queryTimeTMapping, predicate => predicate === item)
 
@@ -301,8 +329,10 @@ const ProjectAlertsSettings = ({
           {isSettings ? (
             <div className='flex justify-between items-center mt-5'>
               <Button onClick={() => setShowModal(true)} danger semiSmall>
-                <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-                {t('alert.delete')}
+                <>
+                  <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                  {t('alert.delete')}
+                </>
               </Button>
               <div className='flex justify-between items-center'>
                 <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>

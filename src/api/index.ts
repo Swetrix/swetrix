@@ -639,7 +639,7 @@ export const getAlerts = (take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) 
         : error.response.data.message
     })
 
-interface ICreateAlert extends Omit<IAlerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> { }
+export interface ICreateAlert extends Omit<IAlerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> { }
 
 export const createAlert = (data: ICreateAlert) =>
   api
@@ -652,7 +652,7 @@ export const createAlert = (data: ICreateAlert) =>
         : error.response.data.message
     })
 
-export const updateAlert = (id: string, data: IAlerts) =>
+export const updateAlert = (id: string, data: Partial<IAlerts>) =>
   api
     .put(`alert/${id}`, data)
     .then((response): IAlerts => response.data)

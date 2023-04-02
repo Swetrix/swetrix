@@ -6,19 +6,20 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 
 const Select = ({
-  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect,
+  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect, id,
 }: {
   title?: string,
   label: string,
   className?: string,
   items: any[],
+  id: string,
   labelExtractor?: (item: any, index: number) => string,
   keyExtractor?: (item: any, index: number) => string,
   iconExtractor?: (item: any, index: number) => JSX.Element | null,
   onSelect: (item: any) => void,
 }): JSX.Element => (
   // @ts-ignore
-  <Listbox className={className} value={title} onChange={onSelect}>
+  <Listbox id={id} className={className} value={title} onChange={onSelect}>
     {({ open }) => (
       <>
         <Listbox.Label className='block text-sm whitespace-pre-line font-medium text-gray-700 dark:text-gray-100'>{label}</Listbox.Label>
