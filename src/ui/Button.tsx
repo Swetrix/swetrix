@@ -8,7 +8,7 @@ import Spin from './icons/Spin'
 import './ButtonChristmas.css'
 
 const Button = ({
-  text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading, semiSmall, semiDanger, noBorder, focus,
+  text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading, semiSmall, semiDanger, noBorder, focus, disabled,
 }: {
   text?: string,
   children?: JSX.Element | string,
@@ -28,11 +28,13 @@ const Button = ({
   semiDanger?: boolean,
   focus?: boolean,
   noBorder?: boolean,
+  disabled?: boolean,
 }): JSX.Element => {
   // const themeType = useSelector((state) => state.ui.theme.type)
 
   return (
     <button
+      disabled={disabled}
       type={type}
       onClick={onClick}
       className={cx('relative inline-flex select-none items-center border leading-4 font-medium rounded-md', {
@@ -97,6 +99,7 @@ Button.propTypes = {
   loading: PropTypes.bool,
   focus: PropTypes.bool,
   noBorder: PropTypes.bool,
+  disabled: PropTypes.bool,
 }
 
 Button.defaultProps = {
@@ -118,6 +121,7 @@ Button.defaultProps = {
   children: null,
   focus: true,
   noBorder: false,
+  disabled: false,
 }
 
 export default memo(Button)
