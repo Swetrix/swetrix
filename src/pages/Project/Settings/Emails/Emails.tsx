@@ -37,8 +37,8 @@ const ModalMessage = ({
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
   beenSubmitted: boolean
   errors: {
-    email: string
-    reportFrequency: string
+    email?: string
+    reportFrequency?: string
   }
   form: {
     email: string
@@ -294,12 +294,9 @@ const Emails = ({
   })
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    email: string,
-    reportFrequency: string,
-  }>({
-    email: '',
-    reportFrequency: '',
-  })
+    email?: string,
+    reportFrequency?: string,
+  }>({})
   const [validated, setValidated] = useState<boolean>(false)
   const [emails, setEmails] = useState<ISubscribers[]>([])
   const [loading, setLoading] = useState(true)
@@ -330,12 +327,9 @@ const Emails = ({
 
   const validate = () => {
     const allErrors: {
-      email: string,
-      reportFrequency: string,
-    } = {
-      email: '',
-      reportFrequency: '',
-    }
+      email?: string,
+      reportFrequency?: string,
+    } = {}
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -364,10 +358,7 @@ const Emails = ({
 
   const onSubmit = async () => {
     setShowModal(false)
-    setErrors({
-      email: '',
-      reportFrequency: '',
-    })
+    setErrors({})
     setValidated(false)
 
     try {
@@ -399,10 +390,7 @@ const Emails = ({
     setShowModal(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
     setTimeout(() => setForm({ email: '', reportFrequency: '' }), 300)
-    setErrors({
-      email: '',
-      reportFrequency: '',
-    })
+    setErrors({})
   }
 
   const onRemove = async (email: string) => {

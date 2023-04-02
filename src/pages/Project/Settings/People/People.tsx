@@ -21,8 +21,11 @@ import {
   roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN,
 } from 'redux/constants'
 import useOnClickOutside from 'hooks/useOnClickOutside'
+import { IProject, IShareOwnerProject } from 'redux/models/IProject'
 
-const NoEvents = ({ t }) => (
+const NoEvents = ({ t }: {
+  t: (key: string) => string
+}): JSX.Element => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
       <h2 className='text-2xl mb-8 text-center leading-snug'>
@@ -34,19 +37,31 @@ const NoEvents = ({ t }) => (
 
 const UsersList = ({
   data, onRemove, t, share, setProjectShareData, pid, updateProjectFailed, language, roleUpdatedNotification,
+}: {
+  data: IShareOwnerProject
+  onRemove: (id: string) => void
+  t: (key: string, options?: {
+    [key: string]: string | number | null
+  }) => string
+  share?: IShareOwnerProject[]
+  setProjectShareData: (item: Partial<IProject>, id: string) => void
+  pid: string
+  updateProjectFailed: (message: string) => void
+  language: string
+  roleUpdatedNotification: (email: string, role?: string) => void
 }) => {
-  const [open, setOpen] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const openRef = useRef()
+  const [open, setOpen] = useState<boolean>(false)
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
+  const openRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const {
     id, created, confirmed, role, user,
   } = data
 
-  const changeRole = async (newRole) => {
+  const changeRole = async (newRole: string) => {
     try {
       const results = await changeShareRole(id, { role: newRole })
-      const newShared = _map(share, (itShare) => {
+      const newShared: IShareOwnerProject[] = _map(share, (itShare) => {
         if (itShare.id === results.id) {
           return { ...results, user: itShare.user }
         }
@@ -166,24 +181,50 @@ UsersList.defaultProps = {
   data: {},
 }
 
-const People = ({
+interface IPeopleProps {
+  project: IProject,
+  updateProjectFailed: (error: string) => void,
+  setProjectShareData: (data: Partial<IProject>, projectId: string, share?: boolean) => void,
+  roleUpdatedNotification: (email: string, role?: string) => void,
+  inviteUserNotification: (email: string, type?: string) => void,
+  removeUserNotification: (email: string) => void,
+  isPaidTierUsed: boolean,
+}
+
+const People: React.FunctionComponent<IPeopleProps> = ({
   project, updateProjectFailed, setProjectShareData, roleUpdatedNotification, inviteUserNotification,
   removeUserNotification, isPaidTierUsed,
-}) => {
-  const [showModal, setShowModal] = useState(false)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
-  const { t, i18n: { language } } = useTranslation('common')
-  const [form, setForm] = useState({
+}: IPeopleProps): JSX.Element => {
+  const [showModal, setShowModal] = useState<boolean>(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const { t, i18n: { language } }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | null
+    }) => string,
+    i18n: {
+      language: string
+    }
+  } = useTranslation('common')
+  const [form, setForm] = useState<{
+    email: string,
+    role: string,
+  }>({
     email: '',
     role: '',
   })
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [validated, setValidated] = useState(false)
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    email?: string,
+    role?: string,
+  }>({})
+  const [validated, setValidated] = useState<boolean>(false)
   const { id, name, share } = project
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors: {
+      email?: string,
+      role?: string,
+    } = {}
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -205,7 +246,7 @@ const People = ({
     }
   }, [form]) // eslint-disable-line
 
-  const handleInput = ({ target }) => {
+  const handleInput = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
 
     setForm(oldForm => ({
@@ -232,7 +273,7 @@ const People = ({
     setTimeout(() => setForm({ email: '', role: '' }), 300)
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -256,7 +297,7 @@ const People = ({
     setErrors({})
   }
 
-  const onRemove = async (userId) => {
+  const onRemove = async (userId: string) => {
     try {
       await deleteShareProjectUsers(id, userId)
       const newShared = _map(_filter(share, s => s.id !== userId), s => s)
@@ -286,8 +327,10 @@ const People = ({
           type='button'
           onClick={() => setShowModal(true)}
         >
-          <UserPlusIcon className='w-5 h-5 mr-1' />
-          {t('project.settings.invite')}
+          <>
+            <UserPlusIcon className='w-5 h-5 mr-1' />
+            {t('project.settings.invite')}
+          </>
         </Button>
       </div>
       <div>
@@ -437,6 +480,7 @@ const People = ({
 }
 
 People.propTypes = {
+  // @ts-ignore
   // eslint-disable-next-line react/forbid-prop-types
   project: PropTypes.object.isRequired,
   updateProjectFailed: PropTypes.func.isRequired,
