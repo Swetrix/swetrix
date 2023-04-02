@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, {
+  useState, useEffect, useRef,
+} from 'react'
 import {
   TrashIcon, InboxStackIcon, ChevronDownIcon, CheckIcon,
 } from '@heroicons/react/24/outline'
@@ -26,10 +28,26 @@ import Loader from 'ui/Loader'
 import Beta from 'ui/Beta'
 import cx from 'clsx'
 import { WarningPin } from 'ui/Pin'
+import { ISubscribers } from 'redux/models/ISubscribers'
 
 const ModalMessage = ({
   project, handleInput, beenSubmitted, errors, form, t,
-}) => (
+}: {
+  project: string
+  handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
+  beenSubmitted: boolean
+  errors: {
+    email: string
+    reportFrequency: string
+  }
+  form: {
+    email: string
+    reportFrequency: string
+  }
+  t: (key: string, options?: {
+    [key: string]: string | number | boolean | undefined
+  }) => string
+}): JSX.Element => (
   <div>
     <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
       {t('project.settings.inviteTo', { project })}
@@ -86,16 +104,36 @@ const ModalMessage = ({
 
 const EmailList = ({
   data, onRemove, t, setEmails, emailFailed, language, reportTypeNotifiction,
+}: {
+  data: {
+    id: string
+    addedAt: string
+    isConfirmed: boolean
+    projectId: string
+    email: string
+    reportFrequency: string
+  }
+  onRemove: (id: string) => void
+  t: (key: string, options?: {
+    [key: string]: string | number | boolean | undefined
+  }) => string
+  setEmails: (value: ISubscribers[] | ((prevVar: ISubscribers[]) => ISubscribers[])) => void;
+  emailFailed: (message: string) => void
+  language: string
+  reportTypeNotifiction: (message: string) => void
 }) => {
-  const [open, setOpen] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const openRef = useRef()
+  const [open, setOpen] = useState<boolean>(false)
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
+  const openRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const {
     id, addedAt, isConfirmed, projectId, email, reportFrequency,
   } = data
 
-  const changeRole = async (reportType) => {
+  const changeRole = async (reportType: {
+    value: string
+    label: string
+  }) => {
     try {
       const results = await updateSubscriber(projectId, id, { reportFrequency: reportType.value })
       setEmails((prev) => {
@@ -218,7 +256,9 @@ EmailList.defaultProps = {
   data: {},
 }
 
-const NoSubscribers = ({ t }) => (
+const NoSubscribers = ({ t }: {
+  t: (string: string) => string,
+}): JSX.Element => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
       <h2 className='text-2xl mb-8 text-center leading-snug'>
@@ -230,17 +270,38 @@ const NoSubscribers = ({ t }) => (
 
 const Emails = ({
   emailFailed, addEmail, removeEmail, projectId, projectName, reportTypeNotifiction,
-}) => {
-  const [showModal, setShowModal] = useState(false)
-  const { t, i18n: { language } } = useTranslation('common')
-  const [form, setForm] = useState({
+}: {
+  emailFailed: (message: string, type?: string) => void
+  addEmail: (message: string, type?: string) => void
+  removeEmail: (message: string) => void
+  projectId: string
+  projectName: string
+  reportTypeNotifiction: (message: string, type?: string) => void
+}): JSX.Element => {
+  const [showModal, setShowModal] = useState<boolean>(false)
+  const { t, i18n: { language } }: {
+    t: (string: string, options?: {
+      [key: string]: string | number | boolean | undefined | null
+    }) => string,
+    i18n: { language: string },
+  } = useTranslation('common')
+  const [form, setForm] = useState<{
+    email: string,
+    reportFrequency: string,
+  }>({
     email: '',
     reportFrequency: reportFrequencyForEmailsOptions[3].value,
   })
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [validated, setValidated] = useState(false)
-  const [emails, setEmails] = useState([])
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    email: string,
+    reportFrequency: string,
+  }>({
+    email: '',
+    reportFrequency: '',
+  })
+  const [validated, setValidated] = useState<boolean>(false)
+  const [emails, setEmails] = useState<ISubscribers[]>([])
   const [loading, setLoading] = useState(true)
   const [paggination, setPaggination] = useState({
     page: 1,
@@ -268,7 +329,13 @@ const Emails = ({
   }, []) // eslint-disable-line
 
   const validate = () => {
-    const allErrors = {}
+    const allErrors: {
+      email: string,
+      reportFrequency: string,
+    } = {
+      email: '',
+      reportFrequency: '',
+    }
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -286,7 +353,7 @@ const Emails = ({
     }
   }, [form]) // eslint-disable-line
 
-  const handleInput = ({ target }) => {
+  const handleInput = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
 
     setForm(oldForm => ({
@@ -297,7 +364,10 @@ const Emails = ({
 
   const onSubmit = async () => {
     setShowModal(false)
-    setErrors({})
+    setErrors({
+      email: '',
+      reportFrequency: '',
+    })
     setValidated(false)
 
     try {
@@ -310,10 +380,10 @@ const Emails = ({
     }
 
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '' }), 300)
+    setTimeout(() => setForm({ email: '', reportFrequency: '' }), 300)
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -328,11 +398,14 @@ const Emails = ({
   const closeModal = () => {
     setShowModal(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '' }), 300)
-    setErrors({})
+    setTimeout(() => setForm({ email: '', reportFrequency: '' }), 300)
+    setErrors({
+      email: '',
+      reportFrequency: '',
+    })
   }
 
-  const onRemove = async (email) => {
+  const onRemove = async (email: string) => {
     try {
       await removeSubscriber(projectId, email)
       const results = _filter(emails, s => s.id !== email)
@@ -365,8 +438,10 @@ const Emails = ({
           type='button'
           onClick={() => setShowModal(true)}
         >
-          <InboxStackIcon className='w-5 h-5 mr-1' />
-          {t('project.emails.add')}
+          <>
+            <InboxStackIcon className='w-5 h-5 mr-1' />
+            {t('project.emails.add')}
+          </>
         </Button>
       </div>
       <div>
@@ -393,12 +468,10 @@ const Emails = ({
                         <EmailList
                           data={email}
                           key={email.id}
-                          pid={projectId}
                           onRemove={onRemove}
                           t={t}
                           language={language}
                           setEmails={setEmails}
-                          removeEmail={removeEmail}
                           emailFailed={emailFailed}
                           reportTypeNotifiction={reportTypeNotifiction}
                         />
@@ -437,7 +510,6 @@ const Emails = ({
             handleInput={handleInput}
             errors={errors}
             beenSubmitted={beenSubmitted}
-            validated={validated}
           />
         )}
         isOpened={showModal}

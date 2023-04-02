@@ -9,13 +9,17 @@ import Loader from 'ui/Loader'
 import { confirmSubscriberInvite } from 'api'
 import routes from 'routes'
 
-const ConfirmReportsShare = () => {
-  const { t } = useTranslation('common')
-  const { id } = useParams()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+const ConfirmReportsShare = (): JSX.Element => {
+  const { t }: {
+    t: (key: string) => string
+  } = useTranslation('common')
+  const { id }: {
+    id: string
+  } = useParams()
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string>('')
 
-  const handleConfirm = async (token) => {
+  const handleConfirm = async (token: string) => {
     try {
       await confirmSubscriberInvite(id, token)
     } catch (e) {

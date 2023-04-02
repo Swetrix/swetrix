@@ -687,7 +687,7 @@ export const reGenerateCaptchaSecretKey = (pid: string) =>
 
 export const addSubscriber = (id: string, data: {
   email: string
-  reportFrequency: keyof typeof reportFrequencies
+  reportFrequency: string
 }) =>
   api
     .post(`project/${id}/subscribers`, data)
@@ -714,7 +714,7 @@ export const getSubscribers = (id: string, offset: number, limit: number) =>
     })
 
 export const updateSubscriber = (id: string, subscriberId: string, data: {
-  reportFrequency: keyof typeof reportFrequencies
+  reportFrequency: string
 }) =>
   api
     .patch(`project/${id}/subscribers/${subscriberId}`, data)
