@@ -7,22 +7,28 @@ import _split from 'lodash/split'
 
 import Title from 'components/Title'
 import UIActions from 'redux/reducers/ui'
+import sagaActions from 'redux/sagas/actions'
 import Loader from 'ui/Loader'
 import routes from 'routes'
+import { AppDispatch } from 'redux/store'
 
 const ConfirmShare = () => {
-  const { t } = useTranslation('common')
-  const dispatch = useDispatch()
-  const { id } = useParams()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const { t }: {
+    t: (key: string) => string
+  } = useTranslation('common')
+  const dispatch: AppDispatch = useDispatch()
+  const { id }: {
+    id: string
+  } = useParams()
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string>('')
 
   useEffect(() => {
     setLoading(true)
     const path = _split(window.location.pathname, '/')[1]
 
     dispatch(
-      UIActions.shareVerifyAsync(
+      sagaActions.shareVerifyAsync(
         { path, id },
         () => setLoading(false),
         (verifyError) => {

@@ -77,7 +77,8 @@ const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?:
 
 const shareVerifyAsync = (data: {
     id: string,
-}, successfulCallback?: () => {}, errorCallback?: () => {}) => ({
+    path: string
+}, successfulCallback?: () => void, errorCallback?: (error: string) => void) => ({
   type: types.SHARE_VERIFY_ASYNC,
   payload: { data, successfulCallback, errorCallback },
 })
