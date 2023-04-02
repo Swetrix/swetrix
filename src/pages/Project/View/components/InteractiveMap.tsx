@@ -5,21 +5,38 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
 import { PROJECT_TABS } from 'redux/constants'
+import { StateType } from 'redux/store'
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 
 import countriesList from 'utils/countries'
 import { useSelector } from 'react-redux'
 
-const InteractiveMap = ({ data, onClickCountry, total }) => {
+const InteractiveMap = ({ data, onClickCountry, total }: {
+  data: Record<string, number>
+  onClickCountry: (country: string) => void
+  total: number
+}) => {
   const { t, i18n: { language } } = useTranslation('common')
-  const [hoverShow, setHoverShow] = useState(false)
-  const [dataHover, setDataHover] = useState(null)
-  const [cursorPosition, setCursorPosition] = useState(null)
+  const [hoverShow, setHoverShow] = useState<boolean>(false)
+  const [dataHover, setDataHover] = useState<{
+    countries: string
+    data: number
+  }>({} as {
+    countries: string
+    data: number
+  })
+  const [cursorPosition, setCursorPosition] = useState<{
+    pageX: number
+    pageY: number
+  }>({} as {
+    pageX: number
+    pageY: number
+  })
 
-  const projectTab = useSelector((state) => state.ui.projects.projectTab)
+  const projectTab = useSelector((state: StateType) => state.ui.projects.projectTab)
   const isTrafficTab = projectTab === PROJECT_TABS.traffic
 
-  const onMouseMove = (e) => {
+  const onMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const pageX = e.clientX - rect.left
     const pageY = e.clientY - rect.top

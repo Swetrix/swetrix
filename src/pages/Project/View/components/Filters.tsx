@@ -12,7 +12,18 @@ import countries from 'utils/isoCountries'
  */
 const Filter = ({
   column, filter, isExclusive, onRemoveFilter, onChangeExclusive, tnMapping, language, t,
-}) => {
+}: {
+  column: string
+  filter: string
+  isExclusive: boolean
+  // eslint-disable-next-line no-shadow
+  onRemoveFilter: (column: string, filter: string) => void
+  // eslint-disable-next-line no-shadow
+  onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
+  tnMapping: Record<string, string>
+  language: string
+  t: (key: string) => string
+}): JSX.Element => {
   const displayColumn = tnMapping[column]
   let displayFilter = filter
 
@@ -58,6 +69,17 @@ const Filter = ({
  */
 const Filters = ({
   filters, onRemoveFilter, onChangeExclusive, tnMapping,
+}: {
+  filters: {
+    column: string
+    filter: string
+    isExclusive: boolean
+  }[]
+  // eslint-disable-next-line no-shadow
+  onRemoveFilter: (column: string, filter: string) => void
+  // eslint-disable-next-line no-shadow
+  onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
+  tnMapping: Record<string, string>
 }) => {
   const { t, i18n: { language } } = useTranslation('common')
 

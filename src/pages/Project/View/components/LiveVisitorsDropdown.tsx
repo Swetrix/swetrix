@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
+// @ts-ignore
 import OutsideClickHandler from 'react-outside-click-handler'
 import {
   ChevronDownIcon, ChevronUpIcon, XMarkIcon,
 } from '@heroicons/react/24/outline'
 import Flag from 'react-flagkit'
 
-import { getLiveVisitorsInfo } from 'api'
+import { getLiveVisitorsInfo, IGetLiveVisitorsInfo } from 'api'
 
-const LiveVisitorsDropdown = ({ live, projectId }) => {
+const LiveVisitorsDropdown = ({ live, projectId }: {
+  live: number
+  projectId: string
+}): JSX.Element => {
   const { t } = useTranslation()
-  const [show, setShow] = useState(false)
-  const [liveInfo, setLiveInfo] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [show, setShow] = useState<boolean>(false)
+  const [liveInfo, setLiveInfo] = useState<IGetLiveVisitorsInfo[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
 
   const getLiveVisitors = async () => {
     await getLiveVisitorsInfo(projectId)
