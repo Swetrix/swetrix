@@ -46,7 +46,7 @@ const ProjectAlertsSettings = ({
   user: IUser
   setProjectAlertsTotal: (num: number) => void
   total: number
-}) => {
+}): JSX.Element => {
   const history = useHistory()
   const { id, pid }: {
     id: string

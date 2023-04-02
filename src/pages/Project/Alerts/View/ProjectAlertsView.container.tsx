@@ -1,8 +1,8 @@
 import { connect } from 'react-redux'
-
+import { StateType } from 'redux/store'
 import ProjectAlerts from './ProjectAlertsView'
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: StateType) => ({
   alerts: state.ui.alerts.alerts,
   loading: state.ui.alerts.loading,
   user: state.auth.user,

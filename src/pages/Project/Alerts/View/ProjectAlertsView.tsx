@@ -21,12 +21,24 @@ import routes from 'routes'
 import Button from 'ui/Button'
 import PaidFeature from 'modals/PaidFeature'
 import { QUERY_METRIC, PLAN_LIMITS } from 'redux/constants'
+import { IAlerts } from 'redux/models/IAlerts'
+import { IUser } from 'redux/models/IUser'
 
 const ProjectAlerts = ({
   projectId, alerts, loading, user, total, authenticated,
-}) => {
-  const { t, i18n: { language } } = useTranslation()
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
+}: {
+  projectId: string,
+  alerts: IAlerts[],
+  loading: boolean,
+  user: IUser,
+  total: number,
+  authenticated: boolean,
+}): JSX.Element => {
+  const { t, i18n: { language } }: {
+    t: (key: string) => string,
+    i18n: { language: string },
+  } = useTranslation()
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const history = useHistory()
 
   const limits = PLAN_LIMITS[user?.planCode]
@@ -37,7 +49,9 @@ const ProjectAlerts = ({
     return _filter(alerts, ({ pid }) => pid === projectId)
   }, [projectId, alerts, loading])
 
-  const queryMetricTMapping = useMemo(() => {
+  const queryMetricTMapping: {
+    [key: string]: string,
+  } = useMemo(() => {
     const values = _values(QUERY_METRIC)
 
     return _reduce(values, (prev, curr) => ({
@@ -73,12 +87,14 @@ const ProjectAlerts = ({
               large
               onClick={handleNewAlert}
             >
-              {isLimitReached ? (
-                <CurrencyDollarIcon className='w-5 h-5 mr-1' />
-              ) : (
-                <FolderPlusIcon className='w-5 h-5 mr-1' />
-              )}
-              {t('alert.add')}
+              <>
+                {isLimitReached ? (
+                  <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+                ) : (
+                  <FolderPlusIcon className='w-5 h-5 mr-1' />
+                )}
+                {t('alert.add')}
+              </>
             </Button>
           </>
         )}
@@ -106,10 +122,12 @@ const ProjectAlerts = ({
               secondary
               large
             >
-              {isLimitReached && (
-                <CurrencyDollarIcon className='w-5 h-5 mr-1' />
-              )}
-              {t('alert.add')}
+              <>
+                {isLimitReached && (
+                  <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+                )}
+                {t('alert.add')}
+              </>
             </Button>
           </div>
         )}
@@ -161,8 +179,10 @@ const ProjectAlerts = ({
                         secondary
                         large
                       >
-                        <PencilSquareIcon className='w-4 h-4 mr-1' />
-                        {t('common.edit')}
+                        <>
+                          <PencilSquareIcon className='w-4 h-4 mr-1' />
+                          {t('common.edit')}
+                        </>
                       </Button>
                     </div>
 
