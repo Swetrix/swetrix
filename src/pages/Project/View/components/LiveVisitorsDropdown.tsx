@@ -11,7 +11,7 @@ import Flag from 'react-flagkit'
 import { getLiveVisitorsInfo, IGetLiveVisitorsInfo } from 'api'
 
 const LiveVisitorsDropdown = ({ live, projectId }: {
-  live: number
+  live: number | string,
   projectId: string
 }): JSX.Element => {
   const { t } = useTranslation()

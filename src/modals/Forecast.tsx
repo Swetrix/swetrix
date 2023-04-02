@@ -6,6 +6,7 @@ import _isNaN from 'lodash/isNaN'
 import Modal from 'ui/Modal'
 import Input from 'ui/Input'
 import { FORECAST_MAX_MAPPING } from 'redux/constants'
+import _toString from 'lodash/toString'
 
 const DEFAULT_PERIOD = 3
 
@@ -13,7 +14,7 @@ const Forecast = ({
   onClose, onSubmit, isOpened, activeTB, tb,
 }: {
   onClose: () => void,
-  onSubmit: (period: number) => void,
+  onSubmit: (period: string) => void,
   isOpened: boolean,
   activeTB: string,
   tb: string,
@@ -51,7 +52,7 @@ const Forecast = ({
       return
     }
 
-    onSubmit(processedPeriod)
+    onSubmit(_toString(processedPeriod))
   }
 
   const _onClose = () => {

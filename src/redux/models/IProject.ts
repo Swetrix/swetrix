@@ -44,8 +44,10 @@ export interface IProject {
     share?: IShareOwnerProject[]
     isOwner: boolean
     overall: IOvervallObject
-    live: number
+    live: number | string
     uiHidden: boolean
+    isPublicVisitors?: boolean
+    isPublic?: boolean
 }
 
 export interface ICaptchaProject {
@@ -62,6 +64,6 @@ export interface ICaptchaProject {
     created: string
     isOwner: boolean
     overall: IOvervallObject
-    live: number
+    live: number | string
     uiHidden: boolean
 }

@@ -861,7 +861,7 @@ const ViewProject = ({
                   chartData={chartData}
                   activePeriod={activePeriod}
                   sessionDurationAVG={sessionDurationAVG}
-                  live={project.live || 0}
+                  live={project.live || 'N/A'}
                   projectId={id}
                 />
                 )}

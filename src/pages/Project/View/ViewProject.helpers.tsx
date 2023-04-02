@@ -240,7 +240,7 @@ const getColumns = (chart: {
 
 const getColumnsPerf = (chart: {
   [key: string]: string[],
-}, activeChartMetrics: keyof typeof CHART_METRICS_MAPPING_PERF) => {
+}, activeChartMetrics: string) => {
   const columns: any[] = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
@@ -467,7 +467,7 @@ const getSettingsPerf = (
   [key: string]: string[]
 },
   timeBucket: string,
-  activeChartMetrics: keyof typeof CHART_METRICS_MAPPING_PERF,
+  activeChartMetrics: string,
   rotateXAxias: boolean,
   chartType: string,
 ) => {

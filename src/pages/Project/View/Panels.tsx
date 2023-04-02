@@ -167,7 +167,7 @@ const Overview = ({
   chartData: any
   activePeriod: any
   t: (arg: string) => string
-  live: number
+  live: number | string
   sessionDurationAVG: number
   projectId: string
 }) => {

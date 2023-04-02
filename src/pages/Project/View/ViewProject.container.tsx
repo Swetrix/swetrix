@@ -56,7 +56,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       key,
     }))
   },
-  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate: string) => {
+  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[]) => {
     dispatch(UIActions.setProjectViewPrefs({
       pid,
       period,
@@ -76,7 +76,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       project,
     }))
   },
-  setProjects: (project: Partial<IProject | ISharedProject>[], shared: boolean) => {
+  setProjects: (project: Partial<IProject | ISharedProject>[], shared?: boolean) => {
     dispatch(UIActions.setProjects({
       projects: project,
       shared,

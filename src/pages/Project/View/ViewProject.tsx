@@ -4,7 +4,9 @@ import React, {
 } from 'react'
 import useSize from 'hooks/useSize'
 import { useHistory, useParams, Link } from 'react-router-dom'
+// @ts-ignore
 import domToImage from 'dom-to-image'
+// @ts-ignore
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
@@ -38,6 +40,9 @@ import {
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER,
 } from 'redux/constants'
+import { IUser } from 'redux/models/IUser'
+import { IProject } from 'redux/models/IProject'
+import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -69,40 +74,86 @@ import './styles.css'
 
 const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
 
+interface IProjectView extends IProject {
+  isPublicVisitors?: boolean,
+}
+
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
   projectTab, setProjectTab, setProjects, setProjectForcastCache,
+}: {
+  projects: IProjectView[],
+  extensions: any,
+  isLoading: boolean,
+  showError: (message: string) => void,
+  cache: any,
+  cachePerf: any,
+  setProjectCache: (pid: string, data: any, key: string) => void,
+  projectViewPrefs: any,
+  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[]) => void,
+  setPublicProject: (project: Partial<IProject | ISharedProject>) => void,
+  setLiveStatsForProject: (id: string, count: number) => void,
+  generateAlert: (message: string, type: string) => void,
+  setProjectCachePerf: (pid: string, data: any, key: string) => void,
+  setProjectForcastCache: (pid: string, data: any, key: string) => void,
+  authenticated: boolean,
+  user: IUser,
+  isPaidTierUsed: boolean,
+  timezone: string,
+  sharedProjects: ISharedProject[],
+  projectTab: string,
+  setProjectTab: (tab: string) => void,
+  // eslint-disable-next-line no-unused-vars, no-shadow
+  setProjects: (projects: Partial<IProject | ISharedProject>[]) => void,
 }) => {
-  const { t, i18n: { language } } = useTranslation('common')
-  const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
-  const [customExportTypes, setCustomExportTypes] = useState([])
-  const [customPanelTabs, setCustomPanelTabs] = useState([])
-  const [sdkInstance, setSdkInstance] = useState(null)
-  const dashboardRef = useRef(null)
-  const { id } = useParams()
+  const { t, i18n: { language } }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | null,
+    }) => string,
+    i18n: {
+      language: string,
+    },
+  } = useTranslation('common')
+  const [periodPairs, setPeriodPairs] = useState<{
+    label: string
+    period: string
+    tbs: string[]
+    access: string
+    dropdownLabel?: string
+    isCustomDate?: boolean
+  }[]>(tbPeriodPairs(t))
+  const [customExportTypes, setCustomExportTypes] = useState<any[]>([])
+  const [customPanelTabs, setCustomPanelTabs] = useState<any[]>([])
+  const [sdkInstance, setSdkInstance] = useState<any>(null)
+  const dashboardRef = useRef<HTMLDivElement>(null)
+  const { id }: {
+    id: string
+  } = useParams()
   const history = useHistory()
-  const project = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {}, [projects, id, sharedProjects])
+  const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
   const isSharedProject = useMemo(() => {
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
   }, [id, sharedProjects])
-  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
-  const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState(false)
-  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
-  const [arePeriodParsed, setArePeriodParsed] = useState(false)
-  const [panelsData, setPanelsData] = useState({})
-  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
-  const [isForecastOpened, setIsForecastOpened] = useState(false)
-  const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState(projectViewPrefs[id]?.period || periodPairs[3].period)
-  const [timeBucket, setTimebucket] = useState(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
+  const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
+  const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState<boolean>(false)
+  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
+  const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
+  const [panelsData, setPanelsData] = useState<any>({})
+  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const [isForecastOpened, setIsForecastOpened] = useState<boolean>(false)
+  const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
+  const [period, setPeriod] = useState<string>(projectViewPrefs[id]?.period || periodPairs[3].period)
+  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
   const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period, periodPairs])
-  const [chartData, setChartData] = useState({})
-  const [mainChart, setMainChart] = useState(null)
-  const [dataLoading, setDataLoading] = useState(false)
-  const [activeChartMetrics, setActiveChartMetrics] = useState({
+  const [chartData, setChartData] = useState<any>({})
+  const [mainChart, setMainChart] = useState<any>(null)
+  const [dataLoading, setDataLoading] = useState<boolean>(false)
+  const [activeChartMetrics, setActiveChartMetrics] = useState<{
+    [key: string]: boolean
+  }>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.sessionDuration]: false,
@@ -110,26 +161,27 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
   })
-  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.timing)
-  const [sessionDurationAVG, setSessionDurationAVG] = useState(null)
+  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
+  const [sessionDurationAVG, setSessionDurationAVG] = useState<any>(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
-  const [filters, setFilters] = useState([])
-  const [filtersPerf, setFiltersPerf] = useState([])
+  const [filters, setFilters] = useState<any[]>([])
+  const [filtersPerf, setFiltersPerf] = useState<any[]>([])
   // That is needed when using 'Export as image' feature,
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
-  const [showIcons, setShowIcons] = useState(true)
+  const [showIcons, setShowIcons] = useState<boolean>(true)
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs[id]?.rangeDate
-  const [dateRange, setDateRange] = useState(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
-  const [activeTab, setActiveTab] = useState(() => {
+  const [dateRange, setDateRange] = useState<null | Date[]>(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
     const tab = searchParams.get('tab')
 
     if (_includes(PROJECT_TABS_VALUES, tab)) {
-      return tab
+      return tab || 'traffic'
     }
 
     return projectTab || PROJECT_TABS.traffic
@@ -137,17 +189,21 @@ const ViewProject = ({
 
   // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
   // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
-  const [forecasedChartData, setForecasedChartData] = useState({})
+  const [forecasedChartData, setForecasedChartData] = useState<any>({})
 
-  const [chartDataPerf, setChartDataPerf] = useState({})
-  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
-  const [panelsDataPerf, setPanelsDataPerf] = useState({})
+  const [chartDataPerf, setChartDataPerf] = useState<any>({})
+  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState<boolean>(false)
+  const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
-  const [ref, size] = useSize()
+  const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
-  const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
+  const [chartType, setChartType] = useState<string>(getItem('chartType') || chartTypes.line)
 
-  const tabs = useMemo(() => {
+  const tabs: {
+    id: string
+    label: string
+    icon: any
+  }[] = useMemo(() => {
     return [
       {
         id: PROJECT_TABS.traffic,
@@ -283,7 +339,7 @@ const ViewProject = ({
   }
 
   // this function is used for requesting the data from the API
-  const loadAnalytics = async (forced = false, newFilters = null) => {
+  const loadAnalytics = async (forced = false, newFilters: any[] | null = null) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
     }
@@ -348,7 +404,7 @@ const ViewProject = ({
       if (_isEmpty(params)) {
         setIsPanelsDataEmpty(true)
       } else {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+        const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
         const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
         setChartData(chart)
 
@@ -364,6 +420,7 @@ const ViewProject = ({
           }
 
           setMainChart(() => {
+            // @ts-ignore
             const generete = bb.generate(bbSettings)
             generete.data.names(dataNames)
             return generete
@@ -383,7 +440,7 @@ const ViewProject = ({
     }
   }
 
-  const loadAnalyticsPerf = async (forced = false, newFilters = null) => {
+  const loadAnalyticsPerf = async (forced = false, newFilters: any[] | null = null) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
     }
@@ -448,6 +505,7 @@ const ViewProject = ({
           }
 
           setMainChart(() => {
+            // @ts-ignore
             const generete = bb.generate(bbSettings)
             generete.data.names(dataNamesPerf)
             return generete
@@ -468,7 +526,7 @@ const ViewProject = ({
   }
 
   // this funtion is used for requesting the data from the API when the filter is changed
-  const filterHandler = (column, filter, isExclusive = false) => {
+  const filterHandler = (column: string, filter: any, isExclusive = false) => {
     let newFilters
     let newFiltersPerf
     const columnPerf = `${column}_perf`
@@ -477,6 +535,7 @@ const ViewProject = ({
       if (_find(filtersPerf, (f) => f.column === column)) {
         newFiltersPerf = _filter(filtersPerf, (f) => f.column !== column)
 
+        // @ts-ignore
         const url = new URL(window.location)
         url.searchParams.delete(columnPerf)
         const { pathname, search } = url
@@ -494,6 +553,7 @@ const ViewProject = ({
           { column, filter, isExclusive },
         ]
 
+        // @ts-ignore
         const url = new URL(window.location)
         url.searchParams.append(columnPerf, filter)
         const { pathname, search } = url
@@ -515,6 +575,8 @@ const ViewProject = ({
         setFilters(newFilters)
 
         // removing filter from the page URL
+
+        // @ts-ignore
         const url = new URL(window.location)
         url.searchParams.delete(column)
         const { pathname, search } = url
@@ -535,6 +597,8 @@ const ViewProject = ({
         setFilters(newFilters)
 
         // storing filter in the page URL
+
+        // @ts-ignore
         const url = new URL(window.location)
         url.searchParams.append(column, filter)
         const { pathname, search } = url
@@ -557,7 +621,7 @@ const ViewProject = ({
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
-  const onChangeExclusive = (column, filter, isExclusive) => {
+  const onChangeExclusive = (column: string, filter: string, isExclusive: boolean) => {
     let newFilters
     if (activeTab === PROJECT_TABS.performance) {
       newFilters = _map(filtersPerf, (f) => {
@@ -588,6 +652,7 @@ const ViewProject = ({
     }
 
     // storing exclusive filter in the page URL
+    // @ts-ignore
     const url = new URL(window.location)
 
     if (activeTab === PROJECT_TABS.performance) {
@@ -633,7 +698,7 @@ const ViewProject = ({
     setIsForecastOpened(true)
   }
 
-  const onForecastSubmit = async (periodToForecast) => {
+  const onForecastSubmit = async (periodToForecast: string) => {
     setIsForecastOpened(false)
     setDataLoading(true)
     const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast)
@@ -663,6 +728,7 @@ const ViewProject = ({
   }, [forecasedChartData])
 
   useEffect(() => {
+    // @ts-ignore
     const url = new URL(window.location)
     url.searchParams.delete('tab')
 
@@ -688,7 +754,7 @@ const ViewProject = ({
         }
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
-          const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+          const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
           const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
 
           if (!_isEmpty(mainChart)) {
@@ -696,6 +762,7 @@ const ViewProject = ({
           }
 
           setMainChart(() => {
+            // @ts-ignore
             const generete = bb.generate(bbSettings)
             generete.data.names(dataNames)
             return generete
@@ -703,7 +770,7 @@ const ViewProject = ({
         }
 
         if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
-          const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+          const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
           const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
 
           if (!_isEmpty(mainChart)) {
@@ -711,6 +778,7 @@ const ViewProject = ({
           }
 
           setMainChart(() => {
+            // @ts-ignore
             const generete = bb.generate(bbSettings)
             generete.data.names(dataNames)
             return generete
@@ -743,6 +811,7 @@ const ViewProject = ({
       }
 
       setMainChart(() => {
+        // @ts-ignore
         const generete = bb.generate(bbSettings)
         generete.data.names(dataNamesPerf)
         return generete
@@ -752,7 +821,7 @@ const ViewProject = ({
 
   // Initialising Swetrix SDK instance
   useEffect(() => {
-    let sdk = null
+    let sdk: any | null = null
     if (!_isEmpty(extensions)) {
       const processedExtensions = _map(extensions, (ext) => {
         const { id: extId, fileURL } = ext
@@ -762,10 +831,11 @@ const ViewProject = ({
         }
       })
 
+      // @ts-ignore
       sdk = new SwetrixSDK(processedExtensions, {
         debug: isDevelopment,
       }, {
-        onAddExportDataRow: (label, onClick) => {
+        onAddExportDataRow: (label: any, onClick: (e: any) => void) => {
           setCustomExportTypes((prev) => [
             ...prev,
             {
@@ -774,10 +844,10 @@ const ViewProject = ({
             },
           ])
         },
-        onRemoveExportDataRow: (label) => {
+        onRemoveExportDataRow: (label: any) => {
           setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
         },
-        onAddPanelTab: (extensionID, panelID, tabContent, onOpen) => {
+        onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
           setCustomPanelTabs((prev) => [
             ...prev,
             {
@@ -788,7 +858,7 @@ const ViewProject = ({
             },
           ])
         },
-        onRemovePanelTab: (extensionID, panelID) => {
+        onRemovePanelTab: (extensionID: string, panelID: string) => {
           setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
         },
       })
@@ -835,9 +905,10 @@ const ViewProject = ({
     // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
     if (activeTab === PROJECT_TABS.performance) {
       try {
+        // @ts-ignore
         const url = new URL(window.location)
         const { searchParams } = url
-        const initialFilters = []
+        const initialFilters: any[] = []
         // eslint-disable-next-line lodash/prefer-lodash-method
         searchParams.forEach((value, key) => {
           if (!_includes(key, '_perf')) {
@@ -864,9 +935,10 @@ const ViewProject = ({
       }
     } else {
       try {
+        // @ts-ignore
         const url = new URL(window.location)
         const { searchParams } = url
-        const initialFilters = []
+        const initialFilters: any[] = []
         // eslint-disable-next-line lodash/prefer-lodash-method
         searchParams.forEach((value, key) => {
           if (!_includes(validFilters, key)) {
@@ -890,6 +962,7 @@ const ViewProject = ({
   useEffect(() => {
     if (arePeriodParsed) {
       try {
+        // @ts-ignore
         const url = new URL(window.location)
         const { searchParams } = url
         const intialTimeBucket = searchParams.get('timeBucket')
@@ -898,10 +971,10 @@ const ViewProject = ({
           return
         }
         const newPeriodFull = _find(periodPairs, (el) => el.period === period)
-        if (!_includes(newPeriodFull.tbs, intialTimeBucket)) {
+        if (!_includes(newPeriodFull?.tbs, intialTimeBucket)) {
           return
         }
-        setTimebucket(intialTimeBucket)
+        setTimebucket(intialTimeBucket || periodPairs[3].tbs[1])
       } finally {
         setAreTimeBucketParsed(true)
       }
@@ -909,8 +982,9 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arePeriodParsed])
 
-  const onRangeDateChange = (dates, onRender) => {
+  const onRangeDateChange = (dates: Date[], onRender?: boolean) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
+    // @ts-ignore
     const url = new URL(window.location)
 
     // setting allowed time buckets for the specified date range (period)
@@ -993,7 +1067,7 @@ const ViewProject = ({
       setLiveStatsForProject(pid, result[pid])
     }
 
-    let interval
+    let interval: any = null
     if (project.uiHidden) {
       updateLiveVisitors()
       interval = setInterval(async () => {
@@ -1026,7 +1100,7 @@ const ViewProject = ({
             } else {
               getOverallStats([id])
                 .then(res => {
-                  setProjects([...projects, {
+                  setProjects([...(projects as any[]), {
                     ...projectRes,
                     overall: res[id],
                     live: 'N/A',
@@ -1054,14 +1128,18 @@ const ViewProject = ({
     }
   }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
 
-  const updatePeriod = (newPeriod) => {
+  const updatePeriod = (newPeriod: {
+    period: string
+    label?: string
+  }) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb = timeBucket
+    // @ts-ignore
     const url = new URL(window.location)
     if (_isEmpty(newPeriodFull)) return
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
-      tb = _last(newPeriodFull.tbs)
+      tb = _last(newPeriodFull.tbs) || 'day'
       url.searchParams.delete('timeBucket')
       url.searchParams.append('timeBucket', tb)
       setTimebucket(tb)
@@ -1092,7 +1170,8 @@ const ViewProject = ({
     setForecasedChartData({})
   }
 
-  const updateTimebucket = (newTimebucket) => {
+  const updateTimebucket = (newTimebucket: string) => {
+    // @ts-ignore
     const url = new URL(window.location)
     url.searchParams.delete('timeBucket')
     url.searchParams.append('timeBucket', newTimebucket)
@@ -1105,7 +1184,7 @@ const ViewProject = ({
       },
     })
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket, dateRange)
+    setProjectViewPrefs(id, period, newTimebucket, dateRange as Date[])
     sdkInstance?._emitEvent('timeupdate', {
       period,
       timeBucket: newTimebucket,
@@ -1134,9 +1213,10 @@ const ViewProject = ({
 
   useEffect(() => {
     try {
+      // @ts-ignore
       const url = new URL(window.location)
       const { searchParams } = url
-      const intialPeriod = searchParams.get('period')
+      const intialPeriod = searchParams.get('period') || '7d'
       const tab = searchParams.get('tab')
 
       if (tab === PROJECT_TABS.performance) {
@@ -1148,7 +1228,9 @@ const ViewProject = ({
       }
 
       if (intialPeriod === 'custom') {
+        // @ts-ignore
         const from = new Date(searchParams.get('from'))
+        // @ts-ignore
         const to = new Date(searchParams.get('to'))
         if (from.getDate() && to.getDate()) {
           onRangeDateChange([from, to], true)
@@ -1159,14 +1241,16 @@ const ViewProject = ({
 
       setPeriodPairs(tbPeriodPairs(t))
       setDateRange(null)
-      updatePeriod({ period: intialPeriod })
+      updatePeriod({
+        period: intialPeriod,
+      })
     } finally {
       setArePeriodParsed(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const isConflicted = (conflicts) => {
+  const isConflicted = (conflicts: string[]) => {
     const conflicted = conflicts && _some(conflicts, (conflict) => {
       const conflictPair = _find(chartMetrics, (metric) => metric.id === conflict)
       return conflictPair && conflictPair.active
@@ -1175,6 +1259,7 @@ const ViewProject = ({
   }
 
   const resetFilters = () => {
+    // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
     // eslint-disable-next-line lodash/prefer-lodash-method
@@ -1215,7 +1300,7 @@ const ViewProject = ({
   ]
 
   // function set chart type and save to local storage
-  const setChartTypeOnClick = (type) => {
+  const setChartTypeOnClick = (type: string) => {
     setItem('chartType', type)
     setChartType(type)
   }
@@ -1254,8 +1339,10 @@ const ViewProject = ({
                   labelExtractor={(item) => item.label}
                   onSelect={(label) => {
                     const selected = _find(tabs, (tab) => tab.label === label)
-                    setProjectTab(selected.id)
-                    setActiveTab(selected.id)
+                    if (selected) {
+                      setProjectTab(selected?.id)
+                      setActiveTab(selected?.id)
+                    }
                   }}
                   title={activeTabLabel}
                 />
@@ -1335,7 +1422,7 @@ const ViewProject = ({
                     </div>
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                       <span className='relative z-0 inline-flex shadow-sm rounded-md'>
-                        {_map(activePeriod.tbs, (tb, index, { length }) => (
+                        {_map(activePeriod?.tbs, (tb, index, { length }) => (
                           <button
                             key={tb}
                             type='button'
@@ -1358,7 +1445,7 @@ const ViewProject = ({
                     </div>
                     <Dropdown
                       items={periodPairs}
-                      title={activePeriod.label}
+                      title={activePeriod?.label}
                       labelExtractor={(pair) => {
                         const label = pair.dropdownLabel || pair.label
 
@@ -1384,6 +1471,7 @@ const ViewProject = ({
 
                         if (pair.isCustomDate) {
                           setTimeout(() => {
+                            // @ts-ignore
                             refCalendar.current.openCalendar()
                           }, 100)
                         } else {
@@ -1396,7 +1484,7 @@ const ViewProject = ({
                     <FlatPicker
                       ref={refCalendar}
                       onChange={(date) => setDateRange(date)}
-                      value={dateRange}
+                      value={dateRange || []}
                       maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
                     />
                   </div>
@@ -1477,8 +1565,10 @@ const ViewProject = ({
                         className='relative flex justify-center items-center py-2 !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
                         secondary
                       >
-                        <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                        {t('common.settings')}
+                        <>
+                          <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                          {t('common.settings')}
+                        </>
                       </Button>
                     )}
                   </div>
@@ -1489,7 +1579,7 @@ const ViewProject = ({
                   })}
                 >
                   <div className={cx('xs:mt-0', {
-                    'mt-14': project.public || (isSharedProject && project.role === roleAdmin.role) || project.isOwner,
+                    'mt-14': project.public || (isSharedProject && project?.role === roleAdmin.role) || project.isOwner,
                   })}
                   />
                   <div className='relative'>
@@ -1546,10 +1636,10 @@ const ViewProject = ({
               <Loader />
             )}
             {(isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic) && (
-              <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
+              <NoEvents filters={filters} resetFilters={resetFilters} />
             )}
             {(isPanelsDataEmptyPerf && activeTab === PROJECT_TABS.performance) && (
-              <NoEvents filters={filters} resetFilters={resetFilters} pid={id} />
+              <NoEvents filters={filters} resetFilters={resetFilters} />
             )}
             {activeTab === PROJECT_TABS.traffic && (
               <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
@@ -1586,8 +1676,9 @@ const ViewProject = ({
                       projectId={id}
                     />
                   )}
-                  {!_isEmpty(panelsData.types) && _map(TRAFFIC_PANELS_ORDER, (type) => {
+                  {!_isEmpty(panelsData.types) && _map(TRAFFIC_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                     const panelName = tnMapping[type]
+                    // @ts-ignore
                     const panelIcon = panelIconMapping[type]
                     const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 
@@ -1691,8 +1782,9 @@ const ViewProject = ({
                   </div>
                 )}
                 <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                  {!_isEmpty(panelsDataPerf.types) && _map(PERFORMANCE_PANELS_ORDER, (type) => {
+                  {!_isEmpty(panelsDataPerf.types) && _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                     const panelName = tnMapping[type]
+                    // @ts-ignore
                     const panelIcon = panelIconMapping[type]
                     const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 

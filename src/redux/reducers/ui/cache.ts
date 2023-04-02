@@ -90,7 +90,7 @@ const cacheSlice = createSlice({
       }
       state.captchaAnalytics[pid] = _filter(state.captchaAnalytics[pid], (ckey) => ckey !== key)
     },
-    setProjectViewPrefs(state, { payload }: PayloadAction<{ pid: string, period: string, timeBucket: string, rangeDate: string }>) {
+    setProjectViewPrefs(state, { payload }: PayloadAction<{ pid: string, period: string, timeBucket: string, rangeDate?: Date[] }>) {
       const {
         pid, period, timeBucket, rangeDate,
       } = payload
