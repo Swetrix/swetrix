@@ -284,7 +284,7 @@ export const createProject = (data: {
         : error.response.data.message
     })
 
-export const updateProject = (id: string, data: IProject) =>
+export const updateProject = (id: string, data: Partial<IProject>) =>
   api
     .put(`/project/${id}`, data)
     .then((response): IProject => response.data)
