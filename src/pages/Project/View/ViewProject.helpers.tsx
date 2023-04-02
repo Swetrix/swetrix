@@ -1,8 +1,10 @@
+// @ts-ignore
 import { saveAs } from 'file-saver'
 import {
   GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon,
   ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon,
 } from '@heroicons/react/24/outline'
+// @ts-ignore
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import {
@@ -26,17 +28,21 @@ import {
 } from 'redux/constants'
 import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
+import _toNumber from 'lodash/toNumber'
+import _toString from 'lodash/toString'
 
-const getAvg = (arr) => {
+const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
   return total / _size(arr)
 }
 
-const getSum = (arr) => {
+const getSum = (arr: any) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
 }
 
-const transformAIChartData = (data) => {
+const transformAIChartData = (data: {
+  [key: string]: any,
+}) => {
   const transformedData = {
     x: [],
     sdur: [],
@@ -62,7 +68,7 @@ const transformAIChartData = (data) => {
   return transformedData
 }
 
-const trendline = (data) => {
+const trendline = (data: any[]): string[] => {
   const xData = _map(_fill(new Array(_size(data)), 0), (_, i) => i + 1)
   const yData = data
 
@@ -89,22 +95,22 @@ const trendline = (data) => {
   for (let x = 0; x < _size(data); ++x) {
     const y = _round(b0 + b1 * x, 2)
     if (y < 0) {
-      trendData.push(0)
+      trendData.push(_toString(0))
     } else {
-      trendData.push(y)
+      trendData.push(_toString(y))
     }
   }
 
   return trendData
 }
 
-const getExportFilename = (prefix) => {
+const getExportFilename = (prefix: string) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
   const date = _split(_replace(_split(new Date().toISOString(), '.')[0], /:/g, '-'), 'T')[0]
   return `${prefix}-${date}.zip`
 }
 
-const convertToCSV = (array) => {
+const convertToCSV = (array: any[]) => {
   let str = 'name,value,perc\r\n'
 
   for (let i = 0; i < _size(array); ++i) {
@@ -121,7 +127,12 @@ const convertToCSV = (array) => {
   return str
 }
 
-const onCSVExportClick = (data, pid, tnMapping, language) => {
+const onCSVExportClick = (data: {
+  data: any,
+  types: any,
+}, pid: string, tnMapping: {
+  [key: string]: string,
+}, language: string) => {
   const { data: rowData, types } = data
   const zip = new JSZip()
 
@@ -174,12 +185,16 @@ const CHART_METRICS_MAPPING_PERF = {
 }
 
 // function to filter the data for the chart
-const getColumns = (chart, activeChartMetrics) => {
+const getColumns = (chart: {
+  [key: string]: string[],
+}, activeChartMetrics: {
+  [key: string]: boolean,
+}) => {
   const {
     views, bounce, viewsPerUnique, unique, trendlines, sessionDuration,
   } = activeChartMetrics
 
-  const columns = [
+  const columns: any[] = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
 
@@ -199,7 +214,7 @@ const getColumns = (chart, activeChartMetrics) => {
 
   if (bounce) {
     const bounceArray = _map(chart.uniques, (el, i) => {
-      return _round((el * 100) / chart.visits[i], 1) || 0
+      return _round((_toNumber(el) * 100) / _toNumber(chart.visits[i]), 1) || 0
     })
     columns.push(
       ['bounce', ...bounceArray],
@@ -208,10 +223,10 @@ const getColumns = (chart, activeChartMetrics) => {
 
   if (viewsPerUnique) {
     const viewsPerUniqueArray = _map(chart.visits, (el, i) => {
-      if (chart.uniques[i] === 0 || chart.uniques[i] === undefined) {
+      if (chart.uniques[i] === '0' || chart.uniques[i] === undefined) {
         return 0
       }
-      return _round(el / chart.uniques[i], 1)
+      return _round(_toNumber(el) / _toNumber(chart.uniques[i]), 1)
     })
     columns.push(['viewsPerUnique', ...viewsPerUniqueArray])
   }
@@ -223,8 +238,10 @@ const getColumns = (chart, activeChartMetrics) => {
   return columns
 }
 
-const getColumnsPerf = (chart, activeChartMetrics) => {
-  const columns = [
+const getColumnsPerf = (chart: {
+  [key: string]: string[],
+}, activeChartMetrics: keyof typeof CHART_METRICS_MAPPING_PERF) => {
+  const columns: any[] = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
 
@@ -267,7 +284,20 @@ const getColumnsPerf = (chart, activeChartMetrics) => {
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType) => {
+const getSettings = (
+  chart: any,
+  timeBucket: string,
+  activeChartMetrics: {
+    [key: string]: boolean,
+  },
+  applyRegions: boolean,
+  timeFormat: string,
+  forecasedChartData: {
+    [key: string]: string[],
+  },
+  rotateXAxias: boolean,
+  chartType: string,
+) => {
   const xAxisSize = _size(chart.x)
   const lines = []
   const modifiedChart = { ...chart }
@@ -368,7 +398,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -376,7 +406,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
       y2: {
         show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration,
         tick: {
-          format: activeChartMetrics.bounce ? (d) => `${d}%` : (d) => getStringFromTime(getTimeFromSeconds(d)),
+          format: activeChartMetrics.bounce ? (d: string) => `${d}%` : (d: string) => getStringFromTime(getTimeFromSeconds(d)),
         },
         min: activeChartMetrics.bounce ? 10 : null,
         max: activeChartMetrics.bounce ? 100 : null,
@@ -385,7 +415,7 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
     },
     tooltip: {
       format: {
-        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+        title: (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
       },
       contents: {
         template: `
@@ -432,7 +462,15 @@ const getSettings = (chart, timeBucket, activeChartMetrics, applyRegions, timeFo
   }
 }
 
-const getSettingsPerf = (chart, timeBucket, activeChartMetrics, rotateXAxias, chartType) => {
+const getSettingsPerf = (
+  chart: {
+  [key: string]: string[]
+},
+  timeBucket: string,
+  activeChartMetrics: keyof typeof CHART_METRICS_MAPPING_PERF,
+  rotateXAxias: boolean,
+  chartType: string,
+) => {
   const xAxisSize = _size(chart.x)
 
   return {
@@ -478,13 +516,13 @@ const getSettingsPerf = (chart, timeBucket, activeChartMetrics, rotateXAxias, ch
       },
       y: {
         tick: {
-          format: (d) => getStringFromTime(getTimeFromSeconds(d), true),
+          format: (d: string) => getStringFromTime(getTimeFromSeconds(d), true),
         },
       },
     },
     tooltip: {
       format: {
-        title: (x) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+        title: (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
       },
       contents: {
         template: `
@@ -535,7 +573,7 @@ const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '1
 const paidPeriods = ['12M', '24M']
 const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt', 'ev']
 
-const typeNameMapping = (t) => ({
+const typeNameMapping = (t: (str: string) => string) => ({
   cc: t('project.mapping.cc'),
   pg: t('project.mapping.pg'),
   lc: t('project.mapping.lc'),
@@ -562,10 +600,10 @@ const panelIconMapping = {
 }
 
 // This function return date using the same format as the backend
-const getFormatDate = (date) => {
+const getFormatDate = (date: Date) => {
   const yyyy = date.getFullYear()
-  let mm = date.getMonth() + 1
-  let dd = date.getDate()
+  let mm: string | number = date.getMonth() + 1
+  let dd: string | number = date.getDate()
   if (dd < 10) dd = `0${dd}`
   if (mm < 10) mm = `0${mm}`
   return `${yyyy}-${mm}-${dd}`

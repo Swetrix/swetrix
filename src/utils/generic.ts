@@ -69,7 +69,7 @@ export const getStringFromTime = (time: any, showMS?: boolean) => {
   return `${h ? `${h}h ` : ''}${m ? `${m}m ` : ''}${s || (showMS && ms > 0) ? `${showMS ? _round(s + ms / 1000, 2) : s}s` : ''}`
 }
 
-export const sumArrays = (...arrays: any) => {
+export const sumArrays = (...arrays: any): number[] => {
   return _map(arrays[0], (_, index) => {
     return _reduce(arrays, (sum, array) => sum + array[index], 0)
   })

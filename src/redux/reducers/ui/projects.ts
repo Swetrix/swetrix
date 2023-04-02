@@ -56,7 +56,7 @@ const projectsSlice = createSlice({
   initialState,
   reducers: {
     setProjects(state, { payload }: PayloadAction<{
-      projects: IProject[] | ISharedProject[]
+      projects: Partial<IProject | ISharedProject>[]
       shared?: boolean
     }>) {
       if (payload.shared) {
@@ -117,7 +117,7 @@ const projectsSlice = createSlice({
         }))
       }
     },
-    setLiveStatsProject(state, { payload }: PayloadAction<{ id: string, count: number, shared: boolean }>) {
+    setLiveStatsProject(state, { payload }: PayloadAction<{ id: string, count: number, shared?: boolean }>) {
       const { id, count, shared = false } = payload
 
       if (shared) {
@@ -142,7 +142,7 @@ const projectsSlice = createSlice({
         })
       }
     },
-    setPublicProject(state, { payload }: PayloadAction<{ project: IProject | ISharedProject, shared: boolean }>) {
+    setPublicProject(state, { payload }: PayloadAction<{ project: Partial<IProject | ISharedProject>, shared?: boolean }>) {
       const { project, shared = false } = payload
 
       if (shared) {
