@@ -1,6 +1,14 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import _isEmpty from 'lodash/isEmpty'
+
+interface IScrollToTop {
+  children: JSX.Element
+}
+
+interface StateType {
+  scrollToTopDisable?: boolean
+}
 
 /**
   * A HOC which listens to history changes and scrolls to top of the page when triggered.
@@ -15,12 +23,12 @@ import _isEmpty from 'lodash/isEmpty'
   * @component
   * @param {HTMLElement} children The children covered by the listener.
   */
-const ScrollToTop = ({ children }) => {
+const ScrollToTop: React.FC<IScrollToTop> = ({ children }) => {
   const history = useHistory()
 
   useEffect(() => {
     const unlisten = history.listen(({ hash, state }) => {
-      if (!_isEmpty(state) && state?.scrollToTopDisable) {
+      if (!_isEmpty(state) && (state as StateType)?.scrollToTopDisable) {
         return
       }
 
