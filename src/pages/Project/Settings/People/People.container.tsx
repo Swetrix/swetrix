@@ -17,11 +17,11 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       message,
     }))
   },
-  setProjectShareData: (data: Partial<IProject>, projectId: string, share = true) => {
+  setProjectShareData: (data: Partial<IProject>, projectId: string, shared = false) => {
     dispatch(UIActions.setProjectsShareData({
       data,
       id: projectId,
-      shared: share,
+      shared,
     }))
   },
   roleUpdatedNotification: (message: string, type = 'success') => {
