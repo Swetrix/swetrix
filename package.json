@@ -196,5 +196,8 @@
     "source-map-explorer": "^2.5.3",
     "tailwindcss": "^3.3.1",
     "typescript": "^5.0.3"
+  },
+  "overrides": {
+    "typescript": "^5.0.3"
   }
 }
