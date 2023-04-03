@@ -51,7 +51,14 @@ const cacheSlice = createSlice({
   initialState,
   reducers: {
     setProjectCache(state, { payload }: PayloadAction<{ pid: string, key: string, data: any }>) {
-      state.analytics[payload.pid][payload.key] = payload.data
+      console.log('setProjectCache', payload)
+      state.analytics = {
+        ...state.analytics,
+        [payload.pid]: {
+          ...state.analytics[payload.pid],
+          [payload.key]: payload.data,
+        },
+      }
     },
     setCaptchaProjectCache(state, { payload }: PayloadAction<{ pid: string, key: string, data: any }>) {
       state.captchaAnalytics[payload.pid][payload.key] = payload.data
