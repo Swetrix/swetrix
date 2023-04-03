@@ -1898,7 +1898,6 @@ ViewProject.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   sharedProjects: PropTypes.arrayOf(PropTypes.object).isRequired,
   cache: PropTypes.objectOf(PropTypes.object).isRequired,
-  projectViewPrefs: PropTypes.objectOf(PropTypes.object).isRequired,
   showError: PropTypes.func.isRequired,
   setProjectCache: PropTypes.func.isRequired,
   setProjectViewPrefs: PropTypes.func.isRequired,
