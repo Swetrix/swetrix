@@ -3,17 +3,17 @@ import { ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
 
 export const DOTS = '...'
 
-const range = (start, end) => {
+const range = (start: number, end: number) => {
   const length = end - start + 1
   return Array.from({ length }, (_, idx) => idx + start)
 }
 
 export const usePagination = (
-  totalCount,
-  currentPage,
-  siblingCount = 1,
-  pageSize = ENTRIES_PER_PAGE_DASHBOARD,
-) => {
+  totalCount: number,
+  currentPage: number,
+  siblingCount: number = 1,
+  pageSize: number = ENTRIES_PER_PAGE_DASHBOARD,
+): any[] => {
   const paginationRange = useMemo(() => {
     const totalPageCount = Math.ceil(totalCount / pageSize)
 

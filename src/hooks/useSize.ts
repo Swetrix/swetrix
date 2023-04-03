@@ -7,6 +7,7 @@ export default () => {
     width: 0, height: 0,
   })
   const ref = useRef(null)
+
   useEffect(() => {
     const DOMnode = ref.current
     if (!DOMnode) {
@@ -23,5 +24,6 @@ export default () => {
       resizeObserver.unobserve(DOMnode)
     }
   }, [])
+
   return [ref, size]
 }
