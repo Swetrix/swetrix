@@ -117,7 +117,7 @@ const team: {
   },
   {
     name: '🇺🇦 Yevhenii Kulisidi',
-    role: 'Co-Founder; Backend Developer.',
+    role: 'Lead Backend Developer.',
     photo: '/assets/yevhenii.jpg',
     desc: 'An amazing backend engineer. Works on Swetrix API, Swetrix Marketplace and integrations.',
     socials: {

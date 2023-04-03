@@ -32,7 +32,6 @@ import Ghost from 'ui/icons/Ghost'
 import Gatsby from 'ui/icons/Gatsby'
 import Wix from 'ui/icons/Wix'
 
-import { withAuthentication, auth } from '../../hoc/protected'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
 
@@ -217,7 +216,7 @@ const Main = (): JSX.Element => {
                         aria-label={t('titles.signup')}
                       >
                         <span className='text-base font-semibold mr-1'>
-                          {t('main.start')}
+                          {t('common.getStarted')}
                         </span>
                         <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
                       </Link>
@@ -265,7 +264,7 @@ const Main = (): JSX.Element => {
                   </p>
                   <a
                     href={LIVE_DEMO_URL}
-                    className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'
+                    className='dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center'
                     target='_blank'
                     rel='noopener noreferrer'
                     aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
@@ -290,7 +289,7 @@ const Main = (): JSX.Element => {
                   </p>
                   <a
                     href={MARKETPLACE_URL}
-                    className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center'
+                    className='dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center'
                     target='_blank'
                     rel='noopener noreferrer'
                     aria-label='Swetrix Marketplace (opens in a new tab)'
@@ -324,7 +323,7 @@ const Main = (): JSX.Element => {
                       </p>
                     </div>
                   ))}
-                  <Link to={routes.privacy} className='dark:text-indigo-400 text-indigo-700 font-bold border-0 flex items-center' aria-label={t('footer.pp')}>
+                  <Link to={routes.privacy} className='dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center' aria-label={t('footer.pp')}>
                     {t('main.dataProtection')}
                     <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </Link>
@@ -745,4 +744,4 @@ const Main = (): JSX.Element => {
   )
 }
 
-export default memo(withAuthentication(Main, auth.notAuthenticated))
+export default memo(Main)

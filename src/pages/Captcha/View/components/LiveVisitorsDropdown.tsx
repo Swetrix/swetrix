@@ -81,7 +81,7 @@ const LiveVisitorsDropdown = ({ live, projectId }: {
               ))
             )}
           </div>
-          <XMarkIcon className='absolute top-2 right-2 w-5 h-5 text-gray-900 cursor-pointer dark:text-gray-50' onClick={() => setShow(!show)} />
+          <XMarkIcon className='absolute rounded-md top-2 right-2 w-5 h-5 text-gray-900 cursor-pointer dark:text-gray-50 hover:bg-gray-200 hover:dark:bg-gray-700 ' onClick={() => setShow(!show)} />
         </div>
       )}
     </OutsideClickHandler>
