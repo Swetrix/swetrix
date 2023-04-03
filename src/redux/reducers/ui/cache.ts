@@ -51,7 +51,6 @@ const cacheSlice = createSlice({
   initialState,
   reducers: {
     setProjectCache(state, { payload }: PayloadAction<{ pid: string, key: string, data: any }>) {
-      console.log('setProjectCache', payload)
       state.analytics = {
         ...state.analytics,
         [payload.pid]: {
