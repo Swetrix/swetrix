@@ -9,6 +9,10 @@ type AuthParamType = {
   redirectPath: string
 }
 
+type PropsType = {
+  [key: string]: any
+}
+
 export const auth = {
   authenticated: {
     selector: (state: StateType) => state.auth.authenticated,
@@ -20,15 +24,15 @@ export const auth = {
   },
 }
 
-export const withAuthentication = (WrappedComponent: any, authParam: AuthParamType) => {
-  const WithAuthentication = (params: any) => {
+export const withAuthentication = <P extends PropsType>(WrappedComponent: any, authParam: AuthParamType) => {
+  const WithAuthentication = (props: P) => {
     const selector = useSelector(authParam.selector)
 
     if (!selector) {
       return <Redirect to={authParam.redirectPath} />
     }
 
-    return <WrappedComponent {...params} />
+    return <WrappedComponent {...props} />
   }
 
   return WithAuthentication
