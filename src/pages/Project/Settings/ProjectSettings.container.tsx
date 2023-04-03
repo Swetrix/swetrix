@@ -30,11 +30,13 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   newProject: (message: string) => {
     dispatch(alertsActions.generateAlerts({
       message,
+      type: 'success',
     }))
   },
   projectDeleted: (message: string) => {
     dispatch(alertsActions.generateAlerts({
       message,
+      type: 'success',
     }))
   },
   deleteProjectFailed: (message: string) => {
