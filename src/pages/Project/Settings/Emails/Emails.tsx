@@ -73,10 +73,16 @@ const ModalMessage = ({
       </label>
       <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-gray-800', { 'border-red-300 border': errors.reportFrequency })}>
         {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-        {_map(reportFrequencyForEmailsOptions, (item) => (
+        {_map(reportFrequencyForEmailsOptions, (item, index) => (
           <div key={item.value}>
             {/*  eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-            <label className={cx('dark:border-gray-500 rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': item.value === form.reportFrequency, 'border-gray-200': form.reportFrequency !== item.value })}>
+            <label className={cx('dark:border-gray-500 relative border p-4 flex cursor-pointer border-gray-200', {
+              'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': item.value === form.reportFrequency,
+              'border-gray-200': form.reportFrequency !== item.value,
+              'rounded-tl-md rounded-tr-md': index === 0,
+              'rounded-bl-md rounded-br-md': index === reportFrequencyForEmailsOptions.length - 1,
+            })}
+            >
               <input
                 name='reportFrequency'
                 className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300'
