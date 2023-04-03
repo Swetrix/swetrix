@@ -1,0 +1,433 @@
+/* eslint-disable react/forbid-prop-types */
+import React, {
+  useState, useEffect, useMemo, memo,
+} from 'react'
+import { useLocation, useHistory, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import cx from 'clsx'
+import _isEmpty from 'lodash/isEmpty'
+import _size from 'lodash/size'
+import _replace from 'lodash/replace'
+import _find from 'lodash/find'
+import _join from 'lodash/join'
+import _isString from 'lodash/isString'
+import _split from 'lodash/split'
+import _keys from 'lodash/keys'
+import _map from 'lodash/map'
+import _includes from 'lodash/includes'
+import PropTypes from 'prop-types'
+import { ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
+
+import Title from 'components/Title'
+import { withAuthentication, auth } from 'hoc/protected'
+import { isSelfhosted } from 'redux/constants'
+import { IProject, IShareOwnerProject } from 'redux/models/IProject'
+import { IUser } from 'redux/models/IUser'
+import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
+import {
+  createProject, updateProject, deleteProject, resetProject,
+} from 'api'
+import Input from 'ui/Input'
+import Button from 'ui/Button'
+import Checkbox from 'ui/Checkbox'
+import Modal from 'ui/Modal'
+import { nanoid } from 'utils/random'
+import { trackCustom } from 'utils/analytics'
+import routes from 'routes'
+
+import People from './People'
+import Emails from './Emails'
+
+const MAX_NAME_LENGTH = 50
+const MAX_ORIGINS_LENGTH = 300
+const MAX_IPBLACKLIST_LENGTH = 300
+
+interface IForm extends Partial<IProject> {
+  origins: string | null,
+  ipBlacklist: string | null,
+}
+
+const ProjectSettings = ({
+  updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
+  loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
+  deleteProjectCache,
+}: {
+  updateProjectFailed: (message: string) => void,
+  createNewProjectFailed: (message: string) => void,
+  newProject: (message: string) => void,
+  projectDeleted: (message: string) => void,
+  deleteProjectFailed: (message: string) => void,
+  loadProjects: (shared: boolean) => void,
+  isLoading: boolean,
+  projects: IProject[],
+  showError: (message: string) => void,
+  removeProject: (pid: string, shared: boolean) => void,
+  user: IUser,
+  isSharedProject: boolean,
+  sharedProjects: ISharedProject[],
+  deleteProjectCache: (pid: string) => void,
+}) => {
+  const { t }: {
+    t: (key: string, options?: {
+      [key: string]: string | number | null
+    }) => string,
+  } = useTranslation('common')
+  const { pathname } = useLocation()
+  const { id }: {
+    id: string,
+  } = useParams()
+  const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
+  const isSettings: boolean = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
+  const history = useHistory()
+
+  const [form, setForm] = useState<IForm>({
+    name: '',
+    id: id || nanoid(),
+    public: false,
+    origins: null,
+    ipBlacklist: null,
+  })
+  const [validated, setValidated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<{
+    name?: string,
+    origins?: string,
+    ipBlacklist?: string,
+  }>({})
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [showDelete, setShowDelete] = useState<boolean>(false)
+  const [showReset, setShowReset] = useState<boolean>(false)
+  const [projectDeleting, setProjectDeleting] = useState<boolean>(false)
+  const [projectResetting, setProjectResetting] = useState<boolean>(false)
+  const [projectSaving, setProjectSaving] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!user.isActive && !isSelfhosted) {
+      showError(t('project.settings.verify'))
+      history.push(routes.dashboard)
+    }
+
+    if (!isLoading && isSettings && !projectDeleting) {
+      if (_isEmpty(project) || project?.uiHidden) {
+        showError(t('project.noExist'))
+        history.push(routes.dashboard)
+      } else {
+        setForm({
+          ...project,
+          ipBlacklist: _isString(project.ipBlacklist) ? project.ipBlacklist : _join(project.ipBlacklist, ', '),
+          origins: _isString(project.origins) ? project.origins : _join(project.origins, ', '),
+        })
+      }
+    }
+  }, [user, project, isLoading, isSettings, history, showError, projectDeleting, t])
+
+  const onSubmit = async (data: IForm) => {
+    if (!projectSaving) {
+      setProjectSaving(true)
+      try {
+        const formalisedData = {
+          ...data,
+          origins: _isEmpty(data.origins) ? null : _map(_split(data.origins, ','), (origin) => {
+            try {
+              if (_includes(origin, 'localhost')) {
+                return origin
+              }
+              return new URL(origin).host
+            } catch (e) {
+              return origin
+            }
+          }),
+          ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
+        }
+        if (isSettings) {
+          await updateProject(id, formalisedData as Partial<IProject>)
+          newProject(t('project.settings.updated'))
+        } else {
+          await createProject({
+            id: data.id || nanoid(),
+            name: data.name || 'Untitled Project',
+          })
+          trackCustom('PROJECT_CREATED')
+          newProject(t('project.settings.created'))
+        }
+
+        loadProjects(isSharedProject)
+        history.push(routes.dashboard)
+      } catch (e) {
+        if (isSettings) {
+          updateProjectFailed(e as string)
+        } else {
+          createNewProjectFailed(e as string)
+        }
+      } finally {
+        setProjectSaving(false)
+      }
+    }
+  }
+
+  const onDelete = async () => {
+    setShowDelete(false)
+    if (!projectDeleting) {
+      setProjectDeleting(true)
+      try {
+        await deleteProject(id)
+        removeProject(id, isSharedProject)
+        projectDeleted(t('project.settings.deleted'))
+        history.push(routes.dashboard)
+      } catch (e) {
+        deleteProjectFailed(e as string)
+      } finally {
+        setProjectDeleting(false)
+      }
+    }
+  }
+
+  const onReset = async () => {
+    setShowReset(false)
+    if (!projectResetting) {
+      setProjectResetting(true)
+      try {
+        await resetProject(id)
+        deleteProjectCache(id)
+        projectDeleted(t('project.settings.resetted'))
+        history.push(routes.dashboard)
+      } catch (e) {
+        deleteProjectFailed(e as string)
+      } finally {
+        setProjectResetting(false)
+      }
+    }
+  }
+
+  const validate = () => {
+    const allErrors: {
+      name?: string,
+      origins?: string,
+      ipBlacklist?: string,
+    } = {}
+
+    if (_isEmpty(form.name)) {
+      allErrors.name = t('project.settings.noNameError')
+    }
+
+    if (_size(form.name) > MAX_NAME_LENGTH) {
+      allErrors.name = t('project.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
+    }
+
+    if (_size(form.origins) > MAX_ORIGINS_LENGTH) {
+      allErrors.origins = t('project.settings.oxCharsError', { amount: MAX_ORIGINS_LENGTH })
+    }
+
+    if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
+      allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
+    }
+
+    const valid = _isEmpty(_keys(allErrors))
+
+    setErrors(allErrors)
+    setValidated(valid)
+  }
+
+  useEffect(() => {
+    validate()
+  }, [form]) // eslint-disable-line
+
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { target } = event
+    const value = target.type === 'checkbox' ? target.checked : target.value
+
+    setForm(oldForm => ({
+      ...oldForm,
+      [target.name]: value,
+    }))
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit(form)
+    }
+  }
+
+  const onCancel = () => {
+    history.push(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
+  }
+
+  const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
+
+  return (
+    <Title title={title}>
+      <div
+        className={cx('min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8', {
+          'pb-40': isSettings,
+        })}
+      >
+        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+            {title}
+          </h2>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.general')}
+          </h3>
+          <Input
+            name='name'
+            id='name'
+            type='text'
+            label={t('project.settings.name')}
+            value={form.name}
+            placeholder='My awesome project'
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted ? errors.name : null}
+          />
+          <Input
+            name='id'
+            id='id'
+            type='text'
+            label={t('project.settings.pid')}
+            value={form.id}
+            className='mt-4'
+            onChange={handleInput}
+            error={null}
+            disabled
+          />
+          {isSettings ? (
+            <>
+              <Input
+                name='origins'
+                id='origins'
+                type='text'
+                label={t('project.settings.origins')}
+                hint={t('project.settings.originsHint')}
+                value={form.origins || ''}
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.origins : null}
+              />
+              <Input
+                name='ipBlacklist'
+                id='ipBlacklist'
+                type='text'
+                label={t('project.settings.ipBlacklist')}
+                hint={t('project.settings.ipBlacklistHint')}
+                value={form.ipBlacklist || ''}
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.ipBlacklist : null}
+                isBeta
+              />
+              <Checkbox
+                checked={Boolean(form.active)}
+                onChange={handleInput}
+                name='active'
+                id='active'
+                className='mt-4'
+                label={t('project.settings.enabled')}
+                hint={t('project.settings.enabledHint')}
+              />
+              <Checkbox
+                checked={Boolean(form.public)}
+                onChange={handleInput}
+                name='public'
+                id='public'
+                className='mt-4'
+                label={t('project.settings.public')}
+                hint={t('project.settings.publicHint')}
+              />
+              <div className='flex justify-between mt-8 h-20 sm:h-min'>
+                <div className='flex flex-wrap items-center'>
+                  <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
+                    {t('common.cancel')}
+                  </Button>
+                  <Button type='submit' loading={projectSaving} primary regular>
+                    {t('common.save')}
+                  </Button>
+                </div>
+                {!project?.shared && (
+                  <div className='flex flex-wrap items-center justify-end'>
+                    <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
+                      <>
+                        <TrashIcon className='w-5 h-5 mr-1' />
+                        {t('project.settings.reset')}
+                      </>
+                    </Button>
+                    <Button className='ml-2' onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                      <>
+                        <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                        {t('project.settings.delete')}
+                      </>
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+              <Emails projectId={id} projectName={project.name} />
+              <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+              {
+                !project?.shared && (
+                  <People project={project} />
+                )
+              }
+            </>
+          ) : (
+            <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
+              {t('project.settings.createHint')}
+            </p>
+          )}
+
+          {!isSettings && (
+            <div>
+              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
+                {t('common.cancel')}
+              </Button>
+              <Button type='submit' loading={projectSaving} primary regular>
+                {t('common.save')}
+              </Button>
+            </div>
+          )}
+        </form>
+        <Modal
+          onClose={() => setShowDelete(false)}
+          onSubmit={onDelete}
+          submitText={t('project.settings.delete')}
+          closeText={t('common.close')}
+          title={t('project.settings.qDelete')}
+          message={t('project.settings.deleteHint')}
+          submitType='danger'
+          type='error'
+          isOpened={showDelete}
+        />
+        <Modal
+          onClose={() => setShowReset(false)}
+          onSubmit={onReset}
+          submitText={t('project.settings.reset')}
+          closeText={t('common.close')}
+          title={t('project.settings.qReset')}
+          message={t('project.settings.resetHint')}
+          submitType='danger'
+          type='error'
+          isOpened={showReset}
+        />
+      </div>
+    </Title>
+  )
+}
+
+ProjectSettings.propTypes = {
+  updateProjectFailed: PropTypes.func.isRequired,
+  createNewProjectFailed: PropTypes.func.isRequired,
+  newProject: PropTypes.func.isRequired,
+  projectDeleted: PropTypes.func.isRequired,
+  deleteProjectFailed: PropTypes.func.isRequired,
+  loadProjects: PropTypes.func.isRequired,
+  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  showError: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  user: PropTypes.object.isRequired,
+  isSharedProject: PropTypes.bool.isRequired,
+  deleteProjectCache: PropTypes.func.isRequired,
+}
+
+export default memo(withAuthentication(ProjectSettings, auth.authenticated))
