@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import _includes from 'lodash/includes'
 
@@ -11,7 +11,11 @@ const selfHostedBlacklist = [
 
 const DEFAULT_PAGE = routes.signin
 
-const Selfhosted = ({ children }) => {
+interface ISelfhosted {
+  children: JSX.Element
+}
+
+const Selfhosted: React.FC<ISelfhosted> = ({ children }): JSX.Element => {
   const history = useHistory()
 
   // eslint-disable-next-line consistent-return
