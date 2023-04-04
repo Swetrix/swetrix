@@ -273,6 +273,7 @@ export const getProject = (pid: string, isCaptcha: boolean = false) =>
 export const createProject = (data: {
   id: string
   name: string
+  isCaptcha?: boolean
 }) =>
   api
     .post('/project', data)
@@ -426,7 +427,7 @@ export const getOverallStatsCaptcha = (pids: string[]) =>
 export const getLiveVisitors = (pids: string[]) =>
   api
     .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
-    .then((response): { [key: string]: number } => response.data)
+    .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)

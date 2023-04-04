@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-param-reassign */
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, current, PayloadAction } from '@reduxjs/toolkit'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import { IUser } from '../models/IUser'
@@ -68,7 +68,7 @@ const authSlice = createSlice({
       state.user = { ...state.user, sharedProjects: projects }
     },
     setUserShareData: (state, { payload }: PayloadAction<{ data: Partial<ISharedProject>, id: string }>) => {
-      const projects = _map(state.user?.sharedProjects, (item) => {
+      const projects = _map(current(state.user?.sharedProjects), (item) => {
         if (item.id === payload.id) {
           return { ...item, ...payload.data }
         }

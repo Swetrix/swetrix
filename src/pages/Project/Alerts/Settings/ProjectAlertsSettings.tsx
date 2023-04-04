@@ -38,7 +38,7 @@ import { IUser } from 'redux/models/IUser'
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
 const ProjectAlertsSettings = ({
-  alerts, setProjectAlerts, showError, user, setProjectAlertsTotal, total,
+  alerts, setProjectAlerts, showError, user, setProjectAlertsTotal, total, generateAlerts,
 }: {
   alerts: IAlerts[]
   setProjectAlerts: (item: IAlerts[]) => void
@@ -46,6 +46,7 @@ const ProjectAlertsSettings = ({
   user: IUser
   setProjectAlertsTotal: (num: number) => void
   total: number
+  generateAlerts: (message: string) => void
 }): JSX.Element => {
   const history = useHistory()
   const { id, pid }: {
@@ -162,6 +163,7 @@ const ProjectAlertsSettings = ({
         .then((res) => {
           history.push(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setProjectAlerts([..._filter(alerts, (a) => a.id !== id), res])
+          generateAlerts(t('alertsSettings.alertUpdated'))
         })
         .catch((err) => {
           showError(err.message || err || 'Something went wrong')
@@ -172,6 +174,7 @@ const ProjectAlertsSettings = ({
           history.push(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setProjectAlerts([...alerts, res])
           setProjectAlertsTotal(total + 1)
+          generateAlerts(t('alertsSettings.alertCreated'))
         })
         .catch((err) => {
           showError(err.message || err || 'Something went wrong')
@@ -185,6 +188,7 @@ const ProjectAlertsSettings = ({
         setProjectAlerts(_filter(alerts, (a) => a.id !== id))
         setProjectAlertsTotal(total - 1)
         history.push(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
+        generateAlerts(t('alertsSettings.alertDeleted'))
       })
       .catch((err) => {
         showError(err.message || err || 'Something went wrong')

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, current, PayloadAction } from '@reduxjs/toolkit'
 import _filter from 'lodash/filter'
 import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
@@ -103,17 +103,19 @@ const projectsSlice = createSlice({
       const { data, shared = false } = payload
       if (shared) {
         // @ts-ignore
-        state.sharedProjects = _map(state.sharedProjects, (res) => ({
+        state.sharedProjects = _map(current(state.sharedProjects), (res) => ({
           ...res,
           project: {
             ...res.project,
-            live: res.project && data[toNumber(res.project.id)],
+            // @ts-ignore
+            live: data[res.project.id],
           },
         }))
       } else {
-        state.projects = _map(state.projects, (res) => ({
+        state.projects = _map(current(state.projects), (res) => ({
           ...res,
-          live: data[toNumber(res.id)],
+          // @ts-ignore
+          live: data[res.id],
         }))
       }
     },
@@ -121,7 +123,7 @@ const projectsSlice = createSlice({
       const { id, count, shared = false } = payload
 
       if (shared) {
-        state.sharedProjects = _map(state.sharedProjects, (res) => {
+        state.sharedProjects = _map(current(state.sharedProjects), (res) => {
           if (res.id === id) {
             return {
               ...res,
@@ -131,7 +133,7 @@ const projectsSlice = createSlice({
           return res
         })
       } else {
-        state.projects = _map(state.projects, (res) => {
+        state.projects = _map(current(state.projects), (res) => {
           if (res.id === id) {
             return {
               ...res,
@@ -146,7 +148,7 @@ const projectsSlice = createSlice({
       const { project, shared = false } = payload
 
       if (shared) {
-        state.sharedProjects = _findIndex(state.sharedProjects, (el) => el.id === project.id) >= 0
+        state.sharedProjects = _findIndex(current(state.sharedProjects), (el) => el.id === project.id) >= 0
           ? state.sharedProjects
           : [
             ...state.sharedProjects,
@@ -156,7 +158,7 @@ const projectsSlice = createSlice({
             },
           ]
       } else {
-        state.projects = _findIndex(state.projects, (el) => el.id === project.id) >= 0
+        state.projects = _findIndex(current(state.projects), (el) => el.id === project.id) >= 0
           ? state.projects
           : [
             ...state.projects,
@@ -171,7 +173,7 @@ const projectsSlice = createSlice({
       const { data, id, shared = false } = payload
 
       if (shared) {
-        state.sharedProjects = _map(state.sharedProjects, (res) => {
+        state.sharedProjects = _map(current(state.sharedProjects), (res) => {
           if (res.project && res.project.id === id) {
             return {
               ...res,
@@ -181,7 +183,7 @@ const projectsSlice = createSlice({
           return res
         })
       } else {
-        state.projects = _map(state.projects, (res) => {
+        state.projects = _map(current(state.projects), (res) => {
           if (res.id === id) {
             return {
               ...res,

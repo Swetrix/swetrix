@@ -530,7 +530,7 @@ const Dashboard = ({
                                       isPublic={project?.public}
                                       confirmed={confirmed}
                                       overall={project?.overall}
-                                      live='N/A'
+                                      live={_isNumber(project?.live) ? project?.live : 'N/A'}
                                       setUserShareData={() => {}}
                                       deleteProjectFailed={() => {}}
                                       sharedProjects={[]}

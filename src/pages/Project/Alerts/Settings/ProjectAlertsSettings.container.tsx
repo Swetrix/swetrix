@@ -3,6 +3,7 @@ import { errorsActions } from 'redux/reducers/errors'
 import UIActions from 'redux/reducers/ui'
 import { StateType, AppDispatch } from 'redux/store'
 import { IAlerts } from 'redux/models/IAlerts'
+import { alertsActions } from 'redux/reducers/alerts'
 import ProjectAlerts from './ProjectAlertsSettings'
 
 const mapStateToProps = (state: StateType) => ({
@@ -15,6 +16,12 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   showError: (message: string) => {
     dispatch(errorsActions.genericError({
       message,
+    }))
+  },
+  generateAlerts: (message: string) => {
+    dispatch(alertsActions.generateAlerts({
+      message,
+      type: 'success',
     }))
   },
   setProjectAlerts: (alerts: IAlerts[]) => {

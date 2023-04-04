@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, current } from '@reduxjs/toolkit'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import {
@@ -19,16 +19,6 @@ export const getInitialViewPrefs = (LS_VIEW: string) => {
 
   return {}
 }
-// analytics: {},
-
-// analyticsPerf: {},
-
-// captchaAnalytics: {},
-
-// captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING),
-
-// // { pid: { period: '7d', timeBucket: 'day' }, ... }
-// projectViewPrefs: getInitialViewPrefs(LS_VIEW_PREFS_SETTING),
 
 interface IInitialState {
     analytics: any

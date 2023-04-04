@@ -170,6 +170,7 @@ const CaptchaSettings = ({
             await createProject({
               id: formalisedData.id,
               name: formalisedData.name,
+              isCaptcha: true,
             })
           }
           trackCustom('PROJECT_CREATED')
