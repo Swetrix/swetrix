@@ -43,7 +43,7 @@ const LiveVisitorsDropdown = ({ live, projectId }: {
       onOutsideClick={() => setShow(false)}
     >
       <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl cursor-pointer' onClick={() => setShow(!show)}>
-        {live}
+        {`${live}` || 'N/A'}
         {' '}
         {show ? <ChevronUpIcon className='inline w-5 h-5' /> : <ChevronDownIcon className='inline w-5 h-5' />}
       </p>

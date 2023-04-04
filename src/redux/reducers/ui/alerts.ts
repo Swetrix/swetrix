@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, current, PayloadAction } from '@reduxjs/toolkit'
 import { IAlerts } from 'redux/models/IAlerts'
 
 interface IInitialState {
@@ -24,7 +24,7 @@ const alertsSlice = createSlice({
     },
     setProjectAlertsTotal(state, { payload }: PayloadAction<{ total: number, pageTotal?: number }>) {
       state.total = payload.total
-      state.pageTotal = payload.pageTotal || state.pageTotal
+      state.pageTotal = payload.pageTotal || current(state.pageTotal)
     },
     setProjectAlertsLoading(state, { payload }: PayloadAction<boolean>) {
       state.loading = payload
