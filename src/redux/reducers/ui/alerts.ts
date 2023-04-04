@@ -24,7 +24,7 @@ const alertsSlice = createSlice({
     },
     setProjectAlertsTotal(state, { payload }: PayloadAction<{ total: number, pageTotal?: number }>) {
       state.total = payload.total
-      state.pageTotal = payload.pageTotal || current(state.pageTotal)
+      state.pageTotal = payload.pageTotal || state.pageTotal
     },
     setProjectAlertsLoading(state, { payload }: PayloadAction<boolean>) {
       state.loading = payload

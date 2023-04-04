@@ -40,7 +40,7 @@ const authSlice = createSlice({
       state.isPaidTierUsed = isSelfhosted || (payload?.planCode && payload.planCode !== FREE_TIER_KEY) as boolean
     },
     emailVerifySuccessful: (state) => {
-      state.user = { ...current(state.user), isActive: true }
+      state.user = { ...state.user, isActive: true }
     },
     signupUpSuccessful: (state, { payload }: PayloadAction<IUser>) => {
       state.user = payload
@@ -65,7 +65,7 @@ const authSlice = createSlice({
     },
     deleteShareProject: (state, { payload }: PayloadAction<string>) => {
       const projects = _filter(current(state.user?.sharedProjects), (item) => item.id !== payload)
-      state.user = { ...current(state.user), sharedProjects: projects }
+      state.user = { ...state.user, sharedProjects: projects }
     },
     setUserShareData: (state, { payload }: PayloadAction<{ data: Partial<ISharedProject>, id: string }>) => {
       const projects = _map(current(state.user?.sharedProjects), (item) => {
@@ -74,19 +74,19 @@ const authSlice = createSlice({
         }
         return item
       })
-      state.user = { ...current(state.user), sharedProjects: projects }
+      state.user = { ...state.user, sharedProjects: projects }
     },
     setDontRemember: (state, { payload }: PayloadAction<boolean>) => {
       state.dontRemember = payload
     },
     updateUserData: (state, { payload }: PayloadAction<IUser>) => {
-      state.user = { ...current(state.user), ...payload }
+      state.user = { ...state.user, ...payload }
     },
     setApiKey: (state, { payload }: PayloadAction<string>) => {
-      state.user = { ...current(state.user), apiKey: payload }
+      state.user = { ...state.user, apiKey: payload }
     },
     setUser: (state, { payload }: PayloadAction<IUser>) => {
-      state.user = { ...current(state.user), ...payload }
+      state.user = { ...state.user, ...payload }
     },
   },
 })
