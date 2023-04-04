@@ -273,6 +273,7 @@ export const getProject = (pid: string, isCaptcha: boolean = false) =>
 export const createProject = (data: {
   id: string
   name: string
+  isCaptcha?: boolean
 }) =>
   api
     .post('/project', data)
