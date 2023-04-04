@@ -64,7 +64,7 @@ const authSlice = createSlice({
       state.isPaidTierUsed = isSelfhosted
     },
     deleteShareProject: (state, { payload }: PayloadAction<string>) => {
-      const projects = _filter(current(state.user?.sharedProjects), (item) => item.id !== payload)
+      const projects = _filter(state.user?.sharedProjects, (item) => item.id !== payload)
       state.user = { ...state.user, sharedProjects: projects }
     },
     setUserShareData: (state, { payload }: PayloadAction<{ data: Partial<ISharedProject>, id: string }>) => {

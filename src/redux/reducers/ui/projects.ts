@@ -97,7 +97,7 @@ const projectsSlice = createSlice({
       state.isLoadingCaptcha = payload
     },
     removeCaptchaProject(state, { payload }: PayloadAction<string>) {
-      state.captchaProjects = _filter(current(state.captchaProjects), (project) => project.id !== payload)
+      state.captchaProjects = _filter(state.captchaProjects, (project) => project.id !== payload)
     },
     setLiveStats(state, { payload }: PayloadAction<{ data: any[], shared: boolean }>) {
       const { data, shared = false } = payload
@@ -201,10 +201,10 @@ const projectsSlice = createSlice({
       const { pid, shared = false } = payload
 
       if (shared) {
-        state.sharedProjects = _filter(current(state.sharedProjects), (project) => project.id !== pid)
+        state.sharedProjects = _filter(state.sharedProjects, (project) => project.id !== pid)
         state.sharedTotal -= 1
       } else {
-        state.projects = _filter(current(state.projects), (project) => project.id !== pid)
+        state.projects = _filter(state.projects, (project) => project.id !== pid)
         state.total -= 1
       }
     },

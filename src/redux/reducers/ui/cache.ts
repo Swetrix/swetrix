@@ -70,12 +70,12 @@ const cacheSlice = createSlice({
         if (_isEmpty(pid)) {
           state.analytics = {}
         }
-        state.analytics = _filter(current(state.analytics), (project) => project !== pid)
+        state.analytics = _filter(state.analytics, (project) => project !== pid)
       }
       if (pid) {
         state.analytics = {
           ...state.analytics,
-          [pid]: _filter(current(state.analytics[pid]), (ckey) => ckey !== key),
+          [pid]: _filter(state.analytics[pid], (ckey) => ckey !== key),
         }
       }
     },
@@ -91,11 +91,11 @@ const cacheSlice = createSlice({
         if (_isEmpty(pid)) {
           state.captchaAnalytics = {}
         }
-        state.captchaAnalytics = _filter(current(state.captchaAnalytics), (project) => project !== pid)
+        state.captchaAnalytics = _filter(state.captchaAnalytics, (project) => project !== pid)
       }
       state.captchaAnalytics = {
         ...state.captchaAnalytics,
-        [pid]: _filter(current(state.captchaAnalytics[pid]), (ckey) => ckey !== key),
+        [pid]: _filter(state.captchaAnalytics[pid], (ckey) => ckey !== key),
       }
     },
     setProjectViewPrefs(state, { payload }: PayloadAction<{ pid: string, period: string, timeBucket: string, rangeDate?: Date[] }>) {
@@ -145,11 +145,11 @@ const cacheSlice = createSlice({
         if (_isEmpty(pid)) {
           state.analyticsPerf = {}
         }
-        state.analyticsPerf = _filter(current(state.analyticsPerf), (project) => project !== pid)
+        state.analyticsPerf = _filter(state.analyticsPerf, (project) => project !== pid)
       }
       state.analyticsPerf = {
         ...state.analyticsPerf,
-        [pid]: _filter(current(state.analyticsPerf[pid]), (ckey) => ckey !== key),
+        [pid]: _filter(state.analyticsPerf[pid], (ckey) => ckey !== key),
       }
     },
     setProjectForecastCache(state, { payload }: PayloadAction<{ pid: string, key: string, data: any }>) {
