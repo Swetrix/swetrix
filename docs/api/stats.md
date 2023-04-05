@@ -15,7 +15,7 @@ Each request must be authenticated with an API key using `X-Api-Key` HTTP header
 
 Rate limit for the API depends on your plan, you can find more information on the billing (or the main) page.
 As for 9 February 2023, the rate limits are as follows:
-- **Free plan**: 5 requests per hour;
+- **Free plan**: 600 requests per hour;
 - **Any paid plan**: 600 requests per hour.
 
 If you have special needs for more requests, please contact us to request more capacity.
