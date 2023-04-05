@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 import { Link, NavLink } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
 import { useAppDispatch } from 'redux/store'
+import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
@@ -26,6 +27,7 @@ import cx from 'clsx'
 
 import routes from 'routes'
 import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 import UIActions from 'redux/reducers/ui'
 import {
   whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
@@ -537,6 +539,7 @@ const Header = ({
     i18n: { language: string },
   } = useTranslation('common')
   const dispatch = useAppDispatch()
+  const _dispatch = useDispatch()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
 
@@ -576,6 +579,7 @@ const Header = ({
 
   const logoutHandler = () => {
     dispatch(authActions.logout())
+    _dispatch(sagaActions.logout(false))
   }
 
   const switchTheme = (_theme?: string) => {

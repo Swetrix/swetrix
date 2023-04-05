@@ -32,8 +32,8 @@ const loadProjectAlerts = (take?: number, skip?: number) => ({
 })
 
 const loginAsync = (credentials: {
-    email: string,
-    password: string,
+  email: string,
+  password: string,
 }, callback = () => { }) => ({
   type: types.LOGIN_ASYNC,
   payload: {
@@ -42,8 +42,8 @@ const loginAsync = (credentials: {
 })
 
 const signupAsync = (data: {
-    email: string,
-    password: string,
+  email: string,
+  password: string,
 }, t?: (string: string) => {}, callback = (res: any) => { }) => ({
   type: types.SIGNUP_ASYNC,
   payload: {
@@ -52,13 +52,13 @@ const signupAsync = (data: {
 })
 
 const emailVerifyAsync = (data: {
-    id: string,
+  id: string,
 }, successfulCallback?: () => void, errorCallback?: (e: string) => void) => ({
   type: types.EMAIL_VERIFY_ASYNC,
   payload: { data, successfulCallback, errorCallback },
 })
 
-const updateUserProfileAsync = (data: Partial<IUser>, callback = (item: any) => {}) => ({
+const updateUserProfileAsync = (data: Partial<IUser>, callback = (item: any) => { }) => ({
   type: types.UPDATE_USER_PROFILE_ASYNC,
   payload: { data, callback },
 })
@@ -76,14 +76,14 @@ const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?:
 }
 
 const shareVerifyAsync = (data: {
-    id: string,
-    path: string
+  id: string,
+  path: string
 }, successfulCallback?: () => void, errorCallback?: (error: string) => void) => ({
   type: types.SHARE_VERIFY_ASYNC,
   payload: { data, successfulCallback, errorCallback },
 })
 
-const logout = (basedOn401Error: string) => {
+const logout = (basedOn401Error: boolean) => {
   const refreshToken = getRefreshToken()
   logoutApi(refreshToken)
   removeAccessToken()
