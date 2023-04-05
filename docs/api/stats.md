@@ -14,7 +14,7 @@ The statistics API provides several GET endpoints. These endpoints require some 
 Each request must be authenticated with an API key using `X-Api-Key` HTTP header. You can obtain an API key in your Swetrix [account settings](https://swetrix.com/settings).
 
 Rate limit for the API depends on your plan, you can find more information on the billing (or the main) page.
-As for 9 February 2023, the rate limits are as follows:
+As of 9 February 2023, the rate limits are as follows:
 - **Free plan**: 600 requests per hour;
 - **Any paid plan**: 600 requests per hour.
 
