@@ -250,7 +250,7 @@ const Main = (): JSX.Element => {
             {/* end first block with live demo */}
             {/* section Core Analytics Features */}
             <div className='dark:bg-gray-900 bg-white px-4 pb-24'>
-              <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
+              <section className='flex pt-16 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <picture>
                   <source srcSet='/assets/CoreFeaturesLight.webp' type='image/webp' />
                   <img src='/assets/CoreFeaturesLight.png' className='md:max-w-md md:mr-3 mt-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />
@@ -276,7 +276,7 @@ const Main = (): JSX.Element => {
               </section>
               {/* end section Core Analytics Features */}
               {/* section Marketplace & build-in Extensions */}
-              <section className='flex pt-20 md:pt-30 flex-col md:flex-row items-center md:justify-between max-w-7xl m-auto'>
+              <section className='flex pt-16 flex-col md:flex-row items-center md:justify-between max-w-7xl m-auto'>
                 <div className='max-w-[516px]'>
                   <h2 className='font-extrabold text-4xl text-gray-800 dark:text-white'>
                     {t('main.marketplace.title')}
@@ -302,7 +302,7 @@ const Main = (): JSX.Element => {
               </section>
               {/* end section Marketplace & build-in Extensions */}
               {/* section Privacy compliance. */}
-              <section className='flex pt-20 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
+              <section className='flex pt-20 md:pt-28 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <img className='md:max-w-[360px] md:mr-3 mt-3 md:mt-0 lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
                 <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0 md:pt-8'>
                   <h2 className='font-extrabold mb-6 text-4xl text-gray-800 dark:text-white'>
@@ -323,7 +323,8 @@ const Main = (): JSX.Element => {
                       </p>
                     </div>
                   ))}
-                  <Link to={routes.privacy} className='dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center' aria-label={t('footer.pp')}>
+                  {/* mt-7 because mb-4 in upper component + mt-7 = 11. mb-11 is used for spacing the links in other sections. */}
+                  <Link to={routes.privacy} className='mt-7 dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center' aria-label={t('footer.pp')}>
                     {t('main.dataProtection')}
                     <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                   </Link>
@@ -333,7 +334,7 @@ const Main = (): JSX.Element => {
             </div>
             {/*  block singup */}
             <div className='overflow-x-clip'>
-              <div className='py-24 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5'>
+              <div className='py-20 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5'>
                 <div className='relative z-50 lg:col-span-6 rounded-xl'>
                   <div className='bg-white dark:bg-gray-800 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
@@ -378,7 +379,7 @@ const Main = (): JSX.Element => {
             </div>
             {/* end block singup */}
             {/* Core features section */}
-            <section className='bg-white dark:bg-gray-900 pt-20 relative pb-14'>
+            <section className='bg-white dark:bg-gray-900 pt-14 relative pb-14'>
               <BackgroundSvg className='absolute -left-8' type='shapes' />
               <div className='mx-auto text-gray-800 font-extrabold text-3xl sm:text-5xl w-fit relative'>
                 <h2 className='relative z-20 dark:text-white'>
