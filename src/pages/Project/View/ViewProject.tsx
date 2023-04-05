@@ -1734,6 +1734,22 @@ const ViewProject = ({
                       )
                     }
 
+                    if (type === 'so' || type === 'me' || type === 'ca') {
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsData.data[type]}
+                          customTabs={customTabs}
+                          rowMapper={(row) => decodeURIComponent(row)}
+                        />
+                      )
+                    }
+
                     return (
                       <Panel
                         t={t}
