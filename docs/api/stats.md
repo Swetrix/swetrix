@@ -4,7 +4,7 @@ slug: /statistics-api
 ---
 
 :::caution
-The API is currently in beta and be a subject to change in future.
+The API is currently in beta and might be a subject to change in future.
 :::
 
 Swetrix provides the ability to retrieve aggregated data not only through the UI, but also programmatically using API queries.
