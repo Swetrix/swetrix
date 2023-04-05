@@ -82,13 +82,10 @@ const UserSettings = ({
   accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
 }: IProps): JSX.Element => {
   const history = useHistory()
-  const { t, i18n: { language } }: {
+  const { t }: {
     t: (key: string, options?: {
       [key: string]: string | number | null,
     }) => string,
-    i18n: {
-      language: string,
-    },
   } = useTranslation('common')
 
   const [form, setForm] = useState<IForm>({

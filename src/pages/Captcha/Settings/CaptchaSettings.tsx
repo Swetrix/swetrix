@@ -16,7 +16,6 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
-import _omit from 'lodash/omit'
 import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 

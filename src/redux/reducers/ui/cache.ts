@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction, current } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import {

@@ -21,7 +21,7 @@ import { ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted } from 'redux/constants'
-import { IProject, IShareOwnerProject } from 'redux/models/IProject'
+import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import {

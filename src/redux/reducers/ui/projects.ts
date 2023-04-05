@@ -7,7 +7,6 @@ import { setItem, getItem } from 'utils/localstorage'
 import { IProject, ICaptchaProject } from 'redux/models/IProject'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { IAlerts } from 'redux/models/IAlerts'
-import { toNumber } from 'lodash'
 
 interface IInitialState {
     projects: IProject[]
