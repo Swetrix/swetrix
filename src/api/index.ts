@@ -10,7 +10,7 @@ import { authActions } from 'redux/reducers/auth'
 
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
-import { DEFAULT_ALERTS_TAKE, isSelfhosted, reportFrequencies } from 'redux/constants'
+import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IAuth } from 'redux/models/IAuth'
 import { IProject, IOverall } from 'redux/models/IProject'
