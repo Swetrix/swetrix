@@ -2,7 +2,9 @@ import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Project } from 'src/project/entity/project.entity'
-import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
+import {
+  QueryCondition, QueryMetric, QueryTime, AlertType,
+} from 'src/alert/dto/alert.dto'
 
 @Entity()
 export class Alert {
@@ -15,6 +17,14 @@ export class Alert {
   @ApiProperty()
   @Column('varchar', { length: 50 })
   name: string
+
+  @ApiProperty()
+  @Column({
+    type: 'enum',
+    enum: AlertType,
+    default: AlertType.TRAFFIC,
+  })
+  type: AlertType
 
   @ApiProperty()
   @Column({
@@ -33,6 +43,7 @@ export class Alert {
   })
   lastTriggered: Date | null
 
+  // traffic type related fields
   @ApiProperty()
   @Column({
     type: 'enum',
@@ -40,7 +51,7 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryMetric: QueryMetric
+  queryMetric: QueryMetric | null
 
   @ApiProperty()
   @Column({
@@ -49,7 +60,7 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryCondition: QueryCondition
+  queryCondition: QueryCondition | null
 
   @ApiProperty()
   @Column({
@@ -57,7 +68,7 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryValue: number
+  queryValue: number | null
 
   @ApiProperty()
   @Column({
@@ -66,5 +77,15 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryTime: QueryTime
+  queryTime: QueryTime | null
+
+  // custom event type related fields
+  @ApiProperty()
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    default: null,
+  })
+  customEvent: string | null
 }

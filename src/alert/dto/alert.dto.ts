@@ -23,6 +23,11 @@ export enum QueryTime {
   LAST_48_HOURS = 'last_48_hours',
 }
 
+export enum AlertType {
+  TRAFFIC = 'traffic',
+  CUSTOM_EVENT = 'custom_event',
+}
+
 export class AlertDTO {
   @ApiProperty()
   @IsNotEmpty()
