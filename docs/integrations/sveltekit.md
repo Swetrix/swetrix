@@ -7,17 +7,17 @@ After you sign up on Swetrix and create a new project, the only thing left is to
 
 ## Installation
 1. Install the Swetrix package via `npm install swetrix`.
-2. Go to your SvelteKit website codebase and either create a new `__layout.svelte` file or use an existing one.
+2. Go to your SvelteKit website codebase and either create a new `+layout.svelte` file or use an existing one.
 3. Make your layout file look like this:
 ```html
 <script>
   import { onMount } from "svelte";
-  import { browser, dev } from "$app/env";
+  import { browser, dev } from '$app/environment';
   import { page } from "$app/stores";
   import * as Swetrix from "swetrix";
 
   onMount(() => {
-    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.init("YOUR_PROJECT_ID", { debug: dev, disabled: dev });
     Swetrix.trackViews();
   });
 
