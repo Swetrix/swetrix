@@ -17,6 +17,15 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-04-06',
+    changes: [
+      'utm_* parameters in the dashboard are now displayed as decoded URL values (i.e. %20 is replaced with a space, %3D is replaced with an equal sign, etc.).',
+      'Fully rewritten the frontend part of Swetrix to TypeScript to improve stability and code quality.',
+      'Fixed some minor bugs related to live visitors counter and the CAPTCHA configuration page.',
+      'Fixed spacing between action buttons on Dashboard on mobile layouts.'
+    ],
+  },
+  {
     date: '2023-03-20',
     changes: [
       <>
