@@ -2,7 +2,6 @@ import React from 'react'
 import _toString from 'lodash/toString'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { CONTACT_EMAIL, PAGE_FORCE_REFRESHED } from 'redux/constants'
-import { getItem, setItem } from 'utils/localstorage'
 
 interface CrashHandlerProps {
   children: JSX.Element
@@ -17,14 +16,14 @@ interface CrashHandlerState {
 
 const retryPageLoading = () => {
   const pageHasAlreadyBeenForceRefreshed = JSON.parse(
-    getItem(PAGE_FORCE_REFRESHED) || 'false',
+    sessionStorage.getItem(PAGE_FORCE_REFRESHED) || 'false',
   ) as boolean
 
   if (!pageHasAlreadyBeenForceRefreshed) {
-    setItem(PAGE_FORCE_REFRESHED, 'true')
+    sessionStorage.setItem(PAGE_FORCE_REFRESHED, 'true')
     return window.location.reload()
   }
-  setItem(PAGE_FORCE_REFRESHED, 'false')
+  sessionStorage.setItem(PAGE_FORCE_REFRESHED, 'false')
   return null
 }
 
