@@ -31,6 +31,7 @@ import * as dayjs from 'dayjs'
 
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
+import { isValidDate } from 'src/analytics/analytics.service'
 import {
   ProjectService,
   processProjectUser,
@@ -52,7 +53,6 @@ import { UserService } from '../user/user.service'
 import { ProjectDTO } from './dto/project.dto'
 import { ShareDTO } from './dto/share.dto'
 import { ShareUpdateDTO } from './dto/share-update.dto'
-import { isValidDate } from 'src/analytics/analytics.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isValidPID,
