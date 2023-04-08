@@ -799,8 +799,20 @@ export class ProjectController {
   }
 
   @Delete('/partially/:pid')
-  @ApiQuery({ name: 'from', required: true, description: 'Date in ISO format', example: '2020-01-01T00:00:00.000Z', type: 'string' })
-  @ApiQuery({ name: 'to', required: true, description: 'Date in ISO format', example: '2020-01-01T00:00:00.000Z', type: 'string' })
+  @ApiQuery({
+    name: 'from',
+    required: true,
+    description: 'Date in ISO format',
+    example: '2020-01-01T00:00:00.000Z',
+    type: 'string',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: true,
+    description: 'Date in ISO format',
+    example: '2020-01-01T00:00:00.000Z',
+    type: 'string',
+  })
   @ApiResponse({ status: 200 })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
@@ -813,18 +825,20 @@ export class ProjectController {
     this.logger.log({ from, to, pid }, 'DELETE /partially/:id')
 
     if (!isValidPID(pid)) {
-      throw new BadRequestException('The provided Project ID (pid) is incorrect')
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
     }
 
     from = _head(_split(from, 'T'))
     to = _head(_split(to, 'T'))
 
     if (!isValidDate(from)) {
-      throw new BadRequestException('The provided \'from\' date is incorrect',)
+      throw new BadRequestException("The provided 'from' date is incorrect")
     }
 
     if (!isValidDate(to)) {
-      throw new BadRequestException('The provided \'to\' date is incorrect',)
+      throw new BadRequestException("The provided 'to' date is incorrect")
     }
 
     const project = await this.projectService.findOne(pid, {

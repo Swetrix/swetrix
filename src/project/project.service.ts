@@ -347,13 +347,22 @@ export class ProjectService {
     }
   }
 
-  async removeDataFromClickhouse(pid: string, from: string, to: string): Promise<void> {
-    const queryAnalytics = 'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryCustomEvents = 'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryPerformance = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+  async removeDataFromClickhouse(
+    pid: string,
+    from: string,
+    to: string,
+  ): Promise<void> {
+    const queryAnalytics =
+      'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryCustomEvents =
+      'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryPerformance =
+      'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
-        pid, from, to,
+        pid,
+        from,
+        to,
       },
     }
 

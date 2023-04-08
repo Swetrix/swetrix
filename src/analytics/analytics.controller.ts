@@ -707,7 +707,9 @@ export class AnalyticsController {
 
     await Promise.all(keyCountPromises).catch(reason => {
       this.logger.error(`[@Get('/hb')] ${reason}`)
-      throw new InternalServerErrorException('An error occured while calculating heartbeat statistics')
+      throw new InternalServerErrorException(
+        'An error occured while calculating heartbeat statistics',
+      )
     })
 
     return result
@@ -1057,5 +1059,167 @@ export class AnalyticsController {
 
     res.writeHead(200, { 'Content-Type': 'image/gif' })
     return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
+  }
+
+  @Get('custom-events')
+  @Auth([], true, true)
+  async getCustomEvents(
+    @Query() data: AnalyticsGET_DTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+    const [filtersQuery, filtersParams] =
+      this.analyticsService.getFiltersQuery(filters)
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    let groupFrom = from
+    let groupTo = to
+
+    const queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
+    const subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: null,
+        groupTo: null,
+        ...filtersParams,
+      },
+    }
+
+    if (!_isEmpty(from) && !_isEmpty(to)) {
+      if (!isValidDate(from)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter is invalid",
+        )
+      }
+
+      if (!isValidDate(to)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'to' parameter is invalid",
+        )
+      }
+
+      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter cannot be greater than 'to'",
+        )
+      }
+
+      checkIfTBAllowed(timeBucket, from, to)
+
+      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+
+      if (from === to) {
+        groupTo = dayjs
+          .tz(to, timezone)
+          .add(1, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+      } else {
+        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
+      }
+    } else if (!_isEmpty(period)) {
+      if (period === 'today') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
+          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else if (period === 'yesterday') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .subtract(1, 'day')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs
+            .utc()
+            .startOf('d')
+            .subtract(1, 'day')
+            .format('YYYY-MM-DD')
+          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else {
+        groupFrom = dayjs
+          .utc()
+          .subtract(parseInt(period, 10), _last(period))
+          .format('YYYY-MM-DD')
+        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+
+        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
+      }
+    } else {
+      throw new BadRequestException(
+        'The timeframe (either from/to pair or period) has to be provided',
+      )
+    }
+
+    paramsData.params = {
+      ...paramsData.params,
+      groupFrom,
+      groupTo,
+    }
+
+    // let result: object | void
+
+    let appliedFilters = filters
+
+    if (filters) {
+      try {
+        appliedFilters = JSON.parse(filters)
+        // eslint-disable-next-line no-empty
+      } catch {}
+    }
+
+    const customs = await this.analyticsService.processCustomEV(
+      queryCustoms,
+      paramsData,
+    )
+
+    const customEventsName = Object.keys(customs)
+
+    const result = await this.analyticsService.groupCustomEVByTimeBucket(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      subQuery,
+      filtersQuery,
+      paramsData,
+      timezone,
+      customEventsName,
+    )
+
+    return {
+      ...result,
+      appliedFilters,
+    }
   }
 }

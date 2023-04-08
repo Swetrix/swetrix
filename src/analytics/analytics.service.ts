@@ -1017,4 +1017,103 @@ export class AnalyticsService {
     // @ts-ignore
     return redis.countKeysByPattern(`hb:${pid}:*`)
   }
+
+  async groupCustomEVByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    timezone: string,
+    customEventsName: string[],
+  ): Promise<object | void> {
+    let groupDateIterator
+    const now = dayjs.utc().endOf(timeBucket)
+    const djsTo = dayjs.utc(to).endOf(timeBucket)
+    const iterateTo = djsTo > now ? now : djsTo
+
+    switch (timeBucket) {
+      case TimeBucketType.HOUR:
+        groupDateIterator = dayjs.utc(from).startOf('hour')
+        break
+
+      case TimeBucketType.DAY:
+      case TimeBucketType.WEEK:
+      case TimeBucketType.MONTH:
+        groupDateIterator = dayjs.utc(from).startOf('day')
+        break
+
+      default:
+        return Promise.reject()
+    }
+
+    let x = []
+
+    while (groupDateIterator < iterateTo) {
+      const nextIteration = groupDateIterator.add(1, timeBucket)
+      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
+      groupDateIterator = nextIteration
+    }
+
+    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, ev, count() from customEV where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by pid, ev`
+    }
+
+    // @ts-ignore
+    const result: Array<CustomsCHResponse> = (
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+      // @ts-ignore
+      .sort((a, b) => a.index - b.index)
+
+    const customEvents = {}
+
+    let idx = 0
+    const resSize = _size(result)
+
+    while (idx < resSize) {
+      const res = result[idx]
+      // get index from res by js destructuring
+      const { ev } = res
+
+      if (!customEvents[ev]) {
+        customEvents[ev] = []
+      }
+
+      customEvents[ev][idx] = _round(res['count()'], 2)
+
+      idx++
+    }
+
+    for (let i = 0; i < _size(x); ++i) {
+      for (let j = 0; j < _size(customEventsName); ++j) {
+        if (!customEvents[customEventsName[j]][i]) {
+          customEvents[customEventsName[j]][i] = 0
+        }
+      }
+    }
+
+    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+      x = _map(x, el =>
+        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+      )
+    }
+
+    return Promise.resolve({
+      chart: {
+        x,
+        events: customEvents,
+      },
+    })
+  }
 }
