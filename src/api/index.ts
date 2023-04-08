@@ -748,3 +748,39 @@ export const confirmSubscriberInvite = (id: string, token: string) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const transferProject = (uuid: string, email: string) =>
+  api
+    .post('project/transfer', {
+      projectId: uuid,
+      email,
+    })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const rejectTransferProject = (uuid: string) =>
+  api
+    .delete(`project/transfer?token=${uuid}`)
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const confirmTransferProject = (uuid: string) =>
+  api
+    .get(`project/transfer?token=${uuid}`)
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

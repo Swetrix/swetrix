@@ -27,7 +27,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       message,
     }))
   },
-  newProject: (message: string) => {
+  generateAlerts: (message: string) => {
     dispatch(alertsActions.generateAlerts({
       message,
       type: 'success',
