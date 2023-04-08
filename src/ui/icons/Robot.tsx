@@ -1,16 +1,19 @@
 import React from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
+import { StateType } from 'redux/store'
 
 const Robot = ({
-  className, containerClassName, // theme,
+  className, containerClassName,
 }: {
   className?: string,
   containerClassName?: string,
 }): JSX.Element => {
+  const theme = useSelector((state: StateType) => state.ui.theme.theme)
   const cn = cx(className, {
-    // 'fill-white': theme === 'dark',
-    // 'fill-slate-800': theme === 'light',
+    'fill-text-gray-700': theme === 'dark',
+    'fill-white': theme === 'light',
   })
 
   return (
@@ -27,7 +30,6 @@ const Robot = ({
 Robot.propTypes = {
   className: PropTypes.string,
   containerClassName: PropTypes.string,
-  // theme: PropTypes.string.isRequired,
 }
 
 Robot.defaultProps = {
