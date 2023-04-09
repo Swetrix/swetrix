@@ -644,6 +644,13 @@ export class ProjectService {
       projectId,
     )
 
+    await this.projectsRepository.update(
+      { id: projectId },
+      {
+        isTransferring: true,
+      },
+    )
+
     const url = `${
       isDevelopment ? origin : PRODUCTION_ORIGIN
     }/projects/${projectId}/transfer?token=${actionToken.id}`
@@ -662,7 +669,7 @@ export class ProjectService {
   ) {
     await this.projectsRepository.update(
       { id: projectId },
-      { admin: { id: userId } },
+      { admin: { id: userId }, isTransferring: false },
     )
     await this.projectShareRepository.save({
       user: { id: oldAdminId },
@@ -673,7 +680,11 @@ export class ProjectService {
     await this.actionTokens.deleteActionToken(token)
   }
 
-  async cancelTransferProject(token: string) {
+  async cancelTransferProject(token: string, projectId: string) {
+    await this.projectsRepository.update(
+      { id: projectId },
+      { isTransferring: false },
+    )
     await this.actionTokens.deleteActionToken(token)
   }
 }

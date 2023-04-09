@@ -1358,6 +1358,6 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    await this.projectService.cancelTransferProject(actionToken.id)
+    await this.projectService.cancelTransferProject(actionToken.id, project.id)
   }
 }

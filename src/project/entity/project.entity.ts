@@ -50,6 +50,9 @@ export class Project {
   })
   public: boolean
 
+  @Column('boolean', { default: false })
+  isTransferring: boolean
+
   // Swetrix CAPTCHA related stuff
   @ApiProperty()
   @Column('boolean', { default: true })
