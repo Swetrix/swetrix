@@ -23,6 +23,7 @@ import {
 } from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
 import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
@@ -57,6 +58,8 @@ const CaptchaSettings = lazy(() => import('pages/Captcha/Settings'))
 const CaptchaView = lazy(() => import('pages/Captcha/View'))
 const ConfirmReportsShare = lazy(() => import('pages/Project/Settings/Emails/ConfirmReportsShare'))
 const MediaAndPress = lazy(() => import('pages/Press'))
+const TransferProjectConfirm = lazy(() => import('pages/Project/Settings/TransferProject/TransferProjectConfirm'))
+const TransferProjectReject = lazy(() => import('pages/Project/Settings/TransferProject/TransferProjectReject'))
 
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
@@ -147,6 +150,7 @@ const App = () => {
           dispatch(authActions.finishLoading())
         } catch (e) {
           dispatch(authActions.logout())
+          dispatch(sagaActions.logout(false))
         }
       }
     })()
@@ -225,6 +229,8 @@ const App = () => {
                 <Route path={routes.captcha} component={CaptchaView} exact />
                 <Route path={routes.confirm_subcription} component={ConfirmReportsShare} exact />
                 <Route path={routes.press} component={MediaAndPress} exact />
+                <Route path={routes.transfer_confirm} component={TransferProjectConfirm} exact />
+                <Route path={routes.transfer_reject} component={TransferProjectReject} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>

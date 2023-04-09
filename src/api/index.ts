@@ -6,8 +6,9 @@ import Debug from 'debug'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
-import { authActions } from 'redux/reducers/auth'
 
+import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
@@ -43,6 +44,7 @@ const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
     })
     .catch((error) => {
       store.dispatch(authActions.logout())
+      store.dispatch(sagaActions.logout(true))
       return Promise.reject(error)
     })
 
@@ -742,6 +744,42 @@ export const confirmSubscriberInvite = (id: string, token: string) =>
   api
     .get(`project/${id}/subscribers/invite?token=${token}`)
     .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const transferProject = (uuid: string, email: string) =>
+  api
+    .post('project/transfer', {
+      projectId: uuid,
+      email,
+    })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const rejectTransferProject = (uuid: string) =>
+  api
+    .delete(`project/transfer?token=${uuid}`)
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const confirmTransferProject = (uuid: string) =>
+  api
+    .get(`project/transfer?token=${uuid}`)
+    .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)
