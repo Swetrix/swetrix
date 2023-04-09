@@ -878,6 +878,8 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Headers() headers: { origin: string },
   ) {
+    this.logger.log({ body }, 'POST /project/transfer')
+
     const project = await this.projectService.getOwnProject(
       body.projectId,
       userId,
@@ -910,6 +912,8 @@ export class ProjectController {
   async confirmTransferProject(
     @Query() queries: ConfirmTransferProjectQueriesDto,
   ) {
+    this.logger.log({ queries }, 'GET /project/transfer')
+
     const actionToken = await this.actionTokensService.getActionToken(
       queries.token,
     )
@@ -942,7 +946,8 @@ export class ProjectController {
   async cancelTransferProject(
     @Query() queries: CancelTransferProjectQueriesDto,
   ) {
-    console.log('DELETE /projects/transfer', queries)
+    this.logger.log({ queries }, 'DELETE /project/transfer')
+
     const actionToken = await this.actionTokensService.getActionToken(
       queries.token,
     )
@@ -971,6 +976,8 @@ export class ProjectController {
     @Param() params: RemoveSubscriberParamsDto,
     @CurrentUserId() userId: string,
   ): Promise<void> {
+    this.logger.log({ params }, 'DELETE /project/:projectId/subscribers/:subscriberId')
+
     const project = await this.projectService.getProject(
       params.projectId,
       userId,
@@ -1003,6 +1010,7 @@ export class ProjectController {
     @Headers() headers: { origin: string },
     @CurrentUserId() userId: string,
   ) {
+    this.logger.log({ params, body }, 'POST /project/:projectId/subscribers')
     const project = await this.projectService.getProject(
       params.projectId,
       userId,
@@ -1043,6 +1051,7 @@ export class ProjectController {
     @Param() params: ConfirmSubscriberInviteParamsDto,
     @Query() queries: ConfirmSubscriberInviteQueriesDto,
   ): Promise<void> {
+    this.logger.log({ params, queries }, 'GET /project/:projectId/subscribers/invite')
     const project = await this.projectService.getProjectById(params.projectId)
 
     if (!project) {
@@ -1084,6 +1093,7 @@ export class ProjectController {
     @Query() queries: GetSubscribersQueriesDto,
     @CurrentUserId() userId: string,
   ) {
+    this.logger.log({ params, queries }, 'GET /project/:projectId/subscribers')
     const project = await this.projectService.getProject(
       params.projectId,
       userId,
@@ -1103,6 +1113,8 @@ export class ProjectController {
     @Body() body: UpdateSubscriberBodyDto,
     @CurrentUserId() userId: string,
   ) {
+    this.logger.log({ params, body }, 'PATCH /project/:projectId/subscribers/:subscriberId')
+
     const project = await this.projectService.getProject(
       params.projectId,
       userId,
