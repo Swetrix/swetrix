@@ -27,9 +27,6 @@ export class ProjectSubscriber {
   @Column('boolean', { default: false })
   isConfirmed: boolean
 
-  @Column('boolean', { default: false })
-  isTransferring: boolean
-
   @CreateDateColumn()
   addedAt: Date
 
