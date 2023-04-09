@@ -65,6 +65,7 @@ export class ActionTokensService {
       where: {
         id: token,
       },
+      relations: ['user'],
     })
   }
 }

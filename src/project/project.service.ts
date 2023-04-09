@@ -560,6 +560,7 @@ export class ProjectService {
   async getProjectById(projectId: string) {
     return this.projectsRepository.findOne({
       where: { id: projectId },
+      relations: ['admin'],
     })
   }
 
