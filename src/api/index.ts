@@ -6,8 +6,9 @@ import Debug from 'debug'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
-import { authActions } from 'redux/reducers/auth'
 
+import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
@@ -43,6 +44,7 @@ const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
     })
     .catch((error) => {
       store.dispatch(authActions.logout())
+      store.dispatch(sagaActions.logout(true))
       return Promise.reject(error)
     })
 

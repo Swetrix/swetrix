@@ -23,6 +23,7 @@ import {
 } from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
 import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
@@ -149,6 +150,7 @@ const App = () => {
           dispatch(authActions.finishLoading())
         } catch (e) {
           dispatch(authActions.logout())
+          dispatch(sagaActions.logout(false))
         }
       }
     })()
