@@ -48,6 +48,7 @@ export interface IProject {
     uiHidden: boolean
     isPublicVisitors?: boolean
     isPublic?: boolean
+    isTransferring?: boolean
 }
 
 export interface ICaptchaProject {

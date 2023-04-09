@@ -62,12 +62,13 @@ interface IProjectCart {
   userSharedUpdate: (message: string) => void
   sharedProjectError: (message: string) => void
   captcha?: boolean
+  isTransferring?: boolean
 }
 
 const ProjectCart = ({
   name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
   sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
-  captcha,
+  captcha, isTransferring,
 }: IProjectCart): JSX.Element => {
   const statsDidGrowUp = overall?.percChange ? overall?.percChange >= 0 : false
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -107,6 +108,11 @@ const ProjectCart = ({
                   ) : (
                     <WarningPin className='mr-2' label={t('common.pending')} />
                   )
+                )
+              }
+              {
+                isTransferring && (
+                  <WarningPin className='mr-2 !bg-indigo-500 dark:!bg-indigo-600 !text-gray-300 dark:!text-gray-300' label={t('common.transferring')} />
                 )
               }
               {active ? (
@@ -215,6 +221,7 @@ ProjectCart.defaultProps = {
   id: '',
   name: '',
   live: 'N/A',
+  isTransferring: false,
 }
 
 const NoProjects = ({ t }: {
@@ -439,7 +446,7 @@ const Dashboard = ({
                     <div className='shadow overflow-hidden sm:rounded-md'>
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, live, public: isPublic,
+                          name, id, created, active, overall, live, public: isPublic, isTransferring,
                         }) => (
                           <div key={id}>
                             <Link to={_replace(routes.project, ':id', id)}>
@@ -459,6 +466,7 @@ const Dashboard = ({
                                 sharedProjects={[]}
                                 setProjectsShareData={() => {}}
                                 sharedProjectError={() => {}}
+                                isTransferring={isTransferring}
                               />
                             </Link>
                           </div>
