@@ -24,7 +24,8 @@
     "numberCantBeNegative": "The number cannot be negative",
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
     "invalidToken": "Invalid token",
-    "transferRequestSent": "Transfer request sent"
+    "transferRequestSent": "Transfer request sent",
+    "transferProjectReject": "The project transfer request has been cancelled"
   },
   "common": {
     "features": "Features",
