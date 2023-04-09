@@ -262,7 +262,7 @@ const ProjectSettings = ({
   const onTransfer = async () => {
     await transferProject(id, transferEmail)
       .then(() => {
-        generateAlerts(t('project.settings.transferred'))
+        generateAlerts(t('apiNotifications.transferRequestSent'))
         history.push(routes.dashboard)
       })
       .catch((e) => {

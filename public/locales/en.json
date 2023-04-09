@@ -23,7 +23,8 @@
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
-    "invalidToken": "Invalid token"
+    "invalidToken": "Invalid token",
+    "transferRequestSent": "Transfer request sent"
   },
   "common": {
     "features": "Features",
