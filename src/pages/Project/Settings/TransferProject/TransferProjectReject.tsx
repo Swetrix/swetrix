@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/solid'
 
@@ -8,8 +8,6 @@ import Loader from 'ui/Loader'
 
 import { rejectTransferProject } from 'api'
 import routes from 'routes'
-
-// http://localhost:3000/projects/dDfoJStW17Xv/subscribers/invite?token=5e1eab3b-c018-46d4-b051-ed7025b50405
 
 const TransferProjectReject = (): JSX.Element => {
   const { t }: {
@@ -96,7 +94,7 @@ const TransferProjectReject = (): JSX.Element => {
             <div className='sm:ml-6'>
               <div className='sm:border-l max-w-prose sm:border-gray-200 sm:pl-6'>
                 <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>
-                  {t('apiNotifications.acceptInvitation')}
+                  {t('apiNotifications.transferProjectReject')}
                 </h1>
               </div>
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>

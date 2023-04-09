@@ -38,6 +38,15 @@ const WarningPin = ({ label, className }: {
   </p>
 )
 
+const CustomPin = ({ label, className }: {
+  label: string,
+  className?: string,
+}): JSX.Element => (
+  <p className={cx('px-2 inline-flex text-sm leading-5 font-normal rounded-full', className)}>
+    {label}
+  </p>
+)
+
 ActivePin.propTypes = propTypes
 ActivePin.defaultProps = defaultProps
 
@@ -47,8 +56,12 @@ WarningPin.defaultProps = defaultProps
 InactivePin.propTypes = propTypes
 InactivePin.defaultProps = defaultProps
 
+CustomPin.propTypes = propTypes
+CustomPin.defaultProps = defaultProps
+
 export {
   ActivePin,
   InactivePin,
   WarningPin,
+  CustomPin,
 }

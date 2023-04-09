@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
@@ -13,9 +13,6 @@ const TransferProjectConfirm = (): JSX.Element => {
   const { t }: {
     t: (key: string) => string
   } = useTranslation('common')
-  const { id }: {
-    id: string
-  } = useParams()
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
 

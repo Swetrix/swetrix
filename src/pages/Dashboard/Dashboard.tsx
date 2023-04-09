@@ -24,7 +24,9 @@ import _values from 'lodash/values'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
-import { ActivePin, InactivePin, WarningPin } from 'ui/Pin'
+import {
+  ActivePin, InactivePin, WarningPin, CustomPin,
+} from 'ui/Pin'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
 import {
@@ -112,7 +114,7 @@ const ProjectCart = ({
               }
               {
                 isTransferring && (
-                  <WarningPin className='mr-2 !bg-indigo-500 dark:!bg-indigo-600 !text-gray-300 dark:!text-gray-300' label={t('common.transferring')} />
+                  <CustomPin className='mr-2 !bg-indigo-500 dark:!bg-indigo-600 !text-gray-300 dark:!text-gray-300' label={t('common.transferring')} />
                 )
               }
               {active ? (
