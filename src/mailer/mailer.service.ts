@@ -88,7 +88,8 @@ const metaInfoJson = {
   },
   [LetterTemplate.ProjectTransfer]: {
     subject: {
-      en: (p: Params) => `A Swetrix user offers to transfer ${p.name} project to your account.`,
+      en: (p: Params) =>
+        `A Swetrix user offers to transfer ${p.name} project to your account.`,
     },
   },
 }
@@ -113,7 +114,7 @@ const mailClient = new postmark.ServerClient(process.env.SMTP_PASSWORD)
 
 @Injectable()
 export class MailerService {
-  constructor(private readonly logger: AppLoggerService) { }
+  constructor(private readonly logger: AppLoggerService) {}
 
   async sendEmail(
     email: string,
