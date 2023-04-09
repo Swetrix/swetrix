@@ -86,6 +86,12 @@ const metaInfoJson = {
       en: () => 'You have been invited to join the project.',
     },
   },
+  [LetterTemplate.ProjectTransfer]: {
+    subject: {
+      en: (p: Params) =>
+        `A Swetrix user offers to transfer ${p.name} project to your account.`,
+    },
+  },
 }
 
 interface Params {

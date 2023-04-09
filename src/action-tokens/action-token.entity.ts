@@ -14,6 +14,7 @@ export enum ActionTokenType {
   EMAIL_CHANGE,
   PROJECT_SHARE,
   ADDING_PROJECT_SUBSCRIBER,
+  TRANSFER_PROJECT,
 }
 
 @Entity()

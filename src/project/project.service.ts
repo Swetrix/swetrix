@@ -44,6 +44,8 @@ import {
   ORIGINS_REGEX,
   getRedisProjectKey,
   redisProjectCacheTimeout,
+  isDevelopment,
+  PRODUCTION_ORIGIN,
 } from '../common/constants'
 import { getProjectsClickhouse } from '../common/utils'
 import { ProjectSubscriber } from './entity'
@@ -347,13 +349,22 @@ export class ProjectService {
     }
   }
 
-  async removeDataFromClickhouse(pid: string, from: string, to: string): Promise<void> {
-    const queryAnalytics = 'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryCustomEvents = 'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryPerformance = 'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+  async removeDataFromClickhouse(
+    pid: string,
+    from: string,
+    to: string,
+  ): Promise<void> {
+    const queryAnalytics =
+      'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryCustomEvents =
+      'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryPerformance =
+      'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
-        pid, from, to,
+        pid,
+        from,
+        to,
       },
     }
 
@@ -549,6 +560,7 @@ export class ProjectService {
   async getProjectById(projectId: string) {
     return this.projectsRepository.findOne({
       where: { id: projectId },
+      relations: ['admin'],
     })
   }
 
@@ -612,5 +624,72 @@ export class ProjectService {
       where: { id: subscriberId },
     })
     return projects.map(project => project.project)
+  }
+
+  async getOwnProject(projectId: string, userId: string) {
+    return this.projectsRepository.findOne({
+      where: { id: projectId, admin: { id: userId } },
+    })
+  }
+
+  async transferProject(
+    projectId: string,
+    name: string,
+    userId: string,
+    email: string,
+    origin: string,
+  ) {
+    const actionToken = await this.actionTokens.createActionToken(
+      userId,
+      ActionTokenType.TRANSFER_PROJECT,
+      projectId,
+    )
+
+    await this.projectsRepository.update(
+      { id: projectId },
+      {
+        isTransferring: true,
+      },
+    )
+
+    const confirmUrl = `${
+      isDevelopment ? origin : PRODUCTION_ORIGIN
+    }/project/transfer/confirm?token=${actionToken.id}`
+    const cancelUrl = `${
+      isDevelopment ? origin : PRODUCTION_ORIGIN
+    }/project/transfer/cancel?token=${actionToken.id}`
+
+    await this.mailerService.sendEmail(email, LetterTemplate.ProjectTransfer, {
+      confirmUrl,
+      cancelUrl,
+      name,
+    })
+  }
+
+  async confirmTransferProject(
+    projectId: string,
+    userId: string,
+    oldAdminId: string,
+    token: string,
+  ) {
+    await this.projectsRepository.update(
+      { id: projectId },
+      { admin: { id: userId }, isTransferring: false },
+    )
+    await this.projectShareRepository.save({
+      user: { id: oldAdminId },
+      project: { id: projectId },
+      confirmed: true,
+      role: Role.admin,
+    })
+    await this.actionTokens.deleteActionToken(token)
+  }
+
+  async cancelTransferProject(token: string, projectId: string) {
+    await this.projectsRepository.update(
+      { id: projectId },
+      { isTransferring: false },
+    )
+    await this.actionTokens.deleteActionToken(token)
   }
 }

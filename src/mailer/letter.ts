@@ -14,4 +14,5 @@ export enum LetterTemplate {
   TrialExpired = 'trial-expired',
   TrialEndsTomorrow = 'trial-ends-tomorrow',
   ProjectSubscriberInvitation = 'project-subscriber-invitation',
+  ProjectTransfer = 'project-transfer',
 }
