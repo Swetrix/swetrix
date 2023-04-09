@@ -651,12 +651,16 @@ export class ProjectService {
       },
     )
 
-    const url = `${
+    const confirmUrl = `${
       isDevelopment ? origin : PRODUCTION_ORIGIN
-    }/projects/${projectId}/transfer?token=${actionToken.id}`
+    }/project/transfer/confirm?token=${actionToken.id}`
+    const cancelUrl = `${
+      isDevelopment ? origin : PRODUCTION_ORIGIN
+    }/project/transfer/cancel?token=${actionToken.id}`
 
     await this.mailerService.sendEmail(email, LetterTemplate.ProjectTransfer, {
-      url,
+      confirmUrl,
+      cancelUrl,
       name,
     })
   }
