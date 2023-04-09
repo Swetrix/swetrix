@@ -7,7 +7,7 @@ import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
 
 const Dropdown = ({
-  title, desc, className, items, labelExtractor, keyExtractor, onSelect, aside, buttonClassName, selectItemClassName,
+  title, desc, className, items, labelExtractor, keyExtractor, onSelect, aside, buttonClassName, selectItemClassName, menuItemsClassName,
 }: {
   title: string | number | React.ReactNode,
   desc?: string | number | React.ReactNode,
@@ -15,10 +15,11 @@ const Dropdown = ({
   items: any[],
   labelExtractor: (item: any) => string | number | React.ReactNode,
   keyExtractor: (item: any) => string | number | React.ReactNode,
-  onSelect: (item: any) => void,
+  onSelect: (item: any) => void | null,
   aside?: boolean,
   buttonClassName?: string,
   selectItemClassName?: string,
+  menuItemsClassName?: string,
 }): JSX.Element => (
   <Menu as='div' className={cx('relative inline-block text-left', className)}>
     {({ open }) => (
@@ -48,7 +49,7 @@ const Dropdown = ({
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items static className='z-50 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none'>
+          <Menu.Items static className={cx('z-50 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none', menuItemsClassName)}>
             <div className='py-1'>
               {_map(items, item => (
                 <Menu.Item key={keyExtractor ? keyExtractor(item) : item}>
@@ -87,6 +88,7 @@ Dropdown.propTypes = {
   keyExtractor: PropTypes.func,
   aside: PropTypes.bool,
   desc: PropTypes.string,
+  menuItemsClassName: PropTypes.string,
 }
 
 Dropdown.defaultProps = {
@@ -98,6 +100,7 @@ Dropdown.defaultProps = {
   aside: false,
   desc: '',
   items: [],
+  menuItemsClassName: '',
 }
 
 export default memo(Dropdown)

@@ -10,7 +10,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon, PresentationChartBarIcon, PresentationChartLineIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon, PresentationChartBarIcon, PresentationChartLineIcon, NoSymbolIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -24,6 +24,7 @@ import _replace from 'lodash/replace'
 import _values from 'lodash/values'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
+import _findIndex from 'lodash/findIndex'
 import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
@@ -126,6 +127,7 @@ const ViewProject = ({
   const [customExportTypes, setCustomExportTypes] = useState<any[]>([])
   const [customPanelTabs, setCustomPanelTabs] = useState<any[]>([])
   const [sdkInstance, setSdkInstance] = useState<any>(null)
+  const [activeChartMetricsCustomEvents, setActiveChartMetricsCustomEvents] = useState<any[]>([])
   const dashboardRef = useRef<HTMLDivElement>(null)
   const { id }: {
     id: string
@@ -263,6 +265,11 @@ const ViewProject = ({
         label: t('dashboard.trendlines'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.trendlines],
       },
+      {
+        id: CHART_METRICS_MAPPING.customEvents,
+        label: t('dashboard.customEvents'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.customEvents],
+      },
     ]
   }, [t, activeChartMetrics])
 
@@ -295,6 +302,17 @@ const ViewProject = ({
       },
     ]
   }, [t, activeChartMetricsPerf])
+
+  const chartMetricsCustomEvents = useMemo(() => {
+    if (!_isEmpty(panelsData.customs)) {
+      return _map(_keys(panelsData.customs), key => ({
+        id: key,
+        label: key,
+        active: _includes(activeChartMetricsCustomEvents, key),
+      }))
+    }
+    return []
+  }, [panelsData, activeChartMetricsCustomEvents])
 
   const dataNames = useMemo(() => {
     return {
@@ -1503,9 +1521,51 @@ const ViewProject = ({
 
                             const conflicted = isConflicted(conflicts)
 
+                            if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                              if (_isEmpty(panelsData.customs)) {
+                                return (
+                                  <span className='px-4 py-2 flex items-center cursor-not-allowed'>
+                                    <NoSymbolIcon className='w-5 h-5 mr-1' />
+                                    {label}
+                                  </span>
+                                )
+                              }
+
+                              return (
+                                <Dropdown
+                                  className=''
+                                  items={chartMetricsCustomEvents}
+                                  title={label}
+                                  labelExtractor={(event) => (
+                                    <Checkbox
+                                      className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                                      label={event.label}
+                                      id={event.id}
+                                      onChange={() => {
+                                        setActiveChartMetricsCustomEvents((prev) => {
+                                          const newActiveChartMetricsCustomEvents = [...prev]
+                                          const index = _findIndex(prev, (item) => item === event.id)
+                                          if (index === -1) {
+                                            newActiveChartMetricsCustomEvents.push(event.id)
+                                          } else {
+                                            newActiveChartMetricsCustomEvents.splice(index, 1)
+                                          }
+                                          return newActiveChartMetricsCustomEvents
+                                        })
+                                      }}
+                                      checked={event.active}
+                                    />
+                                  )}
+                                  buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700'
+                                  keyExtractor={(event) => event.id}
+                                  onSelect={() => {}}
+                                />
+                              )
+                            }
+
                             return (
                               <Checkbox
-                                className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                                className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
                                 label={label}
                                 disabled={conflicted}
                                 id={pairID}
@@ -1513,12 +1573,18 @@ const ViewProject = ({
                               />
                             )
                           }}
+                          selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
                           keyExtractor={(pair) => pair.id}
                           onSelect={({ id: pairID, conflicts }) => {
                             if (isConflicted(conflicts)) {
                               generateAlert(t('project.conflictMetric'), 'error')
                               return
                             }
+
+                            if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                              return
+                            }
+
                             switchActiveChartMetric(pairID)
                           }}
                         />

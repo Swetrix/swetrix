@@ -174,6 +174,7 @@ const CHART_METRICS_MAPPING = {
   viewsPerUnique: 'viewsPerUnique',
   trendlines: 'trendlines',
   sessionDuration: 'sessionDuration',
+  customEvents: 'customEvents',
 }
 
 const CHART_METRICS_MAPPING_PERF = {
