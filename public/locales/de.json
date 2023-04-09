@@ -23,7 +23,9 @@
     "enterACorrectNumber": "Bitte geben Sie eine korrekte Zahl ein",
     "numberCantBeNegative": "Die Zahl darf nicht negativ sein",
     "forecastNumberCantBeBigger": "Die prognostizierte Zahl kann nicht größer sein als {{max}} für die gewählte Frequenz",
-    "invalidToken": "Invalid token"
+    "invalidToken": "Invalid token",
+    "transferRequestSent": "Transfer request sent",
+    "transferProjectReject": "The project transfer request has been cancelled"
   },
   "common": {
     "features": "Funktionen",
@@ -65,7 +67,9 @@
     "copied": "Kopiert",
     "new": "Neu",
     "loading": "Laden...",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "account": "Account",
+    "transferring": "Transferring"
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
@@ -618,7 +622,11 @@
       },
       "errorNoRole": "Bitte wählen Sie eine Rolle.",
       "ipBlacklist": "IP-Adressen für die Sperrliste",
-      "ipBlacklistHint": "Eine Liste von IP-Adressen, von denen keine Metriken für dieses Projekt gesammelt werden.\nDiese Funktion ist praktisch, wenn Sie z.B. Analysen von Ihrer eigenen IP-Adresse ignorieren möchten.\nBeispiel: 172.126.10.16, 192.168.0.1/32, ::1"
+      "ipBlacklistHint": "Eine Liste von IP-Adressen, von denen keine Metriken für dieses Projekt gesammelt werden.\nDiese Funktion ist praktisch, wenn Sie z.B. Analysen von Ihrer eigenen IP-Adresse ignorieren möchten.\nBeispiel: 172.126.10.16, 192.168.0.1/32, ::1",
+      "transfer": "Transfer project",
+      "transferTo": "Transfer project",
+      "transferHint": "You can transfer '{{name}}' project to another user.\nThis user will become the project's owner and will be able to manage the project's settings, add/remove members, and invite new users.\nYou will be assigned to the project as an administrator. However, the new owner will be able to remove you from the project.",
+      "transfereeEmail": "Transferee email"
     },
     "captcha": {
       "settings": {

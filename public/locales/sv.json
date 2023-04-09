@@ -23,7 +23,9 @@
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
-    "invalidToken": "Invalid token"
+    "invalidToken": "Invalid token",
+    "transferRequestSent": "Transfer request sent",
+    "transferProjectReject": "The project transfer request has been cancelled"
   },
   "common": {
     "features": "Funktioner",
@@ -65,7 +67,9 @@
     "copied": "Copied",
     "new": "Nytt",
     "loading": "Laddar..",
-    "edit": "Redigera"
+    "edit": "Redigera",
+    "account": "Account",
+    "transferring": "Transferring"
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
@@ -618,7 +622,11 @@
       },
       "errorNoRole": "Please select a role.",
       "ipBlacklist": "IP's to blacklist",
-      "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1"
+      "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1",
+      "transfer": "Transfer project",
+      "transferTo": "Transfer project",
+      "transferHint": "You can transfer '{{name}}' project to another user.\nThis user will become the project's owner and will be able to manage the project's settings, add/remove members, and invite new users.\nYou will be assigned to the project as an administrator. However, the new owner will be able to remove you from the project.",
+      "transfereeEmail": "Transferee email"
     },
     "captcha": {
       "settings": {
