@@ -233,46 +233,6 @@ export class ProjectController {
     }
   }
 
-  @Get('/:id')
-  @Auth([], true, true)
-  @ApiResponse({ status: 200, type: Project })
-  async getOne(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ): Promise<Project | object> {
-    this.logger.log({ id }, 'GET /project/:id')
-    if (!isValidPID(id)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    let project
-
-    if (isSelfhosted) {
-      project = await getProjectsClickhouse(id)
-    } else {
-      project = await this.projectService.findOne(id, {
-        relations: ['admin'],
-      })
-    }
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException('Project was not found in the database')
-    }
-
-    this.projectService.allowedToView(project, uid)
-
-    if (isSelfhosted) {
-      return this.projectService.formatFromClickhouse(project)
-    }
-
-    return {
-      ..._omit(project, ['admin']),
-      isOwner: uid === project.admin?.id,
-    }
-  }
-
   @Post('/admin/:id')
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(SelfhostedGuard)
@@ -541,79 +501,6 @@ export class ProjectController {
     }
   }
 
-  @Put('/:id')
-  @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @ApiResponse({ status: 200, type: Project })
-  async update(
-    @Param('id') id: string,
-    @Body() projectDTO: ProjectDTO,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
-    this.projectService.validateProject(projectDTO)
-    let project
-
-    if (isSelfhosted) {
-      const chProject = await getProjectsClickhouse(id)
-
-      if (_isEmpty(chProject)) {
-        throw new NotFoundException()
-      }
-      chProject.active = projectDTO.active
-      chProject.origins = _map(projectDTO.origins, _trim)
-      chProject.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
-      chProject.name = projectDTO.name
-      chProject.public = projectDTO.public
-
-      await updateProjectClickhouse(
-        this.projectService.formatToClickhouse(chProject),
-      )
-    } else {
-      project = await this.projectService.findOne(id, {
-        relations: ['admin', 'share', 'share.user'],
-      })
-      const user = await this.userService.findOne(uid)
-
-      if (_isEmpty(project)) {
-        throw new NotFoundException()
-      }
-
-      this.projectService.allowedToManage(project, uid, user.roles)
-
-      project.active = projectDTO.active
-      project.origins = _map(projectDTO.origins, _trim)
-      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
-      project.name = projectDTO.name
-      project.public = projectDTO.public
-
-      if (project.isAnalyticsProject && projectDTO.isCaptcha) {
-        const captchaProjects = _filter(
-          user.projects,
-          (fProject: Project) => fProject.isCaptchaProject,
-        )
-        const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
-
-        if (_size(captchaProjects >= (maxProjects || PROJECTS_MAXIMUM))) {
-          throw new ForbiddenException(
-            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-          )
-        }
-
-        project.isCaptchaProject = true
-        project.isCaptchaEnabled = true
-      }
-
-      await this.projectService.update(id, _omit(project, ['share', 'admin']))
-    }
-
-    // await updateProjectRedis(id, project)
-    await deleteProjectRedis(id)
-
-    return project
-  }
-
   @Post('/secret-gen/:pid')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -667,83 +554,6 @@ export class ProjectController {
     await deleteProjectRedis(pid)
 
     return secret
-  }
-
-  @Delete('/:id')
-  @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @ApiResponse({ status: 204, description: 'Empty body' })
-  async delete(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ uid, id }, 'DELETE /project/:id')
-    if (!isValidPID(id)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    if (isSelfhosted) {
-      // todo: delete share for selfhosted
-      await deleteProjectClickhouse(id)
-
-      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
-
-      try {
-        await clickhouse.query(query1).toPromise()
-        await clickhouse.query(query2).toPromise()
-        return 'Project deleted successfully'
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while deleting your project'
-      }
-    } else {
-      const user = await this.userService.findOne(uid)
-      const project = await this.projectService.findOneWhere(
-        { id },
-        {
-          relations: ['admin'],
-          select: ['id'],
-        },
-      )
-
-      if (_isEmpty(project)) {
-        throw new NotFoundException(`Project with ID ${id} does not exist`)
-      }
-
-      this.projectService.allowedToManage(project, uid, user.roles)
-
-      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
-
-      try {
-        await clickhouse.query(query1).toPromise()
-        await clickhouse.query(query2).toPromise()
-        await deleteProjectRedis(id)
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while deleting your project'
-      }
-
-      try {
-        if (project.isCaptchaProject) {
-          project.isAnalyticsProject = false
-          await this.projectService.update(id, project)
-        } else {
-          await this.projectService.deleteMultipleShare(`project = "${id}"`)
-          await this.projectService.delete(id)
-          await this.deleteCAPTCHA(id, uid)
-        }
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while deleting your project'
-      }
-
-      return 'Project deleted successfully'
-    }
   }
 
   @Delete('/captcha/:id')
@@ -859,50 +669,6 @@ export class ProjectController {
     to = dayjs(to).format('YYYY-MM-DD 23:59:59')
 
     await this.projectService.removeDataFromClickhouse(pid, from, to)
-  }
-
-  // The routes related to sharing projects feature
-  @Delete('/:pid/:shareId')
-  @HttpCode(204)
-  @UseGuards(SelfhostedGuard)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @ApiResponse({ status: 204, description: 'Empty body' })
-  async deleteShare(
-    @Param('pid') pid: string,
-    @Param('shareId') shareId: string,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ uid, pid, shareId }, 'DELETE /project/:pid/:shareId')
-
-    if (!isValidPID(pid)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    // TODO: Discuss.
-    // I'm not sure if we should select 'share' from project too.
-    // If we select share - this means that the share project admins would be able to delete other people from project share too
-    // (as the allowedToManage method would pass for them).
-    const project = await this.projectService.findOneWhere(
-      { id: pid },
-      {
-        relations: ['admin'],
-        select: ['id', 'admin'],
-      },
-    )
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException(`Project with ID ${pid} does not exist`)
-    }
-
-    const user = await this.userService.findOne(uid)
-
-    this.projectService.allowedToManage(project, uid, user.roles)
-
-    await deleteProjectRedis(pid)
-    await this.projectService.deleteShare(shareId)
   }
 
   @Post('/:pid/share')
@@ -1105,6 +871,130 @@ export class ProjectController {
     }
   }
 
+  @Post('transfer')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async transferProject(
+    @Body() body: TransferProjectBodyDto,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { origin: string },
+  ) {
+    const project = await this.projectService.getOwnProject(
+      body.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.getUserByEmail(body.email)
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    if (user.id === userId) {
+      throw new ConflictException('You cannot transfer project to yourself.')
+    }
+
+    await this.projectService.transferProject(
+      body.projectId,
+      project.name,
+      user.id,
+      user.email,
+      headers.origin,
+    )
+  }
+
+  @Get('transfer')
+  async confirmTransferProject(
+    @Query() queries: ConfirmTransferProjectQueriesDto,
+  ) {
+    const actionToken = await this.actionTokensService.getActionToken(
+      queries.token,
+    )
+
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.TRANSFER_PROJECT
+    ) {
+      throw new BadRequestException('Invalid token.')
+    }
+
+    const project = await this.projectService.getProjectById(
+      actionToken.newValue,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    await this.projectService.confirmTransferProject(
+      actionToken.newValue,
+      actionToken.user.id,
+      project.admin.id,
+      actionToken.id,
+    )
+  }
+
+  @Delete('transfer')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async cancelTransferProject(
+    @Query() queries: CancelTransferProjectQueriesDto,
+  ) {
+    console.log('DELETE /projects/transfer', queries)
+    const actionToken = await this.actionTokensService.getActionToken(
+      queries.token,
+    )
+
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.TRANSFER_PROJECT
+    ) {
+      throw new BadRequestException('Invalid token.')
+    }
+
+    const project = await this.projectService.getProjectById(
+      actionToken.newValue,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    await this.projectService.cancelTransferProject(actionToken.id, project.id)
+  }
+
+  @Delete(':projectId/subscribers/:subscriberId')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async removeSubscriber(
+    @Param() params: RemoveSubscriberParamsDto,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const subscriber = await this.projectService.getSubscriber(
+      params.projectId,
+      params.subscriberId,
+    )
+
+    if (!subscriber) {
+      throw new NotFoundException('Subscriber not found.')
+    }
+
+    await this.projectService.removeSubscriber(
+      params.projectId,
+      params.subscriberId,
+    )
+  }
+
   @Post(':projectId/subscribers')
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async addSubscriber(
@@ -1238,126 +1128,237 @@ export class ProjectController {
     )
   }
 
-  @Delete(':projectId/subscribers/:subscriberId')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
-  async removeSubscriber(
-    @Param() params: RemoveSubscriberParamsDto,
-    @CurrentUserId() userId: string,
-  ): Promise<void> {
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
+  @Delete('/:id')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async delete(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, id }, 'DELETE /project/:id')
+    if (!isValidPID(id)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
     }
 
-    const subscriber = await this.projectService.getSubscriber(
-      params.projectId,
-      params.subscriberId,
-    )
+    if (isSelfhosted) {
+      // todo: delete share for selfhosted
+      await deleteProjectClickhouse(id)
 
-    if (!subscriber) {
-      throw new NotFoundException('Subscriber not found.')
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+
+      try {
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        return 'Project deleted successfully'
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
+    } else {
+      const user = await this.userService.findOne(uid)
+      const project = await this.projectService.findOneWhere(
+        { id },
+        {
+          relations: ['admin'],
+          select: ['id'],
+        },
+      )
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException(`Project with ID ${id} does not exist`)
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
+      const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+
+      try {
+        await clickhouse.query(query1).toPromise()
+        await clickhouse.query(query2).toPromise()
+        await deleteProjectRedis(id)
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
+
+      try {
+        if (project.isCaptchaProject) {
+          project.isAnalyticsProject = false
+          await this.projectService.update(id, project)
+        } else {
+          await this.projectService.deleteMultipleShare(`project = "${id}"`)
+          await this.projectService.delete(id)
+          await this.deleteCAPTCHA(id, uid)
+        }
+      } catch (e) {
+        this.logger.error(e)
+        return 'Error while deleting your project'
+      }
+
+      return 'Project deleted successfully'
     }
-
-    await this.projectService.removeSubscriber(
-      params.projectId,
-      params.subscriberId,
-    )
   }
 
-  @Post('transfer')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
-  async transferProject(
-    @Body() body: TransferProjectBodyDto,
-    @CurrentUserId() userId: string,
-    @Headers() headers: { origin: string },
-  ) {
-    const project = await this.projectService.getOwnProject(
-      body.projectId,
-      userId,
-    )
+  @Put('/:id')
+  @HttpCode(200)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 200, type: Project })
+  async update(
+    @Param('id') id: string,
+    @Body() projectDTO: ProjectDTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
+    this.projectService.validateProject(projectDTO)
+    let project
 
-    if (!project) {
-      throw new NotFoundException('Project not found.')
+    if (isSelfhosted) {
+      const chProject = await getProjectsClickhouse(id)
+
+      if (_isEmpty(chProject)) {
+        throw new NotFoundException()
+      }
+      chProject.active = projectDTO.active
+      chProject.origins = _map(projectDTO.origins, _trim)
+      chProject.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+      chProject.name = projectDTO.name
+      chProject.public = projectDTO.public
+
+      await updateProjectClickhouse(
+        this.projectService.formatToClickhouse(chProject),
+      )
+    } else {
+      project = await this.projectService.findOne(id, {
+        relations: ['admin', 'share', 'share.user'],
+      })
+      const user = await this.userService.findOne(uid)
+
+      if (_isEmpty(project)) {
+        throw new NotFoundException()
+      }
+
+      this.projectService.allowedToManage(project, uid, user.roles)
+
+      project.active = projectDTO.active
+      project.origins = _map(projectDTO.origins, _trim)
+      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+      project.name = projectDTO.name
+      project.public = projectDTO.public
+
+      if (project.isAnalyticsProject && projectDTO.isCaptcha) {
+        const captchaProjects = _filter(
+          user.projects,
+          (fProject: Project) => fProject.isCaptchaProject,
+        )
+        const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+
+        if (_size(captchaProjects >= (maxProjects || PROJECTS_MAXIMUM))) {
+          throw new ForbiddenException(
+            `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          )
+        }
+
+        project.isCaptchaProject = true
+        project.isCaptchaEnabled = true
+      }
+
+      await this.projectService.update(id, _omit(project, ['share', 'admin']))
     }
 
-    const user = await this.userService.getUserByEmail(body.email)
+    // await updateProjectRedis(id, project)
+    await deleteProjectRedis(id)
 
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    if (user.id === userId) {
-      throw new ConflictException('You cannot transfer project to yourself.')
-    }
-
-    await this.projectService.transferProject(
-      body.projectId,
-      project.name,
-      user.id,
-      user.email,
-      headers.origin,
-    )
+    return project
   }
 
-  @Get('transfer')
-  async confirmTransferProject(
-    @Query() queries: ConfirmTransferProjectQueriesDto,
-  ) {
-    const actionToken = await this.actionTokensService.getActionToken(
-      queries.token,
-    )
+  // The routes related to sharing projects feature
+  @Delete('/:pid/:shareId')
+  @HttpCode(204)
+  @UseGuards(SelfhostedGuard)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async deleteShare(
+    @Param('pid') pid: string,
+    @Param('shareId') shareId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, pid, shareId }, 'DELETE /project/:pid/:shareId')
 
-    if (
-      !actionToken ||
-      actionToken.action !== ActionTokenType.TRANSFER_PROJECT
-    ) {
-      throw new BadRequestException('Invalid token.')
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
     }
 
-    const project = await this.projectService.getProjectById(
-      actionToken.newValue,
+    // TODO: Discuss.
+    // I'm not sure if we should select 'share' from project too.
+    // If we select share - this means that the share project admins would be able to delete other people from project share too
+    // (as the allowedToManage method would pass for them).
+    const project = await this.projectService.findOneWhere(
+      { id: pid },
+      {
+        relations: ['admin'],
+        select: ['id', 'admin'],
+      },
     )
 
-    if (!project) {
-      throw new NotFoundException('Project not found.')
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${pid} does not exist`)
     }
 
-    await this.projectService.confirmTransferProject(
-      actionToken.newValue,
-      actionToken.user.id,
-      project.admin.id,
-      actionToken.id,
-    )
+    const user = await this.userService.findOne(uid)
+
+    this.projectService.allowedToManage(project, uid, user.roles)
+
+    await deleteProjectRedis(pid)
+    await this.projectService.deleteShare(shareId)
   }
 
-  @Delete('transfer')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
-  async cancelTransferProject(
-    @Query() queries: CancelTransferProjectQueriesDto,
-  ) {
-    const actionToken = await this.actionTokensService.getActionToken(
-      queries.token,
-    )
-
-    if (
-      !actionToken ||
-      actionToken.action !== ActionTokenType.TRANSFER_PROJECT
-    ) {
-      throw new BadRequestException('Invalid token.')
+  @Get('/:id')
+  @Auth([], true, true)
+  @ApiResponse({ status: 200, type: Project })
+  async getOne(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ): Promise<Project | object> {
+    this.logger.log({ id }, 'GET /project/:id')
+    if (!isValidPID(id)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
     }
 
-    const project = await this.projectService.getProjectById(
-      actionToken.newValue,
-    )
+    let project
 
-    if (!project) {
-      throw new NotFoundException('Project not found.')
+    if (isSelfhosted) {
+      project = await getProjectsClickhouse(id)
+    } else {
+      project = await this.projectService.findOne(id, {
+        relations: ['admin'],
+      })
     }
 
-    await this.projectService.cancelTransferProject(actionToken.id, project.id)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToView(project, uid)
+
+    if (isSelfhosted) {
+      return this.projectService.formatFromClickhouse(project)
+    }
+
+    return {
+      ..._omit(project, ['admin']),
+      isOwner: uid === project.admin?.id,
+    }
   }
 }
