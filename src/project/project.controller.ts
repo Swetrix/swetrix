@@ -976,7 +976,10 @@ export class ProjectController {
     @Param() params: RemoveSubscriberParamsDto,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    this.logger.log({ params }, 'DELETE /project/:projectId/subscribers/:subscriberId')
+    this.logger.log(
+      { params },
+      'DELETE /project/:projectId/subscribers/:subscriberId',
+    )
 
     const project = await this.projectService.getProject(
       params.projectId,
@@ -1051,7 +1054,10 @@ export class ProjectController {
     @Param() params: ConfirmSubscriberInviteParamsDto,
     @Query() queries: ConfirmSubscriberInviteQueriesDto,
   ): Promise<void> {
-    this.logger.log({ params, queries }, 'GET /project/:projectId/subscribers/invite')
+    this.logger.log(
+      { params, queries },
+      'GET /project/:projectId/subscribers/invite',
+    )
     const project = await this.projectService.getProjectById(params.projectId)
 
     if (!project) {
@@ -1113,7 +1119,10 @@ export class ProjectController {
     @Body() body: UpdateSubscriberBodyDto,
     @CurrentUserId() userId: string,
   ) {
-    this.logger.log({ params, body }, 'PATCH /project/:projectId/subscribers/:subscriberId')
+    this.logger.log(
+      { params, body },
+      'PATCH /project/:projectId/subscribers/:subscriberId',
+    )
 
     const project = await this.projectService.getProject(
       params.projectId,
