@@ -17,6 +17,13 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-04-09',
+    changes: [
+      'Fixed a bug when the app was crashing due to \'ChunkLoadError: Loading chunk N failed\' error. Now in case of such error the app will reload the page automatically for one time.',
+      'Fixed broken alignment of the action buttons in the dashboard.',
+    ],
+  },
+  {
     date: '2023-04-06',
     changes: [
       'utm_* parameters in the dashboard are now displayed as decoded URL values (i.e. %20 is replaced with a space, %3D is replaced with an equal sign, etc.).',
