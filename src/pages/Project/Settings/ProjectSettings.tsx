@@ -47,6 +47,8 @@ interface IForm extends Partial<IProject> {
   ipBlacklist: string | null,
 }
 
+const DEFAULT_PROJECT_NAME = 'Untitled Project'
+
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
@@ -146,7 +148,7 @@ const ProjectSettings = ({
         } else {
           await createProject({
             id: data.id || nanoid(),
-            name: data.name || 'Untitled Project',
+            name: data.name || DEFAULT_PROJECT_NAME,
           })
           trackCustom('PROJECT_CREATED')
           generateAlerts(t('project.settings.created'))
@@ -445,13 +447,15 @@ const ProjectSettings = ({
                 {t('project.settings.transferTo')}
               </h2>
               <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
-                {t('project.settings.transferHint')}
+                {t('project.settings.transferHint', {
+                  name: form.name || DEFAULT_PROJECT_NAME,
+                })}
               </p>
               <Input
                 name='email'
                 id='email'
                 type='email'
-                label={t('auth.common.email')}
+                label={t('project.settings.transfereeEmail')}
                 value={transferEmail}
                 placeholder='you@example.com'
                 className='mt-4'
