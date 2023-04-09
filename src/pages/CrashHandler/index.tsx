@@ -15,15 +15,13 @@ interface CrashHandlerState {
 }
 
 const retryPageLoading = () => {
-  const pageHasAlreadyBeenForceRefreshed = JSON.parse(
-    sessionStorage.getItem(PAGE_FORCE_REFRESHED) || 'false',
-  ) as boolean
+  const wasPageForceRefreshed = sessionStorage.getItem(PAGE_FORCE_REFRESHED) === 'true'
 
-  if (!pageHasAlreadyBeenForceRefreshed) {
+  if (!wasPageForceRefreshed) {
     sessionStorage.setItem(PAGE_FORCE_REFRESHED, 'true')
     return window.location.reload()
   }
-  sessionStorage.setItem(PAGE_FORCE_REFRESHED, 'false')
+
   return null
 }
 
