@@ -65,6 +65,7 @@ import {
 } from '../common/constants'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
+import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -1064,7 +1065,7 @@ export class AnalyticsController {
   @Get('custom-events')
   @Auth([], true, true)
   async getCustomEvents(
-    @Query() data: AnalyticsGET_DTO,
+    @Query() data: GetCustomEventsDto,
     @CurrentUserId() uid: string,
   ): Promise<any> {
     const {
@@ -1075,6 +1076,7 @@ export class AnalyticsController {
       to,
       filters,
       timezone = DEFAULT_TIMEZONE,
+      customEvents,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -1206,7 +1208,7 @@ export class AnalyticsController {
 
     const customEventsName = Object.keys(customs)
 
-    const result = await this.analyticsService.groupCustomEVByTimeBucket(
+    const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
       timeBucket,
       groupFrom,
       groupTo,
@@ -1216,6 +1218,25 @@ export class AnalyticsController {
       timezone,
       customEventsName,
     )
+
+    let customEventss = customEvents
+
+    if (filters) {
+      try {
+        customEventss = JSON.parse(customEvents)
+        // eslint-disable-next-line no-empty
+      } catch {}
+    }
+
+    if (customEventss.length > 0) {
+      for (const key in result.chart.events) {
+        if (!customEventss.includes(key)) {
+          delete result.chart.events[key]
+        }
+      }
+    } else {
+      result.chart = {}
+    }
 
     return {
       ...result,
