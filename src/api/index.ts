@@ -750,7 +750,7 @@ export const confirmSubscriberInvite = (id: string, token: string) =>
         ? error.response.data
         : error.response.data.message
     })
-  
+
 export const getProjectDataCustomEvents = (
   pid: string,
   tb: string = 'hour',
@@ -772,7 +772,7 @@ export const getProjectDataCustomEvents = (
         ? error.response.data
         : error.response.data.message
     })
-  
+
 export const transferProject = (uuid: string, email: string) =>
   api
     .post('project/transfer', {
