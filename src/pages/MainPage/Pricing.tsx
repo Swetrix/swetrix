@@ -16,6 +16,7 @@ import { CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS } from 'redux/constan
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 import { authMe } from 'api'
 import routes from 'routes'
 import { IUser } from 'redux/models/IUser'
@@ -292,6 +293,7 @@ const Pricing = ({ t, language }: {
             dispatch(authActions.finishLoading())
           } catch (e) {
             dispatch(authActions.logout())
+            dispatch(sagaActions.logout(false))
           }
 
           dispatch(alertsActions.accountUpdated({

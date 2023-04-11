@@ -16,7 +16,7 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
-import { ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -25,7 +25,7 @@ import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import {
-  createProject, updateProject, deleteProject, resetProject,
+  createProject, updateProject, deleteProject, resetProject, transferProject,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -47,14 +47,16 @@ interface IForm extends Partial<IProject> {
   ipBlacklist: string | null,
 }
 
+const DEFAULT_PROJECT_NAME = 'Untitled Project'
+
 const ProjectSettings = ({
-  updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
+  updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
   deleteProjectCache,
 }: {
   updateProjectFailed: (message: string) => void,
   createNewProjectFailed: (message: string) => void,
-  newProject: (message: string) => void,
+  generateAlerts: (message: string) => void,
   projectDeleted: (message: string) => void,
   deleteProjectFailed: (message: string) => void,
   loadProjects: (shared: boolean) => void,
@@ -99,6 +101,8 @@ const ProjectSettings = ({
   const [projectDeleting, setProjectDeleting] = useState<boolean>(false)
   const [projectResetting, setProjectResetting] = useState<boolean>(false)
   const [projectSaving, setProjectSaving] = useState<boolean>(false)
+  const [showTransfer, setShowTransfer] = useState<boolean>(false)
+  const [transferEmail, setTransferEmail] = useState<string>('')
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
@@ -140,14 +144,14 @@ const ProjectSettings = ({
         }
         if (isSettings) {
           await updateProject(id, formalisedData as Partial<IProject>)
-          newProject(t('project.settings.updated'))
+          generateAlerts(t('project.settings.updated'))
         } else {
           await createProject({
             id: data.id || nanoid(),
-            name: data.name || 'Untitled Project',
+            name: data.name || DEFAULT_PROJECT_NAME,
           })
           trackCustom('PROJECT_CREATED')
-          newProject(t('project.settings.created'))
+          generateAlerts(t('project.settings.created'))
         }
 
         loadProjects(isSharedProject)
@@ -255,6 +259,21 @@ const ProjectSettings = ({
     history.push(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
   }
 
+  const onTransfer = async () => {
+    await transferProject(id, transferEmail)
+      .then(() => {
+        generateAlerts(t('apiNotifications.transferRequestSent'))
+        history.push(routes.dashboard)
+      })
+      .catch((e) => {
+        showError(e as string)
+      })
+      .finally(() => {
+        setShowTransfer(false)
+        setTransferEmail('')
+      })
+  }
+
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
 
   return (
@@ -347,6 +366,12 @@ const ProjectSettings = ({
                 </div>
                 {!project?.shared && (
                   <div className='flex flex-wrap items-center justify-end'>
+                    <Button className='mr-2' onClick={() => setShowTransfer(true)} semiDanger semiSmall>
+                      <>
+                        <RocketLaunchIcon className='w-5 h-5 mr-1' />
+                        {t('project.settings.transfer')}
+                      </>
+                    </Button>
                     <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
                       <>
                         <TrashIcon className='w-5 h-5 mr-1' />
@@ -362,7 +387,7 @@ const ProjectSettings = ({
                   </div>
                 )}
               </div>
-              <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+              <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
               <Emails projectId={id} projectName={project.name} />
               <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
               {
@@ -410,6 +435,37 @@ const ProjectSettings = ({
           type='error'
           isOpened={showReset}
         />
+        <Modal
+          onClose={() => {
+            setShowTransfer(false)
+          }}
+          submitText={t('project.settings.transfer')}
+          closeText={t('common.cancel')}
+          message={(
+            <div>
+              <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+                {t('project.settings.transferTo')}
+              </h2>
+              <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+                {t('project.settings.transferHint', {
+                  name: form.name || DEFAULT_PROJECT_NAME,
+                })}
+              </p>
+              <Input
+                name='email'
+                id='email'
+                type='email'
+                label={t('project.settings.transfereeEmail')}
+                value={transferEmail}
+                placeholder='you@example.com'
+                className='mt-4'
+                onChange={(e) => setTransferEmail(e.target.value)}
+              />
+            </div>
+          )}
+          isOpened={showTransfer}
+          onSubmit={onTransfer}
+        />
       </div>
     </Title>
   )
@@ -418,7 +474,7 @@ const ProjectSettings = ({
 ProjectSettings.propTypes = {
   updateProjectFailed: PropTypes.func.isRequired,
   createNewProjectFailed: PropTypes.func.isRequired,
-  newProject: PropTypes.func.isRequired,
+  generateAlerts: PropTypes.func.isRequired,
   projectDeleted: PropTypes.func.isRequired,
   deleteProjectFailed: PropTypes.func.isRequired,
   loadProjects: PropTypes.func.isRequired,
