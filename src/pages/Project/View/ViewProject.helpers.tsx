@@ -298,11 +298,18 @@ const getSettings = (
   },
   rotateXAxias: boolean,
   chartType: string,
+  customEvents?: {
+    [key: string]: string[],
+  },
 ) => {
   const xAxisSize = _size(chart.x)
   const lines = []
   const modifiedChart = { ...chart }
   let regions
+  const columns = getColumns(chart, activeChartMetrics)
+  const customEventsToArray = customEvents ? _map(_keys(customEvents), (el) => {
+    return [el, ...customEvents[el]]
+  }) : []
 
   if (!_isEmpty(forecasedChartData)) {
     lines.push({
@@ -363,7 +370,7 @@ const getSettings = (
   return {
     data: {
       x: 'x',
-      columns: getColumns(modifiedChart, activeChartMetrics),
+      columns: [...columns, ...customEventsToArray],
       types: {
         unique: chartType === chartTypes.line ? area() : bar(),
         total: chartType === chartTypes.line ? area() : bar(),

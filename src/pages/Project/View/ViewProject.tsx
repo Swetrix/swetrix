@@ -314,6 +314,13 @@ const ViewProject = ({
     return []
   }, [panelsData, activeChartMetricsCustomEvents])
 
+  const dataNamesCustomEvents = useMemo(() => {
+    if (!_isEmpty(panelsData.customs)) {
+      return { ..._keys(panelsData.customs) }
+    }
+    return {}
+  }, [panelsData])
+
   const dataNames = useMemo(() => {
     return {
       unique: t('project.unique'),
@@ -323,8 +330,9 @@ const ViewProject = ({
       trendlineTotal: t('project.trendlineTotal'),
       trendlineUnique: t('project.trendlineUnique'),
       sessionDuration: t('dashboard.sessionDuration'),
+      ...dataNamesCustomEvents,
     }
-  }, [t])
+  }, [t, dataNamesCustomEvents])
 
   const dataNamesPerf = useMemo(() => {
     return {
@@ -355,6 +363,57 @@ const ViewProject = ({
     showError(t('project.noExist'))
     history.push(routes.dashboard)
   }
+
+  const loadCustomEvents = async () => {
+    if (_isEmpty(panelsData.customs)) {
+      return
+    }
+
+    let data
+    let from
+    let to
+
+    try {
+      setDataLoading(true)
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      if (period === 'custom' && dateRange) {
+        data = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
+      } else {
+        data = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents)
+      }
+
+      const { chart } = data
+
+      const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
+      const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, chart.events)
+
+      if (!_isEmpty(mainChart)) {
+        mainChart.destroy()
+      }
+
+      setMainChart(() => {
+        // @ts-ignore
+        const generete = bb.generate(bbSettings)
+        generete.data.names(dataNames)
+        return generete
+      })
+    } catch (e) {
+      console.log('FAILED TO LOAD CUSTOM EVENTS', e)
+    } finally {
+      setDataLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === PROJECT_TABS.traffic) {
+      loadCustomEvents()
+    }
+  }, [activeTab, activeChartMetricsCustomEvents])
 
   // this function is used for requesting the data from the API
   const loadAnalytics = async (forced = false, newFilters: any[] | null = null) => {
@@ -485,91 +544,6 @@ const ViewProject = ({
           dataPerf = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, from, to, timezone)
         } else {
           dataPerf = await getPerfData(id, timeBucket, period, newFilters || filtersPerf, '', '', timezone)
-        }
-
-        setProjectCachePerf(id, dataPerf || {}, key)
-      }
-
-      const {
-        appliedFilters,
-      } = dataPerf
-
-      if (!_isEmpty(appliedFilters)) {
-        setFilters(appliedFilters)
-      }
-
-      if (_isEmpty(dataPerf)) {
-        setIsPanelsDataEmptyPerf(true)
-        setDataLoading(false)
-        setAnalyticsLoading(false)
-        return
-      }
-
-      if (_isEmpty(dataPerf.params)) {
-        setIsPanelsDataEmptyPerf(true)
-      } else {
-        const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
-        setChartDataPerf(chartPerf)
-
-        setPanelsDataPerf({
-          types: _keys(dataPerf.params),
-          data: dataPerf.params,
-        })
-
-        if (activeTab === PROJECT_TABS.performance) {
-          if (!_isEmpty(mainChart)) {
-            mainChart.destroy()
-          }
-
-          setMainChart(() => {
-            // @ts-ignore
-            const generete = bb.generate(bbSettings)
-            generete.data.names(dataNamesPerf)
-            return generete
-          })
-        }
-
-        setIsPanelsDataEmptyPerf(false)
-      }
-
-      setAnalyticsLoading(false)
-      setDataLoading(false)
-    } catch (e) {
-      setAnalyticsLoading(false)
-      setDataLoading(false)
-      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
-      console.error(e)
-    }
-  }
-
-  const loadAnalyticsCustomEvents = async (forced = false, newFilters: any[] | null = null) => {
-    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
-      return
-    }
-
-    setDataLoading(true)
-    try {
-      let dataPerf
-      let key
-      let from
-      let to
-
-      if (dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket)
-      } else {
-        key = getProjectCacheKey(period, timeBucket)
-      }
-
-      if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
-        dataPerf = cachePerf[id][key]
-      } else {
-        if (period === 'custom' && dateRange) {
-          dataPerf = await getProjectDataCustomEvents(id, timeBucket, '', newFilters || filtersPerf, from, to, timezone, activeChartMetricsCustomEvents)
-        } else {
-          dataPerf = await getProjectDataCustomEvents(id, timeBucket, period, newFilters || filtersPerf, '', '', timezone, activeChartMetricsCustomEvents)
         }
 
         setProjectCachePerf(id, dataPerf || {}, key)
