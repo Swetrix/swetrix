@@ -761,7 +761,7 @@ export const getProjectDataCustomEvents = (
 ) =>
   api
     .get(
-      `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&customEvents=${JSON.stringify(customEvents)}`,
     )
     .then((response) => response.data)
     .catch((error) => {
