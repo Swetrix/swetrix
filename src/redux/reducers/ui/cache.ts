@@ -1,19 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
+import { getItem, removeItem, setItem } from 'utils/localstorage'
 import {
   getProjectCacheKey, LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, getProjectCaptchaCacheKey,
 } from 'redux/constants'
 
 export const getInitialViewPrefs = (LS_VIEW: string) => {
   if (typeof window !== 'undefined' && window.localStorage) {
-    const storedPrefs = window.localStorage.getItem(LS_VIEW)
-    if (typeof storedPrefs === 'string') {
-      try {
-        return JSON.parse(storedPrefs)
-      } catch (e) {
-        window.localStorage.removeItem(LS_VIEW)
-      }
+    const storedPrefs = getItem(LS_VIEW)
+    try {
+      return storedPrefs
+    } catch (e) {
+      removeItem(LS_VIEW)
     }
   }
 
@@ -21,18 +20,24 @@ export const getInitialViewPrefs = (LS_VIEW: string) => {
 }
 
 interface IInitialState {
-    analytics: any
-    analyticsPerf: any
-    captchaAnalytics: any
-    captchaProjectsViewPrefs: any
-    projectViewPrefs: any
+  analytics: any
+  analyticsPerf: any
+  captchaAnalytics: any
+  captchaProjectsViewPrefs: any
+  projectViewPrefs: {
+    [key: string]: {
+      period: string
+      timeBucket: string
+      rangeDate?: Date[]
+    },
+  } | null
 }
 
 const initialState: IInitialState = {
   analytics: {},
   analyticsPerf: {},
   captchaAnalytics: {},
-  captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING),
+  captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING) || {},
   projectViewPrefs: getInitialViewPrefs(LS_VIEW_PREFS_SETTING),
 }
 
@@ -107,7 +112,19 @@ const cacheSlice = createSlice({
       } : {
         period, timeBucket,
       }
-      window.localStorage.setItem(LS_VIEW_PREFS_SETTING, JSON.stringify(viewPrefs))
+      const storedPrefs = getItem(LS_VIEW_PREFS_SETTING) as {
+        [key: string]: {
+          period: string
+          timeBucket: string
+          rangeDate?: Date[]
+        },
+      }
+      if (typeof storedPrefs === 'object' && storedPrefs !== null) {
+        storedPrefs[pid] = viewPrefs
+        setItem(LS_VIEW_PREFS_SETTING, JSON.stringify(storedPrefs))
+      } else {
+        setItem(LS_VIEW_PREFS_SETTING, JSON.stringify({ [pid]: viewPrefs }))
+      }
       state.projectViewPrefs = {
         ...state.projectViewPrefs,
         [pid]: viewPrefs,
@@ -122,7 +139,19 @@ const cacheSlice = createSlice({
       } : {
         period, timeBucket,
       }
-      window.localStorage.setItem(LS_CAPTCHA_VIEW_PREFS_SETTING, JSON.stringify(viewPrefs))
+      const storedPrefs = getItem(LS_CAPTCHA_VIEW_PREFS_SETTING) as {
+        [key: string]: {
+          period: string
+          timeBucket: string
+          rangeDate?: Date[]
+        },
+      }
+      if (typeof storedPrefs === 'object' && storedPrefs !== null) {
+        storedPrefs[pid] = viewPrefs
+        setItem(LS_CAPTCHA_VIEW_PREFS_SETTING, JSON.stringify(storedPrefs))
+      } else {
+        setItem(LS_CAPTCHA_VIEW_PREFS_SETTING, JSON.stringify({ [pid]: viewPrefs }))
+      }
       state.captchaProjectsViewPrefs = {
         ...state.captchaProjectsViewPrefs,
         [pid]: viewPrefs,
