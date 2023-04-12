@@ -24,6 +24,7 @@ const mapStateToProps = (state: StateType) => {
       extensions: state.ui.misc.extensions,
       user: state.auth.user,
       projectTab: state.ui.projects.projectTab,
+      customEventsPrefs: state.ui.cache.customEventsPrefs,
     }
   }
 
@@ -40,6 +41,7 @@ const mapStateToProps = (state: StateType) => {
     extensions: state.ui.misc.extensions,
     user: state.auth.user,
     projectTab: state.ui.projects.projectTab,
+    customEventsPrefs: state.ui.cache.customEventsPrefs,
   }
 }
 
@@ -102,6 +104,12 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       pid,
       data,
       key,
+    }))
+  },
+  setCustomEventsPrefs: (pid: string, data: any) => {
+    dispatch(UIActions.setCustomEventsPrefs({
+      pid,
+      data,
     }))
   },
 })

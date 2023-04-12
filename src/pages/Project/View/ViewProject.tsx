@@ -28,6 +28,8 @@ import _findIndex from 'lodash/findIndex'
 import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
+import _pickBy from 'lodash/pickBy'
+import _every from 'lodash/every'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
@@ -82,7 +84,7 @@ interface IProjectView extends IProject {
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs,
 }: {
   projects: IProjectView[],
   extensions: any,
@@ -107,6 +109,8 @@ const ViewProject = ({
   setProjectTab: (tab: string) => void,
   // eslint-disable-next-line no-unused-vars, no-shadow
   setProjects: (projects: Partial<IProject | ISharedProject>[]) => void,
+  customEventsPrefs: any,
+  setCustomEventsPrefs: (pid: string, data: any) => void,
 }) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -165,7 +169,7 @@ const ViewProject = ({
   })
   const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
   const [sessionDurationAVG, setSessionDurationAVG] = useState<any>(null)
-  const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
+  const checkIfAllMetricsAreDisabled = useMemo(() => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value), [activeChartMetrics, activeChartMetricsCustomEvents])
   const [filters, setFilters] = useState<any[]>([])
   const [filtersPerf, setFiltersPerf] = useState<any[]>([])
   // That is needed when using 'Export as image' feature,
@@ -200,6 +204,7 @@ const ViewProject = ({
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
   const [chartType, setChartType] = useState<string>(getItem('chartType') || chartTypes.line)
+  const customEventsChartData = useMemo(() => _pickBy(customEventsPrefs[id], (value, keyCustomEvents) => _includes(activeChartMetricsCustomEvents, keyCustomEvents)), [customEventsPrefs, id, activeChartMetricsCustomEvents])
 
   const tabs: {
     id: string
@@ -369,7 +374,7 @@ const ViewProject = ({
       return
     }
 
-    let data
+    let data = null
     let from
     let to
 
@@ -381,16 +386,25 @@ const ViewProject = ({
         to = getFormatDate(dateRange[1])
       }
 
-      if (period === 'custom' && dateRange) {
-        data = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
-      } else {
-        data = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents)
+      // write if customEventsChartData includes all activeChartMetricsCustomEvents return true if not false
+      const isAllActiveChartMetricsCustomEvents = _every(activeChartMetricsCustomEvents, (metric) => {
+        return _includes(_keys(customEventsChartData), metric)
+      })
+
+      if (!isAllActiveChartMetricsCustomEvents) {
+        if (period === 'custom' && dateRange) {
+          data = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
+        } else {
+          data = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents)
+        }
       }
 
-      const { chart } = data
+      const events = data?.chart ? data.chart.events : customEventsChartData
+
+      setCustomEventsPrefs(id, events)
 
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-      const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, chart.events)
+      const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, events)
 
       if (!_isEmpty(mainChart)) {
         mainChart.destroy()
@@ -482,7 +496,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
         setChartData(chart)
 
         setPanelsData({
@@ -832,7 +846,7 @@ const ViewProject = ({
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -848,7 +862,7 @@ const ViewProject = ({
 
         if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()

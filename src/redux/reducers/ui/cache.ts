@@ -26,6 +26,7 @@ interface IInitialState {
     captchaAnalytics: any
     captchaProjectsViewPrefs: any
     projectViewPrefs: any
+    customEventsPrefs: any
 }
 
 const initialState: IInitialState = {
@@ -34,6 +35,7 @@ const initialState: IInitialState = {
   captchaAnalytics: {},
   captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING),
   projectViewPrefs: getInitialViewPrefs(LS_VIEW_PREFS_SETTING),
+  customEventsPrefs: {},
 }
 
 const cacheSlice = createSlice({
@@ -158,6 +160,15 @@ const cacheSlice = createSlice({
         [payload.pid]: {
           ...state.analytics[payload.pid],
           [payload.key]: payload.data,
+        },
+      }
+    },
+    setCustomEventsPrefs(state, { payload }: PayloadAction<{ pid: string, data: any }>) {
+      state.customEventsPrefs = {
+        ...state.customEventsPrefs,
+        [payload.pid]: {
+          ...state.customEventsPrefs[payload.pid],
+          ...payload.data,
         },
       }
     },
