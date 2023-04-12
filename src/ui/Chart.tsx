@@ -37,7 +37,7 @@ const Chart = ({ current, options }: {
 
   return (
     <div>
-      <div id={current} />
+      <div id={current} data-testid='chart' />
     </div>
   )
 }

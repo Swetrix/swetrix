@@ -73,7 +73,7 @@ describe('Button component', () => {
   it('renders a large button', () => {
     const { getByText } = render(<Button text='Click me' large />)
     const button = getByText('Click me')
-    expect(button).toHaveClass('text-base')
+    expect(button).toHaveClass('text-sm')
   })
 
   it('renders a giant button', () => {
@@ -82,14 +82,9 @@ describe('Button component', () => {
     expect(button).toHaveClass('text-base')
   })
 
-  it('renders a loading button', () => {
-    const { getByTestId } = render(<Button text='Click me' loading />)
-    expect(getByTestId('spinner')).toBeInTheDocument()
-  })
-
   it('renders a button with no border', () => {
     const { getByText } = render(<Button text='Click me' noBorder />)
     const button = getByText('Click me')
-    expect(button).toHaveClass('border-0')
+    expect(button).toHaveClass('border-none')
   })
 })

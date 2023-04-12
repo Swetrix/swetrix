@@ -13,7 +13,7 @@ describe('Beta component', () => {
       resources: {
         en: {
           beta: {
-            title: 'Beta',
+            title: 'beta.title',
           },
         },
       },
@@ -26,6 +26,6 @@ describe('Beta component', () => {
         <Beta className='custom-class-name' />
       </I18nextProvider>,
     )
-    expect(getByText('Beta')).toHaveClass('custom-class-name')
+    expect(getByText('beta.title')).toHaveClass('custom-class-name')
   })
 })
