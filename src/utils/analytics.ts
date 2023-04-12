@@ -1,7 +1,7 @@
 import * as Swetrix from 'swetrix'
 import { isSelfhosted } from 'redux/constants'
 
-const SWETRIX_PID = 'FxKL4SGgp4PZ'
+const SWETRIX_PID = 'STEzHcB1rALV'
 
 Swetrix.init(SWETRIX_PID)
 

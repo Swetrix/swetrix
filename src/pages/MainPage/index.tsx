@@ -37,7 +37,7 @@ import Pricing from './Pricing'
 
 import './styles.css'
 
-const LIVE_DEMO_URL = '/projects/FxKL4SGgp4PZ'
+const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 
 const COMPETITORS_LIST = ['Google Analytics', 'Fathom', 'Plausible', 'Simple Analytics']
 const SWETRIX_AND_COMPETITORS_LIST = ['Swetrix', ...COMPETITORS_LIST]
