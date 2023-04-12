@@ -65,6 +65,8 @@
     "newrelic": "^9.15.0",
     "otplib": "^12.0.1",
     "passport": "^0.6.0",
+    "passport-google-auth": "^1.0.2",
+    "passport-google-oauth20": "^2.0.0",
     "passport-headerapikey": "^1.2.2",
     "passport-jwt": "^4.0.1",
     "php-serialize": "^4.0.2",
