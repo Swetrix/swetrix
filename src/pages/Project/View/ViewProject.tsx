@@ -1582,7 +1582,10 @@ const ViewProject = ({
                     'mt-14': project.public || (isSharedProject && project?.role === roleAdmin.role) || project.isOwner,
                   })}
                   />
-                  <div className='relative'>
+                  <div className={cx('relative', {
+                    hidden: checkIfAllMetricsAreDisabled,
+                  })}
+                  >
                     <div className={cx('absolute right-0 z-10 -top-2  max-sm:top-6', {
                       'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
                       'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
@@ -1775,7 +1778,7 @@ const ViewProject = ({
               </div>
             )}
             {activeTab === PROJECT_TABS.performance && (
-              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
+              <div className={cx('pt-8 md:pt-4', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
                 <div
                   className={cx('h-80', {
                     hidden: checkIfAllMetricsAreDisabled,
