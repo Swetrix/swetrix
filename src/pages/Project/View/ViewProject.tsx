@@ -1607,7 +1607,7 @@ const ViewProject = ({
 
                               return (
                                 <Dropdown
-                                  className=''
+                                  menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
                                   items={chartMetricsCustomEvents}
                                   title={label}
                                   labelExtractor={(event) => (
@@ -1615,24 +1615,24 @@ const ViewProject = ({
                                       className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
                                       label={event.label}
                                       id={event.id}
-                                      onChange={() => {
-                                        setActiveChartMetricsCustomEvents((prev) => {
-                                          const newActiveChartMetricsCustomEvents = [...prev]
-                                          const index = _findIndex(prev, (item) => item === event.id)
-                                          if (index === -1) {
-                                            newActiveChartMetricsCustomEvents.push(event.id)
-                                          } else {
-                                            newActiveChartMetricsCustomEvents.splice(index, 1)
-                                          }
-                                          return newActiveChartMetricsCustomEvents
-                                        })
-                                      }}
+                                      onChange={() => {}}
                                       checked={event.active}
                                     />
                                   )}
                                   buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700'
                                   keyExtractor={(event) => event.id}
-                                  onSelect={() => {}}
+                                  onSelect={(event) => {
+                                    setActiveChartMetricsCustomEvents((prev) => {
+                                      const newActiveChartMetricsCustomEvents = [...prev]
+                                      const index = _findIndex(prev, (item) => item === event.id)
+                                      if (index === -1) {
+                                        newActiveChartMetricsCustomEvents.push(event.id)
+                                      } else {
+                                        newActiveChartMetricsCustomEvents.splice(index, 1)
+                                      }
+                                      return newActiveChartMetricsCustomEvents
+                                    })
+                                  }}
                                 />
                               )
                             }
