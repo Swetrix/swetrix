@@ -427,6 +427,7 @@ const ViewProject = ({
     if (activeTab === PROJECT_TABS.traffic) {
       loadCustomEvents()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, activeChartMetricsCustomEvents])
 
   // this function is used for requesting the data from the API
