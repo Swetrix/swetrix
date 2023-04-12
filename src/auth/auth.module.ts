@@ -1,6 +1,8 @@
 import { forwardRef, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
+import TwitterStrategy from 'passport-twitter'
+
 import { ActionTokensModule } from 'src/action-tokens/action-tokens.module'
 import { MailerModule } from 'src/mailer/mailer.module'
 import { UserModule } from 'src/user/user.module'
@@ -22,6 +24,7 @@ import {
     MailerModule,
     ActionTokensModule,
     ProjectModule,
+    TwitterStrategy,
   ],
   controllers: [AuthController],
   providers: [
@@ -29,6 +32,7 @@ import {
     JwtAccessTokenStrategy,
     JwtRefreshTokenStrategy,
     ApiKeyStrategy,
+    TwitterStrategy,
   ],
   exports: [AuthService],
 })

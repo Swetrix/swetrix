@@ -276,6 +276,15 @@ export class User {
   })
   timeFormat: TimeFormat
 
+  // Twitter SSO
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    default: null,
+  })
+  twitterId: string | null
+
   @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
   @JoinTable()
   extensions: ExtensionToUser[]

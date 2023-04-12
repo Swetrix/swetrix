@@ -410,4 +410,30 @@ export class AuthService {
   async validateApiKey(apiKey: string): Promise<User | null> {
     return this.userService.findUserByApiKey(apiKey)
   }
+
+  async validateTwitterUser(
+    profile: any,
+  ): Promise<User | null> {
+    const { id } = profile
+    const email = `${
+      profile.emails && profile.emails.length > 0 ? profile.emails[0].value : ''
+    }`
+
+    let user = await this.userService.findUserByTwitterId(id)
+
+    if (!user) {
+      user = await this.userService.findUser(email)
+    }
+
+    if (!user) {
+      const userDto = {
+        email,
+        twitterId: id,
+      }
+
+      user = await this.userService.createUser(userDto)
+    }
+
+    return user
+  }
 }

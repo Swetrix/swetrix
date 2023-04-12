@@ -5,6 +5,7 @@ import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
+import * as _pick from 'lodash/pick'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { User, ACCOUNT_PLANS, TRIAL_DURATION } from './entities/user.entity'
@@ -19,6 +20,10 @@ export class UserService {
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
+
+  async findUserByTwitterId(twitterId: string): Promise<User> {
+    return this.usersRepository.findOne({ where: { twitterId } })
+  }
 
   async create(userDTO: UserProfileDTO | User): Promise<User> {
     return this.usersRepository.save(userDTO)
@@ -162,9 +167,10 @@ export class UserService {
     return this.usersRepository.findOne({ email })
   }
 
-  public async createUser(user: Pick<User, 'email' | 'password'>) {
+  public async createUser(user: any /*Pick<User, 'email' | 'password'> */) {
     return this.usersRepository.save({
-      ...user,
+      // ...user,
+      ..._pick(user, ['email', 'password', 'twitterId']),
       trialEndDate: dayjs
         .utc()
         .add(TRIAL_DURATION, 'day')

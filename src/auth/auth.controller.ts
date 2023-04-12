@@ -412,4 +412,18 @@ export class AuthController {
 
     await this.authService.logout(user.id, refreshToken)
   }
+
+  // Twitter SSO
+  // create a @Get('twitter/login') endpoint to initiate the Twitter authentication process.
+  @ApiOperation({ summary: 'Login with Twitter' })
+  @ApiOkResponse({
+    description: 'Logged in with Twitter',
+  })
+  @Public()
+  @Get('twitter/login')
+  @UseGuards(TwitterAuthGuard)
+  public async twitterLogin(): Promise<void> {
+    // TODO
+    return
+  }
 }

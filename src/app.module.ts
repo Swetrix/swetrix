@@ -4,8 +4,8 @@ import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TelegrafModule } from 'nestjs-telegraf'
 import { NestjsFormDataModule } from 'nestjs-form-data'
-
 import { I18nModule } from 'nestjs-i18n'
+
 import { UserModule } from './user/user.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { ProjectModule } from './project/project.module'
