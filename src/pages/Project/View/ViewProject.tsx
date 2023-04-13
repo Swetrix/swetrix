@@ -96,7 +96,13 @@ const ViewProject = ({
   cache: any,
   cachePerf: any,
   setProjectCache: (pid: string, data: any, key: string) => void,
-  projectViewPrefs: any,
+  projectViewPrefs: {
+    [key: string]: {
+      period: string,
+      timeBucket: string,
+      rangeDate?: Date[],
+    },
+  } | null,
   setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[]) => void,
   setPublicProject: (project: Partial<IProject | ISharedProject>) => void,
   setLiveStatsForProject: (id: string, count: number) => void,
@@ -154,8 +160,8 @@ const ViewProject = ({
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const [isForecastOpened, setIsForecastOpened] = useState<boolean>(false)
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
-  const [period, setPeriod] = useState<string>(projectViewPrefs[id]?.period || periodPairs[3].period)
-  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
+  const [period, setPeriod] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period)
+  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1] : periodPairs[3].tbs[1])
   const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period, periodPairs])
   const [chartData, setChartData] = useState<any>({})
   const [mainChart, setMainChart] = useState<any>(null)
@@ -181,7 +187,7 @@ const ViewProject = ({
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
-  const localStorageDateRange = projectViewPrefs[id]?.rangeDate
+  const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
   const [dateRange, setDateRange] = useState<null | Date[]>(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
   const [activeTab, setActiveTab] = useState<string>(() => {
     // @ts-ignore
@@ -206,8 +212,8 @@ const ViewProject = ({
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
-  const [chartType, setChartType] = useState<string>(getItem('chartType') || chartTypes.line)
   const customEventsChartData = useMemo(() => _pickBy(customEventsPrefs[id], (value, keyCustomEvents) => _includes(activeChartMetricsCustomEvents, keyCustomEvents)), [customEventsPrefs, id, activeChartMetricsCustomEvents])
+  const [chartType, setChartType] = useState<string>(getItem('chartType') as string || chartTypes.line)
 
   const tabs: {
     id: string
@@ -1311,7 +1317,7 @@ const ViewProject = ({
       // @ts-ignore
       const url = new URL(window.location)
       const { searchParams } = url
-      const intialPeriod = searchParams.get('period') || '7d'
+      const intialPeriod = projectViewPrefs ? searchParams.get('period') || projectViewPrefs[id]?.period : searchParams.get('period') || '7d'
       const tab = searchParams.get('tab')
 
       if (tab === PROJECT_TABS.performance) {
@@ -1729,7 +1735,10 @@ const ViewProject = ({
                     'mt-14': project.public || (isSharedProject && project?.role === roleAdmin.role) || project.isOwner,
                   })}
                   />
-                  <div className='relative'>
+                  <div className={cx('relative', {
+                    hidden: checkIfAllMetricsAreDisabled,
+                  })}
+                  >
                     <div className={cx('absolute right-0 z-10 -top-2  max-sm:top-6', {
                       'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
                       'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
@@ -1922,7 +1931,7 @@ const ViewProject = ({
               </div>
             )}
             {activeTab === PROJECT_TABS.performance && (
-              <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
+              <div className={cx('pt-8 md:pt-4', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
                 <div
                   className={cx('h-80', {
                     hidden: checkIfAllMetricsAreDisabled,

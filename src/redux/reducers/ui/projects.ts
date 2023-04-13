@@ -44,7 +44,7 @@ const initialState: IInitialState = {
   dashboardPaginationPage: 1,
   dashboardPaginationPageShared: 1,
   dashboardPaginationPageCaptcha: 1,
-  dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
+  dashboardTabs: getItem('dashboardTabs') as string || tabForOwnedProject,
   projectTab: PROJECT_TABS.traffic,
   alerts: [],
   subscribers: [],
