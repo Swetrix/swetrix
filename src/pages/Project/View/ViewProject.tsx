@@ -513,7 +513,6 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        console.log('customEventsChart', customEventsChart)
         const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChart)
         setChartData(chart)
 
