@@ -7,6 +7,7 @@ import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 
 import Title from 'components/Title'
+import GoogleAuth from 'components/GoogleAuth'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
@@ -249,6 +250,7 @@ const Signup = ({ signup }: {
               {t('auth.signup.button')}
             </Button>
           </div>
+          <GoogleAuth />
         </form>
       </div>
     </Title>
