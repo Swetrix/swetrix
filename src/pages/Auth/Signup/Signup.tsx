@@ -250,7 +250,7 @@ const Signup = ({ signup }: {
               {t('auth.signup.button')}
             </Button>
           </div>
-          <GoogleAuth />
+          <GoogleAuth setIsLoading={setIsLoading} />
         </form>
       </div>
     </Title>

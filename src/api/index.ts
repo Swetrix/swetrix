@@ -808,3 +808,14 @@ export const confirmTransferProject = (uuid: string) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const googleAuth = (data: any) =>
+  api
+    .post('google-auth', data)
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

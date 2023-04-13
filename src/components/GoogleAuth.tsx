@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { googleAuth } from 'api'
 import Button from 'ui/Button'
 import GoogleGSVG from 'ui/icons/GoogleG'
 
@@ -19,19 +20,19 @@ const loadScript = (src: string): Promise<any> => new Promise((resolve, reject) 
   document.body.appendChild(script)
 })
 
-const GoogleAuth = () => {
+interface IGoogleAuth {
+  setIsLoading: (isLoading: boolean) => void,
+}
+
+const GoogleAuth: React.FC<IGoogleAuth> = ({ setIsLoading }) => {
   const { t } = useTranslation()
   const actualGoogleButton = useRef(null)
 
-  // useEffect(() => {
-  //   if (actualGoogleButton.current) {
-  //     // @ts-ignore
-  //     actualGoogleButton.current.click()
-  //   }
-  // }, [actualGoogleButton.current])
+  const handleCredentialResponse = async (response: any) => {
+    const result = await googleAuth({ token: response.credential })
+    console.log(result) // should be { user, access_token, refresh_token }
 
-  const handleCredentialResponse = (response: any) => {
-    console.log(response)
+    setIsLoading(false)
   }
 
   const renderGoogleLoginButton = async () => {
@@ -65,6 +66,7 @@ const GoogleAuth = () => {
   }
 
   const googleLogin = async () => {
+    setIsLoading(true)
     await renderGoogleLoginButton()
     clickGoogleLoginButton()
   }
