@@ -58,7 +58,9 @@ const GoogleAuth = () => {
   const clickGoogleLoginButton = () => {
     if (actualGoogleButton.current) {
       // @ts-ignore
-      actualGoogleButton.current.click()
+      const iframe = actualGoogleButton.current.querySelector('iframe')
+      // Emulating the click on an actial 'Sign in with Google' button
+      iframe.nextElementSibling.click()
     }
   }
 
@@ -83,7 +85,6 @@ const GoogleAuth = () => {
       <div
         className='hidden'
         ref={actualGoogleButton}
-        onClick={() => { }}
       />
     </div>
   )
