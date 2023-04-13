@@ -10,7 +10,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon, PresentationChartBarIcon, PresentationChartLineIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon, PresentationChartBarIcon, PresentationChartLineIcon, NoSymbolIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -24,9 +24,14 @@ import _replace from 'lodash/replace'
 import _values from 'lodash/values'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
+import _findIndex from 'lodash/findIndex'
 import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
+import _pickBy from 'lodash/pickBy'
+import _every from 'lodash/every'
+import _size from 'lodash/size'
+import _truncate from 'lodash/truncate'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
@@ -54,7 +59,7 @@ import PaidFeature from 'modals/PaidFeature'
 import Forecast from 'modals/Forecast'
 import routes from 'routes'
 import {
-  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData,
+  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import {
@@ -73,6 +78,7 @@ import ProjectAlertsView from '../Alerts/View'
 import './styles.css'
 
 const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
+const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
 interface IProjectView extends IProject {
   isPublicVisitors?: boolean,
@@ -81,7 +87,7 @@ interface IProjectView extends IProject {
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs,
 }: {
   projects: IProjectView[],
   extensions: any,
@@ -112,6 +118,8 @@ const ViewProject = ({
   setProjectTab: (tab: string) => void,
   // eslint-disable-next-line no-unused-vars, no-shadow
   setProjects: (projects: Partial<IProject | ISharedProject>[]) => void,
+  customEventsPrefs: any,
+  setCustomEventsPrefs: (pid: string, data: any) => void,
 }) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -132,6 +140,7 @@ const ViewProject = ({
   const [customExportTypes, setCustomExportTypes] = useState<any[]>([])
   const [customPanelTabs, setCustomPanelTabs] = useState<any[]>([])
   const [sdkInstance, setSdkInstance] = useState<any>(null)
+  const [activeChartMetricsCustomEvents, setActiveChartMetricsCustomEvents] = useState<any[]>([])
   const dashboardRef = useRef<HTMLDivElement>(null)
   const { id }: {
     id: string
@@ -169,7 +178,7 @@ const ViewProject = ({
   })
   const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
   const [sessionDurationAVG, setSessionDurationAVG] = useState<any>(null)
-  const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
+  const checkIfAllMetricsAreDisabled = useMemo(() => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value), [activeChartMetrics, activeChartMetricsCustomEvents])
   const [filters, setFilters] = useState<any[]>([])
   const [filtersPerf, setFiltersPerf] = useState<any[]>([])
   // That is needed when using 'Export as image' feature,
@@ -203,6 +212,7 @@ const ViewProject = ({
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
+  const customEventsChartData = useMemo(() => _pickBy(customEventsPrefs[id], (value, keyCustomEvents) => _includes(activeChartMetricsCustomEvents, keyCustomEvents)), [customEventsPrefs, id, activeChartMetricsCustomEvents])
   const [chartType, setChartType] = useState<string>(getItem('chartType') as string || chartTypes.line)
 
   const tabs: {
@@ -269,6 +279,11 @@ const ViewProject = ({
         label: t('dashboard.trendlines'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.trendlines],
       },
+      {
+        id: CHART_METRICS_MAPPING.customEvents,
+        label: t('dashboard.customEvents'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.customEvents],
+      },
     ]
   }, [t, activeChartMetrics])
 
@@ -302,6 +317,24 @@ const ViewProject = ({
     ]
   }, [t, activeChartMetricsPerf])
 
+  const chartMetricsCustomEvents = useMemo(() => {
+    if (!_isEmpty(panelsData.customs)) {
+      return _map(_keys(panelsData.customs), key => ({
+        id: key,
+        label: key,
+        active: _includes(activeChartMetricsCustomEvents, key),
+      }))
+    }
+    return []
+  }, [panelsData, activeChartMetricsCustomEvents])
+
+  const dataNamesCustomEvents = useMemo(() => {
+    if (!_isEmpty(panelsData.customs)) {
+      return { ..._keys(panelsData.customs) }
+    }
+    return {}
+  }, [panelsData])
+
   const dataNames = useMemo(() => {
     return {
       unique: t('project.unique'),
@@ -311,8 +344,9 @@ const ViewProject = ({
       trendlineTotal: t('project.trendlineTotal'),
       trendlineUnique: t('project.trendlineUnique'),
       sessionDuration: t('dashboard.sessionDuration'),
+      ...dataNamesCustomEvents,
     }
-  }, [t])
+  }, [t, dataNamesCustomEvents])
 
   const dataNamesPerf = useMemo(() => {
     return {
@@ -343,6 +377,67 @@ const ViewProject = ({
     showError(t('project.noExist'))
     history.push(routes.dashboard)
   }
+
+  const loadCustomEvents = async () => {
+    if (_isEmpty(panelsData.customs)) {
+      return
+    }
+
+    let data = null
+    let from
+    let to
+
+    try {
+      setDataLoading(true)
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      // write if customEventsChartData includes all activeChartMetricsCustomEvents return true if not false
+      const isAllActiveChartMetricsCustomEvents = _every(activeChartMetricsCustomEvents, (metric) => {
+        return _includes(_keys(customEventsChartData), metric)
+      })
+
+      if (!isAllActiveChartMetricsCustomEvents) {
+        if (period === 'custom' && dateRange) {
+          data = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
+        } else {
+          data = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents)
+        }
+      }
+
+      const events = data?.chart ? data.chart.events : customEventsChartData
+
+      setCustomEventsPrefs(id, events)
+
+      const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
+      const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, events)
+
+      if (!_isEmpty(mainChart)) {
+        mainChart.destroy()
+      }
+
+      setMainChart(() => {
+        // @ts-ignore
+        const generete = bb.generate(bbSettings)
+        generete.data.names(dataNames)
+        return generete
+      })
+    } catch (e) {
+      console.log('FAILED TO LOAD CUSTOM EVENTS', e)
+    } finally {
+      setDataLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === PROJECT_TABS.traffic) {
+      loadCustomEvents()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, activeChartMetricsCustomEvents])
 
   // this function is used for requesting the data from the API
   const loadAnalytics = async (forced = false, newFilters: any[] | null = null) => {
@@ -411,7 +506,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
         setChartData(chart)
 
         setPanelsData({
@@ -761,7 +856,7 @@ const ViewProject = ({
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -777,7 +872,7 @@ const ViewProject = ({
 
         if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
@@ -1509,9 +1604,55 @@ const ViewProject = ({
 
                             const conflicted = isConflicted(conflicts)
 
+                            if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                              if (_isEmpty(panelsData.customs)) {
+                                return (
+                                  <span className='px-4 py-2 flex items-center cursor-not-allowed'>
+                                    <NoSymbolIcon className='w-5 h-5 mr-1' />
+                                    {label}
+                                  </span>
+                                )
+                              }
+
+                              return (
+                                <Dropdown
+                                  menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
+                                  items={chartMetricsCustomEvents}
+                                  title={label}
+                                  labelExtractor={(event) => (
+                                    <Checkbox
+                                      className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                                      label={_size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
+                                        <span title={event.label}>
+                                          {_truncate(event.label, { length: CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH })}
+                                        </span>
+                                      ) : event.label}
+                                      id={event.id}
+                                      onChange={() => {}}
+                                      checked={event.active}
+                                    />
+                                  )}
+                                  buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700'
+                                  keyExtractor={(event) => event.id}
+                                  onSelect={(event) => {
+                                    setActiveChartMetricsCustomEvents((prev) => {
+                                      const newActiveChartMetricsCustomEvents = [...prev]
+                                      const index = _findIndex(prev, (item) => item === event.id)
+                                      if (index === -1) {
+                                        newActiveChartMetricsCustomEvents.push(event.id)
+                                      } else {
+                                        newActiveChartMetricsCustomEvents.splice(index, 1)
+                                      }
+                                      return newActiveChartMetricsCustomEvents
+                                    })
+                                  }}
+                                />
+                              )
+                            }
+
                             return (
                               <Checkbox
-                                className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                                className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
                                 label={label}
                                 disabled={conflicted}
                                 id={pairID}
@@ -1519,12 +1660,18 @@ const ViewProject = ({
                               />
                             )
                           }}
+                          selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
                           keyExtractor={(pair) => pair.id}
                           onSelect={({ id: pairID, conflicts }) => {
                             if (isConflicted(conflicts)) {
                               generateAlert(t('project.conflictMetric'), 'error')
                               return
                             }
+
+                            if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                              return
+                            }
+
                             switchActiveChartMetric(pairID)
                           }}
                         />

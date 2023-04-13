@@ -751,6 +751,28 @@ export const confirmSubscriberInvite = (id: string, token: string) =>
         : error.response.data.message
     })
 
+export const getProjectDataCustomEvents = (
+  pid: string,
+  tb: string = 'hour',
+  period: string = '3d',
+  filters: string[] = [],
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
+  customEvents: string[] = [],
+) =>
+  api
+    .get(
+      `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&customEvents=${JSON.stringify(customEvents)}`,
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const transferProject = (uuid: string, email: string) =>
   api
     .post('project/transfer', {

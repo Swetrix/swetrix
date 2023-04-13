@@ -24,6 +24,7 @@ interface IInitialState {
   analyticsPerf: any
   captchaAnalytics: any
   captchaProjectsViewPrefs: any
+  customEventsPrefs: any
   projectViewPrefs: {
     [key: string]: {
       period: string
@@ -39,6 +40,7 @@ const initialState: IInitialState = {
   captchaAnalytics: {},
   captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING) || {},
   projectViewPrefs: getInitialViewPrefs(LS_VIEW_PREFS_SETTING),
+  customEventsPrefs: {},
 }
 
 const cacheSlice = createSlice({
@@ -187,6 +189,15 @@ const cacheSlice = createSlice({
         [payload.pid]: {
           ...state.analytics[payload.pid],
           [payload.key]: payload.data,
+        },
+      }
+    },
+    setCustomEventsPrefs(state, { payload }: PayloadAction<{ pid: string, data: any }>) {
+      state.customEventsPrefs = {
+        ...state.customEventsPrefs,
+        [payload.pid]: {
+          ...state.customEventsPrefs[payload.pid],
+          ...payload.data,
         },
       }
     },
