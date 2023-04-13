@@ -425,7 +425,11 @@ export class AuthService {
     return this.userService.findUserByApiKey(apiKey)
   }
 
-  // Google SSO
+  /*
+    --------------------------------
+    Google SSO section
+    --------------------------------
+  */
   async handleExistingUserGoogle(
     user: User,
     headers: unknown,
@@ -500,5 +504,31 @@ export class AuthService {
       console.error(`[ERROR][AuthService -> authenticateGoogle]: ${error}`)
       throw new InternalServerErrorException('Something went wrong while authenticating user with Google')
     }
+  }
+
+  async linkGoogleAccount(userId: string, token: string) {
+    const tokenInfo = await this.oauth2Client.getTokenInfo(token)
+
+    const { sub } = tokenInfo
+
+    if (!sub) {
+      throw new UnauthorizedException()
+    }
+
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    await this.userService.updateUser(userId, {
+      googleId: sub,
+    })
+  }
+
+  async unlinkGoogleAccount(userId: string) {
+    await this.userService.updateUser(userId, {
+      googleId: null,
+    })
   }
 }
