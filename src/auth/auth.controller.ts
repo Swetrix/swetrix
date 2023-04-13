@@ -14,6 +14,7 @@ import {
   Param,
   UnauthorizedException,
   Headers,
+  Res,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -41,6 +42,7 @@ import {
   ChangePasswordDto,
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
+  AuthUserGoogleDto,
 } from './dtos'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 
@@ -103,11 +105,11 @@ export class AuthController {
       body.password,
     )
 
-    const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
+    const { accessToken, refreshToken } = await this.authService.generateJwtTokens(newUser.id, true)
 
     return {
-      accessToken: jwtTokens.accessToken,
-      refreshToken: jwtTokens.refreshToken,
+      accessToken,
+      refreshToken,
       user: this.userService.omitSensitiveData(newUser),
     }
   }
@@ -411,5 +413,46 @@ export class AuthController {
     }
 
     await this.authService.logout(user.id, refreshToken)
+  }
+
+  // Google SSO
+  @ApiOperation({ summary: 'Auth user' })
+  @Post('google')
+  async authUserGoogle(
+    @Body() body: AuthUserGoogleDto,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<RegisterResponseDto> {
+    // todo: add rate limiting for sign ups
+
+    const { token } = body
+
+    return await this.authService.authenticateGoogle(token, headers, requestIp)
+  }
+
+  @ApiOperation({ summary: 'Link Google to an existing account' })
+  @ApiOkResponse({
+    description: 'Google linked to an existing account',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Post('google/link')
+  public async linkGoogleToAccount(
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    // TODO
+  }
+
+  @ApiOperation({ summary: 'Unlink Google from an existing account' })
+  @ApiOkResponse({
+    description: 'Google unlinked from an existing account',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Post('google/unlink')
+  public async unlinkGoogleFromAccount(
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    // TODO
   }
 }

@@ -52,6 +52,7 @@
     "eslint-plugin-lodash": "^7.4.0",
     "express": "^4.18.2",
     "form-data": "^4.0.0",
+    "googleapis": "^117.0.0",
     "handlebars": "^4.7.7",
     "ioredis": "^5.3.1",
     "ip-range-check": "^0.2.0",

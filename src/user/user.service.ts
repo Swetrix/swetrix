@@ -10,6 +10,7 @@ import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { User, ACCOUNT_PLANS, TRIAL_DURATION } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
+import { UserGoogleDTO } from './dto/user-google.dto'
 
 @Injectable()
 export class UserService {
@@ -20,7 +21,7 @@ export class UserService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
-  async create(userDTO: UserProfileDTO | User): Promise<User> {
+  async create(userDTO: UserProfileDTO | User | UserGoogleDTO): Promise<User> {
     return this.usersRepository.save(userDTO)
   }
 

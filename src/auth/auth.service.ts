@@ -1,12 +1,19 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import {
+  Injectable, InternalServerErrorException, UnauthorizedException,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import axios from 'axios'
 import { genSalt, hash, compare } from 'bcrypt'
 import { getCountry } from 'countries-and-timezones'
+import { Auth } from 'googleapis'
 import { createHash } from 'crypto'
 import * as dayjs from 'dayjs'
 import { InjectBot } from 'nestjs-telegraf'
+import { Telegraf } from 'telegraf'
+import { UAParser } from 'ua-parser-js'
+import _pick from 'lodash/pick'
+
 import {
   ActionToken,
   ActionTokenType,
@@ -14,15 +21,17 @@ import {
 import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { MailerService } from 'src/mailer/mailer.service'
-import { MAX_EMAIL_REQUESTS, User } from 'src/user/entities/user.entity'
+import {
+  MAX_EMAIL_REQUESTS, User, TRIAL_DURATION,
+} from 'src/user/entities/user.entity'
 import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
-import { Telegraf } from 'telegraf'
-import { UAParser } from 'ua-parser-js'
 
 @Injectable()
 export class AuthService {
+  oauth2Client: Auth.OAuth2Client
+
   constructor(
     @InjectBot() private readonly telegramBot: Telegraf<TelegrafContext>,
     private readonly userService: UserService,
@@ -31,7 +40,12 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly projectService: ProjectService,
-  ) {}
+  ) {
+    this.oauth2Client = new Auth.OAuth2Client(
+      this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
+      this.configService.get('GOOGLE_OAUTH2_CLIENT_SECRET'),
+    )
+  }
 
   private async createSha1Hash(password: string): Promise<string> {
     return new Promise(resolve => {
@@ -409,5 +423,82 @@ export class AuthService {
 
   async validateApiKey(apiKey: string): Promise<User | null> {
     return this.userService.findUserByApiKey(apiKey)
+  }
+
+  // Google SSO
+  async handleExistingUserGoogle(
+    user: User,
+    headers: unknown,
+    ip: string,
+  ) {
+    if (!user.googleId) {
+      throw new UnauthorizedException()
+    }
+
+    await this.sendTelegramNotification(user.id, headers, ip)
+
+    const jwtTokens = await this.generateJwtTokens(
+      user.id,
+      !user.isTwoFactorAuthenticationEnabled,
+    )
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
+    } else {
+      user = await this.getSharedProjectsForUser(user)
+    }
+
+    return {
+      accessToken: jwtTokens.accessToken,
+      refreshToken: jwtTokens.refreshToken,
+      user: this.userService.omitSensitiveData(user),
+    }
+  }
+
+  async registerUserGoogle(sub: string) {
+    const user = await this.userService.create({
+      googleId: sub,
+      trialEndDate: dayjs
+        .utc()
+        .add(TRIAL_DURATION, 'day')
+        .format('YYYY-MM-DD HH:mm:ss'),
+    })
+
+    const { accessToken, refreshToken } = await this.generateJwtTokens(user.id, true)
+    
+    return {
+      accessToken,
+      refreshToken,
+      user: this.userService.omitSensitiveData(user),
+    }
+  }
+
+  async authenticateGoogle(
+    token: string,
+    headers: unknown,
+    ip: string,
+  ) {
+    const tokenInfo = await this.oauth2Client.getTokenInfo(token)
+
+    const { sub } = tokenInfo
+
+    if (!sub) {
+      throw new UnauthorizedException()
+    }
+
+    try {
+      const user = await this.userService.findOneWhere({
+        googleId: sub,
+      })
+
+      if (!user) {
+        return this.registerUserGoogle(sub)
+      }
+
+      return this.handleExistingUserGoogle(user, headers, ip)
+    } catch (error) {
+      console.error(`[ERROR][AuthService -> authenticateGoogle]: ${error}`)
+      throw new InternalServerErrorException('Something went wrong while authenticating user with Google')
+    }
   }
 }
