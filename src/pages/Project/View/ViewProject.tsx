@@ -30,6 +30,8 @@ import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 import _pickBy from 'lodash/pickBy'
 import _every from 'lodash/every'
+import _size from 'lodash/size'
+import _truncate from 'lodash/truncate'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
@@ -76,6 +78,7 @@ import ProjectAlertsView from '../Alerts/View'
 import './styles.css'
 
 const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
+const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
 interface IProjectView extends IProject {
   isPublicVisitors?: boolean,
@@ -1613,7 +1616,11 @@ const ViewProject = ({
                                   labelExtractor={(event) => (
                                     <Checkbox
                                       className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                                      label={event.label}
+                                      label={_size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
+                                        <span title={event.label}>
+                                          {_truncate(event.label, { length: CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH })}
+                                        </span>
+                                      ) : event.label}
                                       id={event.id}
                                       onChange={() => {}}
                                       checked={event.active}
