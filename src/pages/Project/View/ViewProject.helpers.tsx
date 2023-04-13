@@ -310,6 +310,7 @@ const getSettings = (
   const customEventsToArray = customEvents ? _map(_keys(customEvents), (el) => {
     return [el, ...customEvents[el]]
   }) : []
+  console.log('customEventsToArray', customEventsToArray)
 
   if (!_isEmpty(forecasedChartData)) {
     lines.push({

@@ -433,11 +433,11 @@ const ViewProject = ({
   }
 
   useEffect(() => {
-    if (activeTab === PROJECT_TABS.traffic) {
+    if (activeTab === PROJECT_TABS.traffic && !_isEmpty(activeChartMetricsCustomEvents)) {
       loadCustomEvents()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, activeChartMetricsCustomEvents])
+  }, [activeChartMetricsCustomEvents])
 
   // this function is used for requesting the data from the API
   const loadAnalytics = async (forced = false, newFilters: any[] | null = null) => {
@@ -451,6 +451,7 @@ const ViewProject = ({
       let key
       let from
       let to
+      let customEventsChart = customEventsChartData
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
@@ -465,9 +466,15 @@ const ViewProject = ({
       } else {
         if (period === 'custom' && dateRange) {
           data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
+          customEventsChart = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
         } else {
           data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
+          customEventsChart = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents)
         }
+
+        customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
+
+        setCustomEventsPrefs(id, customEventsChart)
 
         setProjectCache(id, data || {}, key)
       }
@@ -506,7 +513,8 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
+        console.log('customEventsChart', customEventsChart)
+        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChart)
         setChartData(chart)
 
         setPanelsData({
@@ -854,23 +862,7 @@ const ViewProject = ({
           })
         }
 
-        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
-          const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
-
-          if (!_isEmpty(mainChart)) {
-            mainChart.destroy()
-          }
-
-          setMainChart(() => {
-            // @ts-ignore
-            const generete = bb.generate(bbSettings)
-            generete.data.names(dataNames)
-            return generete
-          })
-        }
-
-        if (!activeChartMetrics.bounce || !activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique) {
+        if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique || !activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
           const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
 
@@ -1153,6 +1145,10 @@ const ViewProject = ({
       }
     }
   }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
+
+  useEffect(() => {
+    setActiveChartMetricsCustomEvents([])
+  }, [period, filters]) // eslint-disable-line
 
   useEffect(() => {
     if (dateRange && arePeriodParsed) {
@@ -1634,7 +1630,9 @@ const ViewProject = ({
                                   )}
                                   buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700'
                                   keyExtractor={(event) => event.id}
-                                  onSelect={(event) => {
+                                  onSelect={(event, e) => {
+                                    e.stopPropagation()
+                                    e.preventDefault()
                                     setActiveChartMetricsCustomEvents((prev) => {
                                       const newActiveChartMetricsCustomEvents = [...prev]
                                       const index = _findIndex(prev, (item) => item === event.id)
