@@ -281,7 +281,7 @@ const ViewProject = ({
       },
       {
         id: CHART_METRICS_MAPPING.customEvents,
-        label: t('dashboard.customEvents'),
+        label: t('project.customEv'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.customEvents],
       },
     ]
