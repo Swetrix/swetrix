@@ -15,7 +15,7 @@ const Dropdown = ({
   items: any[],
   labelExtractor: (item: any) => string | number | React.ReactNode,
   keyExtractor: (item: any) => string | number | React.ReactNode,
-  onSelect: (item: any) => void | null,
+  onSelect: (item: any, e?: any) => void | null,
   aside?: boolean,
   buttonClassName?: string,
   selectItemClassName?: string,
@@ -59,7 +59,7 @@ const Dropdown = ({
                     // @ts-ignore
                     tabIndex='-1'
                     id='menu-item-0'
-                    onClick={() => onSelect(item)}
+                    onClick={(e) => onSelect(item, e)}
                   >
                     {labelExtractor ? labelExtractor(item) : item}
                   </span>
