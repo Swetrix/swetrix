@@ -438,9 +438,12 @@ export class AuthController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('google/link')
   public async linkGoogleToAccount(
+    @Body() body: AuthUserGoogleDto,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    // TODO
+    const { token } = body
+
+    await this.authService.linkGoogleAccount(userId, token)
   }
 
   @ApiOperation({ summary: 'Unlink Google from an existing account' })
@@ -453,6 +456,6 @@ export class AuthController {
   public async unlinkGoogleFromAccount(
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    // TODO
+    await this.authService.unlinkGoogleAccount(userId)
   }
 }
