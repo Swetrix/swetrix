@@ -811,7 +811,7 @@ export const confirmTransferProject = (uuid: string) =>
 
 export const googleAuth = (data: any) =>
   api
-    .post('google-auth', data)
+    .post('v1/auth/google', data)
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)

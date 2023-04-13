@@ -26,7 +26,7 @@ interface IGoogleAuth {
 
 const GoogleAuth: React.FC<IGoogleAuth> = ({ setIsLoading }) => {
   const { t } = useTranslation()
-  const actualGoogleButton = useRef(null)
+  const actualGoogleButton = useRef<HTMLDivElement>(null)
 
   const handleCredentialResponse = async (response: any) => {
     const result = await googleAuth({ token: response.credential })
@@ -59,9 +59,20 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({ setIsLoading }) => {
   const clickGoogleLoginButton = () => {
     if (actualGoogleButton.current) {
       // @ts-ignore
-      const iframe = actualGoogleButton.current.querySelector('iframe')
+      const iframe = actualGoogleButton.current.querySelector('iframe') as HTMLIFrameElement
       // Emulating the click on an actial 'Sign in with Google' button
-      iframe.nextElementSibling.click()
+
+      // Works for Firefox
+      if (iframe.nextElementSibling) {
+        // @ts-ignore
+        iframe.nextElementSibling.click()
+      }
+
+      // Works for Chrome
+      if (iframe.previousElementSibling) {
+        // idk how to make it work for Chrome yet so just displaying the google button itself
+        actualGoogleButton.current.className = ''
+      }
     }
   }
 
