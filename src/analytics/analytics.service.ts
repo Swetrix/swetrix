@@ -10,6 +10,7 @@ import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
+import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -83,6 +84,7 @@ interface ChartCHResponse {
 interface CustomsCHResponse {
   ev: string
   'count()': number
+  index: number
 }
 
 const validPeriods = [
@@ -163,6 +165,10 @@ export const checkIfTBAllowed = (
       "The specified 'timeBucket' parameter cannot be applied to the date range",
     )
   }
+}
+
+const nullifyMissingResults = (results: any[]): number[] => {
+  return _map(results, r => r || 0)
 }
 
 @Injectable()
@@ -678,8 +684,9 @@ export class AnalyticsService {
     )
       // @ts-ignore
       .sort((a, b) => a.index - b.index)
-    const visits = []
-    const uniques = []
+
+    let visits = []
+    let uniques = []
     let sdur = []
 
     let idx = 0
@@ -714,12 +721,8 @@ export class AnalyticsService {
       idx++
     }
 
-    for (let i = 0; i < _size(x); ++i) {
-      if (!visits[i]) {
-        visits[i] = 0
-        uniques[i] = 0
-      }
-    }
+    visits = nullifyMissingResults(visits)
+    uniques = nullifyMissingResults(uniques)
 
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
       x = _map(x, el =>
@@ -825,7 +828,7 @@ export class AnalyticsService {
     )
       // @ts-ignore
       .sort((a, b) => a.index - b.index)
-    const results = []
+    let results = []
 
     let idx = 0
     const resSize = _size(result)
@@ -837,11 +840,7 @@ export class AnalyticsService {
       idx++
     }
 
-    for (let i = 0; i < _size(x); ++i) {
-      if (!results[i]) {
-        results[i] = 0
-      }
-    }
+    results = nullifyMissingResults(results)
 
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
       x = _map(x, el =>
@@ -1022,11 +1021,9 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     from: string,
     to: string,
-    subQuery: string,
     filtersQuery: string,
     paramsData: object,
     timezone: string,
-    customEventsName: string[],
   ): Promise<object | void> {
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
@@ -1078,29 +1075,21 @@ export class AnalyticsService {
 
     const customEvents = {}
 
-    let idx = 0
-    const resSize = _size(result)
-
-    while (idx < resSize) {
-      const res = result[idx]
-      // get index from res by js destructuring
-      const { ev } = res
+    for (let i = 0; i < _size(result); ++i) {
+      const { ev, index } = result[i]
 
       if (!customEvents[ev]) {
         customEvents[ev] = []
       }
 
-      customEvents[ev][idx] = _round(res['count()'], 2)
-
-      idx++
+      customEvents[ev][index] = result[i]['count()']
     }
 
-    for (let i = 0; i < _size(x); ++i) {
-      for (let j = 0; j < _size(customEventsName); ++j) {
-        if (!customEvents[customEventsName[j]][i]) {
-          customEvents[customEventsName[j]][i] = 0
-        }
-      }
+    const processedCustomEvents = _keys(customEvents)
+
+    for (let i = 0; i < _size(processedCustomEvents); ++i) {
+      const ev = processedCustomEvents[i]
+      customEvents[ev] = nullifyMissingResults(customEvents[ev])
     }
 
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {

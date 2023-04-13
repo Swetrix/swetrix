@@ -1092,9 +1092,6 @@ export class AnalyticsController {
     let groupFrom = from
     let groupTo = to
 
-    const queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-    const subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-
     const paramsData = {
       params: {
         pid,
@@ -1201,22 +1198,13 @@ export class AnalyticsController {
       } catch {}
     }
 
-    const customs = await this.analyticsService.processCustomEV(
-      queryCustoms,
-      paramsData,
-    )
-
-    const customEventsName = Object.keys(customs)
-
     const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
       timeBucket,
       groupFrom,
       groupTo,
-      subQuery,
       filtersQuery,
       paramsData,
       timezone,
-      customEventsName,
     )
 
     let customEventss = customEvents
