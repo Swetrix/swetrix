@@ -477,7 +477,8 @@
     "domLoad": "DOM Content Load",
     "pageLoad": "Page load time",
     "render": "Browser render",
-    "response": "Response Time"
+    "response": "Response Time",
+    "customEvents": "Custom events"
   },
   "alert": {
     "create": "Create an alert",
