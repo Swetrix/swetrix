@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { googleAuth } from 'api'
@@ -8,9 +8,14 @@ import GoogleGSVG from 'ui/icons/GoogleG'
 const googleScriptSrc = 'https://accounts.google.com/gsi/client'
 const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID
 
+const checkIfScriptIsLoaded = (src: string): boolean => {
+  return Boolean(document.querySelector(`script[src='${src}']`))
+}
+
 const loadScript = (src: string): Promise<any> => new Promise((resolve, reject) => {
-  if (document.querySelector(`script[src='${src}']`)) {
+  if (checkIfScriptIsLoaded(src)) {
     resolve(null)
+    return
   }
 
   const script = document.createElement('script')
