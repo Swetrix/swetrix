@@ -22,11 +22,9 @@ describe('Pagination', () => {
   }
 
   // use HOC to wrap component with I18nextProvider
-  const HocWithI18n = ({ children }: {
-    children: React.ReactNode,
-  }): JSX.Element => (
+  const HocWithI18n = (props: any): JSX.Element => (
     <I18nextProvider i18n={i18n}>
-      {children}
+      <Pagination {...props} />
     </I18nextProvider>
   )
 
@@ -59,9 +57,7 @@ describe('Pagination', () => {
 
   it('renders with default props', () => {
     const { getByText } = render(
-      <HocWithI18n>
-        <Pagination {...defaultProps} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} />,
     )
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('10')).toBeInTheDocument()
@@ -71,9 +67,7 @@ describe('Pagination', () => {
   it('renders on page > 1', () => {
     defaultProps.page = 2
     const { getByText } = render(
-      <HocWithI18n>
-        <Pagination {...defaultProps} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} />,
     )
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('10')).toBeInTheDocument()
@@ -84,9 +78,7 @@ describe('Pagination', () => {
   it('renders on page > 1 and page < pageAmount', () => {
     defaultProps.page = 5
     const { getByText } = render(
-      <HocWithI18n>
-        <Pagination {...defaultProps} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} />,
     )
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('10')).toBeInTheDocument()
@@ -97,9 +89,7 @@ describe('Pagination', () => {
   it('renders on page = pageAmount', () => {
     defaultProps.page = 10
     const { getByText } = render(
-      <HocWithI18n>
-        <Pagination {...defaultProps} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} />,
     )
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('10')).toBeInTheDocument()
@@ -110,9 +100,7 @@ describe('Pagination', () => {
     defaultProps.page = 10
     defaultProps.total = 101
     const { getByText } = render(
-      <HocWithI18n>
-        <Pagination {...defaultProps} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} />,
     )
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('11')).toBeInTheDocument()
@@ -121,9 +109,7 @@ describe('Pagination', () => {
 
   it('snapshot', () => {
     const { container } = render(
-      <HocWithI18n>
-        <Pagination {...defaultProps} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} />,
     )
     expect(container).toMatchSnapshot()
   })

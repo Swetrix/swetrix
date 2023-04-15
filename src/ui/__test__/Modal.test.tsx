@@ -22,11 +22,9 @@ describe('Modal component', () => {
   }
 
   // use HOC to wrap component with I18nextProvider
-  const HocWithI18n = ({ children }: {
-    children: React.ReactNode,
-  }): JSX.Element => (
+  const HocWithI18n = (props: any): JSX.Element => (
     <I18nextProvider i18n={i18n}>
-      {children}
+      <Modal {...props} />
     </I18nextProvider>
   )
 
@@ -50,9 +48,7 @@ describe('Modal component', () => {
 
   it('renders with default props', () => {
     const { getByText } = render(
-      <HocWithI18n>
-        <Modal {...defaultProps} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} />,
     )
     expect(getByText('Success')).toBeInTheDocument()
     expect(getByText('Action completed successfully')).toBeInTheDocument()
@@ -60,9 +56,7 @@ describe('Modal component', () => {
 
   it('calls onClose when close button is clicked', () => {
     const { getByText } = render(
-      <HocWithI18n>
-        <Modal {...defaultProps} closeText='Close' />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} closeText='Close' />,
     )
     const closeButton = getByText('Close')
     fireEvent.click(closeButton)
@@ -72,9 +66,7 @@ describe('Modal component', () => {
   it('calls onSubmit when submit button is clicked', () => {
     const onSubmit = jest.fn()
     const { getByText } = render(
-      <HocWithI18n>
-        <Modal {...defaultProps} onSubmit={onSubmit} submitText='Submit' />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} onSubmit={onSubmit} submitText='Submit' />,
     )
     const submitButton = getByText('Submit')
     fireEvent.click(submitButton)
@@ -84,27 +76,21 @@ describe('Modal component', () => {
   it('renders custom buttons', () => {
     const customButtons = <button type='button'>Custom Button</button>
     const { getByText } = render(
-      <HocWithI18n>
-        <Modal {...defaultProps} customButtons={customButtons} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} customButtons={customButtons} />,
     )
     expect(getByText('Custom Button')).toBeInTheDocument()
   })
 
   it('renders beta badge when isBeta prop is true', () => {
     const { getByText } = render(
-      <HocWithI18n>
-        <Modal {...defaultProps} isBeta />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} isBeta />,
     )
     expect(getByText('beta.title')).toBeInTheDocument()
   })
 
   it('snapshot', () => {
     const { asFragment } = render(
-      <HocWithI18n>
-        <Modal {...defaultProps} />
-      </HocWithI18n>,
+      <HocWithI18n {...defaultProps} />,
     )
     expect(asFragment()).toMatchSnapshot()
   })

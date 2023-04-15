@@ -4,6 +4,7 @@ exports[`Beta component snapshot 1`] = `
 <div>
   <div
     class="w-5 h-5 relative flex flex-col group items-center max-w-content !w-full"
+    data-testid="tooltip-wrapper"
   >
     <p
       class="px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-yellow-200 text-yellow-800 dark:bg-yellow-300 dark:text-yellow-900"
