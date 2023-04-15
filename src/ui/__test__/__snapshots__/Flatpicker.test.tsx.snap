@@ -1,0 +1,467 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Flatpicker snapshot 1`] = `
+<div>
+  <div
+    class="h-0 flatpicker-custom"
+  >
+    <div
+      class="flatpickr-wrapper"
+    >
+      <input
+        class="invisible flatpickr-input"
+        data-testid="calendar"
+        id="calendar"
+        type="hidden"
+        value=""
+      />
+      <input
+        class="hidden"
+        placeholder=""
+        readonly="readonly"
+        tabindex="0"
+        type="text"
+      />
+      <div
+        class="flatpickr-calendar rangeMode animate static"
+        tabindex="-1"
+      >
+        <div
+          class="flatpickr-months"
+        >
+          <span
+            class="flatpickr-prev-month"
+          >
+            <svg
+              version="1.1"
+              viewBox="0 0 17 17"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+              <g />
+              <path
+                d="M5.207 8.471l7.146 7.147-0.707 0.707-7.853-7.854 7.854-7.853 0.707 0.707-7.147 7.146z"
+              />
+            </svg>
+          </span>
+          <div
+            class="flatpickr-month"
+          >
+            <div
+              class="flatpickr-current-month"
+            >
+              <select
+                aria-label="Month"
+                class="flatpickr-monthDropdown-months"
+                tabindex="-1"
+              >
+                <option
+                  class="flatpickr-monthDropdown-month"
+                  tabindex="-1"
+                  value="0"
+                >
+                  January
+                </option>
+                <option
+                  class="flatpickr-monthDropdown-month"
+                  tabindex="-1"
+                  value="1"
+                >
+                  February
+                </option>
+                <option
+                  class="flatpickr-monthDropdown-month"
+                  tabindex="-1"
+                  value="2"
+                >
+                  March
+                </option>
+                <option
+                  class="flatpickr-monthDropdown-month"
+                  tabindex="-1"
+                  value="3"
+                >
+                  April
+                </option>
+              </select>
+              <div
+                class="numInputWrapper"
+              >
+                <input
+                  aria-label="Year"
+                  class="numInput cur-year"
+                  max="2023"
+                  min="2021"
+                  tabindex="-1"
+                  type="number"
+                />
+                <span
+                  class="arrowUp"
+                />
+                <span
+                  class="arrowDown"
+                />
+              </div>
+            </div>
+          </div>
+          <span
+            class="flatpickr-next-month flatpickr-disabled"
+          >
+            <svg
+              version="1.1"
+              viewBox="0 0 17 17"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+              <g />
+              <path
+                d="M13.207 8.472l-7.854 7.854-0.707-0.707 7.146-7.146-7.146-7.148 0.707-0.707 7.854 7.854z"
+              />
+            </svg>
+          </span>
+        </div>
+        <div
+          class="flatpickr-innerContainer"
+        >
+          <div
+            class="flatpickr-rContainer"
+          >
+            <div
+              class="flatpickr-weekdays"
+            >
+              <div
+                class="flatpickr-weekdaycontainer"
+              >
+                
+      
+                <span
+                  class="flatpickr-weekday"
+                >
+                  
+        Sun
+                </span>
+                <span
+                  class="flatpickr-weekday"
+                >
+                  Mon
+                </span>
+                <span
+                  class="flatpickr-weekday"
+                >
+                  Tue
+                </span>
+                <span
+                  class="flatpickr-weekday"
+                >
+                  Wed
+                </span>
+                <span
+                  class="flatpickr-weekday"
+                >
+                  Thu
+                </span>
+                <span
+                  class="flatpickr-weekday"
+                >
+                  Fri
+                </span>
+                <span
+                  class="flatpickr-weekday"
+                >
+                  Sat
+      
+                </span>
+                
+      
+              </div>
+            </div>
+            <div
+              class="flatpickr-days"
+              tabindex="-1"
+            >
+              <div
+                class="dayContainer"
+              >
+                <span
+                  aria-label="March 26, 2023"
+                  class="flatpickr-day prevMonthDay"
+                  tabindex="-1"
+                >
+                  26
+                </span>
+                <span
+                  aria-label="March 27, 2023"
+                  class="flatpickr-day prevMonthDay"
+                  tabindex="-1"
+                >
+                  27
+                </span>
+                <span
+                  aria-label="March 28, 2023"
+                  class="flatpickr-day prevMonthDay"
+                  tabindex="-1"
+                >
+                  28
+                </span>
+                <span
+                  aria-label="March 29, 2023"
+                  class="flatpickr-day prevMonthDay"
+                  tabindex="-1"
+                >
+                  29
+                </span>
+                <span
+                  aria-label="March 30, 2023"
+                  class="flatpickr-day prevMonthDay"
+                  tabindex="-1"
+                >
+                  30
+                </span>
+                <span
+                  aria-label="March 31, 2023"
+                  class="flatpickr-day prevMonthDay"
+                  tabindex="-1"
+                >
+                  31
+                </span>
+                <span
+                  aria-label="April 1, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  1
+                </span>
+                <span
+                  aria-label="April 2, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  2
+                </span>
+                <span
+                  aria-label="April 3, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  3
+                </span>
+                <span
+                  aria-label="April 4, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  4
+                </span>
+                <span
+                  aria-label="April 5, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  5
+                </span>
+                <span
+                  aria-label="April 6, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  6
+                </span>
+                <span
+                  aria-label="April 7, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  7
+                </span>
+                <span
+                  aria-label="April 8, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  8
+                </span>
+                <span
+                  aria-label="April 9, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  9
+                </span>
+                <span
+                  aria-label="April 10, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  10
+                </span>
+                <span
+                  aria-label="April 11, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  11
+                </span>
+                <span
+                  aria-label="April 12, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  12
+                </span>
+                <span
+                  aria-label="April 13, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  13
+                </span>
+                <span
+                  aria-label="April 14, 2023"
+                  class="flatpickr-day"
+                  tabindex="-1"
+                >
+                  14
+                </span>
+                <span
+                  aria-current="date"
+                  aria-label="April 15, 2023"
+                  class="flatpickr-day today"
+                  tabindex="-1"
+                >
+                  15
+                </span>
+                <span
+                  aria-label="April 16, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  16
+                </span>
+                <span
+                  aria-label="April 17, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  17
+                </span>
+                <span
+                  aria-label="April 18, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  18
+                </span>
+                <span
+                  aria-label="April 19, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  19
+                </span>
+                <span
+                  aria-label="April 20, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  20
+                </span>
+                <span
+                  aria-label="April 21, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  21
+                </span>
+                <span
+                  aria-label="April 22, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  22
+                </span>
+                <span
+                  aria-label="April 23, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  23
+                </span>
+                <span
+                  aria-label="April 24, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  24
+                </span>
+                <span
+                  aria-label="April 25, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  25
+                </span>
+                <span
+                  aria-label="April 26, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  26
+                </span>
+                <span
+                  aria-label="April 27, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  27
+                </span>
+                <span
+                  aria-label="April 28, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  28
+                </span>
+                <span
+                  aria-label="April 29, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  29
+                </span>
+                <span
+                  aria-label="April 30, 2023"
+                  class="flatpickr-day flatpickr-disabled"
+                >
+                  30
+                </span>
+                <span
+                  aria-label="May 1, 2023"
+                  class="flatpickr-day nextMonthDay flatpickr-disabled"
+                >
+                  1
+                </span>
+                <span
+                  aria-label="May 2, 2023"
+                  class="flatpickr-day nextMonthDay flatpickr-disabled"
+                >
+                  2
+                </span>
+                <span
+                  aria-label="May 3, 2023"
+                  class="flatpickr-day nextMonthDay flatpickr-disabled"
+                >
+                  3
+                </span>
+                <span
+                  aria-label="May 4, 2023"
+                  class="flatpickr-day nextMonthDay flatpickr-disabled"
+                >
+                  4
+                </span>
+                <span
+                  aria-label="May 5, 2023"
+                  class="flatpickr-day nextMonthDay flatpickr-disabled"
+                >
+                  5
+                </span>
+                <span
+                  aria-label="May 6, 2023"
+                  class="flatpickr-day nextMonthDay flatpickr-disabled"
+                >
+                  6
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

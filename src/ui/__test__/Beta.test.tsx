@@ -28,4 +28,13 @@ describe('Beta component', () => {
     )
     expect(getByText('beta.title')).toHaveClass('custom-class-name')
   })
+
+  it('snapshot', () => {
+    const { container } = render(
+      <I18nextProvider i18n={i18n}>
+        <Beta />
+      </I18nextProvider>,
+    )
+    expect(container).toMatchSnapshot()
+  })
 })

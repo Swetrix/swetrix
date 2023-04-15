@@ -9,4 +9,9 @@ describe('Flatpicker', () => {
     const { getByTestId } = render(<Flatpicker />)
     expect(getByTestId('calendar')).toBeInTheDocument()
   })
+
+  it('snapshot', () => {
+    const { container } = render(<Flatpicker />)
+    expect(container).toMatchSnapshot()
+  })
 })

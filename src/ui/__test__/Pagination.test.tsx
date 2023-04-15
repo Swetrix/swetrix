@@ -118,4 +118,13 @@ describe('Pagination', () => {
     expect(getByText('11')).toBeInTheDocument()
     expect(getByText('project.prev')).toBeInTheDocument()
   })
+
+  it('snapshot', () => {
+    const { container } = render(
+      <HocWithI18n>
+        <Pagination {...defaultProps} />
+      </HocWithI18n>,
+    )
+    expect(container).toMatchSnapshot()
+  })
 })

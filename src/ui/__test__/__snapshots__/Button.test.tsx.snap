@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Button component snapshot 1`] = `
+<div>
+  <button
+    class="relative inline-flex select-none items-center border leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    type="button"
+  >
+    Click me
+  </button>
+</div>
+`;

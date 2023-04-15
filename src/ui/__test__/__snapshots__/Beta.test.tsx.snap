@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Beta component snapshot 1`] = `
+<div>
+  <div
+    class="w-5 h-5 relative flex flex-col group items-center max-w-content !w-full"
+  >
+    <p
+      class="px-2 inline-flex text-sm leading-5 font-normal rounded-full bg-yellow-200 text-yellow-800 dark:bg-yellow-300 dark:text-yellow-900"
+    >
+      beta.title
+    </p>
+    <div
+      class="absolute bottom-0 flex-col mb-6 hidden group-hover:flex items-center"
+    >
+      <span
+        class="opacity-95 relative w-60 z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-700 shadow-lg rounded-md"
+      >
+        beta.description
+      </span>
+      <div
+        class="w-3 h-3 -mt-2 rotate-45 bg-gray-700 opacity-95"
+      />
+    </div>
+  </div>
+</div>
+`;

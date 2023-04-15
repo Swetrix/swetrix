@@ -34,4 +34,9 @@ describe('Input component', () => {
     const input = getByRole('textbox') as HTMLInputElement
     expect(input).toBeDisabled()
   })
+
+  it('snapshot', () => {
+    const { container } = render(<Input label='Username' />)
+    expect(container).toMatchSnapshot()
+  })
 })
