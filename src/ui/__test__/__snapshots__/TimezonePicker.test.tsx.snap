@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TimezonePricker snapshots 1`] = `
+<div>
+  <label
+    class="block text-sm whitespace-pre-line font-medium text-gray-700 dark:text-gray-100"
+    data-headlessui-state=""
+    id="headlessui-listbox-label-:r2k:"
+  >
+    profileSettings.timezoneDesc
+  </label>
+  <div
+    class="mt-1 relative"
+  >
+    <button
+      aria-expanded="false"
+      aria-haspopup="listbox"
+      aria-labelledby="headlessui-listbox-label-:r2k: headlessui-listbox-button-:r2l:"
+      class="relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      data-headlessui-state=""
+      id="headlessui-listbox-button-:r2l:"
+      type="button"
+    >
+      <span
+        class="block truncate first-letter:capitalize"
+      >
+        (GMT+1:00) Edinburgh, London
+      </span>
+      <span
+        class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
+      >
+        <svg
+          aria-hidden="true"
+          class="h-5 w-5 text-gray-400"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            clip-rule="evenodd"
+            d="M11.47 4.72a.75.75 0 011.06 0l3.75 3.75a.75.75 0 01-1.06 1.06L12 6.31 8.78 9.53a.75.75 0 01-1.06-1.06l3.75-3.75zm-3.75 9.75a.75.75 0 011.06 0L12 17.69l3.22-3.22a.75.75 0 111.06 1.06l-3.75 3.75a.75.75 0 01-1.06 0l-3.75-3.75a.75.75 0 010-1.06z"
+            fill-rule="evenodd"
+          />
+        </svg>
+      </span>
+    </button>
+  </div>
+</div>
+`;
