@@ -16,7 +16,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(sagaActions.signupAsync(data, t, callback))
   },
   authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => {
-    console.log('dispatching authSSO')
     dispatch(sagaActions.authSSO(dontRemember, t, callback))
   },
 })

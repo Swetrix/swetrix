@@ -279,7 +279,8 @@
       "success": "Your email has been successfully verified!"
     },
     "socialisation": {
-      "success": "Socialisation successful"
+      "success": "Socialisation successful",
+      "orSingUpWith": "or sign up with"
     },
     "common": {
       "signinInstead": "Sign in instead",
