@@ -822,9 +822,9 @@ export const generateSSOAuthURL = (provider: string) =>
         : error.response.data.message
     })
 
-export const getJWTByGoogleHash = (hash: string) =>
+export const getJWTBySSOHash = (hash: string, provider: string) =>
   api
-    .post('v1/auth/google/hash', { hash })
+    .post('v1/auth/sso/hash', { hash, provider })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -833,9 +833,9 @@ export const getJWTByGoogleHash = (hash: string) =>
         : error.response.data.message
     })
 
-export const linkByGoogleHash = (hash: string) =>
+export const linkBySSOHash = (hash: string, provider: string) =>
   api
-    .post('v1/auth/google/link_by_hash', { hash })
+    .post('v1/auth/sso/link_by_hash', { hash, provider })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -844,9 +844,9 @@ export const linkByGoogleHash = (hash: string) =>
         : error.response.data.message
     })
 
-export const unlinkGoogle = () =>
+export const unlinkSSO = (provider: string) =>
   api
-    .delete('v1/auth/google/unlink')
+    .delete('v1/auth/sso/unlink', { data: { provider } })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)

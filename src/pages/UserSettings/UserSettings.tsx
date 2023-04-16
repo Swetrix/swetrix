@@ -70,6 +70,7 @@ interface IProps {
   isPaidTierUsed: boolean,
   linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
   unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
+  theme: string,
 }
 
 interface IForm extends Partial<IUser> {
@@ -83,7 +84,7 @@ const UserSettings = ({
   setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData,
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
   accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
-  linkSSO, unlinkSSO,
+  linkSSO, unlinkSSO, theme,
 }: IProps): JSX.Element => {
   const history = useHistory()
   const { t }: {
@@ -553,6 +554,7 @@ const UserSettings = ({
             genericError={genericError}
             linkSSO={linkSSO}
             unlinkSSO={unlinkSSO}
+            theme={theme}
           />
 
           {/* Shared projects setting */}
@@ -717,6 +719,7 @@ UserSettings.propTypes = {
   isPaidTierUsed: PropTypes.bool.isRequired,
   linkSSO: PropTypes.func.isRequired,
   unlinkSSO: PropTypes.func.isRequired,
+  theme: PropTypes.string.isRequired,
 }
 
 export default memo(withAuthentication(UserSettings, auth.authenticated))

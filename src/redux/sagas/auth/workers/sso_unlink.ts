@@ -6,7 +6,7 @@ import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import {
-  unlinkGoogle, authMe,
+  unlinkSSO, authMe,
 } from 'api'
 import { SSO_PROVIDERS } from 'redux/constants'
 
@@ -25,9 +25,7 @@ export default function* ssoUnlink({ payload: { provider, t, callback } }: ISSOU
   }
 
   try {
-    if (provider === SSO_PROVIDERS.GOOGLE) {
-      yield call(unlinkGoogle)
-    }
+    yield call(unlinkSSO, provider)
 
     // @ts-ignore
     const user = yield call(authMe)

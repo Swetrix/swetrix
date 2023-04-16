@@ -7,14 +7,28 @@ import {
 
 import Button from 'ui/Button'
 import Google from 'ui/icons/GoogleG'
+import GithubDark from 'ui/icons/GithubDark'
+import GithubLight from 'ui/icons/GithubLight'
 import { IUser } from 'redux/models/IUser'
 import { SSO_PROVIDERS } from 'redux/constants'
 
-const AVAILABLE_SOCIALISATIONS = [
+const AVAILABLE_SSO_PROVIDERS = [
   {
     name: 'Google',
     key: SSO_PROVIDERS.GOOGLE,
     Icon: Google,
+    icons: {
+      Dark: Google,
+      Light: Google,
+    },
+  },
+  {
+    name: 'Github',
+    key: SSO_PROVIDERS.GITHUB,
+    icons: {
+      Dark: GithubDark,
+      Light: GithubLight,
+    },
   },
 ]
 
@@ -38,30 +52,31 @@ interface ISocialisations {
   linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
   unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
   genericError: (message: string) => void,
+  theme: string
 }
 
 const Socialisations = ({
-  user, linkSSO, unlinkSSO, genericError,
+  user, linkSSO, unlinkSSO, genericError, theme,
 }: ISocialisations) => {
   const { t }: {
     t: (key: string) => string,
   } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
 
-  const _linkSSO = (key: string) => {
+  const _linkSSO = (provider: string) => {
     setIsLoading(true)
 
     linkSSO(t, () => {
       setIsLoading(false)
-    }, key)
+    }, provider)
   }
 
-  const _unlinkSSO = (key: string) => {
+  const _unlinkSSO = (provider: string) => {
     setIsLoading(true)
 
     unlinkSSO(t, () => {
       setIsLoading(false)
-    }, key)
+    }, provider)
   }
 
   return (
@@ -72,10 +87,11 @@ const Socialisations = ({
       <div className='overflow-hidden bg-white dark:bg-gray-700 mt-2 shadow sm:rounded-md'>
         <ul className='divide-y divide-gray-200'>
           {
-            _map(AVAILABLE_SOCIALISATIONS, ({
-              name, key, Icon,
+            _map(AVAILABLE_SSO_PROVIDERS, ({
+              name, key, icons,
             }) => {
               const [connected, unlinkable] = getStatusByUser(user, key)
+              const { Light, Dark } = icons
 
               const status = connected ? 'connected' : 'notConnected'
 
@@ -84,7 +100,11 @@ const Socialisations = ({
                   <div className='sm:flex items-center px-1 py-4 sm:px-6'>
                     <div className='flex min-w-0 flex-1 items-center'>
                       <div className='flex-shrink-0 hidden sm:block'>
-                        <Icon className='max-h-12 max-w-12 h-12 w-12 rounded-full' />
+                        {theme === 'dark' ? (
+                          <Light className='max-h-12 max-w-12 h-12 w-12 rounded-full' />
+                        ) : (
+                          <Dark className='max-h-12 max-w-12 h-12 w-12 rounded-full' />
+                        )}
                       </div>
                       <div className='min-w-0 flex-1 px-2 sm:px-4 md:grid md:grid-cols-2 md:gap-4'>
                         <div>

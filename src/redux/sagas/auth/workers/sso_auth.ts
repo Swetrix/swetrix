@@ -4,7 +4,7 @@ import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { setAccessToken } from 'utils/accessToken'
 import {
-  getJWTByGoogleHash, generateSSOAuthURL,
+  getJWTBySSOHash, generateSSOAuthURL,
 } from 'api'
 import { setRefreshToken } from 'utils/refreshToken'
 import { openBrowserWindow } from 'utils/generic'
@@ -24,7 +24,11 @@ interface ISSOAuth {
   }
 }
 
-export default function* ssoAuth({ payload: { callback, dontRemember, t, provider } }: ISSOAuth) {
+export default function* ssoAuth({
+  payload: {
+    callback, dontRemember, t, provider,
+  },
+}: ISSOAuth) {
   const authWindow = openBrowserWindow('', AUTH_WINDOW_WIDTH, AUTH_WINDOW_HEIGHT)
 
   if (!authWindow) {
@@ -52,7 +56,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t, provide
       try {
         const {
           accessToken, refreshToken, user,
-        } = yield call(getJWTByGoogleHash, uuid)
+        } = yield call(getJWTBySSOHash, uuid, provider)
         authWindow.close()
 
         yield put(authActions.setDontRemember(dontRemember))

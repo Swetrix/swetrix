@@ -4,7 +4,7 @@ import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import {
-  linkByGoogleHash, generateSSOAuthURL, authMe,
+  linkBySSOHash, generateSSOAuthURL, authMe,
 } from 'api'
 import { openBrowserWindow } from 'utils/generic'
 
@@ -17,10 +17,11 @@ export interface ISSOLink {
   payload: {
     callback: (isSuccess: boolean) => void
     t: (key: string) => string
+    provider: string
   }
 }
 
-export default function* ssoLink({ payload: { callback, t } }: ISSOLink) {
+export default function* ssoLink({ payload: { callback, t, provider } }: ISSOLink) {
   const authWindow = openBrowserWindow('', AUTH_WINDOW_WIDTH, AUTH_WINDOW_HEIGHT)
 
   if (!authWindow) {
@@ -34,7 +35,7 @@ export default function* ssoLink({ payload: { callback, t } }: ISSOLink) {
   try {
     const {
       uuid, auth_url: authUrl, expires_in: expiresIn,
-    } = yield call(generateSSOAuthURL)
+    } = yield call(generateSSOAuthURL, provider)
 
     // Set the URL of the authentification browser window
     authWindow.location = authUrl
@@ -46,7 +47,7 @@ export default function* ssoLink({ payload: { callback, t } }: ISSOLink) {
       yield delay(HASH_CHECK_FREQUENCY)
 
       try {
-        yield call(linkByGoogleHash, uuid)
+        yield call(linkBySSOHash, uuid, provider)
         authWindow.close()
 
         // @ts-ignore
