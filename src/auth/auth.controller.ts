@@ -105,7 +105,8 @@ export class AuthController {
       body.password,
     )
 
-    const { accessToken, refreshToken } = await this.authService.generateJwtTokens(newUser.id, true)
+    const { accessToken, refreshToken } =
+      await this.authService.generateJwtTokens(newUser.id, true)
 
     return {
       accessToken,
@@ -419,12 +420,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Auth user' })
   @Post('google/generate')
   @Public()
-  async generateAuthURL(
-    @Ip() ip: string,
-  ): Promise<any> {
+  async generateAuthURL(@Ip() ip: string): Promise<any> {
     await checkRateLimit(ip, 'g-sso-generate', 15)
 
-    return await this.authService.generateGoogleURL()
+    return this.authService.generateGoogleURL()
   }
 
   @ApiOperation({ summary: 'Auth user' })
@@ -438,7 +437,7 @@ export class AuthController {
 
     const { token, hash } = body
 
-    return await this.authService.processGoogleToken(token, hash)
+    return this.authService.processGoogleToken(token, hash)
   }
 
   @ApiOperation({ summary: 'Auth user' })
@@ -454,7 +453,7 @@ export class AuthController {
 
     const { hash } = body
 
-    return await this.authService.authenticateGoogle(hash, headers, ip)
+    return this.authService.authenticateGoogle(hash, headers, ip)
   }
 
   @ApiOperation({ summary: 'Link Google to an existing account' })

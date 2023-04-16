@@ -5,7 +5,7 @@ export class UserGoogleDTO {
   @ApiProperty({ example: '10769150350006150715113082367', required: true })
   @IsString()
   googleId: string
-  
+
   @ApiProperty({ required: true })
   @IsBoolean()
   registeredWithGoogle: boolean
