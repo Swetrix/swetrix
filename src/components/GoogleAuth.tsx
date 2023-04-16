@@ -27,14 +27,16 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
   }
 
   if (isMiniButton) {
-    <Button
-      className='border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600'
-      onClick={googleLogin}
-      secondary
-      regular
-    >
-      <GoogleGSVG className='w-5 h-5 mr-2' />
-    </Button>
+    return (
+      <Button
+        className='border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600'
+        onClick={googleLogin}
+        secondary
+        regular
+      >
+        <GoogleGSVG className='w-5 h-5' />
+      </Button>
+    )
   }
 
   return (
