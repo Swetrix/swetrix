@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import cx from 'clsx'
 
 import Button from 'ui/Button'
 import GoogleGSVG from 'ui/icons/GoogleG'
@@ -10,10 +11,11 @@ interface IGoogleAuth {
   callback?: any,
   dontRemember?: boolean,
   isMiniButton?: boolean,
+  className?: string
 }
 
 const GoogleAuth: React.FC<IGoogleAuth> = ({
-  setIsLoading, authSSO, dontRemember, callback, isMiniButton,
+  setIsLoading, authSSO, dontRemember, callback, isMiniButton, className,
 }) => {
   const { t } = useTranslation()
 
@@ -29,7 +31,7 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
   if (isMiniButton) {
     return (
       <Button
-        className='border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600'
+        className={cx(className, 'border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600')}
         onClick={googleLogin}
         secondary
         regular
@@ -41,7 +43,7 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
 
   return (
     <Button
-      className='border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600'
+      className={cx(className, 'border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600')}
       onClick={googleLogin}
       secondary
       regular
@@ -58,6 +60,7 @@ GoogleAuth.defaultProps = {
   dontRemember: false,
   isMiniButton: false,
   callback: () => { },
+  className: '',
 }
 
 export default GoogleAuth

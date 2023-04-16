@@ -251,7 +251,13 @@ const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
               {t('auth.signup.button')}
             </Button>
           </div>
-          <GoogleAuth setIsLoading={setIsLoading} authSSO={authSSO} callback={signUpCallback} dontRemember={form.dontRemember} />
+          <GoogleAuth
+            className='mt-4'
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            callback={signUpCallback}
+            dontRemember={form.dontRemember}
+          />
         </form>
       </div>
     </Title>

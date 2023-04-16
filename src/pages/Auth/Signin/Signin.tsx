@@ -254,7 +254,13 @@ const Signin = ({
               {t('auth.signin.button')}
             </Button>
           </div>
-          <GoogleAuth setIsLoading={setIsLoading} authSSO={authSSO} callback={loginCallback} dontRemember={form.dontRemember} />
+          <GoogleAuth
+            className='mt-4'
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            callback={loginCallback}
+            dontRemember={form.dontRemember}
+          />
         </form>
       </div>
     </Title>
