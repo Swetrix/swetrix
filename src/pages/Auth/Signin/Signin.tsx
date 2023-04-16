@@ -22,29 +22,33 @@ import { submit2FA } from 'api'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
 
-// TODO: ADD & USE INTERFACE ISignin
-const Signin = ({
-  login, loginSuccess, loginFailed, authSSO,
-}: {
+interface ISigninForm {
+  email: string,
+  password: string,
+  dontRemember: boolean,
+}
+
+interface ISignin {
   login: (data: {
     email: string,
     password: string,
     dontRemember: boolean
-  }, callback: (result: boolean, twoFARequired: boolean) => void) => void,
+  },
+  callback: (result: boolean, twoFARequired: boolean) => void) => void,
   loginSuccess: (user: IUser) => void,
   loginFailed: (error: string) => void,
-  authSSO: any, // TODO add types
-}): JSX.Element => {
+  authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+}
+
+const Signin = ({
+  login, loginSuccess, loginFailed, authSSO,
+}: ISignin): JSX.Element => {
   const { t }: {
     t: (key: string, optinions?: {
       [key: string]: string | number,
     }) => string,
   } = useTranslation('common')
-  const [form, setForm] = useState<{
-    email: string,
-    password: string,
-    dontRemember: boolean,
-  }>({
+  const [form, setForm] = useState<ISigninForm>({
     email: '',
     password: '',
     dontRemember: false,
@@ -97,11 +101,7 @@ const Signin = ({
     }
   }
 
-  const onSubmit = (data: {
-    email: string,
-    password: string,
-    dontRemember: boolean
-  }) => {
+  const onSubmit = (data: ISigninForm) => {
     if (!isLoading) {
       setIsLoading(true)
       login(data, loginCallback)

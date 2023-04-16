@@ -26,7 +26,8 @@
     "invalidToken": "Invalid token",
     "transferRequestSent": "Transfer request sent",
     "transferProjectReject": "The project transfer request has been cancelled",
-    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service"
+    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
+    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service"
   },
   "common": {
     "features": "Features",

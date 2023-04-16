@@ -6,8 +6,8 @@ import GoogleGSVG from 'ui/icons/GoogleG'
 
 interface IGoogleAuth {
   setIsLoading: (isLoading: boolean) => void,
-  authSSO: any, // TODO add types
-  callback?: any, // TODO add types
+  authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  callback?: any,
   dontRemember?: boolean,
   isMiniButton?: boolean,
 }
@@ -19,10 +19,12 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
 
   const googleLogin = async () => {
     setIsLoading(true)
-    authSSO(dontRemember, t, callback)
+    authSSO(
+      dontRemember as boolean,
+      t,
+      callback,
+    )
   }
-
-  console.log('isMiniButton', isMiniButton)
 
   if (isMiniButton) {
     <Button

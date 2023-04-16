@@ -15,23 +15,27 @@ const AUTH_WINDOW_HEIGHT = 800
 
 const HASH_CHECK_FREQUENCY = 1000 // 1 second
 
-// TODO: Add types
-export default function* ssoAuth({ payload: { callback, dontRemember } }: any) {
-  console.log('ssoAuth worker')
+interface ISSOAuth {
+  payload: {
+    callback: (isSuccess: boolean, is2FA: boolean) => void
+    dontRemember: boolean
+    t: (key: string) => string
+  }
+}
+
+export default function* ssoAuth({ payload: { callback, dontRemember, t } }: ISSOAuth) {
   const authWindow = openBrowserWindow('', AUTH_WINDOW_WIDTH, AUTH_WINDOW_HEIGHT)
 
   if (!authWindow) {
-    // TODO: Check the issue later
-    // @ts-ignore
-    yield put(errorsActions.loginFailed('SOMETHING WENT WRONG (THIS MESSAGE SHOULD BE SENT VIA I18N)'))
-    // callback(false, false)
+    yield put(errorsActions.loginFailed({
+      message: t('apiNotifications.socialisationAuthGenericError'),
+    }))
+    callback(false, false)
     return
   }
 
   try {
     const { uuid, auth_url: authUrl } = yield call(generateGoogleAuthURL)
-
-    console.log(uuid, authUrl)
 
     // Set the URL of the authentification browser window
     authWindow.location = authUrl
@@ -74,11 +78,14 @@ export default function* ssoAuth({ payload: { callback, dontRemember } }: any) {
         // Authentication is not finished yet
       }
       if (authWindow.closed) {
-        // callback(false, false)
+        callback(false, false)
         return
       }
     }
   } catch (reason) {
-    // TODO: Display notification. Something went wrong while generating auth URL
+    yield put(errorsActions.loginFailed({
+      message: t('apiNotifications.socialisationAuthGenericError'),
+    }))
+    callback(false, false)
   }
 }

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
+import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 
 import Title from 'components/Title'
@@ -19,33 +20,37 @@ import {
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL, TRIAL_DAYS } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
-import _omit from 'lodash/omit'
 
-const Signup = ({ signup, authSSO }: {
+interface ISignupForm {
+  email: string,
+  password: string,
+  repeat: string,
+  tos: boolean,
+  dontRemember: boolean,
+  checkIfLeaked: boolean,
+}
+
+interface ISignup {
   signup: (data: {
     email: string,
     password: string,
     repeat: string,
     dontRemember: boolean,
     checkIfLeaked: boolean,
-  }, t: (key: string, optinions?: {
-    [key: string]: string | number,
-  }) => string, callback: (res: any) => void) => void,
-  authSSO: any, // TODO add types
-}): JSX.Element => {
+  },
+    t: (key: string, options?: {
+      [key: string]: string | number,
+    }) => string, callback: (res: any) => void) => void,
+  authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+}
+
+const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
   const { t }: {
-    t: (key: string, optinions?: {
+    t: (key: string, options?: {
       [key: string]: string | number,
     }) => string,
   } = useTranslation('common')
-  const [form, setForm] = useState<{
-    email: string,
-    password: string,
-    repeat: string,
-    tos: boolean,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  }>({
+  const [form, setForm] = useState<ISignupForm>({
     email: '',
     password: '',
     repeat: '',
@@ -109,14 +114,7 @@ const Signup = ({ signup, authSSO }: {
     }
   }
 
-  const onSubmit = (data: {
-    email: string,
-    password: string,
-    repeat: string,
-    tos: boolean,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  }) => {
+  const onSubmit = (data: ISignupForm) => {
     if (!isLoading) {
       setIsLoading(true)
       signup(_omit(data, 'tos'), t, signUpCallback)
