@@ -589,6 +589,7 @@ export class AuthService {
     return {
       uuid,
       auth_url: authUrl,
+      expires_in: REDIS_SSO_SESSION_TIMEOUT * 1000, // milliseconds
     }
   }
 
