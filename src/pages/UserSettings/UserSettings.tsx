@@ -550,6 +550,7 @@ const UserSettings = ({
           </h3>
           <Socialisations
             user={user}
+            genericError={genericError}
             linkSSO={linkSSO}
             unlinkSSO={unlinkSSO}
           />

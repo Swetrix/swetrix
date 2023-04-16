@@ -5,7 +5,6 @@ import {
   CheckCircleIcon, XCircleIcon,
 } from '@heroicons/react/24/solid'
 
-import Tooltip from 'ui/Tooltip'
 import Button from 'ui/Button'
 import Google from 'ui/icons/GoogleG'
 import { IUser } from 'redux/models/IUser'
@@ -38,10 +37,11 @@ interface ISocialisations {
   user: IUser,
   linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
   unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
+  genericError: (message: string) => void,
 }
 
 const Socialisations = ({
-  user, linkSSO, unlinkSSO,
+  user, linkSSO, unlinkSSO, genericError,
 }: ISocialisations) => {
   const { t }: {
     t: (key: string) => string,
@@ -101,15 +101,13 @@ const Socialisations = ({
                     </div>
                     <div className='flex justify-center mt-2 sm:block sm:mt-0'>
                       {connected && !unlinkable && (
-                        <Tooltip
-                          className='max-w-content !w-full'
-                          tooltipNode={(
-                            <Button onClick={() => { }} disabled small danger>
-                              {t('common.unlink')}
-                            </Button>
-                          )}
-                          text={t('profileSettings.cantUnlinkSocialisation')}
-                        />
+                        <Button
+                          onClick={() => genericError(t('profileSettings.cantUnlinkSocialisation'))}
+                          small
+                          danger
+                        >
+                          {t('common.unlink')}
+                        </Button>
                       )}
 
                       {connected && unlinkable && (
