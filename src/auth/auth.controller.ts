@@ -14,7 +14,6 @@ import {
   Param,
   UnauthorizedException,
   Headers,
-  Res,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -43,6 +42,7 @@ import {
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
   AuthUserGoogleDto,
+  AuthUserGoogleProcessCodeDto,
 } from './dtos'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 
@@ -417,17 +417,46 @@ export class AuthController {
 
   // Google SSO
   @ApiOperation({ summary: 'Auth user' })
-  @Post('google')
-  async authUserGoogle(
+  @Post('google/generate')
+  @Public()
+  async generateAuthURL(
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<any> {
+    // TODO: add rate limiting
+
+    return await this.authService.generateGoogleURL()
+  }
+
+  @ApiOperation({ summary: 'Auth user' })
+  @Post('google/process-code')
+  @Public()
+  async processGoogleCode(
+    @Body() body: AuthUserGoogleProcessCodeDto,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<any> {
+    // TODO: add rate limiting
+
+    const { token, hash } = body
+
+    return await this.authService.processGoogleToken(token, hash)
+  }
+
+  @ApiOperation({ summary: 'Auth user' })
+  @Post('google/hash')
+  @Public()
+  // Validates the authorisation code and returns the JWT tokens
+  async getJWTByHash(
     @Body() body: AuthUserGoogleDto,
     @Headers() headers: unknown,
     @Ip() requestIp: string,
-  ): Promise<RegisterResponseDto> {
-    // todo: add rate limiting for sign ups
+  ): Promise<any> {
+    // TODO: add rate limiting
 
-    const { token } = body
+    const { hash } = body
 
-    return await this.authService.authenticateGoogle(token, headers, requestIp)
+    return await this.authService.authenticateGoogle(hash, headers, requestIp)
   }
 
   @ApiOperation({ summary: 'Link Google to an existing account' })
@@ -436,14 +465,14 @@ export class AuthController {
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Post('google/link')
+  @Post('google/link_by_hash')
   public async linkGoogleToAccount(
     @Body() body: AuthUserGoogleDto,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    const { token } = body
+    const { hash } = body
 
-    await this.authService.linkGoogleAccount(userId, token)
+    await this.authService.linkGoogleAccount(userId, hash)
   }
 
   @ApiOperation({ summary: 'Unlink Google from an existing account' })
