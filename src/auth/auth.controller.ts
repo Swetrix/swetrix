@@ -420,10 +420,9 @@ export class AuthController {
   @Post('google/generate')
   @Public()
   async generateAuthURL(
-    @Headers() headers: unknown,
-    @Ip() requestIp: string,
+    @Ip() ip: string,
   ): Promise<any> {
-    // TODO: add rate limiting
+    await checkRateLimit(ip, 'g-sso-generate', 15)
 
     return await this.authService.generateGoogleURL()
   }
@@ -433,10 +432,9 @@ export class AuthController {
   @Public()
   async processGoogleCode(
     @Body() body: AuthUserGoogleProcessCodeDto,
-    @Headers() headers: unknown,
-    @Ip() requestIp: string,
+    @Ip() ip: string,
   ): Promise<any> {
-    // TODO: add rate limiting
+    await checkRateLimit(ip, 'g-sso-process', 15)
 
     const { token, hash } = body
 
@@ -450,13 +448,13 @@ export class AuthController {
   async getJWTByHash(
     @Body() body: AuthUserGoogleDto,
     @Headers() headers: unknown,
-    @Ip() requestIp: string,
+    @Ip() ip: string,
   ): Promise<any> {
-    // TODO: add rate limiting
+    await checkRateLimit(ip, 'g-sso-hash', 15)
 
     const { hash } = body
 
-    return await this.authService.authenticateGoogle(hash, headers, requestIp)
+    return await this.authService.authenticateGoogle(hash, headers, ip)
   }
 
   @ApiOperation({ summary: 'Link Google to an existing account' })
@@ -469,7 +467,10 @@ export class AuthController {
   public async linkGoogleToAccount(
     @Body() body: AuthUserGoogleDto,
     @CurrentUserId() userId: string,
+    @Ip() ip: string,
   ): Promise<void> {
+    await checkRateLimit(ip, 'g-sso-link', 15)
+
     const { hash } = body
 
     await this.authService.linkGoogleAccount(userId, hash)
