@@ -578,6 +578,8 @@ export class AuthService {
   ) {
     let tokenInfo
 
+    console.log(token, hash)
+
     try {
       tokenInfo = await this.oauth2Client.getTokenInfo(token)
     } catch (reason) {
@@ -586,6 +588,8 @@ export class AuthService {
     }
 
     const { sub, email } = tokenInfo
+
+    console.log(sub, email)
 
     // TODO: Only store the email if email_verified is true
     const dataToStore = JSON.stringify({ sub, email })
