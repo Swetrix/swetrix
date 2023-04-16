@@ -421,7 +421,7 @@ export class AuthController {
   @Post('google/generate')
   @Public()
   async generateAuthURL(@Ip() ip: string): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-generate', 15)
+    await checkRateLimit(ip, 'g-sso-generate', 15, 1800)
 
     return this.authService.generateGoogleURL()
   }
@@ -433,7 +433,7 @@ export class AuthController {
     @Body() body: AuthUserGoogleProcessCodeDto,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-process', 15)
+    await checkRateLimit(ip, 'g-sso-process', 15, 1800)
 
     const { token, hash } = body
 
@@ -449,7 +449,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-hash', 15)
+    await checkRateLimit(ip, 'g-sso-hash', 15, 1800)
 
     const { hash } = body
 
@@ -468,7 +468,7 @@ export class AuthController {
     @CurrentUserId() userId: string,
     @Ip() ip: string,
   ): Promise<void> {
-    await checkRateLimit(ip, 'g-sso-link', 15)
+    await checkRateLimit(ip, 'g-sso-link', 15, 1800)
 
     const { hash } = body
 
