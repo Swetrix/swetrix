@@ -16,8 +16,8 @@ import * as dayjs from 'dayjs'
 import { InjectBot } from 'nestjs-telegraf'
 import { Telegraf } from 'telegraf'
 import { UAParser } from 'ua-parser-js'
-import _pick from 'lodash/pick'
-import _split from 'lodash/split'
+import * as _pick from 'lodash/pick'
+import * as _split from 'lodash/split'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
