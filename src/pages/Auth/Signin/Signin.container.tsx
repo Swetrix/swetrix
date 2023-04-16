@@ -11,6 +11,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   login: (data: {
     email: string,
     password: string,
+    dontRemember: boolean
   }, callback: () => void) => {
     dispatch(sagaActions.loginAsync(data, callback))
   },
@@ -23,6 +24,10 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(errorsActions.loginFailed({
       message: error,
     }))
+  },
+  authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => {
+    console.log('dispatching authSSO')
+    dispatch(sagaActions.authSSO(dontRemember, t, callback))
   },
 })
 

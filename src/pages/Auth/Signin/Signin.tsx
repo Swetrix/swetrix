@@ -7,6 +7,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 
 import Title from 'components/Title'
+import GoogleAuth from 'components/GoogleAuth'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
@@ -21,25 +22,33 @@ import { submit2FA } from 'api'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
 
-const Signin = ({ login, loginSuccess, loginFailed }: {
+interface ISigninForm {
+  email: string,
+  password: string,
+  dontRemember: boolean,
+}
+
+interface ISignin {
   login: (data: {
     email: string,
     password: string,
     dontRemember: boolean
-  }, callback: (result: boolean, twoFARequired: boolean) => void) => void,
+  },
+  callback: (result: boolean, twoFARequired: boolean) => void) => void,
   loginSuccess: (user: IUser) => void,
   loginFailed: (error: string) => void,
-}): JSX.Element => {
+  authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+}
+
+const Signin = ({
+  login, loginSuccess, loginFailed, authSSO,
+}: ISignin): JSX.Element => {
   const { t }: {
     t: (key: string, optinions?: {
       [key: string]: string | number,
     }) => string,
   } = useTranslation('common')
-  const [form, setForm] = useState<{
-    email: string,
-    password: string,
-    dontRemember: boolean,
-  }>({
+  const [form, setForm] = useState<ISigninForm>({
     email: '',
     password: '',
     dontRemember: false,
@@ -85,19 +94,17 @@ const Signin = ({ login, loginSuccess, loginFailed }: {
     setTwoFACodeError(null)
   }
 
-  const onSubmit = (data: {
-    email: string,
-    password: string,
-    dontRemember: boolean
-  }) => {
+  const loginCallback = (result: boolean, twoFARequired: boolean) => {
+    if (!result) {
+      setIsLoading(false)
+      setIsTwoFARequired(twoFARequired)
+    }
+  }
+
+  const onSubmit = (data: ISigninForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      login(data, (result, twoFARequired) => {
-        if (!result) {
-          setIsLoading(false)
-          setIsTwoFARequired(twoFARequired)
-        }
-      })
+      login(data, loginCallback)
     }
   }
 
@@ -247,6 +254,13 @@ const Signin = ({ login, loginSuccess, loginFailed }: {
               {t('auth.signin.button')}
             </Button>
           </div>
+          <GoogleAuth
+            className='mt-4'
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            callback={loginCallback}
+            dontRemember={form.dontRemember}
+          />
         </form>
       </div>
     </Title>
@@ -257,6 +271,7 @@ Signin.propTypes = {
   login: PropTypes.func.isRequired,
   loginSuccess: PropTypes.func.isRequired,
   loginFailed: PropTypes.func.isRequired,
+  authSSO: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(Signin, auth.notAuthenticated))

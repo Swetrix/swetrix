@@ -74,3 +74,7 @@ export const sumArrays = (...arrays: any): number[] => {
     return _reduce(arrays, (sum, array) => sum + array[index], 0)
   })
 }
+
+export const openBrowserWindow = (url: string, width: number, height: number) => {
+  return window.open(url, '', `width=${width},height=${height},top=${(window.innerHeight - height) / 2},left=${(window.innerWidth - width) / 2}`)
+}

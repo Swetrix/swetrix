@@ -405,9 +405,16 @@ export const PLAN_LIMITS: {
 
 export const TRIAL_DAYS: number = 14
 
-export const chartTypes: {
-  [key: string]: string
-} = {
+export const chartTypes = Object.freeze({
   line: 'line',
   bar: 'bar',
-}
+})
+
+export const SSO_ACTIONS = Object.freeze({
+  LINK: 'link',
+  AUTH: 'auth',
+})
+
+export const SOCIALISATIONS = Object.freeze({
+  GOOGLE: 'google',
+})

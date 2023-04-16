@@ -120,6 +120,24 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   // setThemeType: (theme) => {
   //   dispatch(UIActions.setThemeType(theme))
   // },
+  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
+    dispatch(
+      sagaActions.linkSSO(
+        t,
+        callback,
+        provider,
+      ),
+    )
+  },
+  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
+    dispatch(
+      sagaActions.unlinkSSO(
+        t,
+        callback,
+        provider,
+      ),
+    )
+  },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserSettings)

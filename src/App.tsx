@@ -60,6 +60,7 @@ const ConfirmReportsShare = lazy(() => import('pages/Project/Settings/Emails/Con
 const MediaAndPress = lazy(() => import('pages/Press'))
 const TransferProjectConfirm = lazy(() => import('pages/Project/Settings/TransferProject/TransferProjectConfirm'))
 const TransferProjectReject = lazy(() => import('pages/Project/Settings/TransferProject/TransferProjectReject'))
+const Socialised = lazy(() => import('pages/Auth/Socialised'))
 
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
@@ -231,6 +232,7 @@ const App = () => {
                 <Route path={routes.press} component={MediaAndPress} exact />
                 <Route path={routes.transfer_confirm} component={TransferProjectConfirm} exact />
                 <Route path={routes.transfer_reject} component={TransferProjectReject} exact />
+                <Route path={routes.socialised} component={Socialised} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>

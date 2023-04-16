@@ -25,7 +25,12 @@
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
     "invalidToken": "Invalid token",
     "transferRequestSent": "Transfer request sent",
-    "transferProjectReject": "The project transfer request has been cancelled"
+    "transferProjectReject": "The project transfer request has been cancelled",
+    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
+    "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
+    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
+    "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
   },
   "common": {
     "features": "Features",
@@ -69,7 +74,9 @@
     "loading": "Loading..",
     "edit": "Edit",
     "account": "Account",
-    "transferring": "Transferring"
+    "transferring": "Transferring",
+    "link": "Link",
+    "unlink": "Unlink"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -277,6 +284,10 @@
     "verification": {
       "success": "Your email has been successfully verified!"
     },
+    "socialisation": {
+      "success": "Socialisation successful",
+      "orSingUpWith": "or sign up with"
+    },
     "common": {
       "signinInstead": "Sign in instead",
       "signupInstead": "Sign up instead",
@@ -293,7 +304,8 @@
       "signin": "Sign in",
       "checkLeakedPassword": "Check if password is leaked",
       "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text.",
-      "addedOn": "Added on"
+      "addedOn": "Added on",
+      "continueWithGoogle": "Continue with Google"
     }
   },
   "features": {
@@ -418,6 +430,9 @@
       "telegram": "Receive notifications directly into a Telegram bot.",
       "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
     },
+    "socialisations": "Socialisations",
+    "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
+    "cantUnlinkSocialisation": "You can't unlink this socialisation because is was used to register your account.",
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
     "chatID": "Chat ID",
@@ -755,7 +770,8 @@
     "contact": "Contact",
     "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs",
-    "press": "Media & Press"
+    "press": "Media & Press",
+    "socialisation": "Socialisation"
   },
   "header": {
     "switchTheme": "Switch theme",

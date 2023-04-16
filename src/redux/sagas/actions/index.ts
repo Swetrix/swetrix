@@ -34,10 +34,35 @@ const loadProjectAlerts = (take?: number, skip?: number) => ({
 const loginAsync = (credentials: {
   email: string,
   password: string,
+  dontRemember: boolean,
 }, callback = () => { }) => ({
   type: types.LOGIN_ASYNC,
   payload: {
     credentials, callback,
+  },
+})
+
+// currently only google is supported, in future we should provide a variable specifying the provider
+const authSSO = (dontRemember: boolean, t: (key: string) => string = () => '', callback: (res: any) => void = () => { }) => ({
+  type: types.AUTH_SSO,
+  payload: {
+    dontRemember, callback, t,
+  },
+})
+
+// currently only google is supported, in future we should provide a variable specifying the provider
+const linkSSO = (t: (key: string) => string = () => '', callback: (res: any) => void = () => { }, provider = 'google') => ({
+  type: types.LINK_SSO,
+  payload: {
+    callback, t, provider,
+  },
+})
+
+// currently only google is supported, in future we should provide a variable specifying the provider
+const unlinkSSO = (t: (key: string) => string = () => '', callback: (res: any) => void = () => { }, provider = 'google') => ({
+  type: types.UNLINK_SSO,
+  payload: {
+    callback, t, provider,
   },
 })
 
@@ -103,12 +128,15 @@ const sagaActions = {
   loadExtensions,
   loadProjectAlerts,
   loginAsync,
+  authSSO,
   signupAsync,
   emailVerifyAsync,
   updateUserProfileAsync,
   deleteAccountAsync,
   logout,
   shareVerifyAsync,
+  linkSSO,
+  unlinkSSO,
 }
 
 export default sagaActions
