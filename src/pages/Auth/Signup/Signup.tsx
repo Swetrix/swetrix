@@ -101,6 +101,14 @@ const Signup = ({ signup, authSSO }: {
     validate()
   }, [form]) // eslint-disable-line
 
+  const signUpCallback = (result: any) => {
+    if (result) {
+      trackCustom('SIGNUP')
+    } else {
+      setIsLoading(false)
+    }
+  }
+
   const onSubmit = (data: {
     email: string,
     password: string,
@@ -111,13 +119,7 @@ const Signup = ({ signup, authSSO }: {
   }) => {
     if (!isLoading) {
       setIsLoading(true)
-      signup(_omit(data, 'tos'), t, (result) => {
-        if (result) {
-          trackCustom('SIGNUP')
-        } else {
-          setIsLoading(false)
-        }
-      })
+      signup(_omit(data, 'tos'), t, signUpCallback)
     }
   }
 
@@ -251,7 +253,7 @@ const Signup = ({ signup, authSSO }: {
               {t('auth.signup.button')}
             </Button>
           </div>
-          <GoogleAuth setIsLoading={setIsLoading} authSSO={authSSO} dontRemember={form.dontRemember} />
+          <GoogleAuth setIsLoading={setIsLoading} authSSO={authSSO} callback={signUpCallback} dontRemember={form.dontRemember} />
         </form>
       </div>
     </Title>

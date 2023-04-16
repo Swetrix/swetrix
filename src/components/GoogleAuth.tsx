@@ -6,18 +6,19 @@ import GoogleGSVG from 'ui/icons/GoogleG'
 
 interface IGoogleAuth {
   setIsLoading: (isLoading: boolean) => void,
+  callback: any, // TODO add types
   authSSO: any, // TODO add types
   dontRemember?: boolean,
 }
 
-const GoogleAuth: React.FC<IGoogleAuth> = ({ setIsLoading, authSSO, dontRemember }) => {
+const GoogleAuth: React.FC<IGoogleAuth> = ({
+  setIsLoading, authSSO, dontRemember, callback,
+}) => {
   const { t } = useTranslation()
 
   const googleLogin = async () => {
     setIsLoading(true)
-    authSSO(dontRemember, t, () => {
-      setIsLoading(false)
-    })
+    authSSO(dontRemember, t, callback)
   }
 
   return (

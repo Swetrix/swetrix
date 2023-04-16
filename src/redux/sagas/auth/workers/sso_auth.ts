@@ -1,6 +1,5 @@
 import { call, put, delay } from 'redux-saga/effects'
 
-import UIActions from 'redux/reducers/ui'
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { setAccessToken } from 'utils/accessToken'
@@ -65,7 +64,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember } }: any) {
         yield put(authActions.loginSuccessful(user))
         yield call(setAccessToken, accessToken, dontRemember)
         yield call(setRefreshToken, refreshToken)
-        yield put(UIActions.setThemeType(user.theme))
+        // yield put(UIActions.setThemeType(user.theme))
         yield put(sagaActions.loadProjects())
         yield put(sagaActions.loadSharedProjects())
         yield put(sagaActions.loadProjectAlerts())
