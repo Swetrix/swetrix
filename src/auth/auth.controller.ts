@@ -5,6 +5,7 @@ import {
   UsePipes,
   ValidationPipe,
   Post,
+  Delete,
   Body,
   Ip,
   ConflictException,
@@ -41,6 +42,8 @@ import {
   ChangePasswordDto,
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
+  AuthUserGoogleDto,
+  AuthUserGoogleProcessCodeDto,
 } from './dtos'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 
@@ -106,8 +109,7 @@ export class AuthController {
     const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
 
     return {
-      accessToken: jwtTokens.accessToken,
-      refreshToken: jwtTokens.refreshToken,
+      ...jwtTokens,
       user: this.userService.omitSensitiveData(newUser),
     }
   }
@@ -411,5 +413,77 @@ export class AuthController {
     }
 
     await this.authService.logout(user.id, refreshToken)
+  }
+
+  // Google SSO
+  @ApiOperation({ summary: 'Auth user' })
+  @Post('google/generate')
+  @Public()
+  async generateAuthURL(@Ip() ip: string): Promise<any> {
+    await checkRateLimit(ip, 'g-sso-generate', 15, 1800)
+
+    return this.authService.generateGoogleURL()
+  }
+
+  @ApiOperation({ summary: 'Auth user' })
+  @Post('google/process-token')
+  @Public()
+  async processGoogleCode(
+    @Body() body: AuthUserGoogleProcessCodeDto,
+    @Ip() ip: string,
+  ): Promise<any> {
+    await checkRateLimit(ip, 'g-sso-process', 15, 1800)
+
+    const { token, hash } = body
+
+    return this.authService.processGoogleToken(token, hash)
+  }
+
+  @ApiOperation({ summary: 'Auth user' })
+  @Post('google/hash')
+  @Public()
+  // Validates the authorisation code and returns the JWT tokens
+  async getJWTByHash(
+    @Body() body: AuthUserGoogleDto,
+    @Headers() headers: unknown,
+    @Ip() ip: string,
+  ): Promise<any> {
+    await checkRateLimit(ip, 'g-sso-hash', 15, 1800)
+
+    const { hash } = body
+
+    return this.authService.authenticateGoogle(hash, headers, ip)
+  }
+
+  @ApiOperation({ summary: 'Link Google to an existing account' })
+  @ApiOkResponse({
+    description: 'Google linked to an existing account',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Post('google/link_by_hash')
+  public async linkGoogleToAccount(
+    @Body() body: AuthUserGoogleDto,
+    @CurrentUserId() userId: string,
+    @Ip() ip: string,
+  ): Promise<void> {
+    await checkRateLimit(ip, 'g-sso-link', 15, 1800)
+
+    const { hash } = body
+
+    await this.authService.linkGoogleAccount(userId, hash)
+  }
+
+  @ApiOperation({ summary: 'Unlink Google from an existing account' })
+  @ApiOkResponse({
+    description: 'Google unlinked from an existing account',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Delete('google/unlink')
+  public async unlinkGoogleFromAccount(
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    await this.authService.unlinkGoogleAccount(userId)
   }
 }

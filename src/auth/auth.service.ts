@@ -1,12 +1,24 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import axios from 'axios'
 import { genSalt, hash, compare } from 'bcrypt'
 import { getCountry } from 'countries-and-timezones'
+import { Auth } from 'googleapis'
 import { createHash } from 'crypto'
 import * as dayjs from 'dayjs'
 import { InjectBot } from 'nestjs-telegraf'
+import { Telegraf } from 'telegraf'
+import { UAParser } from 'ua-parser-js'
+import _pick from 'lodash/pick'
+import { v4 as uuidv4 } from 'uuid'
+
 import {
   ActionToken,
   ActionTokenType,
@@ -14,15 +26,33 @@ import {
 import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
 import { LetterTemplate } from 'src/mailer/letter'
 import { MailerService } from 'src/mailer/mailer.service'
-import { MAX_EMAIL_REQUESTS, User } from 'src/user/entities/user.entity'
+import {
+  MAX_EMAIL_REQUESTS,
+  User,
+  TRIAL_DURATION,
+} from 'src/user/entities/user.entity'
 import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
-import { Telegraf } from 'telegraf'
-import { UAParser } from 'ua-parser-js'
+import {
+  REDIS_SSO_UUID,
+  redis,
+  PRODUCTION_ORIGIN,
+  isDevelopment,
+} from 'src/common/constants'
+import { UserGoogleDTO } from '../user/dto/user-google.dto'
+
+const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
+const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
+
+const GOOGLE_OAUTH_REDIRECT_URL = isDevelopment
+  ? 'http://localhost:3000/socialised'
+  : `${PRODUCTION_ORIGIN}/socialised`
 
 @Injectable()
 export class AuthService {
+  oauth2Client: Auth.OAuth2Client
+
   constructor(
     @InjectBot() private readonly telegramBot: Telegraf<TelegrafContext>,
     private readonly userService: UserService,
@@ -31,7 +61,12 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly projectService: ProjectService,
-  ) {}
+  ) {
+    this.oauth2Client = new Auth.OAuth2Client(
+      this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
+      this.configService.get('GOOGLE_OAUTH2_CLIENT_SECRET'),
+    )
+  }
 
   private async createSha1Hash(password: string): Promise<string> {
     return new Promise(resolve => {
@@ -409,5 +444,215 @@ export class AuthService {
 
   async validateApiKey(apiKey: string): Promise<User | null> {
     return this.userService.findUserByApiKey(apiKey)
+  }
+
+  /*
+    --------------------------------
+    Google SSO section
+    --------------------------------
+  */
+  async handleExistingUserGoogle(user: User, headers: unknown, ip: string) {
+    if (!user.googleId) {
+      throw new UnauthorizedException()
+    }
+
+    await this.sendTelegramNotification(user.id, headers, ip)
+
+    const jwtTokens = await this.generateJwtTokens(
+      user.id,
+      !user.isTwoFactorAuthenticationEnabled,
+    )
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
+    } else {
+      user = await this.getSharedProjectsForUser(user)
+    }
+
+    return {
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(user),
+    }
+  }
+
+  async registerUserGoogle(sub: string, email: string) {
+    const query: UserGoogleDTO = {
+      googleId: sub,
+      trialEndDate: dayjs
+        .utc()
+        .add(TRIAL_DURATION, 'day')
+        .format('YYYY-MM-DD HH:mm:ss'),
+      registeredWithGoogle: true,
+      isActive: true,
+      emailRequests: 0,
+    }
+
+    const userWithSameEmail = await this.userService.findOneWhere({
+      email,
+    })
+
+    if (!userWithSameEmail) {
+      query.email = email
+    }
+
+    const user = await this.userService.create(query)
+
+    const { accessToken, refreshToken } = await this.generateJwtTokens(
+      user.id,
+      true,
+    )
+
+    return {
+      accessToken,
+      refreshToken,
+      user: this.userService.omitSensitiveData(user),
+    }
+  }
+
+  async processHash(ssoHash: string) {
+    if (!ssoHash) {
+      throw new BadRequestException('Missing hash parameter')
+    }
+
+    const ssoRedisKey = getSSORedisKey(ssoHash)
+    const exists = await redis.exists(ssoRedisKey)
+
+    if (!exists) {
+      throw new BadRequestException(
+        'No authentication session opened for this hash',
+      )
+    }
+
+    const data = await redis.get(ssoRedisKey)
+
+    if (!data) {
+      throw new ConflictException(
+        'Authentication session is opened but no data found',
+      )
+    }
+
+    let sub: string
+    let email: string
+
+    try {
+      const payload = JSON.parse(data)
+      sub = payload.sub
+      email = payload.email
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> authenticateGoogle -> JSON.parse]: ${reason} - ${data}`,
+      )
+      throw new InternalServerErrorException(
+        'Session related data is corrupted',
+      )
+    }
+
+    await redis.del(ssoRedisKey)
+
+    return { sub, email }
+  }
+
+  async authenticateGoogle(ssoHash: string, headers: unknown, ip: string) {
+    const { sub, email } = await this.processHash(ssoHash)
+
+    try {
+      const user = await this.userService.findOneWhere({
+        googleId: sub,
+      })
+
+      if (!user) {
+        return await this.registerUserGoogle(sub, email)
+      }
+
+      return await this.handleExistingUserGoogle(user, headers, ip)
+    } catch (error) {
+      console.error(`[ERROR][AuthService -> authenticateGoogle]: ${error}`)
+      throw new InternalServerErrorException(
+        'Something went wrong while authenticating user with Google',
+      )
+    }
+  }
+
+  async generateGoogleURL() {
+    // Generating SSO session identifier and authorisation URL
+    const uuid = uuidv4()
+    const authUrl = await this.oauth2Client.generateAuthUrl({
+      state: uuid,
+      redirect_uri: GOOGLE_OAUTH_REDIRECT_URL,
+      scope: 'email',
+      response_type: 'token',
+    })
+
+    // Storing the session identifier in redis
+    await redis.set(getSSORedisKey(uuid), '', 'EX', REDIS_SSO_SESSION_TIMEOUT)
+
+    return {
+      uuid,
+      auth_url: authUrl,
+    }
+  }
+
+  async processGoogleToken(token: string, ssoHash: string) {
+    let tokenInfo
+
+    try {
+      tokenInfo = await this.oauth2Client.getTokenInfo(token)
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> processGoogleCode -> oauth2Client.getTokenInfo]: ${reason}`,
+      )
+      throw new BadRequestException('Invalid Google code supplied')
+    }
+
+    const { sub, email } = tokenInfo
+
+    // TODO: Only store the email if email_verified is true
+    const dataToStore = JSON.stringify({ sub, email })
+
+    // Storing the session identifier in redis
+    await redis.set(
+      getSSORedisKey(ssoHash),
+      dataToStore,
+      'EX',
+      REDIS_SSO_SESSION_TIMEOUT,
+    )
+  }
+
+  async linkGoogleAccount(userId: string, ssoHash: string) {
+    const { sub } = await this.processHash(ssoHash)
+
+    if (!sub) {
+      throw new BadRequestException(
+        'Google ID is missing in the authentication session',
+      )
+    }
+
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    await this.userService.updateUser(userId, {
+      googleId: sub,
+    })
+  }
+
+  async unlinkGoogleAccount(userId: string) {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (user.registeredWithGoogle) {
+      throw new BadRequestException(
+        'You cannot unlink your Google account if you registered with it',
+      )
+    }
+
+    await this.userService.updateUser(userId, {
+      googleId: null,
+    })
   }
 }

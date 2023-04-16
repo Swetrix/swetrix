@@ -188,6 +188,7 @@ const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
 const REDIS_PERFORMANCE_COUNT_KEY = 'stats:performance'
+const REDIS_SSO_UUID = 'sso:uuid'
 
 // Captcha service
 const { CAPTCHA_SALT } = process.env
@@ -262,4 +263,5 @@ export {
   PRODUCTION_ORIGIN,
   isTgTokenPresent,
   DEFAULT_SELFHOSTED_UUID,
+  REDIS_SSO_UUID,
 }

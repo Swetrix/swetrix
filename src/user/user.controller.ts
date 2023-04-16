@@ -578,6 +578,8 @@ export class UserController {
         'trialEndDate',
         'cancellationEffectiveDate',
         'trialReminderSent',
+        'googleId',
+        'registeredWithGoogle',
       ])
       await this.userService.update(id, userToUpdate)
 

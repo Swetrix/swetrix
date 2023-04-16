@@ -276,6 +276,19 @@ export class User {
   })
   timeFormat: TimeFormat
 
+  // Google SSO
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    default: null,
+  })
+  // Google 'sub' value -> https://cloud.google.com/nodejs/docs/reference/google-auth-library/latest/google-auth-library/tokeninfo#google_auth_library_TokenInfo_sub_member
+  googleId: string | null
+
+  @Column({ default: false })
+  registeredWithGoogle: boolean
+
   @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
   @JoinTable()
   extensions: ExtensionToUser[]
