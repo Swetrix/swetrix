@@ -70,7 +70,6 @@ export class UserService {
       'password',
       'twoFactorRecoveryCode',
       'twoFactorAuthenticationSecret',
-      'googleId',
     ])
   }
 

@@ -17,4 +17,10 @@ export class UserGoogleDTO {
   @ApiProperty({ example: 'hello@example.com', required: false })
   @IsEmail()
   email?: string
+
+  @ApiProperty({ example: 1, required: false })
+  emailRequests: number
+
+  @ApiProperty({ example: true, required: false })
+  isActive: boolean
 }

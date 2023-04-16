@@ -470,8 +470,7 @@ export class AuthService {
     }
 
     return {
-      accessToken: jwtTokens.accessToken,
-      refreshToken: jwtTokens.refreshToken,
+      ...jwtTokens,
       user: this.userService.omitSensitiveData(user),
     }
   }
@@ -484,6 +483,8 @@ export class AuthService {
         .add(TRIAL_DURATION, 'day')
         .format('YYYY-MM-DD HH:mm:ss'),
       registeredWithGoogle: true,
+      isActive: true,
+      emailRequests: 0,
     }
 
     const userWithSameEmail = await this.userService.findOneWhere({

@@ -5,6 +5,7 @@ import {
   UsePipes,
   ValidationPipe,
   Post,
+  Delete,
   Body,
   Ip,
   ConflictException,
@@ -105,12 +106,10 @@ export class AuthController {
       body.password,
     )
 
-    const { accessToken, refreshToken } =
-      await this.authService.generateJwtTokens(newUser.id, true)
+    const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
 
     return {
-      accessToken,
-      refreshToken,
+      ...jwtTokens,
       user: this.userService.omitSensitiveData(newUser),
     }
   }
@@ -481,7 +480,7 @@ export class AuthController {
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Post('google/unlink')
+  @Delete('google/unlink')
   public async unlinkGoogleFromAccount(
     @CurrentUserId() userId: string,
   ): Promise<void> {
