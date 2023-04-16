@@ -25,9 +25,8 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       message: error,
     }))
   },
-  authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => {
-    console.log('dispatching authSSO')
-    dispatch(sagaActions.authSSO(dontRemember, t, callback))
+  authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => {
+    dispatch(sagaActions.authSSO(provider, dontRemember, t, callback))
   },
 })
 

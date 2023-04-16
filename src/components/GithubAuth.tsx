@@ -1,9 +1,12 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import cx from 'clsx'
 
 import Button from 'ui/Button'
-import GoogleGSVG from 'ui/icons/GoogleG'
+import { StateType } from 'redux/store/index'
+import GithubDarkSVG from 'ui/icons/GithubDark'
+import GithubLightSVG from 'ui/icons/GithubLight'
 import { SSO_PROVIDERS } from 'redux/constants'
 
 interface IGoogleAuth {
@@ -15,15 +18,16 @@ interface IGoogleAuth {
   className?: string
 }
 
-const GoogleAuth: React.FC<IGoogleAuth> = ({
+const GithubAuth: React.FC<IGoogleAuth> = ({
   setIsLoading, authSSO, dontRemember, callback, isMiniButton, className,
 }) => {
   const { t } = useTranslation()
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
 
   const googleLogin = async () => {
     setIsLoading(true)
     authSSO(
-      SSO_PROVIDERS.GOOGLE,
+      SSO_PROVIDERS.GITHUB,
       dontRemember as boolean,
       t,
       callback,
@@ -38,7 +42,11 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
         secondary
         regular
       >
-        <GoogleGSVG className='w-5 h-5' />
+        {theme === 'dark' ? (
+          <GithubLightSVG className='w-5 h-5' />
+        ) : (
+          <GithubDarkSVG className='w-5 h-5' />
+        )}
       </Button>
     )
   }
@@ -51,18 +59,22 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
       regular
     >
       <>
-        <GoogleGSVG className='w-5 h-5 mr-2' />
-        {t('auth.common.continueWithGoogle')}
+        {theme === 'dark' ? (
+          <GithubLightSVG className='w-5 h-5 mr-2' />
+        ) : (
+          <GithubDarkSVG className='w-5 h-5 mr-2' />
+        )}
+        {t('auth.common.continueWithGithub')}
       </>
     </Button>
   )
 }
 
-GoogleAuth.defaultProps = {
+GithubAuth.defaultProps = {
   dontRemember: false,
   isMiniButton: false,
   callback: () => { },
   className: '',
 }
 
-export default GoogleAuth
+export default GithubAuth

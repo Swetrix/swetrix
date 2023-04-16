@@ -4,7 +4,7 @@ import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import {
-  linkByGoogleHash, generateGoogleAuthURL, authMe,
+  linkByGoogleHash, generateSSOAuthURL, authMe,
 } from 'api'
 import { openBrowserWindow } from 'utils/generic'
 
@@ -34,7 +34,7 @@ export default function* ssoLink({ payload: { callback, t } }: ISSOLink) {
   try {
     const {
       uuid, auth_url: authUrl, expires_in: expiresIn,
-    } = yield call(generateGoogleAuthURL)
+    } = yield call(generateSSOAuthURL)
 
     // Set the URL of the authentification browser window
     authWindow.location = authUrl

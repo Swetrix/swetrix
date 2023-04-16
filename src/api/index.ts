@@ -809,9 +809,11 @@ export const confirmTransferProject = (uuid: string) =>
         : error.response.data.message
     })
 
-export const generateGoogleAuthURL = () =>
+export const generateSSOAuthURL = (provider: string) =>
   api
-    .post('v1/auth/google/generate')
+    .post('v1/auth/sso/generate', {
+      provider,
+    })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)

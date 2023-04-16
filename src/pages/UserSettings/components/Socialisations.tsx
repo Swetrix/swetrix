@@ -8,12 +8,12 @@ import {
 import Button from 'ui/Button'
 import Google from 'ui/icons/GoogleG'
 import { IUser } from 'redux/models/IUser'
-import { SOCIALISATIONS } from 'redux/constants'
+import { SSO_PROVIDERS } from 'redux/constants'
 
 const AVAILABLE_SOCIALISATIONS = [
   {
     name: 'Google',
-    key: SOCIALISATIONS.GOOGLE,
+    key: SSO_PROVIDERS.GOOGLE,
     Icon: Google,
   },
 ]
@@ -24,7 +24,7 @@ const AVAILABLE_SOCIALISATIONS = [
  * @returns {[boolean, boolean]} - [isConnected, isUnlinkable]
 */
 const getStatusByUser = (user: IUser, socialisation: string) => {
-  if (socialisation === SOCIALISATIONS.GOOGLE) {
+  if (socialisation === SSO_PROVIDERS.GOOGLE) {
     const connected = user.googleId
     const unlinkable = !user.registeredWithGoogle
     return [connected, unlinkable]
