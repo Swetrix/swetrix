@@ -7,6 +7,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 
 import Title from 'components/Title'
+import GoogleAuth from 'components/GoogleAuth'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
@@ -21,7 +22,10 @@ import { submit2FA } from 'api'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
 
-const Signin = ({ login, loginSuccess, loginFailed }: {
+// TODO: ADD & USE INTERFACE ISignin
+const Signin = ({
+  login, loginSuccess, loginFailed, authSSO,
+}: {
   login: (data: {
     email: string,
     password: string,
@@ -29,6 +33,7 @@ const Signin = ({ login, loginSuccess, loginFailed }: {
   }, callback: (result: boolean, twoFARequired: boolean) => void) => void,
   loginSuccess: (user: IUser) => void,
   loginFailed: (error: string) => void,
+  authSSO: any, // TODO add types
 }): JSX.Element => {
   const { t }: {
     t: (key: string, optinions?: {
@@ -85,6 +90,13 @@ const Signin = ({ login, loginSuccess, loginFailed }: {
     setTwoFACodeError(null)
   }
 
+  const loginCallback = (result: boolean, twoFARequired: boolean) => {
+    if (!result) {
+      setIsLoading(false)
+      setIsTwoFARequired(twoFARequired)
+    }
+  }
+
   const onSubmit = (data: {
     email: string,
     password: string,
@@ -92,12 +104,7 @@ const Signin = ({ login, loginSuccess, loginFailed }: {
   }) => {
     if (!isLoading) {
       setIsLoading(true)
-      login(data, (result, twoFARequired) => {
-        if (!result) {
-          setIsLoading(false)
-          setIsTwoFARequired(twoFARequired)
-        }
-      })
+      login(data, loginCallback)
     }
   }
 
@@ -247,6 +254,7 @@ const Signin = ({ login, loginSuccess, loginFailed }: {
               {t('auth.signin.button')}
             </Button>
           </div>
+          <GoogleAuth setIsLoading={setIsLoading} authSSO={authSSO} callback={loginCallback} dontRemember={form.dontRemember} />
         </form>
       </div>
     </Title>
@@ -257,6 +265,7 @@ Signin.propTypes = {
   login: PropTypes.func.isRequired,
   loginSuccess: PropTypes.func.isRequired,
   loginFailed: PropTypes.func.isRequired,
+  authSSO: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(Signin, auth.notAuthenticated))
