@@ -17,6 +17,15 @@ import { trackCustom } from 'utils/analytics'
 import { useAppDispatch } from 'redux/store'
 import _omit from 'lodash/omit'
 
+interface ISignUpForm {
+  email: string,
+  password: string,
+  repeat: string,
+  tos: boolean,
+  dontRemember: boolean,
+  checkIfLeaked: boolean,
+}
+
 const BasicSignup = (): JSX.Element => {
   const { t }: {
     t: (key: string, optinions?: {
@@ -24,14 +33,7 @@ const BasicSignup = (): JSX.Element => {
     }) => string,
   } = useTranslation('common')
   const dispatch = useAppDispatch()
-  const [form, setForm] = useState<{
-    email: string,
-    password: string,
-    repeat: string,
-    tos: boolean,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  }>({
+  const [form, setForm] = useState<ISignUpForm>({
     email: '',
     password: '',
     repeat: '',
@@ -49,14 +51,7 @@ const BasicSignup = (): JSX.Element => {
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const onSubmit = (data: {
-    email: string,
-    password: string,
-    repeat: string,
-    tos: boolean,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  }) => {
+  const onSubmit = (data: ISignUpForm) => {
     if (!isLoading) {
       setIsLoading(true)
       dispatch(sagaActions.signupAsync(_omit(data, 'tos'), t, (result) => {
