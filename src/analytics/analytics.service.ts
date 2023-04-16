@@ -10,6 +10,7 @@ import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
+import * as _clone from 'lodash/clone'
 import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -97,6 +98,7 @@ const validPeriods = [
   '12M',
   '24M',
 ]
+
 const validTimebuckets = [
   TimeBucketType.HOUR,
   TimeBucketType.DAY,
@@ -167,8 +169,20 @@ export const checkIfTBAllowed = (
   }
 }
 
-const nullifyMissingResults = (results: any[]): number[] => {
-  return _map(results, r => r || 0)
+const nullifyMissingElements = (results: any[], size?: number): number[] => {
+  if (!size) {
+    return _map(results, r => r || 0)
+  }
+
+  const copy = _clone(results)
+
+  for (let i = 0; i < size; ++i) {
+    if (!copy[i]) {
+      copy[i] = 0
+    }
+  }
+
+  return copy
 }
 
 @Injectable()
@@ -721,8 +735,8 @@ export class AnalyticsService {
       idx++
     }
 
-    visits = nullifyMissingResults(visits)
-    uniques = nullifyMissingResults(uniques)
+    visits = nullifyMissingElements(visits, _size(x))
+    uniques = nullifyMissingElements(uniques, _size(x))
 
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
       x = _map(x, el =>
@@ -840,7 +854,7 @@ export class AnalyticsService {
       idx++
     }
 
-    results = nullifyMissingResults(results)
+    results = nullifyMissingElements(results, _size(x))
 
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
       x = _map(x, el =>
@@ -1089,7 +1103,7 @@ export class AnalyticsService {
 
     for (let i = 0; i < _size(processedCustomEvents); ++i) {
       const ev = processedCustomEvents[i]
-      customEvents[ev] = nullifyMissingResults(customEvents[ev])
+      customEvents[ev] = nullifyMissingElements(customEvents[ev], _size(x))
     }
 
     if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
