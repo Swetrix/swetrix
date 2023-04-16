@@ -28,11 +28,13 @@ import {
 import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
-import { REDIS_SSO_UUID, redis } from 'src/common/constants'
+import { REDIS_SSO_UUID, redis, PRODUCTION_ORIGIN, isDevelopment } from 'src/common/constants'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
+
+const GOOGLE_OAUTH_REDIRECT_URL = isDevelopment ? 'http://localhost:3000/socialised' : `${PRODUCTION_ORIGIN}/socialised`
 
 @Injectable()
 export class AuthService {
@@ -557,7 +559,7 @@ export class AuthService {
     const uuid = uuidv4()
     const auth_url = await this.oauth2Client.generateAuthUrl({
       state: uuid,
-      redirect_uri: 'http://localhost:3000/socialised',
+      redirect_uri: GOOGLE_OAUTH_REDIRECT_URL,
       scope: 'email',
       response_type: 'token',
     })

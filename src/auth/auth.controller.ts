@@ -429,7 +429,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Auth user' })
-  @Post('google/process-code')
+  @Post('google/process-token')
   @Public()
   async processGoogleCode(
     @Body() body: AuthUserGoogleProcessCodeDto,
