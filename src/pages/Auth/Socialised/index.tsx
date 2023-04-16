@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _replace from 'lodash/replace'
 
-import { processGoogleToken } from 'api'
+import { processSSOToken } from 'api'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
 import routes from 'routes'
@@ -37,7 +37,7 @@ const Socialised = (): JSX.Element => {
       }
 
       try {
-        await processGoogleToken(token, hash)
+        await processSSOToken(token, hash)
       } catch (reason) {
         setIsError(true)
         console.error(`[ERROR] Error while processing Google code: ${reason}`)

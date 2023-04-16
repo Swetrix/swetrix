@@ -855,9 +855,9 @@ export const unlinkGoogle = () =>
         : error.response.data.message
     })
 
-export const processGoogleToken = (token: string, hash: string) =>
+export const processSSOToken = (token: string, hash: string) =>
   api
-    .post('v1/auth/google/process-token', { token, hash })
+    .post('v1/auth/sso/process-token', { token, hash })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
