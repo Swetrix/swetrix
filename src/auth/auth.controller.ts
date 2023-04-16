@@ -43,8 +43,10 @@ import {
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
   AuthUserGoogleDto,
-  AuthUserGoogleProcessCodeDto,
+  ProcessSSOCodeDto,
+  SSOGenerateDto,
 } from './dtos'
+import { SSOProviders } from './dtos/sso-generate.dto'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 
 @ApiTags('Auth')
@@ -415,28 +417,39 @@ export class AuthController {
     await this.authService.logout(user.id, refreshToken)
   }
 
-  // Google SSO
-  @ApiOperation({ summary: 'Auth user' })
-  @Post('google/generate')
+  // SSO section
+  @ApiOperation({ summary: 'Generate SSO authentication URL' })
+  @Post('sso/generate')
   @Public()
-  async generateAuthURL(@Ip() ip: string): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-generate', 15, 1800)
-
-    return this.authService.generateGoogleURL()
-  }
-
-  @ApiOperation({ summary: 'Auth user' })
-  @Post('google/process-token')
-  @Public()
-  async processGoogleCode(
-    @Body() body: AuthUserGoogleProcessCodeDto,
+  async generateAuthURL(
+    @Body() body: SSOGenerateDto,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-process', 15, 1800)
+    await checkRateLimit(ip, 'sso-generate', 15, 1800)
+
+    const { provider } = body
+
+    if (provider === SSOProviders.GOOGLE) {
+      return this.authService.generateGoogleURL()
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      return this.authService.generateGithubURL()
+    }
+  }
+
+  @ApiOperation({ summary: 'Process authentication token (or code)' })
+  @Post('sso/process-token')
+  @Public()
+  async processSSOToken(
+    @Body() body: ProcessSSOCodeDto,
+    @Ip() ip: string,
+  ): Promise<any> {
+    await checkRateLimit(ip, 'sso-process', 15, 1800)
 
     const { token, hash } = body
 
-    return this.authService.processGoogleToken(token, hash)
+    return this.authService.processSSOToken(token, hash)
   }
 
   @ApiOperation({ summary: 'Auth user' })

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsString, IsUUID } from 'class-validator'
 
-export class AuthUserGoogleProcessCodeDto {
+export class ProcessSSOCodeDto {
   @ApiProperty({
     description: 'Google auth token',
     example: '4/0AVHE...',

@@ -17,6 +17,7 @@ import { InjectBot } from 'nestjs-telegraf'
 import { Telegraf } from 'telegraf'
 import { UAParser } from 'ua-parser-js'
 import _pick from 'lodash/pick'
+import _split from 'lodash/split'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
@@ -40,18 +41,23 @@ import {
   PRODUCTION_ORIGIN,
   isDevelopment,
 } from 'src/common/constants'
+import { SSOProviders } from './dtos/sso-generate.dto'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
+const generateSSOState = (provider: SSOProviders) => `${provider}:${uuidv4()}`
+const getSSOSessionProvider = (state: string): SSOProviders => _split(state, ':')[0] as SSOProviders
 
-const GOOGLE_OAUTH_REDIRECT_URL = isDevelopment
+const OAUTH_REDIRECT_URL = isDevelopment
   ? 'http://localhost:3000/socialised'
   : `${PRODUCTION_ORIGIN}/socialised`
 
 @Injectable()
 export class AuthService {
   oauth2Client: Auth.OAuth2Client
+  githubOAuthClientID: string
+  githubOAuthClientSecret: string
 
   constructor(
     @InjectBot() private readonly telegramBot: Telegraf<TelegrafContext>,
@@ -66,6 +72,8 @@ export class AuthService {
       this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
       this.configService.get('GOOGLE_OAUTH2_CLIENT_SECRET'),
     )
+    this.githubOAuthClientID = this.configService.get('GITHUB_OAUTH2_CLIENT_ID')
+    this.githubOAuthClientSecret = this.configService.get('GITHUB_OAUTH2_CLIENT_SECRET')
   }
 
   private async createSha1Hash(password: string): Promise<string> {
@@ -575,10 +583,10 @@ export class AuthService {
 
   async generateGoogleURL() {
     // Generating SSO session identifier and authorisation URL
-    const uuid = uuidv4()
+    const uuid = generateSSOState(SSOProviders.GOOGLE)
     const authUrl = await this.oauth2Client.generateAuthUrl({
       state: uuid,
-      redirect_uri: GOOGLE_OAUTH_REDIRECT_URL,
+      redirect_uri: OAUTH_REDIRECT_URL,
       scope: 'email',
       response_type: 'token',
     })
@@ -593,6 +601,20 @@ export class AuthService {
     }
   }
 
+  async processSSOToken(token: string, ssoHash: string) {
+    const provider = getSSOSessionProvider(ssoHash)
+
+    if (provider === SSOProviders.GOOGLE) {
+      await this.processGoogleToken(token, ssoHash)
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      await this.processGithubCode(token, ssoHash)
+    }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
+  }
+
   async processGoogleToken(token: string, ssoHash: string) {
     let tokenInfo
 
@@ -602,7 +624,7 @@ export class AuthService {
       console.error(
         `[ERROR][AuthService -> processGoogleCode -> oauth2Client.getTokenInfo]: ${reason}`,
       )
-      throw new BadRequestException('Invalid Google code supplied')
+      throw new BadRequestException('Invalid Google token supplied')
     }
 
     const { sub, email } = tokenInfo
@@ -655,5 +677,90 @@ export class AuthService {
     await this.userService.updateUser(userId, {
       googleId: null,
     })
+  }
+
+  /*
+    --------------------------------
+    Github SSO section
+    --------------------------------
+  */
+  async generateGithubURL() {
+    // Generating SSO session identifier and authorisation URL
+    const uuid = generateSSOState(SSOProviders.GITHUB)
+    const authUrl = await axios.get('https://github.com/login/oauth/authorize', {
+      params: {
+        client_id: this.githubOAuthClientID,
+        state: uuid,
+        redirect_uri: OAUTH_REDIRECT_URL,
+        scope: 'user:email',
+      },
+    })
+
+    // Storing the session identifier in redis
+    await redis.set(getSSORedisKey(uuid), '', 'EX', REDIS_SSO_SESSION_TIMEOUT)
+
+    return {
+      uuid,
+      auth_url: authUrl,
+      expires_in: REDIS_SSO_SESSION_TIMEOUT * 1000, // milliseconds
+    }
+  }
+
+  async processGithubCode(code: string, ssoHash: string) {
+    let token
+    let tokenInfo
+
+    try {
+      const response = await axios.post(
+        'https://github.com/login/oauth/access_token',
+        {
+          client_id: this.githubOAuthClientID,
+          client_secret: this.githubOAuthClientSecret,
+          code,
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+          },
+        },
+      )
+
+      token = response.data.access_token
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> processGithubCode -> axios.post]: ${reason}`,
+      )
+      throw new BadRequestException('Invalid Github code supplied')
+    }
+
+    try {
+      const response = await axios.get('https://api.github.com/user', {
+        headers: {
+          Authorization: `token ${token}`,
+        },
+      })
+
+      tokenInfo = response.data
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> processGithubCode -> axios.get]: ${reason}`,
+      )
+      throw new BadRequestException('Invalid Github token')
+    }
+
+    // const { sub, email } = tokenInfo
+
+    console.log(tokenInfo)
+
+    // TODO: Only store the email if email_verified is true
+    // const dataToStore = JSON.stringify({ sub, email })
+
+    // Storing the session identifier in redis
+    // await redis.set(
+    //   getSSORedisKey(ssoHash),
+    //   dataToStore,
+    //   'EX',
+    //   REDIS_SSO_SESSION_TIMEOUT,
+    // )
   }
 }
