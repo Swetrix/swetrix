@@ -638,6 +638,18 @@ export class AuthService {
   }
 
   async unlinkGoogleAccount(userId: string) {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (user.registeredWithGoogle) {
+      throw new BadRequestException(
+        'You cannot unlink your Google account if you registered with it',
+      )
+    }
+
     await this.userService.updateUser(userId, {
       googleId: null,
     })
