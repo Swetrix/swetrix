@@ -1,12 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEnum } from 'class-validator'
 
-export enum SSOProviders {
-  GOOGLE = 'google',
-  GITHUB = 'github',
-}
+import { SSOProviders } from './sso-generate.dto'
 
-export class SSOGenerateDto {
+export class SSOUnlinkDto {
   @ApiProperty({
     description: 'SSO provider name',
     enum: SSOProviders,

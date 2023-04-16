@@ -42,9 +42,11 @@ import {
   ChangePasswordDto,
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
-  AuthUserGoogleDto,
+  SSOGetJWTByHashDto,
   ProcessSSOCodeDto,
   SSOGenerateDto,
+  SSOLinkDto,
+  SSOUnlinkDto,
 } from './dtos'
 import { SSOProviders } from './dtos/sso-generate.dto'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
@@ -457,46 +459,49 @@ export class AuthController {
   @Public()
   // Validates the authorisation code and returns the JWT tokens
   async getJWTByHash(
-    @Body() body: AuthUserGoogleDto,
+    @Body() body: SSOGetJWTByHashDto,
     @Headers() headers: unknown,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-hash', 15, 1800)
+    await checkRateLimit(ip, 'sso-hash', 15, 1800)
 
-    const { hash } = body
+    const { hash, provider } = body
 
-    return this.authService.authenticateGoogle(hash, headers, ip)
+    return this.authService.authenticateSSO(hash, headers, ip, provider)
   }
 
-  @ApiOperation({ summary: 'Link Google to an existing account' })
+  @ApiOperation({ summary: 'Link SSO provider to an existing account' })
   @ApiOkResponse({
-    description: 'Google linked to an existing account',
+    description: 'SSO provider linked to an existing account',
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Post('google/link_by_hash')
+  @Post('sso/link_by_hash')
   public async linkGoogleToAccount(
-    @Body() body: AuthUserGoogleDto,
+    @Body() body: SSOLinkDto,
     @CurrentUserId() userId: string,
     @Ip() ip: string,
   ): Promise<void> {
-    await checkRateLimit(ip, 'g-sso-link', 15, 1800)
+    await checkRateLimit(ip, 'sso-link', 15, 1800)
 
-    const { hash } = body
+    const { hash, provider } = body
 
-    await this.authService.linkGoogleAccount(userId, hash)
+    await this.authService.linkSSOAccount(userId, hash, provider)
   }
 
-  @ApiOperation({ summary: 'Unlink Google from an existing account' })
+  @ApiOperation({ summary: 'Unlink SSO provider from an existing account' })
   @ApiOkResponse({
-    description: 'Google unlinked from an existing account',
+    description: 'SSO provider unlinked from an existing account',
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Delete('google/unlink')
-  public async unlinkGoogleFromAccount(
+  @Delete('sso/unlink')
+  public async unlinkSSOFromAccount(
+    @Body() body: SSOUnlinkDto,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    await this.authService.unlinkGoogleAccount(userId)
+    const { provider } = body
+
+    await this.authService.unlinkSSOAccount(userId, provider)
   }
 }

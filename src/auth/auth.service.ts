@@ -560,6 +560,18 @@ export class AuthService {
     return { sub, email }
   }
 
+  async authenticateSSO(ssoHash: string, headers: unknown, ip: string, provider: SSOProviders) {
+    if (provider === SSOProviders.GOOGLE) {
+      return await this.authenticateGoogle(ssoHash, headers, ip)
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      return await this.authenticateGithub(ssoHash, headers, ip)
+    }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
+  }
+
   async authenticateGoogle(ssoHash: string, headers: unknown, ip: string) {
     const { sub, email } = await this.processHash(ssoHash)
 
@@ -641,6 +653,18 @@ export class AuthService {
     )
   }
 
+  async linkSSOAccount(userId: string, ssoHash: string, provider: SSOProviders) {
+    if (provider === SSOProviders.GOOGLE) {
+      await this.linkGoogleAccount(userId, ssoHash)
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      await this.linkGithubAccount(userId, ssoHash)
+    }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
+  }
+
   async linkGoogleAccount(userId: string, ssoHash: string) {
     const { sub } = await this.processHash(ssoHash)
 
@@ -659,6 +683,18 @@ export class AuthService {
     await this.userService.updateUser(userId, {
       googleId: sub,
     })
+  }
+
+  async unlinkSSOAccount(userId: string, provider: SSOProviders) {
+    if (provider === SSOProviders.GOOGLE) {
+      await this.unlinkGoogleAccount(userId)
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      await this.unlinkGithubAccount(userId)
+    }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
   }
 
   async unlinkGoogleAccount(userId: string) {
@@ -762,5 +798,17 @@ export class AuthService {
     //   'EX',
     //   REDIS_SSO_SESSION_TIMEOUT,
     // )
+  }
+
+  async unlinkGithubAccount(userId: string) {
+    // TODO
+  }
+
+  async linkGithubAccount(userId: string, ssoHash: string) {
+    // TODO
+  }
+
+  async authenticateGithub(ssoHash: string, headers: unknown, ip: string) {
+    // TODO
   }
 }
