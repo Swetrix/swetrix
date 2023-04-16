@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import Button from 'ui/Button'
 import GoogleGSVG from 'ui/icons/GoogleG'
 
-
 interface IGoogleAuth {
   setIsLoading: (isLoading: boolean) => void,
   authSSO: any, // TODO add types
@@ -34,6 +33,10 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({ setIsLoading, authSSO, dontRemember
       </>
     </Button>
   )
+}
+
+GoogleAuth.defaultProps = {
+  dontRemember: false,
 }
 
 export default GoogleAuth

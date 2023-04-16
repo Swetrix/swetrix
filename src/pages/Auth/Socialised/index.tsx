@@ -24,20 +24,20 @@ const Socialised = (): JSX.Element => {
   const _location = _replace(window.location.href, `${routes.socialised}#`, `${routes.socialised}?`)
 
   const { searchParams } = new URL(_location)
-  const state = searchParams.get('state')
+  const hash = searchParams.get('state')
   const token = searchParams.get('access_token')
 
-  console.log(state, token)
+  console.log(hash, token)
 
   useEffect(() => {
     const processCode = async () => {
-      if (!token || !state) {
+      if (!token || !hash) {
         setIsError(true)
         return
       }
 
       try {
-        await processGoogleToken(token, state)
+        await processGoogleToken(token, hash)
       } catch (reason) {
         setIsError(true)
         console.error(`[ERROR] Error while processing Google code: ${reason}`)

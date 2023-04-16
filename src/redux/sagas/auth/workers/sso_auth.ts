@@ -1,6 +1,4 @@
 import { call, put, delay } from 'redux-saga/effects'
-import _isObject from 'lodash/isPlainObject'
-import _omit from 'lodash/omit'
 
 import UIActions from 'redux/reducers/ui'
 import { authActions } from 'redux/reducers/auth'
@@ -10,8 +8,8 @@ import {
   getJWTByGoogleHash, generateGoogleAuthURL,
 } from 'api'
 import { setRefreshToken } from 'utils/refreshToken'
-import sagaActions from '../../actions/index'
 import { openBrowserWindow } from 'utils/generic'
+import sagaActions from '../../actions/index'
 
 const AUTH_WINDOW_WIDTH = 600
 const AUTH_WINDOW_HEIGHT = 800
@@ -52,6 +50,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember } }: any) {
         const {
           accessToken, refreshToken, user,
         } = yield call(getJWTByGoogleHash, uuid)
+        authWindow.close()
 
         yield put(authActions.setDontRemember(dontRemember))
 
@@ -71,6 +70,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember } }: any) {
         yield put(sagaActions.loadSharedProjects())
         yield put(sagaActions.loadProjectAlerts())
         callback(true, false)
+        return
       } catch (reason) {
         // Authentication is not finished yet
       }
