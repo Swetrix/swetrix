@@ -32,16 +32,15 @@ export default function* ssoLink({ payload: { callback, t } }: ISSOLink) {
   }
 
   try {
-    const { uuid, auth_url: authUrl } = yield call(generateGoogleAuthURL)
+    const {
+      uuid, auth_url: authUrl, expires_in: expiresIn,
+    } = yield call(generateGoogleAuthURL)
 
     // Set the URL of the authentification browser window
     authWindow.location = authUrl
 
-    // Close the authWindow after 5 minutes
-    // TODO: THIS VALUE SHOULD BE RETURNED FROM THE API
-    setTimeout(() => {
-      authWindow.close()
-    }, 5 * 60 * 1000)
+    // Closing the authorisation window after the session expires
+    setTimeout(authWindow.close, expiresIn)
 
     while (true) {
       yield delay(HASH_CHECK_FREQUENCY)
