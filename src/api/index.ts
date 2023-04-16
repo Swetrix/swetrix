@@ -809,9 +809,42 @@ export const confirmTransferProject = (uuid: string) =>
         : error.response.data.message
     })
 
-export const googleAuth = (data: any) =>
+export const generateGoogleAuthURL = () =>
   api
-    .post('v1/auth/google', data)
+    .post('v1/auth/google/generate')
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getJWTByGoogleHash = (hash: string) =>
+  api
+    .post('v1/auth/google/hash', { hash })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const linkByGoogleHash = (hash: string) =>
+  api
+    .post('v1/auth/google/link_by_hash', { hash })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const processGoogleToken = (token: string, hash: string) =>
+  api
+    .post('v1/auth/google/process-token', { token, hash })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)

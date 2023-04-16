@@ -21,7 +21,7 @@ import { HAVE_I_BEEN_PWNED_URL, TRIAL_DAYS } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
 import _omit from 'lodash/omit'
 
-const Signup = ({ signup }: {
+const Signup = ({ signup, authSSO }: {
   signup: (data: {
     email: string,
     password: string,
@@ -31,6 +31,7 @@ const Signup = ({ signup }: {
   }, t: (key: string, optinions?: {
     [key: string]: string | number,
   }) => string, callback: (res: any) => void) => void,
+  authSSO: any, // TODO add types
 }): JSX.Element => {
   const { t }: {
     t: (key: string, optinions?: {
@@ -250,7 +251,7 @@ const Signup = ({ signup }: {
               {t('auth.signup.button')}
             </Button>
           </div>
-          <GoogleAuth setIsLoading={setIsLoading} />
+          <GoogleAuth setIsLoading={setIsLoading} authSSO={authSSO} dontRemember={form.dontRemember} />
         </form>
       </div>
     </Title>
@@ -259,6 +260,7 @@ const Signup = ({ signup }: {
 
 Signup.propTypes = {
   signup: PropTypes.func.isRequired,
+  authSSO: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(Signup, auth.notAuthenticated))

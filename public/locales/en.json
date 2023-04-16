@@ -25,7 +25,8 @@
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
     "invalidToken": "Invalid token",
     "transferRequestSent": "Transfer request sent",
-    "transferProjectReject": "The project transfer request has been cancelled"
+    "transferProjectReject": "The project transfer request has been cancelled",
+    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service"
   },
   "common": {
     "features": "Features",
@@ -276,6 +277,9 @@
     },
     "verification": {
       "success": "Your email has been successfully verified!"
+    },
+    "socialisation": {
+      "success": "Socialisation successful"
     },
     "common": {
       "signinInstead": "Sign in instead",
@@ -756,7 +760,8 @@
     "contact": "Contact",
     "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs",
-    "press": "Media & Press"
+    "press": "Media & Press",
+    "socialisation": "Socialisation"
   },
   "header": {
     "switchTheme": "Switch theme",
