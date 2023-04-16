@@ -526,7 +526,7 @@ export class AuthService {
 
     await redis.del(ssoRedisKey)
 
-    return { sub, email, ssoRedisKey }
+    return { sub, email }
   }
 
   async authenticateGoogle(
