@@ -842,6 +842,17 @@ export const linkByGoogleHash = (hash: string) =>
         : error.response.data.message
     })
 
+export const unlinkGoogle = () =>
+  api
+    .delete('v1/auth/google/unlink')
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const processGoogleToken = (token: string, hash: string) =>
   api
     .post('v1/auth/google/process-token', { token, hash })

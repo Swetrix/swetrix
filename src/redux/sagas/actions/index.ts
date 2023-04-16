@@ -50,6 +50,22 @@ const authSSO = (dontRemember: boolean, t: (key: string) => string = () => '', c
   },
 })
 
+// currently only google is supported, in future we should provide a variable specifying the provider
+const linkSSO = (t: (key: string) => string = () => '', callback: (res: any) => void = () => { }, provider = 'google') => ({
+  type: types.LINK_SSO,
+  payload: {
+    callback, t, provider,
+  },
+})
+
+// currently only google is supported, in future we should provide a variable specifying the provider
+const unlinkSSO = (t: (key: string) => string = () => '', callback: (res: any) => void = () => { }, provider = 'google') => ({
+  type: types.UNLINK_SSO,
+  payload: {
+    callback, t, provider,
+  },
+})
+
 const signupAsync = (data: {
   email: string,
   password: string,
@@ -119,6 +135,8 @@ const sagaActions = {
   deleteAccountAsync,
   logout,
   shareVerifyAsync,
+  linkSSO,
+  unlinkSSO,
 }
 
 export default sagaActions

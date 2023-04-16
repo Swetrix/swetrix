@@ -414,3 +414,7 @@ export const SSO_ACTIONS = Object.freeze({
   LINK: 'link',
   AUTH: 'auth',
 })
+
+export const SOCIALISATIONS = Object.freeze({
+  GOOGLE: 'google',
+})

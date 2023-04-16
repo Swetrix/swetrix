@@ -11,6 +11,8 @@ const sagaTypes = Object.freeze({
   SHARE_VERIFY_ASYNC: 'SHARE_VERIFY_ASYNC',
   LOGOUT: 'LOGOUT',
   AUTH_SSO: 'AUTH_SSO',
+  LINK_SSO: 'LINK_SSO',
+  UNLINK_SSO: 'UNLINK_SSO',
 })
 
 export default sagaTypes

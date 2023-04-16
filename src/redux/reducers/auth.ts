@@ -9,12 +9,12 @@ import { FREE_TIER_KEY, isSelfhosted } from '../constants'
 import { ISharedProject } from '../models/ISharedProject'
 
 interface IAuthState {
-    user: IUser
-    redirectPath: string | null
-    authenticated: boolean
-    loading: boolean
-    dontRemember: boolean
-    isPaidTierUsed: boolean
+  user: IUser
+  redirectPath: string | null
+  authenticated: boolean
+  loading: boolean
+  dontRemember: boolean
+  isPaidTierUsed: boolean
 }
 
 const initialState: IAuthState = {
