@@ -306,7 +306,6 @@ const getSettings = (
   const lines = []
   const modifiedChart = { ...chart }
   let regions
-  const columns = getColumns(chart, activeChartMetrics)
   const customEventsToArray = customEvents ? _map(_keys(customEvents), (el) => {
     return [el, ...customEvents[el]]
   }) : []
@@ -321,6 +320,8 @@ const getSettings = (
     modifiedChart.visits = [...modifiedChart.visits, ...forecasedChartData.visits]
     modifiedChart.sdur = [...modifiedChart.sdur, ...forecasedChartData.sdur]
   }
+
+  const columns = getColumns(modifiedChart, activeChartMetrics)
 
   if (applyRegions) {
     let regionStart
