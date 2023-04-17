@@ -76,6 +76,7 @@ export default function* ssoAuth({
         yield put(sagaActions.loadProjects())
         yield put(sagaActions.loadSharedProjects())
         yield put(sagaActions.loadProjectAlerts())
+        yield put(authActions.finishLoading())
         callback(true, false)
         return
       } catch (reason) {
