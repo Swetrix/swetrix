@@ -433,7 +433,7 @@
     },
     "socialisations": "Socialisations",
     "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
-    "cantUnlinkSocialisation": "You can't unlink this socialisation because is was used to register your account.",
+    "cantUnlinkSocialisation": "You can't unlink this socialisation because it was used to register your account.",
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
     "chatID": "Chat ID",
