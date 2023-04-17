@@ -673,6 +673,16 @@ export class AuthService {
       )
     }
 
+    const subUser = await this.userService.findOneWhere({
+      googleId: sub,
+    })
+
+    if (subUser) {
+      throw new BadRequestException(
+        'This Google account is already linked to another user',
+      )
+    }
+
     const user = await this.userService.findUserById(userId)
 
     if (!user) {
@@ -897,6 +907,16 @@ export class AuthService {
     if (!id) {
       throw new BadRequestException(
         'Github ID is missing in the authentication session',
+      )
+    }
+
+    const subUser = await this.userService.findOneWhere({
+      githubId: id,
+    })
+
+    if (subUser) {
+      throw new BadRequestException(
+        'This Github account is already linked to another user',
       )
     }
 
