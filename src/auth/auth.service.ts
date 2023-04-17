@@ -1,7 +1,6 @@
 import {
   Injectable,
   InternalServerErrorException,
-  UnauthorizedException,
   BadRequestException,
   ConflictException,
 } from '@nestjs/common'
@@ -50,19 +49,22 @@ import { UserGithubDTO } from '../user/dto/user-github.dto'
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
 const generateSSOState = (provider: SSOProviders) => `${provider}:${uuidv4()}`
-const getSSOSessionProvider = (state: string): SSOProviders => _split(state, ':')[0] as SSOProviders
+const getSSOSessionProvider = (state: string): SSOProviders =>
+  _split(state, ':')[0] as SSOProviders
 
 const OAUTH_REDIRECT_URL = isDevelopment
   ? 'http://localhost:3000/socialised'
   : `${PRODUCTION_ORIGIN}/socialised`
 
-const GITHUB_OAUTH2_CLIENT_ID = process.env.GITHUB_OAUTH2_CLIENT_ID
-const GITHUB_OAUTH2_CLIENT_SECRET = process.env.GITHUB_OAUTH2_CLIENT_SECRET
+const { GITHUB_OAUTH2_CLIENT_ID } = process.env
+const { GITHUB_OAUTH2_CLIENT_SECRET } = process.env
 
 @Injectable()
 export class AuthService {
   oauth2Client: Auth.OAuth2Client
+
   githubOAuthClientID: string
+
   githubOAuthClientSecret: string
 
   constructor(
@@ -509,10 +511,7 @@ export class AuthService {
 
     const user = await this.userService.create(query)
 
-    const jwtTokens = await this.generateJwtTokens(
-      user.id,
-      true,
-    )
+    const jwtTokens = await this.generateJwtTokens(user.id, true)
 
     return {
       ...jwtTokens,
@@ -560,13 +559,18 @@ export class AuthService {
     return payload
   }
 
-  async authenticateSSO(ssoHash: string, headers: unknown, ip: string, provider: SSOProviders) {
+  async authenticateSSO(
+    ssoHash: string,
+    headers: unknown,
+    ip: string,
+    provider: SSOProviders,
+  ) {
     if (provider === SSOProviders.GOOGLE) {
-      return await this.authenticateGoogle(ssoHash, headers, ip)
+      return this.authenticateGoogle(ssoHash, headers, ip)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      return await this.authenticateGithub(ssoHash, headers, ip)
+      return this.authenticateGithub(ssoHash, headers, ip)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
@@ -617,11 +621,11 @@ export class AuthService {
     const provider = getSSOSessionProvider(ssoHash)
 
     if (provider === SSOProviders.GOOGLE) {
-      return await this.processGoogleToken(token, ssoHash)
+      return this.processGoogleToken(token, ssoHash)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      return await this.processGithubCode(token, ssoHash)
+      return this.processGithubCode(token, ssoHash)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
@@ -652,13 +656,17 @@ export class AuthService {
     )
   }
 
-  async linkSSOAccount(userId: string, ssoHash: string, provider: SSOProviders) {
+  async linkSSOAccount(
+    userId: string,
+    ssoHash: string,
+    provider: SSOProviders,
+  ) {
     if (provider === SSOProviders.GOOGLE) {
-      return await this.linkGoogleAccount(userId, ssoHash)
+      return this.linkGoogleAccount(userId, ssoHash)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      return await this.linkGithubAccount(userId, ssoHash)
+      return this.linkGithubAccount(userId, ssoHash)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
@@ -696,11 +704,11 @@ export class AuthService {
 
   async unlinkSSOAccount(userId: string, provider: SSOProviders) {
     if (provider === SSOProviders.GOOGLE) {
-      return await this.unlinkGoogleAccount(userId)
+      return this.unlinkGoogleAccount(userId)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      return await this.unlinkGithubAccount(userId)
+      return this.unlinkGithubAccount(userId)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
@@ -806,7 +814,7 @@ export class AuthService {
           throw new BadRequestException('No email address found')
         }
 
-        email = _find(emails, (e) => e.primary).email
+        email = _find(emails, e => e.primary).email
       } catch (reason) {
         console.error(
           `[ERROR][AuthService -> processGithubCode -> axios.get (emails)]: ${reason}`,
@@ -848,10 +856,7 @@ export class AuthService {
 
     const user = await this.userService.create(query)
 
-    const jwtTokens = await this.generateJwtTokens(
-      user.id,
-      true,
-    )
+    const jwtTokens = await this.generateJwtTokens(user.id, true)
 
     return {
       ...jwtTokens,

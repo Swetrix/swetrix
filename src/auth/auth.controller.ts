@@ -14,6 +14,7 @@ import {
   Get,
   Param,
   UnauthorizedException,
+  BadRequestException,
   Headers,
 } from '@nestjs/common'
 import {
@@ -28,6 +29,7 @@ import * as _pick from 'lodash/pick'
 import { checkRateLimit } from 'src/common/utils'
 import { UserType } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
+import { isDevelopment } from 'src/common/constants'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
 import {
@@ -49,7 +51,6 @@ import {
   SSOUnlinkDto,
 } from './dtos'
 import { SSOProviders } from './dtos/sso-generate.dto'
-import { isDevelopment } from 'src/common/constants'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 
 const LOCAL_OAUTH_RATE_LIMIT = 2000
@@ -431,7 +432,12 @@ export class AuthController {
     @Body() body: SSOGenerateDto,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'sso-generate', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
+    await checkRateLimit(
+      ip,
+      'sso-generate',
+      isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT,
+      1800,
+    )
 
     const { provider } = body
 
@@ -442,6 +448,8 @@ export class AuthController {
     if (provider === SSOProviders.GITHUB) {
       return this.authService.generateGithubURL()
     }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
   }
 
   @ApiOperation({ summary: 'Process authentication token (or code)' })
@@ -451,7 +459,12 @@ export class AuthController {
     @Body() body: ProcessSSOCodeDto,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'sso-process', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
+    await checkRateLimit(
+      ip,
+      'sso-process',
+      isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT,
+      1800,
+    )
 
     const { token, hash } = body
 
@@ -467,7 +480,12 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'sso-hash', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
+    await checkRateLimit(
+      ip,
+      'sso-hash',
+      isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT,
+      1800,
+    )
 
     const { hash, provider } = body
 
@@ -486,7 +504,12 @@ export class AuthController {
     @CurrentUserId() userId: string,
     @Ip() ip: string,
   ): Promise<void> {
-    await checkRateLimit(ip, 'sso-link', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
+    await checkRateLimit(
+      ip,
+      'sso-link',
+      isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT,
+      1800,
+    )
 
     const { hash, provider } = body
 

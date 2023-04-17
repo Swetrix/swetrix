@@ -22,7 +22,9 @@ export class UserService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
-  async create(userDTO: UserProfileDTO | User | UserGoogleDTO | UserGithubDTO): Promise<User> {
+  async create(
+    userDTO: UserProfileDTO | User | UserGoogleDTO | UserGithubDTO,
+  ): Promise<User> {
     return this.usersRepository.save(userDTO)
   }
 
