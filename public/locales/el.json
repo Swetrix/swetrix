@@ -25,7 +25,12 @@
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
     "invalidToken": "Invalid token",
     "transferRequestSent": "Transfer request sent",
-    "transferProjectReject": "The project transfer request has been cancelled"
+    "transferProjectReject": "The project transfer request has been cancelled",
+    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
+    "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
+    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
+    "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
   },
   "common": {
     "features": "Χαρακτηριστικά",
@@ -69,7 +74,9 @@
     "loading": "Loading..",
     "edit": "Edit",
     "account": "Account",
-    "transferring": "Transferring"
+    "transferring": "Transferring",
+    "link": "Link",
+    "unlink": "Unlink"
   },
   "main": {
     "ukrSupport": "Υποστηρίξτε τον ουκρανικό στρατό για να πολεμήσει τη ρωσική εισβολή.",
@@ -277,6 +284,10 @@
     "verification": {
       "success": "Το email σας επαληθεύτηκε επιτυχώς!"
     },
+    "socialisation": {
+      "success": "Socialisation successful",
+      "orSingUpWith": "or sign up with"
+    },
     "common": {
       "signinInstead": "Συνδεθείτε αντ' αυτού",
       "signupInstead": "Εγγραφείτε αντ' αυτού",
@@ -293,7 +304,9 @@
       "signin": "Σύνδεση",
       "checkLeakedPassword": "Ελέγξτε αν ο κωδικός πρόσβασης έχει διαρρεύσει",
       "checkLeakedPasswordDesc": "Όταν είναι ενεργοποιημένο, ελέγχουμε τον κωδικό πρόσβασής σας με τη βάση δεδομένων <db>{{database}}</db>. Δεν στέλνουμε τον κωδικό πρόσβασής σας στην υπηρεσία. Πρώτα κατακερµατίζουµε τον κωδικό σας (χρησιµοποιώντας SHA1) και στέλνουµε µόνο τους 5 πρώτους χαρακτήρες αυτού του κατακερµατισµού στην υπηρεσία. Η υπηρεσία επιστρέφει όλους τους διαρρεύσαντες κωδικούς πρόσβασης που ξεκινούν με αυτούς τους 5 χαρακτήρες. Στο τέλος μας ελέγχουμε αν ένας από αυτούς ταιριάζει με τον κωδικό πρόσβασής σας. Σας εμφανίζουμε μια προειδοποίηση εάν έχει διαρρεύσει ξανά. Ποτέ δεν αποθηκεύουμε τον κωδικό πρόσβασής σας σε απλό κείμενο.",
-      "addedOn": "Added on"
+      "addedOn": "Added on",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithGithub": "Continue with Github"
     }
   },
   "features": {
@@ -418,6 +431,9 @@
       "telegram": "Receive notifications directly into a Telegram bot.",
       "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
     },
+    "socialisations": "Socialisations",
+    "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
+    "cantUnlinkSocialisation": "You can't unlink this socialisation because it was used to register your account.",
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
     "chatID": "Chat ID",
@@ -755,7 +771,8 @@
     "contact": "Επικοινωνία",
     "changelog": "Changelog",
     "main": "Απόλυτα analytics ανοιχτού κώδικα για να ικανοποιήσετε όλες τις ανάγκες σας",
-    "press": "Media & Press"
+    "press": "Media & Press",
+    "socialisation": "Socialisation"
   },
   "header": {
     "switchTheme": "Switch theme",
