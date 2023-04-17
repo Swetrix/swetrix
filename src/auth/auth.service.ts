@@ -16,7 +16,10 @@ import * as dayjs from 'dayjs'
 import { InjectBot } from 'nestjs-telegraf'
 import { Telegraf } from 'telegraf'
 import { UAParser } from 'ua-parser-js'
-import _pick from 'lodash/pick'
+import * as _pick from 'lodash/pick'
+import * as _split from 'lodash/split'
+import * as _isEmpty from 'lodash/isEmpty'
+import * as _find from 'lodash/find'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
@@ -40,18 +43,27 @@ import {
   PRODUCTION_ORIGIN,
   isDevelopment,
 } from 'src/common/constants'
+import { SSOProviders } from './dtos/sso-generate.dto'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
+import { UserGithubDTO } from '../user/dto/user-github.dto'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
+const generateSSOState = (provider: SSOProviders) => `${provider}:${uuidv4()}`
+const getSSOSessionProvider = (state: string): SSOProviders => _split(state, ':')[0] as SSOProviders
 
-const GOOGLE_OAUTH_REDIRECT_URL = isDevelopment
+const OAUTH_REDIRECT_URL = isDevelopment
   ? 'http://localhost:3000/socialised'
   : `${PRODUCTION_ORIGIN}/socialised`
+
+const GITHUB_OAUTH2_CLIENT_ID = process.env.GITHUB_OAUTH2_CLIENT_ID
+const GITHUB_OAUTH2_CLIENT_SECRET = process.env.GITHUB_OAUTH2_CLIENT_SECRET
 
 @Injectable()
 export class AuthService {
   oauth2Client: Auth.OAuth2Client
+  githubOAuthClientID: string
+  githubOAuthClientSecret: string
 
   constructor(
     @InjectBot() private readonly telegramBot: Telegraf<TelegrafContext>,
@@ -453,7 +465,7 @@ export class AuthService {
   */
   async handleExistingUserGoogle(user: User, headers: unknown, ip: string) {
     if (!user.googleId) {
-      throw new UnauthorizedException()
+      throw new BadRequestException()
     }
 
     await this.sendTelegramNotification(user.id, headers, ip)
@@ -497,14 +509,13 @@ export class AuthService {
 
     const user = await this.userService.create(query)
 
-    const { accessToken, refreshToken } = await this.generateJwtTokens(
+    const jwtTokens = await this.generateJwtTokens(
       user.id,
       true,
     )
 
     return {
-      accessToken,
-      refreshToken,
+      ...jwtTokens,
       user: this.userService.omitSensitiveData(user),
     }
   }
@@ -531,13 +542,10 @@ export class AuthService {
       )
     }
 
-    let sub: string
-    let email: string
+    let payload
 
     try {
-      const payload = JSON.parse(data)
-      sub = payload.sub
-      email = payload.email
+      payload = JSON.parse(data)
     } catch (reason) {
       console.error(
         `[ERROR][AuthService -> authenticateGoogle -> JSON.parse]: ${reason} - ${data}`,
@@ -549,7 +557,19 @@ export class AuthService {
 
     await redis.del(ssoRedisKey)
 
-    return { sub, email }
+    return payload
+  }
+
+  async authenticateSSO(ssoHash: string, headers: unknown, ip: string, provider: SSOProviders) {
+    if (provider === SSOProviders.GOOGLE) {
+      return await this.authenticateGoogle(ssoHash, headers, ip)
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      return await this.authenticateGithub(ssoHash, headers, ip)
+    }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
   }
 
   async authenticateGoogle(ssoHash: string, headers: unknown, ip: string) {
@@ -575,10 +595,10 @@ export class AuthService {
 
   async generateGoogleURL() {
     // Generating SSO session identifier and authorisation URL
-    const uuid = uuidv4()
+    const uuid = generateSSOState(SSOProviders.GOOGLE)
     const authUrl = await this.oauth2Client.generateAuthUrl({
       state: uuid,
-      redirect_uri: GOOGLE_OAUTH_REDIRECT_URL,
+      redirect_uri: OAUTH_REDIRECT_URL,
       scope: 'email',
       response_type: 'token',
     })
@@ -593,6 +613,20 @@ export class AuthService {
     }
   }
 
+  async processSSOToken(token: string, ssoHash: string) {
+    const provider = getSSOSessionProvider(ssoHash)
+
+    if (provider === SSOProviders.GOOGLE) {
+      return await this.processGoogleToken(token, ssoHash)
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      return await this.processGithubCode(token, ssoHash)
+    }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
+  }
+
   async processGoogleToken(token: string, ssoHash: string) {
     let tokenInfo
 
@@ -602,12 +636,11 @@ export class AuthService {
       console.error(
         `[ERROR][AuthService -> processGoogleCode -> oauth2Client.getTokenInfo]: ${reason}`,
       )
-      throw new BadRequestException('Invalid Google code supplied')
+      throw new BadRequestException('Invalid Google token supplied')
     }
 
     const { sub, email } = tokenInfo
 
-    // TODO: Only store the email if email_verified is true
     const dataToStore = JSON.stringify({ sub, email })
 
     // Storing the session identifier in redis
@@ -619,12 +652,34 @@ export class AuthService {
     )
   }
 
+  async linkSSOAccount(userId: string, ssoHash: string, provider: SSOProviders) {
+    if (provider === SSOProviders.GOOGLE) {
+      return await this.linkGoogleAccount(userId, ssoHash)
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      return await this.linkGithubAccount(userId, ssoHash)
+    }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
+  }
+
   async linkGoogleAccount(userId: string, ssoHash: string) {
     const { sub } = await this.processHash(ssoHash)
 
     if (!sub) {
       throw new BadRequestException(
         'Google ID is missing in the authentication session',
+      )
+    }
+
+    const subUser = await this.userService.findOneWhere({
+      googleId: sub,
+    })
+
+    if (subUser) {
+      throw new BadRequestException(
+        'This Google account is already linked to another user',
       )
     }
 
@@ -637,6 +692,18 @@ export class AuthService {
     await this.userService.updateUser(userId, {
       googleId: sub,
     })
+  }
+
+  async unlinkSSOAccount(userId: string, provider: SSOProviders) {
+    if (provider === SSOProviders.GOOGLE) {
+      return await this.unlinkGoogleAccount(userId)
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      return await this.unlinkGithubAccount(userId)
+    }
+
+    throw new BadRequestException('Unknown SSO provider supplied')
   }
 
   async unlinkGoogleAccount(userId: string) {
@@ -655,5 +722,233 @@ export class AuthService {
     await this.userService.updateUser(userId, {
       googleId: null,
     })
+  }
+
+  /*
+    --------------------------------
+    Github SSO section
+    --------------------------------
+  */
+  async generateGithubURL() {
+    // Generating SSO session identifier and authorisation URL
+    const uuid = generateSSOState(SSOProviders.GITHUB)
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_OAUTH2_CLIENT_ID}&state=${uuid}&redirect_uri=${OAUTH_REDIRECT_URL}&scope=user:email`
+
+    // Storing the session identifier in redis
+    await redis.set(getSSORedisKey(uuid), '', 'EX', REDIS_SSO_SESSION_TIMEOUT)
+
+    return {
+      uuid,
+      auth_url: authUrl,
+      expires_in: REDIS_SSO_SESSION_TIMEOUT * 1000, // milliseconds
+    }
+  }
+
+  async processGithubCode(code: string, ssoHash: string) {
+    let token
+    let tokenInfo
+
+    try {
+      const response = await axios.post(
+        'https://github.com/login/oauth/access_token',
+        {
+          client_id: GITHUB_OAUTH2_CLIENT_ID,
+          client_secret: GITHUB_OAUTH2_CLIENT_SECRET,
+          code,
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+          },
+        },
+      )
+
+      token = response.data.access_token
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> processGithubCode -> axios.post]: ${reason}`,
+      )
+      throw new BadRequestException('Invalid Github code supplied')
+    }
+
+    try {
+      const response = await axios.get('https://api.github.com/user', {
+        headers: {
+          Authorization: `token ${token}`,
+        },
+      })
+
+      tokenInfo = response.data
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> processGithubCode -> axios.get]: ${reason}`,
+      )
+      throw new BadRequestException('Invalid Github token')
+    }
+
+    const { id } = tokenInfo
+    let { email } = tokenInfo
+
+    if (!email) {
+      try {
+        const response = await axios.get('https://api.github.com/user/emails', {
+          headers: {
+            Authorization: `token ${token}`,
+          },
+        })
+
+        const emails = response.data
+
+        if (_isEmpty(emails)) {
+          console.error(
+            '[ERROR][AuthService -> processGithubCode]: No email address found',
+          )
+          throw new BadRequestException('No email address found')
+        }
+
+        email = _find(emails, (e) => e.primary).email
+      } catch (reason) {
+        console.error(
+          `[ERROR][AuthService -> processGithubCode -> axios.get (emails)]: ${reason}`,
+        )
+        throw new BadRequestException('Invalid Github token')
+      }
+    }
+
+    const dataToStore = JSON.stringify({ id, email })
+
+    // Storing the session identifier in redis
+    await redis.set(
+      getSSORedisKey(ssoHash),
+      dataToStore,
+      'EX',
+      REDIS_SSO_SESSION_TIMEOUT,
+    )
+  }
+
+  async registerUserGithub(id: number, email: string) {
+    const query: UserGithubDTO = {
+      githubId: id,
+      trialEndDate: dayjs
+        .utc()
+        .add(TRIAL_DURATION, 'day')
+        .format('YYYY-MM-DD HH:mm:ss'),
+      registeredWithGithub: true,
+      isActive: true,
+      emailRequests: 0,
+    }
+
+    const userWithSameEmail = await this.userService.findOneWhere({
+      email,
+    })
+
+    if (!userWithSameEmail) {
+      query.email = email
+    }
+
+    const user = await this.userService.create(query)
+
+    const jwtTokens = await this.generateJwtTokens(
+      user.id,
+      true,
+    )
+
+    return {
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(user),
+    }
+  }
+
+  async handleExistingUserGithub(user: User, headers: unknown, ip: string) {
+    if (!user.githubId) {
+      throw new BadRequestException()
+    }
+
+    await this.sendTelegramNotification(user.id, headers, ip)
+
+    const jwtTokens = await this.generateJwtTokens(
+      user.id,
+      !user.isTwoFactorAuthenticationEnabled,
+    )
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
+    } else {
+      user = await this.getSharedProjectsForUser(user)
+    }
+
+    return {
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(user),
+    }
+  }
+
+  async unlinkGithubAccount(userId: string) {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (user.registeredWithGithub) {
+      throw new BadRequestException(
+        'You cannot unlink your Google account if you registered with it',
+      )
+    }
+
+    await this.userService.updateUser(userId, {
+      githubId: null,
+    })
+  }
+
+  async linkGithubAccount(userId: string, ssoHash: string) {
+    const { id } = await this.processHash(ssoHash)
+
+    if (!id) {
+      throw new BadRequestException(
+        'Github ID is missing in the authentication session',
+      )
+    }
+
+    const subUser = await this.userService.findOneWhere({
+      githubId: id,
+    })
+
+    if (subUser) {
+      throw new BadRequestException(
+        'This Github account is already linked to another user',
+      )
+    }
+
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    await this.userService.updateUser(userId, {
+      githubId: id,
+    })
+  }
+
+  async authenticateGithub(ssoHash: string, headers: unknown, ip: string) {
+    const { id, email } = await this.processHash(ssoHash)
+
+    try {
+      const user = await this.userService.findOneWhere({
+        githubId: id,
+      })
+
+      if (!user) {
+        return await this.registerUserGithub(id, email)
+      }
+
+      return await this.handleExistingUserGithub(user, headers, ip)
+    } catch (error) {
+      console.error(`[ERROR][AuthService -> authenticateGithub]: ${error}`)
+      throw new InternalServerErrorException(
+        'Something went wrong while authenticating user with Github',
+      )
+    }
   }
 }

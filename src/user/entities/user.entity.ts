@@ -289,6 +289,18 @@ export class User {
   @Column({ default: false })
   registeredWithGoogle: boolean
 
+  // Github SSO
+  @Column({
+    type: 'int',
+    nullable: true,
+    default: null,
+  })
+  // Github user: id value -> https://developer.github.com/v3/users/#get-the-authenticated-user
+  githubId: number | null
+
+  @Column({ default: false })
+  registeredWithGithub: boolean
+
   @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
   @JoinTable()
   extensions: ExtensionToUser[]

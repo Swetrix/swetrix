@@ -42,10 +42,18 @@ import {
   ChangePasswordDto,
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
-  AuthUserGoogleDto,
-  AuthUserGoogleProcessCodeDto,
+  SSOGetJWTByHashDto,
+  ProcessSSOCodeDto,
+  SSOGenerateDto,
+  SSOLinkDto,
+  SSOUnlinkDto,
 } from './dtos'
+import { SSOProviders } from './dtos/sso-generate.dto'
+import { isDevelopment } from 'src/common/constants'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
+
+const LOCAL_OAUTH_RATE_LIMIT = 2000
+const PRODUCTION_OAUTH_RATE_LIMIT = 15
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -415,75 +423,89 @@ export class AuthController {
     await this.authService.logout(user.id, refreshToken)
   }
 
-  // Google SSO
-  @ApiOperation({ summary: 'Auth user' })
-  @Post('google/generate')
+  // SSO section
+  @ApiOperation({ summary: 'Generate SSO authentication URL' })
+  @Post('sso/generate')
   @Public()
-  async generateAuthURL(@Ip() ip: string): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-generate', 15, 1800)
-
-    return this.authService.generateGoogleURL()
-  }
-
-  @ApiOperation({ summary: 'Auth user' })
-  @Post('google/process-token')
-  @Public()
-  async processGoogleCode(
-    @Body() body: AuthUserGoogleProcessCodeDto,
+  async generateAuthURL(
+    @Body() body: SSOGenerateDto,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-process', 15, 1800)
+    await checkRateLimit(ip, 'sso-generate', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
+
+    const { provider } = body
+
+    if (provider === SSOProviders.GOOGLE) {
+      return this.authService.generateGoogleURL()
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      return this.authService.generateGithubURL()
+    }
+  }
+
+  @ApiOperation({ summary: 'Process authentication token (or code)' })
+  @Post('sso/process-token')
+  @Public()
+  async processSSOToken(
+    @Body() body: ProcessSSOCodeDto,
+    @Ip() ip: string,
+  ): Promise<any> {
+    await checkRateLimit(ip, 'sso-process', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
 
     const { token, hash } = body
 
-    return this.authService.processGoogleToken(token, hash)
+    return this.authService.processSSOToken(token, hash)
   }
 
   @ApiOperation({ summary: 'Auth user' })
-  @Post('google/hash')
+  @Post('sso/hash')
   @Public()
   // Validates the authorisation code and returns the JWT tokens
   async getJWTByHash(
-    @Body() body: AuthUserGoogleDto,
+    @Body() body: SSOGetJWTByHashDto,
     @Headers() headers: unknown,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'g-sso-hash', 15, 1800)
+    await checkRateLimit(ip, 'sso-hash', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
 
-    const { hash } = body
+    const { hash, provider } = body
 
-    return this.authService.authenticateGoogle(hash, headers, ip)
+    return this.authService.authenticateSSO(hash, headers, ip, provider)
   }
 
-  @ApiOperation({ summary: 'Link Google to an existing account' })
+  @ApiOperation({ summary: 'Link SSO provider to an existing account' })
   @ApiOkResponse({
-    description: 'Google linked to an existing account',
+    description: 'SSO provider linked to an existing account',
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Post('google/link_by_hash')
+  @Post('sso/link_by_hash')
   public async linkGoogleToAccount(
-    @Body() body: AuthUserGoogleDto,
+    @Body() body: SSOLinkDto,
     @CurrentUserId() userId: string,
     @Ip() ip: string,
   ): Promise<void> {
-    await checkRateLimit(ip, 'g-sso-link', 15, 1800)
+    await checkRateLimit(ip, 'sso-link', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
 
-    const { hash } = body
+    const { hash, provider } = body
 
-    await this.authService.linkGoogleAccount(userId, hash)
+    await this.authService.linkSSOAccount(userId, hash, provider)
   }
 
-  @ApiOperation({ summary: 'Unlink Google from an existing account' })
+  @ApiOperation({ summary: 'Unlink SSO provider from an existing account' })
   @ApiOkResponse({
-    description: 'Google unlinked from an existing account',
+    description: 'SSO provider unlinked from an existing account',
   })
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Delete('google/unlink')
-  public async unlinkGoogleFromAccount(
+  @Delete('sso/unlink')
+  public async unlinkSSOFromAccount(
+    @Body() body: SSOUnlinkDto,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    await this.authService.unlinkGoogleAccount(userId)
+    const { provider } = body
+
+    await this.authService.unlinkSSOAccount(userId, provider)
   }
 }
