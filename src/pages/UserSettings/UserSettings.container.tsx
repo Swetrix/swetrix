@@ -53,6 +53,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   userSharedUpdate: (message: string) => {
     dispatch(alertsActions.userSharedUpdate({
       message,
+      type: 'success',
     }))
   },
   sharedProjectError: (message: string) => {
@@ -95,6 +96,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   accountUpdated: (message: string) => {
     dispatch(alertsActions.accountUpdated({
       message,
+      type: 'success',
     }))
   },
   updateUserProfileAsync: (data: Partial<IUser>, successMessage: string, callback = (e: any) => {}) => {
@@ -106,6 +108,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
             dispatch(
               alertsActions.accountUpdated({
                 message: successMessage,
+                type: 'success',
               }),
             )
           }

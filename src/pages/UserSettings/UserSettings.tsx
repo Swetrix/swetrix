@@ -62,7 +62,7 @@ interface IProps {
   genericError: (message: string) => void,
   onGDPRExportFailed: (message: string) => void,
   updateProfileFailed: (message: string) => void,
-  updateUserProfileAsync: (data: IUser, onSuccess: () => void, onError: () => void) => void,
+  updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (e: any) => {}) => void,
   accountUpdated: (t: string) => void,
   setAPIKey: (key: string | null) => void,
   user: IUser,
@@ -150,7 +150,7 @@ const UserSettings = ({
       }
     }
 
-    updateUserProfileAsync(data, () => t('profileSettings.updated'), callback)
+    updateUserProfileAsync(data, t('profileSettings.updated'))
   }
 
   useEffect(() => {
