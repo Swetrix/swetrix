@@ -44,6 +44,12 @@ const getStatusByUser = (user: IUser, socialisation: string) => {
     return [connected, unlinkable]
   }
 
+  if (socialisation === SSO_PROVIDERS.GITHUB) {
+    const connected = user.githubId
+    const unlinkable = !user.registeredWithGithub
+    return [connected, unlinkable]
+  }
+
   return [false, false]
 }
 
