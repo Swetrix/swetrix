@@ -617,11 +617,11 @@ export class AuthService {
     const provider = getSSOSessionProvider(ssoHash)
 
     if (provider === SSOProviders.GOOGLE) {
-      await this.processGoogleToken(token, ssoHash)
+      return await this.processGoogleToken(token, ssoHash)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      await this.processGithubCode(token, ssoHash)
+      return await this.processGithubCode(token, ssoHash)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
@@ -654,11 +654,11 @@ export class AuthService {
 
   async linkSSOAccount(userId: string, ssoHash: string, provider: SSOProviders) {
     if (provider === SSOProviders.GOOGLE) {
-      await this.linkGoogleAccount(userId, ssoHash)
+      return await this.linkGoogleAccount(userId, ssoHash)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      await this.linkGithubAccount(userId, ssoHash)
+      return await this.linkGithubAccount(userId, ssoHash)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
@@ -686,11 +686,11 @@ export class AuthService {
 
   async unlinkSSOAccount(userId: string, provider: SSOProviders) {
     if (provider === SSOProviders.GOOGLE) {
-      await this.unlinkGoogleAccount(userId)
+      return await this.unlinkGoogleAccount(userId)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      await this.unlinkGithubAccount(userId)
+      return await this.unlinkGithubAccount(userId)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
