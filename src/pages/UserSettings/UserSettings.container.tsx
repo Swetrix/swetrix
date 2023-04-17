@@ -16,7 +16,7 @@ const mapStateToProps = (state: StateType) => {
     user: state.auth.user,
     dontRemember: state.auth.dontRemember,
     isPaidTierUsed: state.auth.isPaidTierUsed,
-    // themeType: state.ui.theme.type,
+    theme: state.ui.theme.theme,
   }
 }
 

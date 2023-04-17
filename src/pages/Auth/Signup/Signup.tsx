@@ -9,6 +9,7 @@ import _isEmpty from 'lodash/isEmpty'
 
 import Title from 'components/Title'
 import GoogleAuth from 'components/GoogleAuth'
+import GithubAuth from 'components/GithubAuth'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
@@ -41,7 +42,7 @@ interface ISignup {
     t: (key: string, options?: {
       [key: string]: string | number,
     }) => string, callback: (res: any) => void) => void,
-  authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
 }
 
 const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
@@ -251,13 +252,22 @@ const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
               {t('auth.signup.button')}
             </Button>
           </div>
-          <GoogleAuth
-            className='mt-4'
-            setIsLoading={setIsLoading}
-            authSSO={authSSO}
-            callback={signUpCallback}
-            dontRemember={form.dontRemember}
-          />
+          <div className='space-x-5'>
+            <GoogleAuth
+              className='mt-4'
+              setIsLoading={setIsLoading}
+              authSSO={authSSO}
+              callback={signUpCallback}
+              dontRemember={form.dontRemember}
+            />
+            <GithubAuth
+              className='mt-4'
+              setIsLoading={setIsLoading}
+              authSSO={authSSO}
+              callback={signUpCallback}
+              dontRemember={form.dontRemember}
+            />
+          </div>
         </form>
       </div>
     </Title>

@@ -31,4 +31,6 @@ export interface IUser {
   sharedProjects: ISharedProject[]
   registeredWithGoogle: boolean
   googleId: string | null
+  githubId: number | null
+  registeredWithGithub: boolean
 }

@@ -6,9 +6,9 @@ import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import {
-  unlinkGoogle, authMe,
+  unlinkSSO, authMe,
 } from 'api'
-import { SOCIALISATIONS } from 'redux/constants'
+import { SSO_PROVIDERS } from 'redux/constants'
 
 export interface ISSOUnlink {
   payload: {
@@ -19,15 +19,13 @@ export interface ISSOUnlink {
 }
 
 export default function* ssoUnlink({ payload: { provider, t, callback } }: ISSOUnlink) {
-  if (!_includes(_values(SOCIALISATIONS), provider)) {
+  if (!_includes(_values(SSO_PROVIDERS), provider)) {
     callback(false)
     return
   }
 
   try {
-    if (provider === SOCIALISATIONS.GOOGLE) {
-      yield call(unlinkGoogle)
-    }
+    yield call(unlinkSSO, provider)
 
     // @ts-ignore
     const user = yield call(authMe)

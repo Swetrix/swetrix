@@ -809,9 +809,11 @@ export const confirmTransferProject = (uuid: string) =>
         : error.response.data.message
     })
 
-export const generateGoogleAuthURL = () =>
+export const generateSSOAuthURL = (provider: string) =>
   api
-    .post('v1/auth/google/generate')
+    .post('v1/auth/sso/generate', {
+      provider,
+    })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -820,9 +822,9 @@ export const generateGoogleAuthURL = () =>
         : error.response.data.message
     })
 
-export const getJWTByGoogleHash = (hash: string) =>
+export const getJWTBySSOHash = (hash: string, provider: string) =>
   api
-    .post('v1/auth/google/hash', { hash })
+    .post('v1/auth/sso/hash', { hash, provider })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -831,9 +833,9 @@ export const getJWTByGoogleHash = (hash: string) =>
         : error.response.data.message
     })
 
-export const linkByGoogleHash = (hash: string) =>
+export const linkBySSOHash = (hash: string, provider: string) =>
   api
-    .post('v1/auth/google/link_by_hash', { hash })
+    .post('v1/auth/sso/link_by_hash', { hash, provider })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -842,9 +844,9 @@ export const linkByGoogleHash = (hash: string) =>
         : error.response.data.message
     })
 
-export const unlinkGoogle = () =>
+export const unlinkSSO = (provider: string) =>
   api
-    .delete('v1/auth/google/unlink')
+    .delete('v1/auth/sso/unlink', { data: { provider } })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -853,9 +855,9 @@ export const unlinkGoogle = () =>
         : error.response.data.message
     })
 
-export const processGoogleToken = (token: string, hash: string) =>
+export const processSSOToken = (token: string, hash: string) =>
   api
-    .post('v1/auth/google/process-token', { token, hash })
+    .post('v1/auth/sso/process-token', { token, hash })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)

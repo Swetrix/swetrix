@@ -8,6 +8,7 @@ import _isString from 'lodash/isString'
 
 import Title from 'components/Title'
 import GoogleAuth from 'components/GoogleAuth'
+import GithubAuth from 'components/GithubAuth'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
@@ -34,10 +35,10 @@ interface ISignin {
     password: string,
     dontRemember: boolean
   },
-  callback: (result: boolean, twoFARequired: boolean) => void) => void,
+    callback: (result: boolean, twoFARequired: boolean) => void) => void,
   loginSuccess: (user: IUser) => void,
   loginFailed: (error: string) => void,
-  authSSO: (dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
 }
 
 const Signin = ({
@@ -254,13 +255,22 @@ const Signin = ({
               {t('auth.signin.button')}
             </Button>
           </div>
-          <GoogleAuth
-            className='mt-4'
-            setIsLoading={setIsLoading}
-            authSSO={authSSO}
-            callback={loginCallback}
-            dontRemember={form.dontRemember}
-          />
+          <div className='space-x-5'>
+            <GoogleAuth
+              className='mt-4'
+              setIsLoading={setIsLoading}
+              authSSO={authSSO}
+              callback={loginCallback}
+              dontRemember={form.dontRemember}
+            />
+            <GithubAuth
+              className='mt-4'
+              setIsLoading={setIsLoading}
+              authSSO={authSSO}
+              callback={loginCallback}
+              dontRemember={form.dontRemember}
+            />
+          </div>
         </form>
       </div>
     </Title>

@@ -415,6 +415,7 @@ export const SSO_ACTIONS = Object.freeze({
   AUTH: 'auth',
 })
 
-export const SOCIALISATIONS = Object.freeze({
+export const SSO_PROVIDERS = Object.freeze({
   GOOGLE: 'google',
+  GITHUB: 'github',
 })

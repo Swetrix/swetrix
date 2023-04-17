@@ -17,6 +17,7 @@ import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
 import { useAppDispatch } from 'redux/store'
 import GoogleAuth from 'components/GoogleAuth'
+import GithubAuth from 'components/GithubAuth'
 
 interface ISignUpForm {
   email: string,
@@ -60,8 +61,8 @@ const BasicSignup = (): JSX.Element => {
     }
   }
 
-  const authSSO = () => {
-    dispatch(sagaActions.authSSO(form.dontRemember, t, signUpCallback))
+  const authSSO = (provider: string) => {
+    dispatch(sagaActions.authSSO(provider, form.dontRemember, t, signUpCallback))
   }
 
   const onSubmit = (data: ISignUpForm) => {
@@ -190,11 +191,18 @@ const BasicSignup = (): JSX.Element => {
         <p className='text-sm mt-2 mb-2 text-center text-gray-500 dark:text-gray-100'>
           {t('auth.socialisation.orSingUpWith')}
         </p>
-        <GoogleAuth
-          setIsLoading={setIsLoading}
-          authSSO={authSSO}
-          isMiniButton
-        />
+        <div className='space-x-5'>
+          <GoogleAuth
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            isMiniButton
+          />
+          <GithubAuth
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            isMiniButton
+          />
+        </div>
       </div>
     </form>
   )

@@ -43,10 +43,10 @@ const loginAsync = (credentials: {
 })
 
 // currently only google is supported, in future we should provide a variable specifying the provider
-const authSSO = (dontRemember: boolean, t: (key: string) => string = () => '', callback: (res: any) => void = () => { }) => ({
+const authSSO = (provider: string, dontRemember: boolean, t: (key: string) => string = () => '', callback: (res: any) => void = () => { }) => ({
   type: types.AUTH_SSO,
   payload: {
-    dontRemember, callback, t,
+    dontRemember, callback, t, provider,
   },
 })
 

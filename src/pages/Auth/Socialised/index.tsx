@@ -4,9 +4,11 @@ import React, {
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import _split from 'lodash/split'
 import _replace from 'lodash/replace'
 
-import { processGoogleToken } from 'api'
+import { processSSOToken } from 'api'
+import { SSO_PROVIDERS } from 'redux/constants'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
 import routes from 'routes'
@@ -25,19 +27,34 @@ const Socialised = (): JSX.Element => {
 
   const { searchParams } = new URL(_location)
   const hash = searchParams.get('state')
-  const token = searchParams.get('access_token')
-
-  console.log(hash, token)
+  const accessToken = searchParams.get('access_token')
+  const code = searchParams.get('code')
+  const provider = _split(hash, ':')[0]
 
   useEffect(() => {
     const processCode = async () => {
-      if (!token || !hash) {
+      if (!hash || !provider) {
+        setIsError(true)
+        return
+      }
+
+      let _token
+
+      if (provider === SSO_PROVIDERS.GOOGLE) {
+        _token = accessToken
+      }
+
+      if (provider === SSO_PROVIDERS.GITHUB) {
+        _token = code
+      }
+
+      if (!_token) {
         setIsError(true)
         return
       }
 
       try {
-        await processGoogleToken(token, hash)
+        await processSSOToken(_token, hash)
       } catch (reason) {
         setIsError(true)
         console.error(`[ERROR] Error while processing Google code: ${reason}`)

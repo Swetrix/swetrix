@@ -4,7 +4,7 @@ import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { setAccessToken } from 'utils/accessToken'
 import {
-  getJWTByGoogleHash, generateGoogleAuthURL,
+  getJWTBySSOHash, generateSSOAuthURL,
 } from 'api'
 import { setRefreshToken } from 'utils/refreshToken'
 import { openBrowserWindow } from 'utils/generic'
@@ -20,10 +20,15 @@ interface ISSOAuth {
     callback: (isSuccess: boolean, is2FA: boolean) => void
     dontRemember: boolean
     t: (key: string) => string
+    provider: string
   }
 }
 
-export default function* ssoAuth({ payload: { callback, dontRemember, t } }: ISSOAuth) {
+export default function* ssoAuth({
+  payload: {
+    callback, dontRemember, t, provider,
+  },
+}: ISSOAuth) {
   const authWindow = openBrowserWindow('', AUTH_WINDOW_WIDTH, AUTH_WINDOW_HEIGHT)
 
   if (!authWindow) {
@@ -37,7 +42,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t } }: ISS
   try {
     const {
       uuid, auth_url: authUrl, expires_in: expiresIn,
-    } = yield call(generateGoogleAuthURL)
+    } = yield call(generateSSOAuthURL, provider)
 
     // Set the URL of the authentification browser window
     authWindow.location = authUrl
@@ -51,7 +56,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t } }: ISS
       try {
         const {
           accessToken, refreshToken, user,
-        } = yield call(getJWTByGoogleHash, uuid)
+        } = yield call(getJWTBySSOHash, uuid, provider)
         authWindow.close()
 
         yield put(authActions.setDontRemember(dontRemember))
@@ -71,6 +76,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t } }: ISS
         yield put(sagaActions.loadProjects())
         yield put(sagaActions.loadSharedProjects())
         yield put(sagaActions.loadProjectAlerts())
+        yield put(authActions.finishLoading())
         callback(true, false)
         return
       } catch (reason) {
