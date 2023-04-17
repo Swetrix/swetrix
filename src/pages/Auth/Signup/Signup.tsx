@@ -252,9 +252,9 @@ const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
               {t('auth.signup.button')}
             </Button>
           </div>
-          <div className='space-x-5'>
+          <div className='flex flex-wrap'>
             <GoogleAuth
-              className='mt-4'
+              className='mt-4 mr-5'
               setIsLoading={setIsLoading}
               authSSO={authSSO}
               callback={signUpCallback}

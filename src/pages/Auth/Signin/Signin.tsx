@@ -255,9 +255,9 @@ const Signin = ({
               {t('auth.signin.button')}
             </Button>
           </div>
-          <div className='space-x-5'>
+          <div className='flex flex-wrap'>
             <GoogleAuth
-              className='mt-4'
+              className='mt-4 mr-5'
               setIsLoading={setIsLoading}
               authSSO={authSSO}
               callback={loginCallback}
