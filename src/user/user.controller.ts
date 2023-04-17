@@ -580,6 +580,8 @@ export class UserController {
         'trialReminderSent',
         'googleId',
         'registeredWithGoogle',
+        'githubId',
+        'registeredWithGithub',
       ])
       await this.userService.update(id, userToUpdate)
 

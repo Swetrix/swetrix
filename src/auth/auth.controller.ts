@@ -49,7 +49,11 @@ import {
   SSOUnlinkDto,
 } from './dtos'
 import { SSOProviders } from './dtos/sso-generate.dto'
+import { isDevelopment } from 'src/common/constants'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
+
+const LOCAL_OAUTH_RATE_LIMIT = 2000
+const PRODUCTION_OAUTH_RATE_LIMIT = 15
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -427,7 +431,7 @@ export class AuthController {
     @Body() body: SSOGenerateDto,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'sso-generate', 15, 1800)
+    await checkRateLimit(ip, 'sso-generate', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
 
     const { provider } = body
 
@@ -447,7 +451,7 @@ export class AuthController {
     @Body() body: ProcessSSOCodeDto,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'sso-process', 15, 1800)
+    await checkRateLimit(ip, 'sso-process', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
 
     const { token, hash } = body
 
@@ -455,7 +459,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Auth user' })
-  @Post('google/hash')
+  @Post('sso/hash')
   @Public()
   // Validates the authorisation code and returns the JWT tokens
   async getJWTByHash(
@@ -463,7 +467,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(ip, 'sso-hash', 15, 1800)
+    await checkRateLimit(ip, 'sso-hash', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
 
     const { hash, provider } = body
 
@@ -482,7 +486,7 @@ export class AuthController {
     @CurrentUserId() userId: string,
     @Ip() ip: string,
   ): Promise<void> {
-    await checkRateLimit(ip, 'sso-link', 15, 1800)
+    await checkRateLimit(ip, 'sso-link', isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT, 1800)
 
     const { hash, provider } = body
 

@@ -18,6 +18,8 @@ import { Telegraf } from 'telegraf'
 import { UAParser } from 'ua-parser-js'
 import * as _pick from 'lodash/pick'
 import * as _split from 'lodash/split'
+import * as _isEmpty from 'lodash/isEmpty'
+import * as _find from 'lodash/find'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
@@ -43,6 +45,7 @@ import {
 } from 'src/common/constants'
 import { SSOProviders } from './dtos/sso-generate.dto'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
+import { UserGithubDTO } from '../user/dto/user-github.dto'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
@@ -52,6 +55,9 @@ const getSSOSessionProvider = (state: string): SSOProviders => _split(state, ':'
 const OAUTH_REDIRECT_URL = isDevelopment
   ? 'http://localhost:3000/socialised'
   : `${PRODUCTION_ORIGIN}/socialised`
+
+const GITHUB_OAUTH2_CLIENT_ID = process.env.GITHUB_OAUTH2_CLIENT_ID
+const GITHUB_OAUTH2_CLIENT_SECRET = process.env.GITHUB_OAUTH2_CLIENT_SECRET
 
 @Injectable()
 export class AuthService {
@@ -72,8 +78,6 @@ export class AuthService {
       this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
       this.configService.get('GOOGLE_OAUTH2_CLIENT_SECRET'),
     )
-    this.githubOAuthClientID = this.configService.get('GITHUB_OAUTH2_CLIENT_ID')
-    this.githubOAuthClientSecret = this.configService.get('GITHUB_OAUTH2_CLIENT_SECRET')
   }
 
   private async createSha1Hash(password: string): Promise<string> {
@@ -461,7 +465,7 @@ export class AuthService {
   */
   async handleExistingUserGoogle(user: User, headers: unknown, ip: string) {
     if (!user.googleId) {
-      throw new UnauthorizedException()
+      throw new BadRequestException()
     }
 
     await this.sendTelegramNotification(user.id, headers, ip)
@@ -505,14 +509,13 @@ export class AuthService {
 
     const user = await this.userService.create(query)
 
-    const { accessToken, refreshToken } = await this.generateJwtTokens(
+    const jwtTokens = await this.generateJwtTokens(
       user.id,
       true,
     )
 
     return {
-      accessToken,
-      refreshToken,
+      ...jwtTokens,
       user: this.userService.omitSensitiveData(user),
     }
   }
@@ -539,13 +542,10 @@ export class AuthService {
       )
     }
 
-    let sub: string
-    let email: string
+    let payload
 
     try {
-      const payload = JSON.parse(data)
-      sub = payload.sub
-      email = payload.email
+      payload = JSON.parse(data)
     } catch (reason) {
       console.error(
         `[ERROR][AuthService -> authenticateGoogle -> JSON.parse]: ${reason} - ${data}`,
@@ -557,7 +557,7 @@ export class AuthService {
 
     await redis.del(ssoRedisKey)
 
-    return { sub, email }
+    return payload
   }
 
   async authenticateSSO(ssoHash: string, headers: unknown, ip: string, provider: SSOProviders) {
@@ -641,7 +641,6 @@ export class AuthService {
 
     const { sub, email } = tokenInfo
 
-    // TODO: Only store the email if email_verified is true
     const dataToStore = JSON.stringify({ sub, email })
 
     // Storing the session identifier in redis
@@ -723,14 +722,7 @@ export class AuthService {
   async generateGithubURL() {
     // Generating SSO session identifier and authorisation URL
     const uuid = generateSSOState(SSOProviders.GITHUB)
-    const authUrl = await axios.get('https://github.com/login/oauth/authorize', {
-      params: {
-        client_id: this.githubOAuthClientID,
-        state: uuid,
-        redirect_uri: OAUTH_REDIRECT_URL,
-        scope: 'user:email',
-      },
-    })
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_OAUTH2_CLIENT_ID}&state=${uuid}&redirect_uri=${OAUTH_REDIRECT_URL}&scope=user:email`
 
     // Storing the session identifier in redis
     await redis.set(getSSORedisKey(uuid), '', 'EX', REDIS_SSO_SESSION_TIMEOUT)
@@ -750,8 +742,8 @@ export class AuthService {
       const response = await axios.post(
         'https://github.com/login/oauth/access_token',
         {
-          client_id: this.githubOAuthClientID,
-          client_secret: this.githubOAuthClientSecret,
+          client_id: GITHUB_OAUTH2_CLIENT_ID,
+          client_secret: GITHUB_OAUTH2_CLIENT_SECRET,
           code,
         },
         {
@@ -784,31 +776,159 @@ export class AuthService {
       throw new BadRequestException('Invalid Github token')
     }
 
-    // const { sub, email } = tokenInfo
+    const { id } = tokenInfo
+    let { email } = tokenInfo
 
-    console.log(tokenInfo)
+    if (!email) {
+      try {
+        const response = await axios.get('https://api.github.com/user/emails', {
+          headers: {
+            Authorization: `token ${token}`,
+          },
+        })
 
-    // TODO: Only store the email if email_verified is true
-    // const dataToStore = JSON.stringify({ sub, email })
+        const emails = response.data
+
+        if (_isEmpty(emails)) {
+          console.error(
+            '[ERROR][AuthService -> processGithubCode]: No email address found',
+          )
+          throw new BadRequestException('No email address found')
+        }
+
+        email = _find(emails, (e) => e.primary).email
+      } catch (reason) {
+        console.error(
+          `[ERROR][AuthService -> processGithubCode -> axios.get (emails)]: ${reason}`,
+        )
+        throw new BadRequestException('Invalid Github token')
+      }
+    }
+
+    const dataToStore = JSON.stringify({ id, email })
 
     // Storing the session identifier in redis
-    // await redis.set(
-    //   getSSORedisKey(ssoHash),
-    //   dataToStore,
-    //   'EX',
-    //   REDIS_SSO_SESSION_TIMEOUT,
-    // )
+    await redis.set(
+      getSSORedisKey(ssoHash),
+      dataToStore,
+      'EX',
+      REDIS_SSO_SESSION_TIMEOUT,
+    )
+  }
+
+  async registerUserGithub(id: number, email: string) {
+    const query: UserGithubDTO = {
+      githubId: id,
+      trialEndDate: dayjs
+        .utc()
+        .add(TRIAL_DURATION, 'day')
+        .format('YYYY-MM-DD HH:mm:ss'),
+      registeredWithGithub: true,
+      isActive: true,
+      emailRequests: 0,
+    }
+
+    const userWithSameEmail = await this.userService.findOneWhere({
+      email,
+    })
+
+    if (!userWithSameEmail) {
+      query.email = email
+    }
+
+    const user = await this.userService.create(query)
+
+    const jwtTokens = await this.generateJwtTokens(
+      user.id,
+      true,
+    )
+
+    return {
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(user),
+    }
+  }
+
+  async handleExistingUserGithub(user: User, headers: unknown, ip: string) {
+    if (!user.githubId) {
+      throw new BadRequestException()
+    }
+
+    await this.sendTelegramNotification(user.id, headers, ip)
+
+    const jwtTokens = await this.generateJwtTokens(
+      user.id,
+      !user.isTwoFactorAuthenticationEnabled,
+    )
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
+    } else {
+      user = await this.getSharedProjectsForUser(user)
+    }
+
+    return {
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(user),
+    }
   }
 
   async unlinkGithubAccount(userId: string) {
-    // TODO
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (user.registeredWithGithub) {
+      throw new BadRequestException(
+        'You cannot unlink your Google account if you registered with it',
+      )
+    }
+
+    await this.userService.updateUser(userId, {
+      githubId: null,
+    })
   }
 
   async linkGithubAccount(userId: string, ssoHash: string) {
-    // TODO
+    const { id } = await this.processHash(ssoHash)
+
+    if (!id) {
+      throw new BadRequestException(
+        'Github ID is missing in the authentication session',
+      )
+    }
+
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    await this.userService.updateUser(userId, {
+      githubId: id,
+    })
   }
 
   async authenticateGithub(ssoHash: string, headers: unknown, ip: string) {
-    // TODO
+    const { id, email } = await this.processHash(ssoHash)
+
+    try {
+      const user = await this.userService.findOneWhere({
+        githubId: id,
+      })
+
+      if (!user) {
+        return await this.registerUserGithub(id, email)
+      }
+
+      return await this.handleExistingUserGithub(user, headers, ip)
+    } catch (error) {
+      console.error(`[ERROR][AuthService -> authenticateGithub]: ${error}`)
+      throw new InternalServerErrorException(
+        'Something went wrong while authenticating user with Github',
+      )
+    }
   }
 }
