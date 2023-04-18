@@ -323,28 +323,31 @@ exports[`Flatpicker snapshot 1`] = `
                   14
                 </span>
                 <span
-                  aria-current="date"
                   aria-label="April 15, 2023"
-                  class="flatpickr-day today"
+                  class="flatpickr-day"
                   tabindex="-1"
                 >
                   15
                 </span>
                 <span
                   aria-label="April 16, 2023"
-                  class="flatpickr-day flatpickr-disabled"
+                  class="flatpickr-day"
+                  tabindex="-1"
                 >
                   16
                 </span>
                 <span
                   aria-label="April 17, 2023"
-                  class="flatpickr-day flatpickr-disabled"
+                  class="flatpickr-day"
+                  tabindex="-1"
                 >
                   17
                 </span>
                 <span
+                  aria-current="date"
                   aria-label="April 18, 2023"
-                  class="flatpickr-day flatpickr-disabled"
+                  class="flatpickr-day today"
+                  tabindex="-1"
                 >
                   18
                 </span>

@@ -16,7 +16,7 @@ exports[`Chart component snapshot 1`] = `
       >
         <defs>
           <clippath
-            id="bb-8491962675112450-clip"
+            id="bb-6964509615290046-clip"
           >
             <rect
               height="226"
@@ -24,7 +24,7 @@ exports[`Chart component snapshot 1`] = `
             />
           </clippath>
           <clippath
-            id="bb-8491962675112450-clip-xaxis"
+            id="bb-6964509615290046-clip-xaxis"
           >
             <rect
               height="110"
@@ -34,7 +34,7 @@ exports[`Chart component snapshot 1`] = `
             />
           </clippath>
           <clippath
-            id="bb-8491962675112450-clip-yaxis"
+            id="bb-6964509615290046-clip-yaxis"
           >
             <rect
               height="240"
@@ -44,7 +44,7 @@ exports[`Chart component snapshot 1`] = `
             />
           </clippath>
           <clippath
-            id="bb-8491962675112450-clip-grid"
+            id="bb-6964509615290046-clip-grid"
           >
             <rect
               height="226"
@@ -58,7 +58,7 @@ exports[`Chart component snapshot 1`] = `
         >
           <g
             class="bb-grid"
-            clip-path="url(http://localhost/#bb-8491962675112450-clip-grid)"
+            clip-path="url(http://localhost/#bb-6964509615290046-clip-grid)"
           >
             <g
               class="bb-xgrid-focus"
@@ -74,7 +74,7 @@ exports[`Chart component snapshot 1`] = `
           </g>
           <g
             class="bb-chart"
-            clip-path="url(http://localhost/#bb-8491962675112450-clip)"
+            clip-path="url(http://localhost/#bb-6964509615290046-clip)"
           >
             <g
               class="bb-event-rects bb-event-rects-single"
@@ -215,7 +215,7 @@ exports[`Chart component snapshot 1`] = `
           </g>
           <g
             class="bb-axis bb-axis-x"
-            clip-path="url(http://localhost/#bb-8491962675112450-clip-xaxis)"
+            clip-path="url(http://localhost/#bb-6964509615290046-clip-xaxis)"
             transform="translate(0, 226)"
           >
             <text
@@ -370,7 +370,7 @@ exports[`Chart component snapshot 1`] = `
           </g>
           <g
             class="bb-axis bb-axis-y"
-            clip-path="url(http://localhost/#bb-8491962675112450-clip-yaxis)"
+            clip-path="url(http://localhost/#bb-6964509615290046-clip-yaxis)"
             transform="translate(0, 0)"
           >
             <text
