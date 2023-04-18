@@ -436,7 +436,7 @@ const ViewProject = ({
     if (activeTab === PROJECT_TABS.traffic && !_isEmpty(activeChartMetricsCustomEvents)) {
       loadCustomEvents()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChartMetricsCustomEvents])
 
   // this function is used for requesting the data from the API
@@ -1623,7 +1623,7 @@ const ViewProject = ({
                                         </span>
                                       ) : event.label}
                                       id={event.id}
-                                      onChange={() => {}}
+                                      onChange={() => { }}
                                       checked={event.active}
                                     />
                                   )}

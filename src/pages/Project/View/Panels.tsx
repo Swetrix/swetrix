@@ -35,6 +35,7 @@ import InteractiveMap from './components/InteractiveMap'
 import { iconClassName } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 5
+const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
 
 const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv']
 
@@ -371,10 +372,40 @@ const CustomEvents = ({
   onFilter: any
   t: (arg0: string) => string
 }) => {
+  const [page, setPage] = useState(0)
+  const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
   const keys = _keys(customs)
+  const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys, currentIndex])
   const uniques = _sum(chartData.uniques)
   const [chartOptions, setChartOptions] = useState<any>({})
   const [activeFragment, setActiveFragment] = useState<number>(0)
+  const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
+  const canGoPrev = () => page > 0
+  const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
+
+  useEffect(() => {
+    const sizeKeys = _size(keys)
+
+    if (currentIndex > sizeKeys) {
+      setPage(_floor(sizeKeys / ENTRIES_PER_CUSTOM_EVENTS_PANEL))
+    }
+  }, [currentIndex, keys])
+
+  useEffect(() => {
+    setPage(0)
+  }, [chartData])
+
+  const onPrevious = () => {
+    if (canGoPrev()) {
+      setPage(page - 1)
+    }
+  }
+
+  const onNext = () => {
+    if (canGoNext()) {
+      setPage(page + 1)
+    }
+  }
 
   useEffect(() => {
     if (!_isEmpty(chartData)) {
@@ -426,7 +457,7 @@ const CustomEvents = ({
           </tr>
         </thead>
         <tbody>
-          {_map(keys, (ev) => (
+          {_map(keysToDisplay, (ev) => (
             <tr
               key={ev}
               className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-gray-700 cursor-pointer'
@@ -448,6 +479,57 @@ const CustomEvents = ({
           ))}
         </tbody>
       </table>
+      {/* for pagination in tabs */}
+      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
+        <div className='absolute bottom-0 w-card-toggle-sm sm:w-card-toggle'>
+          <div className='flex justify-between select-none mb-2'>
+            <div>
+              <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
+                {_size(keys)}
+                {' '}
+                {t('project.results')}
+              </span>
+              <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
+                .
+                {' '}
+                {t('project.page')}
+                {' '}
+                {page + 1}
+                {' '}
+                /
+                {' '}
+                {totalPages}
+              </span>
+            </div>
+            <div className='flex justify-between w-[4.5rem]'>
+              <Button
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-gray-800 border-none px-1.5 py-0.5', {
+                  'opacity-50 cursor-not-allowed': !canGoPrev(),
+                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                })}
+                type='button'
+                onClick={onPrevious}
+                disabled={!canGoPrev()}
+                focus={false}
+              >
+                <ArrowLongLeftIcon className='w-5 h-5' />
+              </Button>
+              <Button
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-gray-800 border-none px-1.5 py-0.5', {
+                  'opacity-50 cursor-not-allowed': !canGoNext(),
+                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                })}
+                onClick={onNext}
+                disabled={!canGoNext()}
+                type='button'
+                focus={false}
+              >
+                <ArrowLongRightIcon className='w-5 h-5' />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </PanelContainer>
   )
 }
@@ -479,7 +561,7 @@ const Panel = ({
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
   const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])
-  const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + 5), [keys, currentIndex])
+  const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_PANEL), [keys, currentIndex])
   const total = useMemo(() => _reduce(keys, (prev, curr) => prev + data[curr], 0), [keys]) // eslint-disable-line
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_PANEL), [keys])
   const [activeFragment, setActiveFragment] = useState(0)
@@ -512,6 +594,7 @@ const Panel = ({
       setPage(page + 1)
     }
   }
+
   // Showing map of stats a data
   if (id === 'cc' && activeFragment === 1 && !_isEmpty(data)) {
     return (
@@ -683,7 +766,7 @@ const Panel = ({
         )
       })}
       {/* for pagination in tabs */}
-      {_size(keys) > 5 && (
+      {_size(keys) > ENTRIES_PER_PANEL && (
         <div className='absolute bottom-0 w-card-toggle-sm sm:w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <div>

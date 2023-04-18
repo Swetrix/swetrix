@@ -17,6 +17,12 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-04-18',
+    changes: [
+      'Added pagination for custom events panel in Dashboard.',
+    ],
+  },
+  {
     date: '2023-04-17',
     changes: [
       'Added Github SSO support.',
