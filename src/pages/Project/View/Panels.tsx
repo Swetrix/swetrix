@@ -24,9 +24,14 @@ import _size from 'lodash/size'
 import _slice from 'lodash/slice'
 import _sum from 'lodash/sum'
 import _ceil from 'lodash/ceil'
+import _sortBy from 'lodash/sortBy'
+import _fromPairs from 'lodash/fromPairs'
+import _toPairs from 'lodash/toPairs'
+import _orderBy from 'lodash/orderBy'
 
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
+import Sort from 'ui/icons/Sort'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import Chart from 'ui/Chart'
@@ -373,8 +378,9 @@ const CustomEvents = ({
   t: (arg0: string) => string
 }) => {
   const [page, setPage] = useState(0)
+  const [customsEventsData, setCustomsEventsData] = useState<any>(customs)
   const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
-  const keys = _keys(customs)
+  const keys = _keys(customsEventsData)
   const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys, currentIndex])
   const uniques = _sum(chartData.uniques)
   const [chartOptions, setChartOptions] = useState<any>({})
@@ -382,6 +388,15 @@ const CustomEvents = ({
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
+  const [sort, setSort] = useState<{
+    label: string
+    sortByAscend: boolean
+    sortByDescend: boolean
+  }>({
+    label: 'quantity',
+    sortByAscend: false,
+    sortByDescend: false,
+  })
 
   useEffect(() => {
     const sizeKeys = _size(keys)
@@ -390,6 +405,10 @@ const CustomEvents = ({
       setPage(_floor(sizeKeys / ENTRIES_PER_CUSTOM_EVENTS_PANEL))
     }
   }, [currentIndex, keys])
+
+  useEffect(() => {
+    setCustomsEventsData(customs)
+  }, [customs])
 
   useEffect(() => {
     setPage(0)
@@ -407,18 +426,94 @@ const CustomEvents = ({
     }
   }
 
+  const sortedAsc = (obj: any, transformValue?: (el: any) => number) => _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
+    if (transformValue) {
+      return transformValue(b[1]) - transformValue(a[1])
+    }
+
+    return b[1] - a[1]
+  }))
+
+  const sortedDesc = (obj: any, transformValue?: (el: any) => number) => _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
+    if (transformValue) {
+      return transformValue(a[1]) - transformValue(b[1])
+    }
+
+    return a[1] - b[1]
+  }))
+
+  const onSortBy = (label: string) => {
+    let sorted
+    switch (label) {
+      case 'quantity':
+        if (sort.sortByAscend) {
+          sorted = sortedDesc(customsEventsData)
+          setSort({
+            label: 'quantity',
+            sortByAscend: false,
+            sortByDescend: true,
+          })
+        } else if (sort.sortByDescend) {
+          sorted = customs
+          setSort({
+            label: 'quantity',
+            sortByAscend: false,
+            sortByDescend: false,
+          })
+        } else {
+          sorted = sortedAsc(customsEventsData)
+          setSort({
+            label: 'quantity',
+            sortByAscend: true,
+            sortByDescend: false,
+          })
+        }
+        setCustomsEventsData(sorted)
+        break
+
+      case 'conversion':
+        if (sort.sortByAscend) {
+          sorted = sortedDesc(customsEventsData, (el) => _round((el / uniques) * 100, 2))
+          setSort({
+            label: 'conversion',
+            sortByAscend: false,
+            sortByDescend: true,
+          })
+        } else if (sort.sortByDescend) {
+          sorted = customs
+          setSort({
+            label: 'conversion',
+            sortByAscend: false,
+            sortByDescend: false,
+          })
+        } else {
+          sorted = sortedAsc(customsEventsData, (el) => _round((el / uniques) * 100, 2))
+          setSort({
+            label: 'conversion',
+            sortByAscend: true,
+            sortByDescend: false,
+          })
+        }
+        setCustomsEventsData(sorted)
+        break
+
+      default:
+        break
+    }
+  }
+
   useEffect(() => {
     if (!_isEmpty(chartData)) {
-      const options = getPieOptions(customs, uniques, t)
+      const options = getPieOptions(customsEventsData, uniques, t)
       setChartOptions({
         data: {
-          columns: _map(keys, (ev) => [ev, customs[ev]]),
+          columns: _map(keys, (ev) => [ev, customsEventsData[ev]]),
           type: pie(),
         },
         ...options,
       })
     }
-  }, [chartData, customs, t]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [chartData, customsEventsData, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // for showing chart circle of stats a data
   if (activeFragment === 1 && !_isEmpty(chartData)) {
@@ -448,12 +543,22 @@ const CustomEvents = ({
       <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
-            <th className='w-4/6 text-left'>{t('project.event')}</th>
-            <th className='w-1/6 text-right'>
-              {t('project.quantity')}
-              &nbsp;&nbsp;
+            <th className='w-4/6 text-left'>
+              {t('project.event')}
             </th>
-            <th className='w-1/6 text-right'>{t('project.conversion')}</th>
+            <th className='w-1/6 text-right'>
+              <p className='flex items-center'>
+                {t('project.quantity')}
+                <Sort onClick={() => onSortBy('quantity')} sortByAscend={sort.label === 'quantity' && sort.sortByAscend} sortByDescend={sort.label === 'quantity' && sort.sortByDescend} />
+                &nbsp;&nbsp;
+              </p>
+            </th>
+            <th className='w-1/6 text-right'>
+              <p className='flex items-center'>
+                {t('project.conversion')}
+                <Sort onClick={() => onSortBy('conversion')} sortByAscend={sort.label === 'conversion' && sort.sortByAscend} sortByDescend={sort.label === 'conversion' && sort.sortByDescend} />
+              </p>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -468,11 +573,11 @@ const CustomEvents = ({
                 <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
               </td>
               <td className='text-right'>
-                {customs[ev]}
+                {customsEventsData[ev]}
                 &nbsp;&nbsp;
               </td>
               <td className='text-right'>
-                {_round((customs[ev] / uniques) * 100, 2)}
+                {_round((customsEventsData[ev] / uniques) * 100, 2)}
                 %
               </td>
             </tr>
