@@ -433,7 +433,7 @@ const ViewProject = ({
   }
 
   useEffect(() => {
-    if (activeTab === PROJECT_TABS.traffic && !_isEmpty(activeChartMetricsCustomEvents)) {
+    if (activeTab === PROJECT_TABS.traffic) {
       loadCustomEvents()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1632,6 +1632,7 @@ const ViewProject = ({
                                   onSelect={(event, e) => {
                                     e.stopPropagation()
                                     e.preventDefault()
+
                                     setActiveChartMetricsCustomEvents((prev) => {
                                       const newActiveChartMetricsCustomEvents = [...prev]
                                       const index = _findIndex(prev, (item) => item === event.id)
