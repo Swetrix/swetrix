@@ -24,9 +24,14 @@ import _size from 'lodash/size'
 import _slice from 'lodash/slice'
 import _sum from 'lodash/sum'
 import _ceil from 'lodash/ceil'
+import _sortBy from 'lodash/sortBy'
+import _fromPairs from 'lodash/fromPairs'
+import _toPairs from 'lodash/toPairs'
+import _reverse from 'lodash/reverse'
 
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
+import Sort from 'ui/icons/Sort'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import Chart from 'ui/Chart'
@@ -363,18 +368,27 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
   }
 }
 
-// Tabs with custom events like submit form, press button, go to the link rate etc.
-const CustomEvents = ({
-  customs, chartData, onFilter, t,
-}: {
+interface ICustomEvents {
   customs: any
   chartData: any
   onFilter: any
   t: (arg0: string) => string
-}) => {
+}
+
+interface ISortRows {
+  label: string
+  sortByAscend: boolean
+  sortByDescend: boolean
+}
+
+// Tabs with custom events like submit form, press button, go to the link rate etc.
+const CustomEvents = ({
+  customs, chartData, onFilter, t,
+}: ICustomEvents) => {
   const [page, setPage] = useState(0)
+  const [customsEventsData, setCustomsEventsData] = useState<any>(customs)
   const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
-  const keys = _keys(customs)
+  const keys = _keys(customsEventsData)
   const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys, currentIndex])
   const uniques = _sum(chartData.uniques)
   const [chartOptions, setChartOptions] = useState<any>({})
@@ -382,6 +396,11 @@ const CustomEvents = ({
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
+  const [sort, setSort] = useState<ISortRows>({
+    label: 'quantity',
+    sortByAscend: false,
+    sortByDescend: false,
+  })
 
   useEffect(() => {
     const sizeKeys = _size(keys)
@@ -390,6 +409,10 @@ const CustomEvents = ({
       setPage(_floor(sizeKeys / ENTRIES_PER_CUSTOM_EVENTS_PANEL))
     }
   }, [currentIndex, keys])
+
+  useEffect(() => {
+    setCustomsEventsData(customs)
+  }, [customs])
 
   useEffect(() => {
     setPage(0)
@@ -407,18 +430,69 @@ const CustomEvents = ({
     }
   }
 
+  const sortedAsc = (obj: any, sortByKeys?: boolean) => {
+    if (sortByKeys) {
+      return _fromPairs(_sortBy(_toPairs(obj), (pair) => pair[0]))
+    }
+
+    return _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
+      return b[1] - a[1]
+    }))
+  }
+
+  const sortedDesc = (obj: any, sortByKeys?: boolean) => {
+    if (sortByKeys) {
+      return _fromPairs(_reverse(_sortBy(_toPairs(obj), (pair) => pair[0])))
+    }
+
+    return _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
+      return a[1] - b[1]
+    }))
+  }
+
+  const onSortBy = (label: string) => {
+    const sortByKeys = label === 'event'
+
+    if (sort.sortByAscend) {
+      setCustomsEventsData(sortedDesc(customsEventsData, sortByKeys))
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: true,
+      })
+      return
+    }
+
+    if (sort.sortByDescend) {
+      setCustomsEventsData(customs)
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: false,
+      })
+      return
+    }
+
+    setCustomsEventsData(sortedAsc(customsEventsData, sortByKeys))
+    setSort({
+      label,
+      sortByAscend: true,
+      sortByDescend: false,
+    })
+  }
+
   useEffect(() => {
     if (!_isEmpty(chartData)) {
-      const options = getPieOptions(customs, uniques, t)
+      const options = getPieOptions(customsEventsData, uniques, t)
       setChartOptions({
         data: {
-          columns: _map(keys, (ev) => [ev, customs[ev]]),
+          columns: _map(keys, (ev) => [ev, customsEventsData[ev]]),
           type: pie(),
         },
         ...options,
       })
     }
-  }, [chartData, customs, t]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [chartData, customsEventsData, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // for showing chart circle of stats a data
   if (activeFragment === 1 && !_isEmpty(chartData)) {
@@ -448,12 +522,35 @@ const CustomEvents = ({
       <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
-            <th className='w-4/6 text-left'>{t('project.event')}</th>
-            <th className='w-1/6 text-right'>
-              {t('project.quantity')}
-              &nbsp;&nbsp;
+            <th className='w-4/6 text-left flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('event')}>
+              {t('project.event')}
+              <Sort
+                className='ml-1'
+                sortByAscend={sort.label === 'event' && sort.sortByAscend}
+                sortByDescend={sort.label === 'event' && sort.sortByDescend}
+              />
             </th>
-            <th className='w-1/6 text-right'>{t('project.conversion')}</th>
+            <th className='w-1/6 text-right'>
+              <p className='flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('quantity')}>
+                {t('project.quantity')}
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
+                  sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                />
+                &nbsp;&nbsp;
+              </p>
+            </th>
+            <th className='w-1/6 text-right'>
+              <p className='flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('conversion')}>
+                {t('project.conversion')}
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
+                  sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                />
+              </p>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -468,11 +565,11 @@ const CustomEvents = ({
                 <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
               </td>
               <td className='text-right'>
-                {customs[ev]}
+                {customsEventsData[ev]}
                 &nbsp;&nbsp;
               </td>
               <td className='text-right'>
-                {_round((customs[ev] / uniques) * 100, 2)}
+                {_round((customsEventsData[ev] / uniques) * 100, 2)}
                 %
               </td>
             </tr>

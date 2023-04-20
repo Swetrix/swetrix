@@ -17,9 +17,15 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-04-20',
+    changes: [
+      'Added sorting functinoality to the Custom events panel.',
+    ],
+  },
+  {
     date: '2023-04-18',
     changes: [
-      'Added pagination for custom events panel in Dashboard.',
+      'Added pagination for Custom events panel in Dashboard.',
     ],
   },
   {
