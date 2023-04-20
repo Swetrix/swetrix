@@ -27,7 +27,7 @@ import _ceil from 'lodash/ceil'
 import _sortBy from 'lodash/sortBy'
 import _fromPairs from 'lodash/fromPairs'
 import _toPairs from 'lodash/toPairs'
-import _orderBy from 'lodash/orderBy'
+import _reverse from 'lodash/reverse'
 
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
@@ -368,15 +368,23 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
   }
 }
 
-// Tabs with custom events like submit form, press button, go to the link rate etc.
-const CustomEvents = ({
-  customs, chartData, onFilter, t,
-}: {
+interface ICustomEvents {
   customs: any
   chartData: any
   onFilter: any
   t: (arg0: string) => string
-}) => {
+}
+
+interface ISortRows {
+  label: string
+  sortByAscend: boolean
+  sortByDescend: boolean
+}
+
+// Tabs with custom events like submit form, press button, go to the link rate etc.
+const CustomEvents = ({
+  customs, chartData, onFilter, t,
+}: ICustomEvents) => {
   const [page, setPage] = useState(0)
   const [customsEventsData, setCustomsEventsData] = useState<any>(customs)
   const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
@@ -388,11 +396,7 @@ const CustomEvents = ({
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
-  const [sort, setSort] = useState<{
-    label: string
-    sortByAscend: boolean
-    sortByDescend: boolean
-  }>({
+  const [sort, setSort] = useState<ISortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
@@ -426,80 +430,55 @@ const CustomEvents = ({
     }
   }
 
-  const sortedAsc = (obj: any, transformValue?: (el: any) => number) => _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
-    if (transformValue) {
-      return transformValue(b[1]) - transformValue(a[1])
+  const sortedAsc = (obj: any, sortByKeys?: boolean) => {
+    if (sortByKeys) {
+      return _fromPairs(_sortBy(_toPairs(obj), (pair) => pair[0]))
     }
 
-    return b[1] - a[1]
-  }))
+    return _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
+      return b[1] - a[1]
+    }))
+  }
 
-  const sortedDesc = (obj: any, transformValue?: (el: any) => number) => _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
-    if (transformValue) {
-      return transformValue(a[1]) - transformValue(b[1])
+  const sortedDesc = (obj: any, sortByKeys?: boolean) => {
+    if (sortByKeys) {
+      return _fromPairs(_reverse(_sortBy(_toPairs(obj), (pair) => pair[0])))
     }
 
-    return a[1] - b[1]
-  }))
+    return _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
+      return a[1] - b[1]
+    }))
+  }
 
   const onSortBy = (label: string) => {
-    let sorted
-    switch (label) {
-      case 'quantity':
-        if (sort.sortByAscend) {
-          sorted = sortedDesc(customsEventsData)
-          setSort({
-            label: 'quantity',
-            sortByAscend: false,
-            sortByDescend: true,
-          })
-        } else if (sort.sortByDescend) {
-          sorted = customs
-          setSort({
-            label: 'quantity',
-            sortByAscend: false,
-            sortByDescend: false,
-          })
-        } else {
-          sorted = sortedAsc(customsEventsData)
-          setSort({
-            label: 'quantity',
-            sortByAscend: true,
-            sortByDescend: false,
-          })
-        }
-        setCustomsEventsData(sorted)
-        break
+    const sortByKeys = label === 'event'
 
-      case 'conversion':
-        if (sort.sortByAscend) {
-          sorted = sortedDesc(customsEventsData, (el) => _round((el / uniques) * 100, 2))
-          setSort({
-            label: 'conversion',
-            sortByAscend: false,
-            sortByDescend: true,
-          })
-        } else if (sort.sortByDescend) {
-          sorted = customs
-          setSort({
-            label: 'conversion',
-            sortByAscend: false,
-            sortByDescend: false,
-          })
-        } else {
-          sorted = sortedAsc(customsEventsData, (el) => _round((el / uniques) * 100, 2))
-          setSort({
-            label: 'conversion',
-            sortByAscend: true,
-            sortByDescend: false,
-          })
-        }
-        setCustomsEventsData(sorted)
-        break
-
-      default:
-        break
+    if (sort.sortByAscend) {
+      setCustomsEventsData(sortedDesc(customsEventsData, sortByKeys))
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: true,
+      })
+      return
     }
+
+    if (sort.sortByDescend) {
+      setCustomsEventsData(customs)
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: false,
+      })
+      return
+    }
+
+    setCustomsEventsData(sortedAsc(customsEventsData, sortByKeys))
+    setSort({
+      label,
+      sortByAscend: true,
+      sortByDescend: false,
+    })
   }
 
   useEffect(() => {
@@ -543,20 +522,33 @@ const CustomEvents = ({
       <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
-            <th className='w-4/6 text-left'>
+            <th className='w-4/6 text-left flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('event')}>
               {t('project.event')}
+              <Sort
+                className='ml-1'
+                sortByAscend={sort.label === 'event' && sort.sortByAscend}
+                sortByDescend={sort.label === 'event' && sort.sortByDescend}
+              />
             </th>
             <th className='w-1/6 text-right'>
-              <p className='flex items-center'>
+              <p className='flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('quantity')}>
                 {t('project.quantity')}
-                <Sort onClick={() => onSortBy('quantity')} sortByAscend={sort.label === 'quantity' && sort.sortByAscend} sortByDescend={sort.label === 'quantity' && sort.sortByDescend} />
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
+                  sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                />
                 &nbsp;&nbsp;
               </p>
             </th>
             <th className='w-1/6 text-right'>
-              <p className='flex items-center'>
+              <p className='flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('conversion')}>
                 {t('project.conversion')}
-                <Sort onClick={() => onSortBy('conversion')} sortByAscend={sort.label === 'conversion' && sort.sortByAscend} sortByDescend={sort.label === 'conversion' && sort.sortByDescend} />
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
+                  sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                />
               </p>
             </th>
           </tr>

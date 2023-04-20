@@ -1,32 +1,37 @@
 import React from 'react'
-import { BarsArrowUpIcon, BarsArrowDownIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline'
+import { ChevronUpDownIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import cx from 'clsx'
 
-const Sort = ({ sortByAscend, sortByDescend, onClick }: {
+interface ISort {
   sortByAscend?: boolean,
   sortByDescend?: boolean,
-  onClick?: () => void
-}): JSX.Element => {
+  className?: string,
+}
+
+const Sort: React.FC<ISort> = ({
+  sortByAscend, sortByDescend, className,
+}: ISort): JSX.Element => {
   if (sortByAscend) {
     return (
-      <BarsArrowUpIcon onClick={onClick} className='w-6 h-6' />
+      <ChevronUpIcon className={cx(className, 'w-4 h-4')} />
     )
   }
 
   if (sortByDescend) {
     return (
-      <BarsArrowDownIcon onClick={onClick} className='w-6 h-6' />
+      <ChevronDownIcon className={cx(className, 'w-4 h-4')} />
     )
   }
 
   return (
-    <ChevronUpDownIcon onClick={onClick} className='w-6 h-6' />
+    <ChevronUpDownIcon className={cx(className, 'w-4 h-4')} />
   )
 }
 
 Sort.defaultProps = {
-  sortByAscend: undefined,
-  sortByDescend: undefined,
-  onClick: () => {},
+  sortByAscend: false,
+  sortByDescend: false,
+  className: '',
 }
 
 export default Sort
