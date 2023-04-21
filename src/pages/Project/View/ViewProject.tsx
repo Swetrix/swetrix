@@ -1146,7 +1146,9 @@ const ViewProject = ({
   }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
   useEffect(() => {
-    setActiveChartMetricsCustomEvents([])
+    if (!_isEmpty(activeChartMetricsCustomEvents)) {
+      setActiveChartMetricsCustomEvents([])
+    }
   }, [period, filters]) // eslint-disable-line
 
   useEffect(() => {
