@@ -68,7 +68,6 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
     const liveStats: any[] = yield call(getLiveVisitors, pids)
     yield put(UIActions.setLiveStats({
       data: liveStats,
-      shared: true,
     }))
   } catch (e: unknown) {
     const { message } = e as { message: string }

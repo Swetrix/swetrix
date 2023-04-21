@@ -46,7 +46,7 @@ import {
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
-import { IProject } from 'redux/models/IProject'
+import { IProject, ILiveStats } from 'redux/models/IProject'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -87,7 +87,7 @@ interface IProjectView extends IProject {
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats,
 }: {
   projects: IProjectView[],
   extensions: any,
@@ -120,6 +120,7 @@ const ViewProject = ({
   setProjects: (projects: Partial<IProject | ISharedProject>[]) => void,
   customEventsPrefs: any,
   setCustomEventsPrefs: (pid: string, data: any) => void,
+  liveStats: ILiveStats,
 }) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -1185,7 +1186,6 @@ const ViewProject = ({
                   setPublicProject({
                     ...projectRes,
                     overall: res[id],
-                    live: 'N/A',
                     isPublicVisitors: true,
                   })
                 })
@@ -1199,7 +1199,6 @@ const ViewProject = ({
                   setProjects([...(projects as any[]), {
                     ...projectRes,
                     overall: res[id],
-                    live: 'N/A',
                   }])
                 })
                 .then(() => {
@@ -1826,7 +1825,7 @@ const ViewProject = ({
                       chartData={chartData}
                       activePeriod={activePeriod}
                       sessionDurationAVG={sessionDurationAVG}
-                      live={project.live}
+                      live={liveStats[id]}
                       projectId={id}
                     />
                   )}
