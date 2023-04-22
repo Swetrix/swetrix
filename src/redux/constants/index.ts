@@ -124,6 +124,9 @@ export const TimeFormat: {
 
 export const FREE_TIER_KEY: string = 'free'
 
+export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/paddle.js'
+export const PADDLE_VENDOR_ID = 139393
+
 // a dedicated variable is needed for paid tier checking
 export const WEEKLY_REPORT_FREQUENCY: string = 'weekly'
 export const reportFrequencies: string[] = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
