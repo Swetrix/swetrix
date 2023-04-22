@@ -349,8 +349,6 @@ const getSettings = (
     }
   })
 
-  console.log('customEventsColors', customEventsColors)
-
   if (!_isEmpty(forecasedChartData)) {
     lines.push({
       value: _last(chart?.x),
