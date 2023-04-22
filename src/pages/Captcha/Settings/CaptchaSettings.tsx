@@ -324,7 +324,7 @@ const CaptchaSettings = ({
   }
 
   useEffect(() => {
-    if (tab === tabForInheritance && _isEmpty(allProjectsNames)) {
+    if (_isEmpty(allProjectsNames)) {
       getAllProjectsNames()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
