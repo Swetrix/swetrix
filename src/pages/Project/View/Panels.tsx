@@ -412,6 +412,11 @@ const CustomEvents = ({
 
   useEffect(() => {
     setCustomsEventsData(customs)
+    setSort({
+      label: 'quantity',
+      sortByAscend: false,
+      sortByDescend: false,
+    })
   }, [customs])
 
   useEffect(() => {
