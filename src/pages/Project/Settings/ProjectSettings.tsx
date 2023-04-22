@@ -263,7 +263,12 @@ const ProjectSettings = ({
     if (!projectResetting) {
       setProjectResetting(true)
       try {
-        if (!_isEmpty(dateRange)) {
+        if (tab === tabDeleteDataModal[1].name) {
+          if (_isEmpty(dateRange)) {
+            deleteProjectFailed(t('project.settings.noDateRange'))
+            setProjectResetting(false)
+            return
+          }
           await deletePartially(id, {
             from: getFormatDate(dateRange[0]),
             to: getFormatDate(dateRange[1]),
