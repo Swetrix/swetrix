@@ -47,11 +47,11 @@ const MAX_IPBLACKLIST_LENGTH = 300
 const tabDeleteDataModal = [
   {
     name: 'all',
-    title: 'project.settings.delete.all',
+    title: 'project.settings.reseted.all',
   },
   {
     name: 'partially',
-    title: 'project.settings.delete.partially',
+    title: 'project.settings.reseted.partially',
   },
 ]
 
@@ -89,11 +89,11 @@ const ModalMessage = ({
     </div>
     {tab === tabDeleteDataModal[1].name && (
       <>
-        <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
-          {t('project.settings.delete.partiallyHint')}
+        <p className='text-gray-500 dark:text-gray-300 mt-4 mb-2 text-sm'>
+          {t('project.settings.reseted.partiallyDesc')}
         </p>
-        <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
-          if you want to reset the project not all project please select the date range
+        <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-2 text-sm'>
+          {t('project.settings.reseted.partiallyHint')}
         </p>
         <input type='text' className='h-0 w-0 border-0 p-0 m-0 focus:text-transparent focus:border-transparent focus:shadow-none focus:ring-transparent' />
         <FlatPicker
@@ -107,7 +107,7 @@ const ModalMessage = ({
     )}
     {tab === tabDeleteDataModal[0].name && (
       <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
-        {t('project.settings.delete.allHint')}
+        {t('project.settings.reseted.allHint')}
       </p>
     )}
   </>
