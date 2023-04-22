@@ -281,6 +281,34 @@ const getColumnsPerf = (chart: {
   return columns
 }
 
+const stringToColour = (str: string) => {
+  let hash = 0
+
+  // Loop through each character in the string
+  for (let i = 0; i < str.length; i++) {
+    // Get the ASCII code for the current character
+    const charCode = str.charCodeAt(i)
+    // Update the hash value using a simple algorithm
+    hash = charCode + ((hash << 5) - hash)
+  }
+
+  // Initialise color value to #
+  let colour = '#'
+
+  // Generate 3-byte color code (RRGGBB)
+  for (let i = 0; i < 3; i++) {
+    // Get the next 8 bits of the hash value
+    const value = (hash >> (i * 8)) & 0xFF
+    // Convert the value to a 2-digit hex string
+    const hexString = (`00${value.toString(16)}`).substr(-2)
+    // Append the hex string to the color value
+    colour += hexString
+  }
+
+  // Return the resulting color value
+  return colour
+}
+
 // setting the default values for the time period dropdown
 const noRegionPeriods = ['custom', 'yesterday']
 
@@ -309,6 +337,17 @@ const getSettings = (
   const customEventsToArray = customEvents ? _map(_keys(customEvents), (el) => {
     return [el, ...customEvents[el]]
   }) : []
+
+  let customEventsColors: {
+    [key: string]: string,
+  } = {}
+
+  _forEach(_keys(customEvents), (el) => {
+    customEventsColors = {
+      ...customEventsColors,
+      [el]: stringToColour(el),
+    }
+  })
 
   if (!_isEmpty(forecasedChartData)) {
     lines.push({
@@ -389,6 +428,7 @@ const getSettings = (
         trendlineUnique: '#436abf',
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
+        ...customEventsColors,
       },
       regions,
       axes: {
