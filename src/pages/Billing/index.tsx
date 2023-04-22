@@ -18,15 +18,6 @@ import Pricing from '../MainPage/Pricing'
 dayjs.extend(utc)
 dayjs.extend(duration)
 
-const loadPaddleScript = () => {
-  const script = document.createElement('script')
-  script.src = 'https://cdn.paddle.com/paddle/paddle.js'
-  script.async = true
-  document.body.appendChild(script)
-}
-
-loadPaddleScript()
-
 const Billing = (): JSX.Element => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
   const { user }: {
