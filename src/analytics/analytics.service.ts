@@ -185,8 +185,10 @@ const nullifyMissingElements = (results: any[], size?: number): number[] => {
   return copy
 }
 
-const generateParamsQuery = (col: string, subQuery: string): string => {
-  // TODO: ??? idk, something should be done to improve it
+const generateParamsQuery = (col: string, subQuery: string, customEVFilterApplied: boolean): string => {
+  if (customEVFilterApplied) {
+    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  }
 
   if (col === 'pg') {
     return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
@@ -586,7 +588,7 @@ export class AnalyticsService {
     const params = {}
 
     const paramsPromises = _map(cols, async col => {
-      const query1 = generateParamsQuery(col, subQuery)
+      const query1 = generateParamsQuery(col, subQuery, customEVFilterApplied)
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
       params[col] = {}
