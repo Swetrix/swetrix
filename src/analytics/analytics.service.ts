@@ -614,7 +614,7 @@ export class AnalyticsService {
     // Average session duration calculation
     let avgSdur = 0
     if (!customEVFilterApplied) {
-      const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
+      const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL AND unique='1'`
       const avgSdurObject = await clickhouse
         .query(avgSdurQuery, paramsData)
         .toPromise()
