@@ -129,7 +129,7 @@ export class MailerService {
       const template = handlebars.compile(letter)
       const htmlToSend = template(params)
 
-      const message = {
+      const message: postmark.Models.Message = {
         From: process.env.FROM_EMAIL,
         To: email,
         Subject: subject,
