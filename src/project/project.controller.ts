@@ -1262,14 +1262,12 @@ export class ProjectController {
     this.logger.log({ uid, id }, 'PUT /project/captcha/inherited/:id')
 
     if (!isValidPID(id)) {
-      throw new BadRequestException(  
+      throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
       )
     }
 
-    let project
-
-    project = await this.projectService.findOne(id, {
+    const project = await this.projectService.findOne(id, {
       relations: ['admin', 'share', 'share.user'],
     })
     const user = await this.userService.findOne(uid)
@@ -1281,9 +1279,7 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid, user.roles)
 
     if (project.isCaptchaProject) {
-      throw new BadRequestException(
-        'This project is already a CAPTCHA project',
-      )
+      throw new BadRequestException('This project is already a CAPTCHA project')
     }
 
     if (project.isAnalyticsProject) {
@@ -1307,7 +1303,6 @@ export class ProjectController {
 
     return project
   }
-
 
   @Put('/:id')
   @HttpCode(200)
