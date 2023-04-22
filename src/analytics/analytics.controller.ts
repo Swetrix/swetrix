@@ -859,74 +859,45 @@ export class AnalyticsController {
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
-    this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
-    let dto: Array<string | number>
-    let perfDTO: Array<string | number> = []
-    let ua: UAParser.IResult
-    let cc
 
-    if (unique) {
-      ua = UAParser(userAgent)
-      const dv = ua.device.type || 'desktop'
-      const br = ua.browser.name
-      const os = ua.os.name
-      // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
-      cc =
-        ct.getCountryForTimezone(logDTO.tz)?.id ||
-        (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
-      dto = analyticsDTO(
-        sessionHash,
-        logDTO.pid,
-        logDTO.pg,
-        dv,
-        br,
-        os,
-        logDTO.lc,
-        logDTO.ref,
-        logDTO.so,
-        logDTO.me,
-        logDTO.ca,
-        cc,
-        0,
-        1,
-      )
-    } else if (!logDTO.unique) {
-      dto = analyticsDTO(
-        'NULL',
-        logDTO.pid,
-        logDTO.pg,
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        0,
-      )
-    } else {
-      throw new BadRequestException(
-        'Event was not saved because it was not unique while unique only param is provided',
+    this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
+
+    if (unique && logDTO.unique) {
+      throw new ForbiddenException(
+        'The event was not saved because it was not unique while unique only param is provided',
       )
     }
 
+    // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
+    const cc =
+      ct.getCountryForTimezone(logDTO.tz)?.id ||
+      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+
+    const ua = UAParser(userAgent)
+    const dv = ua.device.type || 'desktop'
+    const br = ua.browser.name
+    const os = ua.os.name
+
+    const dto = analyticsDTO(
+      sessionHash,
+      logDTO.pid,
+      logDTO.pg,
+      dv,
+      br,
+      os,
+      logDTO.lc,
+      logDTO.ref,
+      logDTO.so,
+      logDTO.me,
+      logDTO.ca,
+      cc,
+      0,
+      Number(unique),
+    )
+
+    let perfDTO: Array<string | number> = []
+
     if (!_isEmpty(logDTO.perf) && isPerformanceValid(logDTO.perf)) {
-      if (!ua) {
-        ua = UAParser(userAgent)
-      }
-
-      if (!cc) {
-        cc =
-          ct.getCountryForTimezone(logDTO.tz)?.id ||
-          (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
-      }
-
-      const dv = ua.device.type || 'desktop'
-      const br = ua.browser.name
-
       const {
         dns,
         tls,
@@ -1000,56 +971,36 @@ export class AnalyticsController {
 
     const ip =
       headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
-
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
+
     this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
-    let dto: Array<string | number>
+    const ua = UAParser(userAgent)
+    const dv = ua.device.type || 'desktop'
+    const br = ua.browser.name
+    const os = ua.os.name
 
-    if (unique) {
-      const ua = UAParser(userAgent)
-      const dv = ua.device.type || 'desktop'
-      const br = ua.browser.name
-      const os = ua.os.name
-      // using CloudFlare's IP based country code
-      const cc =
-        headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
-      dto = analyticsDTO(
-        sessionHash,
-        logDTO.pid,
-        'NULL',
-        dv,
-        br,
-        os,
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        cc,
-        0,
-        1,
-      )
-    } else {
-      dto = analyticsDTO(
-        'NULL',
-        logDTO.pid,
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        'NULL',
-        0,
-      )
-    }
+    // using CloudFlare's IP based country code
+    const cc =
+      headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
+    const dto = analyticsDTO(
+      sessionHash,
+      logDTO.pid,
+      'NULL',
+      dv,
+      br,
+      os,
+      'NULL',
+      'NULL',
+      'NULL',
+      'NULL',
+      'NULL',
+      cc,
+      0,
+      Number(unique),
+    )
 
     const values = `(${dto.map(getElValue).join(',')})`
     try {
