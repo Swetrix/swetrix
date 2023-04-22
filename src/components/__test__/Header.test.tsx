@@ -46,6 +46,10 @@ describe('Header', () => {
     isTelegramChatIdConfirmed: false,
     timeFormat: '',
     sharedProjects: [],
+    registeredWithGoogle: false,
+    googleId: null,
+    githubId: null,
+    registeredWithGithub: false,
   }
 
   beforeEach(() => {
