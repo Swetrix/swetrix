@@ -53,7 +53,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios)/\" --watchAll=false",
+    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios)/\"",
+    "test:ci": "CI=true npm run test",
     "eject": "react-scripts eject",
     "analyse": "source-map-explorer 'build/static/js/*.js'",
     "lint": "eslint src",
