@@ -402,11 +402,7 @@ const Dashboard = ({
                 <div className='sm:hidden mb-2'>
                   <Select
                     items={_filter(dashboardLocTabs, (tab) => {
-                      if (tab.name === tabForSharedProject && sharedTotal <= 0) {
-                        return false
-                      }
-
-                      return true
+                      return !(tab.name === tabForSharedProject && sharedTotal <= 0)
                     })}
                     keyExtractor={(item) => item.id}
                     labelExtractor={(item) => t(item.label)}
