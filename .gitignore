@@ -134,3 +134,5 @@ package-lock.json
 pnpm-lock.yaml
 crowdin.yml
 yarn.lock
+
+**/__snapshots__

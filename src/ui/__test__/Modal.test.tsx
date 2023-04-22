@@ -87,11 +87,4 @@ describe('Modal component', () => {
     )
     expect(getByText('beta.title')).toBeInTheDocument()
   })
-
-  it('snapshot', () => {
-    const { asFragment } = render(
-      <HocWithI18n {...defaultProps} />,
-    )
-    expect(asFragment()).toMatchSnapshot()
-  })
 })

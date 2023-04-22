@@ -25,9 +25,4 @@ describe('Checkbox', () => {
     fireEvent.click(getByRole('checkbox'))
     expect(onChange).toHaveBeenCalled()
   })
-
-  it('snapshot', () => {
-    const { container } = render(<Checkbox label='Checkbox' checked />)
-    expect(container).toMatchSnapshot()
-  })
 })

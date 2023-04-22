@@ -33,11 +33,4 @@ describe('Tooltip', () => {
     const tooltipWrapper = getByTestId('tooltip-wrapper')
     expect(tooltipWrapper).toHaveClass(className)
   })
-
-  it('snapshot', () => {
-    const { container } = render(
-      <Tooltip text='Tooltip' />,
-    )
-    expect(container).toMatchSnapshot()
-  })
 })

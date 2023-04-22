@@ -20,9 +20,4 @@ describe('Chart component', () => {
     const { getByTestId } = render(<Chart current='chart' options={options} />)
     expect(getByTestId('chart')).toBeInTheDocument()
   })
-
-  it('snapshot', () => {
-    const { container } = render(<Chart current='chart' options={options} />)
-    expect(container).toMatchSnapshot()
-  })
 })

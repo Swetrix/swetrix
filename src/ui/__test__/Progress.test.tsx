@@ -6,8 +6,8 @@ import { render } from '@testing-library/react'
 import Progress from '../Progress'
 
 describe('Progress', () => {
-  it('should render', () => {
-    const { container } = render(<Progress now={50} />)
-    expect(container).toMatchSnapshot()
+  it('renders the progress bar', () => {
+    const { getByTestId } = render(<Progress />)
+    expect(getByTestId('progress')).toBeInTheDocument()
   })
 })

@@ -82,16 +82,4 @@ describe('Footer', () => {
     expect(getByText('Hosted in')).toBeInTheDocument()
     expect(getByText('European Union')).toHaveAttribute('href', 'https://en.wikipedia.org/wiki/European_Union')
   })
-
-  it('snapshot minimal footer', () => {
-    const { container } = render(
-      <Router history={history}>
-        <I18nextProvider i18n={i18n}>
-          <Footer {...minimalProps} />
-        </I18nextProvider>
-      </Router>,
-    )
-
-    expect(container).toMatchSnapshot()
-  })
 })

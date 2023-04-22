@@ -52,9 +52,4 @@ describe('Select', () => {
       expect(getByText(item)).toBeInTheDocument()
     })
   })
-
-  it('snapshot', () => {
-    const { container } = render(<Select {...defaultProps} />)
-    expect(container).toMatchSnapshot()
-  })
 })

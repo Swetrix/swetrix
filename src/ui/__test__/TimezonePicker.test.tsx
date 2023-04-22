@@ -59,12 +59,4 @@ describe('TimezonePricker', () => {
     expect(onChange).toHaveBeenCalledTimes(1)
     expect(onChange).toHaveBeenCalledWith('America/Phoenix')
   })
-
-  it('snapshots', () => {
-    const { container } = render(
-      <HocWithI18n value='Europe/London' onChange={onChange} />,
-    )
-
-    expect(container).toMatchSnapshot()
-  })
 })

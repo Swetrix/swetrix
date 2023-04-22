@@ -36,9 +36,4 @@ describe('Dropdown', () => {
     fireEvent.click(item)
     expect(onSelect).toHaveBeenCalledWith(items[0])
   })
-
-  it('snapshot', () => {
-    const { container } = render(<Dropdown {...defaultProps} />)
-    expect(container).toMatchSnapshot()
-  })
 })

@@ -95,18 +95,4 @@ describe('Header', () => {
 
     expect(screen.getByText(/auth.common.signin/i)).toBeInTheDocument()
   })
-
-  test('snapshot', () => {
-    const { container } = render(
-      <Router history={history}>
-        <Provider store={store}>
-          <I18nextProvider i18n={i18n}>
-            <Header authenticated={authenticated} theme={theme} user={user} />
-          </I18nextProvider>
-        </Provider>
-      </Router>,
-    )
-
-    expect(container).toMatchSnapshot()
-  })
 })

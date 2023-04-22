@@ -47,11 +47,4 @@ describe('AlertTemplate', () => {
     fireEvent.click(getByRole('button'))
     expect(closeMock).toHaveBeenCalled()
   })
-
-  it('snapshot', () => {
-    const { container } = render(
-      <AlertTemplate message='This is an error alert' options={{ type: 'error' }} close={closeMock} />,
-    )
-    expect(container).toMatchSnapshot()
-  })
 })

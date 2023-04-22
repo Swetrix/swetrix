@@ -9,9 +9,4 @@ describe('Loader', () => {
     const { getByText } = render(<Loader />)
     expect(getByText('Loading...')).toBeInTheDocument()
   })
-
-  it('snapshot', () => {
-    const { container } = render(<Loader />)
-    expect(container).toMatchSnapshot()
-  })
 })

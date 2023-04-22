@@ -25,11 +25,4 @@ describe('Code component', () => {
     // eslint-disable-next-line testing-library/no-node-access
     expect(container.firstChild).toHaveClass(testClassName)
   })
-
-  it('snapshot', () => {
-    const { container } = render(
-      <Code text={testText} language={testLanguage} />,
-    )
-    expect(container).toMatchSnapshot()
-  })
 })

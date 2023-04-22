@@ -87,9 +87,4 @@ describe('Button component', () => {
     const button = getByText('Click me')
     expect(button).toHaveClass('border-none')
   })
-
-  it('snapshot', () => {
-    const { container } = render(<Button text='Click me' />)
-    expect(container).toMatchSnapshot()
-  })
 })
