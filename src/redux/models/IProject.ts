@@ -29,6 +29,11 @@ export interface IShareOwnerProject {
     user: IUserShareProject
 }
 
+export interface IProjectNames {
+    name: string
+    id: string
+}
+
 export interface IProject {
     id: string
     name: string
