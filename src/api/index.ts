@@ -865,3 +865,17 @@ export const processSSOToken = (token: string, hash: string) =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const deletePartially = (id: string, data: {
+  from: string
+  to: string
+}) =>
+  api
+    .delete(`project/partially/${id}?from=${data.from}&to=${data.to}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
