@@ -14,7 +14,7 @@ import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IAuth } from 'redux/models/IAuth'
-import { IProject, IOverall } from 'redux/models/IProject'
+import { IProject, IOverall, IProjectNames } from 'redux/models/IProject'
 import { IAlerts } from 'redux/models/IAlerts'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
@@ -859,6 +859,28 @@ export const processSSOToken = (token: string, hash: string) =>
   api
     .post('v1/auth/sso/process-token', { token, hash })
     .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getProjectsNames = () =>
+  api
+    .get('project/names')
+    .then((response): IProjectNames[] => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const createCaptchaInherited = (id: string) =>
+  api
+    .put(`project/captcha/inherited/${id}`)
+    .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)

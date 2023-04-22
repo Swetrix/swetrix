@@ -23,7 +23,7 @@ import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted } from 'redux/constants'
 import {
-  createProject, updateProject, deleteCaptchaProject, resetCaptchaProject, reGenerateCaptchaSecretKey,
+  createProject, updateProject, deleteCaptchaProject, resetCaptchaProject, reGenerateCaptchaSecretKey, getProjectsNames, createCaptchaInherited,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -33,7 +33,7 @@ import Select from 'ui/Select'
 import { nanoid } from 'utils/random'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
-import { ICaptchaProject, IProject } from 'redux/models/IProject'
+import { ICaptchaProject, IProject, IProjectNames } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
 const MAX_NAME_LENGTH = 50
@@ -112,6 +112,7 @@ const CaptchaSettings = ({
   const [projectSaving, setProjectSaving] = useState<boolean>(false)
   const [tab, setTab] = useState<string>(tabForCreateCaptcha[0].name)
   const [reuseProjectId, setReuseProjectId] = useState()
+  const [allProjectsNames, setAllProjectsNames] = useState<IProjectNames[]>([])
   const [copied, setCopied] = useState(false)
   const [captchaSecretKey, setCaptchaSecretKey] = useState(project?.captchaSecretKey)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
@@ -164,7 +165,7 @@ const CaptchaSettings = ({
               showError('Select projects')
               return
             }
-            await updateProject(formalisedData.id, formalisedData as ICaptchaProject)
+            await createCaptchaInherited(formalisedData.id)
           } else {
             await createProject({
               id: formalisedData.id,
@@ -272,7 +273,7 @@ const CaptchaSettings = ({
     setBeenSubmitted(true)
 
     if (tab === tabForInheritance) {
-      const data = _find(analyticsProjects, (item) => `${item.name} | ${item.id}` === reuseProjectId)
+      const data = _find(allProjectsNames || analyticsProjects, (item) => `${item.name} | ${item.id}` === reuseProjectId)
 
       if (_isEmpty(data)) {
         showError('Select project or select corect project')
@@ -313,6 +314,22 @@ const CaptchaSettings = ({
     }
   }
 
+  const getAllProjectsNames = async () => {
+    await getProjectsNames()
+      .then((res) => {
+        setAllProjectsNames(res)
+      }).catch((e) => {
+        console.log(e)
+      })
+  }
+
+  useEffect(() => {
+    if (_isEmpty(allProjectsNames)) {
+      getAllProjectsNames()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab])
+
   return (
     <Title title={title}>
       <div
@@ -328,7 +345,7 @@ const CaptchaSettings = ({
             {t('profileSettings.general')}
           </h3>
           <div className='mt-6'>
-            {(!isSettings && _filter(analyticsProjects, (item) => !item.isCaptchaProject).length > 0) && (
+            {(!isSettings && _filter(allProjectsNames || analyticsProjects, (item) => !item?.isCaptchaProject).length > 0) && (
               <nav className='-mb-px flex space-x-8'>
                 {_map(tabForCreateCaptcha, (tabCaptcha) => (
                   <button
@@ -377,7 +394,7 @@ const CaptchaSettings = ({
               title={_isEmpty(reuseProjectId) ? 'select project' : reuseProjectId}
               label={t('profileSettings.selectProject')}
               className='w-full'
-              items={_filter(analyticsProjects, (item) => !item.isCaptchaProject)}
+              items={_filter(allProjectsNames || analyticsProjects, (item) => !item.isCaptchaProject)}
               labelExtractor={(item) => `${item.name} | ${item.id}`}
               keyExtractor={(item) => item.id}
               onSelect={(item) => setReuseProjectId(item)}

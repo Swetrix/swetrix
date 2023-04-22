@@ -29,6 +29,12 @@ export interface IShareOwnerProject {
     user: IUserShareProject
 }
 
+export interface IProjectNames {
+    name: string
+    id: string
+    isCaptchaProject: boolean
+}
+
 export interface IProject {
     id: string
     name: string
