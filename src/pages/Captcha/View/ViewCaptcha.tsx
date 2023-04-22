@@ -37,7 +37,7 @@ import {
   tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
   MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, TimeFormat, chartTypes,
 } from 'redux/constants'
-import { ICaptchaProject, IProject } from 'redux/models/IProject'
+import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -67,7 +67,7 @@ interface IProjectView extends ICaptchaProject {
 }
 
 const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, setProjects,
+  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, setProjects, liveStats,
 }: {
   projects: IProjectView[],
   isLoading: boolean,
@@ -81,6 +81,7 @@ const ViewProject = ({
   isPaidTierUsed: boolean,
   // eslint-disable-next-line no-unused-vars, no-shadow
   setProjects: (projects: ICaptchaProject[]) => void,
+  liveStats: ILiveStats,
 }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -861,7 +862,7 @@ const ViewProject = ({
                   chartData={chartData}
                   activePeriod={activePeriod}
                   sessionDurationAVG={sessionDurationAVG}
-                  live={project.live || 'N/A'}
+                  live={liveStats[id] || 'N/A'}
                   projectId={id}
                 />
                 )}

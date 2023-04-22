@@ -33,7 +33,6 @@ export default function* liveVisitors() {
 
       yield put(UIActions.setLiveStats({
         data: liveStats,
-        shared: true,
       }))
     } else {
       const projects: IProject[] = yield select(state => state.ui.projects.projects)
@@ -51,7 +50,6 @@ export default function* liveVisitors() {
 
       yield put(UIActions.setLiveStats({
         data: liveStats,
-        shared: false,
       }))
     }
   }

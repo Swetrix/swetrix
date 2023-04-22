@@ -38,7 +38,9 @@ import { acceptShareProject } from 'api'
 
 import Pagination from 'ui/Pagination'
 import { ISharedProject } from 'redux/models/ISharedProject'
-import { IProject, IOvervallObject, ICaptchaProject } from 'redux/models/IProject'
+import {
+  IProject, IOvervallObject, ICaptchaProject, ILiveStats,
+} from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
 const DASHBOARD_TABS_VALUES = _values(DASHBOARD_TABS)
@@ -266,6 +268,7 @@ interface DashboardProps {
   setDashboardPaginationPageCaptcha: (page: number) => void
   loadProjectsCaptcha: (take: number, skip: number) => void
   projectTab: string
+  liveStats: ILiveStats
 }
 
 const Dashboard = ({
@@ -273,7 +276,7 @@ const Dashboard = ({
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
   setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
-  loadProjectsCaptcha, projectTab,
+  loadProjectsCaptcha, projectTab, liveStats,
 }: DashboardProps): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -448,7 +451,7 @@ const Dashboard = ({
                     <div className='shadow overflow-hidden sm:rounded-md'>
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, live, public: isPublic, isTransferring,
+                          name, id, created, active, overall, public: isPublic, isTransferring,
                         }) => (
                           <div key={id}>
                             <Link to={_replace(routes.project, ':id', id)}>
@@ -461,7 +464,7 @@ const Dashboard = ({
                                 isPublic={isPublic}
                                 confirmed={false}
                                 overall={overall}
-                                live={_isNumber(live) ? live : 'N/A'}
+                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                                 setUserShareData={() => {}}
                                 deleteProjectFailed={() => {}}
                                 userSharedUpdate={() => {}}
@@ -486,7 +489,7 @@ const Dashboard = ({
                     <div className='shadow overflow-hidden sm:rounded-md'>
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, live, public: isPublic,
+                          name, id, created, active, overall, public: isPublic,
                         }) => (
                           <div key={id}>
                             <Link to={_replace(routes.captcha, ':id', id)}>
@@ -499,7 +502,7 @@ const Dashboard = ({
                                 active={active}
                                 isPublic={isPublic}
                                 overall={overall}
-                                live={_isNumber(live) ? live : 'N/A'}
+                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                                 deleteProjectFailed={() => {}}
                                 sharedProjects={[]}
                                 setProjectsShareData={() => {}}
@@ -540,7 +543,7 @@ const Dashboard = ({
                                       isPublic={project?.public}
                                       confirmed={confirmed}
                                       overall={project?.overall}
-                                      live={_isNumber(project?.live) ? project?.live : 'N/A'}
+                                      live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                       setUserShareData={() => {}}
                                       deleteProjectFailed={() => {}}
                                       sharedProjects={[]}
@@ -564,7 +567,7 @@ const Dashboard = ({
                                     sharedProjects={user.sharedProjects}
                                     setProjectsShareData={setProjectsShareData}
                                     setUserShareData={setUserShareData}
-                                    live={_isNumber(project?.live) ? project?.live : 'N/A'}
+                                    live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                     userSharedUpdate={userSharedUpdate}
                                     sharedProjectError={sharedProjectError}
                                     deleteProjectFailed={deleteProjectFailed}
