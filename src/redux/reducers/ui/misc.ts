@@ -5,11 +5,12 @@ import { secondsTillNextMonth } from 'utils/generic'
 import { IStats } from 'redux/models/IStats'
 
 interface IInitialState {
-    stats: IStats
-    paddle: any
-    showNoEventsLeftBanner: boolean
-    lastBlogPost: any
-    extensions: any[]
+  stats: IStats
+  paddleLoaded: boolean
+  paddle: any
+  showNoEventsLeftBanner: boolean
+  lastBlogPost: any
+  extensions: any[]
 }
 
 const initialState: IInitialState = {
@@ -18,6 +19,7 @@ const initialState: IInitialState = {
     projects: 0,
     pageviews: 0,
   },
+  paddleLoaded: false,
   paddle: {},
   showNoEventsLeftBanner: false,
   lastBlogPost: null,

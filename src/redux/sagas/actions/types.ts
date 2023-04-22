@@ -1,4 +1,4 @@
-const sagaTypes: { [key: string]: string } = {
+const sagaTypes = Object.freeze({
   LOAD_EXTENSIONS: 'LOAD_EXTENSIONS',
   LOAD_PROJECTS: 'LOAD_PROJECTS',
   LOAD_SHARED_PROJECTS: 'LOAD_SHARED_PROJECTS',
@@ -10,6 +10,9 @@ const sagaTypes: { [key: string]: string } = {
   DELETE_ACCOUNT_ASYNC: 'DELETE_ACCOUNT_ASYNC',
   SHARE_VERIFY_ASYNC: 'SHARE_VERIFY_ASYNC',
   LOGOUT: 'LOGOUT',
-}
+  AUTH_SSO: 'AUTH_SSO',
+  LINK_SSO: 'LINK_SSO',
+  UNLINK_SSO: 'UNLINK_SSO',
+})
 
 export default sagaTypes

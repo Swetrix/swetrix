@@ -4,7 +4,7 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import { tabForOwnedProject, PROJECT_TABS } from 'redux/constants'
 import { setItem, getItem } from 'utils/localstorage'
-import { IProject, ICaptchaProject } from 'redux/models/IProject'
+import { IProject, ICaptchaProject, ILiveStats } from 'redux/models/IProject'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { IAlerts } from 'redux/models/IAlerts'
 
@@ -27,6 +27,7 @@ interface IInitialState {
     projectTab: string
     alerts: IAlerts[]
     subscribers: any[]
+    liveStats: ILiveStats
 }
 
 const initialState: IInitialState = {
@@ -44,10 +45,11 @@ const initialState: IInitialState = {
   dashboardPaginationPage: 1,
   dashboardPaginationPageShared: 1,
   dashboardPaginationPageCaptcha: 1,
-  dashboardTabs: getItem('dashboardTabs') || tabForOwnedProject,
+  dashboardTabs: getItem('dashboardTabs') as string || tabForOwnedProject,
   projectTab: PROJECT_TABS.traffic,
   alerts: [],
   subscribers: [],
+  liveStats: {},
 }
 
 const projectsSlice = createSlice({
@@ -98,49 +100,20 @@ const projectsSlice = createSlice({
     removeCaptchaProject(state, { payload }: PayloadAction<string>) {
       state.captchaProjects = _filter(state.captchaProjects, (project) => project.id !== payload)
     },
-    setLiveStats(state, { payload }: PayloadAction<{ data: any[], shared: boolean }>) {
-      const { data, shared = false } = payload
-      if (shared) {
-        // @ts-ignore
-        state.sharedProjects = _map(current(state.sharedProjects), (res) => ({
-          ...res,
-          project: {
-            ...res.project,
-            // @ts-ignore
-            live: data[res.project.id],
-          },
-        }))
-      } else {
-        state.projects = _map(current(state.projects), (res) => ({
-          ...res,
-          // @ts-ignore
-          live: data[res.id],
-        }))
+    setLiveStats(state, { payload }: PayloadAction<{ data: any}>) {
+      const { data } = payload
+
+      state.liveStats = {
+        ...state.liveStats,
+        ...data,
       }
     },
-    setLiveStatsProject(state, { payload }: PayloadAction<{ id: string, count: number, shared?: boolean }>) {
-      const { id, count, shared = false } = payload
+    setLiveStatsProject(state, { payload }: PayloadAction<{ id: string, count: number }>) {
+      const { id, count } = payload
 
-      if (shared) {
-        state.sharedProjects = _map(current(state.sharedProjects), (res) => {
-          if (res.id === id) {
-            return {
-              ...res,
-              live: count,
-            }
-          }
-          return res
-        })
-      } else {
-        state.projects = _map(current(state.projects), (res) => {
-          if (res.id === id) {
-            return {
-              ...res,
-              live: count,
-            }
-          }
-          return res
-        })
+      state.liveStats = {
+        ...state.liveStats,
+        [id]: count,
       }
     },
     setPublicProject(state, { payload }: PayloadAction<{ project: Partial<IProject | ISharedProject>, shared?: boolean }>) {

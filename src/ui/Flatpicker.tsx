@@ -20,6 +20,7 @@ interface FlatPickerProps {
   onChange?: (dates: Date[]) => void,
   value?: Date[],
   maxDateMonths?: number,
+  options?: any,
 }
 
 class FlatPicker extends React.Component<FlatPickerProps> {
@@ -54,7 +55,30 @@ class FlatPicker extends React.Component<FlatPickerProps> {
   }
 
   public render() {
-    const { value = [], maxDateMonths = MAX_MONTHS_IN_PAST } = this.props
+    const { value = [], maxDateMonths = MAX_MONTHS_IN_PAST, options } = this.props
+
+    if (options) {
+      return (
+        <div>
+          <Flatpickr
+            id='calendar'
+            value={value}
+            options={{
+              mode: 'range',
+              maxDate: 'today',
+              minDate: this.removeMonths(new Date(), maxDateMonths),
+              showMonths: 1,
+              animate: true,
+              altInput: true,
+              position: 'auto',
+              ...options,
+            }}
+            onChange={this.setCustomDate}
+            placeholder='Select a date range...'
+          />
+        </div>
+      )
+    }
 
     return (
       <div className='h-0 flatpicker-custom'>
@@ -94,6 +118,7 @@ FlatPicker.defaultProps = {
   onChange: () => { },
   value: [],
   maxDateMonths: MAX_MONTHS_IN_PAST,
+  options: null,
 }
 
 export default memo(FlatPicker)

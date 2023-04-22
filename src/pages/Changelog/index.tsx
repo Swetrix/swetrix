@@ -17,6 +17,48 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-04-22',
+    changes: [
+      'Added an ability to partially delete project related analytics data.',
+    ],
+  },
+  {
+    date: '2023-04-20',
+    changes: [
+      'Added sorting functinoality to the Custom events panel.',
+    ],
+  },
+  {
+    date: '2023-04-18',
+    changes: [
+      'Added pagination for Custom events panel in Dashboard.',
+    ],
+  },
+  {
+    date: '2023-04-17',
+    changes: [
+      'Added Github SSO support.',
+    ],
+  },
+  {
+    date: '2023-04-16',
+    changes: [
+      'Added OAuth SSO: now you can sign in or register to Swetrix using your Google account or link a Google account to your existing Swetrix account to ease the sign in process. We will add other SSO providers soon :)',
+    ],
+  },
+  {
+    date: '2023-04-13',
+    changes: [
+      'Added an ability to view custom events on chart.',
+    ],
+  },
+  {
+    date: '2023-04-12',
+    changes: [
+      'Fixed an issue when the selected time bucket or period was not remembered and used after page reload.',
+    ],
+  },
+  {
     date: '2023-04-09',
     changes: [
       'Added an ability to transfer a project from one account to another.',

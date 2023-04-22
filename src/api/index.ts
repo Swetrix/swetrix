@@ -751,6 +751,28 @@ export const confirmSubscriberInvite = (id: string, token: string) =>
         : error.response.data.message
     })
 
+export const getProjectDataCustomEvents = (
+  pid: string,
+  tb: string = 'hour',
+  period: string = '3d',
+  filters: string[] = [],
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
+  customEvents: string[] = [],
+) =>
+  api
+    .get(
+      `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&customEvents=${JSON.stringify(customEvents)}`,
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const transferProject = (uuid: string, email: string) =>
   api
     .post('project/transfer', {
@@ -780,6 +802,77 @@ export const confirmTransferProject = (uuid: string) =>
   api
     .get(`project/transfer?token=${uuid}`)
     .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const generateSSOAuthURL = (provider: string) =>
+  api
+    .post('v1/auth/sso/generate', {
+      provider,
+    })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getJWTBySSOHash = (hash: string, provider: string) =>
+  api
+    .post('v1/auth/sso/hash', { hash, provider })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const linkBySSOHash = (hash: string, provider: string) =>
+  api
+    .post('v1/auth/sso/link_by_hash', { hash, provider })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const unlinkSSO = (provider: string) =>
+  api
+    .delete('v1/auth/sso/unlink', { data: { provider } })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const processSSOToken = (token: string, hash: string) =>
+  api
+    .post('v1/auth/sso/process-token', { token, hash })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const deletePartially = (id: string, data: {
+  from: string
+  to: string
+}) =>
+  api
+    .delete(`project/partially/${id}?from=${data.from}&to=${data.to}`)
+    .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)

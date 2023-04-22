@@ -42,6 +42,7 @@ import {
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
 import Integrations from './components/Integrations'
+import Socialisations from './components/Socialisations'
 import NoSharedProjects from './components/NoSharedProjects'
 
 dayjs.extend(utc)
@@ -61,12 +62,15 @@ interface IProps {
   genericError: (message: string) => void,
   onGDPRExportFailed: (message: string) => void,
   updateProfileFailed: (message: string) => void,
-  updateUserProfileAsync: (data: IUser, onSuccess: () => void, onError: () => void) => void,
+  updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (e: any) => {}) => void,
   accountUpdated: (t: string) => void,
   setAPIKey: (key: string | null) => void,
   user: IUser,
   dontRemember: boolean,
   isPaidTierUsed: boolean,
+  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
+  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
+  theme: string,
 }
 
 interface IForm extends Partial<IUser> {
@@ -80,6 +84,7 @@ const UserSettings = ({
   setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData,
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
   accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
+  linkSSO, unlinkSSO, theme,
 }: IProps): JSX.Element => {
   const history = useHistory()
   const { t }: {
@@ -145,7 +150,7 @@ const UserSettings = ({
       }
     }
 
-    updateUserProfileAsync(data, () => t('profileSettings.updated'), callback)
+    updateUserProfileAsync(data, t('profileSettings.updated'))
   }
 
   useEffect(() => {
@@ -538,6 +543,20 @@ const UserSettings = ({
             updateUserData={updateUserData}
             genericError={genericError}
           />
+
+          {/* Socialisations setup */}
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+          <h3 id='socialisations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.socialisations')}
+          </h3>
+          <Socialisations
+            user={user}
+            genericError={genericError}
+            linkSSO={linkSSO}
+            unlinkSSO={unlinkSSO}
+            theme={theme}
+          />
+
           {/* Shared projects setting */}
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
@@ -698,6 +717,9 @@ UserSettings.propTypes = {
   user: PropTypes.object.isRequired,
   dontRemember: PropTypes.bool.isRequired,
   isPaidTierUsed: PropTypes.bool.isRequired,
+  linkSSO: PropTypes.func.isRequired,
+  unlinkSSO: PropTypes.func.isRequired,
+  theme: PropTypes.string.isRequired,
 }
 
 export default memo(withAuthentication(UserSettings, auth.authenticated))

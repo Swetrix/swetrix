@@ -4,6 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
+import _omit from 'lodash/omit'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -15,7 +16,17 @@ import {
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
 import { useAppDispatch } from 'redux/store'
-import _omit from 'lodash/omit'
+import GoogleAuth from 'components/GoogleAuth'
+import GithubAuth from 'components/GithubAuth'
+
+interface ISignUpForm {
+  email: string,
+  password: string,
+  repeat: string,
+  tos: boolean,
+  dontRemember: boolean,
+  checkIfLeaked: boolean,
+}
 
 const BasicSignup = (): JSX.Element => {
   const { t }: {
@@ -24,14 +35,7 @@ const BasicSignup = (): JSX.Element => {
     }) => string,
   } = useTranslation('common')
   const dispatch = useAppDispatch()
-  const [form, setForm] = useState<{
-    email: string,
-    password: string,
-    repeat: string,
-    tos: boolean,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  }>({
+  const [form, setForm] = useState<ISignUpForm>({
     email: '',
     password: '',
     repeat: '',
@@ -49,23 +53,22 @@ const BasicSignup = (): JSX.Element => {
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const onSubmit = (data: {
-    email: string,
-    password: string,
-    repeat: string,
-    tos: boolean,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  }) => {
+  const signUpCallback = (result: boolean) => {
+    if (result) {
+      trackCustom('SIGNUP_BASIC')
+    } else {
+      setIsLoading(false)
+    }
+  }
+
+  const authSSO = (provider: string) => {
+    dispatch(sagaActions.authSSO(provider, form.dontRemember, t, signUpCallback))
+  }
+
+  const onSubmit = (data: ISignUpForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      dispatch(sagaActions.signupAsync(_omit(data, 'tos'), t, (result) => {
-        if (result) {
-          trackCustom('SIGNUP_BASIC')
-        } else {
-          setIsLoading(false)
-        }
-      }))
+      dispatch(sagaActions.signupAsync(_omit(data, 'tos'), t, signUpCallback))
     }
   }
 
@@ -182,6 +185,25 @@ const BasicSignup = (): JSX.Element => {
       <Button className='w-full flex justify-center' type='submit' loading={isLoading} primary giant>
         {t('auth.signup.create')}
       </Button>
+      {/* SSO options */}
+      <div>
+        <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+        <p className='text-sm mt-2 mb-2 text-center text-gray-500 dark:text-gray-100'>
+          {t('auth.socialisation.orSingUpWith')}
+        </p>
+        <div className='space-x-5'>
+          <GoogleAuth
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            isMiniButton
+          />
+          <GithubAuth
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            isMiniButton
+          />
+        </div>
+      </div>
     </form>
   )
 }

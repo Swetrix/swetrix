@@ -38,7 +38,9 @@ import { acceptShareProject } from 'api'
 
 import Pagination from 'ui/Pagination'
 import { ISharedProject } from 'redux/models/ISharedProject'
-import { IProject, IOvervallObject, ICaptchaProject } from 'redux/models/IProject'
+import {
+  IProject, IOvervallObject, ICaptchaProject, ILiveStats,
+} from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
 const DASHBOARD_TABS_VALUES = _values(DASHBOARD_TABS)
@@ -266,6 +268,7 @@ interface DashboardProps {
   setDashboardPaginationPageCaptcha: (page: number) => void
   loadProjectsCaptcha: (take: number, skip: number) => void
   projectTab: string
+  liveStats: ILiveStats
 }
 
 const Dashboard = ({
@@ -273,7 +276,7 @@ const Dashboard = ({
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
   setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
-  loadProjectsCaptcha, projectTab,
+  loadProjectsCaptcha, projectTab, liveStats,
 }: DashboardProps): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -398,7 +401,9 @@ const Dashboard = ({
               <div>
                 <div className='sm:hidden mb-2'>
                   <Select
-                    items={dashboardLocTabs}
+                    items={_filter(dashboardLocTabs, (tab) => {
+                      return !(tab.name === tabForSharedProject && sharedTotal <= 0)
+                    })}
                     keyExtractor={(item) => item.id}
                     labelExtractor={(item) => t(item.label)}
                     onSelect={(label) => {
@@ -410,24 +415,28 @@ const Dashboard = ({
                   />
                 </div>
                 <div className='hidden sm:block'>
-                  {sharedTotal > 0 && (
                   <nav className='-mb-px flex space-x-8'>
-                    {_map(tabsForDashboard, (tab) => (
-                      <button
-                        key={tab.name}
-                        type='button'
-                        onClick={() => setTabProjects(tab.name)}
-                        className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                          'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
-                          'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
-                        })}
-                        aria-current={tab.name === tabProjects ? 'page' : undefined}
-                      >
-                        {t(tab.label)}
-                      </button>
-                    ))}
+                    {_map(tabsForDashboard, (tab) => {
+                      if (tab.name === tabForSharedProject && sharedTotal <= 0) {
+                        return null
+                      }
+
+                      return (
+                        <button
+                          key={tab.name}
+                          type='button'
+                          onClick={() => setTabProjects(tab.name)}
+                          className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                            'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
+                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
+                          })}
+                          aria-current={tab.name === tabProjects ? 'page' : undefined}
+                        >
+                          {t(tab.label)}
+                        </button>
+                      )
+                    })}
                   </nav>
-                  )}
                 </div>
               </div>
             </div>
@@ -448,7 +457,7 @@ const Dashboard = ({
                     <div className='shadow overflow-hidden sm:rounded-md'>
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, live, public: isPublic, isTransferring,
+                          name, id, created, active, overall, public: isPublic, isTransferring,
                         }) => (
                           <div key={id}>
                             <Link to={_replace(routes.project, ':id', id)}>
@@ -461,7 +470,7 @@ const Dashboard = ({
                                 isPublic={isPublic}
                                 confirmed={false}
                                 overall={overall}
-                                live={_isNumber(live) ? live : 'N/A'}
+                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                                 setUserShareData={() => {}}
                                 deleteProjectFailed={() => {}}
                                 userSharedUpdate={() => {}}
@@ -486,7 +495,7 @@ const Dashboard = ({
                     <div className='shadow overflow-hidden sm:rounded-md'>
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, live, public: isPublic,
+                          name, id, created, active, overall, public: isPublic,
                         }) => (
                           <div key={id}>
                             <Link to={_replace(routes.captcha, ':id', id)}>
@@ -499,7 +508,7 @@ const Dashboard = ({
                                 active={active}
                                 isPublic={isPublic}
                                 overall={overall}
-                                live={_isNumber(live) ? live : 'N/A'}
+                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                                 deleteProjectFailed={() => {}}
                                 sharedProjects={[]}
                                 setProjectsShareData={() => {}}
@@ -540,7 +549,7 @@ const Dashboard = ({
                                       isPublic={project?.public}
                                       confirmed={confirmed}
                                       overall={project?.overall}
-                                      live={_isNumber(project?.live) ? project?.live : 'N/A'}
+                                      live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                       setUserShareData={() => {}}
                                       deleteProjectFailed={() => {}}
                                       sharedProjects={[]}
@@ -564,7 +573,7 @@ const Dashboard = ({
                                     sharedProjects={user.sharedProjects}
                                     setProjectsShareData={setProjectsShareData}
                                     setUserShareData={setUserShareData}
-                                    live={_isNumber(project?.live) ? project?.live : 'N/A'}
+                                    live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                     userSharedUpdate={userSharedUpdate}
                                     sharedProjectError={sharedProjectError}
                                     deleteProjectFailed={deleteProjectFailed}

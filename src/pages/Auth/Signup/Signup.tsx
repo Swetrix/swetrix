@@ -4,9 +4,12 @@ import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
+import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 
 import Title from 'components/Title'
+import GoogleAuth from 'components/GoogleAuth'
+import GithubAuth from 'components/GithubAuth'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
@@ -18,32 +21,37 @@ import {
 } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL, TRIAL_DAYS } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
-import _omit from 'lodash/omit'
 
-const Signup = ({ signup }: {
+interface ISignupForm {
+  email: string,
+  password: string,
+  repeat: string,
+  tos: boolean,
+  dontRemember: boolean,
+  checkIfLeaked: boolean,
+}
+
+interface ISignup {
   signup: (data: {
     email: string,
     password: string,
     repeat: string,
     dontRemember: boolean,
     checkIfLeaked: boolean,
-  }, t: (key: string, optinions?: {
-    [key: string]: string | number,
-  }) => string, callback: (res: any) => void) => void,
-}): JSX.Element => {
+  },
+    t: (key: string, options?: {
+      [key: string]: string | number,
+    }) => string, callback: (res: any) => void) => void,
+  authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+}
+
+const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
   const { t }: {
-    t: (key: string, optinions?: {
+    t: (key: string, options?: {
       [key: string]: string | number,
     }) => string,
   } = useTranslation('common')
-  const [form, setForm] = useState<{
-    email: string,
-    password: string,
-    repeat: string,
-    tos: boolean,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  }>({
+  const [form, setForm] = useState<ISignupForm>({
     email: '',
     password: '',
     repeat: '',
@@ -99,23 +107,18 @@ const Signup = ({ signup }: {
     validate()
   }, [form]) // eslint-disable-line
 
-  const onSubmit = (data: {
-    email: string,
-    password: string,
-    repeat: string,
-    tos: boolean,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  }) => {
+  const signUpCallback = (result: any) => {
+    if (result) {
+      trackCustom('SIGNUP')
+    } else {
+      setIsLoading(false)
+    }
+  }
+
+  const onSubmit = (data: ISignupForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      signup(_omit(data, 'tos'), t, (result) => {
-        if (result) {
-          trackCustom('SIGNUP')
-        } else {
-          setIsLoading(false)
-        }
-      })
+      signup(_omit(data, 'tos'), t, signUpCallback)
     }
   }
 
@@ -249,6 +252,22 @@ const Signup = ({ signup }: {
               {t('auth.signup.button')}
             </Button>
           </div>
+          <div className='flex flex-wrap'>
+            <GoogleAuth
+              className='mt-4 mr-5'
+              setIsLoading={setIsLoading}
+              authSSO={authSSO}
+              callback={signUpCallback}
+              dontRemember={form.dontRemember}
+            />
+            <GithubAuth
+              className='mt-4'
+              setIsLoading={setIsLoading}
+              authSSO={authSSO}
+              callback={signUpCallback}
+              dontRemember={form.dontRemember}
+            />
+          </div>
         </form>
       </div>
     </Title>
@@ -257,6 +276,7 @@ const Signup = ({ signup }: {
 
 Signup.propTypes = {
   signup: PropTypes.func.isRequired,
+  authSSO: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(Signup, auth.notAuthenticated))

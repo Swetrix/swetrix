@@ -25,7 +25,12 @@
     "forecastNumberCantBeBigger": "Liczba prognozy nie może być większa niż {{max}} dla wybranej częstotliwości",
     "invalidToken": "Invalid token",
     "transferRequestSent": "Transfer request sent",
-    "transferProjectReject": "The project transfer request has been cancelled"
+    "transferProjectReject": "The project transfer request has been cancelled",
+    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
+    "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
+    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
+    "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
   },
   "common": {
     "features": "Funkcje",
@@ -69,7 +74,9 @@
     "loading": "Ładowanie..",
     "edit": "Edycja",
     "account": "Account",
-    "transferring": "Transferring"
+    "transferring": "Transferring",
+    "link": "Link",
+    "unlink": "Unlink"
   },
   "main": {
     "ukrSupport": "Wspieraj ukraińską armię w walce z rosyjską inwazją.",
@@ -277,6 +284,10 @@
     "verification": {
       "success": "Twój adres e-mail został pomyślnie zweryfikowany!"
     },
+    "socialisation": {
+      "success": "Socialisation successful",
+      "orSingUpWith": "or sign up with"
+    },
     "common": {
       "signinInstead": "Zamiast tego zaloguj się",
       "signupInstead": "Zamiast tego zarejestruj się",
@@ -293,7 +304,9 @@
       "signin": "Zaloguj się",
       "checkLeakedPassword": "Sprawdź, czy Twoje hasło wyciekło",
       "checkLeakedPasswordDesc": "Po włączeniu sprawdzamy hasło z bazą danych <db>{{database}}</db>. Nie wysyłamy twojego hasła do usługi. Najpierw hashujemy twoje hasło (używając SHA1) i wysyłamy tylko pierwsze 5 znaków tego hasha do usługi. Serwis zwraca wszystkie wyciekłe hasła, które zaczynają się od tych 5 znaków. Na naszym końcu sprawdzamy, czy jedno z nich pasuje do Twojego hasła. Pokażemy Ci ostrzeżenie, jeśli został on wyciekły wcześniej. Nigdy nie przechowujemy Twojego hasła w postaci zwykłego tekstu.",
-      "addedOn": "Added on"
+      "addedOn": "Added on",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithGithub": "Continue with Github"
     }
   },
   "features": {
@@ -418,6 +431,9 @@
       "telegram": "Otrzymuj powiadomienia bezpośrednio do bota Telegrama.",
       "tgHint": "Napisz wiadomość do <url>{{username}}</url>, aby uzyskać ID czatu. Ten bot zostanie użyty później, aby wysyłać powiadomienia lub alerty."
     },
+    "socialisations": "Socialisations",
+    "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
+    "cantUnlinkSocialisation": "You can't unlink this socialisation because it was used to register your account.",
     "addIntegration": "Dodaj integrację",
     "removeIntegration": "Usuń integrację",
     "chatID": "ID czatu",
@@ -755,7 +771,8 @@
     "contact": "Kontakt",
     "changelog": "Lista zmian",
     "main": "Najlepszy serwis analityczny, który spełni wszystkie Twoje potrzeby",
-    "press": "Media & Press"
+    "press": "Media & Press",
+    "socialisation": "Socialisation"
   },
   "header": {
     "switchTheme": "Switch theme",

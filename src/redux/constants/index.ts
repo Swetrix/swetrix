@@ -124,6 +124,9 @@ export const TimeFormat: {
 
 export const FREE_TIER_KEY: string = 'free'
 
+export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/paddle.js'
+export const PADDLE_VENDOR_ID = 139393
+
 // a dedicated variable is needed for paid tier checking
 export const WEEKLY_REPORT_FREQUENCY: string = 'weekly'
 export const reportFrequencies: string[] = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
@@ -405,9 +408,17 @@ export const PLAN_LIMITS: {
 
 export const TRIAL_DAYS: number = 14
 
-export const chartTypes: {
-  [key: string]: string
-} = {
+export const chartTypes = Object.freeze({
   line: 'line',
   bar: 'bar',
-}
+})
+
+export const SSO_ACTIONS = Object.freeze({
+  LINK: 'link',
+  AUTH: 'auth',
+})
+
+export const SSO_PROVIDERS = Object.freeze({
+  GOOGLE: 'google',
+  GITHUB: 'github',
+})

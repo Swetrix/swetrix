@@ -37,7 +37,7 @@ import {
   tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
   MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, TimeFormat, chartTypes,
 } from 'redux/constants'
-import { ICaptchaProject, IProject } from 'redux/models/IProject'
+import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -67,7 +67,7 @@ interface IProjectView extends ICaptchaProject {
 }
 
 const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, setProjects,
+  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, setProjects, liveStats,
 }: {
   projects: IProjectView[],
   isLoading: boolean,
@@ -81,6 +81,7 @@ const ViewProject = ({
   isPaidTierUsed: boolean,
   // eslint-disable-next-line no-unused-vars, no-shadow
   setProjects: (projects: ICaptchaProject[]) => void,
+  liveStats: ILiveStats,
 }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -102,8 +103,8 @@ const ViewProject = ({
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
-  const [period, setPeriod] = useState<string>(projectViewPrefs[id]?.period || periodPairs[3].period)
-  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1])
+  const [period, setPeriod] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period)
+  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1] : periodPairs[3].tbs[1])
   const activePeriod: {
     period: string,
     label: string,
@@ -130,13 +131,13 @@ const ViewProject = ({
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
-  const localStorageDateRange = projectViewPrefs[id]?.rangeDate
+  const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
   const [dateRange, setDateRange] = useState<Date[] | null>(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
 
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
-  const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
+  const [chartType, setChartType] = useState<string>(getItem('chartType') as string || chartTypes.line)
 
   const { name } = project as IProject
 
@@ -570,7 +571,7 @@ const ViewProject = ({
       // @ts-ignore
       const url = new URL(window.location)
       const { searchParams } = url
-      const intialPeriod = searchParams.get('period')
+      const intialPeriod = projectViewPrefs ? searchParams.get('period') || projectViewPrefs[id]?.period : searchParams.get('period') || '7d'
       if (!_includes(validPeriods, intialPeriod) || (id !== SWETRIX_PID && !isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
         return
       }
@@ -861,7 +862,7 @@ const ViewProject = ({
                   chartData={chartData}
                   activePeriod={activePeriod}
                   sessionDurationAVG={sessionDurationAVG}
-                  live={project.live || 'N/A'}
+                  live={liveStats[id] || 'N/A'}
                   projectId={id}
                 />
                 )}

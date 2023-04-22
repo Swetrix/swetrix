@@ -16,7 +16,7 @@ const mapStateToProps = (state: StateType) => {
     user: state.auth.user,
     dontRemember: state.auth.dontRemember,
     isPaidTierUsed: state.auth.isPaidTierUsed,
-    // themeType: state.ui.theme.type,
+    theme: state.ui.theme.theme,
   }
 }
 
@@ -53,6 +53,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   userSharedUpdate: (message: string) => {
     dispatch(alertsActions.userSharedUpdate({
       message,
+      type: 'success',
     }))
   },
   sharedProjectError: (message: string) => {
@@ -95,6 +96,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   accountUpdated: (message: string) => {
     dispatch(alertsActions.accountUpdated({
       message,
+      type: 'success',
     }))
   },
   updateUserProfileAsync: (data: Partial<IUser>, successMessage: string, callback = (e: any) => {}) => {
@@ -106,6 +108,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
             dispatch(
               alertsActions.accountUpdated({
                 message: successMessage,
+                type: 'success',
               }),
             )
           }
@@ -120,6 +123,24 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   // setThemeType: (theme) => {
   //   dispatch(UIActions.setThemeType(theme))
   // },
+  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
+    dispatch(
+      sagaActions.linkSSO(
+        t,
+        callback,
+        provider,
+      ),
+    )
+  },
+  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
+    dispatch(
+      sagaActions.unlinkSSO(
+        t,
+        callback,
+        provider,
+      ),
+    )
+  },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserSettings)

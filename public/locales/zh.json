@@ -25,7 +25,12 @@
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
     "invalidToken": "Invalid token",
     "transferRequestSent": "Transfer request sent",
-    "transferProjectReject": "The project transfer request has been cancelled"
+    "transferProjectReject": "The project transfer request has been cancelled",
+    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
+    "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
+    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
+    "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
   },
   "common": {
     "features": "功能",
@@ -69,7 +74,9 @@
     "loading": "Loading..",
     "edit": "Edit",
     "account": "Account",
-    "transferring": "Transferring"
+    "transferring": "Transferring",
+    "link": "Link",
+    "unlink": "Unlink"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -277,6 +284,10 @@
     "verification": {
       "success": "您的邮箱已成功验证！"
     },
+    "socialisation": {
+      "success": "Socialisation successful",
+      "orSingUpWith": "or sign up with"
+    },
     "common": {
       "signinInstead": "改为登录",
       "signupInstead": "改为注册",
@@ -293,7 +304,9 @@
       "signin": "登录",
       "checkLeakedPassword": "检查密码是否泄露",
       "checkLeakedPasswordDesc": "当启用时，我们使用 <db> {{database}} </db> 数据库检查您的密码。我们不会把你的密码直接上传至服务器。首先，我们对密码进行哈希处理(使用SHA1)，并将该哈希的前5个字符发送给服务器。服务器将返回所有以这5个字符开头的泄露密码。在我们的服务器中，我们会检查其中一个是否与您的密码匹配。如果之前泄露过，我们会给您一个警告。我们从不以纯文本存储您的密码。",
-      "addedOn": "Added on"
+      "addedOn": "Added on",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithGithub": "Continue with Github"
     }
   },
   "features": {
@@ -418,6 +431,9 @@
       "telegram": "Receive notifications directly into a Telegram bot.",
       "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
     },
+    "socialisations": "Socialisations",
+    "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
+    "cantUnlinkSocialisation": "You can't unlink this socialisation because it was used to register your account.",
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
     "chatID": "Chat ID",
@@ -755,7 +771,8 @@
     "contact": "联系方式",
     "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs",
-    "press": "Media & Press"
+    "press": "Media & Press",
+    "socialisation": "Socialisation"
   },
   "header": {
     "switchTheme": "Switch theme",

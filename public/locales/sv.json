@@ -25,7 +25,12 @@
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
     "invalidToken": "Invalid token",
     "transferRequestSent": "Transfer request sent",
-    "transferProjectReject": "The project transfer request has been cancelled"
+    "transferProjectReject": "The project transfer request has been cancelled",
+    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
+    "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
+    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
+    "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
   },
   "common": {
     "features": "Funktioner",
@@ -69,7 +74,9 @@
     "loading": "Laddar..",
     "edit": "Redigera",
     "account": "Account",
-    "transferring": "Transferring"
+    "transferring": "Transferring",
+    "link": "Link",
+    "unlink": "Unlink"
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
@@ -277,6 +284,10 @@
     "verification": {
       "success": "Din e-postadress har verifierats framgångsrikt!"
     },
+    "socialisation": {
+      "success": "Socialisation successful",
+      "orSingUpWith": "or sign up with"
+    },
     "common": {
       "signinInstead": "Logga in istället",
       "signupInstead": "Registrera dig istället",
@@ -293,7 +304,9 @@
       "signin": "Logga in",
       "checkLeakedPassword": "Kontrollera om lösenordet är läckt",
       "checkLeakedPasswordDesc": "När aktiverad kontrollerar vi ditt lösenord med <db>{{database}}</db>databasen. Vi skickar inte ditt lösenord till tjänsten. Först hashar vi ditt lösenord ( med SHA1) och skickar endast de första fem tecknen i hashen till tjänsten. Tjänsten returnerar alla läckta lösenord som börjar med dessa 5 tecken. I vår del kontrollerar vi om något av dessa tecken stämmer överens med ditt lösenord. Vi visar dig en varning om det har läckt ut tidigare. Vi lagrar aldrig ditt lösenord i klartext.",
-      "addedOn": "Added on"
+      "addedOn": "Added on",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithGithub": "Continue with Github"
     }
   },
   "features": {
@@ -418,6 +431,9 @@
       "telegram": "Receive notifications directly into a Telegram bot.",
       "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
     },
+    "socialisations": "Socialisations",
+    "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
+    "cantUnlinkSocialisation": "You can't unlink this socialisation because it was used to register your account.",
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
     "chatID": "Chat ID",
@@ -755,7 +771,8 @@
     "contact": "Kontakt",
     "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs",
-    "press": "Media & Press"
+    "press": "Media & Press",
+    "socialisation": "Socialisation"
   },
   "header": {
     "switchTheme": "Switch theme",
