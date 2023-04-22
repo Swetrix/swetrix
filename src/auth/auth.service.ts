@@ -499,14 +499,18 @@ export class AuthService {
       registeredWithGoogle: true,
       isActive: true,
       emailRequests: 0,
+      email,
     }
 
     const userWithSameEmail = await this.userService.findOneWhere({
       email,
     })
 
-    if (!userWithSameEmail) {
-      query.email = email
+    if (userWithSameEmail) {
+      console.error(`[ERROR][AuthService -> registerUserGoogle] User with email ${email} already exists`)
+      throw new BadRequestException(
+        'There is already an account associated with this email address',
+      )
     }
 
     const user = await this.userService.create(query)
@@ -844,14 +848,18 @@ export class AuthService {
       registeredWithGithub: true,
       isActive: true,
       emailRequests: 0,
+      email,
     }
 
     const userWithSameEmail = await this.userService.findOneWhere({
       email,
     })
 
-    if (!userWithSameEmail) {
-      query.email = email
+    if (userWithSameEmail) {
+      console.error(`[ERROR][AuthService -> registerUserGithub] User with email ${email} already exists`)
+      throw new BadRequestException(
+        'There is already an account associated with this email address',
+      )
     }
 
     const user = await this.userService.create(query)
