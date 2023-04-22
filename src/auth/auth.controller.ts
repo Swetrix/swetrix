@@ -480,13 +480,6 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() ip: string,
   ): Promise<any> {
-    await checkRateLimit(
-      ip,
-      'sso-hash',
-      isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT,
-      1800,
-    )
-
     const { hash, provider } = body
 
     return this.authService.authenticateSSO(hash, headers, ip, provider)
