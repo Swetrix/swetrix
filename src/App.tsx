@@ -19,9 +19,10 @@ import Loader from 'ui/Loader'
 import ScrollToTop from 'hoc/ScrollToTop'
 import Selfhosted from 'hoc/Selfhosted'
 import {
-  isSelfhosted, // THEME_TYPE,
+  isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, // THEME_TYPE,
 } from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
+import { loadScript } from 'utils/generic'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { errorsActions } from 'redux/reducers/errors'
@@ -103,6 +104,7 @@ const App = () => {
   const {
     loading, authenticated, user,
   } = useSelector((state: StateType) => state.auth)
+  const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
@@ -110,7 +112,14 @@ const App = () => {
   const accessToken = getAccessToken()
   const refreshToken = getRefreshToken()
 
+  // Paddle (payment processor) set-up
   useEffect(() => {
+    if (paddleLoaded || !authenticated) {
+      return
+    }
+
+    loadScript(PADDLE_JS_URL)
+
     const eventCallback = (data: any) => {
       dispatch(UIActions.setPaddleLastEvent(data))
     }
@@ -122,13 +131,13 @@ const App = () => {
         clearInterval(interval)
       } else if ((window as any)?.Paddle) {
         (window as any).Paddle.Setup({
-          vendor: 139393,
+          vendor: PADDLE_VENDOR_ID,
           eventCallback,
         })
         clearInterval(interval)
       }
     }
-  }, []) // eslint-disable-line
+  }, [paddleLoaded, authenticated]) // eslint-disable-line
 
   useEffect(() => {
     const loaderEl = document.getElementById('loader')
