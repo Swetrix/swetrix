@@ -84,6 +84,7 @@ class FlatPicker extends React.Component<FlatPickerProps> {
       <div className='h-0 flatpicker-custom'>
         <Flatpickr
           id='calendar'
+          data-testid='calendar'
           value={value}
           options={{
             mode: 'range',

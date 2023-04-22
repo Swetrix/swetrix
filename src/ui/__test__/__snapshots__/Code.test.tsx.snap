@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Code component snapshot 1`] = `
+<div>
+  <pre
+    class="w-full rounded-md bg-gray-800 dark:bg-gray-750"
+  >
+    <code
+      class="whitespace-pre-wrap language-javascript"
+    >
+      const greeting = "Hello, world!";
+    </code>
+  </pre>
+</div>
+`;

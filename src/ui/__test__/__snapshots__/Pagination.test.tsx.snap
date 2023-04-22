@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pagination snapshot 1`] = `
+<div>
+  <nav
+    class="border-t-0 border-gray-200 px-4 flex items-center justify-between sm:px-0"
+  >
+    <div
+      class="-mt-px w-0 flex-1 flex group"
+    />
+    <div
+      class="hidden md:-mt-px md:flex"
+    >
+      <button
+        class="border-indigo-500 text-indigo-600 dark:text-indigo-400 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium"
+        type="button"
+      >
+        1
+      </button>
+      <button
+        class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-400 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium"
+        type="button"
+      >
+        2
+      </button>
+      <button
+        class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-400 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium"
+        type="button"
+      >
+        3
+      </button>
+      <button
+        class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-400 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium"
+        type="button"
+      >
+        4
+      </button>
+      <button
+        class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-400 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium"
+        type="button"
+      >
+        5
+      </button>
+      <span
+        class="border-transparent text-gray-500 dark:text-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium"
+      >
+        ...
+      </span>
+      <button
+        class="border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-400 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium"
+        type="button"
+      >
+        10
+      </button>
+    </div>
+    <div
+      class="-mt-px w-0 flex-1 flex justify-end group"
+    >
+      <button
+        class="pt-4 pl-1 inline-flex items-center text-sm font-medium dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500"
+        type="button"
+      >
+        project.next
+        <svg
+          aria-hidden="true"
+          class="ml-3 h-5 w-5 dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500 transition-none"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            clip-rule="evenodd"
+            d="M16.72 7.72a.75.75 0 011.06 0l3.75 3.75a.75.75 0 010 1.06l-3.75 3.75a.75.75 0 11-1.06-1.06l2.47-2.47H3a.75.75 0 010-1.5h16.19l-2.47-2.47a.75.75 0 010-1.06z"
+            fill-rule="evenodd"
+          />
+        </svg>
+      </button>
+    </div>
+  </nav>
+</div>
+`;

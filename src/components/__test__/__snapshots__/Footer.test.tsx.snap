@@ -1,0 +1,72 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Footer snapshot minimal footer 1`] = `
+<div>
+  <footer
+    class="bg-gray-800 dark:bg-gray-900"
+  >
+    <div
+      class="max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8"
+    >
+      <nav
+        aria-label="Footer"
+        class="-mx-5 -my-2 flex flex-wrap justify-center"
+      >
+        <div
+          class="px-5 py-2"
+        >
+          <a
+            class="text-base text-gray-300 hover:text-white"
+            href="/contact"
+          >
+            Contact Us
+          </a>
+        </div>
+        <div
+          class="px-5 py-2"
+        >
+          <a
+            class="text-base text-gray-300 hover:text-white"
+            href="/privacy"
+          >
+            Privacy Policy
+          </a>
+        </div>
+        <div
+          class="px-5 py-2"
+        >
+          <a
+            class="text-base text-gray-300 hover:text-white"
+            href="/terms"
+          >
+            Terms of Service
+          </a>
+        </div>
+        <div
+          class="px-5 py-2"
+        >
+          <a
+            class="text-base text-gray-300 hover:text-white"
+            href="/about"
+          >
+            About Us
+          </a>
+        </div>
+        <div
+          class="px-5 py-2"
+        >
+          <a
+            aria-label="Status (opens in a new tab)"
+            class="text-base text-gray-300 hover:text-white"
+            href="https://stats.uptimerobot.com/33rvmiXXEz"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Status
+          </a>
+        </div>
+      </nav>
+    </div>
+  </footer>
+</div>
+`;
