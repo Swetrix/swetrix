@@ -185,6 +185,22 @@ const nullifyMissingElements = (results: any[], size?: number): number[] => {
   return copy
 }
 
+const generateParamsQuery = (
+  col: string,
+  subQuery: string,
+  customEVFilterApplied: boolean,
+): string => {
+  if (customEVFilterApplied) {
+    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  }
+
+  if (col === 'pg') {
+    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  }
+
+  return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${col}`
+}
+
 @Injectable()
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
@@ -576,7 +592,7 @@ export class AnalyticsService {
     const params = {}
 
     const paramsPromises = _map(cols, async col => {
-      const query1 = `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+      const query1 = generateParamsQuery(col, subQuery, customEVFilterApplied)
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
       params[col] = {}
@@ -598,7 +614,7 @@ export class AnalyticsService {
     // Average session duration calculation
     let avgSdur = 0
     if (!customEVFilterApplied) {
-      const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL`
+      const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL AND unique='1'`
       const avgSdurObject = await clickhouse
         .query(avgSdurQuery, paramsData)
         .toPromise()
