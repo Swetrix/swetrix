@@ -157,6 +157,29 @@ export class ProjectController {
     }
   }
 
+  @Get('/names')
+  @ApiResponse({ status: 200, type: [Project] })
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
+  async getNames(@CurrentUserId() userId: string): Promise<Project[]> {
+    this.logger.log({ userId }, 'GET /project/names')
+
+    if (isSelfhosted) {
+      const results = await getProjectsClickhouse()
+      const formatted = _map(results, this.projectService.formatFromClickhouse)
+      return formatted
+    }
+
+    const where = Object()
+    where.admin = userId
+
+    const projects = await this.projectService.find(where)
+
+    return _map(projects, (p: Project) => ({
+      id: p.id,
+      name: p.name,
+    }))
+  }
+
   @Get('/shared')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
