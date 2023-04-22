@@ -32,6 +32,7 @@ export interface IShareOwnerProject {
 export interface IProjectNames {
     name: string
     id: string
+    isCaptchaProject: boolean
 }
 
 export interface IProject {

@@ -876,3 +876,14 @@ export const getProjectsNames = () =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const createCaptchaInherited = (id: string) =>
+  api
+    .post(`captcha/inherited/${id}`)
+    .then((response): IProject => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })

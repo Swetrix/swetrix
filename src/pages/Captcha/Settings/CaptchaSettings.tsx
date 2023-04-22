@@ -23,7 +23,7 @@ import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted } from 'redux/constants'
 import {
-  createProject, updateProject, deleteCaptchaProject, resetCaptchaProject, reGenerateCaptchaSecretKey, getProjectsNames,
+  createProject, updateProject, deleteCaptchaProject, resetCaptchaProject, reGenerateCaptchaSecretKey, getProjectsNames, createCaptchaInherited,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -165,7 +165,7 @@ const CaptchaSettings = ({
               showError('Select projects')
               return
             }
-            await updateProject(formalisedData.id, formalisedData as ICaptchaProject)
+            await createCaptchaInherited(formalisedData.id)
           } else {
             await createProject({
               id: formalisedData.id,
