@@ -185,6 +185,16 @@ const nullifyMissingElements = (results: any[], size?: number): number[] => {
   return copy
 }
 
+const generateParamsQuery = (col: string, subQuery: string): string => {
+  // TODO: ??? idk, something should be done to improve it
+
+  if (col === 'pg') {
+    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  }
+
+  return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${col}`
+}
+
 @Injectable()
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
@@ -576,7 +586,7 @@ export class AnalyticsService {
     const params = {}
 
     const paramsPromises = _map(cols, async col => {
-      const query1 = `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+      const query1 = generateParamsQuery(col, subQuery)
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
       params[col] = {}
