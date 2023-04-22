@@ -345,7 +345,7 @@ const CaptchaSettings = ({
             {t('profileSettings.general')}
           </h3>
           <div className='mt-6'>
-            {(!isSettings && (allProjectsNames || _filter(analyticsProjects, (item) => !item?.isCaptchaProject).length > 0)) && (
+            {(!isSettings && _filter(allProjectsNames || analyticsProjects, (item) => !item?.isCaptchaProject).length > 0) && (
               <nav className='-mb-px flex space-x-8'>
                 {_map(tabForCreateCaptcha, (tabCaptcha) => (
                   <button
@@ -394,7 +394,7 @@ const CaptchaSettings = ({
               title={_isEmpty(reuseProjectId) ? 'select project' : reuseProjectId}
               label={t('profileSettings.selectProject')}
               className='w-full'
-              items={allProjectsNames || _filter(analyticsProjects, (item) => !item.isCaptchaProject)}
+              items={_filter(allProjectsNames || analyticsProjects, (item) => !item.isCaptchaProject)}
               labelExtractor={(item) => `${item.name} | ${item.id}`}
               keyExtractor={(item) => item.id}
               onSelect={(item) => setReuseProjectId(item)}

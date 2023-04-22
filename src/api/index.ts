@@ -879,7 +879,7 @@ export const getProjectsNames = () =>
 
 export const createCaptchaInherited = (id: string) =>
   api
-    .post(`captcha/inherited/${id}`)
+    .put(`project/captcha/inherited/${id}`)
     .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
