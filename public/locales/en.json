@@ -649,7 +649,8 @@
         "partially": "Reset partial",
         "partiallyDesc": "The 'Reset partial' function allows you to reset the data of a specific project within a given date range.",
         "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered."
-      }
+      },
+      "noDateRange": "Please select a date range."
     },
     "captcha": {
       "settings": {
