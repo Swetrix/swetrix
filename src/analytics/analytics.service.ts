@@ -185,7 +185,11 @@ const nullifyMissingElements = (results: any[], size?: number): number[] => {
   return copy
 }
 
-const generateParamsQuery = (col: string, subQuery: string, customEVFilterApplied: boolean): string => {
+const generateParamsQuery = (
+  col: string,
+  subQuery: string,
+  customEVFilterApplied: boolean,
+): string => {
   if (customEVFilterApplied) {
     return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }

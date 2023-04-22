@@ -869,7 +869,9 @@ export class AnalyticsController {
     }
 
     // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
-    const cc = ct.getCountryForTimezone(logDTO.tz)?.id || (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+    const cc =
+      ct.getCountryForTimezone(logDTO.tz)?.id ||
+      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
@@ -896,9 +898,6 @@ export class AnalyticsController {
     let perfDTO: Array<string | number> = []
 
     if (!_isEmpty(logDTO.perf) && isPerformanceValid(logDTO.perf)) {
-      const dv = ua.device.type || 'desktop'
-      const br = ua.browser.name
-
       const {
         dns,
         tls,
@@ -970,7 +969,8 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(logDTO, origin)
 
-    const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
@@ -983,7 +983,8 @@ export class AnalyticsController {
     const os = ua.os.name
 
     // using CloudFlare's IP based country code
-    const cc = headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
+    const cc =
+      headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
     const dto = analyticsDTO(
       sessionHash,
       logDTO.pid,
