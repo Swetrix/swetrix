@@ -430,8 +430,12 @@ export class AuthController {
   @Public()
   async generateAuthURL(
     @Body() body: SSOGenerateDto,
-    @Ip() ip: string,
+    @Headers() headers: unknown,
+    @Ip() reqIP: string,
   ): Promise<any> {
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+
     await checkRateLimit(
       ip,
       'sso-generate',
@@ -457,8 +461,12 @@ export class AuthController {
   @Public()
   async processSSOToken(
     @Body() body: ProcessSSOCodeDto,
-    @Ip() ip: string,
+    @Headers() headers: unknown,
+    @Ip() reqIP: string,
   ): Promise<any> {
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+
     await checkRateLimit(
       ip,
       'sso-process',
@@ -478,8 +486,11 @@ export class AuthController {
   async getJWTByHash(
     @Body() body: SSOGetJWTByHashDto,
     @Headers() headers: unknown,
-    @Ip() ip: string,
+    @Ip() reqIP: string,
   ): Promise<any> {
+    const ip =
+      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+
     const { hash, provider } = body
 
     return this.authService.authenticateSSO(hash, headers, ip, provider)
