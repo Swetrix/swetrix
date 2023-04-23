@@ -444,10 +444,15 @@ export class AuthService {
       userId,
       isSecondFactorAuthenticated,
     )
-    const refreshToken = await this.generateJwtRefreshToken(
-      userId,
-      isSecondFactorAuthenticated,
-    )
+
+    let refreshToken = 'NOT_AVAILABLE'
+
+    if (isSecondFactorAuthenticated) {
+      refreshToken = await this.generateJwtRefreshToken(
+        userId,
+        isSecondFactorAuthenticated,
+      )
+    }
 
     return { accessToken, refreshToken }
   }

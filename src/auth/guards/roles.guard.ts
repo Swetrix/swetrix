@@ -1,8 +1,13 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { ExtractJwt } from 'passport-jwt'
+import { verify } from 'jsonwebtoken'
+
 import { UserType } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
 import { IS_TWO_FA_NOT_REQUIRED_KEY, ROLES_KEY } from '../decorators'
+
+const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -41,11 +46,34 @@ export class RolesGuard implements CanActivate {
 
     if (!hasRole) return false
 
-    if (
-      !isTwoFaNotRequired &&
-      user.isTwoFactorAuthenticationEnabled &&
-      userFromRequest.isSecondFactorAuthenticated
-    ) {
+    if (isTwoFaNotRequired) {
+      return true
+    }
+
+    let token = ''
+    if (request.cookies.token) {
+      token = request.cookies.token
+    } else {
+      const extract = ExtractJwt.fromAuthHeaderAsBearerToken()
+      token = extract(request)
+    }
+
+    try {
+      const decoded: any = verify(token, ACCESS_TOKEN_SECRET)
+
+      // If the token is not decoded, it means it's invalid
+      if (!decoded) {
+        return false
+      }
+
+      // If the user has 2FA enabled, but the token is temporary (meant to be used for 2FA routes only) then return false
+      if (
+        user.isTwoFactorAuthenticationEnabled &&
+        !decoded.isSecondFactorAuthenticated
+      ) {
+        return false
+      }
+    } catch {
       return false
     }
 
