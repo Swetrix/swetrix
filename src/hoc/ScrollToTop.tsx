@@ -32,7 +32,7 @@ const ScrollToTop: React.FC<IScrollToTop> = ({ children }) => {
   const history = useHistory()
 
   useEffect(() => {
-    const unlisten = history.listen((location) => {
+    const unlisten = history.listen((location: any) => {
       const { hash, state } = location as IHistoryListener
 
       if (!_isEmpty(state) && state?.scrollToTopDisable) {
