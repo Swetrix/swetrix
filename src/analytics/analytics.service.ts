@@ -598,13 +598,20 @@ export class AnalyticsService {
     const params = {}
 
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet = !_isEmpty(_find(
-      parsedFilters,
-      filter => filter.column === 'pg' && !filter.isExclusive,
-    ))
+    const isPageInclusiveFilterSet = !_isEmpty(
+      _find(
+        parsedFilters,
+        filter => filter.column === 'pg' && !filter.isExclusive,
+      ),
+    )
 
     const paramsPromises = _map(cols, async col => {
-      const query1 = generateParamsQuery(col, subQuery, customEVFilterApplied, isPageInclusiveFilterSet)
+      const query1 = generateParamsQuery(
+        col,
+        subQuery,
+        customEVFilterApplied,
+        isPageInclusiveFilterSet,
+      )
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
       params[col] = {}
