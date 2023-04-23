@@ -173,7 +173,7 @@ const CaptchaSettings = ({
               isCaptcha: true,
             })
           }
-          trackCustom('PROJECT_CREATED')
+          trackCustom('CAPTCHA_CREATED')
           newProject(t('project.settings.created'))
         }
 

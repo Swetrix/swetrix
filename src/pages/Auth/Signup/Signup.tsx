@@ -108,6 +108,7 @@ const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
   }, [form]) // eslint-disable-line
 
   const signUpCallback = (result: any) => {
+    console.log('signup callback', result)
     if (result) {
       trackCustom('SIGNUP')
     } else {
