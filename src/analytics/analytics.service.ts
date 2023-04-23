@@ -56,6 +56,9 @@ dayjs.extend(dayjsTimezone)
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
+export const getHeartbeatKey = (pid: string, sessionID: string) =>
+  `hb:${pid}:${sessionID}`
+
 export const getSessionDurationKey = (sessionHash: string, pid: string) =>
   `sd:${sessionHash}:${pid}`
 
@@ -338,25 +341,16 @@ export class AnalyticsService {
     return null
   }
 
-  async validateHB(
-    logDTO: PageviewsDTO,
+  async getSessionHash(
+    pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<string | null> {
-    if (_isEmpty(logDTO))
-      throw new BadRequestException('The request cannot be empty')
-
-    const { pid } = logDTO
+  ): Promise<string> {
     this.validatePID(pid)
 
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-    const sessionHash = getSessionKey(ip, userAgent, pid, salt)
-    const sessionExists = await this.isSessionOpen(sessionHash)
 
-    if (!sessionExists)
-      throw new ForbiddenException('The Heartbeat session does not exist')
-
-    return sessionHash
+    return getSessionKey(ip, userAgent, pid, salt)
   }
 
   async isSessionDurationOpen(sdKey: string): Promise<Array<string | boolean>> {
@@ -452,11 +446,6 @@ export class AnalyticsService {
     const session = await redis.get(sessionHash)
     await redis.set(sessionHash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
     return !session
-  }
-
-  async isSessionOpen(sessionHash: string) {
-    const session = await redis.get(sessionHash)
-    return Boolean(session)
   }
 
   async getSummary(

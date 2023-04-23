@@ -40,6 +40,7 @@ import {
   isValidTimezone,
   isValidDate,
   checkIfTBAllowed,
+  getHeartbeatKey,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -702,13 +703,13 @@ export class AnalyticsController {
     const result = {}
 
     const keyCountPromises = _map(pidsArray, async currentPID => {
-      // @ts-ignore
-      const keysAmout = await redis.countKeysByPattern(`hb:${currentPID}:*`)
-      result[currentPID] = keysAmout
+      result[currentPID] = await this.analyticsService.getOnlineUserCount(
+        currentPID,
+      )
     })
 
     await Promise.all(keyCountPromises).catch(reason => {
-      this.logger.error(`[@Get('/hb')] ${reason}`)
+      this.logger.error(`[GET /analytics/hb] ${reason}`)
       throw new InternalServerErrorException(
         'An error occured while calculating heartbeat statistics',
       )
@@ -830,13 +831,18 @@ export class AnalyticsController {
     const ip =
       headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
-    const sessionID = await this.analyticsService.validateHB(
-      logDTO,
+    const sessionID = await this.analyticsService.getSessionHash(
+      pid,
       userAgent,
       ip,
     )
 
-    await redis.set(`hb:${pid}:${sessionID}`, 1, 'EX', HEARTBEAT_SID_LIFE_TIME)
+    await redis.set(
+      getHeartbeatKey(pid, sessionID),
+      1,
+      'EX',
+      HEARTBEAT_SID_LIFE_TIME,
+    )
     await this.analyticsService.processInteractionSD(sessionID, pid)
   }
 
@@ -861,7 +867,7 @@ export class AnalyticsController {
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
 
-    this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
+    await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
     if (unique && logDTO.unique) {
       throw new ForbiddenException(
@@ -976,7 +982,7 @@ export class AnalyticsController {
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)
 
-    this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
+    await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
