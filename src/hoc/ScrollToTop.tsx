@@ -10,6 +10,11 @@ interface StateType {
   scrollToTopDisable?: boolean
 }
 
+interface IHistoryListener {
+  hash: string
+  state?: StateType | null
+}
+
 /**
   * A HOC which listens to history changes and scrolls to top of the page when triggered.
   *
@@ -27,8 +32,10 @@ const ScrollToTop: React.FC<IScrollToTop> = ({ children }) => {
   const history = useHistory()
 
   useEffect(() => {
-    const unlisten = history.listen(({ hash, state }) => {
-      if (!_isEmpty(state) && (state as StateType)?.scrollToTopDisable) {
+    const unlisten = history.listen((location) => {
+      const { hash, state } = location as IHistoryListener
+
+      if (!_isEmpty(state) && state?.scrollToTopDisable) {
         return
       }
 
