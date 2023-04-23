@@ -21,7 +21,7 @@ import { isSelfhosted } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { submit2FA } from 'api'
 import { setAccessToken, removeAccessToken } from 'utils/accessToken'
-import { setRefreshToken } from 'utils/refreshToken'
+import { setRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 
 interface ISigninForm {
   email: string,
@@ -119,6 +119,7 @@ const Signin = ({
       try {
         const { accessToken, refreshToken, user } = await submit2FA(twoFACode)
         removeAccessToken()
+        removeRefreshToken()
         setAccessToken(accessToken)
         setRefreshToken(refreshToken)
         loginSuccess(user)
