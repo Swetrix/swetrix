@@ -507,7 +507,9 @@ export class AuthService {
     })
 
     if (userWithSameEmail) {
-      console.error(`[ERROR][AuthService -> registerUserGoogle] User with email ${email} already exists`)
+      console.error(
+        `[ERROR][AuthService -> registerUserGoogle] User with email ${email} already exists`,
+      )
       throw new BadRequestException(
         'There is already an account associated with this email address',
       )
@@ -856,7 +858,9 @@ export class AuthService {
     })
 
     if (userWithSameEmail) {
-      console.error(`[ERROR][AuthService -> registerUserGithub] User with email ${email} already exists`)
+      console.error(
+        `[ERROR][AuthService -> registerUserGithub] User with email ${email} already exists`,
+      )
       throw new BadRequestException(
         'There is already an account associated with this email address',
       )
