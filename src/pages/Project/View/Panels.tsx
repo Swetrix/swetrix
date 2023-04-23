@@ -574,7 +574,11 @@ const CustomEvents = ({
                 &nbsp;&nbsp;
               </td>
               <td className='text-right'>
-                {_round((customsEventsData[ev] / uniques) * 100, 2)}
+                {/*
+                  Added a uniques === 0 check because uniques value may be zero and dividing by zero will cause an
+                  Infinity% value to be displayed.
+                */}
+                {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}
                 %
               </td>
             </tr>
