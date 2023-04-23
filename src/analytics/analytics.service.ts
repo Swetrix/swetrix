@@ -56,6 +56,9 @@ dayjs.extend(dayjsTimezone)
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
 
+export const getHeartbeatKey = (pid: string, sessionID: string) =>
+  `hb:${pid}:${sessionID}`
+
 export const getSessionDurationKey = (sessionHash: string, pid: string) =>
   `sd:${sessionHash}:${pid}`
 
@@ -357,6 +360,18 @@ export class AnalyticsService {
       throw new ForbiddenException('The Heartbeat session does not exist')
 
     return sessionHash
+  }
+
+  async getSessionHash(
+    pid: string,
+    userAgent: string,
+    ip: string,
+  ): Promise<string | null> {
+    this.validatePID(pid)
+
+    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+
+    return getSessionKey(ip, userAgent, pid, salt)
   }
 
   async isSessionDurationOpen(sdKey: string): Promise<Array<string | boolean>> {
