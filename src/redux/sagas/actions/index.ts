@@ -4,7 +4,7 @@ import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { logoutApi } from 'api'
 import { removeAccessToken } from 'utils/accessToken'
 import { removeItem } from 'utils/localstorage'
-import { LS_VIEW_PREFS_SETTING } from 'redux/constants'
+import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING } from 'redux/constants'
 import { IUser } from '../../models/IUser'
 
 const loadProjects = (take?: number, skip?: number) => ({
@@ -114,6 +114,7 @@ const logout = (basedOn401Error: boolean) => {
   removeAccessToken()
   removeRefreshToken()
   removeItem(LS_VIEW_PREFS_SETTING)
+  removeItem(LS_CAPTCHA_VIEW_PREFS_SETTING)
 
   return {
     type: types.LOGOUT,
