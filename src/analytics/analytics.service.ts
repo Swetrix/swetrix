@@ -120,8 +120,12 @@ const timeBucketToDays = [
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 interface GetFiltersQuery extends Array<string | object> {
+  // SQL query
   0: string
-  1: any
+  // an object that has structure like { cf_pg: '/signup', ev_exclusive: false }
+  1: { [key: string]: string | boolean }
+  // an array of objects like [{ "column":"pg", "filter":"/signup", "isExclusive":true }]
+  2: Array<{ [key: string]: string }> | []
 }
 
 export const isValidTimezone = (timezone: string): boolean => {
@@ -189,12 +193,13 @@ const generateParamsQuery = (
   col: string,
   subQuery: string,
   customEVFilterApplied: boolean,
+  isPageInclusiveFilterSet: boolean,
 ): string => {
   if (customEVFilterApplied) {
     return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
-  if (col === 'pg') {
+  if (col === 'pg' || isPageInclusiveFilterSet) {
     return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
@@ -388,18 +393,18 @@ export class AnalyticsService {
     let params = {}
 
     if (_isEmpty(filters)) {
-      return [query, params]
+      return [query, params, parsed]
     }
 
     try {
       parsed = JSON.parse(filters)
     } catch (e) {
       console.error(`Cannot parse the filters array: ${filters}`)
-      return [query, params]
+      return [query, params, parsed]
     }
 
     if (_isEmpty(parsed)) {
-      return [query, params]
+      return [query, params, parsed]
     }
 
     for (let i = 0; i < _size(parsed); ++i) {
@@ -432,7 +437,7 @@ export class AnalyticsService {
       } ${column}={${colFilter}:String}`
     }
 
-    return [query, params]
+    return [query, params, parsed]
   }
 
   validateTimebucket(tb: TimeBucketType): void {
@@ -588,11 +593,18 @@ export class AnalyticsService {
     paramsData: any,
     timezone: string,
     customEVFilterApplied: boolean,
+    parsedFilters: Array<{ [key: string]: string }>,
   ): Promise<object | void> {
     const params = {}
 
+    // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
+    const isPageInclusiveFilterSet = !_isEmpty(_find(
+      parsedFilters,
+      filter => filter.column === 'pg' && !filter.isExclusive,
+    ))
+
     const paramsPromises = _map(cols, async col => {
-      const query1 = generateParamsQuery(col, subQuery, customEVFilterApplied)
+      const query1 = generateParamsQuery(col, subQuery, customEVFilterApplied, isPageInclusiveFilterSet)
       const res = await clickhouse.query(query1, paramsData).toPromise()
 
       params[col] = {}
