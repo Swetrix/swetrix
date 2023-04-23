@@ -341,32 +341,11 @@ export class AnalyticsService {
     return null
   }
 
-  async validateHB(
-    logDTO: PageviewsDTO,
-    userAgent: string,
-    ip: string,
-  ): Promise<string | null> {
-    if (_isEmpty(logDTO))
-      throw new BadRequestException('The request cannot be empty')
-
-    const { pid } = logDTO
-    this.validatePID(pid)
-
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-    const sessionHash = getSessionKey(ip, userAgent, pid, salt)
-    const sessionExists = await this.isSessionOpen(sessionHash)
-
-    if (!sessionExists)
-      throw new ForbiddenException('The Heartbeat session does not exist')
-
-    return sessionHash
-  }
-
   async getSessionHash(
     pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<string | null> {
+  ): Promise<string> {
     this.validatePID(pid)
 
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
@@ -467,11 +446,6 @@ export class AnalyticsService {
     const session = await redis.get(sessionHash)
     await redis.set(sessionHash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
     return !session
-  }
-
-  async isSessionOpen(sessionHash: string) {
-    const session = await redis.get(sessionHash)
-    return Boolean(session)
   }
 
   async getSummary(

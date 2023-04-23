@@ -69,9 +69,6 @@ describe('AnalyticsService', () => {
     it('should be defined with groupByTimeBucket()', () => {
       expect(service.groupByTimeBucket).toBeDefined()
     })
-    it('should be defined with isSessionOpen()', () => {
-      expect(service.isSessionOpen).toBeDefined()
-    })
     it('should be defined with isUnique()', () => {
       expect(service.isUnique).toBeDefined()
     })
@@ -80,9 +77,6 @@ describe('AnalyticsService', () => {
     })
     it('should be defined with validate()', () => {
       expect(service.validate).toBeDefined()
-    })
-    it('should be defined with validateHB()', () => {
-      expect(service.validateHB).toBeDefined()
     })
     it('should be defined with validatePID()', () => {
       expect(service.validatePID).toBeDefined()
