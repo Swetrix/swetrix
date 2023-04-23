@@ -196,6 +196,16 @@ const projectsSlice = createSlice({
     setProjectTab(state, { payload }: PayloadAction<string>) {
       state.projectTab = payload
     },
+    reset(state) {
+      state.projects = []
+      state.sharedProjects = []
+      state.captchaProjects = []
+      state.total = 0
+      state.sharedTotal = 0
+      state.captchaTotal = 0
+      state.alerts = []
+      state.subscribers = []
+    },
   },
 })
 
