@@ -44,7 +44,7 @@ export class RolesGuard implements CanActivate {
     if (
       !isTwoFaNotRequired &&
       user.isTwoFactorAuthenticationEnabled &&
-      userFromRequest.isSecondFactorAuthenticated
+      !userFromRequest.isSecondFactorAuthenticated
     ) {
       return false
     }
