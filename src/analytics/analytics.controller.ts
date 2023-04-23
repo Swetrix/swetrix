@@ -820,6 +820,8 @@ export class AnalyticsController {
   }
 
   @Post('/hb')
+  @UseGuards(BotDetectionGuard)
+  @BotDetection()
   @Auth([], true, true)
   async heartbeat(
     @Body() logDTO: PageviewsDTO,
