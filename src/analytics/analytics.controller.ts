@@ -279,7 +279,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] =
+    const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -422,6 +422,7 @@ export class AnalyticsController {
         paramsData,
         timezone,
         customEVFilterApplied,
+        parsedFilters,
       )
     }
 
