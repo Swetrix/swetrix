@@ -495,15 +495,7 @@ export class AuthController {
   public async linkGoogleToAccount(
     @Body() body: SSOLinkDto,
     @CurrentUserId() userId: string,
-    @Ip() ip: string,
   ): Promise<void> {
-    await checkRateLimit(
-      ip,
-      'sso-link',
-      isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT,
-      1800,
-    )
-
     const { hash, provider } = body
 
     await this.authService.linkSSOAccount(userId, hash, provider)
