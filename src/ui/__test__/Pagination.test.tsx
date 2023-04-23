@@ -1,7 +1,7 @@
 /* eslint-disable testing-library/prefer-screen-queries */
 /* eslint-disable import/no-extraneous-dependencies */
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { I18nextProvider } from 'react-i18next'
 import i18n from 'i18next'
 import Pagination from '../Pagination'
