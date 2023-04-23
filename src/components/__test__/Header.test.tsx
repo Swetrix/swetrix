@@ -74,6 +74,7 @@ describe('Header', () => {
 
   test('renders authed header if authenticated', () => {
     render(
+      // @ts-ignore
       <Router history={history}>
         <Provider store={store}>
           <I18nextProvider i18n={i18n}>
@@ -88,6 +89,7 @@ describe('Header', () => {
 
   test('renders not-authed header if not authenticated', () => {
     render(
+      // @ts-ignore
       <Router history={history}>
         <Provider store={store}>
           <I18nextProvider i18n={i18n}>

@@ -49,6 +49,7 @@ describe('Footer', () => {
 
   it('renders minimal footer', () => {
     const { getByLabelText, getByText } = render(
+      // @ts-ignore
       <Router history={history}>
         <I18nextProvider i18n={i18n}>
           <Footer {...minimalProps} />
@@ -66,6 +67,7 @@ describe('Footer', () => {
 
   it('renders full footer', () => {
     const { getByLabelText, getByText } = render(
+      // @ts-ignore
       <Router history={history}>
         <I18nextProvider i18n={i18n}>
           <Footer {...fullProps} />

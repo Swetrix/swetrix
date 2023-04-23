@@ -7,7 +7,7 @@ import Progress from '../Progress'
 
 describe('Progress', () => {
   it('renders the progress bar', () => {
-    const { getByTestId } = render(<Progress />)
+    const { getByTestId } = render(<Progress now={10} />)
     expect(getByTestId('progress')).toBeInTheDocument()
   })
 })
