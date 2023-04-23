@@ -25,7 +25,7 @@ const Selfhosted: React.FC<ISelfhosted> = ({ children }): JSX.Element => {
         history.push(DEFAULT_PAGE)
       }
 
-      const unlisten = history.listen(({ pathname }) => {
+      const unlisten = history.listen(({ pathname }: any) => {
         if (_includes(selfHostedBlacklist, pathname)) {
           history.push(DEFAULT_PAGE)
         }
