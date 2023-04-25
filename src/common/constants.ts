@@ -51,114 +51,6 @@ const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 const isDevelopment = process.env.NODE_ENV === 'development'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
-const CLICKHOUSE_INIT_QUERIES = [
-  `CREATE DATABASE IF NOT EXISTS ${CLICKHOUSE_DATABASE}`,
-
-  // The traffic data table
-  `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.analytics
-  (
-    sid Nullable(String),
-    pid FixedString(12),
-    pg Nullable(String),
-    prev Nullable(String),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    os LowCardinality(Nullable(String)),
-    lc LowCardinality(Nullable(String)),
-    ref Nullable(String),
-    so Nullable(String),
-    me Nullable(String),
-    ca Nullable(String),
-    cc Nullable(FixedString(2)),
-    sdur Nullable(UInt32), 
-    unique UInt8,
-    created DateTime
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`,
-
-  // Custom events table
-  `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.customEV
-  (
-    pid FixedString(12),
-    ev String,
-    pg Nullable(String),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    os LowCardinality(Nullable(String)),
-    lc LowCardinality(Nullable(String)),
-    ref Nullable(String),
-    so Nullable(String),
-    me Nullable(String),
-    ca Nullable(String),
-    cc Nullable(FixedString(2)),
-    created DateTime
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`,
-
-  // The performance data table
-  `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.performance
-  (
-    pid FixedString(12),
-    pg Nullable(String),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    cc Nullable(FixedString(2)),
-    dns Nullable(UInt32),
-    tls Nullable(UInt32),
-    conn Nullable(UInt32),
-    response Nullable(UInt32),
-    render Nullable(UInt32),
-    domLoad Nullable(UInt32),
-    pageLoad Nullable(UInt32),
-    ttfb Nullable(UInt32),
-    created DateTime
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`,
-
-  // Project data table (used for self-hosted only)
-  isSelfhosted &&
-    `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.project
-  (
-    id FixedString(12),
-    name String,
-    origins String,
-    active Int8,
-    public Int8,
-    created DateTime
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (created);`,
-]
-
-const initialiseClickhouse = async () => {
-  console.log('Initialising Clickhouse')
-
-  const promises = _map(CLICKHOUSE_INIT_QUERIES, async query => {
-    if (query) {
-      return clickhouse.query(query).toPromise()
-    }
-
-    return 1
-  })
-
-  await Promise.all(promises).catch(reason => {
-    console.error('Initialising Clickhouse: FAILED')
-    console.error(reason)
-  })
-
-  console.log('Initialising Clickhouse: DONE')
-  console.log(`Swetrix API version is: ${process.env.npm_package_version}`)
-}
-
-initialiseClickhouse()
-
 const SELFHOSTED_EMAIL = process.env.EMAIL
 const SELFHOSTED_PASSWORD = process.env.PASSWORD
 const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
@@ -244,7 +136,6 @@ export {
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,
   SELFHOSTED_UUID,
-  CLICKHOUSE_INIT_QUERIES,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_PAGEVIEWS_COUNT_KEY,
