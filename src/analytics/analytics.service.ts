@@ -132,6 +132,21 @@ interface GetFiltersQuery extends Array<string | object> {
   2: Array<{ [key: string]: string }> | []
 }
 
+interface IUserFlowNode {
+  id: string
+}
+
+interface IUserFlowLink {
+  source: string
+  target: string
+  value: number
+}
+
+interface IUserFlow {
+  nodes: IUserFlowNode[]
+  links: IUserFlowLink[]
+}
+
 export const isValidTimezone = (timezone: string): boolean => {
   if (_isEmpty(timezone)) {
     return false
@@ -425,15 +440,41 @@ export class AnalyticsService {
         'The timeframe (either from/to pair or period) has to be provided',
       )
     }
-    
+
     return {
       groupFrom,
       groupTo,
     }
   }
 
-  async getUserFlow(params: any): Promise<any> {
-    // TODO
+  async getUserFlow(params: any): Promise<IUserFlow> {
+    const query = `
+      SELECT
+        pg AS source,
+        prev AS target,
+        count() AS value
+      FROM analytics
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND pg != prev
+      GROUP BY
+        pg,
+        prev
+    `
+
+    const results = await clickhouse.query(query, { params }).toPromise()
+
+    if (_isEmpty(results)) {
+      return { nodes: [], links: [] }
+    }
+
+    const nodes: IUserFlowNode[] = Array.from(new Set(results.map((row: any) => row.source)
+      .concat(results.map((row: any) => row.target))))
+      .map((node: any) => ({ id: node }))
+    const links: IUserFlowLink[] = results.map((row: any) => ({ source: row.source, target: row.target, value: row.value }))
+
+    return { nodes, links }
   }
 
   async getSessionHash(
