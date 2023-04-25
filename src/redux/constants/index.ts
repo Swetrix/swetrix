@@ -26,56 +26,46 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   label: string
   period: string
   tbs: string[]
-  access: string
   dropdownLabel?: string
   isCustomDate?: boolean
 }[] => [{
   label: t('project.today'),
   period: 'today',
   tbs: ['hour'],
-  access: 'free',
 }, {
   label: t('project.yesterday'),
   period: 'yesterday',
   tbs: ['hour'],
-  access: 'free',
 }, {
   label: t('project.last24h'),
   period: '1d',
   tbs: ['hour'],
-  access: 'free',
 }, {
   label: t('project.lastXDays', { amount: 7 }),
   period: '7d',
   tbs: ['hour', 'day'],
-  access: 'free',
 }, {
   label: t('project.lastXWeeks', { amount: 4 }),
   period: '4w',
   tbs: ['day', 'week'],
-  access: 'free',
 }, {
   label: t('project.lastXMonths', { amount: 3 }),
   period: '3M',
   tbs: ['week', 'month'],
-  access: 'free',
 }, {
   label: t('project.lastXMonths', { amount: 12 }),
   period: '12M',
   tbs: ['week', 'month'],
-  access: 'paid',
 }, {
   label: t('project.lastXMonths', { amount: 24 }),
   period: '24M',
   tbs: ['month'],
-  access: 'paid',
 }, {
   label: dates ? getCustomLabel(dates, t) : t('project.custom'),
   dropdownLabel: t('project.custom'),
   isCustomDate: true,
   period: 'custom',
   tbs: tbs || ['custom'],
-  access: 'free',
 }]
 
 // the order of panels in the project view
@@ -84,7 +74,6 @@ export const PERFORMANCE_PANELS_ORDER: string[] = ['cc', 'pg', 'br', 'dv']
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
 export const MAX_MONTHS_IN_PAST: number = 24
-export const MAX_MONTHS_IN_PAST_FREE: number = 3
 
 export const timeBucketToDays: {
   lt: number

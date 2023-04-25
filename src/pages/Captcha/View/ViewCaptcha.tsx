@@ -10,7 +10,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, PresentationChartBarIcon, PresentationChartLineIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, PresentationChartBarIcon, PresentationChartLineIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -28,14 +28,13 @@ import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 import PropTypes from 'prop-types'
 
-import { SWETRIX_PID } from 'utils/analytics'
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
-  MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, TimeFormat, chartTypes,
+  MAX_MONTHS_IN_PAST, TimeFormat, chartTypes,
 } from 'redux/constants'
 import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
@@ -44,7 +43,6 @@ import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import FlatPicker from 'ui/Flatpicker'
-import PaidFeature from 'modals/PaidFeature'
 import routes from 'routes'
 import {
   getProject, getOverallStats, getLiveVisitors, getCaptchaData,
@@ -54,7 +52,7 @@ import {
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, CHART_METRICS_MAPPING,
+  validTimeBacket, noRegionPeriods, getSettings, CHART_METRICS_MAPPING,
 } from './ViewCaptcha.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -67,7 +65,7 @@ interface IProjectView extends ICaptchaProject {
 }
 
 const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, isPaidTierUsed, setProjects, liveStats,
+  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, setProjects, liveStats,
 }: {
   projects: IProjectView[],
   isLoading: boolean,
@@ -78,7 +76,6 @@ const ViewProject = ({
   setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null) => void,
   authenticated: boolean,
   user: IUser,
-  isPaidTierUsed: boolean,
   // eslint-disable-next-line no-unused-vars, no-shadow
   setProjects: (projects: ICaptchaProject[]) => void,
   liveStats: ILiveStats,
@@ -101,7 +98,6 @@ const ViewProject = ({
   const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
   const [panelsData, setPanelsData] = useState<any>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
   const [period, setPeriod] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period)
   const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1] : periodPairs[3].tbs[1])
@@ -572,7 +568,7 @@ const ViewProject = ({
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = projectViewPrefs ? searchParams.get('period') || projectViewPrefs[id]?.period : searchParams.get('period') || '7d'
-      if (!_includes(validPeriods, intialPeriod) || (id !== SWETRIX_PID && !isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
+      if (!_includes(validPeriods, intialPeriod)) {
         return
       }
 
@@ -699,29 +695,9 @@ const ViewProject = ({
                 <Dropdown
                   items={periodPairs}
                   title={activePeriod.label}
-                  labelExtractor={(pair) => {
-                    const label = pair.dropdownLabel || pair.label
-
-                    // disable limitation for shared projects as project hosts already have a paid plan
-                    // disable limitation for Swetrix public project (for demonstration purposes)
-                    if (id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                      return (
-                        <span className='flex items-center'>
-                          <CurrencyDollarIcon className='w-4 h-4 mr-1' />
-                          {label}
-                        </span>
-                      )
-                    }
-
-                    return label
-                  }}
+                  labelExtractor={(pair) => pair.dropdownLabel || pair.label}
                   keyExtractor={(pair) => pair.label}
                   onSelect={(pair) => {
-                    if (id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                      setIsPaidFeatureOpened(true)
-                      return
-                    }
-
                     if (pair.isCustomDate) {
                       setTimeout(() => {
                         // @ts-ignore
@@ -738,7 +714,7 @@ const ViewProject = ({
                   ref={refCalendar}
                   onChange={(date) => setDateRange(date)}
                   value={dateRange || []}
-                  maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
+                  maxDateMonths={MAX_MONTHS_IN_PAST}
                 />
               </div>
             </div>
@@ -971,10 +947,6 @@ const ViewProject = ({
             </div>
           </div>
         )}
-        <PaidFeature
-          isOpened={isPaidFeatureOpened}
-          onClose={() => setIsPaidFeatureOpened(false)}
-        />
       </Title>
     )
   }
@@ -997,7 +969,6 @@ ViewProject.propTypes = {
   setProjectViewPrefs: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
   authenticated: PropTypes.bool.isRequired,
-  isPaidTierUsed: PropTypes.bool.isRequired,
 }
 
 export default memo(ViewProject)
