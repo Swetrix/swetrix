@@ -6,21 +6,23 @@ import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
 
-const Dropdown = ({
-  title, desc, className, items, labelExtractor, keyExtractor, onSelect, aside, buttonClassName, selectItemClassName, menuItemsClassName,
-}: {
+interface IDropdown {
   title: string | number | React.ReactNode,
   desc?: string | number | React.ReactNode,
   className?: string,
   items: any[],
   labelExtractor: (item: any) => string | number | React.ReactNode,
   keyExtractor: (item: any) => string | number | React.ReactNode,
-  onSelect: (item: any, e?: any) => void | null,
+  onSelect: (item: any, e?: React.MouseEvent<HTMLElement>) => void | null,
   aside?: boolean,
   buttonClassName?: string,
   selectItemClassName?: string,
   menuItemsClassName?: string,
-}): JSX.Element => (
+}
+
+const Dropdown = ({
+  title, desc, className, items, labelExtractor, keyExtractor, onSelect, aside, buttonClassName, selectItemClassName, menuItemsClassName,
+}: IDropdown): JSX.Element => (
   <Menu as='div' className={cx('relative inline-block text-left', className)}>
     {({ open }) => (
       <>
@@ -59,7 +61,7 @@ const Dropdown = ({
                     // @ts-ignore
                     tabIndex='-1'
                     id='menu-item-0'
-                    onClick={(e) => onSelect(item, e)}
+                    onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
                   >
                     {labelExtractor ? labelExtractor(item) : item}
                   </span>

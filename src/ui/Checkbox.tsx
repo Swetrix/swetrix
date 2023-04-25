@@ -2,9 +2,7 @@ import React, { memo } from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 
-const Checkbox = ({
-  label, hint, id, name, className, onChange, checked, hintClassName, disabled,
-}: {
+interface ICheckbox {
   label: string | JSX.Element,
   hint?: string | JSX.Element,
   id?: string,
@@ -14,7 +12,11 @@ const Checkbox = ({
   checked?: boolean,
   hintClassName?: string,
   disabled?: boolean,
-}): JSX.Element => {
+}
+
+const Checkbox = ({
+  label, hint, id, name, className, onChange, checked, hintClassName, disabled,
+}: ICheckbox): JSX.Element => {
   const identifier = id || name
 
   return (

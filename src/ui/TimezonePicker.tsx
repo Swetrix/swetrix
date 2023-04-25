@@ -39,15 +39,17 @@ const options = _reduce(
 )
   .sort((a, b) => a.offset - b.offset)
 
-const TimezoneSelect = ({
-  value, onChange,
-}: {
+interface ITimezoneSelect {
   value: string | {
     value: string,
     label: string,
   },
   onChange: (item: string) => void,
-}): JSX.Element => {
+}
+
+const TimezoneSelect = ({
+  value, onChange,
+}: ITimezoneSelect): JSX.Element => {
   const { t }: {
     t: (key: string) => string,
   } = useTranslation('common')

@@ -7,9 +7,7 @@ import PropTypes from 'prop-types'
 import Spin from './icons/Spin'
 import './ButtonChristmas.css'
 
-const Button = ({
-  text, children, primary, secondary, danger, onClick, white, small, regular, large, giant, type, className, loading, semiSmall, semiDanger, noBorder, focus, disabled,
-}: {
+interface IButton {
   text?: string,
   children?: JSX.Element | string,
   primary?: boolean,
@@ -29,7 +27,12 @@ const Button = ({
   focus?: boolean,
   noBorder?: boolean,
   disabled?: boolean,
-}): JSX.Element => {
+}
+
+const Button = ({
+  text, children, primary, secondary, danger, onClick, white, small, regular, large,
+  giant, type, className, loading, semiSmall, semiDanger, noBorder, focus, disabled,
+}: IButton): JSX.Element => {
   // const themeType = useSelector((state) => state.ui.theme.type)
 
   return (

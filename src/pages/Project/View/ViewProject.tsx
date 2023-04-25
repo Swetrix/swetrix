@@ -1607,8 +1607,8 @@ const ViewProject = ({
                                   buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700'
                                   keyExtractor={(event) => event.id}
                                   onSelect={(event, e) => {
-                                    e.stopPropagation()
-                                    e.preventDefault()
+                                    e?.stopPropagation()
+                                    e?.preventDefault()
 
                                     setActiveChartMetricsCustomEvents((prev) => {
                                       const newActiveChartMetricsCustomEvents = [...prev]

@@ -5,11 +5,13 @@ import { useTranslation } from 'react-i18next'
 import Tooltip from './Tooltip'
 import { WarningPin } from './Pin'
 
+interface IBeta {
+  className?: string,
+}
+
 const Beta = ({
   className,
-}: {
-  className?: string,
-}): JSX.Element => {
+}: IBeta): JSX.Element => {
   const { t } = useTranslation('common')
 
   return (

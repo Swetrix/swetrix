@@ -6,14 +6,16 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { usePagination, DOTS } from 'hooks/usePagination'
 
-const Pagination = ({
-  page, setPage, pageAmount, total,
-}: {
+interface IPagination {
   page: number,
   setPage: (item: number) => void,
   pageAmount: number,
   total: number,
-}): JSX.Element => {
+}
+
+const Pagination = ({
+  page, setPage, pageAmount, total,
+}: IPagination): JSX.Element => {
   const { t } = useTranslation('common')
   const paginationRange = usePagination(total, page)
 
