@@ -7,6 +7,7 @@ const {
 } = require('../../migrations/clickhouse/setup')
 
 const PID_SIZE = 12
+const DEFAULT_ROW_COUNT = 10
 
 const OS = ['Windows', 'Linux', 'Mac']
 const UTM_SOURCES = ['organic', 'paid', 'referral']
@@ -95,7 +96,7 @@ const main = () => {
     pid, beginDate, endDate, rows,
   } = argMap
 
-  const rowCount = parseInt(rows) || 5000
+  const rowCount = parseInt(rows) || DEFAULT_ROW_COUNT
 
   if (_.isEmpty(argMap)) {
     console.error(
