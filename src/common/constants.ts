@@ -9,7 +9,7 @@ import { getSelfhostedUUID } from './utils'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
-const CLICKHOUSE_DATABASE = process.env.CLICKHOUSE_DATABASE
+const { CLICKHOUSE_DATABASE } = process.env
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -121,7 +121,7 @@ const CLICKHOUSE_INIT_QUERIES = [
 
   // Project data table (used for self-hosted only)
   isSelfhosted &&
-  `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.project
+    `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.project
   (
     id FixedString(12),
     name String,
