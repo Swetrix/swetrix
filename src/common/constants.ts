@@ -9,6 +9,8 @@ import { getSelfhostedUUID } from './utils'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
+const CLICKHOUSE_DATABASE = process.env.CLICKHOUSE_DATABASE
+
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
   process.env.REDIS_HOST,
@@ -38,7 +40,7 @@ const clickhouse = new ClickHouse({
     session_timeout: 60,
     output_format_json_quote_64bit_integers: 0,
     enable_http_compression: 0,
-    database: process.env.CLICKHOUSE_DATABASE,
+    database: CLICKHOUSE_DATABASE,
   },
 })
 
@@ -49,10 +51,10 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
 const CLICKHOUSE_INIT_QUERIES = [
-  'CREATE DATABASE IF NOT EXISTS analytics',
+  `CREATE DATABASE IF NOT EXISTS ${CLICKHOUSE_DATABASE}`,
 
   // The traffic data table
-  `CREATE TABLE IF NOT EXISTS analytics.analytics
+  `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.analytics
   (
     sid Nullable(String),
     pid FixedString(12),
@@ -75,7 +77,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, created);`,
 
   // Custom events table
-  `CREATE TABLE IF NOT EXISTS analytics.customEV
+  `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.customEV
   (
     pid FixedString(12),
     ev String,
@@ -96,7 +98,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, created);`,
 
   // The performance data table
-  `CREATE TABLE IF NOT EXISTS analytics.performance
+  `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.performance
   (
     pid FixedString(12),
     pg Nullable(String),
@@ -119,14 +121,14 @@ const CLICKHOUSE_INIT_QUERIES = [
 
   // Project data table (used for self-hosted only)
   isSelfhosted &&
-    `CREATE TABLE IF NOT EXISTS analytics.project
+  `CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DATABASE}.project
   (
-      id FixedString(12),
-      name String,
-      origins String,
-      active Int8,
-      public Int8,
-      created DateTime
+    id FixedString(12),
+    name String,
+    origins String,
+    active Int8,
+    public Int8,
+    created DateTime
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
