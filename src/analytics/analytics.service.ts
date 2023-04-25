@@ -5,6 +5,7 @@ import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
+import * as _last from 'lodash/last'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
@@ -211,7 +212,7 @@ const generateParamsQuery = (
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(private readonly projectService: ProjectService) { }
 
   async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
     if (!isSelfhosted) {
@@ -341,6 +342,100 @@ export class AnalyticsService {
     return null
   }
 
+  getGroupFromTo(from: string, to: string, timeBucket: TimeBucketType, period: string, timezone: string): { groupFrom: string, groupTo: string } {
+    let groupFrom
+    let groupTo
+
+    if (!_isEmpty(from) && !_isEmpty(to)) {
+      if (!isValidDate(from)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter is invalid",
+        )
+      }
+
+      if (!isValidDate(to)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'to' parameter is invalid",
+        )
+      }
+
+      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter cannot be greater than 'to'",
+        )
+      }
+
+      checkIfTBAllowed(timeBucket, from, to)
+
+      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+
+      if (from === to) {
+        groupTo = dayjs
+          .tz(to, timezone)
+          .add(1, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+      } else {
+        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
+      }
+    } else if (!_isEmpty(period)) {
+      if (period === 'today') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
+          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else if (period === 'yesterday') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .subtract(1, 'day')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs
+            .utc()
+            .startOf('d')
+            .subtract(1, 'day')
+            .format('YYYY-MM-DD')
+          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else {
+        groupFrom = dayjs
+          .utc()
+          .subtract(parseInt(period, 10), _last(period))
+          .format('YYYY-MM-DD')
+        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+
+        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
+      }
+    } else {
+      throw new BadRequestException(
+        'The timeframe (either from/to pair or period) has to be provided',
+      )
+    }
+    
+    return {
+      groupFrom,
+      groupTo,
+    }
+  }
+
+  async getUserFlow(params: any): Promise<any> {
+    // TODO
+  }
+
   async getSessionHash(
     pid: string,
     userAgent: string,
@@ -426,9 +521,8 @@ export class AnalyticsService {
         ...params,
         [colFilter]: filter,
       }
-      query += ` ${
-        isExclusive ? 'AND NOT' : 'AND'
-      } ${column}={${colFilter}:String}`
+      query += ` ${isExclusive ? 'AND NOT' : 'AND'
+        } ${column}={${colFilter}:String}`
     }
 
     return [query, params, parsed]
@@ -666,11 +760,9 @@ export class AnalyticsService {
           query += ' UNION ALL '
         }
 
-        query += `select ${i} index, count() from customEV where ${
-          paramsData.params.ev_exclusive ? 'NOT' : ''
-        } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${
-          xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery}`
+        query += `select ${i} index, count() from customEV where ${paramsData.params.ev_exclusive ? 'NOT' : ''
+          } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${xM[i]
+          }' and '${xM[1 + i]}' ${filtersQuery}`
       }
 
       // @ts-ignore
@@ -711,9 +803,8 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
+      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
     // @ts-ignore
@@ -855,9 +946,8 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery}`
+      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery}`
     }
 
     // @ts-ignore
@@ -964,9 +1054,8 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
+      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
     }
 
     // @ts-ignore
@@ -1099,9 +1188,8 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, ev, count() from customEV where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by pid, ev`
+      query += `select ${i} index, ev, count() from customEV where pid = {pid:FixedString(12)} and created between '${xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery} group by pid, ev`
     }
 
     // @ts-ignore
