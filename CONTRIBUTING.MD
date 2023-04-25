@@ -27,14 +27,28 @@ To start the Docker container containing the databases you need to run the follo
 docker-compose -f ./docker-compose-dev.yml up -d
 ```
 
-### 5. Start the API
+### 5. Initialise the Clickhouse database & related tables
+To set up the analytics database and initialise the tables, you should run a script called `initialise_database.js` which is located in the `migrations/clickhouse` directory.
+```bash
+node migrations/clickhouse/initialise_database.js
+```
+
+### 6. Start the API
 To start the API you need to run the following command in the root of the repository:
 ```bash
 npm run start:dev
 ```
 
-### 6. Start the frontend
+### 7. Start the frontend
 To start the frontend locally you have to fork and clone [the frontend repository](https://github.com/Swetrix/swetrix-fe), install it's dependencies (`npm i`), set up it's `.env` file and start it (`npm run start`).
+
+### 8. Generate some dummy data
+This step is not neccessary, but for your convenience you can generate some dummy data. To do that run a script called `generate-dummy-data.js` which is located in the `meta/clickhouse` directory.
+```bash
+node meta/clickhouse/generate-dummy-data.js --help
+```
+
+This command will give you all the required information on how to generate the data.
 
 ## Finding a task
 You can find a list of all the tasks in our [roadmap](https://github.com/orgs/Swetrix/projects/2) (here's a [link](https://github.com/Swetrix/roadmap/issues) to the same page but as 'Issues' page).
