@@ -16,7 +16,7 @@ const queries = [
     so Nullable(String),
     me Nullable(String),
     ca Nullable(String),
-    cc LowCardinality(Nullable(FixedString(2))),
+    cc Nullable(FixedString(2)),
     sdur Nullable(UInt32), 
     unique UInt8,
     created DateTime
@@ -46,7 +46,7 @@ const queries = [
     so Nullable(String),
     me Nullable(String),
     ca Nullable(String),
-    cc LowCardinality(Nullable(FixedString(2))),
+    cc Nullable(FixedString(2)),
     created DateTime
   )
   ENGINE = MergeTree()
