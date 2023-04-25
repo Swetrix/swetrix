@@ -285,7 +285,13 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(from, to, timeBucket, period, timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      timezone,
+    )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
@@ -394,7 +400,13 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams] =
       this.analyticsService.getFiltersQuery(filters)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(from, to, timeBucket, period, timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      timezone,
+    )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
