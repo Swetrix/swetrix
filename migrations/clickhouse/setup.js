@@ -60,24 +60,32 @@ const databaselessQueriesRunner = async (queries) => {
   }
 }
 
-const queriesRunner = async (queries) => {
+const queriesRunner = async (queries, log = true) => {
   let failed = false
+
   for (const query of queries) {
     if (failed) {
-      return
+      return false
     }
 
     if (query) {
       try {
         await clickhouse.query(query).toPromise()
-        console.log(chalk.green('Query OK: '), query)
+
+        if (log) {
+          console.log(chalk.green('Query OK: '), query)
+        }
       } catch (error) {
-        console.error(chalk.red('Query ERROR: '), query)
-        console.error(error)
+        if (log) {
+          console.error(chalk.red('Query ERROR: '), query)
+          console.error(error)
+        }
         failed = true
       }
     }
   }
+
+  return true
 }
 
 const dbName = process.env.CLICKHOUSE_DATABASE
