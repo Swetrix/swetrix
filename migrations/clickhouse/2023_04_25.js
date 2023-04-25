@@ -53,7 +53,7 @@ const queries = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
-  `INSERT INTO ${dbName}.customEV (pid, ev, pg, dv, br, os, lc, ref, so, me, ca, cc, created)
+  `INSERT INTO ${dbName}.customEV_temp (pid, ev, pg, dv, br, os, lc, ref, so, me, ca, cc, created)
   SELECT pid, ev, pg, dv, br, os, lc, ref, so, me, ca, cc, created FROM ${dbName}.customEV`,
 
   `DROP TABLE ${dbName}.customEV`,
