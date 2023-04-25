@@ -218,7 +218,6 @@ export class Lib {
 
     if (this.checkIgnore(pg)) return
 
-    this.activePage = pg
     const perf = this.getPerformanceStats()
 
     const data = {
@@ -232,8 +231,10 @@ export class Lib {
       unique,
       pg,
       perf,
+      prev: this.activePage,
     }
 
+    this.activePage = pg
     this.sendRequest('', data)
   }
 
