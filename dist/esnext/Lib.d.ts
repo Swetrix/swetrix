@@ -64,6 +64,7 @@ export declare class Lib {
     private heartbeat;
     private checkIgnore;
     private trackPathChange;
+    private getPreviousPage;
     private trackPage;
     private debug;
     private canTrack;

@@ -179,6 +179,34 @@ var Lib = /** @class */ (function () {
             this.trackPage(newPath, false);
         }
     };
+    Lib.prototype.getPreviousPage = function () {
+        // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
+        // That method of getting previous page works for SPA websites
+        if (this.activePage) {
+            return this.activePage;
+        }
+        // Checking if URL is supported by the browser (for example, IE11 does not support it)
+        if (typeof URL === 'function') {
+            // That method of getting previous page works for websites with page reloads
+            var referrer = getReferrer();
+            if (!referrer) {
+                return null;
+            }
+            var host = location.host;
+            try {
+                var url = new URL(referrer);
+                var refHost = url.host, pathname = url.pathname;
+                if (host !== refHost) {
+                    return null;
+                }
+                return pathname;
+            }
+            catch (_a) {
+                return null;
+            }
+        }
+        return null;
+    };
     Lib.prototype.trackPage = function (pg, unique) {
         if (unique === void 0) { unique = false; }
         if (!this.pageData)
@@ -186,7 +214,6 @@ var Lib = /** @class */ (function () {
         this.pageData.path = pg;
         if (this.checkIgnore(pg))
             return;
-        this.activePage = pg;
         var perf = this.getPerformanceStats();
         var data = {
             pid: this.projectID,
@@ -199,7 +226,9 @@ var Lib = /** @class */ (function () {
             unique: unique,
             pg: pg,
             perf: perf,
+            prev: this.getPreviousPage(),
         };
+        this.activePage = pg;
         this.sendRequest('', data);
     };
     Lib.prototype.debug = function (message) {

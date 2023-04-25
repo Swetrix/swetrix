@@ -123,13 +123,40 @@ export class Lib {
             this.trackPage(newPath, false);
         }
     }
+    getPreviousPage() {
+        // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
+        // That method of getting previous page works for SPA websites
+        if (this.activePage) {
+            return this.activePage;
+        }
+        // Checking if URL is supported by the browser (for example, IE11 does not support it)
+        if (typeof URL === 'function') {
+            // That method of getting previous page works for websites with page reloads
+            const referrer = getReferrer();
+            if (!referrer) {
+                return null;
+            }
+            const { host } = location;
+            try {
+                const url = new URL(referrer);
+                const { host: refHost, pathname } = url;
+                if (host !== refHost) {
+                    return null;
+                }
+                return pathname;
+            }
+            catch {
+                return null;
+            }
+        }
+        return null;
+    }
     trackPage(pg, unique = false) {
         if (!this.pageData)
             return;
         this.pageData.path = pg;
         if (this.checkIgnore(pg))
             return;
-        this.activePage = pg;
         const perf = this.getPerformanceStats();
         const data = {
             pid: this.projectID,
@@ -142,7 +169,9 @@ export class Lib {
             unique,
             pg,
             perf,
+            prev: this.getPreviousPage(),
         };
+        this.activePage = pg;
         this.sendRequest('', data);
     }
     debug(message) {
