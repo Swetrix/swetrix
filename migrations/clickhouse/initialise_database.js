@@ -73,8 +73,17 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, created);`,
 ]
 
-databaselessQueriesRunner(CLICKHOUSE_DB_INIT_QUERIES)
-  .then(() => queriesRunner(CLICKHOUSE_INIT_QUERIES))
-  .catch((error) => {
-    console.error(`[ERROR] Error occured whilst initialising the database: ${error}`)
-  })
+const initialiseDatabase = async () => {
+  try {
+    await databaselessQueriesRunner(CLICKHOUSE_DB_INIT_QUERIES)
+    await queriesRunner(CLICKHOUSE_INIT_QUERIES)
+  } catch (reason) {
+    console.error(`[ERROR] Error occured whilst initialising the database: ${reason}`)
+  }
+}
+
+initialiseDatabase()
+
+module.exports = {
+  initialiseDatabase,
+}
