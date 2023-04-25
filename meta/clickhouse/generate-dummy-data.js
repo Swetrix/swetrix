@@ -70,6 +70,7 @@ const generateData = async (pid, rowCount, beginDate, endDate) => {
   }
 }
 
+// TODO: ADD SUPPORT FOR --type <analytics | custom_events | performance> ARGUMENT TO GENERATE DATA FOR DIFFERENT TABLES
 const main = () => {
   const args = process.argv.slice(2)
   const argMap = {}
