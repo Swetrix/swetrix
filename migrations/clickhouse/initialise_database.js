@@ -7,7 +7,7 @@ const CLICKHOUSE_DB_INIT_QUERIES = [
 
 const CLICKHOUSE_INIT_QUERIES = [
   // The traffic data table
-  `CREATE TABLE IF NOT EXISTS analytics.analytics
+  `CREATE TABLE IF NOT EXISTS ${dbName}.analytics
   (
     sid Nullable(String),
     pid FixedString(12),
@@ -30,7 +30,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, created);`,
 
   // Custom events table
-  `CREATE TABLE IF NOT EXISTS analytics.customEV
+  `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
   (
     pid FixedString(12),
     ev String,
@@ -51,7 +51,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, created);`,
 
   // The performance data table
-  `CREATE TABLE IF NOT EXISTS analytics.performance
+  `CREATE TABLE IF NOT EXISTS ${dbName}.performance
   (
     pid FixedString(12),
     pg Nullable(String),
