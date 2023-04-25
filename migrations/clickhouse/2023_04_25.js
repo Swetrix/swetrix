@@ -33,7 +33,7 @@ const queries = [
 
   // Custom events -> LowCardinality
   `DROP TABLE IF EXISTS ${dbName}.customEV_temp`,
-  `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
+  `CREATE TABLE IF NOT EXISTS ${dbName}.customEV_temp
   (
     pid FixedString(12),
     ev String,
