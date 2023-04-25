@@ -453,7 +453,7 @@ export class AnalyticsService {
     }
   }
 
-  async getUserFlow(params: any): Promise<IUserFlow> {
+  async getUserFlow(params: unknown): Promise<IUserFlow> {
     const query = `
       SELECT
         pg AS source,
