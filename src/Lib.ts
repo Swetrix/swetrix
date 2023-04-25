@@ -63,6 +63,9 @@ export interface PageViewsOptions {
 
   /** Send Heartbeat requests when the website tab is not active in the browser. */
   heartbeatOnBackground?: boolean
+
+  /** Disable user-flow */
+  noUserFlow?: boolean
 }
 
 export const defaultPageActions = {
@@ -255,6 +258,12 @@ export class Lib {
 
     const perf = this.getPerformanceStats()
 
+    let prev
+
+    if (!this.pageViewsOptions?.noUserFlow) {
+      prev = this.getPreviousPage()
+    }
+
     const data = {
       pid: this.projectID,
       lc: getLocale(),
@@ -266,7 +275,7 @@ export class Lib {
       unique,
       pg,
       perf,
-      prev: this.getPreviousPage(),
+      prev,
     }
 
     this.activePage = pg

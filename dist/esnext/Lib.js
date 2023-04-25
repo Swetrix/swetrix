@@ -158,6 +158,10 @@ export class Lib {
         if (this.checkIgnore(pg))
             return;
         const perf = this.getPerformanceStats();
+        let prev;
+        if (!this.pageViewsOptions?.noUserFlow) {
+            prev = this.getPreviousPage();
+        }
         const data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -169,7 +173,7 @@ export class Lib {
             unique,
             pg,
             perf,
-            prev: this.getPreviousPage(),
+            prev,
         };
         this.activePage = pg;
         this.sendRequest('', data);

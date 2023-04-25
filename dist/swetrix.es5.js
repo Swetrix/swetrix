@@ -208,6 +208,7 @@ var Lib = /** @class */ (function () {
         return null;
     };
     Lib.prototype.trackPage = function (pg, unique) {
+        var _a;
         if (unique === void 0) { unique = false; }
         if (!this.pageData)
             return;
@@ -215,6 +216,10 @@ var Lib = /** @class */ (function () {
         if (this.checkIgnore(pg))
             return;
         var perf = this.getPerformanceStats();
+        var prev;
+        if (!((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.noUserFlow)) {
+            prev = this.getPreviousPage();
+        }
         var data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -226,7 +231,7 @@ var Lib = /** @class */ (function () {
             unique: unique,
             pg: pg,
             perf: perf,
-            prev: this.getPreviousPage(),
+            prev: prev,
         };
         this.activePage = pg;
         this.sendRequest('', data);

@@ -46,6 +46,8 @@ export interface PageViewsOptions {
     noHeartbeat?: boolean;
     /** Send Heartbeat requests when the website tab is not active in the browser. */
     heartbeatOnBackground?: boolean;
+    /** Disable user-flow */
+    noUserFlow?: boolean;
 }
 export declare const defaultPageActions: {
     stop(): void;
