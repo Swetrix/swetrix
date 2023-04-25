@@ -5,22 +5,6 @@
 
 # Swetrix Analytics API
 
-## Development
-
-```bash
-# install dependencies with package manager of your choice
-$ npm install
-
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
 ## Selfhosted Deployment
 
 ### For development purposes
