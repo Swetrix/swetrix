@@ -178,8 +178,8 @@ const main = () => {
     console.log('--pid <pid> - The pid of the project')
     console.log('--beginDate <YYYY-MM-DD!HH:mm:ss> - The begin date of the data')
     console.log('--endDate <YYYY-MM-DD!HH:mm:ss> - The end date of the data')
-    console.log('--rows <number of rows> - The number of rows to generate')
-    console.log('--mode <analytics | custom_events | performance> - The mode to generate data for; default is "analytics"')
+    console.log(`--rows <number of rows> - The number of rows to generate; default is ${DEFAULT_ROW_COUNT}`)
+    console.log(`--mode <analytics | custom_events | performance> - The mode to generate data for; default is ${DEFAULT_MODE}`)
     return
   }
 
