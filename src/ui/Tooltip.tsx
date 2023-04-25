@@ -3,13 +3,15 @@ import PropTypes from 'prop-types'
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 
-const Tooltip = ({
-  text, className, tooltipNode,
-}: {
+interface ITooltip {
   text: string | number | React.ReactNode,
   className?: string,
   tooltipNode?: JSX.Element,
-}): JSX.Element => (
+}
+
+const Tooltip = ({
+  text, className, tooltipNode,
+}: ITooltip): JSX.Element => (
   <div className={cx('w-5 h-5 relative flex flex-col group items-center', className)} data-testid='tooltip-wrapper'>
     {tooltipNode || (
       <QuestionMarkCircleIcon className='w-5 h-5 text-gray-700 dark:text-gray-300' data-testid='tooltip-icon' />

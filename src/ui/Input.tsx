@@ -5,9 +5,7 @@ import PropTypes from 'prop-types'
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid'
 import Beta from 'ui/Beta'
 
-const Input = ({
-  label, hint, placeholder, type, id, name, className, onChange, error, value, disabled, onKeyDown, isBeta,
-}: {
+interface IInput {
   label: string | JSX.Element,
   hint?: string | JSX.Element,
   placeholder?: string,
@@ -21,7 +19,11 @@ const Input = ({
   disabled?: boolean,
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void,
   isBeta?: boolean,
-}): JSX.Element => {
+}
+
+const Input = ({
+  label, hint, placeholder, type, id, name, className, onChange, error, value, disabled, onKeyDown, isBeta,
+}: IInput): JSX.Element => {
   const identifier = id || name || type
   const isError = !_isEmpty(error)
 

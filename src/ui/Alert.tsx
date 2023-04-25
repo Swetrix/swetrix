@@ -6,16 +6,18 @@ import {
   CheckCircleIcon, InformationCircleIcon, XCircleIcon, XMarkIcon,
 } from '@heroicons/react/24/solid'
 
-const AlertTemplate = ({
-  message, options, className, close,
-}: {
+interface IAlert {
   message: string,
   options: {
     type: 'info' | 'success' | 'error',
   },
   className: string,
   close: () => void,
-}): JSX.Element => {
+}
+
+const AlertTemplate = ({
+  message, options, className, close,
+}: IAlert): JSX.Element => {
   const { type } = options
   const isInfo = type === 'info'
   const isSuccess = type === 'success'

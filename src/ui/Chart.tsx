@@ -3,10 +3,12 @@ import bb from 'billboard.js'
 import 'billboard.js/dist/theme/datalab.css'
 import 'billboard.js/dist/billboard.css'
 
-const Chart = ({ current, options }: {
+interface IChart {
   current: string,
   options: any,
-}): JSX.Element => {
+}
+
+const Chart = ({ current, options }: IChart): JSX.Element => {
   let chartInstance: any = {}
 
   const destroy = () => {

@@ -13,7 +13,6 @@ const mapStateToProps = (state: StateType) => ({
   projectViewPrefs: state.ui.cache.captchaProjectsViewPrefs,
   authenticated: state.auth.authenticated,
   timezone: state.auth.user.timezone,
-  isPaidTierUsed: state.auth.isPaidTierUsed,
   user: state.auth.user,
   liveStats: state.ui.projects.liveStats,
 })

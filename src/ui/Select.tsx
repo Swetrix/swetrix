@@ -5,9 +5,7 @@ import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 
-const Select = ({
-  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect, id,
-}: {
+interface ISelect {
   title?: string,
   label: string,
   className?: string,
@@ -17,7 +15,11 @@ const Select = ({
   keyExtractor?: (item: any, index: number) => string,
   iconExtractor?: (item: any, index: number) => JSX.Element | null,
   onSelect: (item: any) => void,
-}): JSX.Element => (
+}
+
+const Select = ({
+  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect, id,
+}: ISelect): JSX.Element => (
   // @ts-ignore
   <Listbox id={id || ''} className={className} value={title} onChange={onSelect}>
     {({ open }) => (

@@ -10,7 +10,8 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, CurrencyDollarIcon, ChartBarIcon, BoltIcon, BellIcon, PresentationChartBarIcon, PresentationChartLineIcon, NoSymbolIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, ChartBarIcon, BoltIcon, BellIcon,
+  PresentationChartBarIcon, PresentationChartLineIcon, NoSymbolIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -35,14 +36,13 @@ import _truncate from 'lodash/truncate'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
-import { SWETRIX_PID } from 'utils/analytics'
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, MAX_MONTHS_IN_PAST_FREE, PROJECT_TABS,
+  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
@@ -55,7 +55,6 @@ import Checkbox from 'ui/Checkbox'
 import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
 import Robot from 'ui/icons/Robot'
-import PaidFeature from 'modals/PaidFeature'
 import Forecast from 'modals/Forecast'
 import routes from 'routes'
 import {
@@ -67,7 +66,7 @@ import {
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, paidPeriods, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
+  validTimeBacket, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF, getSettingsPerf, transformAIChartData,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
@@ -86,7 +85,7 @@ interface IProjectView extends IProject {
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, isPaidTierUsed, extensions, generateAlert, setProjectCachePerf,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
   projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats,
 }: {
   projects: IProjectView[],
@@ -111,7 +110,6 @@ const ViewProject = ({
   setProjectForcastCache: (pid: string, data: any, key: string) => void,
   authenticated: boolean,
   user: IUser,
-  isPaidTierUsed: boolean,
   timezone: string,
   sharedProjects: ISharedProject[],
   projectTab: string,
@@ -134,7 +132,6 @@ const ViewProject = ({
     label: string
     period: string
     tbs: string[]
-    access: string
     dropdownLabel?: string
     isCustomDate?: boolean
   }[]>(tbPeriodPairs(t))
@@ -158,7 +155,6 @@ const ViewProject = ({
   const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
   const [panelsData, setPanelsData] = useState<any>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const [isForecastOpened, setIsForecastOpened] = useState<boolean>(false)
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
   const [period, setPeriod] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period)
@@ -1320,7 +1316,7 @@ const ViewProject = ({
         setProjectTab(PROJECT_TABS.performance)
       }
 
-      if (!_includes(validPeriods, intialPeriod) || (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && _includes(paidPeriods, intialPeriod))) {
+      if (!_includes(validPeriods, intialPeriod)) {
         return
       }
 
@@ -1543,29 +1539,9 @@ const ViewProject = ({
                     <Dropdown
                       items={periodPairs}
                       title={activePeriod?.label}
-                      labelExtractor={(pair) => {
-                        const label = pair.dropdownLabel || pair.label
-
-                        // disable limitation for shared projects as project hosts already have a paid plan
-                        // disable limitation for Swetrix public project (for demonstration purposes)
-                        if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                          return (
-                            <span className='flex items-center'>
-                              <CurrencyDollarIcon className='w-4 h-4 mr-1' />
-                              {label}
-                            </span>
-                          )
-                        }
-
-                        return label
-                      }}
+                      labelExtractor={(pair) => pair.dropdownLabel || pair.label}
                       keyExtractor={(pair) => pair.label}
                       onSelect={(pair) => {
-                        if (!isSharedProject && id !== SWETRIX_PID && !isPaidTierUsed && pair.access === 'paid') {
-                          setIsPaidFeatureOpened(true)
-                          return
-                        }
-
                         if (pair.isCustomDate) {
                           setTimeout(() => {
                             // @ts-ignore
@@ -1582,7 +1558,7 @@ const ViewProject = ({
                       ref={refCalendar}
                       onChange={(date) => setDateRange(date)}
                       value={dateRange || []}
-                      maxDateMonths={(isPaidTierUsed || id === SWETRIX_PID || isSharedProject) ? MAX_MONTHS_IN_PAST : MAX_MONTHS_IN_PAST_FREE}
+                      maxDateMonths={MAX_MONTHS_IN_PAST}
                     />
                   </div>
                 </div>
@@ -1631,8 +1607,8 @@ const ViewProject = ({
                                   buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700'
                                   keyExtractor={(event) => event.id}
                                   onSelect={(event, e) => {
-                                    e.stopPropagation()
-                                    e.preventDefault()
+                                    e?.stopPropagation()
+                                    e?.preventDefault()
 
                                     setActiveChartMetricsCustomEvents((prev) => {
                                       const newActiveChartMetricsCustomEvents = [...prev]
@@ -2041,10 +2017,6 @@ const ViewProject = ({
             </div>
           </div>
         )}
-        <PaidFeature
-          isOpened={isPaidFeatureOpened}
-          onClose={() => setIsPaidFeatureOpened(false)}
-        />
         <Forecast
           isOpened={isForecastOpened}
           onClose={() => setIsForecastOpened(false)}
@@ -2077,7 +2049,6 @@ ViewProject.propTypes = {
   setLiveStatsForProject: PropTypes.func.isRequired,
   authenticated: PropTypes.bool.isRequired,
   extensions: PropTypes.arrayOf(PropTypes.object).isRequired,
-  isPaidTierUsed: PropTypes.bool.isRequired,
   timezone: PropTypes.string,
 }
 

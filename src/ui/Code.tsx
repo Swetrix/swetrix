@@ -2,11 +2,13 @@ import React, { memo } from 'react'
 import PropTypes from 'prop-types'
 import cx from 'clsx'
 
-const Code = ({ text, className, language }: {
+interface ICode {
   text: string | number | React.ReactNode,
   className?: string,
   language: string,
-}) => (
+}
+
+const Code = ({ text, className, language }: ICode) => (
   <pre className={cx('w-full rounded-md bg-gray-800 dark:bg-gray-750', className)}>
     <code className={`whitespace-pre-wrap language-${language}`}>{text}</code>
   </pre>

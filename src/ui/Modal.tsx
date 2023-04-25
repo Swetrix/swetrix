@@ -7,9 +7,7 @@ import {
 } from '@heroicons/react/24/outline'
 import Beta from 'ui/Beta'
 
-const Modal = ({
-  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons, isBeta,
-}: {
+interface IModal {
   className?: string,
   type: 'error' | 'success' | 'info' | 'warning' | 'confirmed',
   title: string,
@@ -23,7 +21,11 @@ const Modal = ({
   size?: 'regular' | 'large',
   customButtons?: JSX.Element,
   isBeta?: boolean,
-}): JSX.Element => (
+}
+
+const Modal = ({
+  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons, isBeta,
+}: IModal): JSX.Element => (
   <Transition.Root show={isOpened} as={Fragment}>
     <Dialog
       as='div'
