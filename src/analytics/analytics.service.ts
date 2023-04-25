@@ -227,7 +227,7 @@ const generateParamsQuery = (
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) { }
+  constructor(private readonly projectService: ProjectService) {}
 
   async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
     if (!isSelfhosted) {
@@ -357,7 +357,13 @@ export class AnalyticsService {
     return null
   }
 
-  getGroupFromTo(from: string, to: string, timeBucket: TimeBucketType, period: string, timezone: string): { groupFrom: string, groupTo: string } {
+  getGroupFromTo(
+    from: string,
+    to: string,
+    timeBucket: TimeBucketType,
+    period: string,
+    timezone: string,
+  ): { groupFrom: string; groupTo: string } {
     let groupFrom
     let groupTo
 
@@ -469,10 +475,18 @@ export class AnalyticsService {
       return { nodes: [], links: [] }
     }
 
-    const nodes: IUserFlowNode[] = Array.from(new Set(results.map((row: any) => row.source)
-      .concat(results.map((row: any) => row.target))))
-      .map((node: any) => ({ id: node }))
-    const links: IUserFlowLink[] = results.map((row: any) => ({ source: row.source, target: row.target, value: row.value }))
+    const nodes: IUserFlowNode[] = Array.from(
+      new Set(
+        results
+          .map((row: any) => row.source)
+          .concat(results.map((row: any) => row.target)),
+      ),
+    ).map((node: any) => ({ id: node }))
+    const links: IUserFlowLink[] = results.map((row: any) => ({
+      source: row.source,
+      target: row.target,
+      value: row.value,
+    }))
 
     return { nodes, links }
   }
@@ -562,8 +576,9 @@ export class AnalyticsService {
         ...params,
         [colFilter]: filter,
       }
-      query += ` ${isExclusive ? 'AND NOT' : 'AND'
-        } ${column}={${colFilter}:String}`
+      query += ` ${
+        isExclusive ? 'AND NOT' : 'AND'
+      } ${column}={${colFilter}:String}`
     }
 
     return [query, params, parsed]
@@ -801,9 +816,11 @@ export class AnalyticsService {
           query += ' UNION ALL '
         }
 
-        query += `select ${i} index, count() from customEV where ${paramsData.params.ev_exclusive ? 'NOT' : ''
-          } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${xM[i]
-          }' and '${xM[1 + i]}' ${filtersQuery}`
+        query += `select ${i} index, count() from customEV where ${
+          paramsData.params.ev_exclusive ? 'NOT' : ''
+        } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${
+          xM[i]
+        }' and '${xM[1 + i]}' ${filtersQuery}`
       }
 
       // @ts-ignore
@@ -844,8 +861,9 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
+      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
     }
 
     // @ts-ignore
@@ -987,8 +1005,9 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery}`
+      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery}`
     }
 
     // @ts-ignore
@@ -1095,8 +1114,9 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
+      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
     }
 
     // @ts-ignore
@@ -1229,8 +1249,9 @@ export class AnalyticsService {
         query += ' UNION ALL '
       }
 
-      query += `select ${i} index, ev, count() from customEV where pid = {pid:FixedString(12)} and created between '${xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery} group by pid, ev`
+      query += `select ${i} index, ev, count() from customEV where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by pid, ev`
     }
 
     // @ts-ignore
