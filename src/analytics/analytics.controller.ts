@@ -41,7 +41,6 @@ import {
   isValidDate,
   checkIfTBAllowed,
   getHeartbeatKey,
-  IUserFlow,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -69,6 +68,7 @@ import {
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
+import { IUserFlow } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
