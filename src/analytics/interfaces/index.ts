@@ -45,7 +45,7 @@ export interface IGenerateXAxis {
 }
 
 export interface IExtractChartData {
-  visits: number[],
-  uniques: number[],
-  sdur: number[],
+  visits: number[]
+  uniques: number[]
+  sdur: number[]
 }
