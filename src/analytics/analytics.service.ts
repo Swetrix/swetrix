@@ -50,6 +50,15 @@ import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
+import {
+  ChartCHResponse,
+  CustomsCHResponse,
+  IGetGroupFromTo,
+  GetFiltersQuery,
+  IUserFlowNode,
+  IUserFlowLink,
+  IUserFlow,
+} from './interfaces'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -79,23 +88,6 @@ export const cols = [
 export const captchaColumns = ['cc', 'br', 'os', 'dv']
 
 export const perfCols = ['cc', 'pg', 'dv', 'br']
-
-interface ChartCHResponse {
-  index: number
-  unique: number
-  'count()': number
-}
-
-interface CustomsCHResponse {
-  ev: string
-  'count()': number
-  index: number
-}
-
-interface IGetGroupFromTo {
-  groupFrom: string
-  groupTo: string
-}
 
 const validPeriods = [
   'today',
@@ -127,30 +119,6 @@ const timeBucketToDays = [
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
 // eslint-disable-next-line no-useless-escape
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
-
-interface GetFiltersQuery extends Array<string | object> {
-  // SQL query
-  0: string
-  // an object that has structure like { cf_pg: '/signup', ev_exclusive: false }
-  1: { [key: string]: string | boolean }
-  // an array of objects like [{ "column":"pg", "filter":"/signup", "isExclusive":true }]
-  2: Array<{ [key: string]: string }> | []
-}
-
-interface IUserFlowNode {
-  id: string
-}
-
-interface IUserFlowLink {
-  source: string
-  target: string
-  value: number
-}
-
-export interface IUserFlow {
-  nodes: IUserFlowNode[]
-  links: IUserFlowLink[]
-}
 
 export const isValidTimezone = (timezone: string): boolean => {
   if (_isEmpty(timezone)) {
