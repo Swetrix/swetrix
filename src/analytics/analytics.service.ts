@@ -92,6 +92,11 @@ interface CustomsCHResponse {
   index: number
 }
 
+interface IGetGroupFromTo {
+  groupFrom: string
+  groupTo: string
+}
+
 const validPeriods = [
   'today',
   'yesterday',
@@ -363,7 +368,7 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     period: string,
     timezone: string,
-  ): { groupFrom: string; groupTo: string } {
+  ): IGetGroupFromTo {
     let groupFrom
     let groupTo
 
