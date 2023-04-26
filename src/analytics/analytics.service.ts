@@ -592,28 +592,25 @@ export class AnalyticsService {
     period: 'w' | 'M' = 'w',
     amountToSubtract = 1,
   ) {
-    return this.getSummaryStats(pids, period, 'analytics', amountToSubtract)
+    return this.getSummaryStats(pids, 'analytics', period, amountToSubtract)
   }
 
-  async getCaptchaSummary(
-    pids: string[],
-    period: 'w' | 'M' = 'w',
-  ) {
-    return this.getSummaryStats(pids, period, 'captcha')
+  async getCaptchaSummary(pids: string[], period: 'w' | 'M' = 'w') {
+    return this.getSummaryStats(pids, 'captcha', period)
   }
 
   async getSummaryStats(
     pids: string[],
-    period: 'w' | 'M' = 'w',
     tableName: 'analytics' | 'captcha',
-    amountToSubtract = 1
+    period: 'w' | 'M' = 'w',
+    amountToSubtract = 1,
   ) {
     const result = {}
-  
-    const promises = pids.map(async (pid) => {
+
+    const promises = pids.map(async pid => {
       if (!isValidPID(pid)) {
         throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`
+          `The provided Project ID (${pid}) is incorrect`,
         )
       }
 
@@ -645,19 +642,25 @@ export class AnalyticsService {
       }
 
       try {
-        const thisWeekResult = await clickhouse.query(queryThisWeek, paramsData).toPromise()
-        const lastWeekResult = await clickhouse.query(queryLastWeek, paramsData).toPromise()
-  
+        const thisWeekResult = await clickhouse
+          .query(queryThisWeek, paramsData)
+          .toPromise()
+        const lastWeekResult = await clickhouse
+          .query(queryLastWeek, paramsData)
+          .toPromise()
+
         if (tableName === 'analytics') {
           const thisWeekUnique =
             _find(thisWeekResult, ({ unique }) => unique)?.['count()'] || 0
           const thisWeekPV =
-            (_find(thisWeekResult, ({ unique }) => !unique)?.['count()'] || 0) + thisWeekUnique
+            (_find(thisWeekResult, ({ unique }) => !unique)?.['count()'] || 0) +
+            thisWeekUnique
           const lastWeekUnique =
             _find(lastWeekResult, ({ unique }) => unique)?.['count()'] || 0
           const lastWeekPV =
-            (_find(lastWeekResult, ({ unique }) => !unique)?.['count()'] || 0) + lastWeekUnique
-  
+            (_find(lastWeekResult, ({ unique }) => !unique)?.['count()'] || 0) +
+            lastWeekUnique
+
           result[pid] = {
             thisWeek: thisWeekPV,
             lastWeek: lastWeekPV,
@@ -666,13 +669,13 @@ export class AnalyticsService {
             percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
             percChangeUnique: calculateRelativePercentage(
               lastWeekUnique,
-              thisWeekUnique
+              thisWeekUnique,
             ),
           }
         } else {
           const thisWeek = thisWeekResult?.['count()'] || 0
           const lastWeek = lastWeekResult?.['count()'] || 0
-  
+
           result[pid] = {
             thisWeek,
             lastWeek,
@@ -681,13 +684,13 @@ export class AnalyticsService {
         }
       } catch {
         throw new InternalServerErrorException(
-          "Can't process the provided PID. Please, try again later."
+          "Can't process the provided PID. Please, try again later.",
         )
       }
     })
-  
+
     await Promise.all(promises)
-  
+
     return result
   }
 
