@@ -1,7 +1,6 @@
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
-import * as _last from 'lodash/last'
 import * as _pick from 'lodash/pick'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
@@ -22,13 +21,11 @@ import {
   BadRequestException,
   InternalServerErrorException,
   UnprocessableEntityException,
-  PreconditionFailedException,
   Ip,
   ForbiddenException,
   Response,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-// @ts-ignore
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
@@ -37,9 +34,6 @@ import { Auth, Public } from 'src/auth/decorators'
 import {
   AnalyticsService,
   getSessionKey,
-  isValidTimezone,
-  isValidDate,
-  checkIfTBAllowed,
   getHeartbeatKey,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
@@ -302,7 +296,6 @@ export class AnalyticsController {
     } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     let customEVFilterApplied = false
 
-    // @ts-ignore
     if (filtersParams?.ev && !isCaptcha) {
       customEVFilterApplied = true
       queryCustoms = `SELECT ev, count() FROM customEV WHERE ${
@@ -931,102 +924,21 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
-    let groupFrom = from
-    let groupTo = to
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      timezone,
+    )
 
     const paramsData = {
       params: {
         pid,
-        groupFrom: null,
-        groupTo: null,
+        groupFrom,
+        groupTo,
         ...filtersParams,
       },
-    }
-
-    if (!_isEmpty(from) && !_isEmpty(to)) {
-      if (!isValidDate(from)) {
-        throw new PreconditionFailedException(
-          "The timeframe 'from' parameter is invalid",
-        )
-      }
-
-      if (!isValidDate(to)) {
-        throw new PreconditionFailedException(
-          "The timeframe 'to' parameter is invalid",
-        )
-      }
-
-      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
-        throw new PreconditionFailedException(
-          "The timeframe 'from' parameter cannot be greater than 'to'",
-        )
-      }
-
-      checkIfTBAllowed(timeBucket, from, to)
-
-      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
-
-      if (from === to) {
-        groupTo = dayjs
-          .tz(to, timezone)
-          .add(1, 'day')
-          .format('YYYY-MM-DD HH:mm:ss')
-      } else {
-        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
-      }
-    } else if (!_isEmpty(period)) {
-      if (period === 'today') {
-        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-          groupFrom = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
-          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        }
-      } else if (period === 'yesterday') {
-        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-          groupFrom = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .subtract(1, 'day')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-          groupTo = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          groupFrom = dayjs
-            .utc()
-            .startOf('d')
-            .subtract(1, 'day')
-            .format('YYYY-MM-DD')
-          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
-        }
-      } else {
-        groupFrom = dayjs
-          .utc()
-          .subtract(parseInt(period, 10), _last(period))
-          .format('YYYY-MM-DD')
-        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
-
-        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
-      }
-    } else {
-      throw new BadRequestException(
-        'The timeframe (either from/to pair or period) has to be provided',
-      )
-    }
-
-    paramsData.params = {
-      ...paramsData.params,
-      groupFrom,
-      groupTo,
     }
 
     // let result: object | void

@@ -38,3 +38,14 @@ export interface IUserFlow {
   nodes: IUserFlowNode[]
   links: IUserFlowLink[]
 }
+
+export interface IGenerateXAxis {
+  x: string[]
+  xM: string[]
+}
+
+export interface IExtractChartData {
+  visits: number[]
+  uniques: number[]
+  sdur: number[]
+}
