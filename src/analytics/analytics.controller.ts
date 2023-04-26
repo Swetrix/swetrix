@@ -49,6 +49,7 @@ import { RolesGuard } from '../auth/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
+import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
@@ -67,6 +68,7 @@ import {
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
+import { IUserFlow } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -86,6 +88,7 @@ const analyticsDTO = (
   sid: string,
   pid: string,
   pg: string,
+  prev: string,
   dv: string,
   br: string,
   os: string,
@@ -102,6 +105,7 @@ const analyticsDTO = (
     sid,
     pid,
     pg,
+    prev,
     dv,
     br,
     os,
@@ -257,7 +261,7 @@ export class AnalyticsController {
     private readonly taskManagerService: TaskManagerService,
   ) {}
 
-  @Get('/')
+  @Get()
   @Auth([], true, true)
   async getData(
     @Query() data: AnalyticsGET_DTO,
@@ -282,10 +286,14 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      timezone,
+    )
     await this.analyticsService.checkProjectAccess(pid, uid)
-
-    let groupFrom = from
-    let groupTo = to
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     // TODO: Refactor
@@ -309,96 +317,10 @@ export class AnalyticsController {
     const paramsData = {
       params: {
         pid,
-        groupFrom: null,
-        groupTo: null,
+        groupFrom,
+        groupTo,
         ...filtersParams,
       },
-    }
-
-    if (!_isEmpty(from) && !_isEmpty(to)) {
-      if (!isValidDate(from)) {
-        throw new PreconditionFailedException(
-          "The timeframe 'from' parameter is invalid",
-        )
-      }
-
-      if (!isValidDate(to)) {
-        throw new PreconditionFailedException(
-          "The timeframe 'to' parameter is invalid",
-        )
-      }
-
-      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
-        throw new PreconditionFailedException(
-          "The timeframe 'from' parameter cannot be greater than 'to'",
-        )
-      }
-
-      checkIfTBAllowed(timeBucket, from, to)
-
-      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
-
-      if (from === to) {
-        groupTo = dayjs
-          .tz(to, timezone)
-          .add(1, 'day')
-          .format('YYYY-MM-DD HH:mm:ss')
-      } else {
-        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
-      }
-    } else if (!_isEmpty(period)) {
-      if (period === 'today') {
-        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-          groupFrom = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
-          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        }
-      } else if (period === 'yesterday') {
-        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-          groupFrom = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .subtract(1, 'day')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-          groupTo = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          groupFrom = dayjs
-            .utc()
-            .startOf('d')
-            .subtract(1, 'day')
-            .format('YYYY-MM-DD')
-          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
-        }
-      } else {
-        groupFrom = dayjs
-          .utc()
-          .subtract(parseInt(period, 10), _last(period))
-          .format('YYYY-MM-DD')
-        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
-
-        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
-      }
-    } else {
-      throw new BadRequestException(
-        'The timeframe (either from/to pair or period) has to be provided',
-      )
-    }
-
-    paramsData.params = {
-      ...paramsData.params,
-      groupFrom,
-      groupTo,
     }
 
     let result: object | void
@@ -455,7 +377,7 @@ export class AnalyticsController {
     }
   }
 
-  @Get('/performance')
+  @Get('performance')
   @Auth([], true, true)
   async getPerfData(
     @Query() data: AnalyticsGET_DTO,
@@ -479,106 +401,24 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams] =
       this.analyticsService.getFiltersQuery(filters)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      timezone,
+    )
     await this.analyticsService.checkProjectAccess(pid, uid)
-
-    let groupFrom = from
-    let groupTo = to
 
     const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     const paramsData = {
       params: {
         pid,
-        groupFrom: null,
-        groupTo: null,
+        groupFrom,
+        groupTo,
         ...filtersParams,
       },
-    }
-
-    if (!_isEmpty(from) && !_isEmpty(to)) {
-      if (!isValidDate(from)) {
-        throw new PreconditionFailedException(
-          "The timeframe 'from' parameter is invalid",
-        )
-      }
-
-      if (!isValidDate(to)) {
-        throw new PreconditionFailedException(
-          "The timeframe 'to' parameter is invalid",
-        )
-      }
-
-      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
-        throw new PreconditionFailedException(
-          "The timeframe 'from' parameter cannot be greater than 'to'",
-        )
-      }
-
-      checkIfTBAllowed(timeBucket, from, to)
-
-      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
-
-      if (from === to) {
-        groupTo = dayjs
-          .tz(to, timezone)
-          .add(1, 'day')
-          .format('YYYY-MM-DD HH:mm:ss')
-      } else {
-        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
-      }
-    } else if (!_isEmpty(period)) {
-      if (period === 'today') {
-        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-          groupFrom = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
-          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        }
-      } else if (period === 'yesterday') {
-        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-          groupFrom = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .subtract(1, 'day')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-          groupTo = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          groupFrom = dayjs
-            .utc()
-            .startOf('d')
-            .subtract(1, 'day')
-            .format('YYYY-MM-DD')
-          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
-        }
-      } else {
-        groupFrom = dayjs
-          .utc()
-          .subtract(parseInt(period, 10), _last(period))
-          .format('YYYY-MM-DD')
-        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
-
-        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
-      }
-    } else {
-      throw new BadRequestException(
-        'The timeframe (either from/to pair or period) has to be provided',
-      )
-    }
-
-    paramsData.params = {
-      ...paramsData.params,
-      groupFrom,
-      groupTo,
     }
 
     const result = await this.analyticsService.groupPerfByTimeBucket(
@@ -606,7 +446,7 @@ export class AnalyticsController {
     }
   }
 
-  @Get('/captcha')
+  @Get('captcha')
   @Auth([], true, true)
   async getCaptchaData(
     @Query() data: AnalyticsGET_DTO,
@@ -615,7 +455,47 @@ export class AnalyticsController {
     return this.getData(data, uid, true)
   }
 
-  @Get('/birdseye')
+  @Get('user-flow')
+  @Auth([], true, true)
+  async getUserFlow(
+    @Query() data: GetUserFlowDTO,
+    @CurrentUserId() uid: string,
+  ): Promise<IUserFlow> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      timezone,
+    )
+
+    const params = {
+      pid,
+      groupFrom,
+      groupTo,
+    }
+
+    return this.analyticsService.getUserFlow(params)
+  }
+
+  @Get('birdseye')
   @Auth([], true, true)
   // returns overall short statistics per project
   async getOverallStats(
@@ -635,7 +515,7 @@ export class AnalyticsController {
     return this.analyticsService.getSummary(pidsArray, 'w')
   }
 
-  @Get('/captcha/birdseye')
+  @Get('captcha/birdseye')
   @Auth([], true, true)
   // returns overall short statistics per CAPTCHA project
   async getCaptchaOverallStats(
@@ -657,7 +537,7 @@ export class AnalyticsController {
 
   @UseGuards(SelfhostedGuard)
   @Public()
-  @Get('/generalStats')
+  @Get('generalStats')
   async getGeneralStats(): Promise<object> {
     const exists = await redis.exists(
       REDIS_USERS_COUNT_KEY,
@@ -685,7 +565,7 @@ export class AnalyticsController {
     return this.taskManagerService.getGeneralStats()
   }
 
-  @Get('/hb')
+  @Get('hb')
   async getHeartBeatStats(
     @Query() data,
     @CurrentUserId() uid: string,
@@ -718,7 +598,7 @@ export class AnalyticsController {
     return result
   }
 
-  @Get('/liveVisitors')
+  @Get('liveVisitors')
   @Auth([], true, true)
   async getLiveVisitors(
     @Query() data,
@@ -749,7 +629,7 @@ export class AnalyticsController {
   }
 
   // Log custom event
-  @Post('/custom')
+  @Post('custom')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   @Public()
@@ -819,7 +699,7 @@ export class AnalyticsController {
     }
   }
 
-  @Post('/hb')
+  @Post('hb')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   @Auth([], true, true)
@@ -849,7 +729,7 @@ export class AnalyticsController {
   }
 
   // Log pageview event
-  @Post('/')
+  @Post()
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   @Public()
@@ -891,6 +771,7 @@ export class AnalyticsController {
       sessionHash,
       logDTO.pid,
       logDTO.pg,
+      logDTO.prev,
       dv,
       br,
       os,
@@ -955,7 +836,7 @@ export class AnalyticsController {
 
   // Fallback for logging pageviews for users with JavaScript disabled
   // Returns 1x1 transparent gif
-  @Get('/noscript')
+  @Get('noscript')
   @Public()
   async noscript(
     @Query() data,
@@ -997,6 +878,7 @@ export class AnalyticsController {
     const dto = analyticsDTO(
       sessionHash,
       logDTO.pid,
+      'NULL',
       'NULL',
       dv,
       br,

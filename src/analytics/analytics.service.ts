@@ -5,6 +5,7 @@ import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
+import * as _last from 'lodash/last'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
@@ -49,6 +50,15 @@ import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
+import {
+  ChartCHResponse,
+  CustomsCHResponse,
+  IGetGroupFromTo,
+  GetFiltersQuery,
+  IUserFlowNode,
+  IUserFlowLink,
+  IUserFlow,
+} from './interfaces'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -78,18 +88,6 @@ export const cols = [
 export const captchaColumns = ['cc', 'br', 'os', 'dv']
 
 export const perfCols = ['cc', 'pg', 'dv', 'br']
-
-interface ChartCHResponse {
-  index: number
-  unique: number
-  'count()': number
-}
-
-interface CustomsCHResponse {
-  ev: string
-  'count()': number
-  index: number
-}
 
 const validPeriods = [
   'today',
@@ -121,15 +119,6 @@ const timeBucketToDays = [
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
 // eslint-disable-next-line no-useless-escape
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
-
-interface GetFiltersQuery extends Array<string | object> {
-  // SQL query
-  0: string
-  // an object that has structure like { cf_pg: '/signup', ev_exclusive: false }
-  1: { [key: string]: string | boolean }
-  // an array of objects like [{ "column":"pg", "filter":"/signup", "isExclusive":true }]
-  2: Array<{ [key: string]: string }> | []
-}
 
 export const isValidTimezone = (timezone: string): boolean => {
   if (_isEmpty(timezone)) {
@@ -339,6 +328,140 @@ export class AnalyticsService {
     this.checkOrigin(project, origin)
 
     return null
+  }
+
+  getGroupFromTo(
+    from: string,
+    to: string,
+    timeBucket: TimeBucketType,
+    period: string,
+    timezone: string,
+  ): IGetGroupFromTo {
+    let groupFrom
+    let groupTo
+
+    if (!_isEmpty(from) && !_isEmpty(to)) {
+      if (!isValidDate(from)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter is invalid",
+        )
+      }
+
+      if (!isValidDate(to)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'to' parameter is invalid",
+        )
+      }
+
+      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter cannot be greater than 'to'",
+        )
+      }
+
+      checkIfTBAllowed(timeBucket, from, to)
+
+      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+
+      if (from === to) {
+        groupTo = dayjs
+          .tz(to, timezone)
+          .add(1, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+      } else {
+        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
+      }
+    } else if (!_isEmpty(period)) {
+      if (period === 'today') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
+          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else if (period === 'yesterday') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .subtract(1, 'day')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs
+            .utc()
+            .startOf('d')
+            .subtract(1, 'day')
+            .format('YYYY-MM-DD')
+          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else {
+        groupFrom = dayjs
+          .utc()
+          .subtract(parseInt(period, 10), _last(period))
+          .format('YYYY-MM-DD')
+        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+
+        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
+      }
+    } else {
+      throw new BadRequestException(
+        'The timeframe (either from/to pair or period) has to be provided',
+      )
+    }
+
+    return {
+      groupFrom,
+      groupTo,
+    }
+  }
+
+  async getUserFlow(params: unknown): Promise<IUserFlow> {
+    const query = `
+      SELECT
+        pg AS source,
+        prev AS target,
+        count() AS value
+      FROM analytics
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND pg != prev
+      GROUP BY
+        pg,
+        prev
+    `
+
+    const results = await clickhouse.query(query, { params }).toPromise()
+
+    if (_isEmpty(results)) {
+      return { nodes: [], links: [] }
+    }
+
+    const nodes: IUserFlowNode[] = Array.from(
+      new Set(
+        results
+          .map((row: any) => row.source)
+          .concat(results.map((row: any) => row.target)),
+      ),
+    ).map((node: any) => ({ id: node }))
+    const links: IUserFlowLink[] = results.map((row: any) => ({
+      source: row.source,
+      target: row.target,
+      value: row.value,
+    }))
+
+    return { nodes, links }
   }
 
   async getSessionHash(
