@@ -50,6 +50,17 @@ export class Project {
   })
   public: boolean
 
+  @Column('varchar', {
+    default: null,
+    length: 60,
+    nullable: true,
+    select: false,
+  })
+  passwordHash: string | null
+
+  @Column('boolean', { default: false })
+  isPasswordProtected: boolean
+
   @Column('boolean', { default: false })
   isTransferring: boolean
 

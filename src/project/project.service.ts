@@ -141,6 +141,7 @@ export class ProjectService {
             'ipBlacklist',
             'captchaSecretKey',
             'isCaptchaEnabled',
+            'isPasswordProtected',
           ],
         })
       }
@@ -304,6 +305,14 @@ export class ProjectService {
   }
 
   allowedToView(project: Project, uid: string | null): void {
+    if (
+      (project.isPasswordProtected && uid !== project.admin?.id) ||
+      (project.isPasswordProtected &&
+        _findIndex(project.share, ({ user }) => user?.id !== uid) !== -1)
+    ) {
+      throw new ForbiddenException('This project is password protected')
+    }
+
     if (
       project.public ||
       uid === project.admin?.id ||
