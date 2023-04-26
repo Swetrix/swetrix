@@ -179,15 +179,47 @@ var Lib = /** @class */ (function () {
             this.trackPage(newPath, false);
         }
     };
+    Lib.prototype.getPreviousPage = function () {
+        // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
+        // That method of getting previous page works for SPA websites
+        if (this.activePage) {
+            return this.activePage;
+        }
+        // Checking if URL is supported by the browser (for example, IE11 does not support it)
+        if (typeof URL === 'function') {
+            // That method of getting previous page works for websites with page reloads
+            var referrer = getReferrer();
+            if (!referrer) {
+                return null;
+            }
+            var host = location.host;
+            try {
+                var url = new URL(referrer);
+                var refHost = url.host, pathname = url.pathname;
+                if (host !== refHost) {
+                    return null;
+                }
+                return pathname;
+            }
+            catch (_a) {
+                return null;
+            }
+        }
+        return null;
+    };
     Lib.prototype.trackPage = function (pg, unique) {
+        var _a;
         if (unique === void 0) { unique = false; }
         if (!this.pageData)
             return;
         this.pageData.path = pg;
         if (this.checkIgnore(pg))
             return;
-        this.activePage = pg;
         var perf = this.getPerformanceStats();
+        var prev;
+        if (!((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.noUserFlow)) {
+            prev = this.getPreviousPage();
+        }
         var data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -199,7 +231,9 @@ var Lib = /** @class */ (function () {
             unique: unique,
             pg: pg,
             perf: perf,
+            prev: prev,
         };
+        this.activePage = pg;
         this.sendRequest('', data);
     };
     Lib.prototype.debug = function (message) {

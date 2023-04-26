@@ -1,6 +1,6 @@
 {
   "name": "swetrix",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "The JavaScript analytics client for Swetrix Analytics",
   "main": "dist/swetrix.cjs.js",
   "module": "dist/swetrix.es5.js",
@@ -34,18 +34,18 @@
   },
   "homepage": "https://swetrix.com/docs",
   "dependencies": {
-    "@types/node": "^18.13.0",
+    "@types/node": "^18.16.1",
     "tslib": "^2.5.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^24.0.1",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "rimraf": "^4.1.2",
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "rimraf": "^4.4.1",
     "rollup": "^2.79.1",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-typescript2": "^0.34.1",
     "rollup-plugin-uglify": "^6.0.4",
-    "typescript": "^4.9.5"
+    "typescript": "^5.0.4"
   }
 }
