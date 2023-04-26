@@ -59,6 +59,7 @@ import {
   IUserFlowLink,
   IUserFlow,
   IGenerateXAxis,
+  IExtractChartData,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -718,7 +719,7 @@ export class AnalyticsService {
     paramsData: any,
     isCaptcha: boolean,
     isPerformance: boolean,
-  ) {
+  ): Promise<any> {
     const params = {}
 
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
@@ -824,7 +825,7 @@ export class AnalyticsService {
     }
   }
 
-  extractChartData(result, x: string[]) {
+  extractChartData(result, x: string[]): IExtractChartData {
     let visits = []
     let uniques = []
     let sdur = []
@@ -878,7 +879,7 @@ export class AnalyticsService {
     }
   }
 
-  updateXAxisTimezone(x: string[], timezone: string) {
+  updateXAxisTimezone(x: string[], timezone: string): string[] {
     if (timezone === DEFAULT_TIMEZONE || !isValidTimezone(timezone)) {
       return x
     }
