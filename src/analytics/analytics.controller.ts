@@ -41,6 +41,7 @@ import {
   isValidDate,
   checkIfTBAllowed,
   getHeartbeatKey,
+  IUserFlow,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -459,7 +460,7 @@ export class AnalyticsController {
   async getUserFlow(
     @Query() data: GetUserFlowDTO,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
+  ): Promise<IUserFlow> {
     const {
       pid,
       period,

@@ -142,7 +142,7 @@ interface IUserFlowLink {
   value: number
 }
 
-interface IUserFlow {
+export interface IUserFlow {
   nodes: IUserFlowNode[]
   links: IUserFlowLink[]
 }
