@@ -591,124 +591,103 @@ export class AnalyticsService {
     pids: string[],
     period: 'w' | 'M' = 'w',
     amountToSubtract = 1,
-  ): Promise<object> {
-    const result = {}
-
-    const promises = _map(pids, async pid => {
-      if (!isValidPID(pid)) {
-        throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
-        )
-      }
-
-      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      const oneWRaw = dayjs.utc().subtract(amountToSubtract, period)
-      const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
-      const twoWeeks = oneWRaw
-        .subtract(amountToSubtract, period)
-        .format('YYYY-MM-DD HH:mm:ss')
-
-      const query1 = `SELECT unique, count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {oneWeek:String} AND {now:String} GROUP BY unique`
-      const query2 = `SELECT unique, count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {twoWeeks:String} AND {oneWeek:String} GROUP BY unique`
-
-      const paramsData = {
-        params: {
-          pid,
-          oneWeek,
-          twoWeeks,
-          now,
-        },
-      }
-
-      try {
-        const q1res = await clickhouse.query(query1, paramsData).toPromise()
-        const q2res = await clickhouse.query(query2, paramsData).toPromise()
-
-        const thisWeekUnique =
-          _find(q1res, ({ unique }) => unique)?.['count()'] || 0
-        const thisWeekPV =
-          (_find(q1res, ({ unique }) => !unique)?.['count()'] || 0) +
-          thisWeekUnique
-        const lastWeekUnique =
-          _find(q2res, ({ unique }) => unique)?.['count()'] || 0
-        const lastWeekPV =
-          (_find(q2res, ({ unique }) => !unique)?.['count()'] || 0) +
-          lastWeekUnique
-
-        result[pid] = {
-          thisWeek: thisWeekPV,
-          lastWeek: lastWeekPV,
-          thisWeekUnique,
-          lastWeekUnique,
-          percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
-          percChangeUnique: calculateRelativePercentage(
-            lastWeekUnique,
-            thisWeekUnique,
-          ),
-        }
-      } catch {
-        throw new InternalServerErrorException(
-          "Can't process the provided PID. Please, try again later.",
-        )
-      }
-    })
-
-    await Promise.all(promises)
-
-    return result
+  ) {
+    return this.getSummaryStats(pids, period, 'analytics', amountToSubtract)
   }
 
   async getCaptchaSummary(
     pids: string[],
     period: 'w' | 'M' = 'w',
-  ): Promise<object> {
-    const result = {}
+  ) {
+    return this.getSummaryStats(pids, period, 'captcha')
+  }
 
-    const promises = _map(pids, async pid => {
+  async getSummaryStats(
+    pids: string[],
+    period: 'w' | 'M' = 'w',
+    tableName: 'analytics' | 'captcha',
+    amountToSubtract = 1
+  ) {
+    const result = {}
+  
+    const promises = pids.map(async (pid) => {
       if (!isValidPID(pid)) {
         throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
+          `The provided Project ID (${pid}) is incorrect`
         )
       }
 
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      const oneWRaw = dayjs.utc().subtract(1, period)
-      const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
-      const twoWeeks = oneWRaw.subtract(1, period).format('YYYY-MM-DD HH:mm:ss')
+      const periodRaw = dayjs.utc().subtract(amountToSubtract, period)
+      const periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+      const periodSubtracted = periodRaw
+        .subtract(amountToSubtract, period)
+        .format('YYYY-MM-DD HH:mm:ss')
 
-      const query1 = `SELECT count() FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {oneWeek:String} AND {now:String}`
-      const query2 = `SELECT count() FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {twoWeeks:String} AND {oneWeek:String}`
+      const queryThisWeek = `SELECT ${
+        tableName === 'analytics' ? 'unique,' : ''
+      } count() FROM ${tableName} WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}${
+        tableName === 'analytics' ? ' GROUP BY unique' : ''
+      }`
+      const queryLastWeek = `SELECT ${
+        tableName === 'analytics' ? 'unique,' : ''
+      } count() FROM ${tableName} WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}${
+        tableName === 'analytics' ? ' GROUP BY unique' : ''
+      }`
 
       const paramsData = {
         params: {
           pid,
-          oneWeek,
-          twoWeeks,
+          periodFormatted,
+          periodSubtracted,
           now,
         },
       }
 
       try {
-        const q1res = await clickhouse.query(query1, paramsData).toPromise()
-        const q2res = await clickhouse.query(query2, paramsData).toPromise()
-
-        const thisWeek = q1res?.['count()'] || 0
-        const lastWeek = q2res?.['count()'] || 0
-
-        result[pid] = {
-          thisWeek,
-          lastWeek,
-          percChange: calculateRelativePercentage(lastWeek, thisWeek),
+        const thisWeekResult = await clickhouse.query(queryThisWeek, paramsData).toPromise()
+        const lastWeekResult = await clickhouse.query(queryLastWeek, paramsData).toPromise()
+  
+        if (tableName === 'analytics') {
+          const thisWeekUnique =
+            _find(thisWeekResult, ({ unique }) => unique)?.['count()'] || 0
+          const thisWeekPV =
+            (_find(thisWeekResult, ({ unique }) => !unique)?.['count()'] || 0) + thisWeekUnique
+          const lastWeekUnique =
+            _find(lastWeekResult, ({ unique }) => unique)?.['count()'] || 0
+          const lastWeekPV =
+            (_find(lastWeekResult, ({ unique }) => !unique)?.['count()'] || 0) + lastWeekUnique
+  
+          result[pid] = {
+            thisWeek: thisWeekPV,
+            lastWeek: lastWeekPV,
+            thisWeekUnique,
+            lastWeekUnique,
+            percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
+            percChangeUnique: calculateRelativePercentage(
+              lastWeekUnique,
+              thisWeekUnique
+            ),
+          }
+        } else {
+          const thisWeek = thisWeekResult?.['count()'] || 0
+          const lastWeek = lastWeekResult?.['count()'] || 0
+  
+          result[pid] = {
+            thisWeek,
+            lastWeek,
+            percChange: calculateRelativePercentage(lastWeek, thisWeek),
+          }
         }
       } catch {
         throw new InternalServerErrorException(
-          "Can't process the provided PID. Please, try again later.",
+          "Can't process the provided PID. Please, try again later."
         )
       }
     })
-
+  
     await Promise.all(promises)
-
+  
     return result
   }
 
