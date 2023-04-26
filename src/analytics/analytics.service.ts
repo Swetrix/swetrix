@@ -122,7 +122,7 @@ const timeBucketToDays = [
 // eslint-disable-next-line no-useless-escape
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
-export const isValidTimezone = (timezone: string): boolean => {
+const isValidTimezone = (timezone: string): boolean => {
   if (_isEmpty(timezone)) {
     return false
   }
@@ -143,7 +143,7 @@ export const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
   return dayjs(date, format).format(format) === date
 }
 
-export const checkIfTBAllowed = (
+const checkIfTBAllowed = (
   timeBucket: TimeBucketType,
   from: string,
   to: string,

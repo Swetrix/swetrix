@@ -1,7 +1,6 @@
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
-import * as _last from 'lodash/last'
 import * as _pick from 'lodash/pick'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
@@ -22,7 +21,6 @@ import {
   BadRequestException,
   InternalServerErrorException,
   UnprocessableEntityException,
-  PreconditionFailedException,
   Ip,
   ForbiddenException,
   Response,
@@ -36,9 +34,6 @@ import { Auth, Public } from 'src/auth/decorators'
 import {
   AnalyticsService,
   getSessionKey,
-  isValidTimezone,
-  isValidDate,
-  checkIfTBAllowed,
   getHeartbeatKey,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
