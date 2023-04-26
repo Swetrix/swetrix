@@ -28,7 +28,6 @@ import {
   Response,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-// @ts-ignore
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
@@ -302,7 +301,6 @@ export class AnalyticsController {
     } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     let customEVFilterApplied = false
 
-    // @ts-ignore
     if (filtersParams?.ev && !isCaptcha) {
       customEVFilterApplied = true
       queryCustoms = `SELECT ev, count() FROM customEV WHERE ${
