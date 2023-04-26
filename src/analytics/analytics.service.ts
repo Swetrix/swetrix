@@ -273,8 +273,7 @@ export class AnalyticsService {
     this.validatePID(pid)
 
     if (type === 'custom') {
-      // @ts-ignore
-      const { ev } = logDTO
+      const { ev } = <EventsDTO>logDTO
 
       if (_isEmpty(ev)) {
         throw new BadRequestException('Empty custom events are not allowed')
@@ -288,7 +287,6 @@ export class AnalyticsService {
     }
 
     // 'tz' does not need validation as it's based on getCountryForTimezone detection
-    // @ts-ignore
     const { lc } = logDTO
 
     // validate locale ('lc' param)
@@ -301,10 +299,8 @@ export class AnalyticsService {
           lcParted[1] = _toUpper(lcParted[1])
         }
 
-        // @ts-ignore
         logDTO.lc = _join(lcParted, '-')
       } else {
-        // @ts-ignore
         logDTO.lc = 'NULL'
       }
     }
@@ -1188,10 +1184,9 @@ export class AnalyticsService {
   async processCustomEV(query: string, params: object): Promise<object> {
     const result = {}
 
-    // @ts-ignore
-    const rawCustoms: Array<CustomsCHResponse> = await clickhouse
+    const rawCustoms = <Array<CustomsCHResponse>>(await clickhouse
       .query(query, params)
-      .toPromise()
+      .toPromise())
     const size = _size(rawCustoms)
 
     for (let i = 0; i < size; ++i) {
