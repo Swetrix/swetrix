@@ -260,7 +260,7 @@ export class AnalyticsController {
     private readonly taskManagerService: TaskManagerService,
   ) {}
 
-  @Get('/')
+  @Get()
   @Auth([], true, true)
   async getData(
     @Query() data: AnalyticsGET_DTO,
@@ -376,7 +376,7 @@ export class AnalyticsController {
     }
   }
 
-  @Get('/performance')
+  @Get('performance')
   @Auth([], true, true)
   async getPerfData(
     @Query() data: AnalyticsGET_DTO,
@@ -445,7 +445,7 @@ export class AnalyticsController {
     }
   }
 
-  @Get('/captcha')
+  @Get('captcha')
   @Auth([], true, true)
   async getCaptchaData(
     @Query() data: AnalyticsGET_DTO,
@@ -454,7 +454,7 @@ export class AnalyticsController {
     return this.getData(data, uid, true)
   }
 
-  @Get('/user-flow')
+  @Get('user-flow')
   @Auth([], true, true)
   async getUserFlow(
     @Query() data: GetUserFlowDTO,
@@ -494,7 +494,7 @@ export class AnalyticsController {
     return this.analyticsService.getUserFlow(params)
   }
 
-  @Get('/birdseye')
+  @Get('birdseye')
   @Auth([], true, true)
   // returns overall short statistics per project
   async getOverallStats(
@@ -514,7 +514,7 @@ export class AnalyticsController {
     return this.analyticsService.getSummary(pidsArray, 'w')
   }
 
-  @Get('/captcha/birdseye')
+  @Get('captcha/birdseye')
   @Auth([], true, true)
   // returns overall short statistics per CAPTCHA project
   async getCaptchaOverallStats(
@@ -536,7 +536,7 @@ export class AnalyticsController {
 
   @UseGuards(SelfhostedGuard)
   @Public()
-  @Get('/generalStats')
+  @Get('generalStats')
   async getGeneralStats(): Promise<object> {
     const exists = await redis.exists(
       REDIS_USERS_COUNT_KEY,
@@ -564,7 +564,7 @@ export class AnalyticsController {
     return this.taskManagerService.getGeneralStats()
   }
 
-  @Get('/hb')
+  @Get('hb')
   async getHeartBeatStats(
     @Query() data,
     @CurrentUserId() uid: string,
@@ -597,7 +597,7 @@ export class AnalyticsController {
     return result
   }
 
-  @Get('/liveVisitors')
+  @Get('liveVisitors')
   @Auth([], true, true)
   async getLiveVisitors(
     @Query() data,
@@ -628,7 +628,7 @@ export class AnalyticsController {
   }
 
   // Log custom event
-  @Post('/custom')
+  @Post('custom')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   @Public()
@@ -698,7 +698,7 @@ export class AnalyticsController {
     }
   }
 
-  @Post('/hb')
+  @Post('hb')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   @Auth([], true, true)
@@ -728,7 +728,7 @@ export class AnalyticsController {
   }
 
   // Log pageview event
-  @Post('/')
+  @Post()
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   @Public()
@@ -835,7 +835,7 @@ export class AnalyticsController {
 
   // Fallback for logging pageviews for users with JavaScript disabled
   // Returns 1x1 transparent gif
-  @Get('/noscript')
+  @Get('noscript')
   @Public()
   async noscript(
     @Query() data,
