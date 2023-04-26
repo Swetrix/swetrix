@@ -58,6 +58,7 @@ import {
   IUserFlowNode,
   IUserFlowLink,
   IUserFlow,
+  IGenerateXAxis,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -707,12 +708,12 @@ export class AnalyticsService {
   }
 
   async generateParams(
-    parsedFilters,
-    subQuery,
-    customEVFilterApplied,
-    paramsData,
-    isCaptcha,
-    isPerformance,
+    parsedFilters: Array<{ [key: string]: string }>,
+    subQuery: string,
+    customEVFilterApplied: boolean,
+    paramsData: any,
+    isCaptcha: boolean,
+    isPerformance: boolean,
   ) {
     const params = {}
 
@@ -771,7 +772,7 @@ export class AnalyticsService {
     return params
   }
 
-  async calculateAverageSessionDuration(subQuery, paramsData): Promise<number> {
+  async calculateAverageSessionDuration(subQuery: string, paramsData: any): Promise<number> {
     const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL AND unique='1'`
     const avgSdurObject = await clickhouse
       .query(avgSdurQuery, paramsData)
@@ -780,7 +781,7 @@ export class AnalyticsService {
     return _round(avgSdurObject[0]['avg(sdur)'])
   }
 
-  generateXAxis(timeBucket, from, to) {
+  generateXAxis(timeBucket: TimeBucketType, from: string, to: string): IGenerateXAxis {
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
@@ -819,7 +820,7 @@ export class AnalyticsService {
     }
   }
 
-  extractChartData(result, x) {
+  extractChartData(result, x: string[]) {
     let visits = []
     let uniques = []
     let sdur = []
@@ -873,7 +874,7 @@ export class AnalyticsService {
     }
   }
 
-  updateXAxisTimezone(x, timezone) {
+  updateXAxisTimezone(x: string[], timezone: string) {
     if (timezone === DEFAULT_TIMEZONE || !isValidTimezone(timezone)) {
       return x
     }
@@ -883,7 +884,7 @@ export class AnalyticsService {
     )
   }
 
-  generateAnalyticsAggregationQuery(x, xM, filtersQuery): string {
+  generateAnalyticsAggregationQuery(x: string[], xM: string[], filtersQuery: string): string {
     let query = ''
 
     for (let i = 0; i < _size(x); ++i) {
@@ -900,10 +901,10 @@ export class AnalyticsService {
   }
 
   generateCustomEventsAggregationQuery(
-    x,
-    xM,
-    filtersQuery,
-    paramsData,
+    x: string[],
+    xM: string[],
+    filtersQuery: string,
+    paramsData: any,
   ): string {
     let query = ''
 
@@ -1081,7 +1082,7 @@ export class AnalyticsService {
     })
   }
 
-  extractPerformanceChartData(result, x) {
+  extractPerformanceChartData(result: any, x: string[]) {
     const dns = []
     const tls = []
     const conn = []
