@@ -252,12 +252,15 @@ export class AnalyticsService {
   }
 
   validatePID(pid: string): void {
-    if (_isEmpty(pid))
+    if (_isEmpty(pid)) {
       throw new BadRequestException('The Project ID (pid) has to be provided')
-    if (!isValidPID(pid))
+    }
+
+    if (!isValidPID(pid)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
       )
+    }
   }
 
   async validate(
@@ -266,8 +269,9 @@ export class AnalyticsService {
     type: 'custom' | 'log' = 'log',
     ip?: string,
   ): Promise<string | null> {
-    if (_isEmpty(logDTO))
+    if (_isEmpty(logDTO)) {
       throw new BadRequestException('The request cannot be empty')
+    }
 
     const { pid } = logDTO
     this.validatePID(pid)
@@ -773,7 +777,10 @@ export class AnalyticsService {
     return params
   }
 
-  async calculateAverageSessionDuration(subQuery: string, paramsData: any): Promise<number> {
+  async calculateAverageSessionDuration(
+    subQuery: string,
+    paramsData: any,
+  ): Promise<number> {
     const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL AND unique='1'`
     const avgSdurObject = await clickhouse
       .query(avgSdurQuery, paramsData)
@@ -782,7 +789,11 @@ export class AnalyticsService {
     return _round(avgSdurObject[0]['avg(sdur)'])
   }
 
-  generateXAxis(timeBucket: TimeBucketType, from: string, to: string): IGenerateXAxis {
+  generateXAxis(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+  ): IGenerateXAxis {
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
@@ -885,7 +896,11 @@ export class AnalyticsService {
     )
   }
 
-  generateAnalyticsAggregationQuery(x: string[], xM: string[], filtersQuery: string): string {
+  generateAnalyticsAggregationQuery(
+    x: string[],
+    xM: string[],
+    filtersQuery: string,
+  ): string {
     let query = ''
 
     for (let i = 0; i < _size(x); ++i) {
@@ -1188,9 +1203,9 @@ export class AnalyticsService {
   async processCustomEV(query: string, params: object): Promise<object> {
     const result = {}
 
-    const rawCustoms = <Array<CustomsCHResponse>>(await clickhouse
-      .query(query, params)
-      .toPromise())
+    const rawCustoms = <Array<CustomsCHResponse>>(
+      await clickhouse.query(query, params).toPromise()
+    )
     const size = _size(rawCustoms)
 
     for (let i = 0; i < size; ++i) {
