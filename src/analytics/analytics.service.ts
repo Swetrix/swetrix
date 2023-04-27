@@ -446,7 +446,7 @@ export class AnalyticsService {
   removeCyclicDependencies(links: IUserFlowLink[]): IUserFlowLink[] {
     const visited = new Set<string>()
 
-    return links.filter((link) => {
+    return links.filter(link => {
       const key = `${link.source}_${link.target}`
       if (visited.has(key)) {
         return false
@@ -484,7 +484,9 @@ export class AnalyticsService {
         prev
     `
 
-    const results = <IUserFlowLink[]>(await clickhouse.query(query, { params }).toPromise())
+    const results = <IUserFlowLink[]>(
+      await clickhouse.query(query, { params }).toPromise()
+    )
 
     if (_isEmpty(results)) {
       const empty = { nodes: [], links: [] }
