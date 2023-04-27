@@ -530,7 +530,7 @@ const Dashboard = ({
                     {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
                       <NoProjects t={t} />
                     ) : (
-                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                      <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
                         {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
                           name, id, active, overall, public: isPublic,
                         }) => (
@@ -564,7 +564,7 @@ const Dashboard = ({
                     {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
                       <NoProjects t={t} />
                     ) : (
-                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                      <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
                         {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
                           project, confirmed,
                         }) => {
