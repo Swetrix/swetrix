@@ -303,10 +303,6 @@ const AddProject = ({ t, onClick }: INoProjects): JSX.Element => (
   </li>
 )
 
-AddProject.defaultProps = {
-  onClick: () => { },
-}
-
 interface DashboardProps {
   projects: IProject[]
   isLoading: boolean
