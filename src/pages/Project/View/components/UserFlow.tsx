@@ -37,7 +37,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   },
 })
 
-const SankeyChart = ({
+const UserFlow = ({
   disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache, userFlowDescendingCache, isReversed, setUserFlowAscending, setUserFlowDescending, generateError,
 }: {
   disableLegend?: boolean
@@ -165,15 +165,15 @@ const SankeyChart = ({
   )
 }
 
-SankeyChart.defaultProps = {
+UserFlow.defaultProps = {
   disableLegend: false,
   isReversed: false,
 }
 
-const mergeProps = (stateProps: ReturnType<typeof mapStateToProps>, dispatchProps: ReturnType<typeof mapDispatchToProps>, ownProps: ReturnType<typeof SankeyChart>) => ({
+const mergeProps = (stateProps: ReturnType<typeof mapStateToProps>, dispatchProps: ReturnType<typeof mapDispatchToProps>, ownProps: ReturnType<typeof UserFlow>) => ({
   ...ownProps,
   ...stateProps,
   ...dispatchProps,
 })
 
-export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(SankeyChart)
+export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(UserFlow)

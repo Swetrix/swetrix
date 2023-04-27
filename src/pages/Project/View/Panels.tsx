@@ -37,7 +37,7 @@ import Button from 'ui/Button'
 import Chart from 'ui/Chart'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
-import SankeyChart from './components/SankeyChart'
+import UserFlow from './components/UserFlow'
 import { iconClassName } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 5
@@ -774,7 +774,7 @@ const Panel = ({
         customTabs={customTabs}
       >
         {/* @ts-ignore */}
-        <SankeyChart
+        <UserFlow
           disableLegend
           pid={pid || ''}
           period={period || ''}
@@ -799,7 +799,7 @@ const Panel = ({
           message={(
             <div className='h-96 dark:text-gray-800'>
               {/* @ts-ignore */}
-              <SankeyChart
+              <UserFlow
                 pid={pid || ''}
                 period={period || ''}
                 timeBucket={timeBucket || ''}
