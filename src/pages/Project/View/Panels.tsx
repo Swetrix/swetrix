@@ -781,7 +781,7 @@ const Panel = ({
             </button>
           )}
           message={(
-            <div className='h-96'>
+            <div className='h-96 dark:text-gray-800'>
               <SankeyChart />
             </div>
           )}

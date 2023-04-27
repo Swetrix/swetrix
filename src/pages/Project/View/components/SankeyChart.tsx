@@ -82,7 +82,7 @@ const SankeyChart = ({ data, disableLegend }: {
       top: 0, right: disableLegend ? 0 : 120, bottom: 0, left: 20,
     }}
     align='justify'
-    colors={{ scheme: 'category10' }}
+    colors={{ scheme: 'nivo' }}
     nodeOpacity={1}
     nodeHoverOthersOpacity={0.35}
     nodeThickness={18}
