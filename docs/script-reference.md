@@ -77,6 +77,7 @@ swetrix.trackViews({
   ignore: [],
   noHeartbeat: false,
   heartbeatOnBackground: false,
+  noUserFlow: false,
 })
 ```
 
@@ -85,7 +86,8 @@ swetrix.trackViews({
 | unique | If true, only unique events will be saved. This param is useful when tracking single-page landing websites. | `false` |
 | ignore | A list of regular expressions or string pathes to ignore.<br />For example: `['/dashboard', /^/projects/i]` setting will force script to ignore all pathes which start with `/projects` or equal to `/dashboard`.<br />Please pay attention, that the pathes always start with `/`. | `[]` |
 | noHeartbeat | Do not send Heartbeat requests to the server.<br />By setting this to `true` you will not be able to see the realtime amount of users on your website. | `false` |
-| heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to true means that users who opened your website in inactive browser tab or window will not be counted into users realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube. | `false` |
+| heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means that users who opened your website in inactive browser tab or window will not be counted into users realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube. | `false` |
+| noUserFlow | Send previous page user visited to the server, only the pages on your website will be sent. Setting this to `true` means that no user flow analytics will be sent and as a consequence it won't be available to you later in Dashboard. | `false` |
 
 The `trackViews` function returns a `Promise` with an object with some methods allowing you to alter the behaviour of page tracking:
 ```javascript
