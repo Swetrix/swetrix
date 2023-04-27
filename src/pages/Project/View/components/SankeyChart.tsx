@@ -72,13 +72,14 @@ const dataTest = {
   ],
 }
 
-const SankeyChart = ({ data }: {
+const SankeyChart = ({ data, disableLegend }: {
   data?: any
+  disableLegend?: boolean
 }) => (
   <ResponsiveSankey
     data={dataTest}
     margin={{
-      top: 40, right: 160, bottom: 40, left: 50,
+      top: 20, right: disableLegend ? 0 : 120, bottom: 20, left: 20,
     }}
     align='justify'
     colors={{ scheme: 'category10' }}
@@ -113,11 +114,11 @@ const SankeyChart = ({ data }: {
         ],
       ],
     }}
-    legends={[
+    legends={!disableLegend ? [
       {
         anchor: 'bottom-right',
         direction: 'column',
-        translateX: 130,
+        translateX: 100,
         itemWidth: 100,
         itemHeight: 14,
         itemDirection: 'right-to-left',
@@ -133,7 +134,7 @@ const SankeyChart = ({ data }: {
           },
         ],
       },
-    ]}
+    ] : []}
   />
 )
 

@@ -71,7 +71,7 @@ const PanelContainer = ({
   customTabs?: any,
 }): JSX.Element => (
   <div
-    className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
+    className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
       'pb-12': !noSwitch,
       'pb-5': noSwitch,
     })}
@@ -119,11 +119,10 @@ const PanelContainer = ({
         {type === 'pg' && (
           <>
             <ChartPieIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                'text-blue-500': activeFragment === 1,
-                'text-gray-900 dark:text-gray-50': activeFragment === 0,
-              })}
-              onClick={() => setActiveFragment(1)}
+              className='ml-2 cursor-pointer'
+              onClick={() => {
+                setActiveFragment(1)
+              }}
             />
             <ArrowsPointingOutIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
@@ -757,6 +756,7 @@ const Panel = ({
   }
 
   if (id === 'pg' && activeFragment === 1) {
+    // setModal(true)
     return (
       <PanelContainer
         name={name}
@@ -765,16 +765,17 @@ const Panel = ({
         activeFragment={activeFragment}
         setActiveFragment={setActiveFragment}
         openModal={() => setModal(true)}
+        customTabs={customTabs}
       >
-        {!modal && (
-          <SankeyChart />
-        )}
+        <SankeyChart disableLegend />
         <Modal
           onClose={() => setModal(false)}
           closeText={t('common.close')}
           isOpened={modal}
           message={(
-            <SankeyChart />
+            <div className='h-72'>
+              <SankeyChart />
+            </div>
           )}
           size='large'
         />
