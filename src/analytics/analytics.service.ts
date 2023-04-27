@@ -372,7 +372,7 @@ export class AnalyticsService {
         )
       }
 
-      if (timeBucket) {
+      if (!_isEmpty(timeBucket)) {
         checkIfTBAllowed(timeBucket, from, to)
       }
 
@@ -427,7 +427,7 @@ export class AnalyticsService {
           .format('YYYY-MM-DD')
         groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
 
-        if (timeBucket) {
+        if (!_isEmpty(timeBucket)) {
           checkIfTBAllowed(timeBucket, from, to)
         }
       }
