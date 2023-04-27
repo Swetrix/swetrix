@@ -4,6 +4,9 @@ import { connect } from 'react-redux'
 import { StateType, AppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
 import { IUserFlow } from 'redux/models/IUserFlow'
+import _isEmpty from 'lodash/isEmpty'
+import { getUserFlowCacheKey } from 'redux/constants'
+import { getUserFlow } from 'api'
 
 const dataTest = {
   nodes: [
@@ -76,9 +79,14 @@ const dataTest = {
   ],
 }
 
+const defaultData = {
+  nodes: [],
+  links: [],
+}
+
 const mapStateToProps = (state: StateType) => ({
-  userFlowAscending: state.ui.cache.userFlowAscending,
-  userFlowDescending: state.ui.cache.userFlowDescending,
+  userFlowAscendingCache: state.ui.cache.userFlowAscending,
+  userFlowDescendingCache: state.ui.cache.userFlowDescending,
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
@@ -99,82 +107,95 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
 })
 
 const SankeyChart = ({
-  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscending, userFlowDescending,
+  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache, userFlowDescendingCache, isReversed,
 }: {
   disableLegend?: boolean
   pid: string
-  userFlowAscending: IUserFlow
-  userFlowDescending: IUserFlow
+  userFlowAscendingCache: {
+    [key: string]: IUserFlow
+  }
+  userFlowDescendingCache: {
+    [key: string]: IUserFlow
+  }
   period: string
   timezone: string
   timeBucket: string
   from: string
   to: string
-}) => (
-  <ResponsiveSankey
-    data={dataTest}
-    margin={{
-      top: 0, right: disableLegend ? 0 : 120, bottom: 0, left: 20,
-    }}
-    align='justify'
-    colors={{ scheme: 'nivo' }}
-    nodeOpacity={1}
-    nodeHoverOthersOpacity={0.35}
-    nodeThickness={18}
-    nodeSpacing={24}
-    nodeBorderWidth={0}
-    nodeBorderColor={{
-      from: 'color',
-      modifiers: [
-        [
-          'darker',
-          0.8,
+  isReversed?: boolean
+}) => {
+  const userFlowAscending = userFlowAscendingCache[getUserFlowCacheKey(pid, period)]
+  const userFlowDescending = userFlowDescendingCache[getUserFlowCacheKey(pid, period)]
+
+  return (
+    <ResponsiveSankey
+      data={isReversed
+        ? !_isEmpty(userFlowDescending) ? userFlowDescending : defaultData
+        : !_isEmpty(userFlowAscending) ? userFlowAscending : defaultData}
+      margin={{
+        top: 0, right: disableLegend ? 0 : 120, bottom: 0, left: 20,
+      }}
+      align='justify'
+      colors={{ scheme: 'nivo' }}
+      nodeOpacity={1}
+      nodeHoverOthersOpacity={0.35}
+      nodeThickness={18}
+      nodeSpacing={24}
+      nodeBorderWidth={0}
+      nodeBorderColor={{
+        from: 'color',
+        modifiers: [
+          [
+            'darker',
+            0.8,
+          ],
         ],
-      ],
-    }}
-    nodeBorderRadius={3}
-    linkOpacity={0.5}
-    linkHoverOthersOpacity={0.1}
-    linkContract={3}
-    enableLinkGradient
-    labelPosition='outside'
-    labelOrientation='vertical'
-    labelPadding={16}
-    labelTextColor={{
-      from: 'color',
-      modifiers: [
-        [
-          'darker',
-          1,
+      }}
+      nodeBorderRadius={3}
+      linkOpacity={0.5}
+      linkHoverOthersOpacity={0.1}
+      linkContract={3}
+      enableLinkGradient
+      labelPosition='outside'
+      labelOrientation='vertical'
+      labelPadding={16}
+      labelTextColor={{
+        from: 'color',
+        modifiers: [
+          [
+            'darker',
+            1,
+          ],
         ],
-      ],
-    }}
-    legends={!disableLegend ? [
-      {
-        anchor: 'bottom-right',
-        direction: 'column',
-        translateX: 100,
-        itemWidth: 100,
-        itemHeight: 14,
-        itemDirection: 'right-to-left',
-        itemsSpacing: 2,
-        itemTextColor: '#999',
-        symbolSize: 14,
-        effects: [
-          {
-            on: 'hover',
-            style: {
-              itemTextColor: '#000',
+      }}
+      legends={!disableLegend ? [
+        {
+          anchor: 'bottom-right',
+          direction: 'column',
+          translateX: 100,
+          itemWidth: 100,
+          itemHeight: 14,
+          itemDirection: 'right-to-left',
+          itemsSpacing: 2,
+          itemTextColor: '#999',
+          symbolSize: 14,
+          effects: [
+            {
+              on: 'hover',
+              style: {
+                itemTextColor: '#000',
+              },
             },
-          },
-        ],
-      },
-    ] : []}
-  />
-)
+          ],
+        },
+      ] : []}
+    />
+  )
+}
 
 SankeyChart.defaultProps = {
   disableLegend: false,
+  isReversed: false,
 }
 
 const mergeProps = (stateProps: ReturnType<typeof mapStateToProps>, dispatchProps: ReturnType<typeof mapDispatchToProps>, ownProps: ReturnType<typeof SankeyChart>) => ({

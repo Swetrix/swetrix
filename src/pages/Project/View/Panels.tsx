@@ -698,6 +698,7 @@ const Panel = ({
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_PANEL), [keys])
   const [activeFragment, setActiveFragment] = useState(0)
   const [modal, setModal] = useState(false)
+  const [isReversedUserFlow, setIsReversedUserFlow] = useState<boolean>(false)
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_PANEL)
 
@@ -788,6 +789,7 @@ const Panel = ({
           customButtons={(
             <button
               type='button'
+              onClick={() => setIsReversedUserFlow(!isReversedUserFlow)}
               className='mt-3 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
             >
               reverse
@@ -802,6 +804,7 @@ const Panel = ({
                 from={from}
                 to={to}
                 timezone={timezone}
+                isReversed={isReversedUserFlow}
               />
             </div>
           )}
