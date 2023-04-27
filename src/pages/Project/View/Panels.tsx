@@ -669,7 +669,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs,
+  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs, pid, period, timeBucket, from, to, timezone,
 }: {
   name: string
   data: any
@@ -683,6 +683,12 @@ const Panel = ({
   hideFilters: boolean
   onFilter: any
   customTabs?: any
+  pid?: string | null
+  period?: string | null
+  timeBucket?: string | null
+  from?: string | null
+  to?: string | null
+  timezone?: string | null
 }): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -766,7 +772,15 @@ const Panel = ({
         openModal={() => setModal(true)}
         customTabs={customTabs}
       >
-        <SankeyChart disableLegend />
+        <SankeyChart
+          disableLegend
+          pid={pid}
+          period={period}
+          timeBucket={timeBucket}
+          from={from}
+          to={to}
+          timezone={timezone}
+        />
         <Modal
           onClose={() => setModal(false)}
           closeText={t('common.close')}
@@ -781,7 +795,14 @@ const Panel = ({
           )}
           message={(
             <div className='h-96 dark:text-gray-800'>
-              <SankeyChart />
+              <SankeyChart
+                pid={pid}
+                period={period}
+                timeBucket={timeBucket}
+                from={from}
+                to={to}
+                timezone={timezone}
+              />
             </div>
           )}
           size='large'
@@ -1005,6 +1026,12 @@ Panel.defaultProps = {
   hideFilters: false,
   icon: null,
   customTabs: [],
+  to: null,
+  from: null,
+  timezone: null,
+  timeBucket: null,
+  period: null,
+  pid: null,
 }
 
 const PanelMemo = memo(Panel)

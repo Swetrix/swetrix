@@ -9,4 +9,4 @@ interface UserFlow {
   }[]
 }
 
-export type IUserFLow = UserFlow | {}
+export type IUserFlow = UserFlow | {}

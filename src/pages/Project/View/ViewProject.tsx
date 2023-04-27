@@ -1881,6 +1881,27 @@ const ViewProject = ({
                       )
                     }
 
+                    if (type === 'pg') {
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsData.data[type]}
+                          customTabs={customTabs}
+                          period={activePeriod?.period}
+                          pid={id}
+                          timeBucket={timeBucket}
+                          from={dateRange ? getFormatDate(dateRange[0]) : null}
+                          to={dateRange ? getFormatDate(dateRange[1]) : null}
+                          timezone={timezone}
+                        />
+                      )
+                    }
+
                     return (
                       <Panel
                         t={t}

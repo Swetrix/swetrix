@@ -1,7 +1,9 @@
 import React from 'react'
 import { ResponsiveSankey } from '@nivo/sankey'
 import { connect } from 'react-redux'
-import { StateType } from 'redux/store'
+import { StateType, AppDispatch } from 'redux/store'
+import UIActions from 'redux/reducers/ui'
+import { IUserFlow } from 'redux/models/IUserFlow'
 
 const dataTest = {
   nodes: [
@@ -74,9 +76,24 @@ const dataTest = {
   ],
 }
 
-const SankeyChart = ({ data, disableLegend }: {
+const mapStateToProps = (state: StateType) => ({
+  userFlowAscending: state.ui.cache.userFlowAscending,
+  userFlowDescending: state.ui.cache.userFlowDescending,
+})
+
+const SankeyChart = ({
+  data, disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscending, userFlowDescending,
+}: {
   data?: any
   disableLegend?: boolean
+  pid: string
+  userFlowAscending: IUserFlow[]
+  userFlowDescending: IUserFlow[]
+  period: string
+  timezone: string
+  timeBucket: string
+  from: string
+  to: string
 }) => (
   <ResponsiveSankey
     data={dataTest}
@@ -143,7 +160,6 @@ const SankeyChart = ({ data, disableLegend }: {
 SankeyChart.defaultProps = {
   data: {},
   disableLegend: false,
-  height: null,
 }
 
 export default SankeyChart
