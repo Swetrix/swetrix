@@ -34,9 +34,14 @@ export interface IUserFlowLink {
   value: number
 }
 
-export interface IUserFlow {
+export interface IBuildUserFlow {
   nodes: IUserFlowNode[]
   links: IUserFlowLink[]
+}
+
+export interface IUserFlow {
+  ascending: IBuildUserFlow
+  descending: IBuildUserFlow
 }
 
 export interface IGenerateXAxis {

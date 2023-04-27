@@ -58,6 +58,7 @@ import {
   IUserFlowNode,
   IUserFlowLink,
   IUserFlow,
+  IBuildUserFlow,
   IGenerateXAxis,
   IExtractChartData,
 } from './interfaces'
@@ -442,6 +443,31 @@ export class AnalyticsService {
     }
   }
 
+  removeCyclicDependencies(links: IUserFlowLink[]): IUserFlowLink[] {
+    const visited = new Set<string>()
+
+    return links.filter((link) => {
+      const key = `${link.source}_${link.target}`
+      if (visited.has(key)) {
+        return false
+      }
+      visited.add(key)
+      return true
+    })
+  }
+
+  buildUserFlow(links: IUserFlowLink[]): IBuildUserFlow {
+    const nodes: IUserFlowNode[] = Array.from(
+      new Set(
+        links
+          .map((link: IUserFlowLink) => link.source)
+          .concat(links.map((link: IUserFlowLink) => link.target)),
+      ),
+    ).map((node: any) => ({ id: node }))
+
+    return { nodes, links }
+  }
+
   async getUserFlow(params: unknown): Promise<IUserFlow> {
     const query = `
       SELECT
@@ -458,26 +484,36 @@ export class AnalyticsService {
         prev
     `
 
-    const results = await clickhouse.query(query, { params }).toPromise()
+    const results = <IUserFlowLink[]>(await clickhouse.query(query, { params }).toPromise())
 
     if (_isEmpty(results)) {
-      return { nodes: [], links: [] }
+      const empty = { nodes: [], links: [] }
+      return {
+        ascending: empty,
+        descending: empty,
+      }
     }
 
-    const nodes: IUserFlowNode[] = Array.from(
-      new Set(
-        results
-          .map((row: any) => row.source)
-          .concat(results.map((row: any) => row.target)),
-      ),
-    ).map((node: any) => ({ id: node }))
-    const links: IUserFlowLink[] = results.map((row: any) => ({
-      source: row.source,
-      target: row.target,
-      value: row.value,
-    }))
+    const ascendingLinks: IUserFlowLink[] = []
+    const descendingLinks: IUserFlowLink[] = []
 
-    return { nodes, links }
+    this.removeCyclicDependencies(results).forEach((row: any) => {
+      const link: IUserFlowLink = {
+        source: row.source,
+        target: row.target,
+        value: row.value,
+      }
+      if (link.source < link.target) {
+        ascendingLinks.push(link)
+      } else {
+        descendingLinks.push(link)
+      }
+    })
+
+    return {
+      ascending: this.buildUserFlow(ascendingLinks),
+      descending: this.buildUserFlow(descendingLinks),
+    }
   }
 
   async getSessionHash(
