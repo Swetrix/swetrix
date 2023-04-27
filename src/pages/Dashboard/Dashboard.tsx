@@ -32,7 +32,7 @@ import {
 import routes from 'routes'
 import { nFormatter } from 'utils/generic'
 import {
-  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard,
+  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard, roleAdmin, roleViewer,
 } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
@@ -68,6 +68,7 @@ interface IProjectCard {
   sharedProjectError: (message: string) => void
   captcha?: boolean
   isTransferring?: boolean
+  getRole?: (id: string) => string | null
 }
 
 interface IMiniCard {
@@ -133,9 +134,10 @@ MiniCard.defaultProps = {
 const ProjectCard = ({
   name, active, overall, t, live, isPublic, confirmed, id, deleteProjectFailed,
   sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
-  captcha, isTransferring, type,
+  captcha, isTransferring, type, getRole,
 }: IProjectCard): JSX.Element => {
   const [showInviteModal, setShowInviteModal] = useState(false)
+  const role = useMemo(() => getRole && getRole(id), [getRole, id])
 
   const onAccept = async () => {
     // @ts-ignore
@@ -172,12 +174,14 @@ const ProjectCard = ({
               className='flex items-center gap-2'
               onClick={(e) => e.stopPropagation()}
             >
-              <Link
-                to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
-                aria-label={`${t('project.settings.settings')} ${name}`}
-              >
-                <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
-              </Link>
+              {role !== roleViewer.role && (
+                <Link
+                  to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
+                  aria-label={`${t('project.settings.settings')} ${name}`}
+                >
+                  <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
+                </Link>
+              )}
               <a
                 href={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}
                 aria-label='name (opens in a new tab)'
@@ -257,6 +261,7 @@ ProjectCard.defaultProps = {
   name: '',
   live: 'N/A',
   isTransferring: false,
+  getRole: () => '',
 }
 
 interface INoProjects {
@@ -334,6 +339,7 @@ const Dashboard = ({
   const pageAmountShared: number = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmount: number = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmountCaptcha: number = Math.ceil(captchaTotal / ENTRIES_PER_PAGE_DASHBOARD)
+  const getRole = (pid: string): string | null => (_find([..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === pid)?.role || null)
 
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
@@ -577,6 +583,7 @@ const Dashboard = ({
                                 id={project?.id}
                                 name={project?.name}
                                 shared
+                                getRole={getRole}
                                 active={project?.active}
                                 isPublic={project?.public}
                                 confirmed={confirmed}
@@ -600,6 +607,7 @@ const Dashboard = ({
                               type='analytics'
                               name={project?.name}
                               shared
+                              getRole={getRole}
                               active={project?.active}
                               isPublic={project?.public}
                               overall={project?.overall}
