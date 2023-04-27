@@ -783,6 +783,7 @@ const Panel = ({
           from={from || ''}
           to={to || ''}
           timezone={timezone || ''}
+          t={t}
         />
         <Modal
           onClose={() => setModal(false)}
@@ -808,6 +809,7 @@ const Panel = ({
                 to={to || ''}
                 timezone={timezone || ''}
                 isReversed={isReversedUserFlow}
+                t={t}
               />
             </div>
           )}

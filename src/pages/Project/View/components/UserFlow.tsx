@@ -38,7 +38,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
 })
 
 const UserFlow = ({
-  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache, userFlowDescendingCache, isReversed, setUserFlowAscending, setUserFlowDescending, generateError,
+  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache, userFlowDescendingCache, isReversed, setUserFlowAscending, setUserFlowDescending, generateError, t,
 }: {
   disableLegend?: boolean
   pid: string
@@ -57,6 +57,7 @@ const UserFlow = ({
   setUserFlowAscending: (data: IUserFlow, id: string, pd: string) => void
   setUserFlowDescending: (data: IUserFlow, id: string, pd: string) => void
   generateError: (message: string) => void
+  t: (key: string) => string
 }) => {
   const key = getUserFlowCacheKey(pid, period)
   const userFlowAscending = userFlowAscendingCache[key]
@@ -97,7 +98,11 @@ const UserFlow = ({
   }
 
   if (_isEmpty(userFlowAscending) && _isEmpty(userFlowDescending)) {
-    return null
+    return (
+      <p className='flex items-center justify-center text-md leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+        {t('project.userFlow.noData')}
+      </p>
+    )
   }
 
   return (
