@@ -799,7 +799,7 @@ const Panel = ({
             </button>
           )}
           message={(
-            <div className='h-96 dark:text-gray-800'>
+            <div className='h-[500px] dark:text-gray-800'>
               {/* @ts-ignore */}
               <UserFlow
                 pid={pid || ''}
