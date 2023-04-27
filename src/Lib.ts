@@ -219,6 +219,10 @@ export class Lib {
     // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
     // That method of getting previous page works for SPA websites
     if (this.activePage) {
+      if (this.checkIgnore(this.activePage)) {
+        return null
+      }
+
       return this.activePage
     }
 
@@ -238,6 +242,10 @@ export class Lib {
         const { host: refHost, pathname } = url
 
         if (host !== refHost) {
+          return null
+        }
+
+        if (this.checkIgnore(pathname)) {
           return null
         }
 

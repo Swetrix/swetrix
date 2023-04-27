@@ -187,6 +187,9 @@ var Lib = /** @class */ (function () {
         // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
         // That method of getting previous page works for SPA websites
         if (this.activePage) {
+            if (this.checkIgnore(this.activePage)) {
+                return null;
+            }
             return this.activePage;
         }
         // Checking if URL is supported by the browser (for example, IE11 does not support it)
@@ -201,6 +204,9 @@ var Lib = /** @class */ (function () {
                 var url = new URL(referrer);
                 var refHost = url.host, pathname = url.pathname;
                 if (host !== refHost) {
+                    return null;
+                }
+                if (this.checkIgnore(pathname)) {
                     return null;
                 }
                 return pathname;
