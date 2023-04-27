@@ -119,10 +119,11 @@ const PanelContainer = ({
         {type === 'pg' && (
           <>
             <ChartPieIcon
-              className='ml-2 cursor-pointer'
-              onClick={() => {
-                setActiveFragment(1)
-              }}
+              className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                'text-blue-500': activeFragment === 1,
+                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+              })}
+              onClick={() => setActiveFragment(1)}
             />
             <ArrowsPointingOutIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
