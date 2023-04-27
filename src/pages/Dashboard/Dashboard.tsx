@@ -513,7 +513,7 @@ const Dashboard = ({
                     {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
                       <NoProjects t={t} onClick={onNewProject} />
                     ) : (
-                      <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
+                      <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
                         {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
                           name, id, active, overall, public: isPublic, isTransferring,
                         }) => (
@@ -548,7 +548,7 @@ const Dashboard = ({
                     {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
                       <NoProjects t={t} onClick={onNewProject} />
                     ) : (
-                      <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
+                      <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
                         {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
                           name, id, active, overall, public: isPublic,
                         }) => (
@@ -583,7 +583,7 @@ const Dashboard = ({
                     {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
                       <NoProjects t={t} onClick={onNewProject} />
                     ) : (
-                      <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
+                      <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
                         {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
                           project, confirmed,
                         }) => {
