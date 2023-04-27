@@ -774,6 +774,13 @@ const Panel = ({
           isOpened={modal}
           message={(
             <div className='h-72'>
+              <Button
+                onClick={() => {}}
+                className='relative float-right px-2 py-1 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                secondary
+              >
+                reverse
+              </Button>
               <SankeyChart />
             </div>
           )}
