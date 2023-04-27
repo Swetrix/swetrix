@@ -14,7 +14,7 @@ const formatterLookup = [
 ]
 
 export const nFormatter = (num: any, digits = 1) => {
-  const item = _find(formatterLookup.slice().reverse(), ({ value }) => num >= value)
+  const item = _find(formatterLookup.slice().reverse(), ({ value }) => Math.abs(num) >= value)
 
   return item ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol : '0'
 }
