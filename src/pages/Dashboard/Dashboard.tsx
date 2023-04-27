@@ -271,6 +271,7 @@ ProjectCard.defaultProps = {
 
 interface INoProjects {
   t: (key: string) => string
+  onClick?: () => void
 }
 
 const NoProjects = ({ t }: INoProjects): JSX.Element => (
@@ -285,8 +286,8 @@ const NoProjects = ({ t }: INoProjects): JSX.Element => (
   </button>
 )
 
-const AddProject = ({ t }: INoProjects): JSX.Element => (
-  <li className='flex justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] group border-gray-300 hover:border-gray-400'>
+const AddProject = ({ t, onClick }: INoProjects): JSX.Element => (
+  <li onClick={onClick} className='flex justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] group border-gray-300 hover:border-gray-400'>
     <div>
       <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
       <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
@@ -529,7 +530,7 @@ const Dashboard = ({
                             confirmed
                           />
                         ))}
-                        <AddProject t={t} />
+                        <AddProject t={t} onClick={onNewProject} />
                       </ul>
                     )}
                   </div>
@@ -563,7 +564,7 @@ const Dashboard = ({
                             sharedProjectError={() => { }}
                           />
                         ))}
-                        <AddProject t={t} />
+                        <AddProject t={t} onClick={onNewProject} />
                       </ul>
                     )}
                   </div>
