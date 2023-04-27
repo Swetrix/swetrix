@@ -244,6 +244,7 @@
       "perf": "Performance monitoring",
       "ext": "Custom extensions",
       "gdpr": "GDPR-compatible",
+      "usfl": "User flow",
       "alrt": "Custom alerts",
       "pbld": "Public dashboards",
       "shad": "Dashboard sharing",
@@ -668,7 +669,11 @@
       "add": "Add a recipient",
       "reportFrequency": "Report frequency"
     },
-    "page": "Page"
+    "page": "Page",
+    "reverse": "Reverse",
+    "userFlow": {
+      "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
+    }
   },
   "billing": {
     "title": "Fakturering och planer",
