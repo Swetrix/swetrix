@@ -5,7 +5,7 @@ import {
   ArrowSmallUpIcon, ArrowSmallDownIcon, ArrowLongRightIcon, ArrowLongLeftIcon,
 } from '@heroicons/react/24/solid'
 import {
-  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon,
+  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon, RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -118,7 +118,7 @@ const PanelContainer = ({
 
         {type === 'pg' && (
           <>
-            <ChartPieIcon
+            <RectangleGroupIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
                 'text-blue-500': activeFragment === 1,
                 'text-gray-900 dark:text-gray-50': activeFragment === 0,
