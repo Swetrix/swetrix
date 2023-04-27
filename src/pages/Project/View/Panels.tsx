@@ -772,15 +772,16 @@ const Panel = ({
           onClose={() => setModal(false)}
           closeText={t('common.close')}
           isOpened={modal}
+          customButtons={(
+            <button
+              type='button'
+              className='mt-3 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
+            >
+              reverse
+            </button>
+          )}
           message={(
-            <div className='h-72'>
-              <Button
-                onClick={() => {}}
-                className='relative float-right px-2 py-1 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                secondary
-              >
-                reverse
-              </Button>
+            <div className='h-96'>
               <SankeyChart />
             </div>
           )}

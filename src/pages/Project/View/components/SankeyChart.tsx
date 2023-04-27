@@ -79,7 +79,7 @@ const SankeyChart = ({ data, disableLegend }: {
   <ResponsiveSankey
     data={dataTest}
     margin={{
-      top: 20, right: disableLegend ? 0 : 120, bottom: 20, left: 20,
+      top: 0, right: disableLegend ? 0 : 120, bottom: 0, left: 20,
     }}
     align='justify'
     colors={{ scheme: 'category10' }}
@@ -137,5 +137,11 @@ const SankeyChart = ({ data, disableLegend }: {
     ] : []}
   />
 )
+
+SankeyChart.defaultProps = {
+  data: {},
+  disableLegend: false,
+  height: null,
+}
 
 export default SankeyChart
