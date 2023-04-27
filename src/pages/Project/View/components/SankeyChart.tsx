@@ -81,14 +81,30 @@ const mapStateToProps = (state: StateType) => ({
   userFlowDescending: state.ui.cache.userFlowDescending,
 })
 
+const mapDispatchToProps = (dispatch: AppDispatch) => ({
+  setUserFlowAscending: (data: IUserFlow, pid: string, period: string) => {
+    dispatch(UIActions.setUserFlowAscending({
+      data,
+      pid,
+      period,
+    }))
+  },
+  setUserFlowDescending: (data: IUserFlow, pid: string, period: string) => {
+    dispatch(UIActions.setUserFlowDescending({
+      data,
+      pid,
+      period,
+    }))
+  },
+})
+
 const SankeyChart = ({
-  data, disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscending, userFlowDescending,
+  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscending, userFlowDescending,
 }: {
-  data?: any
   disableLegend?: boolean
   pid: string
-  userFlowAscending: IUserFlow[]
-  userFlowDescending: IUserFlow[]
+  userFlowAscending: IUserFlow
+  userFlowDescending: IUserFlow
   period: string
   timezone: string
   timeBucket: string
@@ -158,8 +174,13 @@ const SankeyChart = ({
 )
 
 SankeyChart.defaultProps = {
-  data: {},
   disableLegend: false,
 }
 
-export default SankeyChart
+const mergeProps = (stateProps: ReturnType<typeof mapStateToProps>, dispatchProps: ReturnType<typeof mapDispatchToProps>, ownProps: ReturnType<typeof SankeyChart>) => ({
+  ...ownProps,
+  ...stateProps,
+  ...dispatchProps,
+})
+
+export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(SankeyChart)
