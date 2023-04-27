@@ -32,7 +32,7 @@ import {
 import routes from 'routes'
 import { nFormatter } from 'utils/generic'
 import {
-  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard, roleAdmin, roleViewer,
+  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard, roleViewer,
 } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
@@ -276,7 +276,6 @@ ProjectCard.defaultProps = {
 
 interface INoProjects {
   t: (key: string) => string
-  onClick?: () => void
 }
 
 const NoProjects = ({ t }: INoProjects): JSX.Element => (
@@ -291,7 +290,7 @@ const NoProjects = ({ t }: INoProjects): JSX.Element => (
   </button>
 )
 
-const AddProject = ({ t, onClick }: INoProjects): JSX.Element => (
+const AddProject = ({ t, onClick }: INoProjects & { onClick?: () => void }): JSX.Element => (
   <li onClick={onClick} className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] group border-gray-300 hover:border-gray-400'>
     <div>
       <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
@@ -301,6 +300,10 @@ const AddProject = ({ t, onClick }: INoProjects): JSX.Element => (
     </div>
   </li>
 )
+
+AddProject.defaultProps = {
+  onClick: () => { },
+}
 
 interface DashboardProps {
   projects: IProject[]
