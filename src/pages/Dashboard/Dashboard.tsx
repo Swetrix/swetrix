@@ -172,11 +172,15 @@ const ProjectCard = ({
               className='flex items-center gap-2'
               onClick={(e) => e.stopPropagation()}
             >
-              <Link to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}>
+              <Link
+                to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
+                aria-label={`${t('project.settings.settings')} ${name}`}
+              >
                 <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
               </Link>
               <a
                 href={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}
+                aria-label='name (opens in a new tab)'
                 target='_blank'
                 rel='noopener noreferrer'
               >
