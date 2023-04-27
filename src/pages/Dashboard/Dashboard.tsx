@@ -569,6 +569,7 @@ const Dashboard = ({
                             setUserShareData={() => { }}
                             userSharedUpdate={() => { }}
                             sharedProjectError={() => { }}
+                            confirmed
                           />
                         ))}
                         <AddProject t={t} onClick={onNewProject} />
