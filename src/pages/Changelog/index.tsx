@@ -21,6 +21,7 @@ const changelog = [
     changes: [
       'Added user flow feature. By using this functionality you can track user interactions and navigation patterns throughout your application, providing valuable insights for optimising user experience and engagement. To track user flow, you have to upgrade Swetrix NPM library to the version v2.2.1 or higher.',
       'Fully redesigned the Dashboard page, now your projects are listed as cards with a preview of the most important metrics.',
+      'Updated the Project View screen to be more optimised for larger screens.',
       'Slightly improved the Dark theme throughout the application.',
     ],
   },
