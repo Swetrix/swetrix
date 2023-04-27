@@ -11,16 +11,17 @@ interface IPagination {
   setPage: (item: number) => void,
   pageAmount: number,
   total: number,
+  className?: string,
 }
 
 const Pagination = ({
-  page, setPage, pageAmount, total,
+  page, setPage, pageAmount, total, className,
 }: IPagination): JSX.Element => {
   const { t } = useTranslation('common')
   const paginationRange = usePagination(total, page)
 
   return (
-    <nav className='border-t-0 border-gray-200 px-4 flex items-center justify-between sm:px-0'>
+    <nav className={cx('border-t-0 border-gray-200 px-4 flex items-center justify-between sm:px-0', className)}>
       <div className='-mt-px w-0 flex-1 flex group'>
         {
           page > 1 && (
@@ -85,6 +86,11 @@ Pagination.propTypes = {
   setPage: PropTypes.func.isRequired,
   pageAmount: PropTypes.number.isRequired,
   total: PropTypes.number.isRequired,
+  className: PropTypes.string,
+}
+
+Pagination.defaultProps = {
+  className: '',
 }
 
 export default memo(Pagination)
