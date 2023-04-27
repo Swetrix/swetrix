@@ -258,14 +258,15 @@ ProjectCard.defaultProps = {
 const NoProjects = ({ t }: {
   t: (key: string) => string
 }): JSX.Element => (
-  <div className='mt-5'>
-    <h3 className='text-center dark:text-gray-50'>
-      {t('dashboard.noProjects')}
-    </h3>
-    <p className='text-center dark:text-gray-50'>
+  <button
+    type='button'
+    className='mx-auto relative block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+  >
+    <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
+    <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50'>
       {t('dashboard.createProject')}
-    </p>
-  </div>
+    </span>
+  </button>
 )
 
 interface DashboardProps {
