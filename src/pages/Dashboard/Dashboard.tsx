@@ -255,9 +255,11 @@ ProjectCard.defaultProps = {
   isTransferring: false,
 }
 
-const NoProjects = ({ t }: {
+interface INoProjects {
   t: (key: string) => string
-}): JSX.Element => (
+}
+
+const NoProjects = ({ t }: INoProjects): JSX.Element => (
   <button
     type='button'
     className='mx-auto relative block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
@@ -267,6 +269,17 @@ const NoProjects = ({ t }: {
       {t('dashboard.createProject')}
     </span>
   </button>
+)
+
+const AddProject = ({ t }: INoProjects): JSX.Element => (
+  <li className='flex justify-center items-center rounded-lg border-2 border-dashed h-auto group border-gray-300 hover:border-gray-400'>
+    <div>
+      <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
+      <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+        {t('dashboard.newProject')}
+      </span>
+    </div>
+  </li>
 )
 
 interface DashboardProps {
@@ -502,6 +515,7 @@ const Dashboard = ({
                             isTransferring={isTransferring}
                           />
                         ))}
+                        <AddProject t={t} />
                       </ul>
                     )}
                   </div>
@@ -538,6 +552,7 @@ const Dashboard = ({
                             </Link>
                           </div>
                         ))}
+                        <AddProject t={t} />
                       </ul>
                     )}
                   </div>
