@@ -517,7 +517,6 @@ const Dashboard = ({
                             name={name}
                             active={active}
                             isPublic={isPublic}
-                            confirmed={false}
                             overall={overall}
                             live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                             setUserShareData={() => { }}
@@ -527,6 +526,7 @@ const Dashboard = ({
                             setProjectsShareData={() => { }}
                             sharedProjectError={() => { }}
                             isTransferring={isTransferring}
+                            confirmed
                           />
                         ))}
                         <AddProject t={t} />
