@@ -534,27 +534,24 @@ const Dashboard = ({
                         {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
                           name, id, active, overall, public: isPublic,
                         }) => (
-                          <div key={id}>
-                            <Link to={_replace(routes.captcha, ':id', id)}>
-                              <ProjectCard
-                                t={t}
-                                id={id}
-                                type='captcha'
-                                name={name}
-                                captcha
-                                active={active}
-                                isPublic={isPublic}
-                                overall={overall}
-                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
-                                deleteProjectFailed={() => { }}
-                                sharedProjects={[]}
-                                setProjectsShareData={() => { }}
-                                setUserShareData={() => { }}
-                                userSharedUpdate={() => { }}
-                                sharedProjectError={() => { }}
-                              />
-                            </Link>
-                          </div>
+                          <ProjectCard
+                            t={t}
+                            key={id}
+                            id={id}
+                            type='captcha'
+                            name={name}
+                            captcha
+                            active={active}
+                            isPublic={isPublic}
+                            overall={overall}
+                            live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
+                            deleteProjectFailed={() => { }}
+                            sharedProjects={[]}
+                            setProjectsShareData={() => { }}
+                            setUserShareData={() => { }}
+                            userSharedUpdate={() => { }}
+                            sharedProjectError={() => { }}
+                          />
                         ))}
                         <AddProject t={t} />
                       </ul>
@@ -570,53 +567,53 @@ const Dashboard = ({
                       <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
                         {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
                           project, confirmed,
-                        }) => (
-                          <div key={confirmed ? `${project?.id}-confirmed` : project?.id}>
-                            {
-                              (_isUndefined(confirmed) || confirmed) ? (
-                                // <Link to={_replace(routes.project, ':id')}>
-                                <ProjectCard
-                                  t={t}
-                                  type='analytics'
-                                  id={project?.id}
-                                  name={project?.name}
-                                  shared
-                                  active={project?.active}
-                                  isPublic={project?.public}
-                                  confirmed={confirmed}
-                                  overall={project?.overall}
-                                  live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                                  setUserShareData={() => { }}
-                                  deleteProjectFailed={() => { }}
-                                  sharedProjects={[]}
-                                  setProjectsShareData={() => { }}
-                                  userSharedUpdate={() => { }}
-                                  sharedProjectError={() => { }}
-                                />
-                                // </Link>
-                              ) : (
-                                <ProjectCard
-                                  t={t}
-                                  id={project?.id}
-                                  type='analytics'
-                                  name={project?.name}
-                                  shared
-                                  active={project?.active}
-                                  isPublic={project?.public}
-                                  overall={project?.overall}
-                                  confirmed={confirmed}
-                                  sharedProjects={user.sharedProjects}
-                                  setProjectsShareData={setProjectsShareData}
-                                  setUserShareData={setUserShareData}
-                                  live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                                  userSharedUpdate={userSharedUpdate}
-                                  sharedProjectError={sharedProjectError}
-                                  deleteProjectFailed={deleteProjectFailed}
-                                />
-                              )
-                            }
-                          </div>
-                        ))}
+                        }) => {
+                          if (_isUndefined(confirmed) || confirmed) {
+                            return (
+                              <ProjectCard
+                                t={t}
+                                key={confirmed ? `${project?.id}-confirmed` : project?.id}
+                                type='analytics'
+                                id={project?.id}
+                                name={project?.name}
+                                shared
+                                active={project?.active}
+                                isPublic={project?.public}
+                                confirmed={confirmed}
+                                overall={project?.overall}
+                                live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
+                                setUserShareData={() => { }}
+                                deleteProjectFailed={() => { }}
+                                sharedProjects={[]}
+                                setProjectsShareData={() => { }}
+                                userSharedUpdate={() => { }}
+                                sharedProjectError={() => { }}
+                              />
+                            )
+                          }
+
+                          return (
+                            <ProjectCard
+                              t={t}
+                              key={confirmed ? `${project?.id}-confirmed` : project?.id}
+                              id={project?.id}
+                              type='analytics'
+                              name={project?.name}
+                              shared
+                              active={project?.active}
+                              isPublic={project?.public}
+                              overall={project?.overall}
+                              confirmed={confirmed}
+                              sharedProjects={user.sharedProjects}
+                              setProjectsShareData={setProjectsShareData}
+                              setUserShareData={setUserShareData}
+                              live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
+                              userSharedUpdate={userSharedUpdate}
+                              sharedProjectError={sharedProjectError}
+                              deleteProjectFailed={deleteProjectFailed}
+                            />
+                          )
+                        })}
                       </ul>
                     )}
                   </div>
