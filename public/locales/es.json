@@ -1,57 +1,57 @@
 {
   "apiNotifications": {
-    "somethingWentWrong": "Something went wrong, please try again",
-    "emailRegistered": "A user with this email already exists",
-    "leakedPassword": "The provided password is leaked, please use another one",
-    "rateLimitHit": "Too many requests, please try again later",
-    "cancelSubFirst": "Please cancel your paid subscription first",
-    "accountDeleted": "Your account has been deleted",
-    "accountDeleteError": "Error while deleting your account",
-    "roleUpdated": "User's role has been changed",
-    "roleUpdateError": "Error occurred while changing user's role",
-    "userInvited": "The user has been invited to your project",
-    "userInviteError": "Error occurred while inviting the user to your project",
-    "userRemoved": "The user has been removed from your project",
-    "userRemoveError": "Error occurred while removing the user from your project",
-    "quitProjectError": "Error occurred while quitting the project",
-    "quitProject": "You have quit the project",
-    "acceptInvitationError": "Error occurred while accepting the project invitation",
-    "acceptInvitation": "The project invitation has been accepted",
-    "subscriptionUpdated": "Your subscription has been updated",
-    "generate2FAError": "Error occurred while generating 2FA code",
-    "integrationRemovalError": "Error occurred while removing the integration",
-    "enterACorrectNumber": "Please enter a correct number",
-    "numberCantBeNegative": "The number cannot be negative",
-    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
-    "invalidToken": "Invalid token",
-    "transferRequestSent": "Transfer request sent",
-    "transferProjectReject": "The project transfer request has been cancelled",
-    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
-    "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
-    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
-    "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
-    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
+    "somethingWentWrong": "¡Algo salió mal! Inténtalo de nuevo",
+    "emailRegistered": "Ya existe un usuario con este email",
+    "leakedPassword": "La contraseña proporcionada se ha filtrado, usa otra",
+    "rateLimitHit": "Demasiadas solicitudes, vuelve a intentarlo más tarde",
+    "cancelSubFirst": "Por favor, cancela tu suscripción de pago primero",
+    "accountDeleted": "Tu cuenta se ha borrado",
+    "accountDeleteError": "Error al borrar tu cuenta",
+    "roleUpdated": "El rol del usuario se ha cambiado",
+    "roleUpdateError": "Ha ocurrido un error al cambiar el rol del usuario",
+    "userInvited": "El usuario ha sido invitado a tu proyecto",
+    "userInviteError": "Ha ocurrido un error al invitar al usuario a tu proyecto",
+    "userRemoved": "El usuario se ha eliminado de tu proyecto",
+    "userRemoveError": "Ocurrió un error al remover al usuario de tu proyecto",
+    "quitProjectError": "Ocurrió un error al abandonar el proyecto",
+    "quitProject": "Has abandonado el proyecto",
+    "acceptInvitationError": "Ha ocurrido un error al aceptar la invitación al proyecto",
+    "acceptInvitation": "La invitación del proyecto ha sido aceptada",
+    "subscriptionUpdated": "Tu suscripción se ha actualizado",
+    "generate2FAError": "Ha ocurrido un error al generar el código 2FA",
+    "integrationRemovalError": "Ha ocurrido un error al eliminar la integración",
+    "enterACorrectNumber": "Por favor, introduce un número correcto",
+    "numberCantBeNegative": "El número no puede ser negativo",
+    "forecastNumberCantBeBigger": "El número de previsión no puede ser mayor que {{max}} para la frecuencia seleccionada",
+    "invalidToken": "Token inválido",
+    "transferRequestSent": "Solicitud de transferencia enviada",
+    "transferProjectReject": "La solicitud de transferencia del proyecto ha sido cancelada",
+    "socialisationGenericError": "Ocurrió un error al vincular la cuenta Swetrix con un servicio de terceros",
+    "socialisationUnlinkGenericError": "Ocurrió un error al desvincular la cuenta Swetrix de un servicio de terceros",
+    "socialisationAuthGenericError": "Ocurrió un error al autenticar con un servicio de terceros",
+    "socialAccountLinked": "La cuenta Swetrix se ha vinculado con el proveedor seleccionado",
+    "socialAccountUninked": "La cuenta Swetrix se ha desvinculado del proveedor seleccionado"
   },
   "common": {
-    "features": "Features",
-    "docs": "Docs",
-    "getStarted": "Get started",
-    "billing": "Billing",
-    "pricing": "Pricing",
+    "features": "Características",
+    "docs": "Documentos",
+    "getStarted": "Comenzar",
+    "billing": "Facturación",
+    "pricing": "Precios",
     "faqs": "FAQs",
-    "accountSettings": "Account settings",
-    "explore": "Explore",
-    "liveDemo": "Live demo",
-    "dashboard": "Dashboard",
-    "logout": "Logout",
-    "save": "Save",
-    "continue": "Continue",
+    "accountSettings": "Ajustes de cuenta",
+    "explore": "Explorar",
+    "liveDemo": "Demostración en vivo",
+    "dashboard": "Panel principal",
+    "logout": "Cerrar sesión",
+    "save": "Guardar",
+    "continue": "Continuar",
     "error": "Error",
-    "close": "Close",
-    "cancel": "Cancel",
-    "gotIt": "Got it",
-    "settings": "Settings",
-    "openMenu": "Open menu",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "gotIt": "Entendido",
+    "settings": "Ajustes",
+    "openMenu": "Abrir menú",
     "closeMenu": "Close menu",
     "learnMore": "Learn more",
     "yes": "Yes",
@@ -117,105 +117,105 @@
         },
         {
           "label": "CCPA",
-          "desc": "control over the personal information."
+          "desc": "control de la información personal."
         }
       ]
     },
-    "dataProtection": "More about Data Protection",
+    "dataProtection": "Más acerca de la protección de datos",
     "faq": {
-      "title": "Get some questions answered",
+      "title": "Resuelve tus dudas",
       "list": [
         {
-          "question": "Does Swetrix tracking require cookies?",
-          "answer": "No, it does not. Our analytics script is fully cookieless. You can use our service without the need to use a cookie notification on your website.\nWe are compliant with such regulations as GDPR, PECR, CCPA, ePrivacy and COPPA."
+          "question": "¿Swetrix necesita cookies?",
+          "answer": "No. Nuestro script analítico está totalmente libre de cookies. Puedes usar nuestro servicio sin la necesidad de usar una notificación de cookies en tu web.\nEstamos cumpliendo con regulaciones como GDPR, PECR, CCPA, ePrivacy y COPPA."
         },
         {
-          "question": "Do you use/share/sell the end users' data?",
-          "answer": "No, we do not. Also, all of the data we collect is anonymised. We do not store any data that would allow us to identify a specific user. We try to be as transparent and respectful of privacy as possible."
+          "question": "¿Usáis/compartís/vendéis los datos de los usuarios finales?",
+          "answer": "No. Además, todos los datos que recogemos se vuelven anónimos. No almacenamos ningún dato que pueda permitirnos identificar a ningún usuario en específico. Intentamos hacer todo lo posible por la transparencia y el respeto de la privacidad."
         },
         {
-          "question": "Do I have to pay for your service?",
-          "answer": "We provide free accounts as well as paid accounts. While most of the features of the paid tiers are included in the free tier, the paid tiers offer a greater amount of events per month. You can upgrade or downgrade your account subscription at any time."
+          "question": "¿Tengo que pagar por vuestros servicios?",
+          "answer": "Proporcionamos cuentas gratuitas, así como de pago. Mientras que la mayoría de nuestras características de pago incluidas en el nivel gratuito, los niveles de pago ofrecen una mucho mayor cantidad de eventos al mes. Puedes mejorar o degradar la suscripción de tu cuenta en cualquier momento."
         },
         {
-          "question": "Is my data secure?",
-          "answer": "We adhere to all standards regarding the security of data storage and processing. All data is securely stored, cannot be accessed by third parties and all communication is always through encrypted channels (HTTPS)."
+          "question": "¿Son seguros mis datos?",
+          "answer": "Nos adherimos a todas las normas relativas a la seguridad del almacenamiento y procesamiento de datos. Todos los datos están almacenados de forma segura, no se puede acceder a ellos por parte de terceros y toda comunicación se encripta a través de canales encriptados (HTTPS)."
         }
       ]
     },
     "features": [
       {
-        "name": "Measure website traffic with 99% accuracy",
-        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
+        "name": "Mide el tráfico de tu web con una precisión del 99%",
+        "desc": "Los análisis más precisos para rastrear todas las medidas básicas y ver los datos CORRECTOS."
       },
       {
-        "name": "Demo & Geo reports",
-        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
+        "name": "Informes Demo & Geo",
+        "desc": "Sí, es un estándar. Pero rastreamos de dónde son exactamente tus usuarios."
       },
       {
-        "name": "UTM & Reffers tracking",
-        "desc": "All the traffic from your companies and websites will be shown without a data loss."
+        "name": "Seguimiento de UTM & Reffers",
+        "desc": "Todo el tráfico de tus compañías y páginas web se mostrará sin perder datos."
       },
       {
-        "name": "Agile system",
-        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
+        "name": "Sistema ágil",
+        "desc": "Es fácil configurar y personalizar un sistema de ajustes flexible para las reglas de uso básicas - tal como la definición de la sesión, la contabilidad de tráfico, y más cosas."
       },
       {
-        "name": "Custom events\n(really easy to setup)",
-        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
+        "name": "Eventos personalizados\n(muy fáciles de configurar)",
+        "desc": "La interfaz sencilla y la facilidad para programar objetivos te ayudarán a medir la eficacia de tu web."
       },
       {
-        "name": "User flow",
-        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
+        "name": "Flujo de usuarios",
+        "desc": "Haz un seguimiento de cómo usan tu web los usuarios y por dónde se mueven. Estudia su comportamiento y los patrones de tus visitantes."
       }
     ],
-    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
+    "demoGeoReports": "Sí, es un estándar. Pero rastreamos de dónde son exactamente tus usuarios.",
     "mFeatures": [
       {
-        "name": "Expand your possibilities",
-        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
+        "name": "Amplía tus posibilidades",
+        "desc": "Extensiones del navegador, notificaciones, 2FA, funcionalidad flexible, ¡y más!"
       },
       {
-        "name": "Opensource",
-        "desc": "Customise Swetrix for your needs or selfhost it easily."
+        "name": "Código abierto",
+        "desc": "Personaliza Swetrix según tus necesidades o autoalójalo fácilmente."
       },
       {
-        "name": "Marketplace options",
-        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
+        "name": "Opciones de comercio",
+        "desc": "Mercado con extensiones hechas por la comunidad para mejorar tus capacidades analíticas."
       },
       {
-        "name": "Easy integration",
-        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
+        "name": "Integración sencilla",
+        "desc": "Integra tus proyectos, añade nuevas extensiones, sumérgete en el mundo de las analíticas fácilmente."
       },
       {
         "name": "Solve your tasks, not create",
-        "desc": "Get insights and use the best solutions to solve your problems."
+        "desc": "Obtén ideas y utiliza la mejor solución para resolver tus problemas."
       },
       {
-        "name": "Share your best solutions",
-        "desc": "Share your best solutions with the community, get popularity and money."
+        "name": "Comparte tus mejores soluciones",
+        "desc": "Comparte tus mejores soluciones con la comunidad, consigue popularidad y dinero."
       }
     ],
-    "supports": "Supports all popular platforms",
-    "becomeDev": "Become a developer",
-    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "supports": "Compatible con todas las plataformas populares",
+    "becomeDev": "Hazte desarrollador",
+    "becomeDevDesc": "Escribe tus extensiones, sigue las noticias y únete a nuestra comunidad de desarrolladores.",
     "marketplaceBlock": "Marketplace and extension features",
     "coreFeaturesBlock": "Core features",
-    "testimonials": "Testimonials",
+    "testimonials": "Testimonios",
     "lTestimonials": [
       {
         "name": "Alex",
-        "role": "Startup founder",
-        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+        "role": "Fundados de una startup",
+        "desc": "Usamos varios sistemas analíticos en el proyecto para obtener los datos más precisos.\nPara el análisis web, elegimos Swetrix como una solución donde el equipo está constantemente haciendo nuevas mejoras y características."
       },
       {
-        "name": "Michael",
-        "role": "Small business owner",
-        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+        "name": "Miguel",
+        "role": "Propietario de pequeño negocio",
+        "desc": "En el negocio, necesito entender cómo se comportan los clientes en una página web y por qué compran o no compran mi producto.\nSwetrix me da los datos que necesito y unos puntos de vista valiosos para entender a los visitantes de mi web, y me ayuda a aumentar las ventas."
       },
       {
-        "name": "Rachel",
-        "role": "CMO at NDA Company",
+        "name": "Raquel",
+        "role": "Directora de marketing",
         "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
       }
     ],
@@ -290,22 +290,22 @@
     },
     "common": {
       "signinInstead": "Sign in instead",
-      "signupInstead": "Sign up instead",
-      "password": "Password",
-      "noRemember": "Don't remember me.",
-      "repeat": "Repeat password",
-      "hint": "Longer than {{amount}} chars",
-      "xCharsError": "The password has to consist of at least {{amount}} characters.",
-      "noMatchError": "Passwords have to match.",
-      "badEmailError": "Please provide a valid email.",
-      "passwordTooLong": "The provided password is too long, maximum length is {{amount}} characters",
-      "tosError": "You have to accept our TOS and privacy policy in order to use our services.",
+      "signupInstead": "Regístrate",
+      "password": "Contraseña",
+      "noRemember": "No me recuerdes.",
+      "repeat": "Repetir contraseña",
+      "hint": "Más de {{amount}} caracteres",
+      "xCharsError": "La contraseña tiene que contener al menos {{amount}} caracteres.",
+      "noMatchError": "Las contraseñas no coinciden.",
+      "badEmailError": "Por favor, introduce un correo electrónico válido.",
+      "passwordTooLong": "La contraseña introducida es demasiado larga, la longitud máxima es de {{amount}} caracteres",
+      "tosError": "Tienes que aceptar nuestras Condiciones de servicio y nuestra Política de Privacidad para poder usar nuestros servicios.",
       "email": "Email",
-      "signin": "Sign in",
-      "checkLeakedPassword": "Check if password is leaked",
-      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text.",
-      "addedOn": "Added on",
-      "continueWithGoogle": "Continue with Google",
+      "signin": "Entrar",
+      "checkLeakedPassword": "Comprobar si se ha filtrado mi contraseña",
+      "checkLeakedPasswordDesc": "Cuando está activo, comparamos tu contraseña con la <db>{{database}}</db> base de datos. No enviamos tu contraseña al servicio. Primero descomponemos tu contraseña (usando SHA1) y enviamos solo los primeros 5 caracteres de la descomposición al servicio. El servicio devuelve todas las contraseñas filtradas que empezan con esos 5 primeros caracteres. Al final comprobamos si una de ellas coincide con tu contraseña. Te mostramos un aviso si se había filtrado. Nunca almacenamos tus contraseñas en texto plano.",
+      "addedOn": "Añadido el",
+      "continueWithGoogle": "Continuar con Google",
       "continueWithGithub": "Continue with Github"
     }
   },
@@ -642,7 +642,15 @@
       "transfer": "Transfer project",
       "transferTo": "Transfer project",
       "transferHint": "You can transfer '{{name}}' project to another user.\nThis user will become the project's owner and will be able to manage the project's settings, add/remove members, and invite new users.\nYou will be assigned to the project as an administrator. However, the new owner will be able to remove you from the project.",
-      "transfereeEmail": "Transferee email"
+      "transfereeEmail": "Transferee email",
+      "reseted": {
+        "all": "Reset all",
+        "allHint": "All of the project's related analytics data will be permanently removed from our servers, but the project itself, it's settings and the ID will still be available.",
+        "partially": "Reset partially",
+        "partiallyDesc": "The 'Reset partially' function allows you to reset the data of a specific project within a given date range.",
+        "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered."
+      },
+      "noDateRange": "Please select a date range."
     },
     "captcha": {
       "settings": {
