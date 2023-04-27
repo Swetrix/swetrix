@@ -244,6 +244,7 @@
       "perf": "Performance monitoring",
       "ext": "Custom extensions",
       "gdpr": "GDPR-compatible",
+      "usfl": "User flow",
       "alrt": "Custom alerts",
       "pbld": "Public dashboards",
       "shad": "Dashboard sharing",
