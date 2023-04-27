@@ -37,12 +37,13 @@ import Button from 'ui/Button'
 import Chart from 'ui/Chart'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
+import SankeyChart from './components/SankeyChart'
 import { iconClassName } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
 
-const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv']
+const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv', 'pg']
 
 // function that checks if there are custom tabs for a specific type
 const checkCustomTabs = (panelID: string, customTabs: any) => {
@@ -114,6 +115,26 @@ const PanelContainer = ({
             />
           </>
         )}
+
+        {type === 'pg' && (
+          <>
+            <ChartPieIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                'text-blue-500': activeFragment === 1,
+                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+              })}
+              onClick={() => setActiveFragment(1)}
+            />
+            <ArrowsPointingOutIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
+                hidden: activeFragment === 0,
+              })}
+              onClick={openModal}
+            />
+
+          </>
+        )}
+
         {/* if this tab using Circle showing stats panel */}
         {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
           <ChartPieIcon
@@ -734,6 +755,33 @@ const Panel = ({
       </PanelContainer>
     )
   }
+
+  if (id === 'pg' && activeFragment === 1) {
+    return (
+      <PanelContainer
+        name={name}
+        icon={icon}
+        type={id}
+        activeFragment={activeFragment}
+        setActiveFragment={setActiveFragment}
+        openModal={() => setModal(true)}
+      >
+        {!modal && (
+          <SankeyChart />
+        )}
+        <Modal
+          onClose={() => setModal(false)}
+          closeText={t('common.close')}
+          isOpened={modal}
+          message={(
+            <SankeyChart />
+          )}
+          size='large'
+        />
+      </PanelContainer>
+    )
+  }
+
   // Showing chart of stats a data (start if)
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')

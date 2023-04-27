@@ -6,6 +6,8 @@
     "@blaumaus/react-alert": "^7.0.5",
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.17",
+    "@nivo/core": "^0.81.0",
+    "@nivo/sankey": "^0.81.0",
     "@reduxjs/toolkit": "^1.9.5",
     "@swetrix/sdk": "^1.0.0",
     "@tailwindcss/forms": "^0.5.3",
