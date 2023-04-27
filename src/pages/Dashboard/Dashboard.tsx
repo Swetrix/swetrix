@@ -642,13 +642,13 @@ const Dashboard = ({
               </>
             )}
             {(tabProjects === tabForOwnedProject && pageAmount > 1) && (
-              <Pagination page={dashboardPaginationPage} pageAmount={pageAmount} setPage={setDashboardPaginationPage} total={total} />
+              <Pagination className='mt-2' page={dashboardPaginationPage} pageAmount={pageAmount} setPage={setDashboardPaginationPage} total={total} />
             )}
             {(tabProjects === tabForSharedProject && pageAmountShared > 1) && (
-              <Pagination page={dashboardPaginationPageShared} pageAmount={pageAmountShared} setPage={setDashboardPaginationPageShared} total={sharedTotal} />
+              <Pagination className='mt-2' page={dashboardPaginationPageShared} pageAmount={pageAmountShared} setPage={setDashboardPaginationPageShared} total={sharedTotal} />
             )}
             {(tabProjects === tabForCaptchaProject && pageAmountCaptcha > 1) && (
-              <Pagination page={dashboardPaginationPageCaptcha} pageAmount={pageAmountCaptcha} setPage={setDashboardPaginationPageCaptcha} total={captchaTotal} />
+              <Pagination className='mt-2' page={dashboardPaginationPageCaptcha} pageAmount={pageAmountCaptcha} setPage={setDashboardPaginationPageCaptcha} total={captchaTotal} />
             )}
           </div>
         </div>
