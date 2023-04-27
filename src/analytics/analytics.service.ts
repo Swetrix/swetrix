@@ -5,6 +5,7 @@ import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
+import * as _last from 'lodash/last'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
@@ -49,6 +50,18 @@ import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
+import {
+  ChartCHResponse,
+  CustomsCHResponse,
+  IGetGroupFromTo,
+  GetFiltersQuery,
+  IUserFlowNode,
+  IUserFlowLink,
+  IUserFlow,
+  IBuildUserFlow,
+  IGenerateXAxis,
+  IExtractChartData,
+} from './interfaces'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -78,18 +91,6 @@ export const cols = [
 export const captchaColumns = ['cc', 'br', 'os', 'dv']
 
 export const perfCols = ['cc', 'pg', 'dv', 'br']
-
-interface ChartCHResponse {
-  index: number
-  unique: number
-  'count()': number
-}
-
-interface CustomsCHResponse {
-  ev: string
-  'count()': number
-  index: number
-}
 
 const validPeriods = [
   'today',
@@ -122,16 +123,7 @@ const timeBucketToDays = [
 // eslint-disable-next-line no-useless-escape
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
-interface GetFiltersQuery extends Array<string | object> {
-  // SQL query
-  0: string
-  // an object that has structure like { cf_pg: '/signup', ev_exclusive: false }
-  1: { [key: string]: string | boolean }
-  // an array of objects like [{ "column":"pg", "filter":"/signup", "isExclusive":true }]
-  2: Array<{ [key: string]: string }> | []
-}
-
-export const isValidTimezone = (timezone: string): boolean => {
+const isValidTimezone = (timezone: string): boolean => {
   if (_isEmpty(timezone)) {
     return false
   }
@@ -152,7 +144,7 @@ export const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
   return dayjs(date, format).format(format) === date
 }
 
-export const checkIfTBAllowed = (
+const checkIfTBAllowed = (
   timeBucket: TimeBucketType,
   from: string,
   to: string,
@@ -197,7 +189,17 @@ const generateParamsQuery = (
   subQuery: string,
   customEVFilterApplied: boolean,
   isPageInclusiveFilterSet: boolean,
+  isCaptcha?: boolean,
+  isPerformance?: boolean,
 ): string => {
+  if (isPerformance) {
+    return `SELECT ${col}, avg(pageLoad) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  }
+
+  if (isCaptcha) {
+    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  }
+
   if (customEVFilterApplied) {
     return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
@@ -255,12 +257,15 @@ export class AnalyticsService {
   }
 
   validatePID(pid: string): void {
-    if (_isEmpty(pid))
+    if (_isEmpty(pid)) {
       throw new BadRequestException('The Project ID (pid) has to be provided')
-    if (!isValidPID(pid))
+    }
+
+    if (!isValidPID(pid)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
       )
+    }
   }
 
   async validate(
@@ -269,15 +274,15 @@ export class AnalyticsService {
     type: 'custom' | 'log' = 'log',
     ip?: string,
   ): Promise<string | null> {
-    if (_isEmpty(logDTO))
+    if (_isEmpty(logDTO)) {
       throw new BadRequestException('The request cannot be empty')
+    }
 
     const { pid } = logDTO
     this.validatePID(pid)
 
     if (type === 'custom') {
-      // @ts-ignore
-      const { ev } = logDTO
+      const { ev } = <EventsDTO>logDTO
 
       if (_isEmpty(ev)) {
         throw new BadRequestException('Empty custom events are not allowed')
@@ -291,7 +296,6 @@ export class AnalyticsService {
     }
 
     // 'tz' does not need validation as it's based on getCountryForTimezone detection
-    // @ts-ignore
     const { lc } = logDTO
 
     // validate locale ('lc' param)
@@ -304,10 +308,8 @@ export class AnalyticsService {
           lcParted[1] = _toUpper(lcParted[1])
         }
 
-        // @ts-ignore
         logDTO.lc = _join(lcParted, '-')
       } else {
-        // @ts-ignore
         logDTO.lc = 'NULL'
       }
     }
@@ -343,6 +345,179 @@ export class AnalyticsService {
     this.checkOrigin(project, origin)
 
     return null
+  }
+
+  getGroupFromTo(
+    from: string,
+    to: string,
+    timeBucket: TimeBucketType | null,
+    period: string,
+    timezone: string,
+  ): IGetGroupFromTo {
+    let groupFrom
+    let groupTo
+
+    if (!_isEmpty(from) && !_isEmpty(to)) {
+      if (!isValidDate(from)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter is invalid",
+        )
+      }
+
+      if (!isValidDate(to)) {
+        throw new PreconditionFailedException(
+          "The timeframe 'to' parameter is invalid",
+        )
+      }
+
+      if (dayjs.utc(from).isAfter(dayjs.utc(to), 'second')) {
+        throw new PreconditionFailedException(
+          "The timeframe 'from' parameter cannot be greater than 'to'",
+        )
+      }
+
+      if (!_isEmpty(timeBucket)) {
+        checkIfTBAllowed(timeBucket, from, to)
+      }
+
+      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+
+      if (from === to) {
+        groupTo = dayjs
+          .tz(to, timezone)
+          .add(1, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+      } else {
+        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
+      }
+    } else if (!_isEmpty(period)) {
+      if (period === 'today') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
+          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else if (period === 'yesterday') {
+        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
+          groupFrom = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .subtract(1, 'day')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+          groupTo = dayjs()
+            .tz(timezone)
+            .startOf('d')
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          groupFrom = dayjs
+            .utc()
+            .startOf('d')
+            .subtract(1, 'day')
+            .format('YYYY-MM-DD')
+          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else {
+        groupFrom = dayjs
+          .utc()
+          .subtract(parseInt(period, 10), _last(period))
+          .format('YYYY-MM-DD')
+        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+
+        if (!_isEmpty(timeBucket)) {
+          checkIfTBAllowed(timeBucket, groupFrom, groupTo)
+        }
+      }
+    } else {
+      throw new BadRequestException(
+        'The timeframe (either from/to pair or period) has to be provided',
+      )
+    }
+
+    return {
+      groupFrom,
+      groupTo,
+    }
+  }
+
+  removeCyclicDependencies(links: IUserFlowLink[]): IUserFlowLink[] {
+    const visited = new Set<string>()
+
+    return links.filter((link) => {
+      const key = `${link.source}_${link.target}`
+      if (visited.has(key)) {
+        return false
+      }
+      visited.add(key)
+      return true
+    })
+  }
+
+  buildUserFlow(links: IUserFlowLink[]): IBuildUserFlow {
+    const nodes: IUserFlowNode[] = Array.from(
+      new Set(
+        links
+          .map((link: IUserFlowLink) => link.source)
+          .concat(links.map((link: IUserFlowLink) => link.target)),
+      ),
+    ).map((node: any) => ({ id: node }))
+
+    return { nodes, links }
+  }
+
+  async getUserFlow(params: unknown): Promise<IUserFlow> {
+    const query = `
+      SELECT
+        pg AS source,
+        prev AS target,
+        count() AS value
+      FROM analytics
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND pg != prev
+      GROUP BY
+        pg,
+        prev
+    `
+
+    const results = <IUserFlowLink[]>(await clickhouse.query(query, { params }).toPromise())
+
+    if (_isEmpty(results)) {
+      const empty = { nodes: [], links: [] }
+      return {
+        ascending: empty,
+        descending: empty,
+      }
+    }
+
+    const ascendingLinks: IUserFlowLink[] = []
+    const descendingLinks: IUserFlowLink[] = []
+
+    this.removeCyclicDependencies(results).forEach((row: any) => {
+      const link: IUserFlowLink = {
+        source: row.source,
+        target: row.target,
+        value: row.value,
+      }
+      if (link.source < link.target) {
+        ascendingLinks.push(link)
+      } else {
+        descendingLinks.push(link)
+      }
+    })
+
+    return {
+      ascending: this.buildUserFlow(ascendingLinks),
+      descending: this.buildUserFlow(descendingLinks),
+    }
   }
 
   async getSessionHash(
@@ -456,10 +631,23 @@ export class AnalyticsService {
     pids: string[],
     period: 'w' | 'M' = 'w',
     amountToSubtract = 1,
-  ): Promise<object> {
+  ) {
+    return this.getSummaryStats(pids, 'analytics', period, amountToSubtract)
+  }
+
+  async getCaptchaSummary(pids: string[], period: 'w' | 'M' = 'w') {
+    return this.getSummaryStats(pids, 'captcha', period)
+  }
+
+  async getSummaryStats(
+    pids: string[],
+    tableName: 'analytics' | 'captcha',
+    period: 'w' | 'M' = 'w',
+    amountToSubtract = 1,
+  ) {
     const result = {}
 
-    const promises = _map(pids, async pid => {
+    const promises = pids.map(async pid => {
       if (!isValidPID(pid)) {
         throw new BadRequestException(
           `The provided Project ID (${pid}) is incorrect`,
@@ -467,49 +655,72 @@ export class AnalyticsService {
       }
 
       const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      const oneWRaw = dayjs.utc().subtract(amountToSubtract, period)
-      const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
-      const twoWeeks = oneWRaw
+      const periodRaw = dayjs.utc().subtract(amountToSubtract, period)
+      const periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+      const periodSubtracted = periodRaw
         .subtract(amountToSubtract, period)
         .format('YYYY-MM-DD HH:mm:ss')
 
-      const query1 = `SELECT unique, count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {oneWeek:String} AND {now:String} GROUP BY unique`
-      const query2 = `SELECT unique, count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {twoWeeks:String} AND {oneWeek:String} GROUP BY unique`
+      const queryThisWeek = `SELECT ${
+        tableName === 'analytics' ? 'unique,' : ''
+      } count() FROM ${tableName} WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}${
+        tableName === 'analytics' ? ' GROUP BY unique' : ''
+      }`
+      const queryLastWeek = `SELECT ${
+        tableName === 'analytics' ? 'unique,' : ''
+      } count() FROM ${tableName} WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}${
+        tableName === 'analytics' ? ' GROUP BY unique' : ''
+      }`
 
       const paramsData = {
         params: {
           pid,
-          oneWeek,
-          twoWeeks,
+          periodFormatted,
+          periodSubtracted,
           now,
         },
       }
 
       try {
-        const q1res = await clickhouse.query(query1, paramsData).toPromise()
-        const q2res = await clickhouse.query(query2, paramsData).toPromise()
+        const thisWeekResult = await clickhouse
+          .query(queryThisWeek, paramsData)
+          .toPromise()
+        const lastWeekResult = await clickhouse
+          .query(queryLastWeek, paramsData)
+          .toPromise()
 
-        const thisWeekUnique =
-          _find(q1res, ({ unique }) => unique)?.['count()'] || 0
-        const thisWeekPV =
-          (_find(q1res, ({ unique }) => !unique)?.['count()'] || 0) +
-          thisWeekUnique
-        const lastWeekUnique =
-          _find(q2res, ({ unique }) => unique)?.['count()'] || 0
-        const lastWeekPV =
-          (_find(q2res, ({ unique }) => !unique)?.['count()'] || 0) +
-          lastWeekUnique
+        if (tableName === 'analytics') {
+          const thisWeekUnique =
+            _find(thisWeekResult, ({ unique }) => unique)?.['count()'] || 0
+          const thisWeekPV =
+            (_find(thisWeekResult, ({ unique }) => !unique)?.['count()'] || 0) +
+            thisWeekUnique
+          const lastWeekUnique =
+            _find(lastWeekResult, ({ unique }) => unique)?.['count()'] || 0
+          const lastWeekPV =
+            (_find(lastWeekResult, ({ unique }) => !unique)?.['count()'] || 0) +
+            lastWeekUnique
 
-        result[pid] = {
-          thisWeek: thisWeekPV,
-          lastWeek: lastWeekPV,
-          thisWeekUnique,
-          lastWeekUnique,
-          percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
-          percChangeUnique: calculateRelativePercentage(
-            lastWeekUnique,
+          result[pid] = {
+            thisWeek: thisWeekPV,
+            lastWeek: lastWeekPV,
             thisWeekUnique,
-          ),
+            lastWeekUnique,
+            percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
+            percChangeUnique: calculateRelativePercentage(
+              lastWeekUnique,
+              thisWeekUnique,
+            ),
+          }
+        } else {
+          const thisWeek = thisWeekResult?.['count()'] || 0
+          const lastWeek = lastWeekResult?.['count()'] || 0
+
+          result[pid] = {
+            thisWeek,
+            lastWeek,
+            percChange: calculateRelativePercentage(lastWeek, thisWeek),
+          }
         }
       } catch {
         throw new InternalServerErrorException(
@@ -523,116 +734,88 @@ export class AnalyticsService {
     return result
   }
 
-  async getCaptchaSummary(
-    pids: string[],
-    period: 'w' | 'M' = 'w',
-  ): Promise<object> {
-    const result = {}
-
-    const promises = _map(pids, async pid => {
-      if (!isValidPID(pid)) {
-        throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
-        )
-      }
-
-      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      const oneWRaw = dayjs.utc().subtract(1, period)
-      const oneWeek = oneWRaw.format('YYYY-MM-DD HH:mm:ss')
-      const twoWeeks = oneWRaw.subtract(1, period).format('YYYY-MM-DD HH:mm:ss')
-
-      const query1 = `SELECT count() FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {oneWeek:String} AND {now:String}`
-      const query2 = `SELECT count() FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {twoWeeks:String} AND {oneWeek:String}`
-
-      const paramsData = {
-        params: {
-          pid,
-          oneWeek,
-          twoWeeks,
-          now,
-        },
-      }
-
-      try {
-        const q1res = await clickhouse.query(query1, paramsData).toPromise()
-        const q2res = await clickhouse.query(query2, paramsData).toPromise()
-
-        const thisWeek = q1res?.['count()'] || 0
-        const lastWeek = q2res?.['count()'] || 0
-
-        result[pid] = {
-          thisWeek,
-          lastWeek,
-          percChange: calculateRelativePercentage(lastWeek, thisWeek),
-        }
-      } catch {
-        throw new InternalServerErrorException(
-          "Can't process the provided PID. Please, try again later.",
-        )
-      }
-    })
-
-    await Promise.all(promises)
-
-    return result
-  }
-
-  async groupByTimeBucket(
-    timeBucket: TimeBucketType,
-    from: string,
-    to: string,
-    subQuery: string,
-    filtersQuery: string,
-    paramsData: any,
-    timezone: string,
-    customEVFilterApplied: boolean,
+  async generateParams(
     parsedFilters: Array<{ [key: string]: string }>,
-  ): Promise<object | void> {
+    subQuery: string,
+    customEVFilterApplied: boolean,
+    paramsData: any,
+    isCaptcha: boolean,
+    isPerformance: boolean,
+  ): Promise<any> {
     const params = {}
 
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet = !_isEmpty(
-      _find(
-        parsedFilters,
-        filter => filter.column === 'pg' && !filter.isExclusive,
-      ),
-    )
+    const isPageInclusiveFilterSet =
+      isCaptcha || isPerformance
+        ? false
+        : !_isEmpty(
+            _find(
+              parsedFilters,
+              filter => filter.column === 'pg' && !filter.isExclusive,
+            ),
+          )
 
-    const paramsPromises = _map(cols, async col => {
-      const query1 = generateParamsQuery(
+    let columns = cols
+
+    if (isCaptcha) {
+      columns = captchaColumns
+    }
+
+    if (isPerformance) {
+      columns = perfCols
+    }
+
+    const paramsPromises = _map(columns, async col => {
+      const query = generateParamsQuery(
         col,
         subQuery,
         customEVFilterApplied,
         isPageInclusiveFilterSet,
+        isCaptcha,
+        isPerformance,
       )
-      const res = await clickhouse.query(query1, paramsData).toPromise()
+      const res = await clickhouse.query(query, paramsData).toPromise()
 
       params[col] = {}
 
       const size = _size(res)
       for (let j = 0; j < size; ++j) {
         const key = res[j][col]
-        const value = res[j]['count()']
-        params[col][key] = value
+
+        if (isPerformance) {
+          params[col][key] = _round(
+            millisecondsToSeconds(res[j]['avg(pageLoad)']),
+            2,
+          )
+          continue
+        }
+
+        params[col][key] = res[j]['count()']
       }
     })
 
     await Promise.all(paramsPromises)
 
-    if (!_some(_values(params), val => !_isEmpty(val))) {
-      return Promise.resolve()
-    }
+    return params
+  }
 
-    // Average session duration calculation
-    let avgSdur = 0
-    if (!customEVFilterApplied) {
-      const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL AND unique='1'`
-      const avgSdurObject = await clickhouse
-        .query(avgSdurQuery, paramsData)
-        .toPromise()
-      avgSdur = _round(avgSdurObject[0]['avg(sdur)'])
-    }
+  async calculateAverageSessionDuration(
+    subQuery: string,
+    paramsData: any,
+  ): Promise<number> {
+    const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL AND unique='1'`
+    const avgSdurObject = await clickhouse
+      .query(avgSdurQuery, paramsData)
+      .toPromise()
 
+    return _round(avgSdurObject[0]['avg(sdur)'])
+  }
+
+  generateXAxis(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+  ): IGenerateXAxis {
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
@@ -650,10 +833,12 @@ export class AnalyticsService {
         break
 
       default:
-        return Promise.reject()
+        throw new BadRequestException(
+          `The provided time bucket (${timeBucket}) is incorrect`,
+        )
     }
 
-    let x = []
+    const x = []
 
     while (groupDateIterator < iterateTo) {
       const nextIteration = groupDateIterator.add(1, timeBucket)
@@ -662,71 +847,14 @@ export class AnalyticsService {
     }
 
     const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
-    let query = ''
 
-    if (customEVFilterApplied) {
-      for (let i = 0; i < _size(x); ++i) {
-        if (i > 0) {
-          query += ' UNION ALL '
-        }
-
-        query += `select ${i} index, count() from customEV where ${
-          paramsData.params.ev_exclusive ? 'NOT' : ''
-        } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${
-          xM[i]
-        }' and '${xM[1 + i]}' ${filtersQuery}`
-      }
-
-      // @ts-ignore
-      const result: Array<ChartCHResponse> = (
-        await clickhouse.query(query, paramsData).toPromise()
-      )
-        // @ts-ignore
-        .sort((a, b) => a.index - b.index)
-
-      const uniques = []
-      const sdur = []
-
-      for (let i = 0; i < _size(x); ++i) {
-        uniques[i] = result[i]['count()']
-        sdur[i] = 0
-      }
-
-      if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-        x = _map(x, el =>
-          dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
-        )
-      }
-
-      return Promise.resolve({
-        params,
-        chart: {
-          x,
-          visits: uniques,
-          uniques,
-          sdur,
-        },
-        avgSdur,
-      })
+    return {
+      x,
+      xM,
     }
+  }
 
-    for (let i = 0; i < _size(x); ++i) {
-      if (i > 0) {
-        query += ' UNION ALL '
-      }
-
-      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
-    }
-
-    // @ts-ignore
-    const result: Array<ChartCHResponse> = (
-      await clickhouse.query(query, paramsData).toPromise()
-    )
-      // @ts-ignore
-      .sort((a, b) => a.index - b.index)
-
+  extractChartData(result, x: string[]): IExtractChartData {
     let visits = []
     let uniques = []
     let sdur = []
@@ -765,13 +893,6 @@ export class AnalyticsService {
 
     visits = nullifyMissingElements(visits, _size(x))
     uniques = nullifyMissingElements(uniques, _size(x))
-
-    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-      x = _map(x, el =>
-        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
-      )
-    }
-
     // to replace nulls with zeros
     sdur = _map(sdur, el => el || 0)
 
@@ -779,6 +900,146 @@ export class AnalyticsService {
     while (_size(sdur) < _size(uniques)) {
       sdur.push(0)
     }
+
+    return {
+      visits,
+      uniques,
+      sdur,
+    }
+  }
+
+  updateXAxisTimezone(x: string[], timezone: string): string[] {
+    if (timezone === DEFAULT_TIMEZONE || !isValidTimezone(timezone)) {
+      return x
+    }
+
+    return _map(x, el =>
+      dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
+    )
+  }
+
+  generateAnalyticsAggregationQuery(
+    x: string[],
+    xM: string[],
+    filtersQuery: string,
+  ): string {
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
+    }
+
+    return query
+  }
+
+  generateCustomEventsAggregationQuery(
+    x: string[],
+    xM: string[],
+    filtersQuery: string,
+    paramsData: any,
+  ): string {
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, count() from customEV where ${
+        paramsData.params.ev_exclusive ? 'NOT' : ''
+      } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery}`
+    }
+
+    return query
+  }
+
+  async groupByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: any,
+    timezone: string,
+    customEVFilterApplied: boolean,
+    parsedFilters: Array<{ [key: string]: string }>,
+  ): Promise<object | void> {
+    const params = await this.generateParams(
+      parsedFilters,
+      subQuery,
+      customEVFilterApplied,
+      paramsData,
+      false,
+      false,
+    )
+
+    if (!_some(_values(params), val => !_isEmpty(val))) {
+      return Promise.resolve()
+    }
+
+    const avgSdur = customEVFilterApplied
+      ? 0
+      : await this.calculateAverageSessionDuration(subQuery, paramsData)
+
+    const axis = this.generateXAxis(timeBucket, from, to)
+    let { x } = axis
+    const { xM } = axis
+
+    if (customEVFilterApplied) {
+      const query = this.generateCustomEventsAggregationQuery(
+        x,
+        xM,
+        filtersQuery,
+        paramsData,
+      )
+
+      const result = <Array<ChartCHResponse>>(
+        (await clickhouse.query(query, paramsData).toPromise()).sort(
+          (a: ChartCHResponse, b: ChartCHResponse) => a.index - b.index,
+        )
+      )
+
+      const uniques = []
+      const sdur = []
+
+      for (let i = 0; i < _size(x); ++i) {
+        uniques[i] = result[i]['count()']
+        sdur[i] = 0
+      }
+
+      x = this.updateXAxisTimezone(x, timezone)
+
+      return Promise.resolve({
+        params,
+        chart: {
+          x,
+          visits: uniques,
+          uniques,
+          sdur,
+        },
+        avgSdur,
+      })
+    }
+
+    const query = this.generateAnalyticsAggregationQuery(x, xM, filtersQuery)
+
+    const result = <Array<ChartCHResponse>>(
+      (await clickhouse.query(query, paramsData).toPromise()).sort(
+        (a: ChartCHResponse, b: ChartCHResponse) => a.index - b.index,
+      )
+    )
+
+    const { visits, uniques, sdur } = this.extractChartData(result, x)
+
+    x = this.updateXAxisTimezone(x, timezone)
 
     return Promise.resolve({
       params,
@@ -801,57 +1062,22 @@ export class AnalyticsService {
     paramsData: object,
     timezone: string,
   ): Promise<object | void> {
-    const params = {}
-
-    const paramsPromises = _map(captchaColumns, async captchaColumn => {
-      const query1 = `SELECT ${captchaColumn}, count(*) ${subQuery} AND ${captchaColumn} IS NOT NULL GROUP BY ${captchaColumn}`
-      const res = await clickhouse.query(query1, paramsData).toPromise()
-
-      params[captchaColumn] = {}
-
-      const size = _size(res)
-      for (let j = 0; j < size; ++j) {
-        const key = res[j][captchaColumn]
-        const value = res[j]['count()']
-        params[captchaColumn][key] = value
-      }
-    })
-
-    await Promise.all(paramsPromises)
+    const params = await this.generateParams(
+      null,
+      subQuery,
+      false,
+      paramsData,
+      true,
+      false,
+    )
 
     if (!_some(_values(params), val => !_isEmpty(val))) {
       return Promise.resolve()
     }
 
-    let groupDateIterator
-    const now = dayjs.utc().endOf(timeBucket)
-    const djsTo = dayjs.utc(to).endOf(timeBucket)
-    const iterateTo = djsTo > now ? now : djsTo
-
-    switch (timeBucket) {
-      case TimeBucketType.HOUR:
-        groupDateIterator = dayjs.utc(from).startOf('hour')
-        break
-
-      case TimeBucketType.DAY:
-      case TimeBucketType.WEEK:
-      case TimeBucketType.MONTH:
-        groupDateIterator = dayjs.utc(from).startOf('day')
-        break
-
-      default:
-        return Promise.reject()
-    }
-
-    let x = []
-
-    while (groupDateIterator < iterateTo) {
-      const nextIteration = groupDateIterator.add(1, timeBucket)
-      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
-      groupDateIterator = nextIteration
-    }
-
-    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    const axis = this.generateXAxis(timeBucket, from, to)
+    let { x } = axis
+    const { xM } = axis
     let query = ''
 
     for (let i = 0; i < _size(x); ++i) {
@@ -864,12 +1090,11 @@ export class AnalyticsService {
       }' and '${xM[1 + i]}' ${filtersQuery}`
     }
 
-    // @ts-ignore
-    const result: Array<ChartCHResponse> = (
-      await clickhouse.query(query, paramsData).toPromise()
+    const result = <Array<ChartCHResponse>>(
+      (await clickhouse.query(query, paramsData).toPromise()).sort(
+        (a: ChartCHResponse, b: ChartCHResponse) => a.index - b.index,
+      )
     )
-      // @ts-ignore
-      .sort((a, b) => a.index - b.index)
     let results = []
 
     let idx = 0
@@ -884,11 +1109,7 @@ export class AnalyticsService {
 
     results = nullifyMissingElements(results, _size(x))
 
-    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-      x = _map(x, el =>
-        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
-      )
-    }
+    x = this.updateXAxisTimezone(x, timezone)
 
     return Promise.resolve({
       params,
@@ -899,87 +1120,7 @@ export class AnalyticsService {
     })
   }
 
-  async groupPerfByTimeBucket(
-    timeBucket: TimeBucketType,
-    from: string,
-    to: string,
-    subQuery: string,
-    filtersQuery: string,
-    paramsData: object,
-    timezone: string,
-  ): Promise<object | void> {
-    const params = {}
-
-    const paramsPromises = _map(perfCols, async perfColumn => {
-      const query = `SELECT ${perfColumn}, avg(pageLoad) ${subQuery} AND ${perfColumn} IS NOT NULL GROUP BY ${perfColumn}`
-      const res = await clickhouse.query(query, paramsData).toPromise()
-
-      params[perfColumn] = {}
-
-      const size = _size(res)
-      for (let j = 0; j < size; ++j) {
-        const key = res[j][perfColumn]
-        params[perfColumn][key] = _round(
-          millisecondsToSeconds(res[j]['avg(pageLoad)']),
-          2,
-        )
-      }
-    })
-
-    await Promise.all(paramsPromises)
-
-    if (!_some(_values(params), val => !_isEmpty(val))) {
-      return Promise.resolve()
-    }
-
-    let groupDateIterator
-    const now = dayjs.utc().endOf(timeBucket)
-    const djsTo = dayjs.utc(to).endOf(timeBucket)
-    const iterateTo = djsTo > now ? now : djsTo
-
-    switch (timeBucket) {
-      case TimeBucketType.HOUR:
-        groupDateIterator = dayjs.utc(from).startOf('hour')
-        break
-
-      case TimeBucketType.DAY:
-      case TimeBucketType.WEEK:
-      case TimeBucketType.MONTH:
-        groupDateIterator = dayjs.utc(from).startOf('day')
-        break
-
-      default:
-        return Promise.reject()
-    }
-
-    let x = []
-
-    while (groupDateIterator < iterateTo) {
-      const nextIteration = groupDateIterator.add(1, timeBucket)
-      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
-      groupDateIterator = nextIteration
-    }
-
-    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
-    let query = ''
-
-    for (let i = 0; i < _size(x); ++i) {
-      if (i > 0) {
-        query += ' UNION ALL '
-      }
-
-      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
-    }
-
-    // @ts-ignore
-    const result: Array<ChartCHResponse> = (
-      await clickhouse.query(query, paramsData).toPromise()
-    )
-      // @ts-ignore
-      .sort((a, b) => a.index - b.index)
-
+  extractPerformanceChartData(result: any, x: string[]) {
     const dns = []
     const tls = []
     const conn = []
@@ -1016,23 +1157,67 @@ export class AnalyticsService {
       if (!ttfb[i]) ttfb[i] = 0
     }
 
-    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-      x = _map(x, el =>
-        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
-      )
+    return {
+      dns,
+      tls,
+      conn,
+      response,
+      render,
+      domLoad,
+      ttfb,
     }
+  }
+
+  async groupPerfByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    timezone: string,
+  ): Promise<object | void> {
+    const params = await this.generateParams(
+      null,
+      subQuery,
+      false,
+      paramsData,
+      false,
+      true,
+    )
+
+    if (!_some(_values(params), val => !_isEmpty(val))) {
+      return Promise.resolve()
+    }
+
+    const axis = this.generateXAxis(timeBucket, from, to)
+    let { x } = axis
+    const { xM } = axis
+    let query = ''
+
+    for (let i = 0; i < _size(x); ++i) {
+      if (i > 0) {
+        query += ' UNION ALL '
+      }
+
+      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
+        xM[i]
+      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
+    }
+
+    const result = <Array<ChartCHResponse>>(
+      (await clickhouse.query(query, paramsData).toPromise()).sort(
+        (a: ChartCHResponse, b: ChartCHResponse) => a.index - b.index,
+      )
+    )
+
+    x = this.updateXAxisTimezone(x, timezone)
 
     return Promise.resolve({
       params,
       chart: {
         x,
-        dns,
-        tls,
-        conn,
-        response,
-        render,
-        domLoad,
-        ttfb,
+        ...this.extractPerformanceChartData(result, x),
       },
     })
   }
@@ -1040,10 +1225,9 @@ export class AnalyticsService {
   async processCustomEV(query: string, params: object): Promise<object> {
     const result = {}
 
-    // @ts-ignore
-    const rawCustoms: Array<CustomsCHResponse> = await clickhouse
-      .query(query, params)
-      .toPromise()
+    const rawCustoms = <Array<CustomsCHResponse>>(
+      await clickhouse.query(query, params).toPromise()
+    )
     const size = _size(rawCustoms)
 
     for (let i = 0; i < size; ++i) {
@@ -1067,35 +1251,9 @@ export class AnalyticsService {
     paramsData: object,
     timezone: string,
   ): Promise<object | void> {
-    let groupDateIterator
-    const now = dayjs.utc().endOf(timeBucket)
-    const djsTo = dayjs.utc(to).endOf(timeBucket)
-    const iterateTo = djsTo > now ? now : djsTo
-
-    switch (timeBucket) {
-      case TimeBucketType.HOUR:
-        groupDateIterator = dayjs.utc(from).startOf('hour')
-        break
-
-      case TimeBucketType.DAY:
-      case TimeBucketType.WEEK:
-      case TimeBucketType.MONTH:
-        groupDateIterator = dayjs.utc(from).startOf('day')
-        break
-
-      default:
-        return Promise.reject()
-    }
-
-    let x = []
-
-    while (groupDateIterator < iterateTo) {
-      const nextIteration = groupDateIterator.add(1, timeBucket)
-      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
-      groupDateIterator = nextIteration
-    }
-
-    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    const axis = this.generateXAxis(timeBucket, from, to)
+    let { x } = axis
+    const { xM } = axis
     let query = ''
 
     for (let i = 0; i < _size(x); ++i) {
@@ -1108,12 +1266,11 @@ export class AnalyticsService {
       }' and '${xM[1 + i]}' ${filtersQuery} group by pid, ev`
     }
 
-    // @ts-ignore
-    const result: Array<CustomsCHResponse> = (
-      await clickhouse.query(query, paramsData).toPromise()
+    const result = <Array<CustomsCHResponse>>(
+      (await clickhouse.query(query, paramsData).toPromise()).sort(
+        (a: CustomsCHResponse, b: CustomsCHResponse) => a.index - b.index,
+      )
     )
-      // @ts-ignore
-      .sort((a, b) => a.index - b.index)
 
     const customEvents = {}
 
@@ -1134,11 +1291,7 @@ export class AnalyticsService {
       customEvents[ev] = nullifyMissingElements(customEvents[ev], _size(x))
     }
 
-    if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-      x = _map(x, el =>
-        dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
-      )
-    }
+    x = this.updateXAxisTimezone(x, timezone)
 
     return Promise.resolve({
       chart: {
