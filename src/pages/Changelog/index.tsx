@@ -17,6 +17,12 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-04-27',
+    changes: [
+      'Added user flow analytics.',
+    ],
+  },
+  {
     date: '2023-04-22',
     changes: [
       'Added an ability to partially delete project related analytics data.',
