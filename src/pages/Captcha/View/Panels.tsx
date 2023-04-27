@@ -64,7 +64,6 @@ const PanelContainer = ({
             &nbsp;
           </>
         )}
-        {name}
       </h3>
       <div className='flex'>
         {(checkIfBarsNeeded(type)) && (
@@ -515,6 +514,7 @@ const Panel = ({
       </PanelContainer>
     )
   }
+
   // Showing chart of stats a data (start if)
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')

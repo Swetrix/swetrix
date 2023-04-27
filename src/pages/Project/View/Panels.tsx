@@ -5,7 +5,7 @@ import {
   ArrowSmallUpIcon, ArrowSmallDownIcon, ArrowLongRightIcon, ArrowLongLeftIcon,
 } from '@heroicons/react/24/solid'
 import {
-  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon,
+  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon, RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -35,14 +35,18 @@ import Sort from 'ui/icons/Sort'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import Chart from 'ui/Chart'
+
+import { PROJECT_TABS } from 'redux/constants'
+
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
+import UserFlow from './components/UserFlow'
 import { iconClassName } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
 
-const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv']
+const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv', 'pg']
 
 // function that checks if there are custom tabs for a specific type
 const checkCustomTabs = (panelID: string, customTabs: any) => {
@@ -57,7 +61,7 @@ const checkIfBarsNeeded = (panelID: string) => {
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs,
+  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab,
 }: {
   name: string,
   children?: React.ReactNode,
@@ -68,9 +72,10 @@ const PanelContainer = ({
   activeFragment: number | string,
   setActiveFragment: (arg: number) => void,
   customTabs?: any,
+  activeTab?: string,
 }): JSX.Element => (
   <div
-    className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
+    className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
       'pb-12': !noSwitch,
       'pb-5': noSwitch,
     })}
@@ -114,6 +119,25 @@ const PanelContainer = ({
             />
           </>
         )}
+
+        {(type === 'pg' && activeTab !== PROJECT_TABS.performance) && (
+          <>
+            <RectangleGroupIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                'text-blue-500': activeFragment === 1,
+                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+              })}
+              onClick={() => setActiveFragment(1)}
+            />
+            <ArrowsPointingOutIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
+                hidden: activeFragment === 0,
+              })}
+              onClick={openModal}
+            />
+          </>
+        )}
+
         {/* if this tab using Circle showing stats panel */}
         {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
           <ChartPieIcon
@@ -163,6 +187,7 @@ PanelContainer.defaultProps = {
   setActiveFragment: () => { },
   openModal: () => { },
   customTabs: [],
+  activeTab: '',
 }
 
 // First tab with stats
@@ -649,7 +674,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs,
+  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab,
 }: {
   name: string
   data: any
@@ -663,6 +688,13 @@ const Panel = ({
   hideFilters: boolean
   onFilter: any
   customTabs?: any
+  pid?: string | null
+  period?: string | null
+  timeBucket?: string | null
+  from?: string | null
+  to?: string | null
+  timezone?: string | null
+  activeTab?: string
 }): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -672,6 +704,7 @@ const Panel = ({
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_PANEL), [keys])
   const [activeFragment, setActiveFragment] = useState(0)
   const [modal, setModal] = useState(false)
+  const [isReversedUserFlow, setIsReversedUserFlow] = useState<boolean>(false)
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_PANEL)
 
@@ -734,6 +767,63 @@ const Panel = ({
       </PanelContainer>
     )
   }
+
+  if (id === 'pg' && activeFragment === 1) {
+    return (
+      <PanelContainer
+        name={name}
+        icon={icon}
+        type={id}
+        activeFragment={activeFragment}
+        setActiveFragment={setActiveFragment}
+        openModal={() => setModal(true)}
+        customTabs={customTabs}
+      >
+        {/* @ts-ignore */}
+        <UserFlow
+          disableLegend
+          pid={pid || ''}
+          period={period || ''}
+          timeBucket={timeBucket || ''}
+          from={from || ''}
+          to={to || ''}
+          timezone={timezone || ''}
+          t={t}
+        />
+        <Modal
+          onClose={() => setModal(false)}
+          closeText={t('common.close')}
+          isOpened={modal}
+          customButtons={(
+            <button
+              type='button'
+              onClick={() => setIsReversedUserFlow(!isReversedUserFlow)}
+              className='mt-3 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
+            >
+              {t('project.reverse')}
+            </button>
+          )}
+          message={(
+            <div className='h-[500px] dark:text-gray-800'>
+              {/* @ts-ignore */}
+              <UserFlow
+                pid={pid || ''}
+                period={period || ''}
+                timeBucket={timeBucket || ''}
+                from={from || ''}
+                to={to || ''}
+                timezone={timezone || ''}
+                isReversed={isReversedUserFlow}
+                t={t}
+              />
+            </div>
+          )}
+          size='large'
+        />
+      </PanelContainer>
+    )
+  }
+
   // Showing chart of stats a data (start if)
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')
@@ -780,6 +870,7 @@ const Panel = ({
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
         customTabs={customTabs}
+        activeTab={activeTab}
       >
         {_isEmpty(data) ? (
           <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
@@ -810,6 +901,7 @@ const Panel = ({
         setActiveFragment={setActiveFragment}
         openModal={() => setModal(true)}
         customTabs={customTabs}
+        activeTab={activeTab}
       >
         {/* eslint-disable-next-line react/no-danger */}
         <div dangerouslySetInnerHTML={{ __html: content }} />
@@ -818,7 +910,7 @@ const Panel = ({
   }
 
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs}>
+    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs} activeTab={activeTab}>
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}
@@ -949,6 +1041,13 @@ Panel.defaultProps = {
   hideFilters: false,
   icon: null,
   customTabs: [],
+  to: null,
+  from: null,
+  timezone: null,
+  timeBucket: null,
+  period: null,
+  pid: null,
+  activeTab: null,
 }
 
 const PanelMemo = memo(Panel)
