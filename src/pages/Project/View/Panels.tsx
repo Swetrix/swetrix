@@ -773,6 +773,7 @@ const Panel = ({
         openModal={() => setModal(true)}
         customTabs={customTabs}
       >
+        {/* @ts-ignore */}
         <SankeyChart
           disableLegend
           pid={pid || ''}
@@ -797,6 +798,7 @@ const Panel = ({
           )}
           message={(
             <div className='h-96 dark:text-gray-800'>
+              {/* @ts-ignore */}
               <SankeyChart
                 pid={pid || ''}
                 period={period || ''}
