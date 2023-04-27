@@ -454,13 +454,7 @@ export class AnalyticsController {
     @Query() data: GetUserFlowDTO,
     @CurrentUserId() uid: string,
   ): Promise<IUserFlow> {
-    const {
-      pid,
-      period,
-      from,
-      to,
-      timezone = DEFAULT_TIMEZONE,
-    } = data
+    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
