@@ -423,7 +423,7 @@ const ViewProject = ({
         return generete
       })
     } catch (e) {
-      console.log('FAILED TO LOAD CUSTOM EVENTS', e)
+      console.error('[ERROR] FAILED TO LOAD CUSTOM EVENTS', e)
     } finally {
       setDataLoading(false)
     }
@@ -1455,7 +1455,7 @@ const ViewProject = ({
                           }}
                           className={cx(
                             isCurrent
-                              ? 'border-indigo-700 text-indigo-700 dark:text-indigo-500 dark:border-indigo-500'
+                              ? 'border-indigo-700 text-indigo-700 dark:text-gray-50 dark:border-gray-50'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300',
                             'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
                           )}
@@ -1463,7 +1463,7 @@ const ViewProject = ({
                         >
                           <tab.icon
                             className={cx(
-                              isCurrent ? 'text-indigo-700 dark:text-indigo-500' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
+                              isCurrent ? 'text-indigo-700 dark:text-gray-50' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
                               '-ml-0.5 mr-2 h-5 w-5',
                             )}
                             aria-hidden='true'
