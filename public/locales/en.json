@@ -668,7 +668,8 @@
       "add": "Add a recipient",
       "reportFrequency": "Report frequency"
     },
-    "page": "Page"
+    "page": "Page",
+    "reverse": "Reverse"
   },
   "billing": {
     "title": "Billing & Plans",
