@@ -5,6 +5,7 @@ import { getItem, removeItem, setItem } from 'utils/localstorage'
 import {
   getProjectCacheKey, LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, getProjectCaptchaCacheKey,
 } from 'redux/constants'
+import { IUserFlow } from 'redux/models/IUserFlow'
 
 export const getInitialViewPrefs = (LS_VIEW: string) => {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -32,6 +33,12 @@ interface IInitialState {
       rangeDate?: Date[]
     },
   } | null
+  userFlowAscending: {
+    [key: string]: IUserFlow
+  }
+  userFlowDescending: {
+    [key: string]: IUserFlow
+  }
 }
 
 const initialState: IInitialState = {
@@ -41,6 +48,8 @@ const initialState: IInitialState = {
   captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING) || {},
   projectViewPrefs: getInitialViewPrefs(LS_VIEW_PREFS_SETTING),
   customEventsPrefs: {},
+  userFlowAscending: {},
+  userFlowDescending: {},
 }
 
 const cacheSlice = createSlice({
@@ -199,6 +208,22 @@ const cacheSlice = createSlice({
           ...state.customEventsPrefs[payload.pid],
           ...payload.data,
         },
+      }
+    },
+    setUserFlowAscending(state, { payload }: PayloadAction<{ pid: string, period: string, data: IUserFlow }>) {
+      const key = payload.period + payload.pid
+
+      state.userFlowAscending = {
+        ...state.userFlowAscending,
+        [key]: payload.data,
+      }
+    },
+    setUserFlowDescending(state, { payload }: PayloadAction<{ pid: string, period: string, data: IUserFlow }>) {
+      const key = payload.period + payload.pid
+
+      state.userFlowDescending = {
+        ...state.userFlowDescending,
+        [key]: payload.data,
       }
     },
   },

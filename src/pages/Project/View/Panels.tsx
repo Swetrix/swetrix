@@ -756,7 +756,6 @@ const Panel = ({
   }
 
   if (id === 'pg' && activeFragment === 1) {
-    // setModal(true)
     return (
       <PanelContainer
         name={name}

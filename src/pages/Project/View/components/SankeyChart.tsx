@@ -1,5 +1,7 @@
 import React from 'react'
 import { ResponsiveSankey } from '@nivo/sankey'
+import { connect } from 'react-redux'
+import { StateType } from 'redux/store'
 
 const dataTest = {
   nodes: [
