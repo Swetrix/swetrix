@@ -97,7 +97,7 @@ const UserFlow = ({
     return <Loader />
   }
 
-  if (_isEmpty(userFlowAscending) && _isEmpty(userFlowDescending)) {
+  if ((_isEmpty(userFlowAscending) && _isEmpty(userFlowDescending)) || (_isEmpty(userFlowAscending?.nodes) && _isEmpty(userFlowDescending?.links))) {
     return (
       <p className='flex mt-4 items-center justify-center text-md text-gray-900 dark:text-gray-50'>
         {t('project.userFlow.noData')}
