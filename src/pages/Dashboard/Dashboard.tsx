@@ -276,11 +276,13 @@ ProjectCard.defaultProps = {
 
 interface INoProjects {
   t: (key: string) => string
+  onClick: () => void
 }
 
-const NoProjects = ({ t }: INoProjects): JSX.Element => (
+const NoProjects = ({ t, onClick }: INoProjects): JSX.Element => (
   <button
     type='button'
+    onClick={onClick}
     className='mx-auto relative block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
   >
     <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
@@ -290,7 +292,7 @@ const NoProjects = ({ t }: INoProjects): JSX.Element => (
   </button>
 )
 
-const AddProject = ({ t, onClick }: INoProjects & { onClick?: () => void }): JSX.Element => (
+const AddProject = ({ t, onClick }: INoProjects): JSX.Element => (
   <li onClick={onClick} className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] group border-gray-300 hover:border-gray-400'>
     <div>
       <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
@@ -513,7 +515,7 @@ const Dashboard = ({
                 {tabProjects === tabForOwnedProject && (
                   <div>
                     {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
-                      <NoProjects t={t} />
+                      <NoProjects t={t} onClick={onNewProject} />
                     ) : (
                       <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
                         {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
@@ -548,7 +550,7 @@ const Dashboard = ({
                 {tabProjects === tabForCaptchaProject && (
                   <div>
                     {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
-                      <NoProjects t={t} />
+                      <NoProjects t={t} onClick={onNewProject} />
                     ) : (
                       <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
                         {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
@@ -582,7 +584,7 @@ const Dashboard = ({
                 {tabProjects === tabForSharedProject && (
                   <div>
                     {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
-                      <NoProjects t={t} />
+                      <NoProjects t={t} onClick={onNewProject} />
                     ) : (
                       <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
                         {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
