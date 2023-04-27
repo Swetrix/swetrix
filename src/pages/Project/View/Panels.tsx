@@ -35,6 +35,9 @@ import Sort from 'ui/icons/Sort'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import Chart from 'ui/Chart'
+
+import { PROJECT_TABS } from 'redux/constants'
+
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
 import UserFlow from './components/UserFlow'
@@ -58,7 +61,7 @@ const checkIfBarsNeeded = (panelID: string) => {
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs,
+  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab,
 }: {
   name: string,
   children?: React.ReactNode,
@@ -69,6 +72,7 @@ const PanelContainer = ({
   activeFragment: number | string,
   setActiveFragment: (arg: number) => void,
   customTabs?: any,
+  activeTab?: string,
 }): JSX.Element => (
   <div
     className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
@@ -116,7 +120,7 @@ const PanelContainer = ({
           </>
         )}
 
-        {type === 'pg' && (
+        {(type === 'pg' && activeTab !== PROJECT_TABS.performance) && (
           <>
             <RectangleGroupIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
@@ -131,7 +135,6 @@ const PanelContainer = ({
               })}
               onClick={openModal}
             />
-
           </>
         )}
 
@@ -184,6 +187,7 @@ PanelContainer.defaultProps = {
   setActiveFragment: () => { },
   openModal: () => { },
   customTabs: [],
+  activeTab: '',
 }
 
 // First tab with stats
@@ -670,7 +674,7 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs, pid, period, timeBucket, from, to, timezone,
+  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab,
 }: {
   name: string
   data: any
@@ -690,6 +694,7 @@ const Panel = ({
   from?: string | null
   to?: string | null
   timezone?: string | null
+  activeTab?: string
 }): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -865,6 +870,7 @@ const Panel = ({
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
         customTabs={customTabs}
+        activeTab={activeTab}
       >
         {_isEmpty(data) ? (
           <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
@@ -895,6 +901,7 @@ const Panel = ({
         setActiveFragment={setActiveFragment}
         openModal={() => setModal(true)}
         customTabs={customTabs}
+        activeTab={activeTab}
       >
         {/* eslint-disable-next-line react/no-danger */}
         <div dangerouslySetInnerHTML={{ __html: content }} />
@@ -903,7 +910,7 @@ const Panel = ({
   }
 
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs}>
+    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs} activeTab={activeTab}>
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}
@@ -1040,6 +1047,7 @@ Panel.defaultProps = {
   timeBucket: null,
   period: null,
   pid: null,
+  activeTab: null,
 }
 
 const PanelMemo = memo(Panel)

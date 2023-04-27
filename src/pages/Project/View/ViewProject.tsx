@@ -1998,6 +1998,7 @@ const ViewProject = ({
                         key={type}
                         icon={panelIcon}
                         id={type}
+                        activeTab={activeTab}
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsDataPerf.data[type]}
