@@ -213,10 +213,14 @@ const generateParamsQuery = (
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
 
-  async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
+  async checkProjectAccess(
+    pid: string,
+    uid: string | null,
+    password?: string | null,
+  ): Promise<void> {
     if (!isSelfhosted) {
       const project = await this.projectService.getRedisProject(pid)
-      this.projectService.allowedToView(project, uid)
+      this.projectService.allowedToView(project, uid, password)
     }
   }
 

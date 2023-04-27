@@ -34,6 +34,7 @@ import * as isbot from 'isbot'
 
 import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
+import { ProjectPasswordDto } from 'src/project/dto/project-password.dto'
 import {
   AnalyticsService,
   getSessionKey,
@@ -262,6 +263,7 @@ export class AnalyticsController {
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
     isCaptcha = false,
   ): Promise<any> {
     const {
@@ -282,7 +284,7 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters)
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(pid, uid, body.password)
 
     let groupFrom = from
     let groupTo = to
@@ -460,6 +462,7 @@ export class AnalyticsController {
   async getPerfData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<any> {
     const {
       pid,
@@ -479,7 +482,7 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams] =
       this.analyticsService.getFiltersQuery(filters)
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(pid, uid, body.password)
 
     let groupFrom = from
     let groupTo = to
@@ -611,8 +614,9 @@ export class AnalyticsController {
   async getCaptchaData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<any> {
-    return this.getData(data, uid, true)
+    return this.getData(data, uid, body, true)
   }
 
   @Get('/birdseye')
@@ -621,13 +625,18 @@ export class AnalyticsController {
   async getOverallStats(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<any> {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        body.password,
+      )
     })
 
     await Promise.all(validationPromises)
@@ -641,13 +650,18 @@ export class AnalyticsController {
   async getCaptchaOverallStats(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<any> {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        body.password,
+      )
     })
 
     await Promise.all(validationPromises)
@@ -689,13 +703,18 @@ export class AnalyticsController {
   async getHeartBeatStats(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<object> {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        body.password,
+      )
     })
 
     await Promise.all(validationPromises)
@@ -723,11 +742,12 @@ export class AnalyticsController {
   async getLiveVisitors(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<object> {
     const { pid } = data
 
     this.analyticsService.validatePID(pid)
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(pid, uid, body.password)
 
     const keys = await redis.keys(`sd:*:${pid}`)
 
@@ -1027,6 +1047,7 @@ export class AnalyticsController {
   async getCustomEvents(
     @Query() data: GetCustomEventsDto,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<any> {
     const {
       pid,
@@ -1047,7 +1068,7 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams] =
       this.analyticsService.getFiltersQuery(filters)
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(pid, uid, body.password)
 
     let groupFrom = from
     let groupTo = to

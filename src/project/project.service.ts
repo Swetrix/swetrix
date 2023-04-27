@@ -28,6 +28,7 @@ import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
 import { ActionTokenType } from 'src/action-tokens/action-token.entity'
 import { MailerService } from 'src/mailer/mailer.service'
 import { LetterTemplate } from 'src/mailer/letter'
+import { compareSync } from 'bcrypt'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectShare, Role } from './entity/project-share.entity'
@@ -141,6 +142,7 @@ export class ProjectService {
             'ipBlacklist',
             'captchaSecretKey',
             'isCaptchaEnabled',
+            'passwordHash',
             'isPasswordProtected',
           ],
         })
@@ -304,7 +306,19 @@ export class ProjectService {
     return this.projectsRepository.findOne({ where, ...params })
   }
 
-  allowedToView(project: Project, uid: string | null): void {
+  allowedToView(
+    project: Project,
+    uid: string | null,
+    password?: string | null,
+  ): void {
+    if (project.public && project.isPasswordProtected && password) {
+      if (compareSync(password, project.passwordHash)) {
+        return null
+      }
+
+      throw new ConflictException('Incorrect password')
+    }
+
     if (
       (project.isPasswordProtected && uid !== project.admin?.id) ||
       (project.isPasswordProtected &&

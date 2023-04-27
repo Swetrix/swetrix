@@ -54,7 +54,6 @@ export class Project {
     default: null,
     length: 60,
     nullable: true,
-    select: false,
   })
   passwordHash: string | null
 

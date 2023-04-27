@@ -33,6 +33,7 @@ import * as dayjs from 'dayjs'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
 import { isValidDate } from 'src/analytics/analytics.service'
+import { hash } from 'bcrypt'
 import {
   ProjectService,
   processProjectUser,
@@ -85,6 +86,8 @@ import {
   ConfirmTransferProjectQueriesDto,
   CancelTransferProjectQueriesDto,
 } from './dto'
+import { UpdateProjectDto } from './dto/update-project.dto'
+import { ProjectPasswordDto } from './dto/project-password.dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
 
@@ -1301,7 +1304,7 @@ export class ProjectController {
 
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
 
-    return project
+    return _omit(project, ['passwordHash'])
   }
 
   @Put('/:id')
@@ -1311,10 +1314,13 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
-    @Body() projectDTO: ProjectDTO,
+    @Body() projectDTO: UpdateProjectDto,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
+    this.logger.log(
+      { ..._omit(projectDTO, ['password']), uid, id },
+      'PUT /project/:id',
+    )
     this.projectService.validateProject(projectDTO)
     let project
 
@@ -1351,13 +1357,23 @@ export class ProjectController {
       project.name = projectDTO.name
       project.public = projectDTO.public
 
+      if (project.public && projectDTO.password) {
+        project.passwordHash = await hash(projectDTO.password, 10)
+        project.isPasswordProtected = true
+      }
+
+      if (project.isPasswordProtected && projectDTO.password === null) {
+        project.passwordHash = null
+        project.isPasswordProtected = false
+      }
+
       await this.projectService.update(id, _omit(project, ['share', 'admin']))
     }
 
     // await updateProjectRedis(id, project)
     await deleteProjectRedis(id)
 
-    return project
+    return _omit(project, ['passwordHash'])
   }
 
   // The routes related to sharing projects feature
@@ -1410,6 +1426,7 @@ export class ProjectController {
   async getOne(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) {
@@ -1432,14 +1449,14 @@ export class ProjectController {
       throw new NotFoundException('Project was not found in the database')
     }
 
-    this.projectService.allowedToView(project, uid)
+    this.projectService.allowedToView(project, uid, body.password)
 
     if (isSelfhosted) {
       return this.projectService.formatFromClickhouse(project)
     }
 
     return {
-      ..._omit(project, ['admin']),
+      ..._omit(project, ['admin', 'passwordHash']),
       isOwner: uid === project.admin?.id,
     }
   }
