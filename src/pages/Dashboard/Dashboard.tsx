@@ -156,10 +156,20 @@ const ProjectCard = ({
     }
   }
 
+  const onElementClick = (e: React.MouseEvent<HTMLLIElement>) => {
+    if (confirmed) {
+      return
+    }
+
+    e.stopPropagation()
+    e.preventDefault()
+    setShowInviteModal(true)
+  }
+
   return (
     <Link to={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}>
       <li
-        onClick={() => !confirmed && setShowInviteModal(true)}
+        onClick={onElementClick}
         className='overflow-hidden rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-700'
       >
         <div className='py-4 sm:px-4'>
