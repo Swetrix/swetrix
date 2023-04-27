@@ -99,7 +99,7 @@ const UserFlow = ({
 
   if (_isEmpty(userFlowAscending) && _isEmpty(userFlowDescending)) {
     return (
-      <p className='flex items-center justify-center text-md leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+      <p className='flex mt-4 items-center justify-center text-md text-gray-900 dark:text-gray-50'>
         {t('project.userFlow.noData')}
       </p>
     )
