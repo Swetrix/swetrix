@@ -642,10 +642,10 @@ const ViewProject = ({
     return (
       <Title title={name}>
         <EventsRunningOutBanner />
-        <div ref={ref}>
+        <div ref={ref} className=' bg-gray-50 dark:bg-gray-800'>
           <div
             className={cx(
-              'bg-gray-50 dark:bg-gray-800 py-6 px-2 sm:px-4 lg:px-8',
+              'max-w-[1440px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8',
               {
                 'min-h-min-footer': authenticated,
                 'min-h-min-footer-ad': !authenticated,
