@@ -174,7 +174,7 @@ const ProjectCard = ({
         onClick={onElementClick}
         className='overflow-hidden rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-700'
       >
-        <div className='py-4 sm:px-4'>
+        <div className='py-4 px-4'>
           <div className='flex justify-between items-center'>
             <p className='text-lg font-medium text-indigo-600 dark:text-gray-50 truncate'>
               {name}
