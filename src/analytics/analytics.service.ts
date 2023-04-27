@@ -333,7 +333,7 @@ export class AnalyticsService {
   getGroupFromTo(
     from: string,
     to: string,
-    timeBucket: TimeBucketType,
+    timeBucket: TimeBucketType | null,
     period: string,
     timezone: string,
   ): IGetGroupFromTo {
@@ -359,7 +359,9 @@ export class AnalyticsService {
         )
       }
 
-      checkIfTBAllowed(timeBucket, from, to)
+      if (timeBucket) {
+        checkIfTBAllowed(timeBucket, from, to)
+      }
 
       groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
 
@@ -412,7 +414,9 @@ export class AnalyticsService {
           .format('YYYY-MM-DD')
         groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
 
-        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
+        if (timeBucket) {
+          checkIfTBAllowed(timeBucket, from, to)
+        }
       }
     } else {
       throw new BadRequestException(

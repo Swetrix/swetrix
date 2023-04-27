@@ -464,7 +464,6 @@ export class AnalyticsController {
     const {
       pid,
       period,
-      timeBucket,
       from,
       to,
       timezone = DEFAULT_TIMEZONE,
@@ -475,13 +474,12 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      timeBucket,
+      null,
       period,
       timezone,
     )
