@@ -775,12 +775,12 @@ const Panel = ({
       >
         <SankeyChart
           disableLegend
-          pid={pid}
-          period={period}
-          timeBucket={timeBucket}
-          from={from}
-          to={to}
-          timezone={timezone}
+          pid={pid || ''}
+          period={period || ''}
+          timeBucket={timeBucket || ''}
+          from={from || ''}
+          to={to || ''}
+          timezone={timezone || ''}
         />
         <Modal
           onClose={() => setModal(false)}
@@ -798,12 +798,12 @@ const Panel = ({
           message={(
             <div className='h-96 dark:text-gray-800'>
               <SankeyChart
-                pid={pid}
-                period={period}
-                timeBucket={timeBucket}
-                from={from}
-                to={to}
-                timezone={timezone}
+                pid={pid || ''}
+                period={period || ''}
+                timeBucket={timeBucket || ''}
+                from={from || ''}
+                to={to || ''}
+                timezone={timezone || ''}
                 isReversed={isReversedUserFlow}
               />
             </div>

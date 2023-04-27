@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ResponsiveSankey } from '@nivo/sankey'
 import { connect } from 'react-redux'
 import { StateType, AppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
+import { errorsActions } from 'redux/reducers/errors'
 import { IUserFlow } from 'redux/models/IUserFlow'
 import _isEmpty from 'lodash/isEmpty'
 import { getUserFlowCacheKey } from 'redux/constants'
 import { getUserFlow } from 'api'
+import Loader from 'ui/Loader'
 
 const dataTest = {
   nodes: [
@@ -104,10 +106,15 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       period,
     }))
   },
+  generateError: (message: string) => {
+    dispatch(errorsActions.genericError({
+      message,
+    }))
+  },
 })
 
 const SankeyChart = ({
-  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache, userFlowDescendingCache, isReversed,
+  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache, userFlowDescendingCache, isReversed, setUserFlowAscending, setUserFlowDescending, generateError,
 }: {
   disableLegend?: boolean
   pid: string
@@ -123,15 +130,56 @@ const SankeyChart = ({
   from: string
   to: string
   isReversed?: boolean
+  setUserFlowAscending: (data: IUserFlow, id: string, pd: string) => void
+  setUserFlowDescending: (data: IUserFlow, id: string, pd: string) => void
+  generateError: (message: string) => void
 }) => {
-  const userFlowAscending = userFlowAscendingCache[getUserFlowCacheKey(pid, period)]
-  const userFlowDescending = userFlowDescendingCache[getUserFlowCacheKey(pid, period)]
+  const key = getUserFlowCacheKey(pid, period)
+  const userFlowAscending = userFlowAscendingCache[key]
+  const userFlowDescending = userFlowDescendingCache[key]
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  const fetchUserFlow = async () => {
+    setIsLoading(true)
+    await getUserFlow(pid, timeBucket, period, from, to, timezone)
+      .then((res: {
+        ascending: IUserFlow
+        descending: IUserFlow
+      }) => {
+        const { ascending, descending } = res
+
+        setUserFlowAscending(ascending, pid, period)
+        setUserFlowDescending(descending, pid, period)
+      })
+      .catch((err: Error) => {
+        generateError(err.message)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }
+
+  useEffect(() => {
+    if (_isEmpty(userFlowAscending) && _isEmpty(userFlowDescending)) {
+      fetchUserFlow()
+    } else if (isLoading) {
+      setIsLoading(false)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period, timeBucket, from, to, timezone, pid])
+
+  if (isLoading) {
+    return <Loader />
+  }
+
+  if (_isEmpty(userFlowAscending) && _isEmpty(userFlowDescending)) {
+    return null
+  }
 
   return (
     <ResponsiveSankey
-      data={isReversed
-        ? !_isEmpty(userFlowDescending) ? userFlowDescending : defaultData
-        : !_isEmpty(userFlowAscending) ? userFlowAscending : defaultData}
+      // @ts-ignore
+      data={isReversed ? userFlowDescending : userFlowAscending}
       margin={{
         top: 0, right: disableLegend ? 0 : 120, bottom: 0, left: 20,
       }}

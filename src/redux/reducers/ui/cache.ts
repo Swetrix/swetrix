@@ -3,7 +3,7 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import { getItem, removeItem, setItem } from 'utils/localstorage'
 import {
-  getProjectCacheKey, LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, getProjectCaptchaCacheKey,
+  getProjectCacheKey, LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, getProjectCaptchaCacheKey, getUserFlowCacheKey,
 } from 'redux/constants'
 import { IUserFlow } from 'redux/models/IUserFlow'
 
@@ -211,7 +211,7 @@ const cacheSlice = createSlice({
       }
     },
     setUserFlowAscending(state, { payload }: PayloadAction<{ pid: string, period: string, data: IUserFlow }>) {
-      const key = payload.period + payload.pid
+      const key = getUserFlowCacheKey(payload.pid, payload.period)
 
       state.userFlowAscending = {
         ...state.userFlowAscending,
@@ -219,7 +219,7 @@ const cacheSlice = createSlice({
       }
     },
     setUserFlowDescending(state, { payload }: PayloadAction<{ pid: string, period: string, data: IUserFlow }>) {
-      const key = payload.period + payload.pid
+      const key = getUserFlowCacheKey(payload.pid, payload.period)
 
       state.userFlowDescending = {
         ...state.userFlowDescending,
