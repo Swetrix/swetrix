@@ -587,7 +587,7 @@ const CustomEvents = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
-        <div className='absolute bottom-0 w-card-toggle-sm sm:w-card-toggle'>
+        <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <div>
               <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
@@ -873,7 +873,7 @@ const Panel = ({
       })}
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_PANEL && (
-        <div className='absolute bottom-0 w-card-toggle-sm sm:w-card-toggle'>
+        <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <div>
               <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>

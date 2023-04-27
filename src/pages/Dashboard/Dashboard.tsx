@@ -4,7 +4,6 @@ import React, {
 } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import cx from 'clsx'
-import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
@@ -14,8 +13,11 @@ import _isUndefined from 'lodash/isUndefined'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import { useTranslation } from 'react-i18next'
-import { EyeIcon, CalendarIcon, FolderPlusIcon } from '@heroicons/react/24/outline'
-import { ArrowSmallUpIcon, ArrowSmallDownIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import {
+  FolderPlusIcon, AdjustmentsVerticalIcon, ArrowTopRightOnSquareIcon,
+} from '@heroicons/react/24/outline'
+import { XCircleIcon } from '@heroicons/react/24/solid'
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
@@ -27,8 +29,8 @@ import Loader from 'ui/Loader'
 import {
   ActivePin, InactivePin, WarningPin, CustomPin,
 } from 'ui/Pin'
-import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import routes from 'routes'
+import { nFormatter } from 'utils/generic'
 import {
   isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard,
 } from 'redux/constants'
@@ -45,19 +47,18 @@ import { IUser } from 'redux/models/IUser'
 
 const DASHBOARD_TABS_VALUES = _values(DASHBOARD_TABS)
 
-interface IProjectCart {
+interface IProjectCard {
   name?: string
-  created?: string
   active?: boolean
   overall?: IOvervallObject
+  type: 'analytics' | 'captcha'
   t: (key: string, options?: {
     [key: string]: string | number | null | undefined
   }) => string
-  language: string
   live?: string | number
   isPublic?: boolean
   confirmed?: boolean
-  id?: string
+  id: string
   deleteProjectFailed: (message: string) => void
   sharedProjects: ISharedProject[]
   setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
@@ -69,12 +70,71 @@ interface IProjectCart {
   isTransferring?: boolean
 }
 
-const ProjectCart = ({
-  name, created, active, overall, t, language, live, isPublic, confirmed, id, deleteProjectFailed,
+interface IMiniCard {
+  labelTKey: string
+  t: (key: string, options?: {
+    [key: string]: string | number | null | undefined
+  }) => string
+  total?: number | string
+  percChange?: number
+}
+
+const MiniCard = ({
+  labelTKey, t, total, percChange,
+}: IMiniCard): JSX.Element => {
+  const statsDidGrowUp = percChange ? percChange >= 0 : false
+
+  return (
+    <div>
+      <p className='text-sm text-gray-500 dark:text-gray-300'>
+        {t(labelTKey)}
+      </p>
+
+      <div className='flex font-bold'>
+        <p className='text-xl text-gray-700 dark:text-gray-100'>
+          {_isNumber(total) ? nFormatter(total) : total}
+        </p>
+        {_isNumber(percChange) && (
+          <p
+            className={cx('flex text-xs items-center', {
+              'text-green-600': statsDidGrowUp,
+              'text-red-600': !statsDidGrowUp,
+            })}
+          >
+            {statsDidGrowUp ? (
+              <>
+                <ChevronUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <span className='sr-only'>
+                  {t('dashboard.inc')}
+                </span>
+              </>
+            ) : (
+              <>
+                <ChevronDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <span className='sr-only'>
+                  {t('dashboard.dec')}
+                </span>
+              </>
+            )}
+            {nFormatter(percChange)}
+            %
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+MiniCard.defaultProps = {
+  total: 0,
+  percChange: null,
+}
+
+const ProjectCard = ({
+  name, active, overall, t, live, isPublic, confirmed, id, deleteProjectFailed,
   sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
-  captcha, isTransferring,
-}: IProjectCart): JSX.Element => {
-  const statsDidGrowUp = overall?.percChange ? overall?.percChange >= 0 : false
+  captcha, isTransferring, type,
+}: IProjectCard): JSX.Element => {
   const [showInviteModal, setShowInviteModal] = useState(false)
 
   const onAccept = async () => {
@@ -97,103 +157,76 @@ const ProjectCart = ({
   }
 
   return (
-    <li>
-      <div onClick={() => !confirmed && setShowInviteModal(true)} className='block cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-700'>
-        <div className='px-4 py-4 sm:px-6'>
-          <div className='flex items-center justify-between'>
+    <Link to={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}>
+      <li
+        onClick={() => !confirmed && setShowInviteModal(true)}
+        className='overflow-hidden rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-700'
+      >
+        <div className='py-4 sm:px-4'>
+          <div className='flex justify-between items-center'>
             <p className='text-lg font-medium text-indigo-600 dark:text-gray-50 truncate'>
               {name}
             </p>
-            <div className='ml-2 flex-shrink-0 flex'>
-              {
-                shared && (
-                  confirmed ? (
-                    <ActivePin className='mr-2' label={t('dashboard.shared')} />
-                  ) : (
-                    <WarningPin className='mr-2' label={t('common.pending')} />
-                  )
-                )
-              }
-              {
-                isTransferring && (
-                  <CustomPin className='mr-2 !bg-indigo-500 dark:!bg-indigo-600 !text-gray-300 dark:!text-gray-300' label={t('common.transferring')} />
-                )
-              }
-              {active ? (
-                <ActivePin label={t('dashboard.active')} />
-              ) : (
-                <InactivePin label={t('dashboard.disabled')} />
-              )}
-              {isPublic && (
-                <ActivePin label={t('dashboard.public')} className='ml-2' />
-              )}
+
+            <div
+              className='flex items-center gap-2'
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Link
+                to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
+                aria-label={`${t('project.settings.settings')} ${name}`}
+              >
+                <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
+              </Link>
+              <a
+                href={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}
+                aria-label='name (opens in a new tab)'
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                <ArrowTopRightOnSquareIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
+              </a>
             </div>
           </div>
-          <div className='mt-2 sm:flex sm:justify-between'>
-            <div className='sm:flex flex-col'>
-              {overall && (
-                <div className='flex items-center mt-2 text-sm text-gray-500 dark:text-gray-300'>
-                  <EyeIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300' />
-                  {t('dashboard.pageviews')}
-                  :
-                  &nbsp;
-                  <dd className='flex items-baseline'>
-                    <p className='h-5 mr-1'>
-                      {overall?.thisWeek}
-                    </p>
-                    <p
-                      className={cx('flex text-xs -ml-1 items-baseline', {
-                        'text-green-600': statsDidGrowUp,
-                        'text-red-600': !statsDidGrowUp,
-                      })}
-                    >
-                      {statsDidGrowUp ? (
-                        <>
-                          <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
-                          <span className='sr-only'>
-                            {t('dashboard.inc')}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
-                          <span className='sr-only'>
-                            {t('dashboard.dec')}
-                          </span>
-                        </>
-                      )}
-                      {overall?.percChange}
-                      %
-                    </p>
-                  </dd>
-                </div>
-              )}
-              {!captcha && (
-                <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300 sm:mt-0'>
-                  <PulsatingCircle className='flex-shrink-0 mr-3 ml-1' />
-                  {t('dashboard.liveVisitors')}
-                  :&nbsp;
-                  {live}
-                </div>
-              )}
-            </div>
-            <div className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-300'>
-              <CalendarIcon className='flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300' />
-              <p>
-                {t('dashboard.createdAt')}
-                &nbsp;
-                <time dateTime={dayjs(created).format('YYYY-MM-DD')}>
-                  {language === 'en'
-                    ? dayjs(created).locale(language).format('MMMM D, YYYY')
-                    : dayjs(created).locale(language).format('D MMMM, YYYY')}
-                </time>
-              </p>
-            </div>
+          <div className='mt-1 flex-shrink-0 flex gap-2'>
+            {shared && (
+              confirmed ? (
+                <ActivePin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('dashboard.shared')} />
+              ) : (
+                <WarningPin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('common.pending')} />
+              )
+            )}
+            {isTransferring && (
+              <CustomPin className='!bg-indigo-500 dark:!bg-indigo-600 !text-gray-300 dark:!text-gray-300' label={t('common.transferring')} />
+            )}
+            {active ? (
+              <ActivePin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('dashboard.active')} />
+            ) : (
+              <InactivePin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('dashboard.disabled')} />
+            )}
+            {isPublic && (
+              <ActivePin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('dashboard.public')} />
+            )}
+          </div>
+          <div className='mt-4 flex-shrink-0 flex gap-5'>
+            {overall && (
+              <MiniCard
+                labelTKey='dashboard.pageviews'
+                t={t}
+                total={overall?.thisWeek}
+                percChange={overall?.percChange}
+              />
+            )}
+            {!captcha && (
+              <MiniCard
+                labelTKey='dashboard.liveVisitors'
+                t={t}
+                total={live}
+              />
+            )}
           </div>
         </div>
-      </div>
-      {
-        !confirmed && (
+        {!confirmed && (
           <Modal
             onClose={() => { setShowInviteModal(false) }}
             onSubmit={() => { setShowInviteModal(false); onAccept() }}
@@ -204,15 +237,14 @@ const ProjectCart = ({
             message={t('dashboard.invitationDesc', { project: name })}
             isOpened={showInviteModal}
           />
-        )
-      }
-    </li>
+        )}
+      </li>
+    </Link>
   )
 }
 
-ProjectCart.defaultProps = {
+ProjectCard.defaultProps = {
   isPublic: false,
-  created: '',
   overall: {
     percChange: 0,
     total: 0,
@@ -222,23 +254,36 @@ ProjectCart.defaultProps = {
   shared: false,
   captcha: false,
   confirmed: false,
-  id: '',
   name: '',
   live: 'N/A',
   isTransferring: false,
 }
 
-const NoProjects = ({ t }: {
+interface INoProjects {
   t: (key: string) => string
-}): JSX.Element => (
-  <div className='mt-5'>
-    <h3 className='text-center dark:text-gray-50'>
-      {t('dashboard.noProjects')}
-    </h3>
-    <p className='text-center dark:text-gray-50'>
+}
+
+const NoProjects = ({ t }: INoProjects): JSX.Element => (
+  <button
+    type='button'
+    className='mx-auto relative block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+  >
+    <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
+    <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50'>
       {t('dashboard.createProject')}
-    </p>
-  </div>
+    </span>
+  </button>
+)
+
+const AddProject = ({ t }: INoProjects): JSX.Element => (
+  <li className='flex justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] group border-gray-300 hover:border-gray-400'>
+    <div>
+      <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
+      <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+        {t('dashboard.newProject')}
+      </span>
+    </div>
+  </li>
 )
 
 interface DashboardProps {
@@ -278,13 +323,10 @@ const Dashboard = ({
   setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
   loadProjectsCaptcha, projectTab, liveStats,
 }: DashboardProps): JSX.Element => {
-  const { t, i18n: { language } }: {
+  const { t }: {
     t: (key: string, options?: {
       [key: string]: string | number | null | undefined
     }) => string
-    i18n: {
-      language: string
-    }
   } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState<boolean>(false)
   const history = useHistory()
@@ -324,7 +366,7 @@ const Dashboard = ({
     if (tabProjects === tabForCaptchaProject) {
       loadProjectsCaptcha(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageCaptcha - 1) * ENTRIES_PER_PAGE_DASHBOARD)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage, dashboardPaginationPageShared])
 
   const [activeDashTab, setActiveDashTab] = useState<string | null>(() => {
@@ -391,12 +433,12 @@ const Dashboard = ({
               <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
                 {t('titles.dashboard')}
               </h2>
-              <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm'>
+              <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 px-3 py-2 text-sm'>
                 <FolderPlusIcon className='w-5 h-5 mr-1' />
                 {tabProjects === tabForCaptchaProject ? t('dashboard.newCaptchaProject') : t('dashboard.newProject')}
               </span>
             </div>
-            <div className='mt-6'>
+            <div className='mt-6 mb-2'>
               {/* Dashboard tabs selector */}
               <div>
                 <div className='sm:hidden mb-2'>
@@ -427,7 +469,7 @@ const Dashboard = ({
                           type='button'
                           onClick={() => setTabProjects(tab.name)}
                           className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                            'border-indigo-500 text-indigo-600 dark:text-indigo-500': tabProjects === tab.name,
+                            'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabProjects === tab.name,
                             'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
                           })}
                           aria-current={tab.name === tabProjects ? 'page' : undefined}
@@ -448,144 +490,133 @@ const Dashboard = ({
               </Title>
             ) : (
               <>
-
                 {tabProjects === tabForOwnedProject && (
-                <div>
-                  {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
-                    <NoProjects t={t} />
-                  ) : (
-                    <div className='shadow overflow-hidden sm:rounded-md'>
-                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                  <div>
+                    {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
+                      <NoProjects t={t} />
+                    ) : (
+                      <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
                         {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, public: isPublic, isTransferring,
+                          name, id, active, overall, public: isPublic, isTransferring,
                         }) => (
-                          <div key={id}>
-                            <Link to={_replace(routes.project, ':id', id)}>
-                              <ProjectCart
-                                t={t}
-                                language={language}
-                                name={name}
-                                created={created}
-                                active={active}
-                                isPublic={isPublic}
-                                confirmed={false}
-                                overall={overall}
-                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
-                                setUserShareData={() => {}}
-                                deleteProjectFailed={() => {}}
-                                userSharedUpdate={() => {}}
-                                sharedProjects={[]}
-                                setProjectsShareData={() => {}}
-                                sharedProjectError={() => {}}
-                                isTransferring={isTransferring}
-                              />
-                            </Link>
-                          </div>
+                          <ProjectCard
+                            key={id}
+                            id={id}
+                            type='analytics'
+                            t={t}
+                            name={name}
+                            active={active}
+                            isPublic={isPublic}
+                            confirmed={false}
+                            overall={overall}
+                            live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
+                            setUserShareData={() => { }}
+                            deleteProjectFailed={() => { }}
+                            userSharedUpdate={() => { }}
+                            sharedProjects={[]}
+                            setProjectsShareData={() => { }}
+                            sharedProjectError={() => { }}
+                            isTransferring={isTransferring}
+                          />
                         ))}
+                        <AddProject t={t} />
                       </ul>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
                 )}
+
                 {tabProjects === tabForCaptchaProject && (
-                <div>
-                  {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
-                    <NoProjects t={t} />
-                  ) : (
-                    <div className='shadow overflow-hidden sm:rounded-md'>
-                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                  <div>
+                    {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
+                      <NoProjects t={t} />
+                    ) : (
+                      <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
                         {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, created, active, overall, public: isPublic,
+                          name, id, active, overall, public: isPublic,
                         }) => (
-                          <div key={id}>
-                            <Link to={_replace(routes.captcha, ':id', id)}>
-                              <ProjectCart
-                                t={t}
-                                language={language}
-                                name={name}
-                                created={created}
-                                captcha
-                                active={active}
-                                isPublic={isPublic}
-                                overall={overall}
-                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
-                                deleteProjectFailed={() => {}}
-                                sharedProjects={[]}
-                                setProjectsShareData={() => {}}
-                                setUserShareData={() => {}}
-                                userSharedUpdate={() => {}}
-                                sharedProjectError={() => {}}
-                              />
-                            </Link>
-                          </div>
+                          <ProjectCard
+                            t={t}
+                            key={id}
+                            id={id}
+                            type='captcha'
+                            name={name}
+                            captcha
+                            active={active}
+                            isPublic={isPublic}
+                            overall={overall}
+                            live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
+                            deleteProjectFailed={() => { }}
+                            sharedProjects={[]}
+                            setProjectsShareData={() => { }}
+                            setUserShareData={() => { }}
+                            userSharedUpdate={() => { }}
+                            sharedProjectError={() => { }}
+                          />
                         ))}
+                        <AddProject t={t} />
                       </ul>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
                 )}
 
                 {tabProjects === tabForSharedProject && (
-                <div>
-                  {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
-                    <NoProjects t={t} />
-                  ) : (
-                    <div className='shadow overflow-hidden sm:rounded-md'>
-                      <ul className='divide-y divide-gray-200 dark:divide-gray-500'>
+                  <div>
+                    {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
+                      <NoProjects t={t} />
+                    ) : (
+                      <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8'>
                         {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
                           project, confirmed,
-                        }) => (
-                          <div key={confirmed ? `${project?.id}-confirmed` : project?.id}>
-                            {
-                                (_isUndefined(confirmed) || confirmed) ? (
-                                  <Link to={_replace(routes.project, ':id', project?.id ? project?.id : '')}>
-                                    <ProjectCart
-                                      t={t}
-                                      language={language}
-                                      name={project?.name}
-                                      created={project?.created}
-                                      shared
-                                      active={project?.active}
-                                      isPublic={project?.public}
-                                      confirmed={confirmed}
-                                      overall={project?.overall}
-                                      live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                                      setUserShareData={() => {}}
-                                      deleteProjectFailed={() => {}}
-                                      sharedProjects={[]}
-                                      setProjectsShareData={() => {}}
-                                      userSharedUpdate={() => {}}
-                                      sharedProjectError={() => {}}
-                                    />
-                                  </Link>
-                                ) : (
-                                  <ProjectCart
-                                    t={t}
-                                    id={project?.id}
-                                    language={language}
-                                    name={project?.name}
-                                    created={project?.created}
-                                    shared
-                                    active={project?.active}
-                                    isPublic={project?.public}
-                                    overall={project?.overall}
-                                    confirmed={confirmed}
-                                    sharedProjects={user.sharedProjects}
-                                    setProjectsShareData={setProjectsShareData}
-                                    setUserShareData={setUserShareData}
-                                    live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                                    userSharedUpdate={userSharedUpdate}
-                                    sharedProjectError={sharedProjectError}
-                                    deleteProjectFailed={deleteProjectFailed}
-                                  />
-                                )
-                              }
-                          </div>
-                        ))}
+                        }) => {
+                          if (_isUndefined(confirmed) || confirmed) {
+                            return (
+                              <ProjectCard
+                                t={t}
+                                key={confirmed ? `${project?.id}-confirmed` : project?.id}
+                                type='analytics'
+                                id={project?.id}
+                                name={project?.name}
+                                shared
+                                active={project?.active}
+                                isPublic={project?.public}
+                                confirmed={confirmed}
+                                overall={project?.overall}
+                                live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
+                                setUserShareData={() => { }}
+                                deleteProjectFailed={() => { }}
+                                sharedProjects={[]}
+                                setProjectsShareData={() => { }}
+                                userSharedUpdate={() => { }}
+                                sharedProjectError={() => { }}
+                              />
+                            )
+                          }
+
+                          return (
+                            <ProjectCard
+                              t={t}
+                              key={confirmed ? `${project?.id}-confirmed` : project?.id}
+                              id={project?.id}
+                              type='analytics'
+                              name={project?.name}
+                              shared
+                              active={project?.active}
+                              isPublic={project?.public}
+                              overall={project?.overall}
+                              confirmed={confirmed}
+                              sharedProjects={user.sharedProjects}
+                              setProjectsShareData={setProjectsShareData}
+                              setUserShareData={setUserShareData}
+                              live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
+                              userSharedUpdate={userSharedUpdate}
+                              sharedProjectError={sharedProjectError}
+                              deleteProjectFailed={deleteProjectFailed}
+                            />
+                          )
+                        })}
                       </ul>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
                 )}
               </>
             )}
