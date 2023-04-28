@@ -3,6 +3,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common'
 import * as cookieParser from 'cookie-parser'
 import * as bodyParser from 'body-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+import { getBotToken } from 'nestjs-telegraf'
 
 import { isNewRelicEnabled, isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
@@ -58,6 +59,12 @@ async function bootstrap() {
   })
 
   app.use('/webhook', bodyParser.raw({ type: 'application/json' }))
+
+  if (process.env.NODE_ENV === 'production') {
+    const bot = app.get(getBotToken())
+    app.use(bot.webhookCallback(process.env.TELEGRAM_WEBHOOK_PATH))
+  }
+
   await app.listen(5005)
 }
 bootstrap()
