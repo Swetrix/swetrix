@@ -394,13 +394,13 @@
     "noConfLeft": "Tyvärr har du slut på dina förfrågningar om bekräftelse via e-post.\nSe till att du kan ta emot e-post och kontrollera din SPAM-mapp igen för meddelanden.\nDu kan försöka använda en annan e-postadress eller kontakta vår kundtjänst.",
     "timezoneDesc": "Detta kommer att vara den tidszon där data visas. Den används endast för visualisering.\nInga data kommer att ändras baserat på denna inställning.",
     "quitProject": "Are you sure you want to quit this project?",
-    "quitProjectTitle": "Quit {{project}}?",
+    "quitProjectTitle": "Avsluta {{project}}?",
     "shared": "Shared projects",
     "owned": "Owned projects",
     "sharedTable": {
-      "project": "Project",
-      "role": "Role",
-      "joinedOn": "Joined on"
+      "project": "Projekt",
+      "role": "Roll",
+      "joinedOn": "Gick med"
     },
     "noSharedProjects": "Nobody is sharing a project with you yet.",
     "2fa": "Two-factor authentication (2FA)",
@@ -478,7 +478,7 @@
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
     "sessionDuration": "Session duration",
-    "traffic": "Traffic",
+    "traffic": "Trafik",
     "performance": "Performance",
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
