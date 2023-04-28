@@ -713,11 +713,6 @@ const Header = ({
                       </Link>
                     </div>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routes.dashboard} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
-                        {t('common.dashboard')}
-                      </Link>
-                    </div>
-                    <div onClick={() => buttonRef.current?.click()}>
                       <Link to='#' className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={logoutHandler}>
                         {t('common.logout')}
                       </Link>
