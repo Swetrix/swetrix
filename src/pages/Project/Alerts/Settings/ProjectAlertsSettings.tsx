@@ -339,7 +339,7 @@ const ProjectAlertsSettings = ({
                 </>
               </Button>
               <div className='flex justify-between items-center'>
-                <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+                <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
                   {t('common.cancel')}
                 </Button>
                 <Button type='submit' primary regular>
@@ -349,7 +349,7 @@ const ProjectAlertsSettings = ({
             </div>
           ) : (
             <div className='mt-5 flex justify-between items-center'>
-              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
                 {t('common.cancel')}
               </Button>
               <Button type='submit' primary regular>

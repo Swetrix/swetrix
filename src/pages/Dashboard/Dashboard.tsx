@@ -172,7 +172,7 @@ const ProjectCard = ({
     <Link to={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}>
       <li
         onClick={onElementClick}
-        className='overflow-hidden rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-gray-700'
+        className='overflow-hidden rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-800/25'
       >
         <div className='py-4 px-4'>
           <div className='flex justify-between items-center'>
@@ -189,7 +189,7 @@ const ProjectCard = ({
                   to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
                   aria-label={`${t('project.settings.settings')} ${name}`}
                 >
-                  <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
+                  <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500' />
                 </Link>
               )}
               <a
@@ -198,7 +198,7 @@ const ProjectCard = ({
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                <ArrowTopRightOnSquareIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
+                <ArrowTopRightOnSquareIcon className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500' />
               </a>
             </div>
           </div>

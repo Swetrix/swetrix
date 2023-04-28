@@ -157,7 +157,7 @@ const Footer = ({ minimal, authenticated }: {
   }
 
   return (
-    <footer className='bg-gray-800 dark:bg-[#181F29]' aria-labelledby='footer-heading'>
+    <footer className='bg-gray-800 dark:bg-gray-750' aria-labelledby='footer-heading'>
       <h2 id='footer-heading' className='sr-only'>
         Footer
       </h2>

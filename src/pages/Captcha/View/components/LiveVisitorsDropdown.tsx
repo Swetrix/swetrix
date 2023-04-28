@@ -48,7 +48,7 @@ const LiveVisitorsDropdown = ({ live, projectId }: {
         {show ? <ChevronUpIcon className='inline w-5 h-5' /> : <ChevronDownIcon className='inline w-5 h-5' />}
       </p>
       {show && (
-        <div className='absolute z-10 mt-2 right-0 top-20 text-gray-900 bg-white border border-gray-200 rounded-md shadow-lg dark:bg-slate-900 dark:border-gray-700 min-w-[250px] max-h-[200px] overflow-auto'>
+        <div className='absolute z-10 mt-2 right-0 top-20 text-gray-900 bg-white border border-gray-200 rounded-md shadow-lg dark:bg-slate-900 dark:border-slate-700/50 min-w-[250px] max-h-[200px] overflow-auto'>
           <div className='flex flex-col w-full p-2'>
             <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
               {t('dashboard.liveVisitors')}
