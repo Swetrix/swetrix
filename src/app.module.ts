@@ -69,6 +69,9 @@ if (isTgTokenPresent) {
 }
 
 @Module({
-  imports: [...modules, IntegrationsModule],
+  imports: [
+    ...modules,
+    ...(process.env.ENABLE_INTEGRATIONS === 'true' ? [IntegrationsModule] : []),
+  ],
 })
 export class AppModule {}
