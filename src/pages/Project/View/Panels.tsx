@@ -2,8 +2,9 @@ import React, {
   memo, useState, useEffect, useMemo, Fragment,
 } from 'react'
 import {
-  ArrowSmallUpIcon, ArrowSmallDownIcon, ArrowLongRightIcon, ArrowLongLeftIcon,
+  ArrowLongRightIcon, ArrowLongLeftIcon,
 } from '@heroicons/react/24/solid'
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import {
   FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon, RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
@@ -294,14 +295,14 @@ const Overview = ({
           >
             {pageviewsDidGrowUp ? (
               <>
-                <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <ChevronUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                 <span className='sr-only'>
                   {t('dashboard.inc')}
                 </span>
               </>
             ) : (
               <>
-                <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <ChevronDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                 <span className='sr-only'>
                   {t('dashboard.dec')}
                 </span>
@@ -329,14 +330,14 @@ const Overview = ({
           >
             {uniqueDidGrowUp ? (
               <>
-                <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <ChevronUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
                 <span className='sr-only'>
                   {t('dashboard.inc')}
                 </span>
               </>
             ) : (
               <>
-                <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <ChevronDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
                 <span className='sr-only'>
                   {t('dashboard.dec')}
                 </span>
