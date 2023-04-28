@@ -49,7 +49,7 @@ const EventsRunningOutBanner = () => {
             <div className='order-3 mt-2 flex-shrink-0 w-full sm:order-2 sm:mt-0 sm:w-auto'>
               <span
                 onClick={() => setShowModeInfoModal(true)}
-                className='flex items-center justify-center cursor-pointer px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-yellow-600 bg-gray-50 hover:bg-yellow-50 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
+                className='flex items-center justify-center cursor-pointer px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-yellow-600 bg-gray-50 hover:bg-yellow-50 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
               >
                 {t('common.learnMore')}
               </span>

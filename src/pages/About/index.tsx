@@ -128,7 +128,7 @@ const team: {
 
 const About = (): JSX.Element => (
   <Title title='About us'>
-    <div className='bg-gray-50 dark:bg-gray-800 min-h-min-footer'>
+    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
       <div className='max-w-prose md:max-w-none md:w-8/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
         <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
           About us

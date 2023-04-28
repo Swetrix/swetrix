@@ -8,7 +8,6 @@ import { HelmetProvider } from 'react-helmet-async'
 // @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import 'billboard.js/dist/billboard.min.css'
-import 'prismjs/themes/prism-tomorrow.css'
 import { getAccessToken, removeAccessToken } from 'utils/accessToken'
 import { getRefreshToken } from 'utils/refreshToken'
 

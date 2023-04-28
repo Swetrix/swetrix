@@ -14,7 +14,7 @@ const typesOfCookies = [
 const CookiePolicy = () => {
   return (
     <Title title='Cookie Policy'>
-      <div className='bg-gray-50 dark:bg-gray-800'>
+      <div className='bg-gray-50 dark:bg-slate-900'>
         <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
           <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
             Cookie Policy
@@ -39,7 +39,7 @@ const CookiePolicy = () => {
                 <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                   <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
                     <table className='w-full min-w-full divide-y divide-gray-300 200 dark:divide-gray-500'>
-                      <thead className='bg-gray-50 dark:bg-gray-900'>
+                      <thead className='bg-gray-50 dark:bg-slate-800'>
                         <tr>
                           <th
                             scope='col'
@@ -55,7 +55,7 @@ const CookiePolicy = () => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800'>
+                      <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-slate-800'>
                         {_map(typesOfCookies, ({
                           cookie, description,
                         }) => (

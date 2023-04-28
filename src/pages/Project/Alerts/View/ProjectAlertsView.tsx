@@ -175,7 +175,7 @@ const ProjectAlerts = ({
                         onClick={() => {
                           history.push(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
                         }}
-                        className='dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
+                        className='dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
                         secondary
                         large
                       >

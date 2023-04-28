@@ -240,7 +240,7 @@ const Changelog = (): JSX.Element => {
 
   return (
     <Title title={t('titles.changelog')}>
-      <div className='bg-gray-50 dark:bg-gray-800 min-h-min-footer'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
           <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('titles.changelog')}

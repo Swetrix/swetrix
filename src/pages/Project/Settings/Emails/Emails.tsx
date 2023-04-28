@@ -218,7 +218,7 @@ const EmailList = ({
             />
             <Button
               type='button'
-              className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
+              className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:hover:bg-slate-700'
               small
               onClick={() => setShowDeleteModal(true)}
             >

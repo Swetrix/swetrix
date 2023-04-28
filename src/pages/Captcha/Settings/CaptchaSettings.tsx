@@ -333,7 +333,7 @@ const CaptchaSettings = ({
   return (
     <Title title={title}>
       <div
-        className={cx('min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8', {
+        className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8', {
           'pb-40': isSettings,
         })}
       >
@@ -505,7 +505,7 @@ const CaptchaSettings = ({
               />
               <div className='flex justify-between mt-8 h-20 sm:h-min'>
                 <div className='flex flex-wrap items-center'>
-                  <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
+                  <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
                     {t('common.cancel')}
                   </Button>
                   <Button type='submit' loading={projectSaving} primary regular>
@@ -537,7 +537,7 @@ const CaptchaSettings = ({
 
           {!isSettings && (
             <div>
-              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={onCancel} secondary regular>
+              <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
                 {t('common.cancel')}
               </Button>
               <Button type='submit' loading={projectSaving} primary regular>
