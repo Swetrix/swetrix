@@ -1526,8 +1526,8 @@ const ViewProject = ({
                                 '-ml-px': index > 0,
                                 'rounded-l-md': index === 0,
                                 'rounded-r-md': 1 + index === length,
-                                'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
-                                'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
+                                'z-10 border-indigo-500 text-indigo-600 dark:border-slate-200 dark:text-gray-50': timeBucket === tb,
+                                'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-slate-800 ': timeBucket !== tb,
                               },
                             )}
                           >
