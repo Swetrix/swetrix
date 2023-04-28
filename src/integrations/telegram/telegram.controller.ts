@@ -11,7 +11,7 @@ import {
 export class TelegramController {
   private readonly logger = new Logger(TelegramController.name)
 
-  @Post()
+  @Post('webhook')
   @HttpCode(HttpStatus.OK)
   async handleTelegramWebhook(@Req() request: Request) {
     this.logger.log(request.body)
