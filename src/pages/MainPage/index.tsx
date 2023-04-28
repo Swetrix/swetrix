@@ -341,7 +341,7 @@ const Main = (): JSX.Element => {
             <div className='overflow-x-clip'>
               <div className='py-20 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5'>
                 <div className='relative z-50 lg:col-span-6 rounded-xl'>
-                  <div className='bg-white dark:bg-gray-800 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
+                  <div className='bg-white dark:bg-slate-900 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
                       <p className='text-lg text-gray-900 dark:text-white text-center md:text-xl font-semibold'>
                         {t('main.signup')}
@@ -351,7 +351,7 @@ const Main = (): JSX.Element => {
                       </div>
                     </div>
                     <div className='px-4 sm:px-10'>
-                      <div className='py-6 bg-gray-50 dark:bg-gray-800  border-t-2 border-gray-200 dark:border-gray-500'>
+                      <div className='py-6 bg-gray-50 dark:bg-slate-900  border-t-2 border-gray-200 dark:border-gray-500'>
                         <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
                           <Trans
                             // @ts-ignore
@@ -410,7 +410,7 @@ const Main = (): JSX.Element => {
             </section>
             {/* end Core features section */}
             {/* section supports */}
-            <section className='bg-white dark:bg-gray-800 pt-24 sm:px-5 px-3 relative pb-28'>
+            <section className='bg-white dark:bg-slate-900 pt-24 sm:px-5 px-3 relative pb-28'>
               <h2 className='mx-auto text-gray-800 dark:text-white font-bold text-3xl sm:ext-5xl w-fit text-center'>
                 {t('main.supports')}
               </h2>
@@ -587,7 +587,7 @@ const Main = (): JSX.Element => {
                   }, index: number) => (
                     <div
                       key={item.name}
-                      className={cx('max-w-xs w-full dark:bg-gray-800', {
+                      className={cx('max-w-xs w-full dark:bg-slate-900', {
                         'mt-5 md:mt-0': index > 0,
                       })}
                       style={{
@@ -678,7 +678,7 @@ const Main = (): JSX.Element => {
             </section>
             {/* end Advantages of using open source */}
             {/* Become a developer */}
-            <section className='bg-white dark:bg-gray-800 pt-20 pb-44 relative'>
+            <section className='bg-white dark:bg-slate-900 pt-20 pb-44 relative'>
               <div className='absolute right-0 top-16 z-0'>
                 <BackgroundSvg type='threecircle' />
               </div>

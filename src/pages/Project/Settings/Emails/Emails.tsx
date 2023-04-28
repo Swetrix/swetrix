@@ -71,7 +71,7 @@ const ModalMessage = ({
       <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
         {t('project.emails.reportFrequency')}
       </label>
-      <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-gray-800', { 'border-red-300 border': errors.reportFrequency })}>
+      <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-slate-900', { 'border-red-300 border': errors.reportFrequency })}>
         {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         {_map(reportFrequencyForEmailsOptions, (item, index) => (
           <div key={item.value}>
@@ -185,7 +185,7 @@ const EmailList = ({
               />
             </button>
             {open && (
-              <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
+              <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
                 {_map(reportFrequencyForEmailsOptions, (item) => (
                   <li onClick={() => changeRole(item)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={item.value}>
                     <div>

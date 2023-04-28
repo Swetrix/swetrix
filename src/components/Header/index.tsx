@@ -77,11 +77,11 @@ const ThemeMenu = ({
       leaveFrom='transform opacity-100 scale-100'
       leaveTo='transform opacity-0 scale-95'
     >
-      <Menu.Items className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
+      <Menu.Items className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white dark:bg-slate-900 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
         <Menu.Item>
           {({ active }) => (
             <div
-              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-indigo-600 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-gray-700', {
+              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-indigo-600 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800', {
                 'bg-gray-100 dark:bg-gray-700': active,
               })}
               onClick={() => switchTheme('light')}
@@ -94,7 +94,7 @@ const ThemeMenu = ({
         <Menu.Item>
           {({ active }) => (
             <div
-              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-indigo-400 hover:bg-gray-100 hover:dark:bg-gray-700', {
+              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-indigo-400 hover:bg-gray-100 hover:dark:bg-slate-800', {
                 'bg-gray-100 dark:bg-gray-700': active,
               })}
               onClick={() => switchTheme('dark')}
@@ -138,7 +138,7 @@ const ProfileMenu = ({
       leaveFrom='transform opacity-100 scale-100'
       leaveTo='transform opacity-0 scale-95'
     >
-      <Menu.Items className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
+      <Menu.Items className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white dark:bg-slate-900 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
         <div className='border-gray-200 dark:border-gray-700 border-b-[1px]'>
           <Menu.Item>
             <p className='truncate py-2 px-4' role='none'>
@@ -165,7 +165,7 @@ const ProfileMenu = ({
               <>
                 <div>
                   <Menu.Button
-                    className='flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-gray-700'
+                    className='flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800'
                   >
                     <div className='flex'>
                       <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={20} alt='' aria-hidden='true' />

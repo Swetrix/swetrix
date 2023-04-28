@@ -138,7 +138,7 @@ const ProjectAlerts = ({
               {_map(projectAlerts, ({
                 id, name, queryMetric, lastTriggered,
               }) => (
-                <tr key={id} className='bg-white dark:bg-gray-800 rounded-lg shadow-lg'>
+                <tr key={id} className='bg-white dark:bg-slate-900 rounded-lg shadow-lg'>
                   <td className='p-4 pr-0 rounded-l-lg justify-start'>
                     <div className='flex flex-col'>
                       <div className='text-lg font-bold dark:text-white text-gray-800 hidden lg:block'>{name}</div>

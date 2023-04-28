@@ -56,7 +56,7 @@ const ConfirmReportsShare = (): JSX.Element => {
   if (error) {
     return (
       <Title title={t('titles.invitation')}>
-        <div className='bg-gray-50 dark:bg-gray-800 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='bg-gray-50 dark:bg-slate-900 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
           <div className='max-w-max mx-auto'>
             <main className='sm:flex'>
               <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
@@ -90,7 +90,7 @@ const ConfirmReportsShare = (): JSX.Element => {
 
   return (
     <Title title={t('titles.invitation')}>
-      <div className='bg-gray-50 dark:bg-gray-800 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+      <div className='bg-gray-50 dark:bg-slate-900 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
         <div className='max-w-max mx-auto'>
           <main className='sm:flex'>
             <CheckCircleIcon className='h-12 w-12 text-green-500 dark:text-green-400' aria-hidden='true' />
