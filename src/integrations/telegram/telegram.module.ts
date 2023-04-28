@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { TelegrafModule } from 'nestjs-telegraf'
+import { TelegramController } from './telegram.controller'
 
 @Module({
   imports: [
@@ -27,5 +28,6 @@ import { TelegrafModule } from 'nestjs-telegraf'
       }),
     }),
   ],
+  controllers: [TelegramController],
 })
 export class TelegramModule {}
