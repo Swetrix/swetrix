@@ -187,7 +187,7 @@ const BasicSignup = (): JSX.Element => {
       </Button>
       {/* SSO options */}
       <div>
-        <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+        <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-slate-700' />
         <p className='text-sm mt-2 mb-2 text-center text-gray-500 dark:text-gray-100'>
           {t('auth.socialisation.orSingUpWith')}
         </p>

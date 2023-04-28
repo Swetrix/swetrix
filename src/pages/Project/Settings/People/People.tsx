@@ -102,7 +102,7 @@ const UsersList = ({
               />
             </button>
             {open && (
-              <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
+              <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
                 {_map(roles, (itRole) => (
                   <li onClick={() => changeRole(itRole)} className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center' key={itRole}>
                     <div>
@@ -138,7 +138,7 @@ const UsersList = ({
             />
             <Button
               type='button'
-              className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
+              className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:hover:bg-slate-700'
               small
               onClick={() => setShowDeleteModal(true)}
             >
@@ -427,7 +427,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
                 {t('project.settings.role')}
               </label>
-              <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-gray-800', { 'border-red-300 border': errors.role })}>
+              <div className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-slate-900', { 'border-red-300 border': errors.role })}>
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label className={cx('dark:border-gray-500 rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer border-gray-200', { 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10': form.role === roleAdmin.role, 'border-gray-200': form.role !== roleAdmin.role })}>
                   <input

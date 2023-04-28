@@ -166,8 +166,8 @@ const Integrations = ({
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
         {t('profileSettings.integrationsDesc')}
       </p>
-      <div className='overflow-hidden bg-white dark:bg-gray-700 mt-2 shadow sm:rounded-md'>
-        <ul className='divide-y divide-gray-200'>
+      <div className='overflow-hidden bg-white dark:bg-slate-800 mt-2 shadow sm:rounded-md'>
+        <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
           {
             _map(available, ({
               name, key, description, Icon,

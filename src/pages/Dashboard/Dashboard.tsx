@@ -172,7 +172,7 @@ const ProjectCard = ({
     <Link to={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}>
       <li
         onClick={onElementClick}
-        className='overflow-hidden rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-700'
+        className='overflow-hidden rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-800/25'
       >
         <div className='py-4 px-4'>
           <div className='flex justify-between items-center'>
@@ -189,7 +189,7 @@ const ProjectCard = ({
                   to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
                   aria-label={`${t('project.settings.settings')} ${name}`}
                 >
-                  <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
+                  <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500' />
                 </Link>
               )}
               <a
@@ -198,7 +198,7 @@ const ProjectCard = ({
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                <ArrowTopRightOnSquareIcon className='w-6 h-6 text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-800' />
+                <ArrowTopRightOnSquareIcon className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500' />
               </a>
             </div>
           </div>
@@ -443,7 +443,7 @@ const Dashboard = ({
 
   return (
     <Title title={t('titles.dashboard')}>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <EventsRunningOutBanner />
         <div className='flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
           <div className='max-w-7xl w-full mx-auto'>
@@ -451,7 +451,7 @@ const Dashboard = ({
               <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
                 {t('titles.dashboard')}
               </h2>
-              <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 px-3 py-2 text-sm'>
+              <span onClick={onNewProject} className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-2 text-sm'>
                 <FolderPlusIcon className='w-5 h-5 mr-1' />
                 {tabProjects === tabForCaptchaProject ? t('dashboard.newCaptchaProject') : t('dashboard.newProject')}
               </span>
@@ -502,7 +502,7 @@ const Dashboard = ({
             </div>
             {isLoading ? (
               <Title title={t('titles.dashboard')}>
-                <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
+                <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                   <Loader />
                 </div>
               </Title>

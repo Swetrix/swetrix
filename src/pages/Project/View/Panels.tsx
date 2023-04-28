@@ -76,7 +76,7 @@ const PanelContainer = ({
   activeTab?: string,
 }): JSX.Element => (
   <div
-    className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
+    className={cx('relative bg-white dark:bg-slate-800/25 dark:border dark:border-slate-800/50 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
       'pb-12': !noSwitch,
       'pb-5': noSwitch,
     })}
@@ -368,13 +368,13 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
           CONVERSION: conversion,
         },
         template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
             {{
               <li class='flex'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
                 <span>{=NAME}</span>
               </li>
-              <hr class='border-gray-200 dark:border-gray-600' />
+              <hr class='border-gray-200 dark:border-slate-600' />
               <li class='flex justify-between'>
                 <span>${tQuantity}</span>
                 <span class='pl-4'>{=QUANTITY}</span>
@@ -588,7 +588,7 @@ const CustomEvents = ({
           {_map(keysToDisplay, (ev) => (
             <tr
               key={ev}
-              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-gray-700 cursor-pointer'
+              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer'
               onClick={() => onFilter('ev', ev)}
             >
               <td className='text-left flex items-center'>
@@ -635,7 +635,7 @@ const CustomEvents = ({
             </div>
             <div className='flex justify-between w-[4.5rem]'>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-gray-800 border-none px-1.5 py-0.5', {
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
                   'opacity-50 cursor-not-allowed': !canGoPrev(),
                   'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
                 })}
@@ -647,7 +647,7 @@ const CustomEvents = ({
                 <ArrowLongLeftIcon className='w-5 h-5' />
               </Button>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-gray-800 border-none px-1.5 py-0.5', {
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
                   'opacity-50 cursor-not-allowed': !canGoNext(),
                   'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
                 })}
@@ -799,7 +799,7 @@ const Panel = ({
             <button
               type='button'
               onClick={() => setIsReversedUserFlow(!isReversedUserFlow)}
-              className='mt-3 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
+              className='mt-3 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-700 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
             >
               {t('project.reverse')}
             </button>
@@ -842,13 +842,13 @@ const Panel = ({
             QUANTITY: _values(mappedData),
           },
           template: `
-            <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+            <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
               {{
                 <li class='flex'>
                   <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
                   <span>{=NAME}</span>
                 </li>
-                <hr class='border-gray-200 dark:border-gray-600' />
+                <hr class='border-gray-200 dark:border-slate-600' />
                 <li class='flex justify-between'>
                   <span>${tQuantity}</span>
                   <span class='pl-4'>{=QUANTITY}</span>
@@ -925,7 +925,7 @@ const Panel = ({
           <Fragment key={key}>
             <div
               className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
-                'group hover:bg-gray-100 hover:dark:bg-gray-700 cursor-pointer': !hideFilters,
+                'group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer': !hideFilters,
               })}
               onClick={() => _onFilter(id, key)}
             >
@@ -988,7 +988,7 @@ const Panel = ({
             </div>
             <div className='flex justify-between w-[4.5rem]'>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-gray-800 border-none px-1.5 py-0.5', {
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
                   'opacity-50 cursor-not-allowed': !canGoPrev(),
                   'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
                 })}
@@ -1000,7 +1000,7 @@ const Panel = ({
                 <ArrowLongLeftIcon className='w-5 h-5' />
               </Button>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-gray-800 border-none px-1.5 py-0.5', {
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
                   'opacity-50 cursor-not-allowed': !canGoNext(),
                   'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
                 })}

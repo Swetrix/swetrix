@@ -43,7 +43,7 @@ const TransferProjectConfirm = (): JSX.Element => {
   if (loading) {
     return (
       <Title title={t('titles.invitation')}>
-        <div className='min-h-page bg-gray-50 dark:bg-gray-800'>
+        <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
           <Loader />
         </div>
       </Title>
@@ -53,7 +53,7 @@ const TransferProjectConfirm = (): JSX.Element => {
   if (error) {
     return (
       <Title title={t('titles.invitation')}>
-        <div className='bg-gray-50 dark:bg-gray-800 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='bg-gray-50 dark:bg-slate-900 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
           <div className='max-w-max mx-auto'>
             <main className='sm:flex'>
               <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
@@ -72,7 +72,7 @@ const TransferProjectConfirm = (): JSX.Element => {
                   </Link>
                   <Link
                     to={routes.contact}
-                    className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-50'
+                    className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
                   >
                     {t('notFoundPage.support')}
                   </Link>
@@ -87,7 +87,7 @@ const TransferProjectConfirm = (): JSX.Element => {
 
   return (
     <Title title={t('titles.invitation')}>
-      <div className='bg-gray-50 dark:bg-gray-800 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+      <div className='bg-gray-50 dark:bg-slate-900 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
         <div className='max-w-max mx-auto'>
           <main className='sm:flex'>
             <CheckCircleIcon className='h-12 w-12 text-green-500 dark:text-green-400' aria-hidden='true' />

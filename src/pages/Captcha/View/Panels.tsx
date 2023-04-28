@@ -401,7 +401,7 @@ const CustomEvents = ({
           {_map(keys, (ev) => (
             <tr
               key={ev}
-              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-gray-700 cursor-pointer'
+              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-800 cursor-pointer'
               onClick={() => onFilter('ev', ev)}
             >
               <td className='text-left flex items-center'>
@@ -590,7 +590,7 @@ const Panel = ({
           <Fragment key={key}>
             <div
               className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
-                'group hover:bg-gray-100 hover:dark:bg-gray-700 cursor-pointer': !hideFilters,
+                'group hover:bg-gray-100 hover:dark:bg-slate-800 cursor-pointer': !hideFilters,
               })}
               onClick={() => _onFilter(id, key)}
             >

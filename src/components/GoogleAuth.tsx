@@ -33,7 +33,7 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
   if (isMiniButton) {
     return (
       <Button
-        className={cx(className, 'border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600')}
+        className={cx(className, 'border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700')}
         onClick={googleLogin}
         secondary
         regular
@@ -45,7 +45,7 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
 
   return (
     <Button
-      className={cx(className, 'border-indigo-100 dark:text-gray-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600')}
+      className={cx(className, 'border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700')}
       onClick={googleLogin}
       secondary
       regular

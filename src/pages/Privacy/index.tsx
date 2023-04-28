@@ -48,7 +48,7 @@ const serviceProviders: {
 const Features = (): JSX.Element => {
   return (
     <Title title='Privacy Policy'>
-      <div className='bg-gray-50 dark:bg-gray-800'>
+      <div className='bg-gray-50 dark:bg-slate-900'>
         <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
           <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>Privacy Policy</h1>
           <p className='mt-4 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
@@ -208,7 +208,7 @@ const Features = (): JSX.Element => {
                 <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                   <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
                     <table className='min-w-full divide-y divide-gray-300 200 dark:divide-gray-500'>
-                      <thead className='bg-gray-50 dark:bg-gray-900'>
+                      <thead className='bg-gray-50 dark:bg-slate-800'>
                         <tr>
                           <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'>
                             Company
@@ -224,7 +224,7 @@ const Features = (): JSX.Element => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800'>
+                      <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-slate-800'>
                         {_map(serviceProviders, ({
                           company, purpose, dataSubjects, location,
                         }) => (

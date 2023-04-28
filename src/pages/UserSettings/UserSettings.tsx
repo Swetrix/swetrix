@@ -338,7 +338,7 @@ const UserSettings = ({
 
   return (
     <Title title={t('titles.profileSettings')}>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
             {t('titles.profileSettings')}
@@ -570,7 +570,7 @@ const UserSettings = ({
                     <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
                       <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                         <thead>
-                          <tr className='dark:bg-gray-700'>
+                          <tr className='dark:bg-slate-800'>
                             <th
                               scope='col'
                               className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'

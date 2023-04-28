@@ -77,12 +77,12 @@ const ThemeMenu = ({
       leaveFrom='transform opacity-100 scale-100'
       leaveTo='transform opacity-0 scale-95'
     >
-      <Menu.Items className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
+      <Menu.Items className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white dark:bg-slate-900 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
         <Menu.Item>
           {({ active }) => (
             <div
-              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-indigo-600 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-gray-700', {
-                'bg-gray-100 dark:bg-gray-700': active,
+              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-indigo-600 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800', {
+                'bg-gray-100 dark:bg-slate-800': active,
               })}
               onClick={() => switchTheme('light')}
             >
@@ -94,8 +94,8 @@ const ThemeMenu = ({
         <Menu.Item>
           {({ active }) => (
             <div
-              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-indigo-400 hover:bg-gray-100 hover:dark:bg-gray-700', {
-                'bg-gray-100 dark:bg-gray-700': active,
+              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-indigo-400 hover:bg-gray-100 hover:dark:bg-slate-800', {
+                'bg-gray-100 dark:bg-slate-800': active,
               })}
               onClick={() => switchTheme('dark')}
             >
@@ -138,8 +138,8 @@ const ProfileMenu = ({
       leaveFrom='transform opacity-100 scale-100'
       leaveTo='transform opacity-0 scale-95'
     >
-      <Menu.Items className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
-        <div className='border-gray-200 dark:border-gray-700 border-b-[1px]'>
+      <Menu.Items className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white dark:bg-slate-900 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
+        <div className='border-gray-200 dark:border-slate-700/50 border-b-[1px]'>
           <Menu.Item>
             <p className='truncate py-2 px-4' role='none'>
               <span
@@ -158,14 +158,14 @@ const ProfileMenu = ({
           </Menu.Item>
         </div>
 
-        <div className='border-gray-200 dark:border-gray-700 border-b-[1px]'>
+        <div className='border-gray-200 dark:border-slate-700/50 border-b-[1px]'>
           {/* Language selector */}
           <Menu as='div'>
             {({ open }) => (
               <>
                 <div>
                   <Menu.Button
-                    className='flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-gray-700'
+                    className='flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800'
                   >
                     <div className='flex'>
                       <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={20} alt='' aria-hidden='true' />
@@ -186,14 +186,14 @@ const ProfileMenu = ({
                   leaveTo='transform opacity-0 scale-95'
                 >
                   <Menu.Items
-                    className='z-50 origin-top-right absolute right-0 mt-1 w-full min-w-max rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none'
+                    className='z-50 origin-top-right absolute right-0 mt-1 w-full min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none'
                     static
                   >
                     <div className='py-1'>
                       {_map(whitelist, lng => (
                         <Menu.Item key={lng}>
                           <span
-                            className='text-gray-700 dark:text-gray-50 dark:bg-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
+                            className='text-gray-700 dark:text-gray-50 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
                             role='menuitem'
                             tabIndex={-1}
                             id='menu-item-0'
@@ -220,7 +220,7 @@ const ProfileMenu = ({
               <Link
                 to={routes.changelog}
                 className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                  'bg-gray-100 dark:bg-gray-700': active,
+                  'bg-gray-100 dark:bg-slate-800': active,
                 })}
               >
                 {t('footer.changelog')}
@@ -232,7 +232,7 @@ const ProfileMenu = ({
               <Link
                 to={routes.contact}
                 className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                  'bg-gray-100 dark:bg-gray-700': active,
+                  'bg-gray-100 dark:bg-slate-800': active,
                 })}
               >
                 {t('footer.support')}
@@ -244,7 +244,7 @@ const ProfileMenu = ({
               <Link
                 to={routes.billing}
                 className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                  'bg-gray-100 dark:bg-gray-700': active,
+                  'bg-gray-100 dark:bg-slate-800': active,
                 })}
               >
                 {t('common.billing')}
@@ -259,7 +259,7 @@ const ProfileMenu = ({
               <Link
                 to={routes.user_settings}
                 className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                  'bg-gray-100 dark:bg-gray-700': active,
+                  'bg-gray-100 dark:bg-slate-800': active,
                 })}
               >
                 {t('common.accountSettings')}
@@ -271,7 +271,7 @@ const ProfileMenu = ({
           {({ active }) => (
             <p
               className={cx('cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                'bg-gray-100 dark:bg-gray-700': active,
+                'bg-gray-100 dark:bg-slate-800': active,
               })}
               onClick={logoutHandler}
             >
@@ -370,7 +370,7 @@ const AuthedHeader = ({
               <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
             </div>
           )}
-          <Popover.Button className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
+          <Popover.Button className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
             <span className='sr-only'>
               {t('common.openMenu')}
             </span>
@@ -422,7 +422,7 @@ const NotAuthedHeader = ({
             </a>
             {!isSelfhosted && (
               <>
-                <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+                <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-slate-800' key='Features'>
                   <CircleStackIcon className='w-5 h-5 mr-1' />
                   {t('common.features')}
                 </NavLink>
@@ -453,8 +453,8 @@ const NotAuthedHeader = ({
           {/* Language selector */}
           <Dropdown
             items={whitelist}
-            buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
-            selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
+            buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 border dark:border-slate-800'
+            selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
             title={(
               <>
                 <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' aria-hidden='true' />
@@ -471,11 +471,11 @@ const NotAuthedHeader = ({
             )}
             onSelect={onLanguageChange}
           />
-          <Link to={routes.signin} className='inline-block select-none bg-indigo-500 dark:bg-gray-700 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-gray-600'>
+          <Link to={routes.signin} className='inline-block select-none bg-indigo-500 dark:bg-slate-800 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-gray-600'>
             {t('auth.common.signin')}
           </Link>
           {!isSelfhosted && (
-            <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-gray-700 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-gray-600' aria-label={t('titles.signup')}>
+            <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-slate-800 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-gray-600' aria-label={t('titles.signup')}>
               {t('common.getStarted')}
             </Link>
           )}
@@ -491,7 +491,7 @@ const NotAuthedHeader = ({
               <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
             </div>
           )}
-          <Popover.Button className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
+          <Popover.Button className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
             <span className='sr-only'>
               {t('common.openMenu')}
             </span>
@@ -508,7 +508,7 @@ const NotAuthedHeader = ({
           <CreditCardIcon className='w-5 h-5 mr-1' />
           {t('common.pricing')}
         </HashLink>
-        <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-gray-700' key='Features'>
+        <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-slate-800' key='Features'>
           <CircleStackIcon className='w-5 h-5 mr-1' />
           {t('common.features')}
         </NavLink>
@@ -642,7 +642,7 @@ const Header = ({
                     <img className='h-10' src='/assets/logo_blue.svg' alt='Swetrix' />
                   )}
                 </Link>
-                <Popover.Button ref={buttonRef} className='bg-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
+                <Popover.Button ref={buttonRef} className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
                   <span className='sr-only'>
                     {t('common.closeMenu')}
                   </span>
@@ -655,8 +655,8 @@ const Header = ({
                 {/* Language selector */}
                 <Dropdown
                   items={whitelist}
-                  buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                  selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
+                  buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
+                  selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
                   title={(
                     <>
                       <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' aria-hidden='true' />
@@ -700,19 +700,19 @@ const Header = ({
                     {!isSelfhosted && user?.planCode !== 'none' && user?.planCode !== 'trial' && (
                       <Link
                         to={routes.billing}
-                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
+                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
                         key='Billing'
                       >
                         {t('common.billing')}
                       </Link>
                     )}
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'>
+                      <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'>
                         {t('common.accountSettings')}
                       </Link>
                     </div>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to='#' className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={logoutHandler}>
+                      <Link to='#' className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={logoutHandler}>
                         {t('common.logout')}
                       </Link>
                     </div>

@@ -1412,7 +1412,7 @@ const ViewProject = ({
     return (
       <Title title={name}>
         <EventsRunningOutBanner />
-        <div ref={ref} className='bg-gray-50 dark:bg-gray-800'>
+        <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
           <div
             className={cx(
               'max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8',
@@ -1489,7 +1489,7 @@ const ViewProject = ({
                       <button
                         type='button'
                         onClick={refreshStats}
-                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
                           'cursor-not-allowed opacity-50': isLoading || dataLoading,
                         })}
                       >
@@ -1505,7 +1505,7 @@ const ViewProject = ({
                         type='button'
                         onClick={onForecastOpen}
                         disabled={!_isEmpty(filters)}
-                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
                           'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
                           '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
                         })}
@@ -1521,7 +1521,7 @@ const ViewProject = ({
                             type='button'
                             onClick={() => updateTimebucket(tb)}
                             className={cx(
-                              'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                              'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
                               {
                                 '-ml-px': index > 0,
                                 'rounded-l-md': index === 0,
@@ -1604,7 +1604,7 @@ const ViewProject = ({
                                       checked={event.active}
                                     />
                                   )}
-                                  buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700'
+                                  buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
                                   keyExtractor={(event) => event.id}
                                   onSelect={(event, e) => {
                                     e?.stopPropagation()
@@ -1635,7 +1635,7 @@ const ViewProject = ({
                               />
                             )
                           }}
-                          selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
+                          selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
                           keyExtractor={(pair) => pair.id}
                           onSelect={({ id: pairID, conflicts }) => {
                             if (isConflicted(conflicts)) {
@@ -1690,7 +1690,7 @@ const ViewProject = ({
                     {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
                       <Button
                         onClick={openSettingsHandler}
-                        className='relative flex justify-center items-center !pr-3 !pl-1 py-2 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                        className='relative flex justify-center items-center !pr-3 !pl-1 py-2 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
                         secondary
                       >
                         <>
@@ -1714,7 +1714,7 @@ const ViewProject = ({
                     hidden: checkIfAllMetricsAreDisabled,
                   })}
                   >
-                    <div className={cx('absolute right-0 z-10 -top-2  max-sm:top-6', {
+                    <div className={cx('absolute right-0 z-10 -top-2 max-sm:top-6 space-x-2', {
                       'right-[90px]': activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
                       'right-[60px]': activeChartMetrics[CHART_METRICS_MAPPING.bounce],
                     })}
@@ -1722,7 +1722,7 @@ const ViewProject = ({
                       <button
                         type='button'
                         onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                        className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
+                        className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
                           'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.bar,
                           'text-gray-400 dark:text-gray-500': chartType !== chartTypes.bar,
                         })}
@@ -1732,7 +1732,7 @@ const ViewProject = ({
                       <button
                         type='button'
                         onClick={() => setChartTypeOnClick(chartTypes.line)}
-                        className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
+                        className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
                           'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.line,
                           'text-gray-400 dark:text-gray-500': chartType !== chartTypes.line,
                         })}
@@ -2052,7 +2052,7 @@ const ViewProject = ({
 
   return (
     <Title title={name}>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-gray-800'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <Loader />
       </div>
     </Title>
