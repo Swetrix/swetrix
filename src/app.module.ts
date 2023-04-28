@@ -22,6 +22,7 @@ import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { CaptchaModule } from './captcha/captcha.module'
 import { isDevelopment, isTgTokenPresent } from './common/constants'
+import { IntegrationsModule } from './integrations/integrations.module'
 
 const modules = [
   ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
@@ -63,6 +64,6 @@ if (isTgTokenPresent) {
 }
 
 @Module({
-  imports: modules,
+  imports: [...modules, IntegrationsModule],
 })
 export class AppModule {}
