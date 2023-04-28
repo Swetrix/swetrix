@@ -165,7 +165,6 @@ const ProfileMenu = ({
               <>
                 <div>
                   <Menu.Button
-                    // className='inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500'
                     className='flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-gray-700'
                   >
                     <div className='flex'>
@@ -194,7 +193,7 @@ const ProfileMenu = ({
                       {_map(whitelist, lng => (
                         <Menu.Item key={lng}>
                           <span
-                            className='text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
+                            className='text-gray-700 dark:text-gray-50 dark:bg-gray-700 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
                             role='menuitem'
                             tabIndex={-1}
                             id='menu-item-0'
@@ -454,8 +453,8 @@ const NotAuthedHeader = ({
           {/* Language selector */}
           <Dropdown
             items={whitelist}
-            buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-            selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+            buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
+            selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
             title={(
               <>
                 <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' aria-hidden='true' />
@@ -657,7 +656,7 @@ const Header = ({
                 <Dropdown
                   items={whitelist}
                   buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
-                  selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600'
+                  selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
                   title={(
                     <>
                       <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' aria-hidden='true' />
@@ -701,19 +700,19 @@ const Header = ({
                     {!isSelfhosted && user?.planCode !== 'none' && user?.planCode !== 'trial' && (
                       <Link
                         to={routes.billing}
-                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'
+                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'
                         key='Billing'
                       >
                         {t('common.billing')}
                       </Link>
                     )}
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'>
+                      <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600'>
                         {t('common.accountSettings')}
                       </Link>
                     </div>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to='#' className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={logoutHandler}>
+                      <Link to='#' className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600' onClick={logoutHandler}>
                         {t('common.logout')}
                       </Link>
                     </div>
