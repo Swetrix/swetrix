@@ -25,7 +25,12 @@ import { isDevelopment, isTgTokenPresent } from './common/constants'
 import { IntegrationsModule } from './integrations/integrations.module'
 
 const modules = [
-  ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
+  ConfigModule.forRoot({
+    cache: true,
+    envFilePath: '.env',
+    expandVariables: true,
+    isGlobal: true,
+  }),
   TypeOrmModule.forRoot({
     type: 'mysql',
     host: process.env.MYSQL_HOST,
