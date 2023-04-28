@@ -172,7 +172,7 @@ const PricingItem = ({
   return (
     <div
       key={tier.name}
-      className={cx('relative border rounded-2xl shadow-sm divide-y bg-[#F5F5F5] dark:bg-[#212936] divide-gray-200 dark:divide-gray-500', {
+      className={cx('relative border rounded-2xl shadow-sm divide-y bg-[#F5F5F5] dark:bg-slate-800/20 dark:border dark:border-slate-800 divide-gray-200 dark:divide-slate-700', {
         'border-indigo-400': user.planCode === tier.planCode,
         'border-gray-200 dark:border-gray-500': user.planCode !== tier.planCode,
       })}
@@ -189,7 +189,7 @@ const PricingItem = ({
       <div className='p-6 border-none'>
         <h2 className='text-lg leading-6 font-semibold text-[#4D4D4D] dark:text-gray-50 text-center'>{tier.name}</h2>
         {tier.mostPopular && !authenticated && (
-          <p className='absolute top-0 py-1.5 px-4 bg-indigo-600 rounded-full text-xs font-semibold uppercase tracking-wide text-white transform -translate-y-1/2'>
+          <p className='absolute top-0 py-1.5 px-4 bg-indigo-600 dark:bg-indigo-700 rounded-full text-xs font-semibold uppercase tracking-wide text-white transform -translate-y-1/2'>
             {t('pricing.mostPopular')}
           </p>
         )}
@@ -213,7 +213,7 @@ const PricingItem = ({
           <span
             onClick={() => downgrade ? downgradeHandler(tier) : onPlanChange(tier)}
             className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center select-none', {
-              'bg-indigo-600 hover:bg-indigo-700 cursor-pointer': planCodeLoading === null && (tier.planCode !== user.planCode || (user.billingFrequency !== billingFrequency && user.planCode !== 'free')),
+              'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 hover:dark:bg-indigo-800 cursor-pointer': planCodeLoading === null && (tier.planCode !== user.planCode || (user.billingFrequency !== billingFrequency && user.planCode !== 'free')),
               'bg-indigo-400 cursor-default': planCodeLoading !== null || (tier.planCode === user.planCode && (user.billingFrequency === billingFrequency || user.planCode === 'free' || user.planCode === 'trial')),
             })}
           >
@@ -224,7 +224,7 @@ const PricingItem = ({
           </span>
         ) : (
           <Link
-            className='mt-8 block w-full bg-indigo-600 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
+            className='mt-8 block w-full bg-indigo-600 dark:bg-indigo-700 hover:dark:bg-indigo-800 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
             to={routes.signup}
             aria-label={t('titles.signup')}
           >
@@ -233,7 +233,7 @@ const PricingItem = ({
         )}
       </div>
       <div className='px-6 border-none'>
-        <hr className='w-full mx-auto border border-gray-300 dark:border-gray-600' />
+        <hr className='w-full mx-auto border border-gray-300 dark:border-slate-800' />
       </div>
       <div className='pt-6 pb-8 px-6 border-none'>
         <h3 className='text-xs font-medium text-gray-900 dark:text-gray-50 tracking-wide uppercase'>
@@ -379,7 +379,7 @@ const Pricing = ({ t, language }: {
 
   return (
     <>
-      <div id='pricing' className={cx({ 'bg-white dark:bg-gray-750': !authenticated })}>
+      <div id='pricing' className={cx({ 'bg-white dark:bg-slate-900/75': !authenticated })}>
         <div className={cx('w-11/12 max-w-7xl mx-auto whitespace-pre-line', { 'px-4 sm:px-6 lg:px-8 py-24': !authenticated })}>
           <div className='sm:flex sm:flex-col sm:align-center'>
             {!authenticated && (
@@ -392,7 +392,7 @@ const Pricing = ({ t, language }: {
                 </p>
               </>
             )}
-            <div className='relative self-center mt-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 flex sm:mt-8 xs:flex-row flex-col'>
+            <div className='relative self-center mt-6 bg-gray-100 dark:bg-slate-800 rounded-lg p-0.5 flex sm:mt-8 xs:flex-row flex-col'>
               <button
                 type='button'
                 onClick={() => setBillingFrequency(BillingFrequency.monthly)}

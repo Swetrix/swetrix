@@ -155,14 +155,14 @@ const Main = (): JSX.Element => {
 
   return (
     <Title title={t('titles.main')}>
-      <div className='flex justify-center items-center bg-gray-900 py-2 px-2'>
+      <div className='flex justify-center items-center bg-slate-900 py-2 px-2'>
         <a href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi' target='_blank' rel='noreferrer noopener' className='text-white border-gray-900 border-b-2 hover:border-white text-center'>
           {t('main.ukrSupport')}
         </a>
         <ArrowTopRightOnSquareIcon className='h-4 w-4 text-white ml-1 hidden md:block' />
       </div>
       <div className='overflow-hidden'>
-        <div className='bg-gray-800 dark:bg-gray-900'>
+        <div className='bg-gray-800 dark:bg-slate-900'>
           <main>
             {/* first block with live demo */}
             <div className='relative overflow-x-clip'>
@@ -254,7 +254,7 @@ const Main = (): JSX.Element => {
             </div>
             {/* end first block with live demo */}
             {/* section Core Analytics Features */}
-            <div className='dark:bg-gray-900 bg-white px-4 pb-24'>
+            <div className='dark:bg-slate-900 bg-white px-4 pb-24'>
               <section className='flex pt-16 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
                 <picture>
                   <source srcSet='/assets/CoreFeaturesLight.webp' type='image/webp' />
@@ -341,7 +341,7 @@ const Main = (): JSX.Element => {
             <div className='overflow-x-clip'>
               <div className='py-20 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5'>
                 <div className='relative z-50 lg:col-span-6 rounded-xl'>
-                  <div className='bg-white dark:bg-slate-900 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
+                  <div className='bg-white dark:bg-slate-800/20 dark:border dark:border-slate-800 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
                     <div className='px-4 py-8 sm:px-10'>
                       <p className='text-lg text-gray-900 dark:text-white text-center md:text-xl font-semibold'>
                         {t('main.signup')}
@@ -351,7 +351,7 @@ const Main = (): JSX.Element => {
                       </div>
                     </div>
                     <div className='px-4 sm:px-10'>
-                      <div className='py-6 bg-gray-50 dark:bg-slate-900  border-t-2 border-gray-200 dark:border-gray-500'>
+                      <div className='py-6 bg-transparent border-t border-gray-200 dark:border-slate-700'>
                         <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
                           <Trans
                             // @ts-ignore
@@ -384,7 +384,7 @@ const Main = (): JSX.Element => {
             </div>
             {/* end block singup */}
             {/* Core features section */}
-            <section className='bg-white dark:bg-gray-900 pt-14 relative pb-14'>
+            <section className='bg-white dark:bg-slate-900 pt-14 relative pb-14'>
               <BackgroundSvg className='absolute -left-8' type='shapes' />
               <div className='mx-auto text-gray-800 font-extrabold text-3xl sm:text-5xl w-fit relative'>
                 <h2 className='relative z-20 dark:text-white'>
@@ -508,8 +508,8 @@ const Main = (): JSX.Element => {
                       <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                         <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                           <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
-                            <table className='w-full min-w-full divide-y divide-gray-500'>
-                              <thead className='bg-gray-800'>
+                            <table className='w-full min-w-full divide-y divide-slate-500'>
+                              <thead className='bg-slate-800'>
                                 <tr>
                                   <th />
                                   {_map(SWETRIX_AND_COMPETITORS_LIST, (item, key) => (
@@ -523,7 +523,7 @@ const Main = (): JSX.Element => {
                                   ))}
                                 </tr>
                               </thead>
-                              <tbody className='divide-y divide-gray-600 bg-gray-800'>
+                              <tbody className='divide-y divide-slate-700 bg-slate-800'>
                                 {_map(COMPETITOR_FEATURE_TABLE.Swetrix, (_, key) => (
                                   <tr key={key}>
                                     <td className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'>
@@ -568,7 +568,7 @@ const Main = (): JSX.Element => {
             </div>
 
             {/* section Testimonials */}
-            <section className='bg-white dark:bg-gray-900 pt-20 pb-20 relative'>
+            <section className='bg-white dark:bg-slate-900 pt-20 pb-20 relative'>
               <div className='absolute right-0 top-0'>
                 <BackgroundSvg type='twolinecircle2' />
               </div>
@@ -612,8 +612,9 @@ const Main = (): JSX.Element => {
               </div>
             </section>
             {/* end section Testimonials */}
-            <div className='bg-white dark:bg-gray-900 px-4 md:px-8 pb-12'>
-              <section className='max-w-7xl w-full mx-auto bg-gray-800 overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
+
+            <div className='bg-white dark:bg-slate-900 px-4 md:px-8 pb-12'>
+              <section className='max-w-7xl w-full mx-auto bg-slate-800 overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
                 <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
                   <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
                     <h2 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px] text-white mb-3'>
@@ -661,7 +662,7 @@ const Main = (): JSX.Element => {
                     }}
                   />
                 </h2>
-                <hr className='border-gray-600 border-1 max-w-[346px] my-6' />
+                <hr className='border-slate-700 border-1 max-w-[346px] my-6' />
                 <div className='max-w-md w-full lg:mb-0 mb-9'>
                   {_map(t('main.opensource', { returnObjects: true }), (item: {
                     desc: string
