@@ -42,7 +42,7 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
-  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted,
+  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -209,6 +209,17 @@ const ViewProject = ({
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
   const customEventsChartData = useMemo(() => _pickBy(customEventsPrefs[id], (value, keyCustomEvents) => _includes(activeChartMetricsCustomEvents, keyCustomEvents)), [customEventsPrefs, id, activeChartMetricsCustomEvents])
   const [chartType, setChartType] = useState<string>(getItem('chartType') as string || chartTypes.line)
+
+  // state for compare
+  const [periodPairsCompare, setPeriodPairsCompare] = useState<{
+    label: string
+    period: string
+  }[]>(tbPeriodPairsCompare(t))
+  const [isActiveCompare, setIsActiveCompare] = useState<boolean>(false)
+  const [activePeriodCompare, setActivePeriodCompare] = useState<string>(periodPairsCompare[0].period)
+  const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
+  console.log('activeDropdownLabelCompare', activeDropdownLabelCompare)
+  const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
 
   const tabs: {
     id: string
@@ -993,6 +1004,7 @@ const ViewProject = ({
 
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t))
+    setPeriodPairsCompare(tbPeriodPairsCompare(t))
   }, [t])
 
   // Parsing initial filters from the address bar
@@ -1550,6 +1562,11 @@ const ViewProject = ({
                       labelExtractor={(pair) => pair.dropdownLabel || pair.label}
                       keyExtractor={(pair) => pair.label}
                       onSelect={(pair) => {
+                        if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
+                          setIsActiveCompare(!isActiveCompare)
+                          return
+                        }
+
                         if (pair.isCustomDate) {
                           setTimeout(() => {
                             // @ts-ignore
@@ -1562,10 +1579,41 @@ const ViewProject = ({
                         }
                       }}
                     />
+                    {isActiveCompare && (
+                      <>
+                        vs
+                        <Dropdown
+                          items={periodPairsCompare}
+                          title={activeDropdownLabelCompare}
+                          labelExtractor={(pair) => pair.label}
+                          keyExtractor={(pair) => pair.label}
+                          onSelect={(pair) => {
+                            if (pair.period === PERIOD_PAIRS_COMPARE.CUSTOM) {
+                              setTimeout(() => {
+                                // @ts-ignore
+                                refCalendar.current.openCalendar()
+                              }, 100)
+                            } else {
+                              setPeriodPairsCompare(tbPeriodPairsCompare(t))
+                              setDateRangeCompare(null)
+                              setActivePeriodCompare(pair.period)
+                            }
+                          }}
+                        />
+                      </>
+                    )}
                     <FlatPicker
                       ref={refCalendar}
-                      onChange={(date) => setDateRange(date)}
-                      value={dateRange || []}
+                      onChange={(date) => {
+                        if (isActiveCompare) {
+                          setDateRangeCompare(date)
+                          setActivePeriodCompare(PERIOD_PAIRS_COMPARE.CUSTOM)
+                          setPeriodPairsCompare(tbPeriodPairsCompare(t, date))
+                        } else {
+                          setDateRange(date)
+                        }
+                      }}
+                      value={isActiveCompare ? dateRangeCompare || [] : dateRange || []}
                       maxDateMonths={MAX_MONTHS_IN_PAST}
                     />
                   </div>

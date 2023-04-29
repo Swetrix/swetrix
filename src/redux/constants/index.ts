@@ -66,7 +66,32 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   isCustomDate: true,
   period: 'custom',
   tbs: tbs || ['custom'],
+}, {
+  label: t('project.compare'),
+  period: 'compare',
+  tbs: tbs || ['custom'],
 }]
+
+export const tbPeriodPairsCompare = (t: Function, dates?: Date[]): {
+  label: string
+  period: string
+}[] => [{
+  label: t('project.previousPeriod'),
+  period: 'previous',
+}, {
+  label: dates ? getCustomLabel(dates, t) : t('project.custom'),
+  period: 'custom',
+}]
+
+export const PERIOD_PAIRS_COMPARE: {
+  COMPARE: string
+  PREVIOS: string
+  CUSTOM: string
+} = {
+  COMPARE: 'compare',
+  PREVIOS: 'previous',
+  CUSTOM: 'custom',
+}
 
 interface IStringObject {
   [key: string]: string
