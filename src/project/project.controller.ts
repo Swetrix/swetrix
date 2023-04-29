@@ -593,8 +593,6 @@ export class ProjectController {
       this.logger.error(e)
       return 'Error while deleting your CAPTCHA project'
     }
-
-    return null
   }
 
   @Delete('/partially/:pid')
@@ -640,15 +638,21 @@ export class ProjectController {
       throw new BadRequestException("The provided 'to' date is incorrect")
     }
 
-    const project = await this.projectService.findOne(pid, {
-      relations: ['admin', 'share'],
-    })
+    let project
 
-    if (!project) {
-      throw new NotFoundException('Project not found')
+    if (isSelfhosted) {
+      project = getProjectsClickhouse(pid)
+    } else {
+      project = await this.projectService.findOne(pid, {
+        relations: ['admin', 'share'],
+      })
+
+      if (!project) {
+        throw new NotFoundException('Project not found')
+      }
+
+      this.projectService.allowedToManage(project, uid)
     }
-
-    this.projectService.allowedToManage(project, uid)
 
     from = dayjs(from).format('YYYY-MM-DD')
     to = dayjs(to).format('YYYY-MM-DD 23:59:59')
@@ -658,8 +662,7 @@ export class ProjectController {
 
   @Post('/:pid/share')
   @HttpCode(200)
-  @UseGuards(SelfhostedGuard)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
   async share(
@@ -781,8 +784,7 @@ export class ProjectController {
 
   @Put('/share/:shareId')
   @HttpCode(200)
-  @UseGuards(SelfhostedGuard)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
   async updateShare(
@@ -857,6 +859,7 @@ export class ProjectController {
   }
 
   @Post('transfer')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async transferProject(
     @Body() body: TransferProjectBodyDto,
@@ -894,6 +897,7 @@ export class ProjectController {
   }
 
   @Get('transfer')
+  @UseGuards(SelfhostedGuard)
   async confirmTransferProject(
     @Query() queries: ConfirmTransferProjectQueriesDto,
   ) {
@@ -927,6 +931,7 @@ export class ProjectController {
   }
 
   @Delete('transfer')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async cancelTransferProject(
     @Query() queries: CancelTransferProjectQueriesDto,
@@ -956,6 +961,7 @@ export class ProjectController {
   }
 
   @Delete(':projectId/subscribers/:subscriberId')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async removeSubscriber(
     @Param() params: RemoveSubscriberParamsDto,
@@ -991,6 +997,7 @@ export class ProjectController {
   }
 
   @Post(':projectId/subscribers')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async addSubscriber(
     @Param() params: AddSubscriberParamsDto,
@@ -1034,6 +1041,7 @@ export class ProjectController {
   }
 
   @Get(':projectId/subscribers/invite')
+  @UseGuards(SelfhostedGuard)
   @HttpCode(HttpStatus.OK)
   async confirmSubscriberInvite(
     @Param() params: ConfirmSubscriberInviteParamsDto,
@@ -1078,6 +1086,7 @@ export class ProjectController {
   }
 
   @Get(':projectId/subscribers')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async getSubscribers(
     @Param() params: GetSubscribersParamsDto,
@@ -1098,6 +1107,7 @@ export class ProjectController {
   }
 
   @Patch(':projectId/subscribers/:subscriberId')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async updateSubscriber(
     @Param() params: UpdateSubscriberParamsDto,
