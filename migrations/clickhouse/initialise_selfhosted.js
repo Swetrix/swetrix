@@ -7,7 +7,8 @@ const CLICKHOUSE_INIT_QUERIES = [
   (
     id FixedString(12),
     name String,
-    origins String,
+    origins Nullable(String),
+    ipBlacklist Nullable(String),
     active Int8,
     public Int8,
     created DateTime
