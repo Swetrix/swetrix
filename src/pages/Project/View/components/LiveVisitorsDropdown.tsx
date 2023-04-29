@@ -61,7 +61,7 @@ const LiveVisitorsDropdown = ({ live, projectId }: {
               _map(liveInfo, ({
                 dv, br, os, cc,
               }, index) => (
-                <div key={`${dv}${br}${os}${cc}${index}`} className='flex flex-row items-center justify-between w-full p-2 mt-2 text-sm text-gray-900 bg-gray-100 rounded-md dark:text-gray-50 dark:bg-gray-700'>
+                <div key={`${dv}${br}${os}${cc}${index}`} className='flex flex-row items-center justify-between w-full p-2 mt-2 text-sm text-gray-900 bg-gray-100 rounded-md dark:text-gray-50 dark:bg-slate-800'>
                   <div className='flex flex-row items-center'>
                     <Flag
                       className='rounded-sm mr-2'

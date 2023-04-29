@@ -99,7 +99,7 @@ const ModalMessage = ({
         <FlatPicker
           onChange={(date) => setDateRange(date)}
           options={{
-            altInputClass: 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-gray-700 rounded-md',
+            altInputClass: 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-800 rounded-md',
           }}
           value={dateRange}
         />

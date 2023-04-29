@@ -78,7 +78,7 @@ const UsersList = ({
   }
 
   return (
-    <tr className='dark:bg-gray-700'>
+    <tr className='dark:bg-slate-800'>
       <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
         {user.email}
       </td>
@@ -93,7 +93,7 @@ const UsersList = ({
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-600 text-sm leading-5 font-medium rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
+              className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-600 text-sm leading-5 font-medium rounded-full bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
             >
               {t(`project.settings.roles.${role}.name`)}
               <ChevronDownIcon
@@ -344,7 +344,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                   <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
                     <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                       <thead>
-                        <tr className='dark:bg-gray-700'>
+                        <tr className='dark:bg-slate-800'>
                           <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'>
                             {t('auth.common.email')}
                           </th>

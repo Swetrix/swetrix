@@ -51,7 +51,7 @@ const PanelContainer = ({
   setActiveFragment: (arg: number) => void,
 }): JSX.Element => (
   <div
-    className={cx('relative bg-white dark:bg-gray-750 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
+    className={cx('relative bg-white dark:bg-slate-800/25 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
       'pb-12': !noSwitch,
       'pb-5': noSwitch,
     })}
@@ -308,7 +308,7 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
           CONVERSION: conversion,
         },
         template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
             {{
               <li class='flex'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
@@ -532,7 +532,7 @@ const Panel = ({
             QUANTITY: _values(mappedData),
           },
           template: `
-            <ul class='bg-gray-100 dark:text-gray-50 dark:bg-gray-700 rounded-md shadow-md px-3 py-1'>
+            <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
               {{
                 <li class='flex'>
                   <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>

@@ -473,11 +473,11 @@ const NotAuthedHeader = ({
             )}
             onSelect={onLanguageChange}
           />
-          <Link to={routes.signin} className='inline-block select-none bg-indigo-500 dark:bg-slate-800 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-gray-600'>
+          <Link to={routes.signin} className='inline-block select-none bg-indigo-500 dark:bg-slate-800 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-slate-700'>
             {t('auth.common.signin')}
           </Link>
           {!isSelfhosted && (
-            <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-slate-800 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-gray-600' aria-label={t('titles.signup')}>
+            <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-slate-800 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-slate-700' aria-label={t('titles.signup')}>
               {t('common.getStarted')}
             </Link>
           )}
