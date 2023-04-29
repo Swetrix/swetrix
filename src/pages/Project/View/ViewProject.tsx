@@ -461,7 +461,7 @@ const ViewProject = ({
     setDataLoading(true)
     try {
       let data
-      let key
+      let key = ''
       let from
       let to
       let customEventsChart = customEventsChartData
@@ -477,11 +477,12 @@ const ViewProject = ({
           } else {
             date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
           }
-          console.log('date', date)
+          if (date) {
+            from = getFormatDate(date.from)
+            to = getFormatDate(date.to)
+          }
         }
-      }
-
-      if (dateRange) {
+      } else if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
         key = getProjectCacheCustomKey(from, to, timeBucket)
@@ -492,7 +493,7 @@ const ViewProject = ({
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
         data = cache[id][key]
       } else {
-        if (period === 'custom' && dateRange) {
+        if ((period === 'custom' && dateRange) || isActiveCompare) {
           data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           customEventsChart = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
         } else {
