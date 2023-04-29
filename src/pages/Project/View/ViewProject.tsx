@@ -417,11 +417,6 @@ const ViewProject = ({
 
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
       const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, events)
-
-      if (!_isEmpty(mainChart)) {
-        mainChart.destroy()
-      }
-
       setMainChart(() => {
         // @ts-ignore
         const generete = bb.generate(bbSettings)
@@ -526,10 +521,6 @@ const ViewProject = ({
         })
 
         if (activeTab === PROJECT_TABS.traffic) {
-          if (!_isEmpty(mainChart)) {
-            mainChart.destroy()
-          }
-
           setMainChart(() => {
             // @ts-ignore
             const generete = bb.generate(bbSettings)
@@ -611,10 +602,6 @@ const ViewProject = ({
         })
 
         if (activeTab === PROJECT_TABS.performance) {
-          if (!_isEmpty(mainChart)) {
-            mainChart.destroy()
-          }
-
           setMainChart(() => {
             // @ts-ignore
             const generete = bb.generate(bbSettings)
@@ -868,10 +855,6 @@ const ViewProject = ({
           const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
           const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
 
-          if (!_isEmpty(mainChart)) {
-            mainChart.destroy()
-          }
-
           setMainChart(() => {
             // @ts-ignore
             const generete = bb.generate(bbSettings)
@@ -900,10 +883,6 @@ const ViewProject = ({
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
       const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
-
-      if (!_isEmpty(mainChart)) {
-        mainChart.destroy()
-      }
 
       setMainChart(() => {
         // @ts-ignore

@@ -230,10 +230,6 @@ const ViewProject = ({
           customs,
         })
 
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
         setMainChart(() => {
           const generete = bb.generate(bbSettings)
           generete.data.names(dataNames)
