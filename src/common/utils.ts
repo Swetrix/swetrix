@@ -193,7 +193,7 @@ const calculateRelativePercentage = (
 }
 
 const deleteProjectClickhouse = async id => {
-  const query = `ALTER table project DELETE WHERE WHERE id='${id}'`
+  const query = `ALTER table project DELETE WHERE id='${id}'`
   return clickhouse.query(query).toPromise()
 }
 
