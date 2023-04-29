@@ -21,8 +21,6 @@ import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
-import _includes from 'lodash/includes'
-import _values from 'lodash/values'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import Loader from 'ui/Loader'
@@ -32,7 +30,8 @@ import {
 import routes from 'routes'
 import { nFormatter } from 'utils/generic'
 import {
-  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject, tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard, roleViewer,
+  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject,
+  tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard, roleViewer,
 } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 
@@ -44,8 +43,6 @@ import {
   IProject, IOvervallObject, ICaptchaProject, ILiveStats,
 } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
-
-const DASHBOARD_TABS_VALUES = _values(DASHBOARD_TABS)
 
 interface IProjectCard {
   name?: string
@@ -391,9 +388,9 @@ const Dashboard = ({
     // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
-    const tab = searchParams.get('tab')
+    const tab = searchParams.get('tab') as string
 
-    if (_includes(DASHBOARD_TABS_VALUES, tab)) {
+    if (DASHBOARD_TABS[tab]) {
       return tab
     }
 
@@ -447,7 +444,7 @@ const Dashboard = ({
         <EventsRunningOutBanner />
         <div className='flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
           <div className='max-w-7xl w-full mx-auto'>
-            <div className='flex justify-between'>
+            <div className='flex justify-between mb-6'>
               <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
                 {t('titles.dashboard')}
               </h2>
@@ -456,50 +453,52 @@ const Dashboard = ({
                 {tabProjects === tabForCaptchaProject ? t('dashboard.newCaptchaProject') : t('dashboard.newProject')}
               </span>
             </div>
-            <div className='mt-6 mb-2'>
-              {/* Dashboard tabs selector */}
-              <div>
-                <div className='sm:hidden mb-2'>
-                  <Select
-                    items={_filter(dashboardLocTabs, (tab) => {
-                      return !(tab.name === tabForSharedProject && sharedTotal <= 0)
-                    })}
-                    keyExtractor={(item) => item.id}
-                    labelExtractor={(item) => t(item.label)}
-                    onSelect={(label) => {
-                      const selected = _find(dashboardLocTabs, (tab) => t(tab.label) === label)
-                      setTabProjects(selected?.name ? selected.name : tabForOwnedProject)
-                      setActiveDashTab(selected?.id ? selected.id : DASHBOARD_TABS.owned)
-                    }}
-                    title={activeDashTabLabel}
-                  />
-                </div>
-                <div className='hidden sm:block'>
-                  <nav className='-mb-px flex space-x-8'>
-                    {_map(tabsForDashboard, (tab) => {
-                      if (tab.name === tabForSharedProject && sharedTotal <= 0) {
-                        return null
-                      }
+            {!isSelfhosted && (
+              <div className='mb-2'>
+                {/* Dashboard tabs selector */}
+                <div>
+                  <div className='sm:hidden mb-2'>
+                    <Select
+                      items={_filter(dashboardLocTabs, (tab) => {
+                        return !(tab.name === tabForSharedProject && sharedTotal <= 0)
+                      })}
+                      keyExtractor={(item) => item.id}
+                      labelExtractor={(item) => t(item.label)}
+                      onSelect={(label) => {
+                        const selected = _find(dashboardLocTabs, (tab) => t(tab.label) === label)
+                        setTabProjects(selected?.name ? selected.name : tabForOwnedProject)
+                        setActiveDashTab(selected?.id ? selected.id : DASHBOARD_TABS.owned)
+                      }}
+                      title={activeDashTabLabel}
+                    />
+                  </div>
+                  <div className='hidden sm:block'>
+                    <nav className='-mb-px flex space-x-8'>
+                      {_map(tabsForDashboard, (tab) => {
+                        if (tab.name === tabForSharedProject && sharedTotal <= 0) {
+                          return null
+                        }
 
-                      return (
-                        <button
-                          key={tab.name}
-                          type='button'
-                          onClick={() => setTabProjects(tab.name)}
-                          className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                            'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabProjects === tab.name,
-                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
-                          })}
-                          aria-current={tab.name === tabProjects ? 'page' : undefined}
-                        >
-                          {t(tab.label)}
-                        </button>
-                      )
-                    })}
-                  </nav>
+                        return (
+                          <button
+                            key={tab.name}
+                            type='button'
+                            onClick={() => setTabProjects(tab.name)}
+                            className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                              'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabProjects === tab.name,
+                              'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
+                            })}
+                            aria-current={tab.name === tabProjects ? 'page' : undefined}
+                          >
+                            {t(tab.label)}
+                          </button>
+                        )
+                      })}
+                    </nav>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             {isLoading ? (
               <Title title={t('titles.dashboard')}>
                 <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>

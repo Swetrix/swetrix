@@ -68,6 +68,10 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   tbs: tbs || ['custom'],
 }]
 
+interface IStringObject {
+  [key: string]: string
+}
+
 // the order of panels in the project view
 export const TRAFFIC_PANELS_ORDER: string[] = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
 export const PERFORMANCE_PANELS_ORDER: string[] = ['cc', 'pg', 'br', 'dv']
@@ -86,27 +90,21 @@ export const timeBucketToDays: {
   { lt: 732, tb: ['month'] }, // 24 months
 ]
 
-export const tbsFormatMapper: {
-  [key: string]: string
-} = {
+export const tbsFormatMapper: IStringObject = {
   hour: '%d %b %H:%M',
   day: '%d %b',
   week: '%d %b',
   month: '%d %b %Y',
 }
 
-export const tbsFormatMapper24h: {
-  [key: string]: string
-} = {
+export const tbsFormatMapper24h: IStringObject = {
   hour: '%H:%M',
   day: '%d %b',
   week: '%d %b',
   month: '%d %b %Y',
 }
 
-export const TimeFormat: {
-  [key: string]: string
-} = {
+export const TimeFormat: IStringObject = {
   '12-hour': '12-hour',
   '24-hour': '24-hour',
 }
@@ -197,9 +195,7 @@ export const PAGE_FORCE_REFRESHED = 'page-force-refreshed'
 // List of languages with translations available
 export const whitelist: string[] = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
 export const defaultLanguage: string = 'en'
-export const languages: {
-  [key: string]: string
-} = {
+export const languages: IStringObject = {
   en: 'English',
   uk: 'Українська',
   pl: 'Polski',
@@ -211,9 +207,7 @@ export const languages: {
   zh: '中文简体',
 }
 
-export const languageFlag: {
-  [key: string]: string
-} = {
+export const languageFlag: IStringObject = {
   en: 'GB',
   uk: 'UA',
   pl: 'PL',
@@ -225,9 +219,7 @@ export const languageFlag: {
   zh: 'CN',
 }
 
-export const paddleLanguageMapping: {
-  [key: string]: string
-} = {
+export const paddleLanguageMapping: IStringObject = {
   zh: 'zh-Hans',
   uk: 'ru',
   el: 'en',
@@ -261,10 +253,12 @@ export const tabForOwnedProject: string = 'owned'
 export const tabForSharedProject: string = 'shared'
 export const tabForCaptchaProject: string = 'captcha'
 
-export const tabsForDashboard: {
+interface IDashboardTabs {
   name: string
   label: string
-}[] = [
+}
+
+export const tabsForDashboard: IDashboardTabs[] = [
   {
     name: tabForOwnedProject,
     label: 'profileSettings.owned',
@@ -279,42 +273,39 @@ export const tabsForDashboard: {
   },
 ]
 
-export const PROJECT_TABS: {
-  [key: string]: string
-} = {
+const SELFHOSTED_PROJECT_TABS: IStringObject = {
+  traffic: 'traffic',
+  performance: 'performance',
+}
+
+const PRODUCTION_PROJECT_TABS: IStringObject = {
   traffic: 'traffic',
   performance: 'performance',
   alerts: 'alerts',
 }
 
-export const DASHBOARD_TABS: {
-  [key: string]: string
-} = {
+export const PROJECT_TABS = isSelfhosted ? SELFHOSTED_PROJECT_TABS : PRODUCTION_PROJECT_TABS
+
+export const DASHBOARD_TABS: IStringObject = {
   owned: 'owned',
   shared: 'shared',
   captcha: 'captcha',
 }
 
-export const QUERY_METRIC: {
-  [key: string]: string
-} = {
+export const QUERY_METRIC: IStringObject = {
   PAGE_VIEWS: 'page_views',
   UNIQUE_PAGE_VIEWS: 'unique_page_views',
   ONLINE_USERS: 'online_users',
 }
 
-export const QUERY_CONDITION: {
-  [key: string]: string
-} = {
+export const QUERY_CONDITION: IStringObject = {
   GREATER_THAN: 'greater_than',
   GREATER_EQUAL_THAN: 'greater_equal_than',
   LESS_THAN: 'less_than',
   LESS_EQUAL_THAN: 'less_equal_than',
 }
 
-export const QUERY_TIME: {
-  [key: string]: string
-} = {
+export const QUERY_TIME: IStringObject = {
   LAST_15_MINUTES: 'last_15_minutes',
   LAST_30_MINUTES: 'last_30_minutes',
   LAST_1_HOUR: 'last_1_hour',
@@ -326,9 +317,7 @@ export const QUERY_TIME: {
 export const INVITATION_EXPIRES_IN: number = 48 // hours
 export const ENTRIES_PER_PAGE_DASHBOARD: number = 10
 
-export const THEME_TYPE: {
-  [key: string]: string
-} = {
+export const THEME_TYPE: IStringObject = {
   classic: 'classic',
   christmas: 'christmas',
 }

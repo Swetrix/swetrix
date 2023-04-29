@@ -420,7 +420,6 @@ const ProjectSettings = ({
                 className='mt-4'
                 onChange={handleInput}
                 error={beenSubmitted ? errors.ipBlacklist : null}
-                isBeta
               />
               <Checkbox
                 checked={Boolean(form.active)}
@@ -451,12 +450,14 @@ const ProjectSettings = ({
                 </div>
                 {!project?.shared && (
                   <div className='flex flex-wrap items-center justify-end'>
-                    <Button className='mr-2' onClick={() => setShowTransfer(true)} semiDanger semiSmall>
-                      <>
-                        <RocketLaunchIcon className='w-5 h-5 mr-1' />
-                        {t('project.settings.transfer')}
-                      </>
-                    </Button>
+                    {!isSelfhosted && (
+                      <Button className='mr-2' onClick={() => setShowTransfer(true)} semiDanger semiSmall>
+                        <>
+                          <RocketLaunchIcon className='w-5 h-5 mr-1' />
+                          {t('project.settings.transfer')}
+                        </>
+                      </Button>
+                    )}
                     <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
                       <>
                         <TrashIcon className='w-5 h-5 mr-1' />
@@ -472,14 +473,18 @@ const ProjectSettings = ({
                   </div>
                 )}
               </div>
-              <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
-              <Emails projectId={id} projectName={project.name} />
-              <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
-              {
-                !project?.shared && (
+              {!isSelfhosted && (
+                <>
+                  <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+                  <Emails projectId={id} projectName={project.name} />
+                </>
+              )}
+              {!isSelfhosted && !project?.shared && (
+                <>
+                  <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
                   <People project={project} />
-                )
-              }
+                </>
+              )}
             </>
           ) : (
             <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>

@@ -257,22 +257,24 @@ const Signin = ({
               {t('auth.signin.button')}
             </Button>
           </div>
-          <div className='flex flex-wrap'>
-            <GoogleAuth
-              className='mt-4 mr-5'
-              setIsLoading={setIsLoading}
-              authSSO={authSSO}
-              callback={loginCallback}
-              dontRemember={form.dontRemember}
-            />
-            <GithubAuth
-              className='mt-4'
-              setIsLoading={setIsLoading}
-              authSSO={authSSO}
-              callback={loginCallback}
-              dontRemember={form.dontRemember}
-            />
-          </div>
+          {!isSelfhosted && (
+            <div className='flex flex-wrap'>
+              <GoogleAuth
+                className='mt-4 mr-5'
+                setIsLoading={setIsLoading}
+                authSSO={authSSO}
+                callback={loginCallback}
+                dontRemember={form.dontRemember}
+              />
+              <GithubAuth
+                className='mt-4'
+                setIsLoading={setIsLoading}
+                authSSO={authSSO}
+                callback={loginCallback}
+                dontRemember={form.dontRemember}
+              />
+            </div>
+          )}
         </form>
       </div>
     </Title>

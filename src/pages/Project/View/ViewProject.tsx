@@ -22,7 +22,6 @@ import _includes from 'lodash/includes'
 import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
-import _values from 'lodash/values'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _findIndex from 'lodash/findIndex'
@@ -43,7 +42,7 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
-  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER,
+  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -76,7 +75,6 @@ import Filters from './components/Filters'
 import ProjectAlertsView from '../Alerts/View'
 import './styles.css'
 
-const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
 interface IProjectView extends IProject {
@@ -190,9 +188,9 @@ const ViewProject = ({
     // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
-    const tab = searchParams.get('tab')
+    const tab = searchParams.get('tab') as string
 
-    if (_includes(PROJECT_TABS_VALUES, tab)) {
+    if (PROJECT_TABS[tab]) {
       return tab || 'traffic'
     }
 
@@ -217,7 +215,7 @@ const ViewProject = ({
     label: string
     icon: any
   }[] = useMemo(() => {
-    return [
+    const selfhostedOnly = [
       {
         id: PROJECT_TABS.traffic,
         label: t('dashboard.traffic'),
@@ -228,6 +226,14 @@ const ViewProject = ({
         label: t('dashboard.performance'),
         icon: BoltIcon,
       },
+    ]
+
+    if (isSelfhosted) {
+      return selfhostedOnly
+    }
+
+    return [
+      ...selfhostedOnly,
       {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
@@ -1496,23 +1502,25 @@ const ViewProject = ({
                         <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                       </button>
                     </div>
-                    <div
-                      className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
-                        hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
-                      })}
-                    >
-                      <button
-                        type='button'
-                        onClick={onForecastOpen}
-                        disabled={!_isEmpty(filters)}
-                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                          'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
-                          '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
+                    {!isSelfhosted && (
+                      <div
+                        className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
+                          hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
                         })}
                       >
-                        <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
-                      </button>
-                    </div>
+                        <button
+                          type='button'
+                          onClick={onForecastOpen}
+                          disabled={!_isEmpty(filters)}
+                          className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                            'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
+                            '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
+                          })}
+                        >
+                          <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
+                        </button>
+                      </div>
+                    )}
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                       <span className='relative z-0 inline-flex shadow-sm rounded-md'>
                         {_map(activePeriod?.tbs, (tb, index, { length }) => (
@@ -1604,7 +1612,7 @@ const ViewProject = ({
                                       checked={event.active}
                                     />
                                   )}
-                                  buttonClassName='group-hover:bg-gray-50 px-4 py-2 dark:group-hover:bg-gray-600 inline-flex w-full rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
+                                  buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
                                   keyExtractor={(event) => event.id}
                                   onSelect={(event, e) => {
                                     e?.stopPropagation()
@@ -1690,7 +1698,7 @@ const ViewProject = ({
                     {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
                       <Button
                         onClick={openSettingsHandler}
-                        className='relative flex justify-center items-center !pr-3 !pl-1 py-2 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
+                        className='relative flex justify-center items-center !pr-3 pl-2 py-2 md:pr-4 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
                         secondary
                       >
                         <>
