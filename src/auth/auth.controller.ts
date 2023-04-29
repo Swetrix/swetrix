@@ -27,11 +27,12 @@ import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import * as _pick from 'lodash/pick'
 
 import { checkRateLimit } from 'src/common/utils'
-import { UserType } from 'src/user/entities/user.entity'
+import { UserType, User } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
-import { isDevelopment } from 'src/common/constants'
+import { isDevelopment, isSelfhosted } from 'src/common/constants'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
+import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   RegisterResponseDto,
   RegisterRequestDto,
@@ -53,8 +54,7 @@ import {
 import { SSOProviders } from './dtos/sso-generate.dto'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 
-const LOCAL_OAUTH_RATE_LIMIT = 2000
-const PRODUCTION_OAUTH_RATE_LIMIT = 15
+const OAUTH_RATE_LIMIT = 15
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -79,6 +79,7 @@ export class AuthController {
     description: 'User registered',
     type: RegisterResponseDto,
   })
+  @UseGuards(SelfhostedGuard)
   @Public()
   @Post('register')
   public async register(
@@ -148,23 +149,29 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.invalidCredentials'))
     }
 
-    await this.authService.sendTelegramNotification(user.id, headers, ip)
-
     const jwtTokens = await this.authService.generateJwtTokens(
       user.id,
       !user.isTwoFactorAuthenticationEnabled,
     )
 
+    if (isSelfhosted) {
+      return {
+        ...jwtTokens,
+        user,
+      }
+    }
+
+    await this.authService.sendTelegramNotification(user.id, headers, ip)
+
     if (user.isTwoFactorAuthenticationEnabled) {
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
-      user = await this.authService.getSharedProjectsForUser(user)
+      user = await this.authService.getSharedProjectsForUser(user as User)
     }
 
     return {
-      accessToken: jwtTokens.accessToken,
-      refreshToken: jwtTokens.refreshToken,
-      user: this.userService.omitSensitiveData(user),
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(user as User),
     }
   }
 
@@ -172,6 +179,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email verified',
   })
+  @UseGuards(SelfhostedGuard)
   @Public()
   @Get('verify-email/:token')
   public async verifyEmail(
@@ -193,6 +201,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password reset requested',
   })
+  @UseGuards(SelfhostedGuard)
   @Public()
   @Post('reset-password')
   public async requestResetPassword(
@@ -220,6 +229,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password reset',
   })
+  @UseGuards(SelfhostedGuard)
   @Public()
   @Post('reset-password/confirm/:token')
   @HttpCode(200)
@@ -243,6 +253,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password changed',
   })
+  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('change-password')
@@ -273,6 +284,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Resend of the verification email requested',
   })
+  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('verify-email')
@@ -304,6 +316,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email changed',
   })
+  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('change-email')
@@ -340,6 +353,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email confirmed',
   })
+  @UseGuards(SelfhostedGuard)
   @Public()
   @Get('change-email/confirm/:token')
   public async confirmChangeEmail(
@@ -427,6 +441,7 @@ export class AuthController {
   // SSO section
   @ApiOperation({ summary: 'Generate SSO authentication URL' })
   @Post('sso/generate')
+  @UseGuards(SelfhostedGuard)
   @Public()
   async generateAuthURL(
     @Body() body: SSOGenerateDto,
@@ -439,7 +454,7 @@ export class AuthController {
     await checkRateLimit(
       ip,
       'sso-generate',
-      isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT,
+      OAUTH_RATE_LIMIT,
       1800,
     )
 
@@ -458,6 +473,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Process authentication token (or code)' })
   @Post('sso/process-token')
+  @UseGuards(SelfhostedGuard)
   @Public()
   async processSSOToken(
     @Body() body: ProcessSSOCodeDto,
@@ -470,7 +486,7 @@ export class AuthController {
     await checkRateLimit(
       ip,
       'sso-process',
-      isDevelopment ? LOCAL_OAUTH_RATE_LIMIT : PRODUCTION_OAUTH_RATE_LIMIT,
+      OAUTH_RATE_LIMIT,
       1800,
     )
 
@@ -481,6 +497,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Auth user' })
   @Post('sso/hash')
+  @UseGuards(SelfhostedGuard)
   @Public()
   // Validates the authorisation code and returns the JWT tokens
   async getJWTByHash(
@@ -500,6 +517,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'SSO provider linked to an existing account',
   })
+  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('sso/link_by_hash')
@@ -516,6 +534,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'SSO provider unlinked from an existing account',
   })
+  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Delete('sso/unlink')

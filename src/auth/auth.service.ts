@@ -32,19 +32,29 @@ import {
   MAX_EMAIL_REQUESTS,
   User,
   TRIAL_DURATION,
+  SelfhostedUser,
+  generateSelfhostedUser,
 } from 'src/user/entities/user.entity'
 import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
 import {
+  saveRefreshTokenClickhouse, findRefreshTokenClickhouse,
+} from 'src/common/utils'
+import {
   REDIS_SSO_UUID,
   redis,
   PRODUCTION_ORIGIN,
   isDevelopment,
+  isSelfhosted,
+  SELFHOSTED_EMAIL,
+  SELFHOSTED_PASSWORD,
+  SELFHOSTED_UUID,
 } from 'src/common/constants'
 import { SSOProviders } from './dtos/sso-generate.dto'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
+import { RefreshToken } from 'src/user/entities/refresh-token.entity'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
@@ -179,7 +189,15 @@ export class AuthService {
   public async validateUser(
     email: string,
     password: string,
-  ): Promise<User | null> {
+  ): Promise<User | SelfhostedUser | null> {
+    if (isSelfhosted) {
+      if (email !== SELFHOSTED_EMAIL || password !== SELFHOSTED_PASSWORD) {
+        return null
+      }
+
+      return generateSelfhostedUser()
+    }
+
     const user = await this.userService.findUser(email)
 
     if (user && (await this.comparePassword(password, user.password))) {
@@ -423,7 +441,11 @@ export class AuthService {
       },
     )
 
-    await this.userService.saveRefreshToken(userId, refreshToken)
+    if (isSelfhosted) {
+      await saveRefreshTokenClickhouse(userId, refreshToken)
+    } else {
+      await this.userService.saveRefreshToken(userId, refreshToken)
+    }
 
     return refreshToken
   }
@@ -432,7 +454,15 @@ export class AuthService {
     userId: string,
     refreshToken: string,
   ): Promise<boolean> {
-    const token = await this.userService.findRefreshToken(userId, refreshToken)
+    let token: string | RefreshToken
+
+    if (isSelfhosted) {
+      const token2 = await findRefreshTokenClickhouse(userId, refreshToken)
+
+      console.log(token2)
+    }
+
+    token = await this.userService.findRefreshToken(userId, refreshToken)
     return Boolean(token)
   }
 

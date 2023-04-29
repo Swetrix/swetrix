@@ -105,7 +105,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-  ) {}
+  ) { }
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -127,7 +127,7 @@ export class ProjectController {
       const results = await getProjectsClickhouse()
       const formatted = _map(results, this.projectService.formatFromClickhouse)
       return {
-        results,
+        results: formatted,
         page_total: _size(formatted),
         total: _size(formatted),
         totalMonthlyEvents: 0, // not needed as it's selfhosed
@@ -186,6 +186,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async getShared(
     @CurrentUserId() userId: string,
@@ -194,23 +195,15 @@ export class ProjectController {
   ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project/shared')
 
-    if (isSelfhosted) {
-      throw new NotImplementedException(
-        'This feature is not available on selfhosted yet',
-      )
-    } else {
-      const where = Object()
-      where.user = userId
+    const where = Object()
+    where.user = userId
 
-      const paginated = await this.projectService.paginateShared(
-        { take, skip },
-        where,
-      )
+    const paginated = await this.projectService.paginateShared(
+      { take, skip },
+      where,
+    )
 
-      return {
-        ...paginated,
-      }
-    }
+    return paginated
   }
 
   @Get('/all')
@@ -475,7 +468,7 @@ export class ProjectController {
 
   @Delete('/captcha/reset/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async resetCAPTCHA(
@@ -491,37 +484,27 @@ export class ProjectController {
 
     const query = `ALTER table captcha DELETE WHERE pid='${id}'`
 
-    if (isSelfhosted) {
-      try {
-        await clickhouse.query(query).toPromise()
-        return 'CAPTCHA project resetted successfully'
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while resetting your CAPTCHA project'
-      }
-    } else {
-      const user = await this.userService.findOne(uid)
-      const project = await this.projectService.findOneWhere(
-        { id },
-        {
-          relations: ['admin'],
-          select: ['id'],
-        },
-      )
+    const user = await this.userService.findOne(uid)
+    const project = await this.projectService.findOneWhere(
+      { id },
+      {
+        relations: ['admin'],
+        select: ['id'],
+      },
+    )
 
-      if (_isEmpty(project)) {
-        throw new NotFoundException(`Project with ID ${id} does not exist`)
-      }
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${id} does not exist`)
+    }
 
-      this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid, user.roles)
 
-      try {
-        await clickhouse.query(query).toPromise()
-        return 'CAPTCHA project resetted successfully'
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while resetting your CAPTCHA project'
-      }
+    try {
+      await clickhouse.query(query).toPromise()
+      return 'CAPTCHA project resetted successfully'
+    } catch (e) {
+      this.logger.error(e)
+      return 'Error while resetting your CAPTCHA project'
     }
   }
 
@@ -582,7 +565,7 @@ export class ProjectController {
 
   @Delete('/captcha/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteCAPTCHA(
@@ -597,40 +580,36 @@ export class ProjectController {
       )
     }
 
-    if (isSelfhosted) {
-      // TODO
-    } else {
-      const user = await this.userService.findOne(uid)
-      const project = await this.projectService.findOneWhere(
-        { id },
-        {
-          relations: ['admin'],
-          select: ['id'],
-        },
-      )
+    const user = await this.userService.findOne(uid)
+    const project = await this.projectService.findOneWhere(
+      { id },
+      {
+        relations: ['admin'],
+        select: ['id'],
+      },
+    )
 
-      if (_isEmpty(project)) {
-        throw new NotFoundException(`Project with ID ${id} does not exist`)
-      }
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${id} does not exist`)
+    }
 
-      this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid, user.roles)
 
-      const query = `ALTER table captcha DELETE WHERE pid='${id}'`
+    const query = `ALTER table captcha DELETE WHERE pid='${id}'`
 
-      try {
-        await clickhouse.query(query).toPromise()
+    try {
+      await clickhouse.query(query).toPromise()
 
-        project.captchaSecretKey = null
-        project.isCaptchaEnabled = false
-        project.isCaptchaProject = false
+      project.captchaSecretKey = null
+      project.isCaptchaEnabled = false
+      project.isCaptchaProject = false
 
-        await this.projectService.update(id, project)
+      await this.projectService.update(id, project)
 
-        return 'CAPTCHA project deleted successfully'
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while deleting your CAPTCHA project'
-      }
+      return 'CAPTCHA project deleted successfully'
+    } catch (e) {
+      this.logger.error(e)
+      return 'Error while deleting your CAPTCHA project'
     }
 
     return null
@@ -788,9 +767,8 @@ export class ProjectController {
         ActionTokenType.PROJECT_SHARE,
         share.id,
       )
-      const url = `${
-        isDevelopment ? headers.origin : PRODUCTION_ORIGIN
-      }/share/${actionToken.id}`
+      const url = `${isDevelopment ? headers.origin : PRODUCTION_ORIGIN
+        }/share/${actionToken.id}`
       await this.mailerService.sendEmail(
         invitee.email,
         LetterTemplate.ProjectInvitation,
@@ -1190,7 +1168,6 @@ export class ProjectController {
     }
 
     if (isSelfhosted) {
-      // todo: delete share for selfhosted
       await deleteProjectClickhouse(id)
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`

@@ -375,13 +375,10 @@ export class ProjectService {
     ])
   }
 
-  formatToClickhouse(project: Project): object {
+  formatToClickhouse(project: any): object {
     const updProject = { ...project }
-    // @ts-ignore
     updProject.active = Number(updProject.active)
-    // @ts-ignore
     updProject.public = Number(updProject.public)
-    // @ts-ignore
     updProject.origins = _isString(updProject.origins)
       ? updProject.origins
       : _join(updProject.origins, ',')
@@ -389,11 +386,9 @@ export class ProjectService {
     return updProject
   }
 
-  formatFromClickhouse(project: object): object {
+  formatFromClickhouse(project: any): object {
     const updProject = { ...project }
-    // @ts-ignore
     updProject.active = Boolean(updProject.active)
-    // @ts-ignore
     updProject.public = Boolean(updProject.public)
 
     return updProject
