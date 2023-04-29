@@ -22,7 +22,6 @@ import _includes from 'lodash/includes'
 import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
-import _values from 'lodash/values'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _findIndex from 'lodash/findIndex'
@@ -76,7 +75,6 @@ import Filters from './components/Filters'
 import ProjectAlertsView from '../Alerts/View'
 import './styles.css'
 
-const PROJECT_TABS_VALUES = _values(PROJECT_TABS)
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
 interface IProjectView extends IProject {
@@ -190,9 +188,9 @@ const ViewProject = ({
     // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
-    const tab = searchParams.get('tab')
+    const tab = searchParams.get('tab') as string
 
-    if (_includes(PROJECT_TABS_VALUES, tab)) {
+    if (!PROJECT_TABS[tab]) {
       return tab || 'traffic'
     }
 
