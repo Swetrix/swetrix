@@ -509,7 +509,7 @@ export class ProjectController {
 
   @Post('/secret-gen/:pid')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, description: 'A regenerated CAPTCHA secret key' })
   async secretGen(
@@ -524,38 +524,21 @@ export class ProjectController {
       )
     }
 
-    let secret: string = null
+    const project = await this.projectService.findOne(pid, {
+      relations: ['admin'],
+    })
+    const user = await this.userService.findOne(uid)
 
-    if (isSelfhosted) {
-      const project = await getProjectsClickhouse(pid)
-
-      if (_isEmpty(project)) {
-        throw new NotFoundException()
-      }
-      secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
-
-      project.captchaSecretKey = secret
-
-      await updateProjectClickhouse(
-        this.projectService.formatToClickhouse(project),
-      )
-    } else {
-      const project = await this.projectService.findOne(pid, {
-        relations: ['admin'],
-      })
-      const user = await this.userService.findOne(uid)
-
-      if (_isEmpty(project)) {
-        throw new NotFoundException()
-      }
-
-      this.projectService.allowedToManage(project, uid, user.roles)
-
-      secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
-
-      // @ts-ignore
-      await this.projectService.update(pid, { captchaSecretKey: secret })
+    if (_isEmpty(project)) {
+      throw new NotFoundException()
     }
+
+    this.projectService.allowedToManage(project, uid, user.roles)
+
+    const secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+
+    // @ts-ignore
+    await this.projectService.update(pid, { captchaSecretKey: secret })
 
     await deleteProjectRedis(pid)
 

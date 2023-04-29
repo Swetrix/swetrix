@@ -53,7 +53,13 @@ const marketingTips = {
 const RATE_LIMIT_REQUESTS_AMOUNT = 3
 const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
-const allowedToUpdateKeys = ['name', 'origins', 'active', 'public']
+const allowedToUpdateKeys = [
+  'name',
+  'origins',
+  'ipBlacklist',
+  'active',
+  'public',
+]
 
 const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
   `rl:${hash(`${ipOrApiKey}${salt}`).toString('hex')}`

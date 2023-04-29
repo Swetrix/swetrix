@@ -15,6 +15,8 @@ import * as _join from 'lodash/join'
 import * as _find from 'lodash/find'
 import * as _map from 'lodash/map'
 import * as _pick from 'lodash/pick'
+import * as _isNull from 'lodash/isNull'
+import * as _split from 'lodash/split'
 import * as _trim from 'lodash/trim'
 import * as _findIndex from 'lodash/findIndex'
 import * as _includes from 'lodash/includes'
@@ -126,7 +128,7 @@ export class ProjectService {
 
     if (_isEmpty(project)) {
       if (isSelfhosted) {
-        project = await getProjectsClickhouse(pid)
+        project = this.formatFromClickhouse(await getProjectsClickhouse(pid))
       } else {
         // todo: optimise the relations - select
         // select only required columns
@@ -379,17 +381,34 @@ export class ProjectService {
     const updProject = { ...project }
     updProject.active = Number(updProject.active)
     updProject.public = Number(updProject.public)
-    updProject.origins = _isString(updProject.origins)
-      ? updProject.origins
-      : _join(updProject.origins, ',')
+
+    if (!_isNull(updProject.origins)) {
+      updProject.origins = _isString(updProject.origins)
+        ? updProject.origins
+        : _join(updProject.origins, ',')
+    }
+
+    if (!_isNull(updProject.ipBlacklist)) {
+      updProject.ipBlacklist = _isString(updProject.ipBlacklist)
+        ? updProject.ipBlacklist
+        : _join(updProject.ipBlacklist, ',')
+    }
 
     return updProject
   }
 
-  formatFromClickhouse(project: any): object {
+  formatFromClickhouse(project: any): Project {
     const updProject = { ...project }
     updProject.active = Boolean(updProject.active)
     updProject.public = Boolean(updProject.public)
+
+    updProject.origins = _isNull(updProject.origins)
+      ? []
+      : _split(updProject.origins, ',')
+
+    updProject.ipBlacklist = _isNull(updProject.ipBlacklist)
+      ? []
+      : _split(updProject.ipBlacklist, ',')
 
     return updProject
   }
