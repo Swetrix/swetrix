@@ -13,7 +13,6 @@ import {
   NotFoundException,
   ForbiddenException,
   Headers,
-  NotImplementedException,
   Patch,
   HttpStatus,
   ConflictException,

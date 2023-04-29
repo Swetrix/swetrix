@@ -234,6 +234,20 @@ const findRefreshTokenClickhouse = async (
   return clickhouse.query(query, paramsData).toPromise()
 }
 
+const deleteRefreshTokenClickhouse = async (
+  userId: string,
+  refreshToken: string,
+) => {
+  const paramsData = {
+    params: {
+      userId,
+      refreshToken,
+    },
+  }
+  const query = `ALTER table refresh_token DELETE WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}`
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
 const generateRecoveryCode = () =>
   randomstring.generate({
     length: 30,
@@ -270,4 +284,5 @@ export {
   getSelfhostedUUID,
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
+  deleteRefreshTokenClickhouse,
 }
