@@ -15,7 +15,7 @@ import { TwoFactorAuthModule } from './twoFactorAuth/twoFactorAuth.module'
 import { TaskManagerModule } from './task-manager/task-manager.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
-import { TGModule } from './tg-integration/tg.module'
+// import { TGModule } from './tg-integration/tg.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
 import { getI18nConfig } from './configs'
@@ -53,7 +53,7 @@ const modules = [
   AnalyticsModule,
   WebhookModule,
   PingModule,
-  TGModule,
+  // TGModule,
   MarketplaceModule,
   AlertModule,
   AuthModule,

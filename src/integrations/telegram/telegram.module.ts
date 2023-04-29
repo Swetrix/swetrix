@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { TelegrafModule } from 'nestjs-telegraf'
+import { session } from 'telegraf'
 import { TelegramController } from './telegram.controller'
+import { TelegramUpdate } from './telegram.update'
+import { StartScene } from './scene/start.scene'
+import { ProjectsScene } from './scene/projects.scene'
+import { SettingsScene } from './scene/settings.scene'
+import { UnlinkAccountScene } from './scene/unlink-account.scene'
 
 @Module({
   imports: [
@@ -25,9 +31,17 @@ import { TelegramController } from './telegram.controller'
             },
           }),
         },
+        middlewares: [session()],
       }),
     }),
   ],
   controllers: [TelegramController],
+  providers: [
+    TelegramUpdate,
+    StartScene,
+    ProjectsScene,
+    SettingsScene,
+    UnlinkAccountScene,
+  ],
 })
 export class TelegramModule {}
