@@ -1590,6 +1590,9 @@ const ViewProject = ({
                           onSelect={(pair) => {
                             if (pair.period === PERIOD_PAIRS_COMPARE.DISABLE) {
                               setIsActiveCompare(false)
+                              setDateRangeCompare(null)
+                              setActivePeriodCompare(periodPairsCompare[0].period)
+                              return
                             }
 
                             if (pair.period === PERIOD_PAIRS_COMPARE.CUSTOM) {
