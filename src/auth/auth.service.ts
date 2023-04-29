@@ -39,7 +39,8 @@ import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
 import {
-  saveRefreshTokenClickhouse, findRefreshTokenClickhouse,
+  saveRefreshTokenClickhouse,
+  findRefreshTokenClickhouse,
 } from 'src/common/utils'
 import {
   REDIS_SSO_UUID,
@@ -51,10 +52,10 @@ import {
   SELFHOSTED_PASSWORD,
   SELFHOSTED_UUID,
 } from 'src/common/constants'
+import { RefreshToken } from 'src/user/entities/refresh-token.entity'
 import { SSOProviders } from './dtos/sso-generate.dto'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
-import { RefreshToken } from 'src/user/entities/refresh-token.entity'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`

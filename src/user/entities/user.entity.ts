@@ -14,9 +14,7 @@ import { ExtensionToUser } from '../../marketplace/extensions/entities/extension
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
-import {
-  SELFHOSTED_EMAIL, SELFHOSTED_UUID,
-} from '../../common/constants'
+import { SELFHOSTED_EMAIL, SELFHOSTED_UUID } from '../../common/constants'
 
 export enum PlanCode {
   none = 'none',

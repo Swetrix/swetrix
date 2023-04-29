@@ -5,8 +5,8 @@ import { verify } from 'jsonwebtoken'
 
 import { UserType, generateSelfhostedUser } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
-import { IS_TWO_FA_NOT_REQUIRED_KEY, ROLES_KEY } from '../decorators'
 import { isSelfhosted } from 'src/common/constants'
+import { IS_TWO_FA_NOT_REQUIRED_KEY, ROLES_KEY } from '../decorators'
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET
 
@@ -60,7 +60,7 @@ export class RolesGuard implements CanActivate {
     if (isSelfhosted) {
       try {
         const decoded: any = verify(token, ACCESS_TOKEN_SECRET)
-  
+
         // If the token is not decoded, it means it's invalid
         if (!decoded) {
           return false
