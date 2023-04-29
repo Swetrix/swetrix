@@ -261,10 +261,12 @@ export const tabForOwnedProject: string = 'owned'
 export const tabForSharedProject: string = 'shared'
 export const tabForCaptchaProject: string = 'captcha'
 
-export const tabsForDashboard: {
+interface IDashboardTabs {
   name: string
   label: string
-}[] = [
+}
+
+export const tabsForDashboard: IDashboardTabs[] = [
   {
     name: tabForOwnedProject,
     label: 'profileSettings.owned',

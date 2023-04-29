@@ -239,18 +239,20 @@ const ProfileMenu = ({
               </Link>
             )}
           </Menu.Item>
-          <Menu.Item>
-            {({ active }) => (
-              <Link
-                to={routes.billing}
-                className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                  'bg-gray-100 dark:bg-slate-800': active,
-                })}
-              >
-                {t('common.billing')}
-              </Link>
-            )}
-          </Menu.Item>
+          {!isSelfhosted && (
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to={routes.billing}
+                  className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
+                    'bg-gray-100 dark:bg-slate-800': active,
+                  })}
+                >
+                  {t('common.billing')}
+                </Link>
+              )}
+            </Menu.Item>
+          )}
         </div>
 
         {!isSelfhosted && (
@@ -310,7 +312,7 @@ const AuthedHeader = ({
           </Link>
 
           <div className='hidden ml-10 space-x-1 lg:flex'>
-            {!isSelfhosted && user?.planCode === 'trial' && (
+            {user?.planCode === 'trial' && (
               <Link
                 to={routes.billing}
                 className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
@@ -675,7 +677,7 @@ const Header = ({
                 />
                 {authenticated ? (
                   <>
-                    {!isSelfhosted && user?.planCode === 'trial' && (
+                    {user?.planCode === 'trial' && (
                       <Link
                         to={routes.billing}
                         className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
@@ -687,7 +689,7 @@ const Header = ({
                         {status}
                       </Link>
                     )}
-                    {!isSelfhosted && user?.planCode === 'none' && (
+                    {user?.planCode === 'none' && (
                       <Link
                         to={routes.billing}
                         className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
