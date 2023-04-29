@@ -420,7 +420,6 @@ const ProjectSettings = ({
                 className='mt-4'
                 onChange={handleInput}
                 error={beenSubmitted ? errors.ipBlacklist : null}
-                isBeta
               />
               <Checkbox
                 checked={Boolean(form.active)}
