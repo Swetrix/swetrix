@@ -280,7 +280,10 @@ export class AnalyticsController {
 
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
-      this.analyticsService.getFiltersQuery(filters, isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(
+        filters,
+        isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
+      )
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -392,8 +395,10 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] =
-      this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.PERFORMANCE,
+    )
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -912,8 +917,10 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
