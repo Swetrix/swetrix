@@ -27,7 +27,11 @@ import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import * as _pick from 'lodash/pick'
 
 import { checkRateLimit } from 'src/common/utils'
-import { UserType, User, generateSelfhostedUser } from 'src/user/entities/user.entity'
+import {
+  UserType,
+  User,
+  generateSelfhostedUser,
+} from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
 import { isSelfhosted } from 'src/common/constants'
 import { AuthService } from './auth.service'
