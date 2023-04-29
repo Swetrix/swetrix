@@ -41,6 +41,7 @@ import { ProjectService } from 'src/project/project.service'
 import {
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
+  deleteRefreshTokenClickhouse,
 } from 'src/common/utils'
 import {
   REDIS_SSO_UUID,
@@ -50,7 +51,6 @@ import {
   isSelfhosted,
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,
-  SELFHOSTED_UUID,
 } from 'src/common/constants'
 import { RefreshToken } from 'src/user/entities/refresh-token.entity'
 import { SSOProviders } from './dtos/sso-generate.dto'
@@ -455,15 +455,12 @@ export class AuthService {
     userId: string,
     refreshToken: string,
   ): Promise<boolean> {
-    let token: string | RefreshToken
-
     if (isSelfhosted) {
-      const token2 = await findRefreshTokenClickhouse(userId, refreshToken)
-
-      console.log(token2)
+      const tokens = await findRefreshTokenClickhouse(userId, refreshToken)
+      return !_isEmpty(tokens)
     }
 
-    token = await this.userService.findRefreshToken(userId, refreshToken)
+    const token = await this.userService.findRefreshToken(userId, refreshToken)
     return Boolean(token)
   }
 
@@ -489,6 +486,11 @@ export class AuthService {
   }
 
   async logout(userId: string, refreshToken: string) {
+    if (isSelfhosted) {
+      await deleteRefreshTokenClickhouse(userId, refreshToken)
+      return
+    }
+
     await this.userService.deleteRefreshToken(userId, refreshToken)
   }
 

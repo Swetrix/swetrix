@@ -27,9 +27,9 @@ import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import * as _pick from 'lodash/pick'
 
 import { checkRateLimit } from 'src/common/utils'
-import { UserType, User } from 'src/user/entities/user.entity'
+import { UserType, User, generateSelfhostedUser } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
-import { isDevelopment, isSelfhosted } from 'src/common/constants'
+import { isSelfhosted } from 'src/common/constants'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
 import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
@@ -384,7 +384,9 @@ export class AuthController {
     @CurrentUser('refreshToken') refreshToken: string,
     @I18n() i18n: I18nContext,
   ): Promise<{ accessToken: string }> {
-    const user = await this.userService.findUserById(userId)
+    const user = isSelfhosted
+      ? generateSelfhostedUser()
+      : await this.userService.findUserById(userId)
 
     if (!user) {
       throw new UnauthorizedException()
@@ -420,7 +422,9 @@ export class AuthController {
     @CurrentUser('refreshToken') refreshToken: string,
     @I18n() i18n: I18nContext,
   ): Promise<void> {
-    const user = await this.userService.findUserById(userId)
+    const user = isSelfhosted
+      ? generateSelfhostedUser()
+      : await this.userService.findUserById(userId)
 
     if (!user) {
       throw new UnauthorizedException()
