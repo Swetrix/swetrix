@@ -42,7 +42,7 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
-  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE,
+  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE, periodToCompareDate,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -218,7 +218,6 @@ const ViewProject = ({
   const [isActiveCompare, setIsActiveCompare] = useState<boolean>(false)
   const [activePeriodCompare, setActivePeriodCompare] = useState<string>(periodPairsCompare[0].period)
   const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
-  console.log('activeDropdownLabelCompare', activeDropdownLabelCompare)
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
 
   const tabs: {
@@ -466,6 +465,21 @@ const ViewProject = ({
       let from
       let to
       let customEventsChart = customEventsChartData
+
+      if (isActiveCompare) {
+        if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
+          from = getFormatDate(dateRangeCompare[0])
+          to = getFormatDate(dateRangeCompare[1])
+        } else {
+          let date
+          if (dateRange) {
+            date = _find(periodToCompareDate, (item) => item.period === period)?.formula(dateRange)
+          } else {
+            date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
+          }
+          console.log('date', date)
+        }
+      }
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
@@ -1425,6 +1439,14 @@ const ViewProject = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartType])
+
+  // loadAnalytics when compare period change or compare selected
+  useEffect(() => {
+    if (isActiveCompare) {
+      loadAnalytics()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActiveCompare, activePeriodCompare])
 
   if (!isLoading) {
     return (

@@ -98,6 +98,93 @@ export const PERIOD_PAIRS_COMPARE: {
   DISABLE: 'disable',
 }
 
+export const periodToCompareDate: {
+  period: string
+  formula: (date?: Date[]) => {
+    from: Date
+    to: Date
+  }
+}[] = [{
+  period: '1d',
+  formula: () => {
+    const to = new Date()
+    to.setDate(to.getDate() - 1)
+    const from = new Date()
+    from.setDate(to.getDate() - 1)
+    return {
+      from,
+      to,
+    }
+  },
+}, {
+  period: '7d',
+  formula: () => {
+    const to = new Date()
+    to.setDate(to.getDate() - 7)
+    const from = new Date()
+    from.setDate(to.getDate() - 7)
+    return {
+      from,
+      to,
+    }
+  },
+}, {
+  period: '4w',
+  formula: () => {
+    const to = new Date()
+    to.setDate(to.getDate() - 28)
+    const from = new Date()
+    from.setDate(to.getDate() - 28)
+    return {
+      from,
+      to,
+    }
+  },
+}, {
+  period: '3M',
+  formula: () => {
+    const to = new Date()
+    to.setMonth(to.getMonth() - 3)
+    const from = new Date()
+    from.setMonth(to.getMonth() - 3)
+    return {
+      from,
+      to,
+    }
+  },
+}, {
+  period: '12M',
+  formula: () => {
+    const to = new Date()
+    to.setMonth(to.getMonth() - 12)
+    const from = new Date()
+    from.setMonth(to.getMonth() - 12)
+    return {
+      from,
+      to,
+    }
+  },
+}, {
+  period: 'custom',
+  formula: (date) => {
+    if (!date) {
+      return {
+        from: new Date(),
+        to: new Date(),
+      }
+    }
+    const days = (date[1].getTime() - date[0].getTime()) / (1000 * 3600 * 24)
+    const to = new Date()
+    to.setDate(to.getDate() - days)
+    const from = new Date()
+    from.setDate(to.getDate() - days)
+    return {
+      from,
+      to,
+    }
+  },
+}]
+
 interface IStringObject {
   [key: string]: string
 }
