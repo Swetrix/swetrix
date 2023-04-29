@@ -81,16 +81,21 @@ export const tbPeriodPairsCompare = (t: Function, dates?: Date[]): {
 }, {
   label: dates ? getCustomLabel(dates, t) : t('project.custom'),
   period: 'custom',
+}, {
+  label: t('project.disableCompare'),
+  period: 'disable',
 }]
 
 export const PERIOD_PAIRS_COMPARE: {
   COMPARE: string
   PREVIOS: string
   CUSTOM: string
+  DISABLE: string
 } = {
   COMPARE: 'compare',
   PREVIOS: 'previous',
   CUSTOM: 'custom',
+  DISABLE: 'disable',
 }
 
 interface IStringObject {

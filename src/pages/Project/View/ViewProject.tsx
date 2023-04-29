@@ -1588,6 +1588,10 @@ const ViewProject = ({
                           labelExtractor={(pair) => pair.label}
                           keyExtractor={(pair) => pair.label}
                           onSelect={(pair) => {
+                            if (pair.period === PERIOD_PAIRS_COMPARE.DISABLE) {
+                              setIsActiveCompare(false)
+                            }
+
                             if (pair.period === PERIOD_PAIRS_COMPARE.CUSTOM) {
                               setTimeout(() => {
                                 // @ts-ignore
