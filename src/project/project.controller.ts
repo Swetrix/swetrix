@@ -1380,10 +1380,6 @@ export class ProjectController {
       )
     }
 
-    // TODO: Discuss.
-    // I'm not sure if we should select 'share' from project too.
-    // If we select share - this means that the share project admins would be able to delete other people from project share too
-    // (as the allowedToManage method would pass for them).
     const project = await this.projectService.findOneWhere(
       { id: pid },
       {
