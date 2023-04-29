@@ -1502,23 +1502,25 @@ const ViewProject = ({
                         <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                       </button>
                     </div>
-                    <div
-                      className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
-                        hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
-                      })}
-                    >
-                      <button
-                        type='button'
-                        onClick={onForecastOpen}
-                        disabled={!_isEmpty(filters)}
-                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                          'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
-                          '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
+                    {!isSelfhosted && (
+                      <div
+                        className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
+                          hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
                         })}
                       >
-                        <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
-                      </button>
-                    </div>
+                        <button
+                          type='button'
+                          onClick={onForecastOpen}
+                          disabled={!_isEmpty(filters)}
+                          className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                            'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
+                            '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
+                          })}
+                        >
+                          <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
+                        </button>
+                      </div>
+                    )}
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                       <span className='relative z-0 inline-flex shadow-sm rounded-md'>
                         {_map(activePeriod?.tbs, (tb, index, { length }) => (
