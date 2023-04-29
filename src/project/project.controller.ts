@@ -323,6 +323,7 @@ export class ProjectController {
       const project = new Project()
       Object.assign(project, projectDTO)
       project.origins = _map(projectDTO.origins, _trim)
+      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
       project.active = true
 
       await createProjectClickhouse(project)
