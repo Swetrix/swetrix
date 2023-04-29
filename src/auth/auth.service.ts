@@ -52,7 +52,6 @@ import {
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,
 } from 'src/common/constants'
-import { RefreshToken } from 'src/user/entities/refresh-token.entity'
 import { SSOProviders } from './dtos/sso-generate.dto'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
