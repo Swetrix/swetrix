@@ -1690,7 +1690,7 @@ const ViewProject = ({
                     {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
                       <Button
                         onClick={openSettingsHandler}
-                        className='relative flex justify-center items-center !pr-3 !pl-1 py-2 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
+                        className='relative flex justify-center items-center !pr-3 pl-2 py-2 md:pr-4 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
                         secondary
                       >
                         <>
