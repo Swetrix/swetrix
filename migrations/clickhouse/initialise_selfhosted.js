@@ -15,6 +15,14 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (created);`,
+
+  `CREATE TABLE IF NOT EXISTS ${dbName}.refresh_token
+  (
+    userId String,
+    refreshToken String
+  )
+  ENGINE = MergeTree()
+  ORDER BY userId;`,
 ]
 
 const initialiseSelfhosted = async () => {

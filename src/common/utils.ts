@@ -22,6 +22,7 @@ import {
   DEFAULT_SELFHOSTED_UUID,
   SELFHOSTED_EMAIL,
   UUIDV5_NAMESPACE,
+  isDevelopment,
 } from './constants'
 import { Project } from '../project/entity/project.entity'
 
@@ -73,6 +74,10 @@ const checkRateLimit = async (
   reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
   reqTimeout: number = RATE_LIMIT_TIMEOUT,
 ): Promise<void> => {
+  if (isDevelopment) {
+    return
+  }
+
   const rlHash = getRateLimitHash(ip, action)
   const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
 
@@ -198,6 +203,29 @@ const createProjectClickhouse = async (project: Project) => {
   return clickhouse.query(query, paramsData).toPromise()
 }
 
+const saveRefreshTokenClickhouse = async (userId: string, refreshToken: string) => {
+  const paramsData = {
+    params: {
+      userId,
+      refreshToken,
+    },
+  }
+  const query = 'INSERT INTO refresh_token (*) VALUES ({userId:String},{refreshToken:String})'
+
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
+const findRefreshTokenClickhouse = async (userId: string, refreshToken: string) => {
+  const paramsData = {
+    params: {
+      userId,
+      refreshToken,
+    },
+  }
+  const query = 'SELECT * FROM refresh_token WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}'
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
 const generateRecoveryCode = () =>
   randomstring.generate({
     length: 30,
@@ -232,4 +260,6 @@ export {
   millisecondsToSeconds,
   generateRandomString,
   getSelfhostedUUID,
+  saveRefreshTokenClickhouse,
+  findRefreshTokenClickhouse,
 }

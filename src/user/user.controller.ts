@@ -40,6 +40,7 @@ import {
   MAX_EMAIL_REQUESTS,
   PlanCode,
   Theme,
+  generateSelfhostedUser,
 } from './entities/user.entity'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
@@ -47,8 +48,6 @@ import {
   GDPR_EXPORT_TIMEFRAME,
   clickhouse,
   isSelfhosted,
-  SELFHOSTED_UUID,
-  SELFHOSTED_EMAIL,
   isDevelopment,
   PRODUCTION_ORIGIN,
 } from '../common/constants'
@@ -94,10 +93,7 @@ export class UserController {
     let user
 
     if (isSelfhosted) {
-      user = {
-        id: SELFHOSTED_UUID,
-        email: SELFHOSTED_EMAIL,
-      }
+      user = generateSelfhostedUser()
     } else {
       const sharedProjects = await this.projectService.findShare({
         where: {
