@@ -451,12 +451,7 @@ export class AuthController {
     const ip =
       headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
-    await checkRateLimit(
-      ip,
-      'sso-generate',
-      OAUTH_RATE_LIMIT,
-      1800,
-    )
+    await checkRateLimit(ip, 'sso-generate', OAUTH_RATE_LIMIT, 1800)
 
     const { provider } = body
 
@@ -483,12 +478,7 @@ export class AuthController {
     const ip =
       headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
 
-    await checkRateLimit(
-      ip,
-      'sso-process',
-      OAUTH_RATE_LIMIT,
-      1800,
-    )
+    await checkRateLimit(ip, 'sso-process', OAUTH_RATE_LIMIT, 1800)
 
     const { token, hash } = body
 

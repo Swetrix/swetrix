@@ -1,4 +1,8 @@
-import { Injectable, CanActivate, NotImplementedException } from '@nestjs/common'
+import {
+  Injectable,
+  CanActivate,
+  NotImplementedException,
+} from '@nestjs/common'
 import { isSelfhosted } from '../constants'
 
 @Injectable()

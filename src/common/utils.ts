@@ -203,26 +203,34 @@ const createProjectClickhouse = async (project: Project) => {
   return clickhouse.query(query, paramsData).toPromise()
 }
 
-const saveRefreshTokenClickhouse = async (userId: string, refreshToken: string) => {
+const saveRefreshTokenClickhouse = async (
+  userId: string,
+  refreshToken: string,
+) => {
   const paramsData = {
     params: {
       userId,
       refreshToken,
     },
   }
-  const query = 'INSERT INTO refresh_token (*) VALUES ({userId:String},{refreshToken:String})'
+  const query =
+    'INSERT INTO refresh_token (*) VALUES ({userId:String},{refreshToken:String})'
 
   return clickhouse.query(query, paramsData).toPromise()
 }
 
-const findRefreshTokenClickhouse = async (userId: string, refreshToken: string) => {
+const findRefreshTokenClickhouse = async (
+  userId: string,
+  refreshToken: string,
+) => {
   const paramsData = {
     params: {
       userId,
       refreshToken,
     },
   }
-  const query = 'SELECT * FROM refresh_token WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}'
+  const query =
+    'SELECT * FROM refresh_token WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}'
   return clickhouse.query(query, paramsData).toPromise()
 }
 

@@ -105,7 +105,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-  ) { }
+  ) {}
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -767,8 +767,9 @@ export class ProjectController {
         ActionTokenType.PROJECT_SHARE,
         share.id,
       )
-      const url = `${isDevelopment ? headers.origin : PRODUCTION_ORIGIN
-        }/share/${actionToken.id}`
+      const url = `${
+        isDevelopment ? headers.origin : PRODUCTION_ORIGIN
+      }/share/${actionToken.id}`
       await this.mailerService.sendEmail(
         invitee.email,
         LetterTemplate.ProjectInvitation,
