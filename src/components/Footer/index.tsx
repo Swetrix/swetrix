@@ -124,24 +124,19 @@ const SelfHostedFooter = () => {
             </Link>
           </div>
           <div className='px-5 py-2'>
-            <Link to={routes.privacy} className='text-base text-gray-300 hover:text-white'>
-              {t('footer.pp')}
-            </Link>
-          </div>
-          <div className='px-5 py-2'>
-            <Link to={routes.terms} className='text-base text-gray-300 hover:text-white'>
-              {t('footer.tos')}
-            </Link>
-          </div>
-          <div className='px-5 py-2'>
-            <Link to={routes.about} className='text-base text-gray-300 hover:text-white'>
-              {t('footer.about')}
-            </Link>
+            <a href={UTM_GENERATOR_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
+              {t('footer.utm')}
+            </a>
           </div>
           <div className='px-5 py-2'>
             <a href={DONATE_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
               {t('footer.donate')}
             </a>
+          </div>
+          <div className='px-5 py-2'>
+            <Link to={routes.about} className='text-base text-gray-300 hover:text-white'>
+              {t('footer.about')}
+            </Link>
           </div>
         </nav>
       </div>
