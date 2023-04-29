@@ -32,15 +32,25 @@ import {
   MAX_EMAIL_REQUESTS,
   User,
   TRIAL_DURATION,
+  SelfhostedUser,
+  generateSelfhostedUser,
 } from 'src/user/entities/user.entity'
 import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
 import {
+  saveRefreshTokenClickhouse,
+  findRefreshTokenClickhouse,
+  deleteRefreshTokenClickhouse,
+} from 'src/common/utils'
+import {
   REDIS_SSO_UUID,
   redis,
   PRODUCTION_ORIGIN,
   isDevelopment,
+  isSelfhosted,
+  SELFHOSTED_EMAIL,
+  SELFHOSTED_PASSWORD,
 } from 'src/common/constants'
 import { SSOProviders } from './dtos/sso-generate.dto'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
@@ -179,7 +189,15 @@ export class AuthService {
   public async validateUser(
     email: string,
     password: string,
-  ): Promise<User | null> {
+  ): Promise<User | SelfhostedUser | null> {
+    if (isSelfhosted) {
+      if (email !== SELFHOSTED_EMAIL || password !== SELFHOSTED_PASSWORD) {
+        return null
+      }
+
+      return generateSelfhostedUser()
+    }
+
     const user = await this.userService.findUser(email)
 
     if (user && (await this.comparePassword(password, user.password))) {
@@ -423,7 +441,11 @@ export class AuthService {
       },
     )
 
-    await this.userService.saveRefreshToken(userId, refreshToken)
+    if (isSelfhosted) {
+      await saveRefreshTokenClickhouse(userId, refreshToken)
+    } else {
+      await this.userService.saveRefreshToken(userId, refreshToken)
+    }
 
     return refreshToken
   }
@@ -432,6 +454,11 @@ export class AuthService {
     userId: string,
     refreshToken: string,
   ): Promise<boolean> {
+    if (isSelfhosted) {
+      const tokens = await findRefreshTokenClickhouse(userId, refreshToken)
+      return !_isEmpty(tokens)
+    }
+
     const token = await this.userService.findRefreshToken(userId, refreshToken)
     return Boolean(token)
   }
@@ -458,6 +485,11 @@ export class AuthService {
   }
 
   async logout(userId: string, refreshToken: string) {
+    if (isSelfhosted) {
+      await deleteRefreshTokenClickhouse(userId, refreshToken)
+      return
+    }
+
     await this.userService.deleteRefreshToken(userId, refreshToken)
   }
 

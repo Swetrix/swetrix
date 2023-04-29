@@ -22,6 +22,7 @@ import {
   DEFAULT_SELFHOSTED_UUID,
   SELFHOSTED_EMAIL,
   UUIDV5_NAMESPACE,
+  isDevelopment,
 } from './constants'
 import { Project } from '../project/entity/project.entity'
 
@@ -52,7 +53,13 @@ const marketingTips = {
 const RATE_LIMIT_REQUESTS_AMOUNT = 3
 const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
-const allowedToUpdateKeys = ['name', 'origins', 'active', 'public']
+const allowedToUpdateKeys = [
+  'name',
+  'origins',
+  'ipBlacklist',
+  'active',
+  'public',
+]
 
 const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
   `rl:${hash(`${ipOrApiKey}${salt}`).toString('hex')}`
@@ -73,6 +80,10 @@ const checkRateLimit = async (
   reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
   reqTimeout: number = RATE_LIMIT_TIMEOUT,
 ): Promise<void> => {
+  if (isDevelopment) {
+    return
+  }
+
   const rlHash = getRateLimitHash(ip, action)
   const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
 
@@ -182,7 +193,7 @@ const calculateRelativePercentage = (
 }
 
 const deleteProjectClickhouse = async id => {
-  const query = `ALTER table project DELETE WHERE WHERE id='${id}'`
+  const query = `ALTER table project DELETE WHERE id='${id}'`
   return clickhouse.query(query).toPromise()
 }
 
@@ -192,9 +203,54 @@ const createProjectClickhouse = async (project: Project) => {
       ...project,
     },
   }
-  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'',1,0,'${dayjs
+  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'', '',1,0,'${dayjs
     .utc()
     .format('YYYY-MM-DD HH:mm:ss')}')`
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
+const saveRefreshTokenClickhouse = async (
+  userId: string,
+  refreshToken: string,
+) => {
+  const paramsData = {
+    params: {
+      userId,
+      refreshToken,
+    },
+  }
+  const query =
+    'INSERT INTO refresh_token (*) VALUES ({userId:String},{refreshToken:String})'
+
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
+const findRefreshTokenClickhouse = async (
+  userId: string,
+  refreshToken: string,
+) => {
+  const paramsData = {
+    params: {
+      userId,
+      refreshToken,
+    },
+  }
+  const query =
+    'SELECT * FROM refresh_token WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}'
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
+const deleteRefreshTokenClickhouse = async (
+  userId: string,
+  refreshToken: string,
+) => {
+  const paramsData = {
+    params: {
+      userId,
+      refreshToken,
+    },
+  }
+  const query = `ALTER table refresh_token DELETE WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}`
   return clickhouse.query(query, paramsData).toPromise()
 }
 
@@ -232,4 +288,7 @@ export {
   millisecondsToSeconds,
   generateRandomString,
   getSelfhostedUUID,
+  saveRefreshTokenClickhouse,
+  findRefreshTokenClickhouse,
+  deleteRefreshTokenClickhouse,
 }

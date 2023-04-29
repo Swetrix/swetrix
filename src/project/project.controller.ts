@@ -13,7 +13,6 @@ import {
   NotFoundException,
   ForbiddenException,
   Headers,
-  NotImplementedException,
   Patch,
   HttpStatus,
   ConflictException,
@@ -127,7 +126,7 @@ export class ProjectController {
       const results = await getProjectsClickhouse()
       const formatted = _map(results, this.projectService.formatFromClickhouse)
       return {
-        results,
+        results: formatted,
         page_total: _size(formatted),
         total: _size(formatted),
         totalMonthlyEvents: 0, // not needed as it's selfhosed
@@ -186,6 +185,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async getShared(
     @CurrentUserId() userId: string,
@@ -194,23 +194,15 @@ export class ProjectController {
   ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project/shared')
 
-    if (isSelfhosted) {
-      throw new NotImplementedException(
-        'This feature is not available on selfhosted yet',
-      )
-    } else {
-      const where = Object()
-      where.user = userId
+    const where = Object()
+    where.user = userId
 
-      const paginated = await this.projectService.paginateShared(
-        { take, skip },
-        where,
-      )
+    const paginated = await this.projectService.paginateShared(
+      { take, skip },
+      where,
+    )
 
-      return {
-        ...paginated,
-      }
-    }
+    return paginated
   }
 
   @Get('/all')
@@ -331,6 +323,7 @@ export class ProjectController {
       const project = new Project()
       Object.assign(project, projectDTO)
       project.origins = _map(projectDTO.origins, _trim)
+      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
       project.active = true
 
       await createProjectClickhouse(project)
@@ -475,7 +468,7 @@ export class ProjectController {
 
   @Delete('/captcha/reset/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async resetCAPTCHA(
@@ -491,43 +484,33 @@ export class ProjectController {
 
     const query = `ALTER table captcha DELETE WHERE pid='${id}'`
 
-    if (isSelfhosted) {
-      try {
-        await clickhouse.query(query).toPromise()
-        return 'CAPTCHA project resetted successfully'
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while resetting your CAPTCHA project'
-      }
-    } else {
-      const user = await this.userService.findOne(uid)
-      const project = await this.projectService.findOneWhere(
-        { id },
-        {
-          relations: ['admin'],
-          select: ['id'],
-        },
-      )
+    const user = await this.userService.findOne(uid)
+    const project = await this.projectService.findOneWhere(
+      { id },
+      {
+        relations: ['admin'],
+        select: ['id'],
+      },
+    )
 
-      if (_isEmpty(project)) {
-        throw new NotFoundException(`Project with ID ${id} does not exist`)
-      }
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${id} does not exist`)
+    }
 
-      this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid, user.roles)
 
-      try {
-        await clickhouse.query(query).toPromise()
-        return 'CAPTCHA project resetted successfully'
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while resetting your CAPTCHA project'
-      }
+    try {
+      await clickhouse.query(query).toPromise()
+      return 'CAPTCHA project resetted successfully'
+    } catch (e) {
+      this.logger.error(e)
+      return 'Error while resetting your CAPTCHA project'
     }
   }
 
   @Post('/secret-gen/:pid')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, description: 'A regenerated CAPTCHA secret key' })
   async secretGen(
@@ -542,38 +525,21 @@ export class ProjectController {
       )
     }
 
-    let secret: string = null
+    const project = await this.projectService.findOne(pid, {
+      relations: ['admin'],
+    })
+    const user = await this.userService.findOne(uid)
 
-    if (isSelfhosted) {
-      const project = await getProjectsClickhouse(pid)
-
-      if (_isEmpty(project)) {
-        throw new NotFoundException()
-      }
-      secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
-
-      project.captchaSecretKey = secret
-
-      await updateProjectClickhouse(
-        this.projectService.formatToClickhouse(project),
-      )
-    } else {
-      const project = await this.projectService.findOne(pid, {
-        relations: ['admin'],
-      })
-      const user = await this.userService.findOne(uid)
-
-      if (_isEmpty(project)) {
-        throw new NotFoundException()
-      }
-
-      this.projectService.allowedToManage(project, uid, user.roles)
-
-      secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
-
-      // @ts-ignore
-      await this.projectService.update(pid, { captchaSecretKey: secret })
+    if (_isEmpty(project)) {
+      throw new NotFoundException()
     }
+
+    this.projectService.allowedToManage(project, uid, user.roles)
+
+    const secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+
+    // @ts-ignore
+    await this.projectService.update(pid, { captchaSecretKey: secret })
 
     await deleteProjectRedis(pid)
 
@@ -582,7 +548,7 @@ export class ProjectController {
 
   @Delete('/captcha/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteCAPTCHA(
@@ -597,43 +563,37 @@ export class ProjectController {
       )
     }
 
-    if (isSelfhosted) {
-      // TODO
-    } else {
-      const user = await this.userService.findOne(uid)
-      const project = await this.projectService.findOneWhere(
-        { id },
-        {
-          relations: ['admin'],
-          select: ['id'],
-        },
-      )
+    const user = await this.userService.findOne(uid)
+    const project = await this.projectService.findOneWhere(
+      { id },
+      {
+        relations: ['admin'],
+        select: ['id'],
+      },
+    )
 
-      if (_isEmpty(project)) {
-        throw new NotFoundException(`Project with ID ${id} does not exist`)
-      }
-
-      this.projectService.allowedToManage(project, uid, user.roles)
-
-      const query = `ALTER table captcha DELETE WHERE pid='${id}'`
-
-      try {
-        await clickhouse.query(query).toPromise()
-
-        project.captchaSecretKey = null
-        project.isCaptchaEnabled = false
-        project.isCaptchaProject = false
-
-        await this.projectService.update(id, project)
-
-        return 'CAPTCHA project deleted successfully'
-      } catch (e) {
-        this.logger.error(e)
-        return 'Error while deleting your CAPTCHA project'
-      }
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${id} does not exist`)
     }
 
-    return null
+    this.projectService.allowedToManage(project, uid, user.roles)
+
+    const query = `ALTER table captcha DELETE WHERE pid='${id}'`
+
+    try {
+      await clickhouse.query(query).toPromise()
+
+      project.captchaSecretKey = null
+      project.isCaptchaEnabled = false
+      project.isCaptchaProject = false
+
+      await this.projectService.update(id, project)
+
+      return 'CAPTCHA project deleted successfully'
+    } catch (e) {
+      this.logger.error(e)
+      return 'Error while deleting your CAPTCHA project'
+    }
   }
 
   @Delete('/partially/:pid')
@@ -679,15 +639,21 @@ export class ProjectController {
       throw new BadRequestException("The provided 'to' date is incorrect")
     }
 
-    const project = await this.projectService.findOne(pid, {
-      relations: ['admin', 'share'],
-    })
+    let project
 
-    if (!project) {
-      throw new NotFoundException('Project not found')
+    if (isSelfhosted) {
+      project = getProjectsClickhouse(pid)
+    } else {
+      project = await this.projectService.findOne(pid, {
+        relations: ['admin', 'share'],
+      })
+
+      if (!project) {
+        throw new NotFoundException('Project not found')
+      }
+
+      this.projectService.allowedToManage(project, uid)
     }
-
-    this.projectService.allowedToManage(project, uid)
 
     from = dayjs(from).format('YYYY-MM-DD')
     to = dayjs(to).format('YYYY-MM-DD 23:59:59')
@@ -697,8 +663,7 @@ export class ProjectController {
 
   @Post('/:pid/share')
   @HttpCode(200)
-  @UseGuards(SelfhostedGuard)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
   async share(
@@ -820,8 +785,7 @@ export class ProjectController {
 
   @Put('/share/:shareId')
   @HttpCode(200)
-  @UseGuards(SelfhostedGuard)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @UseGuards(SelfhostedGuard, JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Project })
   async updateShare(
@@ -896,6 +860,7 @@ export class ProjectController {
   }
 
   @Post('transfer')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async transferProject(
     @Body() body: TransferProjectBodyDto,
@@ -933,6 +898,7 @@ export class ProjectController {
   }
 
   @Get('transfer')
+  @UseGuards(SelfhostedGuard)
   async confirmTransferProject(
     @Query() queries: ConfirmTransferProjectQueriesDto,
   ) {
@@ -966,6 +932,7 @@ export class ProjectController {
   }
 
   @Delete('transfer')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async cancelTransferProject(
     @Query() queries: CancelTransferProjectQueriesDto,
@@ -995,6 +962,7 @@ export class ProjectController {
   }
 
   @Delete(':projectId/subscribers/:subscriberId')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async removeSubscriber(
     @Param() params: RemoveSubscriberParamsDto,
@@ -1030,6 +998,7 @@ export class ProjectController {
   }
 
   @Post(':projectId/subscribers')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async addSubscriber(
     @Param() params: AddSubscriberParamsDto,
@@ -1073,6 +1042,7 @@ export class ProjectController {
   }
 
   @Get(':projectId/subscribers/invite')
+  @UseGuards(SelfhostedGuard)
   @HttpCode(HttpStatus.OK)
   async confirmSubscriberInvite(
     @Param() params: ConfirmSubscriberInviteParamsDto,
@@ -1117,6 +1087,7 @@ export class ProjectController {
   }
 
   @Get(':projectId/subscribers')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async getSubscribers(
     @Param() params: GetSubscribersParamsDto,
@@ -1137,6 +1108,7 @@ export class ProjectController {
   }
 
   @Patch(':projectId/subscribers/:subscriberId')
+  @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async updateSubscriber(
     @Param() params: UpdateSubscriberParamsDto,
@@ -1190,7 +1162,6 @@ export class ProjectController {
     }
 
     if (isSelfhosted) {
-      // todo: delete share for selfhosted
       await deleteProjectClickhouse(id)
 
       const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
