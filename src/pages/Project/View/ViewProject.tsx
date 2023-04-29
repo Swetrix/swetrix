@@ -42,7 +42,7 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
-  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER,
+  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -190,7 +190,7 @@ const ViewProject = ({
     const { searchParams } = url
     const tab = searchParams.get('tab') as string
 
-    if (!PROJECT_TABS[tab]) {
+    if (PROJECT_TABS[tab]) {
       return tab || 'traffic'
     }
 
@@ -215,7 +215,7 @@ const ViewProject = ({
     label: string
     icon: any
   }[] = useMemo(() => {
-    return [
+    const selfhostedOnly = [
       {
         id: PROJECT_TABS.traffic,
         label: t('dashboard.traffic'),
@@ -226,6 +226,14 @@ const ViewProject = ({
         label: t('dashboard.performance'),
         icon: BoltIcon,
       },
+    ]
+
+    if (isSelfhosted) {
+      return selfhostedOnly
+    }
+
+    return [
+      ...selfhostedOnly,
       {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
