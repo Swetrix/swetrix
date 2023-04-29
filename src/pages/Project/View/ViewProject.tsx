@@ -470,6 +470,7 @@ const ViewProject = ({
         if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
           from = getFormatDate(dateRangeCompare[0])
           to = getFormatDate(dateRangeCompare[1])
+          key = getProjectCacheCustomKey(from, to, timeBucket)
         } else {
           let date
           if (dateRange) {
@@ -480,9 +481,10 @@ const ViewProject = ({
           if (date) {
             from = getFormatDate(date.from)
             to = getFormatDate(date.to)
+            key = getProjectCacheCustomKey(from, to, timeBucket)
           }
         }
-      } else if (dateRange) {
+      } else if (dateRange && !isActiveCompare) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
         key = getProjectCacheCustomKey(from, to, timeBucket)
@@ -1443,11 +1445,15 @@ const ViewProject = ({
 
   // loadAnalytics when compare period change or compare selected
   useEffect(() => {
+    if (activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM && !dateRangeCompare) {
+      return
+    }
+
     if (isActiveCompare) {
       loadAnalytics()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActiveCompare, activePeriodCompare])
+  }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
 
   if (!isLoading) {
     return (
