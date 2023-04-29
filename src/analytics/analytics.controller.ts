@@ -291,7 +291,6 @@ export class AnalyticsController {
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-    // TODO: Refactor
     let subQuery = `FROM ${
       isCaptcha ? 'captcha' : 'analytics'
     } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
