@@ -90,7 +90,7 @@ export const cols = [
 
 export const captchaColumns = ['cc', 'br', 'os', 'dv']
 
-export const perfCols = ['cc', 'pg', 'dv', 'br']
+export const perfColumns = ['cc', 'pg', 'dv', 'br']
 
 const validPeriods = [
   'today',
@@ -209,6 +209,12 @@ const generateParamsQuery = (
   }
 
   return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${col}`
+}
+
+export enum DataType {
+  ANALYTICS = 'analytics',
+  PERFORMANCE = 'performance',
+  CAPTCHA = 'captcha',
 }
 
 @Injectable()
@@ -341,6 +347,18 @@ export class AnalyticsService {
     this.checkOrigin(project, origin)
 
     return null
+  }
+
+  getDataTypeColumns(dataType: DataType): string[] {
+    if (dataType === DataType.ANALYTICS) {
+      return cols
+    }
+
+    if (dataType === DataType.PERFORMANCE) {
+      return perfColumns
+    }
+
+    return captchaColumns
   }
 
   getGroupFromTo(
@@ -557,8 +575,7 @@ export class AnalyticsService {
   }
 
   // returns SQL filters query in a format like 'AND col=value AND ...'
-  getFiltersQuery(filters: string): GetFiltersQuery {
-    // TODO: Use captchaColumns for validation of CAPTCHA filters
+  getFiltersQuery(filters: string, dataType: DataType): GetFiltersQuery {
     let parsed = []
     let query = ''
     let params = {}
@@ -578,6 +595,8 @@ export class AnalyticsService {
       return [query, params, parsed]
     }
 
+    const columns = this.getDataTypeColumns(dataType)
+
     for (let i = 0; i < _size(parsed); ++i) {
       const { column, filter, isExclusive } = parsed[i]
 
@@ -591,7 +610,7 @@ export class AnalyticsService {
         continue
       }
 
-      if (!_includes(cols, column)) {
+      if (!_includes(columns, column)) {
         throw new UnprocessableEntityException(
           `The provided filter (${column}) is not supported`,
         )
@@ -760,7 +779,7 @@ export class AnalyticsService {
     }
 
     if (isPerformance) {
-      columns = perfCols
+      columns = perfColumns
     }
 
     const paramsPromises = _map(columns, async col => {
