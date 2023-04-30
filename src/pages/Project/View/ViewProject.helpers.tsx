@@ -20,7 +20,6 @@ import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import _round from 'lodash/round'
 import _fill from 'lodash/fill'
-import _includes from 'lodash/includes'
 import _reduce from 'lodash/reduce'
 import _last from 'lodash/last'
 import JSZip from 'jszip'
@@ -492,7 +491,7 @@ const getSettings = (
       },
     },
     tooltip: {
-      contents: (item: any, defaultTitleFormat: any, defaultValueFormat: any, color: any) => {
+      contents: (item: any, _: any, __: any, color: any) => {
         const typesOptionsToTypesCompare: {
           [key: string]: string,
         } = {
@@ -538,11 +537,7 @@ const getSettings = (
     } = el
 
     if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
-      return null
-    }
-
-    if (_isEmpty(compareChart)) {
-      return null
+      return '<span></span>'
     }
 
     if (id === 'sessionDuration') {
