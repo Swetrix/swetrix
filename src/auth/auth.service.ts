@@ -48,6 +48,7 @@ import {
   isSelfhosted,
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,
+  JWT_ACCESS_TOKEN_SECRET,
 } from 'src/common/constants'
 import { TelegramService } from 'src/integrations/telegram/telegram.service'
 import { SSOProviders } from './dtos/sso-generate.dto'
@@ -179,7 +180,7 @@ export class AuthService {
       {
         algorithm: 'HS256',
         expiresIn: 60 * 30,
-        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+        secret: JWT_ACCESS_TOKEN_SECRET,
       },
     )
   }

@@ -44,6 +44,7 @@ const clickhouse = new ClickHouse({
   },
 })
 
+const { JWT_ACCESS_TOKEN_SECRET } = process.env
 const isSelfhosted = Boolean(process.env.SELFHOSTED)
 const isTgTokenPresent = Boolean(process.env.TG_BOT_TOKEN)
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
@@ -158,4 +159,5 @@ export {
   isTgTokenPresent,
   DEFAULT_SELFHOSTED_UUID,
   REDIS_SSO_UUID,
+  JWT_ACCESS_TOKEN_SECRET,
 }
