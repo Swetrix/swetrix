@@ -905,7 +905,7 @@ const ViewProject = ({
 
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
-      if (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) {
+      if ((!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) || (isActiveCompare && !_isEmpty(dataChartCompare) && !_isEmpty(mainChart))) {
         if (activeChartMetrics.views || activeChartMetrics.unique || activeChartMetrics.viewsPerUnique || activeChartMetrics.trendlines) {
           mainChart.load({
             columns: getColumns(chartData, activeChartMetrics),
@@ -960,7 +960,7 @@ const ViewProject = ({
         return generete
       })
     }
-  }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf]) // eslint-disable-line
+  }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
 
   // Initialising Swetrix SDK instance
   useEffect(() => {
@@ -1475,6 +1475,13 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
 
+  const compareDisable = () => {
+    setIsActiveCompare(false)
+    setDateRangeCompare(null)
+    setDataChartCompare({})
+    setActivePeriodCompare(periodPairsCompare[0].period)
+  }
+
   if (!isLoading) {
     return (
       <Title title={name}>
@@ -1621,7 +1628,13 @@ const ViewProject = ({
                           if (activeTab !== PROJECT_TABS.traffic) {
                             return
                           }
-                          setIsActiveCompare(!isActiveCompare)
+
+                          if (isActiveCompare) {
+                            compareDisable()
+                          } else {
+                            setIsActiveCompare(true)
+                          }
+
                           return
                         }
 
@@ -1647,9 +1660,7 @@ const ViewProject = ({
                           keyExtractor={(pair) => pair.label}
                           onSelect={(pair) => {
                             if (pair.period === PERIOD_PAIRS_COMPARE.DISABLE) {
-                              setIsActiveCompare(false)
-                              setDateRangeCompare(null)
-                              setActivePeriodCompare(periodPairsCompare[0].period)
+                              compareDisable()
                               return
                             }
 
