@@ -1691,6 +1691,7 @@ const ViewProject = ({
                       }}
                       value={isActiveCompare ? dateRangeCompare || [] : dateRange || []}
                       maxDateMonths={MAX_MONTHS_IN_PAST}
+                      maxRange={10}
                     />
                   </div>
                 </div>
