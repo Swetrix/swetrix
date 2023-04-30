@@ -224,4 +224,15 @@ export class UserService {
       where: { telegramChatId: telegramId },
     })
   }
+
+  async updateUserTelegramId(
+    userId: string,
+    telegramId: number | null,
+    isTelegramChatIdConfirmed = false,
+  ) {
+    await this.usersRepository.update(userId, {
+      telegramChatId: String(telegramId),
+      isTelegramChatIdConfirmed,
+    })
+  }
 }

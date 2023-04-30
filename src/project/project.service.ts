@@ -692,4 +692,16 @@ export class ProjectService {
     )
     await this.actionTokens.deleteActionToken(token)
   }
+
+  async getProjectsByUserId(userId: string) {
+    return this.projectsRepository.find({
+      where: { admin: { id: userId } },
+    })
+  }
+
+  async getProjectByNameAndUserId(name: string, userId: string) {
+    return this.projectsRepository.findOne({
+      where: { name, admin: { id: userId } },
+    })
+  }
 }

@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { AlertModule } from 'src/alert/alert.module'
 import { ExtensionsModule } from 'src/marketplace/extensions/extensions.module'
+import { TelegramService } from 'src/integrations/telegram/telegram.service'
 import { TaskManagerService } from './task-manager.service'
 import { MailerModule } from '../mailer/mailer.module'
 import { UserModule } from '../user/user.module'
@@ -20,7 +21,7 @@ import { AppLoggerModule } from '../logger/logger.module'
     ExtensionsModule,
     AppLoggerModule,
   ],
-  providers: [TaskManagerService],
+  providers: [TaskManagerService, TelegramService],
   exports: [TaskManagerService],
 })
 export class TaskManagerModule {}

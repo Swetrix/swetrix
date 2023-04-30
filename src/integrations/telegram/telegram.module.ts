@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config'
 import { TelegrafModule } from 'nestjs-telegraf'
 import { session } from 'telegraf'
 import { UserModule } from 'src/user/user.module'
+import { ProjectModule } from 'src/project/project.module'
+import { AnalyticsModule } from 'src/analytics/analytics.module'
 import { TelegramController } from './telegram.controller'
 import { TelegramUpdate } from './telegram.update'
 import { StartScene } from './scene/start.scene'
@@ -37,6 +39,8 @@ import { TelegramService } from './telegram.service'
       }),
     }),
     UserModule,
+    ProjectModule,
+    AnalyticsModule,
   ],
   controllers: [TelegramController],
   providers: [
@@ -47,5 +51,6 @@ import { TelegramService } from './telegram.service'
     UnlinkAccountScene,
     TelegramService,
   ],
+  exports: [TelegramService],
 })
 export class TelegramModule {}

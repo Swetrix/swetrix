@@ -13,13 +13,11 @@ import * as _now from 'lodash/now'
 import * as _find from 'lodash/find'
 
 import { AlertService } from 'src/alert/alert.service'
-import { InjectBot } from 'nestjs-telegraf'
-import { TelegrafContext } from 'src/user/user.controller'
-import { Telegraf } from 'telegraf'
 import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
 import { ExtensionsService } from 'src/marketplace/extensions/extensions.service'
 import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
 import { ReportFrequency } from 'src/project/enums'
+import { TelegramService } from 'src/integrations/telegram/telegram.service'
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
@@ -91,9 +89,9 @@ export class TaskManagerService {
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
     private readonly alertService: AlertService,
-    @InjectBot() private bot: Telegraf<TelegrafContext>,
     private readonly extensionsService: ExtensionsService,
     private readonly logger: AppLoggerService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -784,14 +782,15 @@ export class TaskManagerService {
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
         })
-
-        this.bot.telegram.sendMessage(
-          project.admin.telegramChatId,
-          `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`,
-          {
-            parse_mode: 'Markdown',
-          },
-        )
+        if (project.admin && project.admin.isTelegramChatIdConfirmed) {
+          this.telegramService.sendMessage(
+            Number(project.admin.telegramChatId),
+            `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`,
+            {
+              parse_mode: 'Markdown',
+            },
+          )
+        }
       }
     })
 
@@ -862,9 +861,15 @@ export class TaskManagerService {
           alert.queryTime,
         )}!`
 
-        this.bot.telegram.sendMessage(project.admin.telegramChatId, text, {
-          parse_mode: 'Markdown',
-        })
+        if (project.admin && project.admin.isTelegramChatIdConfirmed) {
+          this.telegramService.sendMessage(
+            Number(project.admin.telegramChatId),
+            text,
+            {
+              parse_mode: 'Markdown',
+            },
+          )
+        }
       }
     })
 

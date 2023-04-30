@@ -12,8 +12,6 @@ import { getCountry } from 'countries-and-timezones'
 import { Auth } from 'googleapis'
 import { createHash } from 'crypto'
 import * as dayjs from 'dayjs'
-import { InjectBot } from 'nestjs-telegraf'
-import { Telegraf } from 'telegraf'
 import { UAParser } from 'ua-parser-js'
 import * as _pick from 'lodash/pick'
 import * as _split from 'lodash/split'
@@ -33,7 +31,6 @@ import {
   User,
   TRIAL_DURATION,
 } from 'src/user/entities/user.entity'
-import { TelegrafContext } from 'src/user/user.controller'
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
 import {
@@ -42,6 +39,7 @@ import {
   PRODUCTION_ORIGIN,
   isDevelopment,
 } from 'src/common/constants'
+import { TelegramService } from 'src/integrations/telegram/telegram.service'
 import { SSOProviders } from './dtos/sso-generate.dto'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
@@ -68,13 +66,13 @@ export class AuthService {
   githubOAuthClientSecret: string
 
   constructor(
-    @InjectBot() private readonly telegramBot: Telegraf<TelegrafContext>,
     private readonly userService: UserService,
     private readonly actionTokensService: ActionTokensService,
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly projectService: ProjectService,
+    private readonly telegramService: TelegramService,
   ) {
     this.oauth2Client = new Auth.OAuth2Client(
       this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
@@ -186,6 +184,14 @@ export class AuthService {
       return user
     }
 
+    if (user && user.isTelegramChatIdConfirmed) {
+      await this.telegramService.sendMessage(
+        Number(user.telegramChatId),
+        '⚠️ *Someone has tried to login to their account with an incorrect password.*',
+        { parse_mode: 'Markdown' },
+      )
+    }
+
     return null
   }
 
@@ -220,12 +226,6 @@ export class AuthService {
       return
     }
 
-    const chat = await this.checkTelegramChatId(user.telegramChatId)
-
-    if (!chat) {
-      return
-    }
-
     const headersInfo = await this.getHeadersInfo(headers)
     const loginDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
     const message =
@@ -237,9 +237,15 @@ export class AuthService {
       `*IP:* ${ip}\n` +
       `*Date:* ${loginDate} (UTC)\n\n` +
       'If it was not you, please change your password immediately.'
-    await this.telegramBot.telegram.sendMessage(user.telegramChatId, message, {
-      parse_mode: 'Markdown',
-    })
+    if (user && user.isTelegramChatIdConfirmed) {
+      await this.telegramService.sendMessage(
+        Number(user.telegramChatId),
+        message,
+        {
+          parse_mode: 'Markdown',
+        },
+      )
+    }
   }
 
   private async getHeadersInfo(headers: unknown) {
@@ -264,11 +270,6 @@ export class AuthService {
       os,
       country,
     }
-  }
-
-  public async checkTelegramChatId(chatId: string): Promise<boolean> {
-    const chat = (await this.telegramBot.telegram.getChat(chatId)).id
-    return Boolean(chat)
   }
 
   public async checkVerificationToken(

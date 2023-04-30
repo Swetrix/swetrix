@@ -29,9 +29,9 @@ import * as _isString from 'lodash/isString'
 import * as _omit from 'lodash/omit'
 import { v4 as uuidv4 } from 'uuid'
 
-import { InjectBot } from 'nestjs-telegraf'
-import { Scenes, Telegraf } from 'telegraf'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { TelegramService } from 'src/integrations/telegram/telegram.service'
+import { Markup } from 'telegraf'
 import { UserService } from './user.service'
 import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import {
@@ -68,8 +68,6 @@ import { checkRateLimit } from '../common/utils'
 
 dayjs.extend(utc)
 
-export type TelegrafContext = Scenes.SceneContext
-
 const UNPAID_PLANS = [PlanCode.free, PlanCode.trial, PlanCode.none]
 
 @ApiTags('User')
@@ -83,7 +81,7 @@ export class UserController {
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly logger: AppLoggerService,
-    @InjectBot() private bot: Telegraf<TelegrafContext>,
+    private readonly telegramService: TelegramService,
   ) {}
 
   @Get('/me')
@@ -524,25 +522,18 @@ export class UserController {
           isTelegramChatIdConfirmed: false,
         })
 
-        this.bot.telegram.sendMessage(
-          userDTO.telegramChatId,
-          'Confirm the connection between your Telegram account and your Swetrix account.',
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: '✅ Confirm',
-                    callback_data: `confirmTelegramChatId:${user.id}`,
-                  },
-                  {
-                    text: '❌ Cancel',
-                    callback_data: `cancelTelegramChatId:${user.id}`,
-                  },
-                ],
-              ],
-            },
-          },
+        this.telegramService.sendMessage(
+          Number(userDTO.telegramChatId),
+          'Please confirm your Telegram chat ID',
+          Markup.inlineKeyboard([
+            [
+              Markup.button.callback(
+                '✅ Confirm',
+                `link-account:confirm:${id}`,
+              ),
+              Markup.button.callback('❌ Cancel', `link-account:cancel:${id}`),
+            ],
+          ]),
         )
       }
 

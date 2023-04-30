@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
-import { TelegrafModule } from 'nestjs-telegraf'
 import { NestjsFormDataModule } from 'nestjs-form-data'
 
 import { I18nModule } from 'nestjs-i18n'
@@ -15,13 +14,12 @@ import { TwoFactorAuthModule } from './twoFactorAuth/twoFactorAuth.module'
 import { TaskManagerModule } from './task-manager/task-manager.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
-// import { TGModule } from './tg-integration/tg.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { CaptchaModule } from './captcha/captcha.module'
-import { isDevelopment, isTgTokenPresent } from './common/constants'
+import { isDevelopment } from './common/constants'
 import { IntegrationsModule } from './integrations/integrations.module'
 
 const modules = [
@@ -53,20 +51,11 @@ const modules = [
   AnalyticsModule,
   WebhookModule,
   PingModule,
-  // TGModule,
   MarketplaceModule,
   AlertModule,
   AuthModule,
   CaptchaModule,
 ]
-
-if (isTgTokenPresent) {
-  modules.push(
-    TelegrafModule.forRoot({
-      token: process.env.TG_BOT_TOKEN,
-    }),
-  )
-}
 
 @Module({
   imports: [
