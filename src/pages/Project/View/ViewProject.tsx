@@ -1616,6 +1616,9 @@ const ViewProject = ({
                       keyExtractor={(pair) => pair.label}
                       onSelect={(pair) => {
                         if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
+                          if (activeTab !== PROJECT_TABS.traffic) {
+                            return
+                          }
                           setIsActiveCompare(!isActiveCompare)
                           return
                         }
