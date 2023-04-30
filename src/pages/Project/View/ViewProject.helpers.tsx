@@ -9,7 +9,7 @@ import {
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import {
-  area, areaSpline, spline, bar,
+  area, areaSpline, spline, bar, line,
 } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
@@ -115,14 +115,14 @@ const convertToCSV = (array: any[]) => {
   let str = 'name,value,perc\r\n'
 
   for (let i = 0; i < _size(array); ++i) {
-    let line = ''
+    let lines = ''
 
     _forEach(array[i], (index) => {
-      if (line !== '') line += ','
-      line += index
+      if (lines !== '') lines += ','
+      lines += index
     })
 
-    str += `${line}\r\n`
+    str += `${lines}\r\n`
   }
 
   return str
@@ -219,7 +219,7 @@ const getColumns = (chart: {
       columns.push(['trendlineTotal', ...trendline(chart.visits)])
     }
 
-    if (compareChart?.views) {
+    if (compareChart?.visits) {
       columns.push(['totalCompare', ...compareChart.visits])
     }
   }
@@ -255,7 +255,7 @@ const getColumns = (chart: {
   if (sessionDuration) {
     columns.push(['sessionDuration', ...chart.sdur])
 
-    if (compareChart?.sessionDuration) {
+    if (compareChart?.sdur) {
       columns.push(['sessionDurationCompare', ...compareChart.sdur])
     }
   }
@@ -441,29 +441,29 @@ const getSettings = (
       columns: [...columns, ...customEventsToArray],
       types: {
         unique: chartType === chartTypes.line ? area() : bar(),
-        uniqueCompare: chartType === chartTypes.line ? area() : bar(),
+        uniqueCompare: chartType === chartTypes.line ? line() : bar(),
         total: chartType === chartTypes.line ? area() : bar(),
-        totalCompare: chartType === chartTypes.line ? area() : bar(),
+        totalCompare: chartType === chartTypes.line ? line() : bar(),
         bounce: chartType === chartTypes.line ? spline() : bar(),
         bounceCompare: chartType === chartTypes.line ? spline() : bar(),
         viewsPerUnique: chartType === chartTypes.line ? spline() : bar(),
         trendlineUnique: spline(),
         trendlineTotal: spline(),
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
-        sessionDurationCompare: chartType === chartTypes.line ? spline() : bar(),
+        sessionDurationCompare: chartType === chartTypes.line ? line() : bar(),
       },
       colors: {
         unique: '#2563EB',
-        uniqueCompare: 'rgba(37, 99, 235, 0.5)',
+        uniqueCompare: 'rgba(37, 99, 235, 0.4)',
         total: '#D97706',
-        totalCompare: 'rgba(217, 119, 6, 0.5)',
+        totalCompare: 'rgba(217, 119, 6, 0.4)',
         bounce: '#2AC4B3',
-        bounceCompare: 'rgba(42, 196, 179, 0.5)',
+        bounceCompare: 'rgba(42, 196, 179, 0.4)',
         viewsPerUnique: '#F87171',
         trendlineUnique: '#436abf',
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
-        sessionDurationCompare: 'rgba(201, 69, 237, 0.5)',
+        sessionDurationCompare: 'rgba(201, 69, 237, 0.4)',
         ...customEventsColors,
       },
       regions,
@@ -535,6 +535,7 @@ const getSettings = (
           width: 10,
         },
       },
+      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
     },
     area: {
       linearGradient: true,

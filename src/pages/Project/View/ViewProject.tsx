@@ -219,6 +219,7 @@ const ViewProject = ({
   const [activePeriodCompare, setActivePeriodCompare] = useState<string>(periodPairsCompare[0].period)
   const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
+  const [dataChartCompare, setDataChartCompare] = useState<any>({})
 
   const tabs: {
     id: string
@@ -509,7 +510,7 @@ const ViewProject = ({
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
         data = cache[id][key]
       } else {
-        if ((period === 'custom' && dateRange) || isActiveCompare) {
+        if (period === 'custom' && dateRange) {
           data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
           customEventsChart = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
         } else {
@@ -554,11 +555,14 @@ const ViewProject = ({
         setFilters(appliedFilters)
       }
 
+      if (!_isEmpty(dataCompare) && !_isEmpty(dataCompare?.chart)) {
+        setDataChartCompare(dataCompare.chart)
+      }
+
       if (_isEmpty(params)) {
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        console.log(dataCompare?.chart)
         const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChart, dataCompare?.chart)
         setChartData(chart)
 
@@ -909,7 +913,7 @@ const ViewProject = ({
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique || !activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData, dataChartCompare)
 
           if (!_isEmpty(mainChart)) {
             mainChart.destroy()
