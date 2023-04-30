@@ -11,6 +11,7 @@ import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
+import * as _filter from 'lodash/filter'
 import * as _clone from 'lodash/clone'
 import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
@@ -229,16 +230,20 @@ export class AnalyticsService {
   }
 
   checkOrigin(project: Project, origin: string): void {
-    if (!_isEmpty(project.origins) && !_isEmpty(origin)) {
+    // For some reasons the project.origins sometimes may look like [''], let's filter it out
+    // TODO: Properly validate the origins on project update
+    const origins = _filter(project.origins, Boolean)
+
+    if (!_isEmpty(origins) && !_isEmpty(origin)) {
       if (origin === 'null') {
-        if (!_includes(project.origins, 'null')) {
+        if (!_includes(origins, 'null')) {
           throw new BadRequestException(
             "'null' origin is not added to your project's whitelist. To send requests from this origin either add it to your origins policy or leave it empty.",
           )
         }
       } else {
         const { hostname } = new URL(origin)
-        if (!_includes(project.origins, hostname)) {
+        if (!_includes(origins, hostname)) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
           )
@@ -248,9 +253,13 @@ export class AnalyticsService {
   }
 
   checkIpBlacklist(project: Project, ip: string): void {
+    // For some reasons the project.ipBlacklist sometimes may look like [''], let's filter it out
+    // TODO: Properly validate the ipBlacklist on project update
+    const ipBlacklist = _filter(project.ipBlacklist, Boolean)
+
     if (
-      !_isEmpty(project.ipBlacklist) &&
-      ipRangeCheck(ip, project.ipBlacklist)
+      !_isEmpty(ipBlacklist) &&
+      ipRangeCheck(ip, ipBlacklist)
     ) {
       throw new BadRequestException(
         'Incoming analytics is disabled for this IP address',
