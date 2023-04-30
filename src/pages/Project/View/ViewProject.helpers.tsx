@@ -191,6 +191,8 @@ const getColumns = (chart: {
   [key: string]: string[],
 }, activeChartMetrics: {
   [key: string]: boolean,
+}, compareChart?: {
+  [key: string]: string[],
 }) => {
   const {
     views, bounce, viewsPerUnique, unique, trendlines, sessionDuration,
@@ -205,12 +207,20 @@ const getColumns = (chart: {
     if (trendlines) {
       columns.push(['trendlineUnique', ...trendline(chart.uniques)])
     }
+
+    if (compareChart?.uniques) {
+      columns.push(['uniqueCompare', ...compareChart.uniques])
+    }
   }
 
   if (views) {
     columns.push(['total', ...chart.visits])
     if (trendlines) {
       columns.push(['trendlineTotal', ...trendline(chart.visits)])
+    }
+
+    if (compareChart?.views) {
+      columns.push(['totalCompare', ...compareChart.visits])
     }
   }
 
@@ -221,6 +231,15 @@ const getColumns = (chart: {
     columns.push(
       ['bounce', ...bounceArray],
     )
+
+    if (compareChart?.uniques && compareChart?.visits) {
+      const bounceCompareArray = _map(compareChart.uniques, (el, i) => {
+        return _round((_toNumber(el) * 100) / _toNumber(compareChart.visits[i]), 1) || 0
+      })
+      columns.push(
+        ['bounceCompare', ...bounceCompareArray],
+      )
+    }
   }
 
   if (viewsPerUnique) {
@@ -235,6 +254,10 @@ const getColumns = (chart: {
 
   if (sessionDuration) {
     columns.push(['sessionDuration', ...chart.sdur])
+
+    if (compareChart?.sessionDuration) {
+      columns.push(['sessionDurationCompare', ...compareChart.sdur])
+    }
   }
 
   return columns
@@ -330,6 +353,9 @@ const getSettings = (
   customEvents?: {
     [key: string]: string[],
   },
+  compareChart?: {
+    [key: string]: string[],
+  },
 ) => {
   const xAxisSize = _size(chart.x)
   const lines = []
@@ -361,7 +387,8 @@ const getSettings = (
     modifiedChart.sdur = [...modifiedChart.sdur, ...forecasedChartData.sdur]
   }
 
-  const columns = getColumns(modifiedChart, activeChartMetrics)
+  const columns = getColumns(modifiedChart, activeChartMetrics, compareChart)
+  console.log(columns, compareChart)
 
   if (applyRegions) {
     let regionStart
@@ -414,21 +441,29 @@ const getSettings = (
       columns: [...columns, ...customEventsToArray],
       types: {
         unique: chartType === chartTypes.line ? area() : bar(),
+        uniqueCompare: chartType === chartTypes.line ? area() : bar(),
         total: chartType === chartTypes.line ? area() : bar(),
+        totalCompare: chartType === chartTypes.line ? area() : bar(),
         bounce: chartType === chartTypes.line ? spline() : bar(),
+        bounceCompare: chartType === chartTypes.line ? spline() : bar(),
         viewsPerUnique: chartType === chartTypes.line ? spline() : bar(),
         trendlineUnique: spline(),
         trendlineTotal: spline(),
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
+        sessionDurationCompare: chartType === chartTypes.line ? spline() : bar(),
       },
       colors: {
         unique: '#2563EB',
+        uniqueCompare: 'rgba(37, 99, 235, 0.5)',
         total: '#D97706',
+        totalCompare: 'rgba(217, 119, 6, 0.5)',
         bounce: '#2AC4B3',
+        bounceCompare: 'rgba(42, 196, 179, 0.5)',
         viewsPerUnique: '#F87171',
         trendlineUnique: '#436abf',
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
+        sessionDurationCompare: 'rgba(201, 69, 237, 0.5)',
         ...customEventsColors,
       },
       regions,
