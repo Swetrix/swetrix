@@ -94,7 +94,7 @@ export const tbsFormatMapper: IStringObject = {
   hour: '%d %b %H:%M',
   day: '%d %b',
   week: '%d %b',
-  month: '%d %b %Y',
+  month: '%b %Y',
 }
 
 export const tbsFormatMapper24h: IStringObject = {
