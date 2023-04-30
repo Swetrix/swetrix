@@ -10,7 +10,7 @@ export class SettingsScene {
   @SceneEnter()
   async onSceneEnter(@Ctx() context: Context) {
     await context.reply(
-      '...',
+      'Settings',
       Markup.keyboard(['🔓 Unlink account', '🔙 Back']).oneTime().resize(),
     )
   }
