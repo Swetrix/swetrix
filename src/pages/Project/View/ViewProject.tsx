@@ -42,7 +42,8 @@ import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
-  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE, periodToCompareDate,
+  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
+  PERIOD_PAIRS_COMPARE, periodToCompareDate, filtersPeriodPairs,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -1605,7 +1606,11 @@ const ViewProject = ({
                       </span>
                     </div>
                     <Dropdown
-                      items={periodPairs}
+                      items={isActiveCompare ? _filter(periodPairs, (el) => {
+                        return _includes(filtersPeriodPairs, el.period)
+                      }) : _includes(filtersPeriodPairs, period) ? periodPairs : _filter(periodPairs, (el) => {
+                        return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
+                      })}
                       title={activePeriod?.label}
                       labelExtractor={(pair) => pair.dropdownLabel || pair.label}
                       keyExtractor={(pair) => pair.label}
