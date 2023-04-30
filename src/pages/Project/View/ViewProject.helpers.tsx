@@ -361,14 +361,16 @@ const getSettings = (
     [key: string]: string,
   } = {}
 
-  _forEach(_keys(customEvents), (el) => {
-    customEventsColors = {
-      ...customEventsColors,
-      [el]: stringToColour(el),
-    }
-  })
+  if (_isEmpty(compareChart)) {
+    _forEach(_keys(customEvents), (el) => {
+      customEventsColors = {
+        ...customEventsColors,
+        [el]: stringToColour(el),
+      }
+    })
+  }
 
-  if (!_isEmpty(forecasedChartData)) {
+  if (!_isEmpty(forecasedChartData) && _isEmpty(compareChart)) {
     lines.push({
       value: _last(chart?.x),
       text: 'Forecast',

@@ -1562,7 +1562,7 @@ const ViewProject = ({
                         <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                       </button>
                     </div>
-                    {!isSelfhosted && (
+                    {(!isSelfhosted && !isActiveCompare) && (
                       <div
                         className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3', {
                           hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
