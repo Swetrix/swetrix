@@ -356,11 +356,6 @@ const getSettings = (
   const customEventsToArray = customEvents ? _map(_keys(customEvents), (el) => {
     return [el, ...customEvents[el]]
   }) : []
-  const compareX: string[] = _map(compareChart?.x, (el) => {
-    console.log(el)
-    return d3.timeFormat(tbsFormatMapper[timeBucket])(dayjs(el).toDate())
-  })
-  console.log(compareX, 'compareX')
 
   let customEventsColors: {
     [key: string]: string,
@@ -385,7 +380,6 @@ const getSettings = (
   }
 
   const columns = getColumns(modifiedChart, activeChartMetrics, compareChart)
-  console.log(columns, compareChart)
 
   if (applyRegions) {
     let regionStart
