@@ -118,7 +118,7 @@ export const periodToCompareDate: {
     const to = new Date()
     to.setDate(to.getDate() - 1)
     const from = new Date()
-    from.setDate(to.getDate() - 1)
+    from.setDate(from.getDate() - 2)
     return {
       from,
       to,
@@ -130,7 +130,7 @@ export const periodToCompareDate: {
     const to = new Date()
     to.setDate(to.getDate() - 7)
     const from = new Date()
-    from.setDate(to.getDate() - 7)
+    from.setDate(from.getDate() - 14)
     return {
       from,
       to,
@@ -142,7 +142,7 @@ export const periodToCompareDate: {
     const to = new Date()
     to.setDate(to.getDate() - 28)
     const from = new Date()
-    from.setDate(to.getDate() - 28)
+    from.setDate(from.getDate() - 56)
     return {
       from,
       to,
@@ -154,7 +154,7 @@ export const periodToCompareDate: {
     const to = new Date()
     to.setMonth(to.getMonth() - 3)
     const from = new Date()
-    from.setMonth(to.getMonth() - 3)
+    from.setMonth(from.getMonth() - 6)
     return {
       from,
       to,
@@ -166,7 +166,7 @@ export const periodToCompareDate: {
     const to = new Date()
     to.setMonth(to.getMonth() - 12)
     const from = new Date()
-    from.setMonth(to.getMonth() - 12)
+    from.setMonth(from.getMonth() - 24)
     return {
       from,
       to,
@@ -316,6 +316,7 @@ export const REFRESH_TOKEN: string = 'refresh_token'
 
 // LocalStorage
 export const PAGE_FORCE_REFRESHED = 'page-force-refreshed'
+export const IS_ACTIVE_COMPARE = 'is-active-compare'
 
 // List of languages with translations available
 export const whitelist: string[] = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']

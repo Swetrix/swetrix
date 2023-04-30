@@ -43,7 +43,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, periodToCompareDate, filtersPeriodPairs,
+  PERIOD_PAIRS_COMPARE, periodToCompareDate, filtersPeriodPairs, IS_ACTIVE_COMPARE,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -217,7 +217,19 @@ const ViewProject = ({
     label: string
     period: string
   }[]>(tbPeriodPairsCompare(t))
-  const [isActiveCompare, setIsActiveCompare] = useState<boolean>(false)
+  const [isActiveCompare, setIsActiveCompare] = useState<boolean>(() => {
+    const activeCompare = getItem(IS_ACTIVE_COMPARE)
+
+    if (typeof activeCompare === 'string') {
+      return activeCompare === 'true'
+    }
+
+    if (typeof activeCompare === 'boolean') {
+      return activeCompare
+    }
+
+    return false
+  })
   const [activePeriodCompare, setActivePeriodCompare] = useState<string>(periodPairsCompare[0].period)
   const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
@@ -493,6 +505,7 @@ const ViewProject = ({
           } else {
             date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
           }
+
           if (date) {
             fromCompare = getFormatDate(date.from)
             toCompare = getFormatDate(date.to)
@@ -1474,6 +1487,7 @@ const ViewProject = ({
 
   // loadAnalytics when compare period change or compare selected
   useEffect(() => {
+    setItem(IS_ACTIVE_COMPARE, JSON.stringify(isActiveCompare))
     if (activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM && !dateRangeCompare) {
       return
     }
