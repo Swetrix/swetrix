@@ -25,9 +25,9 @@ import { TelegramService } from './telegram.service'
             webhook: {
               domain: configService.get<string>('TELEGRAM_WEBHOOK_DOMAIN'),
               hookPath: configService.get<string>('TELEGRAM_WEBHOOK_PATH'),
-              ipAddress: configService.get<string>(
-                'TELEGRAM_WEBHOOK_IP_ADDRESS',
-              ),
+              // ipAddress: configService.get<string>(
+              //   'TELEGRAM_WEBHOOK_IP_ADDRESS',
+              // ),
               maxConnections: 100,
               secretToken: configService.get<string>(
                 'TELEGRAM_WEBHOOK_SECRET_TOKEN',
