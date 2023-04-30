@@ -461,16 +461,20 @@ const ViewProject = ({
     setDataLoading(true)
     try {
       let data
+      let dataCompare
       let key = ''
+      let keyCompare = ''
       let from
+      let fromCompare
       let to
+      let toCompare
       let customEventsChart = customEventsChartData
 
       if (isActiveCompare) {
         if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
-          from = getFormatDate(dateRangeCompare[0])
-          to = getFormatDate(dateRangeCompare[1])
-          key = getProjectCacheCustomKey(from, to, timeBucket)
+          fromCompare = getFormatDate(dateRangeCompare[0])
+          toCompare = getFormatDate(dateRangeCompare[1])
+          keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
         } else {
           let date
           if (dateRange) {
@@ -479,12 +483,22 @@ const ViewProject = ({
             date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
           }
           if (date) {
-            from = getFormatDate(date.from)
-            to = getFormatDate(date.to)
-            key = getProjectCacheCustomKey(from, to, timeBucket)
+            fromCompare = getFormatDate(date.from)
+            toCompare = getFormatDate(date.to)
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
           }
         }
-      } else if (dateRange && !isActiveCompare) {
+
+        if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+          dataCompare = cache[id][keyCompare]
+        } else {
+          dataCompare = await getProjectData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
+        }
+
+        setProjectCache(id, dataCompare || {}, keyCompare)
+      }
+
+      if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
         key = getProjectCacheCustomKey(from, to, timeBucket)
@@ -531,6 +545,7 @@ const ViewProject = ({
       const {
         chart, params, customs, appliedFilters, avgSdur,
       } = data
+      console.log(dataCompare)
       sdkInstance?._emitEvent('load', sdkData)
       const processedSdur = getTimeFromSeconds(avgSdur)
 
