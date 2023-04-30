@@ -62,6 +62,8 @@ import {
   IBuildUserFlow,
   IGenerateXAxis,
   IExtractChartData,
+  DateRelativeToUTC,
+  TimeBucketToDateFormat,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -854,8 +856,11 @@ export class AnalyticsService {
 
       case TimeBucketType.DAY:
       case TimeBucketType.WEEK:
-      case TimeBucketType.MONTH:
         groupDateIterator = dayjs.utc(from).startOf('day')
+        break
+
+      case TimeBucketType.MONTH:
+        groupDateIterator = dayjs.utc(from).startOf('month')
         break
 
       default:
@@ -934,14 +939,46 @@ export class AnalyticsService {
     }
   }
 
-  updateXAxisTimezone(x: string[], timezone: string): string[] {
+  dateRelativeToUTC(date: dayjs.Dayjs, timezone: string): DateRelativeToUTC {
+    const now = dayjs.utc().tz(timezone)
+    const localDate = date.tz(timezone)
+
+    if (localDate.isSame(now, 'day')) {
+      return DateRelativeToUTC.TODAY
+    }
+
+    if (localDate.isBefore(now, 'day')) {
+      return DateRelativeToUTC.YESTERDAY
+    }
+
+    return DateRelativeToUTC.TOMORROW
+  }
+
+  updateXAxisTimezone(x: string[], timezone: string, timeBucket: TimeBucketType): string[] {
     if (timezone === DEFAULT_TIMEZONE || !isValidTimezone(timezone)) {
       return x
     }
 
-    return _map(x, el =>
-      dayjs.utc(el).tz(timezone).format('YYYY-MM-DD HH:mm:ss'),
-    )
+    return _map(x, el => {
+      const date = dayjs.utc(el)
+      const convertedDate = date.tz(timezone)
+
+      if (timeBucket === TimeBucketType.HOUR) {
+        return convertedDate.format(TimeBucketToDateFormat.hour)
+      }
+
+      const relative = this.dateRelativeToUTC(date, timezone)
+
+      if (relative === DateRelativeToUTC.TODAY) {
+        return convertedDate.format(TimeBucketToDateFormat[timeBucket])
+      }
+
+      if (relative === DateRelativeToUTC.YESTERDAY) {
+        return convertedDate.add(1, 'day').format(TimeBucketToDateFormat[timeBucket])
+      }
+
+      return convertedDate.subtract(1, 'day').format(TimeBucketToDateFormat[timeBucket])
+    })
   }
 
   generateAnalyticsAggregationQuery(
@@ -1041,7 +1078,7 @@ export class AnalyticsService {
         sdur[i] = 0
       }
 
-      x = this.updateXAxisTimezone(x, timezone)
+      x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
       return Promise.resolve({
         params,
@@ -1065,7 +1102,7 @@ export class AnalyticsService {
 
     const { visits, uniques, sdur } = this.extractChartData(result, x)
 
-    x = this.updateXAxisTimezone(x, timezone)
+    x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
     return Promise.resolve({
       params,
@@ -1135,7 +1172,7 @@ export class AnalyticsService {
 
     results = nullifyMissingElements(results, _size(x))
 
-    x = this.updateXAxisTimezone(x, timezone)
+    x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
     return Promise.resolve({
       params,
@@ -1237,7 +1274,7 @@ export class AnalyticsService {
       )
     )
 
-    x = this.updateXAxisTimezone(x, timezone)
+    x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
     return Promise.resolve({
       params,
@@ -1317,7 +1354,7 @@ export class AnalyticsService {
       customEvents[ev] = nullifyMissingElements(customEvents[ev], _size(x))
     }
 
-    x = this.updateXAxisTimezone(x, timezone)
+    x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
     return Promise.resolve({
       chart: {
