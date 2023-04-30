@@ -20,6 +20,7 @@ import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import _round from 'lodash/round'
 import _fill from 'lodash/fill'
+import _includes from 'lodash/includes'
 import _reduce from 'lodash/reduce'
 import _last from 'lodash/last'
 import JSZip from 'jszip'
@@ -231,15 +232,6 @@ const getColumns = (chart: {
     columns.push(
       ['bounce', ...bounceArray],
     )
-
-    if (compareChart?.uniques && compareChart?.visits) {
-      const bounceCompareArray = _map(compareChart.uniques, (el, i) => {
-        return _round((_toNumber(el) * 100) / _toNumber(compareChart.visits[i]), 1) || 0
-      })
-      columns.push(
-        ['bounceCompare', ...bounceCompareArray],
-      )
-    }
   }
 
   if (viewsPerUnique) {
@@ -364,6 +356,11 @@ const getSettings = (
   const customEventsToArray = customEvents ? _map(_keys(customEvents), (el) => {
     return [el, ...customEvents[el]]
   }) : []
+  const compareX: string[] = _map(compareChart?.x, (el) => {
+    console.log(el)
+    return d3.timeFormat(tbsFormatMapper[timeBucket])(dayjs(el).toDate())
+  })
+  console.log(compareX, 'compareX')
 
   let customEventsColors: {
     [key: string]: string,
@@ -450,7 +447,7 @@ const getSettings = (
         trendlineUnique: spline(),
         trendlineTotal: spline(),
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
-        sessionDurationCompare: chartType === chartTypes.line ? line() : bar(),
+        sessionDurationCompare: chartType === chartTypes.line ? spline() : bar(),
       },
       colors: {
         unique: '#2563EB',
@@ -500,24 +497,145 @@ const getSettings = (
     },
     tooltip: {
       format: {
-        title: (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+        title: (x: string) => {
+          return d3.timeFormat(tbsFormatMapper[timeBucket])(x)
+        },
+        name: !_isEmpty(compareChart) && ((name: string, _: never, typeChart: string) => {
+          const chartTypesCompare = ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare']
+          if (_includes(chartTypesCompare, typeChart)) {
+            return ''
+          }
+          return name
+        }),
       },
-      contents: {
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-            <li class='font-semibold'>{=TITLE}</li>
+      contents: (item: any, defaultTitleFormat: any, defaultValueFormat: any, color: any) => {
+        // const {
+        //   id, index, name, value, x,
+        // } = item
+        console.log(item)
+
+        const typesOptionsToTypesCompare: {
+          [key: string]: string,
+        } = {
+          unique: 'uniques',
+          total: 'visits',
+          sessionDuration: 'sdur',
+        }
+
+        if (_isEmpty(compareChart)) {
+          return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          <li class='font-semibold'>${d3.timeFormat(tbsFormatMapper[timeBucket])(item[0].x)}</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(item, (el: {
+            id: string,
+            index: number,
+            name: string,
+            value: string,
+            x: Date,
+          }) => {
+    return `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${el.value}</span>
+            </li>
+            `
+  })}`
+        }
+
+        return `
+        <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          ${_map(item, (el: {
+          id: string,
+          index: number,
+          name: string,
+          value: string,
+          x: Date,
+        }) => {
+    const {
+      id, index, name, value, x,
+    } = el
+
+    if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
+      return null
+    }
+
+    if (_isEmpty(compareChart)) {
+      return null
+    }
+
+    if (id === 'sessionDuration') {
+      return `
+            <div class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+                <span>${name}</span>
+              </div>
+            </div>
             <hr class='border-gray-200 dark:border-gray-600' />
-            {{
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
-                </div>
-                <span class='pl-4'>{=VALUE}</span>
-              </li>
-            }}
-          </ul>`,
+            <li class='mt-1 ml-2'>
+            <p>
+              <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(x)}</span> - <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
+            </p>
+            <p>
+              <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> - <span>${getStringFromTime(getTimeFromSeconds(compareChart[typesOptionsToTypesCompare[id]][index]))}</span>
+            </p>
+            </li>
+          `
+    }
+
+    return `
+            <div class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+                <span>${name}</span>
+              </div>
+            </div>
+            <hr class='border-gray-200 dark:border-gray-600' />
+            <li class='mt-1 ml-2'>
+            <p>
+              <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(x)}</span> - <span>${value}</span>
+            </p>
+            <p>
+              <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> - <span>${compareChart[typesOptionsToTypesCompare[id]][index]}</span>
+            </p>
+            </li>
+          `
+  })}
+        </ul>`
       },
+      // contents: {
+      //   text: {
+      //     compareX,
+      //   },
+      //   template: _isEmpty(compareChart) ? `
+      //   <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+      //     <li class='font-semibold'>{=TITLE}</li>
+      //     <hr class='border-gray-200 dark:border-gray-600' />
+      //     {{
+      //       <li class='flex justify-between'>
+      //         <div class='flex justify-items-start'>
+      //           <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+      //           <span>{=NAME}</span>
+      //         </div>
+      //         <span class='pl-4'>{=VALUE}</span>
+      //       </li>
+      //     }}
+      //   </ul>` : `
+      //   <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+      //     {{
+      //       <li class='flex justify-between'>
+      //         <div class='flex justify-items-start'>
+      //           <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+      //           <span>{=NAME}</span>
+      //         </div>
+      //         <span class='pl-4'>{=VALUE}</span>
+      //       </li>
+      //     }}
+      //   </ul>`,
+      // },
     },
     point: {
       focus: {
