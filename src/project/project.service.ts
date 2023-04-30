@@ -314,7 +314,9 @@ export class ProjectService {
       return null
     }
 
-    throw new ForbiddenException(`You are not allowed to view "${project?.name}" project`)
+    throw new ForbiddenException(
+      `You are not allowed to view "${project?.name}" project`,
+    )
   }
 
   allowedToManage(
