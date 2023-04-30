@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
+import { TelegramService } from 'src/integrations/telegram/telegram.service'
 import { UserController } from './user.controller'
 import { UserService } from './user.service'
 import { User } from './entities/user.entity'
@@ -20,7 +21,7 @@ import { RefreshToken } from './entities/refresh-token.entity'
     AppLoggerModule,
     ProjectModule,
   ],
-  providers: [UserService],
+  providers: [UserService, TelegramService],
   exports: [UserService],
   controllers: [UserController],
 })

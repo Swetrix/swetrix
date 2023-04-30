@@ -218,4 +218,21 @@ export class UserService {
   async getUserByEmail(email: string) {
     return this.usersRepository.findOne({ where: { email } })
   }
+
+  async getUserByTelegramId(telegramId: number) {
+    return this.usersRepository.findOne({
+      where: { telegramChatId: telegramId },
+    })
+  }
+
+  async updateUserTelegramId(
+    userId: string,
+    telegramId: number | null,
+    isTelegramChatIdConfirmed = false,
+  ) {
+    await this.usersRepository.update(userId, {
+      telegramChatId: String(telegramId),
+      isTelegramChatIdConfirmed,
+    })
+  }
 }
