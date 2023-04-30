@@ -259,10 +259,7 @@ export class AnalyticsService {
     // TODO: Properly validate the ipBlacklist on project update
     const ipBlacklist = _filter(project.ipBlacklist, Boolean)
 
-    if (
-      !_isEmpty(ipBlacklist) &&
-      ipRangeCheck(ip, ipBlacklist)
-    ) {
+    if (!_isEmpty(ipBlacklist) && ipRangeCheck(ip, ipBlacklist)) {
       throw new BadRequestException(
         'Incoming analytics is disabled for this IP address',
       )
@@ -954,7 +951,11 @@ export class AnalyticsService {
     return DateRelativeToUTC.TOMORROW
   }
 
-  updateXAxisTimezone(x: string[], timezone: string, timeBucket: TimeBucketType): string[] {
+  updateXAxisTimezone(
+    x: string[],
+    timezone: string,
+    timeBucket: TimeBucketType,
+  ): string[] {
     if (timezone === DEFAULT_TIMEZONE || !isValidTimezone(timezone)) {
       return x
     }
@@ -974,10 +975,14 @@ export class AnalyticsService {
       }
 
       if (relative === DateRelativeToUTC.YESTERDAY) {
-        return convertedDate.add(1, 'day').format(TimeBucketToDateFormat[timeBucket])
+        return convertedDate
+          .add(1, 'day')
+          .format(TimeBucketToDateFormat[timeBucket])
       }
 
-      return convertedDate.subtract(1, 'day').format(TimeBucketToDateFormat[timeBucket])
+      return convertedDate
+        .subtract(1, 'day')
+        .format(TimeBucketToDateFormat[timeBucket])
     })
   }
 
