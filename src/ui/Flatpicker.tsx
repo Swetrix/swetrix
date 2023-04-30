@@ -42,8 +42,7 @@ class FlatPicker extends React.Component<FlatPickerProps, {
   private setCustomDate(dates: Date[]) {
     const { onChange, maxRange } = this.props
 
-    // set max date to the first date selected using maxRange
-    if (maxRange && _size(dates) === 1) {
+    if (maxRange && maxRange > 0 && _size(dates) === 1) {
       const maxDate = new Date(dates[0])
       const minDate = new Date(dates[0])
       maxDate.setDate(maxDate.getDate() + maxRange)
