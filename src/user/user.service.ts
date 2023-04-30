@@ -5,6 +5,7 @@ import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
+import * as _isNull from 'lodash/isNull'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { User, ACCOUNT_PLANS, TRIAL_DURATION } from './entities/user.entity'
@@ -231,7 +232,7 @@ export class UserService {
     isTelegramChatIdConfirmed = false,
   ) {
     await this.usersRepository.update(userId, {
-      telegramChatId: String(telegramId),
+      telegramChatId: _isNull(telegramId) ? null : String(telegramId),
       isTelegramChatIdConfirmed,
     })
   }
