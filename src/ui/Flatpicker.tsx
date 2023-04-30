@@ -47,8 +47,9 @@ class FlatPicker extends React.Component<FlatPickerProps, {
       const minDate = new Date(dates[0])
       maxDate.setDate(maxDate.getDate() + maxRange)
       minDate.setDate(minDate.getDate() - maxRange)
+
       this.setState({
-        maxDate: maxDate.toISOString().split('T')[0],
+        maxDate: maxDate > new Date() ? 'today' : maxDate.toISOString().split('T')[0],
         minDate: minDate.toISOString().split('T')[0],
       })
     }

@@ -131,6 +131,7 @@ const ViewProject = ({
     label: string
     period: string
     tbs: string[]
+    countDays?: number
     dropdownLabel?: string
     isCustomDate?: boolean
   }[]>(tbPeriodPairs(t))
@@ -221,6 +222,15 @@ const ViewProject = ({
   const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
+  const maxRangeCompare = useMemo(() => {
+    if (!isActiveCompare) {
+      return 0
+    }
+
+    return _find(periodPairs, p => p.period === period)?.countDays || 0
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActiveCompare, period])
+  console.log(maxRangeCompare)
 
   const tabs: {
     id: string
@@ -1691,7 +1701,7 @@ const ViewProject = ({
                       }}
                       value={isActiveCompare ? dateRangeCompare || [] : dateRange || []}
                       maxDateMonths={MAX_MONTHS_IN_PAST}
-                      maxRange={10}
+                      maxRange={isActiveCompare ? maxRangeCompare : 0}
                     />
                   </div>
                 </div>
