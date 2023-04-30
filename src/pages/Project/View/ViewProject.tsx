@@ -242,7 +242,6 @@ const ViewProject = ({
     return _find(periodPairs, p => p.period === period)?.countDays || 0
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, period])
-  console.log(maxRangeCompare)
 
   const tabs: {
     id: string
