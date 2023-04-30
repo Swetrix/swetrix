@@ -496,24 +496,7 @@ const getSettings = (
       },
     },
     tooltip: {
-      format: {
-        title: (x: string) => {
-          return d3.timeFormat(tbsFormatMapper[timeBucket])(x)
-        },
-        name: !_isEmpty(compareChart) && ((name: string, _: never, typeChart: string) => {
-          const chartTypesCompare = ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare']
-          if (_includes(chartTypesCompare, typeChart)) {
-            return ''
-          }
-          return name
-        }),
-      },
       contents: (item: any, defaultTitleFormat: any, defaultValueFormat: any, color: any) => {
-        // const {
-        //   id, index, name, value, x,
-        // } = item
-        console.log(item)
-
         const typesOptionsToTypesCompare: {
           [key: string]: string,
         } = {
@@ -606,36 +589,6 @@ const getSettings = (
   })}
         </ul>`
       },
-      // contents: {
-      //   text: {
-      //     compareX,
-      //   },
-      //   template: _isEmpty(compareChart) ? `
-      //   <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-      //     <li class='font-semibold'>{=TITLE}</li>
-      //     <hr class='border-gray-200 dark:border-gray-600' />
-      //     {{
-      //       <li class='flex justify-between'>
-      //         <div class='flex justify-items-start'>
-      //           <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-      //           <span>{=NAME}</span>
-      //         </div>
-      //         <span class='pl-4'>{=VALUE}</span>
-      //       </li>
-      //     }}
-      //   </ul>` : `
-      //   <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-      //     {{
-      //       <li class='flex justify-between'>
-      //         <div class='flex justify-items-start'>
-      //           <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-      //           <span>{=NAME}</span>
-      //         </div>
-      //         <span class='pl-4'>{=VALUE}</span>
-      //       </li>
-      //     }}
-      //   </ul>`,
-      // },
     },
     point: {
       focus: {
