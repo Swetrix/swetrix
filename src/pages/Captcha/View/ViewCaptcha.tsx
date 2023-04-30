@@ -111,7 +111,6 @@ const ViewProject = ({
     label: periodPairs[3].label,
   }, [period, periodPairs])
   const [chartData, setChartData] = useState<any>({})
-  const [mainChart, setMainChart] = useState<any>(null)
   const [dataLoading, setDataLoading] = useState<boolean>(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
     [key: string]: boolean,
@@ -230,11 +229,8 @@ const ViewProject = ({
           customs,
         })
 
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
+        const generete = bb.generate(bbSettings)
+        generete.data.names(dataNames)
 
         setIsPanelsDataEmpty(false)
       }
