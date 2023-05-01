@@ -1968,6 +1968,7 @@ const ViewProject = ({
                       sessionDurationAVG={sessionDurationAVG}
                       sessionDurationAVGCompare={sessionDurationAVGCompare}
                       isActiveCompare={isActiveCompare}
+                      dataChartCompare={dataChartCompare}
                       live={liveStats[id]}
                       projectId={id}
                     />
