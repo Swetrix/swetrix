@@ -199,7 +199,6 @@ const getColumns = (chart: {
   const columns: any[] = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
-  console.log(columns)
 
   if (unique) {
     columns.push(['unique', ...chart.uniques])
