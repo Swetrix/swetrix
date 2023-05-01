@@ -25,7 +25,7 @@ import _last from 'lodash/last'
 import JSZip from 'jszip'
 
 import {
-  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h,
+  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h, tbsFormatMapperTooltip, tbsFormatMapperTooltip24h,
 } from 'redux/constants'
 import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
@@ -199,6 +199,7 @@ const getColumns = (chart: {
   const columns: any[] = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
+  console.log(columns)
 
   if (unique) {
     columns.push(['unique', ...chart.uniques])
@@ -448,7 +449,7 @@ const getSettings = (
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -465,7 +466,7 @@ const getSettings = (
     },
     tooltip: {
       format: {
-        title: (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+        title: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x),
       },
       contents: {
         template: `
