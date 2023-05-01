@@ -135,6 +135,7 @@ const ProjectCard = ({
 }: IProjectCard): JSX.Element => {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const role = useMemo(() => getRole && getRole(id), [getRole, id])
+  const history = useHistory()
 
   const onAccept = async () => {
     // @ts-ignore
@@ -166,7 +167,10 @@ const ProjectCard = ({
   }
 
   return (
-    <Link to={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}>
+    <div onClick={() => {
+      history.push(_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id))
+    }}
+    >
       <li
         onClick={onElementClick}
         className='overflow-hidden rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-800/25'
@@ -250,7 +254,7 @@ const ProjectCard = ({
           />
         )}
       </li>
-    </Link>
+    </div>
   )
 }
 
