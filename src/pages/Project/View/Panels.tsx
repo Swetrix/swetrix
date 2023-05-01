@@ -193,7 +193,7 @@ PanelContainer.defaultProps = {
 
 // First tab with stats
 const Overview = ({
-  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId,
+  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId, sessionDurationAVGCompare, isActiveCompare,
 }: {
   overall: any
   chartData: any
@@ -201,6 +201,8 @@ const Overview = ({
   t: (arg: string) => string
   live: number | string
   sessionDurationAVG: number
+  sessionDurationAVGCompare: number
+  isActiveCompare: boolean
   projectId: string
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
@@ -270,6 +272,13 @@ const Overview = ({
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {sessionDurationAVG}
+              {isActiveCompare && (
+                <span className='text-sm text-gray-500 dark:text-gray-400'>
+                  &nbsp;(
+                  {sessionDurationAVGCompare}
+                  )
+                </span>
+              )}
             </p>
           </div>
           <hr className='my-2 border-gray-200 dark:border-gray-600' />

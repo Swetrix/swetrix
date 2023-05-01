@@ -242,6 +242,7 @@ const ViewProject = ({
     return _find(periodPairs, p => p.period === period)?.countDays || 0
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, period])
+  const [sessionDurationAVGCompare, setSessionDurationAVGCompare] = useState<any>(null)
 
   const tabs: {
     id: string
@@ -518,6 +519,10 @@ const ViewProject = ({
         } else {
           dataCompare = await getProjectData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
         }
+
+        const processedSdur = getTimeFromSeconds(dataCompare?.avgSdur || 0)
+
+        setSessionDurationAVGCompare(getStringFromTime(processedSdur))
 
         setProjectCache(id, dataCompare || {}, keyCompare)
       }
@@ -1961,6 +1966,8 @@ const ViewProject = ({
                       chartData={chartData}
                       activePeriod={activePeriod}
                       sessionDurationAVG={sessionDurationAVG}
+                      sessionDurationAVGCompare={sessionDurationAVGCompare}
+                      isActiveCompare={isActiveCompare}
                       live={liveStats[id]}
                       projectId={id}
                     />
