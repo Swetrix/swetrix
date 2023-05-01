@@ -91,6 +91,20 @@ export const timeBucketToDays: {
 ]
 
 export const tbsFormatMapper: IStringObject = {
+  hour: '%I %p',
+  day: '%d %b',
+  week: '%d %b',
+  month: '%b %Y',
+}
+
+export const tbsFormatMapperTooltip: IStringObject = {
+  hour: '%d %b %I %p',
+  day: '%d %b',
+  week: '%d %b',
+  month: '%b %Y',
+}
+
+export const tbsFormatMapperTooltip24h: IStringObject = {
   hour: '%d %b %H:%M',
   day: '%d %b',
   week: '%d %b',
@@ -101,7 +115,7 @@ export const tbsFormatMapper24h: IStringObject = {
   hour: '%H:%M',
   day: '%d %b',
   week: '%d %b',
-  month: '%d %b %Y',
+  month: '%b %Y',
 }
 
 export const TimeFormat: IStringObject = {
