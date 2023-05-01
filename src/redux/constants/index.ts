@@ -185,7 +185,7 @@ export const periodToCompareDate: {
     const to = new Date()
     to.setDate(to.getDate() - days)
     const from = new Date()
-    from.setDate(to.getDate() - days)
+    from.setDate(from.getDate() - days * 2)
     return {
       from,
       to,
