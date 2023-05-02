@@ -1040,7 +1040,48 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
   ): Promise<object | void> {
-    const params = await this.generateParams(
+    let params: unknown = {}
+    let chart: unknown = {}
+    let avgSdur = 0
+
+    const promises = [
+      // Getting params
+      async () => {
+        params = await this.groupParamsByTimeBucket(subQuery, paramsData, customEVFilterApplied, parsedFilters)
+
+        if (!_some(_values(params), val => !_isEmpty(val))) {
+          throw new BadRequestException('The are no parameters for the specified time frames')
+        }
+      },
+
+      // Getting chart & average session duration data
+      async () => {
+        const groupedData = await this.groupChartByTimeBucket(timeBucket, from, to, subQuery, filtersQuery, paramsData, timezone, customEVFilterApplied)
+
+        // @ts-ignore
+        chart = groupedData.chart
+
+        // @ts-ignore
+        avgSdur = groupedData.avgSdur
+      },
+    ]
+
+    await Promise.all(promises)
+
+    return {
+      params,
+      chart,
+      avgSdur,
+    }
+  }
+
+  async groupParamsByTimeBucket(
+    subQuery: string,
+    paramsData: any,
+    customEVFilterApplied: boolean,
+    parsedFilters: Array<{ [key: string]: string }>,
+  ): Promise<object | void> {
+    return await this.generateParams(
       parsedFilters,
       subQuery,
       customEVFilterApplied,
@@ -1048,11 +1089,18 @@ export class AnalyticsService {
       false,
       false,
     )
+  }
 
-    if (!_some(_values(params), val => !_isEmpty(val))) {
-      return Promise.resolve()
-    }
-
+  async groupChartByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: any,
+    timezone: string,
+    customEVFilterApplied: boolean,
+  ): Promise<object | void> {
     const avgSdur = customEVFilterApplied
       ? 0
       : await this.calculateAverageSessionDuration(subQuery, paramsData)
@@ -1086,7 +1134,6 @@ export class AnalyticsService {
       x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
       return Promise.resolve({
-        params,
         chart: {
           x,
           visits: uniques,
@@ -1110,7 +1157,6 @@ export class AnalyticsService {
     x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
     return Promise.resolve({
-      params,
       chart: {
         x,
         visits,
