@@ -1047,16 +1047,32 @@ export class AnalyticsService {
     const promises = [
       // Getting params
       async () => {
-        params = await this.groupParamsByTimeBucket(subQuery, paramsData, customEVFilterApplied, parsedFilters)
+        params = await this.groupParamsByTimeBucket(
+          subQuery,
+          paramsData,
+          customEVFilterApplied,
+          parsedFilters,
+        )
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
-          throw new BadRequestException('The are no parameters for the specified time frames')
+          throw new BadRequestException(
+            'The are no parameters for the specified time frames',
+          )
         }
       },
 
       // Getting chart & average session duration data
       async () => {
-        const groupedData = await this.groupChartByTimeBucket(timeBucket, from, to, subQuery, filtersQuery, paramsData, timezone, customEVFilterApplied)
+        const groupedData = await this.groupChartByTimeBucket(
+          timeBucket,
+          from,
+          to,
+          subQuery,
+          filtersQuery,
+          paramsData,
+          timezone,
+          customEVFilterApplied,
+        )
 
         // @ts-ignore
         chart = groupedData.chart
@@ -1081,7 +1097,7 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
   ): Promise<object | void> {
-    return await this.generateParams(
+    return this.generateParams(
       parsedFilters,
       subQuery,
       customEVFilterApplied,

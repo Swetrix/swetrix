@@ -395,11 +395,10 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] =
-      this.analyticsService.getFiltersQuery(
-        filters,
-        DataType.ANALYTICS,
-      )
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -409,16 +408,11 @@ export class AnalyticsController {
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
-    let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     let customEVFilterApplied = false
 
     if (filtersParams?.ev) {
       customEVFilterApplied = true
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-
       subQuery = `FROM customEV WHERE ${
         filtersParams.ev_exclusive ? 'NOT' : ''
       } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
