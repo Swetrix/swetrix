@@ -536,6 +536,8 @@ const getSettings = (
       id, index, name, value, x,
     } = el
 
+    const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+    const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
     if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
       return '<span></span>'
     }
@@ -551,11 +553,11 @@ const getSettings = (
             <hr class='border-gray-200 dark:border-gray-600' />
             <li class='mt-1 ml-2'>
               <p>
-                <span>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)}</span> -
+                <span>${xDataValue}</span> -
                 <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
               </p>
               <p>
-                <span>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> -
+                <span>${xDataValueCompare}</span> -
                 <span>${getStringFromTime(getTimeFromSeconds(compareChart[typesOptionsToTypesCompare[id]][index]))}</span>
               </p>
             </li>
@@ -572,10 +574,10 @@ const getSettings = (
             <hr class='border-gray-200 dark:border-gray-600' />
             <li class='mt-1 ml-2'>
             <p>
-              <span>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)}</span> - <span>${value}</span>
+              <span>${xDataValue}</span> - <span>${value}</span>
             </p>
             <p>
-              <span>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> - <span>${compareChart[typesOptionsToTypesCompare[id]][index]}</span>
+              <span>${xDataValueCompare}</span> - <span>${compareChart[typesOptionsToTypesCompare[id]][index]}</span>
             </p>
             </li>
           `
