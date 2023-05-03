@@ -1709,7 +1709,9 @@ const ViewProject = ({
                     {activeTab === PROJECT_TABS.traffic ? (
                       !isPanelsDataEmpty && (
                         <Dropdown
-                          items={chartMetrics}
+                          items={isActiveCompare ? _filter(chartMetrics, (el) => {
+                            return !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id)
+                          }) : chartMetrics}
                           title={t('project.metricVis')}
                           labelExtractor={(pair) => {
                             const {
