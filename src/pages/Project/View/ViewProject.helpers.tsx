@@ -547,25 +547,26 @@ const getSettings = (
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
                 <span>${name}</span>
               </div>
-            </div>
-      format: {
-        title: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x),
-      },
-      contents: {
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-            <li class='font-semibold'>{=TITLE}</li>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            <li class='mt-1 ml-2'>
-            <p>
-              <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(x)}</span> - <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
-            </p>
-            <p>
-              <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> - <span>${getStringFromTime(getTimeFromSeconds(compareChart[typesOptionsToTypesCompare[id]][index]))}</span>
-            </p>
-            </li>
-          `
+            </div>`
     }
+    // format: {
+    //   title: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x),
+    // },
+    //   contents: {
+    //     template: `
+    //       <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+    //         <li class='font-semibold'>{=TITLE}</li>
+    //         <hr class='border-gray-200 dark:border-gray-600' />
+    //         <li class='mt-1 ml-2'>
+    //         <p>
+    //           <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(x)}</span> - <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
+    //         </p>
+    //         <p>
+    //           <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> - <span>${getStringFromTime(getTimeFromSeconds(compareChart[typesOptionsToTypesCompare[id]][index]))}</span>
+    //         </p>
+    //         </li>
+    //       `
+    // }
 
     return `
             <div class='flex justify-between'>
