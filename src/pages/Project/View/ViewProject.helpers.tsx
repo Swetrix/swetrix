@@ -520,7 +520,7 @@ const getSettings = (
               <span class='pl-4'>${el.value}</span>
             </li>
             `
-  })}`
+  }).join('')}`
         }
 
         return `
@@ -577,7 +577,7 @@ const getSettings = (
             </p>
             </li>
           `
-  })}
+  }).join('')}
         </ul>`
       },
     },
