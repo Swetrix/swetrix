@@ -538,6 +538,8 @@ const getSettings = (
 
     const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
     const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+    const valueCompare = id === 'sessionDuration' ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index])) : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
+
     if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
       return '<span></span>'
     }
@@ -558,7 +560,7 @@ const getSettings = (
               </p>
               <p>
                 <span>${xDataValueCompare}</span> -
-                <span>${getStringFromTime(getTimeFromSeconds(compareChart[typesOptionsToTypesCompare[id]][index]))}</span>
+                <span>${valueCompare}</span>
               </p>
             </li>
           `
@@ -577,7 +579,7 @@ const getSettings = (
               <span>${xDataValue}</span> - <span>${value}</span>
             </p>
             <p>
-              <span>${xDataValueCompare}</span> - <span>${compareChart[typesOptionsToTypesCompare[id]][index]}</span>
+              <span>${xDataValueCompare}</span> - <span>${valueCompare}</span>
             </p>
             </li>
           `
