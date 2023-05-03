@@ -178,6 +178,13 @@ const CHART_METRICS_MAPPING = {
   customEvents: 'customEvents',
 }
 
+const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = {
+  bounce: 'bounce',
+  viewsPerUnique: 'viewsPerUnique',
+  trendlines: 'trendlines',
+  customEvents: 'customEvents',
+}
+
 const CHART_METRICS_MAPPING_PERF = {
   full: 'full',
   timing: 'timing',
@@ -783,5 +790,5 @@ export {
   iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters,
   validPeriods, validTimeBacket, noRegionPeriods, getSettings,
   getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
-  CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData,
+  CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData, FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
 }
