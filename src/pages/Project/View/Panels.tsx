@@ -193,7 +193,7 @@ PanelContainer.defaultProps = {
 
 // First tab with stats
 const Overview = ({
-  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId, sessionDurationAVGCompare, isActiveCompare, dataChartCompare,
+  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId, sessionDurationAVGCompare, isActiveCompare, dataChartCompare, activeDropdownLabelCompare,
 }: {
   overall: any
   chartData: any
@@ -203,6 +203,7 @@ const Overview = ({
   sessionDurationAVG: number
   sessionDurationAVGCompare: number
   isActiveCompare: boolean
+  activeDropdownLabelCompare: string | undefined
   dataChartCompare: any
   projectId: string
 }) => {
@@ -241,6 +242,14 @@ const Overview = ({
               &nbsp;
               {activePeriod.label}
             </span>
+            {isActiveCompare && (
+            // return vs activeDropdownLabelCompare
+            <span className='text-sm text-gray-500 dark:text-gray-400'>
+                &nbsp;(
+              {activeDropdownLabelCompare}
+              )
+            </span>
+            )}
           </p>
 
           <div className='flex justify-between'>
@@ -291,6 +300,17 @@ const Overview = ({
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {bounceRate}
               %
+              {isActiveCompare && (
+                <span className={cx('ml-1.5 text-sm', {
+                  'text-green-500': bounceRateCompare > bounceRate,
+                  'text-red-500': bounceRateCompare < bounceRate,
+                })}
+                >
+                  {bounceRateCompare > bounceRate ? '+' : ''}
+                  {_round(bounceRateCompare - bounceRate, 1)}
+                  %
+                </span>
+              )}
             </p>
           </div>
           <div className='flex justify-between'>
