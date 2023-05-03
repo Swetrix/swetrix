@@ -558,10 +558,10 @@ const getSettings = (
                 <span>${xDataValue}</span> -
                 <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
               </p>
-              <p>
+              ${(valueCompare && Number(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]) > 0) ? `<p>
                 <span>${xDataValueCompare}</span> -
                 <span>${valueCompare}</span>
-              </p>
+              </p>` : ''}
             </li>
           `
     }
@@ -578,9 +578,10 @@ const getSettings = (
             <p>
               <span>${xDataValue}</span> - <span>${value}</span>
             </p>
-            <p>
-              <span>${xDataValueCompare}</span> - <span>${valueCompare}</span>
-            </p>
+            ${valueCompare ? `<p>
+              <span>${xDataValueCompare}</span> -
+              <span>${valueCompare}</span>
+            </p>` : ''}
             </li>
           `
   }).join('')}
