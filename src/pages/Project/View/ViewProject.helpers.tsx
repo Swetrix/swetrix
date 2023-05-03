@@ -555,7 +555,7 @@ const getSettings = (
                 <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
               </p>
               <p>
-                <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> -
+                <span>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> -
                 <span>${getStringFromTime(getTimeFromSeconds(compareChart[typesOptionsToTypesCompare[id]][index]))}</span>
               </p>
             </li>
@@ -575,7 +575,7 @@ const getSettings = (
               <span>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)}</span> - <span>${value}</span>
             </p>
             <p>
-              <span>${d3.timeFormat(tbsFormatMapper[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> - <span>${compareChart[typesOptionsToTypesCompare[id]][index]}</span>
+              <span>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())}</span> - <span>${compareChart[typesOptionsToTypesCompare[id]][index]}</span>
             </p>
             </li>
           `
