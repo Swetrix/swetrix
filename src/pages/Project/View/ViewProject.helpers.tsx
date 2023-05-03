@@ -511,6 +511,22 @@ const getSettings = (
             value: string,
             x: Date,
           }) => {
+    if (el.id === 'sessionDuration') {
+      return `
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                  <span>${el.name}</span>
+                </div>
+                <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
+              </li>
+              `
+    }
+
+    if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
+      return ''
+    }
+
     return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
@@ -541,7 +557,7 @@ const getSettings = (
     const valueCompare = id === 'sessionDuration' ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index])) : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
 
     if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
-      return '<span></span>'
+      return ''
     }
 
     if (id === 'sessionDuration') {
