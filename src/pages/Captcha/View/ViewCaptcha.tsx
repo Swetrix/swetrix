@@ -111,7 +111,6 @@ const ViewProject = ({
     label: periodPairs[3].label,
   }, [period, periodPairs])
   const [chartData, setChartData] = useState<any>({})
-  const [mainChart, setMainChart] = useState<any>(null)
   const [dataLoading, setDataLoading] = useState<boolean>(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
     [key: string]: boolean,
@@ -230,15 +229,8 @@ const ViewProject = ({
           customs,
         })
 
-        if (!_isEmpty(mainChart)) {
-          mainChart.destroy()
-        }
-
-        setMainChart(() => {
-          const generete = bb.generate(bbSettings)
-          generete.data.names(dataNames)
-          return generete
-        })
+        const generete = bb.generate(bbSettings)
+        generete.data.names(dataNames)
 
         setIsPanelsDataEmpty(false)
       }
@@ -760,7 +752,7 @@ const ViewProject = ({
                 {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
                 <Button
                   onClick={openSettingsHandler}
-                  className='relative flex justify-center items-center !pr-3 !pl-1 md:pr-4 md:pl-2 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
+                  className='relative flex justify-center items-center !pr-3 pl-2 py-2 md:pr-4 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
                   secondary
                 >
                   <>

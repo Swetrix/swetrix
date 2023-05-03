@@ -25,7 +25,7 @@ import _last from 'lodash/last'
 import JSZip from 'jszip'
 
 import {
-  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h,
+  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h, tbsFormatMapperTooltip, tbsFormatMapperTooltip24h,
 } from 'redux/constants'
 import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
@@ -475,7 +475,7 @@ const getSettings = (
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -548,6 +548,13 @@ const getSettings = (
                 <span>${name}</span>
               </div>
             </div>
+      format: {
+        title: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x),
+      },
+      contents: {
+        template: `
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+            <li class='font-semibold'>{=TITLE}</li>
             <hr class='border-gray-200 dark:border-gray-600' />
             <li class='mt-1 ml-2'>
             <p>

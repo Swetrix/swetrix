@@ -624,7 +624,7 @@ const Main = (): JSX.Element => {
                         i18nKey='main.os'
                         components={{
                           // eslint-disable-next-line jsx-a11y/anchor-has-content
-                          gradi: <span className='text-transparent bg-clip-text' style={{ background: 'linear-gradient(91.37deg, #4E46DD 10%, #5C3CDA 55%, #A274EF 100%)' }} />,
+                          gradi: <span className='text-transparent !bg-clip-text' style={{ background: 'linear-gradient(91.37deg, #4E46DD 10%, #5C3CDA 55%, #A274EF 100%)' }} />,
                         }}
                       />
                     </h2>
