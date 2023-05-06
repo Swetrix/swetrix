@@ -168,7 +168,7 @@ const main = () => {
 
   if (_.includes(args, '--help')) {
     console.log(
-      chalk.cyan('Usage: node generate-dummy-data.js --pid <pid> --beginDate <YYYY-MM-DD!HH:mm:ss> --endDate <YYYY-MM-DD!HH:mm:ss> --rows <number of rows>')
+      chalk.cyan('Usage: node generate-dummy-data.js --pid <pid> --beginDate <YYYY-MM-DD@HH:mm:ss> --endDate <YYYY-MM-DD@HH:mm:ss> --rows <number of rows>')
     )
     console.log(
       chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01!00:00:00 --endDate 2021-01-31!23:59:59 --rows 1000')
@@ -176,8 +176,8 @@ const main = () => {
     console.log()
     console.log('Options:')
     console.log('--pid <pid> - The pid of the project')
-    console.log('--beginDate <YYYY-MM-DD!HH:mm:ss> - The begin date of the data')
-    console.log('--endDate <YYYY-MM-DD!HH:mm:ss> - The end date of the data')
+    console.log('--beginDate <YYYY-MM-DD@HH:mm:ss> - The begin date of the data')
+    console.log('--endDate <YYYY-MM-DD@HH:mm:ss> - The end date of the data')
     console.log(`--rows <number of rows> - The number of rows to generate; default is ${DEFAULT_ROW_COUNT}`)
     console.log(`--mode <analytics | custom_events | performance> - The mode to generate data for; default is ${DEFAULT_MODE}`)
     return
@@ -202,7 +202,7 @@ const main = () => {
       chalk.red('[ERROR] No arguments specified')
     )
     console.log(
-      chalk.cyan('Usage: node generate-dummy-data.js --pid <pid> --beginDate <YYYY-MM-DD!HH:mm:ss> --endDate <YYYY-MM-DD!HH:mm:ss> --rows <number of rows>')
+      chalk.cyan('Usage: node generate-dummy-data.js --pid <pid> --beginDate <YYYY-MM-DD@HH:mm:ss> --endDate <YYYY-MM-DD@HH:mm:ss> --rows <number of rows>')
     )
     console.log(
       chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01!00:00:00 --endDate 2021-01-31!23:59:59 --rows 1000')
