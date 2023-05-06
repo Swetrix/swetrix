@@ -261,9 +261,14 @@ export const getSharedProjects = (take: number = 0, skip: number = 0) =>
         : error.response.data.message
     })
 
-export const getProject = (pid: string, isCaptcha: boolean = false) =>
+// eslint-disable-next-line default-param-last
+export const getProject = (pid: string, isCaptcha: boolean = false, password: string) =>
   api
-    .get(`/project/${pid}?isCaptcha=${isCaptcha}`)
+    .get(`/project/${pid}?isCaptcha=${isCaptcha}`, {
+      data: {
+        password,
+      },
+    })
     .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -350,10 +355,16 @@ export const getProjectData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  password: string = '',
 ) =>
   api
     .get(
       `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        data: {
+          password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
@@ -371,10 +382,16 @@ export const getPerfData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  password: string = '',
 ) =>
   api
     .get(
       `log/performance?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        data: {
+          password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
@@ -404,9 +421,16 @@ export const getCaptchaData = (
         : error.response.data.message
     })
 
-export const getOverallStats = (pids: string[]) =>
+export const getOverallStats = (pids: string[], password: string) =>
   api
-    .get(`log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .get(
+      `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`,
+      {
+        data: {
+          password,
+        },
+      },
+    )
     .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -415,9 +439,13 @@ export const getOverallStats = (pids: string[]) =>
         : error.response.data.message
     })
 
-export const getOverallStatsCaptcha = (pids: string[]) =>
+export const getOverallStatsCaptcha = (pids: string[], password: string) =>
   api
-    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
+      data: {
+        password,
+      },
+    })
     .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -426,9 +454,13 @@ export const getOverallStatsCaptcha = (pids: string[]) =>
         : error.response.data.message
     })
 
-export const getLiveVisitors = (pids: string[]) =>
+export const getLiveVisitors = (pids: string[], password: string) =>
   api
-    .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
+      data: {
+        password,
+      },
+    })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -605,9 +637,13 @@ export interface IGetLiveVisitorsInfo {
   cc: string
 }
 
-export const getLiveVisitorsInfo = (pid: string) =>
+export const getLiveVisitorsInfo = (pid: string, password: string) =>
   api
-    .get(`log/liveVisitors?pid=${pid}`)
+    .get(`log/liveVisitors?pid=${pid}`, {
+      data: {
+        password,
+      },
+    })
     .then((response): IGetLiveVisitorsInfo[] => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -760,10 +796,16 @@ export const getProjectDataCustomEvents = (
   to: string = '',
   timezone: string = '',
   customEvents: string[] = [],
+  password: string = '',
 ) =>
   api
     .get(
       `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&customEvents=${JSON.stringify(customEvents)}`,
+      {
+        data: {
+          password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
