@@ -29,6 +29,7 @@ const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
       'NULL', // sid
       pid,
       faker.helpers.arrayElement(PAGES), // pg
+      'NULL', // prev
       faker.helpers.arrayElement(DEVICES), // dv
       faker.helpers.arrayElement(BROWSERS), // br
       faker.helpers.arrayElement(OS), // os
