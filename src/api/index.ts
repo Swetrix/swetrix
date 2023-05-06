@@ -262,7 +262,7 @@ export const getSharedProjects = (take: number = 0, skip: number = 0) =>
     })
 
 // eslint-disable-next-line default-param-last
-export const getProject = (pid: string, isCaptcha: boolean = false, password: string) =>
+export const getProject = (pid: string, isCaptcha: boolean = false, password?: string) =>
   api
     .get(`/project/${pid}?isCaptcha=${isCaptcha}`, {
       data: {
@@ -355,7 +355,7 @@ export const getProjectData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
-  password: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
@@ -382,7 +382,7 @@ export const getPerfData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
-  password: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
@@ -421,7 +421,7 @@ export const getCaptchaData = (
         : error.response.data.message
     })
 
-export const getOverallStats = (pids: string[], password: string) =>
+export const getOverallStats = (pids: string[], password?: string) =>
   api
     .get(
       `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`,
@@ -439,7 +439,7 @@ export const getOverallStats = (pids: string[], password: string) =>
         : error.response.data.message
     })
 
-export const getOverallStatsCaptcha = (pids: string[], password: string) =>
+export const getOverallStatsCaptcha = (pids: string[], password?: string) =>
   api
     .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
       data: {
@@ -454,7 +454,7 @@ export const getOverallStatsCaptcha = (pids: string[], password: string) =>
         : error.response.data.message
     })
 
-export const getLiveVisitors = (pids: string[], password: string) =>
+export const getLiveVisitors = (pids: string[], password?: string) =>
   api
     .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
       data: {
@@ -637,7 +637,7 @@ export interface IGetLiveVisitorsInfo {
   cc: string
 }
 
-export const getLiveVisitorsInfo = (pid: string, password: string) =>
+export const getLiveVisitorsInfo = (pid: string, password?: string) =>
   api
     .get(`log/liveVisitors?pid=${pid}`, {
       data: {
@@ -796,7 +796,7 @@ export const getProjectDataCustomEvents = (
   to: string = '',
   timezone: string = '',
   customEvents: string[] = [],
-  password: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
