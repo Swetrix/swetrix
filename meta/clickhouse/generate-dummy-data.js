@@ -171,7 +171,7 @@ const main = () => {
       chalk.cyan('Usage: node generate-dummy-data.js --pid <pid> --beginDate <YYYY-MM-DD@HH:mm:ss> --endDate <YYYY-MM-DD@HH:mm:ss> --rows <number of rows>')
     )
     console.log(
-      chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01!00:00:00 --endDate 2021-01-31!23:59:59 --rows 1000')
+      chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01@00:00:00 --endDate 2021-01-31!23:59:59 --rows 1000')
     )
     console.log()
     console.log('Options:')
@@ -205,7 +205,7 @@ const main = () => {
       chalk.cyan('Usage: node generate-dummy-data.js --pid <pid> --beginDate <YYYY-MM-DD@HH:mm:ss> --endDate <YYYY-MM-DD@HH:mm:ss> --rows <number of rows>')
     )
     console.log(
-      chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01!00:00:00 --endDate 2021-01-31!23:59:59 --rows 1000')
+      chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01@00:00:00 --endDate 2021-01-31!23:59:59 --rows 1000')
     )
     return
   }
