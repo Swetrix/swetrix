@@ -88,7 +88,7 @@ const queriesRunner = async (queries, log = true) => {
   return true
 }
 
-const dbName = process.env.CLICKHOUSE_DATABASE
+const dbName = process.env.CLICKHOUSE_DATABASE || 'analytics'
 
 module.exports = {
   clickhouse,
