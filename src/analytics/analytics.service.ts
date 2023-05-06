@@ -1046,7 +1046,7 @@ export class AnalyticsService {
 
     const promises = [
       // Getting params
-      async () => {
+      (async () => {
         params = await this.groupParamsByTimeBucket(
           subQuery,
           paramsData,
@@ -1059,10 +1059,10 @@ export class AnalyticsService {
             'The are no parameters for the specified time frames',
           )
         }
-      },
+      })(),
 
       // Getting chart & average session duration data
-      async () => {
+      (async () => {
         const groupedData = await this.groupChartByTimeBucket(
           timeBucket,
           from,
@@ -1079,7 +1079,7 @@ export class AnalyticsService {
 
         // @ts-ignore
         avgSdur = groupedData.avgSdur
-      },
+      })(),
     ]
 
     await Promise.all(promises)
