@@ -373,6 +373,85 @@ export class AnalyticsController {
     }
   }
 
+  @Get('chart')
+  @Auth([], true, true)
+  async getChartData(
+    @Query() data: AnalyticsGET_DTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      timezone,
+    )
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    let customEVFilterApplied = false
+
+    if (filtersParams?.ev) {
+      customEVFilterApplied = true
+      subQuery = `FROM customEV WHERE ${
+        filtersParams.ev_exclusive ? 'NOT' : ''
+      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    }
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom,
+        groupTo,
+        ...filtersParams,
+      },
+    }
+
+    const result = await this.analyticsService.groupChartByTimeBucket(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      subQuery,
+      filtersQuery,
+      paramsData,
+      timezone,
+      customEVFilterApplied,
+    )
+    let appliedFilters = filters
+
+    if (filters) {
+      try {
+        appliedFilters = JSON.parse(filters)
+        // eslint-disable-next-line no-empty
+      } catch {}
+    }
+
+    return {
+      ...result,
+      appliedFilters,
+    }
+  }
+
   @Get('performance')
   @Auth([], true, true)
   async getPerfData(
