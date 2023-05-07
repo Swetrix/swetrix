@@ -35,6 +35,8 @@ import _truncate from 'lodash/truncate'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
+import { withProjectProtected } from 'hoc/projectProtected'
+
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
@@ -2077,4 +2079,4 @@ ViewProject.defaultProps = {
   timezone: DEFAULT_TIMEZONE,
 }
 
-export default memo(ViewProject)
+export default memo(withProjectProtected(ViewProject))
