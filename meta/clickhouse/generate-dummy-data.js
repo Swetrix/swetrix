@@ -8,7 +8,7 @@ const {
 
 const PID_SIZE = 12
 const DEFAULT_ROW_COUNT = 10
-const MODES = ['analytics', 'custom_events', 'performance']
+const MODES = ['analytics', 'custom_events', 'performance', 'captcha']
 const DEFAULT_MODE = 'analytics'
 
 const OS = ['Windows', 'Linux', 'Mac']
@@ -52,6 +52,46 @@ const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
 
   const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
   const insertQuery = `INSERT INTO ${dbName}.analytics (*) VALUES ${processedRecords}`
+
+  try {
+    const result = await queriesRunner([insertQuery], false)
+
+    if (!result) {
+      throw new Error()
+    }
+
+    console.log(
+      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
+    )
+  } catch {
+    console.error(
+      chalk.red('[ERROR] Error occured whilst inserting the records')
+    )
+  }
+}
+
+const generateCaptchaData = async (pid, rowCount, beginDate, endDate) => {
+  const records = []
+
+  for (let i = 0; i < rowCount; ++i) {
+    const record = [
+      pid,
+      faker.helpers.arrayElement(DEVICES), // dv
+      faker.helpers.arrayElement(BROWSERS), // br
+      faker.helpers.arrayElement(OS), // os
+      faker.address.countryCode(), // cc
+      faker.datatype.number({ min: 0, max: 2 }) === 0 ? 1 : 0, // manuallyPassed; 33% chance of manuallyPassed record
+      _.split(faker.date.between(beginDate, endDate).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
+    ]
+    records.push(record)
+  }
+
+  console.info(
+    chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
+  )
+
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
+  const insertQuery = `INSERT INTO ${dbName}.captcha (*) VALUES ${processedRecords}`
 
   try {
     const result = await queriesRunner([insertQuery], false)
@@ -265,6 +305,10 @@ const main = () => {
 
   if (mode === 'performance') {
     generatePerformanceData(...arguments)
+  }
+
+  if (mode === 'captcha') {
+    generateCaptchaData(...arguments)
   }
 }
 
