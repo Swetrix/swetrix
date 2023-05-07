@@ -72,6 +72,21 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
+
+  // The CAPTCHA data table
+  `CREATE TABLE IF NOT EXISTS ${dbName}.captcha
+  (
+    pid FixedString(12),
+    dv LowCardinality(Nullable(String)),
+    br LowCardinality(Nullable(String)),
+    os Nullable(String),
+    cc Nullable(FixedString(2)),
+    manuallyPassed UInt8,
+    created DateTime
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (pid, created);`
 ]
 
 const initialiseDatabase = async () => {
