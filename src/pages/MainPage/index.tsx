@@ -15,7 +15,7 @@ import _isEmpty from 'lodash/isEmpty'
 import routes from 'routes'
 import { nFormatterSeparated } from 'utils/generic'
 import Title from 'components/Title'
-import { GITHUB_URL, MARKETPLACE_URL } from 'redux/constants'
+import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL } from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
@@ -36,8 +36,6 @@ import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
 
 import './styles.css'
-
-const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 
 const COMPETITORS_LIST = ['Google Analytics', 'Fathom', 'Plausible', 'Simple Analytics']
 const SWETRIX_AND_COMPETITORS_LIST = ['Swetrix', ...COMPETITORS_LIST]

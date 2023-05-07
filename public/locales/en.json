@@ -780,7 +780,8 @@
     },
     "usage": {
       "title": "Usage metrics",
-      "desc": "Our user metrics, such as amount of active users, connected websites."
+      "desc": "Our user metrics, such as amount of active users, connected websites.",
+      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
     }
   },
   "titles": {

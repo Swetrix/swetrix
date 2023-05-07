@@ -4,12 +4,15 @@ import _map from 'lodash/map'
 import bb, {
   bar, line,
 } from 'billboard.js'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 import { nFormatterSeparated } from 'utils/generic'
 import { StateType } from 'redux/store/index'
 import Title from 'components/Title'
+import { LIVE_DEMO_URL } from 'redux/constants'
+import routes from 'routes'
 import '../Project/View/styles.css'
 
 // This should be generated on the API side, will be done later.
@@ -236,9 +239,7 @@ const getSettings = () => {
 }
 
 const OpenStartup = (): JSX.Element => {
-  const { t }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t }: any = useTranslation('common')
   const { stats } = useSelector((state: StateType) => state.ui.misc)
 
   const events = nFormatterSeparated(Number(stats.pageviews), 2)
@@ -322,6 +323,16 @@ const OpenStartup = (): JSX.Element => {
                 +
               </span>
             )}
+          </p>
+
+          <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            <Trans
+              t={t}
+              i18nKey='open.usage.live'
+              components={{
+                livedemo: <Link to={LIVE_DEMO_URL} className='font-medium hover:underline text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' />,
+              }}
+            />
           </p>
         </div>
       </div>
