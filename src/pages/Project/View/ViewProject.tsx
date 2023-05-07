@@ -58,7 +58,7 @@ import Robot from 'ui/icons/Robot'
 import Forecast from 'modals/Forecast'
 import routes from 'routes'
 import {
-  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents,
+  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents, getProjectCompareData,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import {
@@ -512,7 +512,7 @@ const ViewProject = ({
         if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
           dataCompare = cache[id][keyCompare]
         } else {
-          dataCompare = await getProjectData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
+          dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
         }
 
         const processedSdur = getTimeFromSeconds(dataCompare?.avgSdur || 0)
