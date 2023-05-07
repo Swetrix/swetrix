@@ -176,6 +176,7 @@ const ProjectSettings = ({
   const [transferEmail, setTransferEmail] = useState<string>('')
   const [dateRange, setDateRange] = useState<Date[]>([])
   const [tab, setTab] = useState<string>(tabDeleteDataModal[0].name)
+  const [showProtected, setShowProtected] = useState<boolean>(false)
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
@@ -359,6 +360,10 @@ const ProjectSettings = ({
       })
   }
 
+  const onProtected = async () => {
+    // TODO
+  }
+
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
 
   return (
@@ -438,6 +443,17 @@ const ProjectSettings = ({
                 className='mt-4'
                 label={t('project.settings.public')}
                 hint={t('project.settings.publicHint')}
+              />
+              <Checkbox
+                checked={Boolean(form.isPasswordProtected)}
+                onChange={() => {
+                  setShowProtected(true)
+                }}
+                name='isPasswordProtected'
+                id='isPasswordProtected'
+                className='mt-4'
+                label={t('project.settings.protected')}
+                hint={t('project.settings.protectedHint')}
               />
               <div className='flex justify-between mt-8 h-20 sm:h-min'>
                 <div className='flex flex-wrap items-center'>
@@ -524,6 +540,31 @@ const ProjectSettings = ({
           submitType='danger'
           type='error'
           isOpened={showReset}
+        />
+        <Modal
+          onClose={() => setShowProtected(false)}
+          onSubmit={onProtected}
+          submitText={t('common.save')}
+          closeText={t('common.cancel')}
+          title={t('project.settings.protected')}
+          message={(
+            <div>
+              <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
+                {t('project.settings.protectedHint')}
+              </p>
+              <Input
+                name='passwordHash'
+                id='passwordHash'
+                type='password'
+                label={t('project.settings.password')}
+                value={form.passwordHash}
+                placeholder={t('project.settings.password')}
+                className='mt-4'
+                onChange={handleInput}
+              />
+            </div>
+          )}
+          isOpened={showProtected}
         />
         <Modal
           onClose={() => {

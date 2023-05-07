@@ -54,6 +54,8 @@ export interface IProject {
     isPublicVisitors?: boolean
     isPublic?: boolean
     isTransferring?: boolean
+    isPasswordProtected?: boolean
+    passwordHash?: string
 }
 
 export interface ICaptchaProject {
