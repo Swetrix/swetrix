@@ -1398,9 +1398,11 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartType])
 
-  if (project.isPasswordProtected && _isEmpty(passwordHash)) {
+  // if (project.isPasswordProtected && _isEmpty(passwordHash)) {
+  // eslint-disable-next-line no-constant-condition
+  if (true) {
     // write password modal
-    return ''
+    return <div>asdsa</div>
   }
 
   if (!isLoading) {
