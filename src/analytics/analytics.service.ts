@@ -981,6 +981,14 @@ export class AnalyticsService {
     return DateRelativeToUTC.TOMORROW
   }
 
+  getSafeTimezone(timezone: string): string {
+    if (timezone === DEFAULT_TIMEZONE || !isValidTimezone(timezone)) {
+      return DEFAULT_TIMEZONE
+    }
+
+    return timezone
+  }
+
   updateXAxisTimezone(
     x: string[],
     timezone: string,
@@ -1046,14 +1054,14 @@ export class AnalyticsService {
   generateAnalyticsAggregationQuery(
     timezone: string,
     timeBucket: TimeBucketType,
-    from: string,
-    to: string,
     filtersQuery: string,
   ): string {
+    const safeTimezone = this.getSafeTimezone(timezone)
+
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1063,7 +1071,7 @@ export class AnalyticsService {
         sumIf(1, unique = 1) as uniques
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
         WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
       ) as subquery
@@ -1075,15 +1083,15 @@ export class AnalyticsService {
   generateCustomEventsAggregationQuery(
     timezone: string,
     timeBucket: TimeBucketType,
-    from: string,
-    to: string,
     filtersQuery: string,
     paramsData: any,
   ): string {
+    const safeTimezone = this.getSafeTimezone(timezone)
+
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1091,7 +1099,7 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM customEV
         WHERE ${
           paramsData.params.ev_exclusive ? 'NOT' : ''
@@ -1105,14 +1113,14 @@ export class AnalyticsService {
   generatePerformanceAggregationQuery(
     timezone: string,
     timeBucket: TimeBucketType,
-    from: string,
-    to: string,
     filtersQuery: string,
   ): string {
+    const safeTimezone = this.getSafeTimezone(timezone)
+
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1126,7 +1134,7 @@ export class AnalyticsService {
         avg(ttfb) as ttfb
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM performance
         WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
       ) as subquery
@@ -1138,14 +1146,14 @@ export class AnalyticsService {
   generateCaptchaAggregationQuery(
     timezone: string,
     timeBucket: TimeBucketType,
-    from: string,
-    to: string,
     filtersQuery: string,
   ): string {
+    const safeTimezone = this.getSafeTimezone(timezone)
+
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1153,7 +1161,7 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM captcha
         WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
       ) as subquery
@@ -1260,8 +1268,6 @@ export class AnalyticsService {
       const query = this.generateCustomEventsAggregationQuery(
         timezone,
         timeBucket,
-        from,
-        to,
         filtersQuery,
         paramsData,
       )
@@ -1290,8 +1296,6 @@ export class AnalyticsService {
     const query = this.generateAnalyticsAggregationQuery(
       timezone,
       timeBucket,
-      from,
-      to,
       filtersQuery,
     )
 
@@ -1370,8 +1374,6 @@ export class AnalyticsService {
         const query = this.generateCaptchaAggregationQuery(
           timezone,
           timeBucket,
-          from,
-          to,
           filtersQuery,
         )
 
@@ -1469,8 +1471,6 @@ export class AnalyticsService {
         const query = this.generatePerformanceAggregationQuery(
           timezone,
           timeBucket,
-          from,
-          to,
           filtersQuery,
         )
 
@@ -1524,12 +1524,13 @@ export class AnalyticsService {
     paramsData: object,
     timezone: string,
   ): Promise<object | void> {
+    const safeTimezone = this.getSafeTimezone(timezone)
     const x = this.generateXAxis(timeBucket, from, to)
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const query = `
       SELECT
@@ -1538,7 +1539,7 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM customEV
         WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
       ) as subquery
