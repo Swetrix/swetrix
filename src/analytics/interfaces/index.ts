@@ -1,13 +1,48 @@
-export interface ChartCHResponse {
-  index: number
-  unique: number
-  'count()': number
+export interface TrafficCEFilterCHResponse {
+  year: number
+  month: number
+  day?: number
+  hour?: number
+  count: number
+}
+
+export interface TrafficCHResponse {
+  year: number
+  month: number
+  day?: number
+  hour?: number
+  sdur: number
+  uniques: number
+  pageviews: number
+}
+
+export interface PerformanceCHResponse {
+  year: number
+  month: number
+  day?: number
+  hour?: number
+  dns: number
+  tls: number
+  conn: number
+  response: number
+  render: number
+  domLoad: number
+  ttfb: number
 }
 
 export interface CustomsCHResponse {
   ev: string
   'count()': number
   index: number
+}
+
+export interface CustomsCHAggregatedResponse {
+  year: number
+  month: number
+  day?: number
+  hour?: number
+  ev: string
+  count: number
 }
 
 export interface IGetGroupFromTo {
@@ -55,11 +90,6 @@ export interface IBuildUserFlow {
 export interface IUserFlow {
   ascending: IBuildUserFlow
   descending: IBuildUserFlow
-}
-
-export interface IGenerateXAxis {
-  x: string[]
-  xM: string[]
 }
 
 export interface IExtractChartData {
