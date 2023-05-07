@@ -13,7 +13,6 @@ import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
 import * as _clone from 'lodash/clone'
-import * as _keys from 'lodash/keys'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -178,22 +177,6 @@ const checkIfTBAllowed = (
       "The specified 'timeBucket' parameter cannot be applied to the date range",
     )
   }
-}
-
-const nullifyMissingElements = (results: any[], size?: number): number[] => {
-  if (!size) {
-    return _map(results, r => r || 0)
-  }
-
-  const copy = _clone(results)
-
-  for (let i = 0; i < size; ++i) {
-    if (!copy[i]) {
-      copy[i] = 0
-    }
-  }
-
-  return copy
 }
 
 const generateParamsQuery = (
@@ -854,7 +837,7 @@ export class AnalyticsService {
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
     const iterateTo = djsTo > now ? now : djsTo
-    let format 
+    let format
 
     switch (timeBucket) {
       case TimeBucketType.HOUR:
@@ -908,12 +891,8 @@ export class AnalyticsService {
     }
   }
 
-  generateDateString(
-    row: { [key: string]: number },
-  ): string {
-    const {
-      year, month, day, hour,
-    } = row
+  generateDateString(row: { [key: string]: number }): string {
+    const { year, month, day, hour } = row
 
     let dateString = `${year}-${month < 10 ? `0${month}` : month}`
 
@@ -937,9 +916,9 @@ export class AnalyticsService {
   }
 
   extractChartData(result, x: string[]): IExtractChartData {
-    const visits = Array(x.length).fill(0);
-    const uniques = Array(x.length).fill(0);
-    const sdur = Array(x.length).fill(0);
+    const visits = Array(x.length).fill(0)
+    const uniques = Array(x.length).fill(0)
+    const sdur = Array(x.length).fill(0)
 
     for (let row = 0; row < _size(result); ++row) {
       const dateString = this.generateDateString(result[row])
@@ -969,9 +948,7 @@ export class AnalyticsService {
     const result = {}
 
     for (let row = 0; row < _size(queryResult); ++row) {
-      const {
-        ev = '_unknown_event',
-      } = queryResult[row]
+      const { ev = '_unknown_event' } = queryResult[row]
 
       const dateString = this.generateDateString(queryResult[row])
 
@@ -1073,10 +1050,10 @@ export class AnalyticsService {
     to: string,
     filtersQuery: string,
   ): string {
-    const timeBucketFunc = timeBucketConversion[timeBucket];
-    const [selector, groupBy] = this.getGroupSubquery(timeBucket);
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`;
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`;
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
 
     return `
       SELECT
@@ -1092,7 +1069,7 @@ export class AnalyticsService {
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
-      `;
+      `
   }
 
   generateCustomEventsAggregationQuery(
@@ -1293,7 +1270,8 @@ export class AnalyticsService {
         await clickhouse.query(query, paramsData).toPromise()
       )
 
-      const uniques = this.extractCustomEventsChartData(result, x)?._unknown_event || []
+      const uniques =
+        this.extractCustomEventsChartData(result, x)?._unknown_event || []
 
       const sdur = Array(_size(x)).fill(0)
 
@@ -1309,9 +1287,17 @@ export class AnalyticsService {
         avgSdur,
       })
     }
-    const query = this.generateAnalyticsAggregationQuery(timezone, timeBucket, from, to, filtersQuery)
+    const query = this.generateAnalyticsAggregationQuery(
+      timezone,
+      timeBucket,
+      from,
+      to,
+      filtersQuery,
+    )
 
-    const result = <Array<TrafficCHResponse>>(await clickhouse.query(query, paramsData).toPromise())
+    const result = <Array<TrafficCHResponse>>(
+      await clickhouse.query(query, paramsData).toPromise()
+    )
 
     const { visits, uniques, sdur } = this.extractChartData(result, x)
 
@@ -1435,7 +1421,13 @@ export class AnalyticsService {
     }
 
     return {
-      dns, tls, conn, response, render, domLoad, ttfb,
+      dns,
+      tls,
+      conn,
+      response,
+      render,
+      domLoad,
+      ttfb,
     }
   }
 
@@ -1474,8 +1466,14 @@ export class AnalyticsService {
       (async () => {
         const x = this.generateXAxis(timeBucket, from, to)
 
-        const query = this.generatePerformanceAggregationQuery(timezone, timeBucket, from, to, filtersQuery)
-        
+        const query = this.generatePerformanceAggregationQuery(
+          timezone,
+          timeBucket,
+          from,
+          to,
+          filtersQuery,
+        )
+
         const result = <Array<PerformanceCHResponse>>(
           await clickhouse.query(query, paramsData).toPromise()
         )
