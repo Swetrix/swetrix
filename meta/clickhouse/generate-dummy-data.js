@@ -8,7 +8,7 @@ const {
 
 const PID_SIZE = 12
 const DEFAULT_ROW_COUNT = 10
-const MODES = ['analytics', 'custom_events', 'performance']
+const MODES = ['analytics', 'custom_events', 'performance', 'captcha']
 const DEFAULT_MODE = 'analytics'
 
 const OS = ['Windows', 'Linux', 'Mac']
@@ -20,6 +20,47 @@ const URLS = _.map(_.times(36, _.constant(null)), faker.internet.url)
 const DEVICES = ['desktop', 'mobile', 'tablet', 'wearable']
 const BROWSERS = ['Chrome', 'Firefox', 'Safari', 'Opera', 'Edge', 'IE']
 const CUSTOM_EVENTS = ['click', 'hover', 'scroll', 'submit', 'error', 'signup', 'oauth', 'test', 'hello', '235535123433']
+
+const chunkArray = (arr, chunkSize = 1000) => {
+  const result = []
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    result.push(arr.slice(i, i + chunkSize))
+  }
+  return result
+}
+
+const insertData = async (pid, rowCount, processedRecords, table) => {
+  const insertQueries = []
+
+  const recordChunks = chunkArray(processedRecords, 1000)
+
+  for (const chunk of recordChunks) {
+    const insertQuery = `INSERT INTO ${dbName}.${table} (*) VALUES ${chunk.join(',')}`
+    insertQueries.push(insertQuery)
+  }
+
+  if (recordChunks.length > 10) {
+    console.warn(
+      chalk.yellow('[WARNING] The number of records is big, so it might take longer to insert the records')
+    )
+  }
+
+  try {
+    const result = await queriesRunner(insertQueries, false)
+
+    if (!result) {
+      throw new Error()
+    }
+
+    console.log(
+      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
+    )
+  } catch {
+    console.error(
+      chalk.red('[ERROR] Error occured whilst inserting the records')
+    )
+  }
+}
 
 const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
   const records = []
@@ -50,24 +91,32 @@ const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
     chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
   )
 
-  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
-  const insertQuery = `INSERT INTO ${dbName}.analytics (*) VALUES ${processedRecords}`
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`)
+  insertData(pid, rowCount, processedRecords, 'analytics')
+}
 
-  try {
-    const result = await queriesRunner([insertQuery], false)
+const generateCaptchaData = async (pid, rowCount, beginDate, endDate) => {
+  const records = []
 
-    if (!result) {
-      throw new Error()
-    }
-
-    console.log(
-      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
-    )
-  } catch {
-    console.error(
-      chalk.red('[ERROR] Error occured whilst inserting the records')
-    )
+  for (let i = 0; i < rowCount; ++i) {
+    const record = [
+      pid,
+      faker.helpers.arrayElement(DEVICES), // dv
+      faker.helpers.arrayElement(BROWSERS), // br
+      faker.helpers.arrayElement(OS), // os
+      faker.address.countryCode(), // cc
+      faker.datatype.number({ min: 0, max: 2 }) === 0 ? 1 : 0, // manuallyPassed; 33% chance of manuallyPassed record
+      _.split(faker.date.between(beginDate, endDate).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
+    ]
+    records.push(record)
   }
+
+  console.info(
+    chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
+  )
+
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`)
+  insertData(pid, rowCount, processedRecords, 'captcha')
 }
 
 const generateCustomEventsData = async (pid, rowCount, beginDate, endDate) => {
@@ -96,24 +145,8 @@ const generateCustomEventsData = async (pid, rowCount, beginDate, endDate) => {
     chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
   )
 
-  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
-  const insertQuery = `INSERT INTO ${dbName}.customEV (*) VALUES ${processedRecords}`
-
-  try {
-    const result = await queriesRunner([insertQuery], false)
-
-    if (!result) {
-      throw new Error()
-    }
-
-    console.log(
-      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
-    )
-  } catch {
-    console.error(
-      chalk.red('[ERROR] Error occured whilst inserting the records')
-    )
-  }
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`)
+  insertData(pid, rowCount, processedRecords, 'customEV')
 }
 
 const generatePerformanceData = async (pid, rowCount, beginDate, endDate) => {
@@ -143,24 +176,8 @@ const generatePerformanceData = async (pid, rowCount, beginDate, endDate) => {
     chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
   )
 
-  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
-  const insertQuery = `INSERT INTO ${dbName}.performance (*) VALUES ${processedRecords}`
-
-  try {
-    const result = await queriesRunner([insertQuery], false)
-
-    if (!result) {
-      throw new Error()
-    }
-
-    console.log(
-      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
-    )
-  } catch {
-    console.error(
-      chalk.red('[ERROR] Error occured whilst inserting the records')
-    )
-  }
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`)
+  insertData(pid, rowCount, processedRecords, 'performance')
 }
 
 const main = () => {
@@ -172,7 +189,7 @@ const main = () => {
       chalk.cyan('Usage: node generate-dummy-data.js --pid <pid> --beginDate <YYYY-MM-DD@HH:mm:ss> --endDate <YYYY-MM-DD@HH:mm:ss> --rows <number of rows>')
     )
     console.log(
-      chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01@00:00:00 --endDate 2021-01-31!23:59:59 --rows 1000')
+      chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01@00:00:00 --endDate 2021-01-31@23:59:59 --rows 1000')
     )
     console.log()
     console.log('Options:')
@@ -206,7 +223,7 @@ const main = () => {
       chalk.cyan('Usage: node generate-dummy-data.js --pid <pid> --beginDate <YYYY-MM-DD@HH:mm:ss> --endDate <YYYY-MM-DD@HH:mm:ss> --rows <number of rows>')
     )
     console.log(
-      chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01@00:00:00 --endDate 2021-01-31!23:59:59 --rows 1000')
+      chalk.green('Example: node generate-dummy-data.js --pid STEzHcB1rALV --beginDate 2021-01-01@00:00:00 --endDate 2021-01-31@23:59:59 --rows 1000')
     )
     return
   }
@@ -265,6 +282,10 @@ const main = () => {
 
   if (mode === 'performance') {
     generatePerformanceData(...arguments)
+  }
+
+  if (mode === 'captcha') {
+    generateCaptchaData(...arguments)
   }
 }
 
