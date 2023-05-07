@@ -21,6 +21,47 @@ const DEVICES = ['desktop', 'mobile', 'tablet', 'wearable']
 const BROWSERS = ['Chrome', 'Firefox', 'Safari', 'Opera', 'Edge', 'IE']
 const CUSTOM_EVENTS = ['click', 'hover', 'scroll', 'submit', 'error', 'signup', 'oauth', 'test', 'hello', '235535123433']
 
+const chunkArray = (arr, chunkSize = 1000) => {
+  const result = []
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    result.push(arr.slice(i, i + chunkSize))
+  }
+  return result
+}
+
+const insertData = async (pid, rowCount, processedRecords, table) => {
+  const insertQueries = []
+
+  const recordChunks = chunkArray(processedRecords, 1000)
+
+  for (const chunk of recordChunks) {
+    const insertQuery = `INSERT INTO ${dbName}.${table} (*) VALUES ${chunk.join(',')}`
+    insertQueries.push(insertQuery)
+  }
+
+  if (recordChunks.length > 10) {
+    console.warn(
+      chalk.yellow('[WARNING] The number of records is big, so it might take longer to insert the records')
+    )
+  }
+
+  try {
+    const result = await queriesRunner(insertQueries, false)
+
+    if (!result) {
+      throw new Error()
+    }
+
+    console.log(
+      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
+    )
+  } catch {
+    console.error(
+      chalk.red('[ERROR] Error occured whilst inserting the records')
+    )
+  }
+}
+
 const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
   const records = []
 
@@ -50,24 +91,8 @@ const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
     chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
   )
 
-  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
-  const insertQuery = `INSERT INTO ${dbName}.analytics (*) VALUES ${processedRecords}`
-
-  try {
-    const result = await queriesRunner([insertQuery], false)
-
-    if (!result) {
-      throw new Error()
-    }
-
-    console.log(
-      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
-    )
-  } catch {
-    console.error(
-      chalk.red('[ERROR] Error occured whilst inserting the records')
-    )
-  }
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`)
+  insertData(pid, rowCount, processedRecords, 'analytics')
 }
 
 const generateCaptchaData = async (pid, rowCount, beginDate, endDate) => {
@@ -90,24 +115,8 @@ const generateCaptchaData = async (pid, rowCount, beginDate, endDate) => {
     chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
   )
 
-  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
-  const insertQuery = `INSERT INTO ${dbName}.captcha (*) VALUES ${processedRecords}`
-
-  try {
-    const result = await queriesRunner([insertQuery], false)
-
-    if (!result) {
-      throw new Error()
-    }
-
-    console.log(
-      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
-    )
-  } catch {
-    console.error(
-      chalk.red('[ERROR] Error occured whilst inserting the records')
-    )
-  }
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`)
+  insertData(pid, rowCount, processedRecords, 'captcha')
 }
 
 const generateCustomEventsData = async (pid, rowCount, beginDate, endDate) => {
@@ -136,24 +145,8 @@ const generateCustomEventsData = async (pid, rowCount, beginDate, endDate) => {
     chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
   )
 
-  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
-  const insertQuery = `INSERT INTO ${dbName}.customEV (*) VALUES ${processedRecords}`
-
-  try {
-    const result = await queriesRunner([insertQuery], false)
-
-    if (!result) {
-      throw new Error()
-    }
-
-    console.log(
-      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
-    )
-  } catch {
-    console.error(
-      chalk.red('[ERROR] Error occured whilst inserting the records')
-    )
-  }
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`)
+  insertData(pid, rowCount, processedRecords, 'customEV')
 }
 
 const generatePerformanceData = async (pid, rowCount, beginDate, endDate) => {
@@ -183,24 +176,8 @@ const generatePerformanceData = async (pid, rowCount, beginDate, endDate) => {
     chalk.cyan(`[INFO] Inserting the records into Clickhouse "${dbName}" database...`)
   )
 
-  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`).join(',')
-  const insertQuery = `INSERT INTO ${dbName}.performance (*) VALUES ${processedRecords}`
-
-  try {
-    const result = await queriesRunner([insertQuery], false)
-
-    if (!result) {
-      throw new Error()
-    }
-
-    console.log(
-      chalk.green(`[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`)
-    )
-  } catch {
-    console.error(
-      chalk.red('[ERROR] Error occured whilst inserting the records')
-    )
-  }
+  const processedRecords = records.map(record => `(${record.map(item => `'${item}'`).join(',')})`)
+  insertData(pid, rowCount, processedRecords, 'performance')
 }
 
 const main = () => {
