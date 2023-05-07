@@ -12,7 +12,6 @@ import { nFormatterSeparated } from 'utils/generic'
 import { StateType } from 'redux/store/index'
 import Title from 'components/Title'
 import { LIVE_DEMO_URL } from 'redux/constants'
-import routes from 'routes'
 import '../Project/View/styles.css'
 
 // This should be generated on the API side, will be done later.
@@ -20,112 +19,134 @@ const financeData = {
   '2021-08-01': {
     'Technical Expences': -32,
     'Business Expences': 0,
-    'MRR': 0
+    'MRR': 0,
+    'Revenue': 0,
   },
   '2021-09-01': {
     'Technical Expences': -32,
     'Business Expences': 0,
-    'MRR': 0
+    'MRR': 0,
+    'Revenue': 0,
   },
   '2021-10-01': {
     'Technical Expences': -32,
     'Business Expences': 0,
-    'MRR': 0
+    'MRR': 0,
+    'Revenue': 0,
   },
   '2021-11-01': {
     'Technical Expences': -32,
     'Business Expences': 0,
-    'MRR': 0
+    'MRR': 0,
+    'Revenue': 0,
   },
   '2021-12-01': {
     'Technical Expences': -32,
     'Business Expences': 0,
-    'MRR': 0
+    'MRR': 0,
+    'Revenue': 0,
   },
   '2022-01-01': {
     'Technical Expences': -32,
     'Business Expences': 0,
-    'MRR': 0
+    'MRR': 0,
+    'Revenue': 0,
   },
   '2022-02-01': {
     'Technical Expences': -32,
     'Business Expences': 0,
-    'MRR': 2
+    'MRR': 2,
+    'Revenue': 2,
   },
   '2022-03-01': {
     'Technical Expences': -32,
     'Business Expences': 0,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-04-01': {
     'Technical Expences': -32,
     'Business Expences': -300,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-05-01': {
     'Technical Expences': -32,
     'Business Expences': -300,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-06-01': {
     'Technical Expences': -32,
     'Business Expences': -300,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-07-01': {
     'Technical Expences': -32,
     'Business Expences': -300,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-08-01': {
     'Technical Expences': -42,
     'Business Expences': -300,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-09-01': {
     'Technical Expences': -42,
     'Business Expences': -350,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-10-01': {
     'Technical Expences': -48,
     'Business Expences': -300,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-11-01': {
     'Technical Expences': -48,
     'Business Expences': -300,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2022-12-01': {
     'Technical Expences': -48,
     'Business Expences': -400,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2023-01-01': {
     'Technical Expences': -48,
     'Business Expences': -375,
-    'MRR': 15
+    'MRR': 15,
+    'Revenue': 14,
   },
   '2023-02-01': {
     'Technical Expences': -48,
     'Business Expences': -300,
-    'MRR': 35
+    'MRR': 35,
+    'Revenue': 31,
   },
   '2023-03-01': {
     'Technical Expences': -48,
     'Business Expences': -370,
-    'MRR': 30
+    'MRR': 30,
+    'Revenue': 26,
   },
   '2023-04-01': {
     'Technical Expences': -48,
     'Business Expences': -50,
-    'MRR': 34
+    'MRR': 34,
+    'Revenue': 73,
   },
   '2023-05-01': {
     'Technical Expences': -48,
     'Business Expences': -300,
-    'MRR': 38
+    'MRR': 38,
+    'Revenue': 47,
   }
 }
 
@@ -135,6 +156,7 @@ const financeDataToColumns = (financeData: any) => {
     ['Technical Expences'],
     ['Business Expences'],
     ['MRR'],
+    ['Profit'],
     ['Revenue'],
     ['x']
   ]
@@ -144,9 +166,10 @@ const financeDataToColumns = (financeData: any) => {
     columns[1].push(financeData[date]['Business Expences'])
     columns[2].push(financeData[date]['MRR'])
     columns[3].push(
-      financeData[date]['MRR'] + financeData[date]['Technical Expences'] + financeData[date]['Business Expences']
+      financeData[date]['Revenue'] + financeData[date]['Technical Expences'] + financeData[date]['Business Expences']
     )
-    columns[4].push(date)
+    columns[4].push(financeData[date]['Revenue'])
+    columns[5].push(date)
   })
 
   return columns
@@ -164,16 +187,17 @@ const getSettings = () => {
         'Technical Expences': bar(),
         'Business Expences': bar(),
         MRR: bar(),
-        revenue: line(),
+        Profit: line(),
       },
       colors: {
         'Technical Expences': '#EC4319',
         'Business Expences': '#F27059',
         MRR: '#709775',
-        Revenue: '#A5E6AB',
+        Profit: '#A5E6AB',
+        Revenue: '#12731E'
       },
       groups: [
-        ['Technical Expences', 'Business Expences', 'MRR', 'Revenue'],
+        ['Technical Expences', 'Business Expences', 'MRR', 'Profit', 'Revenue'],
       ],
     },
     axis: {
