@@ -33,6 +33,7 @@ import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import FlatPicker from 'ui/Flatpicker'
 import { nanoid } from 'utils/random'
+import { isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
 import { getFormatDate } from '../View/ViewProject.helpers'
@@ -123,7 +124,7 @@ const DEFAULT_PROJECT_NAME = 'Untitled Project'
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
-  deleteProjectCache,
+  deleteProjectCache, setProjectProtectedPassword,
 }: {
   updateProjectFailed: (message: string) => void,
   createNewProjectFailed: (message: string) => void,
@@ -139,6 +140,7 @@ const ProjectSettings = ({
   isSharedProject: boolean,
   sharedProjects: ISharedProject[],
   deleteProjectCache: (pid: string) => void,
+  setProjectProtectedPassword: (pid: string, password: string) => void,
 }) => {
   const { t }: {
     t: (key: string, options?: {
@@ -165,6 +167,7 @@ const ProjectSettings = ({
     name?: string,
     origins?: string,
     ipBlacklist?: string,
+    passwordHash?: string,
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [showDelete, setShowDelete] = useState<boolean>(false)
@@ -293,6 +296,7 @@ const ProjectSettings = ({
       name?: string,
       origins?: string,
       ipBlacklist?: string,
+      passwordHash?: string,
     } = {}
 
     if (_isEmpty(form.name)) {
@@ -309,6 +313,10 @@ const ProjectSettings = ({
 
     if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
       allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
+    }
+
+    if (!_isEmpty(form?.passwordHash) && _size(form.passwordHash) > 0 && !isValidPassword(form?.passwordHash || '')) {
+      allErrors.passwordHash = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -360,8 +368,21 @@ const ProjectSettings = ({
       })
   }
 
-  const onProtected = async () => {
-    // TODO
+  const onProtected = () => {
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit({
+        ...form,
+        isPasswordProtected: true,
+      })
+
+      if (!_isEmpty(form.passwordHash) && !_isEmpty(form.id)) {
+        setProjectProtectedPassword(form?.id || '', form?.passwordHash || '')
+      }
+
+      setShowProtected(false)
+    }
   }
 
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
@@ -557,10 +578,11 @@ const ProjectSettings = ({
                 id='passwordHash'
                 type='password'
                 label={t('project.settings.password')}
-                value={form.passwordHash}
+                value={form?.passwordHash || ''}
                 placeholder={t('project.settings.password')}
                 className='mt-4'
                 onChange={handleInput}
+                error={beenSubmitted ? errors.passwordHash : null}
               />
             </div>
           )}

@@ -28,7 +28,7 @@ interface IInitialState {
     alerts: IAlerts[]
     subscribers: any[]
     liveStats: ILiveStats
-    password: {
+    passwordHash: {
       [key: string]: string
     }
 }
@@ -53,7 +53,7 @@ const initialState: IInitialState = {
   alerts: [],
   subscribers: [],
   liveStats: {},
-  password: getItem(PROJECTS_PROTECTED_PASSWORD) || {},
+  passwordHash: getItem(PROJECTS_PROTECTED_PASSWORD) || {},
 }
 
 const projectsSlice = createSlice({
@@ -203,11 +203,11 @@ const projectsSlice = createSlice({
     setProjectProtectedPassword: (state, { payload }: PayloadAction<{ id: string, password: string }>) => {
       const { id, password } = payload
 
-      state.password = {
-        ...state.password,
+      state.passwordHash = {
+        ...state.passwordHash,
         [id]: password,
       }
-      setItem(PROJECTS_PROTECTED_PASSWORD, JSON.stringify(state.password))
+      setItem(PROJECTS_PROTECTED_PASSWORD, JSON.stringify(state.passwordHash))
     },
     reset(state) {
       state.projects = []
