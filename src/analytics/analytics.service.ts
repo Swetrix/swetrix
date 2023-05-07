@@ -900,7 +900,7 @@ export class AnalyticsService {
 
     let dateString = `${year}-${month < 10 ? `0${month}` : month}`
 
-    if (day) {
+    if (typeof day === 'number') {
       if (day < 10) {
         dateString += `-0${day}`
       } else {
@@ -908,7 +908,7 @@ export class AnalyticsService {
       }
     }
 
-    if (hour) {
+    if (typeof hour === 'number') {
       if (hour < 10) {
         dateString += ` 0${hour}:00:00`
       } else {
