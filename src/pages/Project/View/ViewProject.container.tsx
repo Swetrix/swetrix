@@ -25,6 +25,7 @@ const mapStateToProps = (state: StateType) => {
       projectTab: state.ui.projects.projectTab,
       customEventsPrefs: state.ui.cache.customEventsPrefs,
       liveStats: state.ui.projects.liveStats,
+      passwordHash: state.ui.projects.passwordHash,
     }
   }
 
@@ -42,6 +43,7 @@ const mapStateToProps = (state: StateType) => {
     projectTab: state.ui.projects.projectTab,
     customEventsPrefs: state.ui.cache.customEventsPrefs,
     liveStats: state.ui.projects.liveStats,
+    passwordHash: state.ui.projects.passwordHash,
   }
 }
 

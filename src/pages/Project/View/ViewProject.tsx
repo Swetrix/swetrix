@@ -43,6 +43,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted,
+  PROJECTS_PROTECTED_PASSWORD,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -84,7 +85,7 @@ interface IProjectView extends IProject {
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, passwordHash,
 }: {
   projects: IProjectView[],
   extensions: any,
@@ -117,6 +118,9 @@ const ViewProject = ({
   customEventsPrefs: any,
   setCustomEventsPrefs: (pid: string, data: any) => void,
   liveStats: ILiveStats,
+  passwordHash: {
+    [key: string]: string,
+  },
 }) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -143,6 +147,7 @@ const ViewProject = ({
   } = useParams()
   const history = useHistory()
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
+  const projectPassword: string = useMemo(() => passwordHash[id] || getItem(PROJECTS_PROTECTED_PASSWORD)?.[id] || '', [id, passwordHash])
   const isSharedProject = useMemo(() => {
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
@@ -1392,6 +1397,11 @@ const ViewProject = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartType])
+
+  if (project.isPasswordProtected && _isEmpty(passwordHash)) {
+    // write password modal
+    return ''
+  }
 
   if (!isLoading) {
     return (
