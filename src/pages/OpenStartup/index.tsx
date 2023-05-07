@@ -177,6 +177,8 @@ const financeDataToColumns = (financeData: any) => {
 
 const columns = financeDataToColumns(financeData)
 
+const groups = ['Profit', 'Revenue', 'MRR', 'Technical Expences', 'Business Expences']
+
 const getSettings = () => {
   return {
     data: {
@@ -188,6 +190,7 @@ const getSettings = () => {
         'Business Expences': bar(),
         MRR: bar(),
         Profit: line(),
+        Revenue: line(),
       },
       colors: {
         'Technical Expences': '#EC4319',
@@ -197,7 +200,7 @@ const getSettings = () => {
         Revenue: '#12731E'
       },
       groups: [
-        ['Technical Expences', 'Business Expences', 'MRR', 'Profit', 'Revenue'],
+        groups,
       ],
     },
     axis: {
@@ -217,6 +220,13 @@ const getSettings = () => {
       // format: {
       //   title: (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
       // },
+      order: (a: any, b: any) => {
+        const aIndex = groups.indexOf(a.name)
+        const bIndex = groups.indexOf(b.name)
+
+        // ascending order
+        return aIndex - bIndex
+      },
       contents: {
         template: `
           <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
@@ -272,8 +282,6 @@ const OpenStartup = (): JSX.Element => {
 
   useEffect(() => {
     const bbSettings = getSettings()
-
-    console.log(bbSettings)
 
     // @ts-ignore
     bb.generate(bbSettings)
