@@ -846,8 +846,12 @@ export class AnalyticsService {
         break
 
       case TimeBucketType.DAY:
-      case TimeBucketType.WEEK:
         groupDateIterator = dayjs.utc(from).startOf('day')
+        format = 'YYYY-MM-DD'
+        break
+
+      case TimeBucketType.WEEK:
+        groupDateIterator = dayjs.utc(from).startOf('week')
         format = 'YYYY-MM-DD'
         break
 
@@ -930,12 +934,6 @@ export class AnalyticsService {
         sdur[index] = _round(result[row].sdur)
       }
     }
-
-    // length of sdur is sometimes lower than uniques, let's fix it by adding zeros
-    // not sure if the bug is still here but leaving it here just in case
-    // while (_size(sdur) < _size(uniques)) {
-    //   sdur.push(0)
-    // }
 
     return {
       visits,
