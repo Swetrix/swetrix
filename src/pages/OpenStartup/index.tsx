@@ -177,7 +177,7 @@ const financeDataToColumns = (financeData: any) => {
 
 const columns = financeDataToColumns(financeData)
 
-const groups = ['Profit', 'Revenue', 'MRR', 'Technical Expences', 'Business Expences']
+const groups = ['Revenue', 'MRR', 'Profit', 'Technical Expences', 'Business Expences']
 
 const getSettings = () => {
   return {
