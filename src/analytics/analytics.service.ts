@@ -52,15 +52,17 @@ import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
 import {
-  ChartCHResponse,
+  PerformanceCHResponse,
   CustomsCHResponse,
+  CustomsCHAggregatedResponse,
+  TrafficCEFilterCHResponse,
+  TrafficCHResponse,
   IGetGroupFromTo,
   GetFiltersQuery,
   IUserFlowNode,
   IUserFlowLink,
   IUserFlow,
   IBuildUserFlow,
-  IGenerateXAxis,
   IExtractChartData,
   DateRelativeToUTC,
   TimeBucketToDateFormat,
@@ -125,6 +127,13 @@ const timeBucketToDays = [
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
 // eslint-disable-next-line no-useless-escape
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
+
+const timeBucketConversion = {
+  hour: 'toStartOfHour',
+  day: 'toStartOfDay',
+  week: 'toStartOfWeek',
+  month: 'toStartOfMonth',
+}
 
 const isValidTimezone = (timezone: string): boolean => {
   if (_isEmpty(timezone)) {
@@ -840,24 +849,28 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     from: string,
     to: string,
-  ): IGenerateXAxis {
+  ): string[] {
     let groupDateIterator
     const now = dayjs.utc().endOf(timeBucket)
     const djsTo = dayjs.utc(to).endOf(timeBucket)
     const iterateTo = djsTo > now ? now : djsTo
+    let format 
 
     switch (timeBucket) {
       case TimeBucketType.HOUR:
         groupDateIterator = dayjs.utc(from).startOf('hour')
+        format = 'YYYY-MM-DD HH:mm:ss'
         break
 
       case TimeBucketType.DAY:
       case TimeBucketType.WEEK:
         groupDateIterator = dayjs.utc(from).startOf('day')
+        format = 'YYYY-MM-DD'
         break
 
       case TimeBucketType.MONTH:
         groupDateIterator = dayjs.utc(from).startOf('month')
+        format = 'YYYY-MM'
         break
 
       default:
@@ -870,70 +883,110 @@ export class AnalyticsService {
 
     while (groupDateIterator < iterateTo) {
       const nextIteration = groupDateIterator.add(1, timeBucket)
-      x.push(groupDateIterator.format('YYYY-MM-DD HH:mm:ss'))
+      x.push(groupDateIterator.format(format))
       groupDateIterator = nextIteration
     }
 
-    const xM = [...x, groupDateIterator.format('YYYY-MM-DD HH:mm:ss')]
+    return x
+  }
 
-    return {
-      x,
-      xM,
+  checkTimebucket(timeBucket: TimeBucketType): void {
+    const isValid = _includes(
+      [
+        TimeBucketType.HOUR,
+        TimeBucketType.DAY,
+        TimeBucketType.WEEK,
+        TimeBucketType.MONTH,
+      ],
+      timeBucket,
+    )
+
+    if (!isValid) {
+      throw new BadRequestException(
+        `The provided time bucket (${timeBucket}) is incorrect`,
+      )
     }
   }
 
-  extractChartData(result, x: string[]): IExtractChartData {
-    let visits = []
-    let uniques = []
-    let sdur = []
+  generateDateString(
+    row: { [key: string]: number },
+  ): string {
+    const {
+      year, month, day, hour,
+    } = row
 
-    let idx = 0
-    const resSize = _size(result)
+    let dateString = `${year}-${month < 10 ? `0${month}` : month}`
 
-    while (idx < resSize) {
-      const { index } = result[idx]
-      const v = result[idx]['count()']
-
-      if (index === result[1 + idx]?.index) {
-        const u = result[1 + idx]['count()']
-        const s = result[1 + idx]['avg(sdur)']
-        sdur[index] = _round(s)
-        visits[index] = v + u
-        uniques[index] = u
-        idx += 2
-        continue
-      }
-
-      const { unique } = result[idx]
-
-      if (unique) {
-        visits[index] = v
-        uniques[index] = v
-        const s = result[idx]['avg(sdur)']
-        sdur[index] = _round(s)
+    if (day) {
+      if (day < 10) {
+        dateString += `-0${day}`
       } else {
-        visits[index] = v
-        uniques[index] = 0
-        sdur[index] = 0
+        dateString += `-${day}`
       }
-      idx++
     }
 
-    visits = nullifyMissingElements(visits, _size(x))
-    uniques = nullifyMissingElements(uniques, _size(x))
-    // to replace nulls with zeros
-    sdur = _map(sdur, el => el || 0)
+    if (hour) {
+      if (hour < 10) {
+        dateString += ` 0${hour}:00:00`
+      } else {
+        dateString += ` ${hour}:00:00`
+      }
+    }
+
+    return dateString
+  }
+
+  extractChartData(result, x: string[]): IExtractChartData {
+    const visits = Array(x.length).fill(0);
+    const uniques = Array(x.length).fill(0);
+    const sdur = Array(x.length).fill(0);
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        visits[index] = result[row].pageviews
+        uniques[index] = result[row].uniques
+        sdur[index] = _round(result[row].sdur)
+      }
+    }
 
     // length of sdur is sometimes lower than uniques, let's fix it by adding zeros
-    while (_size(sdur) < _size(uniques)) {
-      sdur.push(0)
-    }
+    // not sure if the bug is still here but leaving it here just in case
+    // while (_size(sdur) < _size(uniques)) {
+    //   sdur.push(0)
+    // }
 
     return {
       visits,
       uniques,
       sdur,
     }
+  }
+
+  extractCustomEventsChartData(queryResult, x: string[]): any {
+    const result = {}
+
+    for (let row = 0; row < _size(queryResult); ++row) {
+      const {
+        ev = '_unknown_event',
+      } = queryResult[row]
+
+      const dateString = this.generateDateString(queryResult[row])
+
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        if (!result[ev]) {
+          result[ev] = Array(x.length).fill(0)
+        }
+
+        result[ev][index] = queryResult[row].count
+      }
+    }
+
+    return result
   }
 
   dateRelativeToUTC(date: dayjs.Dayjs, timezone: string): DateRelativeToUTC {
@@ -986,47 +1039,150 @@ export class AnalyticsService {
     })
   }
 
-  generateAnalyticsAggregationQuery(
-    x: string[],
-    xM: string[],
-    filtersQuery: string,
-  ): string {
-    let query = ''
-
-    for (let i = 0; i < _size(x); ++i) {
-      if (i > 0) {
-        query += ' UNION ALL '
-      }
-
-      query += `select ${i} index, unique, count(), avg(sdur) from analytics where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by unique`
+  getGroupSubquery(timeBucket: TimeBucketType): [string, string] {
+    if (timeBucket === TimeBucketType.HOUR) {
+      return [
+        `toYear(tz_created) as year,
+        toMonth(tz_created) as month,
+        toDayOfMonth(tz_created) as day,
+        toHour(tz_created) as hour`,
+        'year, month, day, hour',
+      ]
     }
 
-    return query
+    if (timeBucket === TimeBucketType.MONTH) {
+      return [
+        `toYear(tz_created) as year,
+        toMonth(tz_created) as month`,
+        'year, month',
+      ]
+    }
+
+    return [
+      `toYear(tz_created) as year,
+      toMonth(tz_created) as month,
+      toDayOfMonth(tz_created) as day`,
+      'year, month, day',
+    ]
+  }
+
+  generateAnalyticsAggregationQuery(
+    timezone: string,
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    filtersQuery: string,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket];
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket);
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`;
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`;
+
+    return `
+      SELECT
+        ${selector},
+        avg(sdur) as sdur,
+        count() as pageviews,
+        sumIf(1, unique = 1) as uniques
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+      `;
   }
 
   generateCustomEventsAggregationQuery(
-    x: string[],
-    xM: string[],
+    timezone: string,
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
     filtersQuery: string,
     paramsData: any,
   ): string {
-    let query = ''
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
 
-    for (let i = 0; i < _size(x); ++i) {
-      if (i > 0) {
-        query += ' UNION ALL '
-      }
+    return `
+      SELECT
+        ${selector},
+        count() as count
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+        FROM customEV
+        WHERE ${
+          paramsData.params.ev_exclusive ? 'NOT' : ''
+        } ev = {ev:String} AND pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+      `
+  }
 
-      query += `select ${i} index, count() from customEV where ${
-        paramsData.params.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery}`
-    }
+  generatePerformanceAggregationQuery(
+    timezone: string,
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    filtersQuery: string,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
 
-    return query
+    return `
+      SELECT
+        ${selector},
+        avg(dns) as dns,
+        avg(tls) as tls,
+        avg(conn) as conn,
+        avg(response) as response,
+        avg(render) as render,
+        avg(domLoad) as domLoad,
+        avg(ttfb) as ttfb
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+        FROM performance
+        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+      `
+  }
+
+  generateCaptchaAggregationQuery(
+    timezone: string,
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    filtersQuery: string,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
+
+    return `
+      SELECT
+        ${selector},
+        count() as count
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+        FROM captcha
+        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+      `
   }
 
   async groupByTimeBucket(
@@ -1121,33 +1277,27 @@ export class AnalyticsService {
       ? 0
       : await this.calculateAverageSessionDuration(subQuery, paramsData)
 
-    const axis = this.generateXAxis(timeBucket, from, to)
-    let { x } = axis
-    const { xM } = axis
+    const x = this.generateXAxis(timeBucket, from, to)
 
     if (customEVFilterApplied) {
       const query = this.generateCustomEventsAggregationQuery(
-        x,
-        xM,
+        timezone,
+        timeBucket,
+        from,
+        to,
         filtersQuery,
         paramsData,
       )
 
-      const result = <Array<ChartCHResponse>>(
-        (await clickhouse.query(query, paramsData).toPromise()).sort(
-          (a: ChartCHResponse, b: ChartCHResponse) => a.index - b.index,
-        )
+      const result = <Array<TrafficCEFilterCHResponse>>(
+        await clickhouse.query(query, paramsData).toPromise()
       )
 
-      const uniques = []
-      const sdur = []
+      const uniques = this.extractCustomEventsChartData(result, x)?._unknown_event || []
 
-      for (let i = 0; i < _size(x); ++i) {
-        uniques[i] = result[i]['count()']
-        sdur[i] = 0
-      }
+      const sdur = Array(_size(x)).fill(0)
 
-      x = this.updateXAxisTimezone(x, timezone, timeBucket)
+      // x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
       return Promise.resolve({
         chart: {
@@ -1159,18 +1309,13 @@ export class AnalyticsService {
         avgSdur,
       })
     }
+    const query = this.generateAnalyticsAggregationQuery(timezone, timeBucket, from, to, filtersQuery)
 
-    const query = this.generateAnalyticsAggregationQuery(x, xM, filtersQuery)
-
-    const result = <Array<ChartCHResponse>>(
-      (await clickhouse.query(query, paramsData).toPromise()).sort(
-        (a: ChartCHResponse, b: ChartCHResponse) => a.index - b.index,
-      )
-    )
+    const result = <Array<TrafficCHResponse>>(await clickhouse.query(query, paramsData).toPromise())
 
     const { visits, uniques, sdur } = this.extractChartData(result, x)
 
-    x = this.updateXAxisTimezone(x, timezone, timeBucket)
+    // x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
     return Promise.resolve({
       chart: {
@@ -1183,6 +1328,24 @@ export class AnalyticsService {
     })
   }
 
+  extractCaptchaChartData(result, x: string[]): any {
+    const count = Array(x.length).fill(0)
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        count[index] = result[row].count
+      }
+    }
+
+    return {
+      count,
+    }
+  }
+
   async groupCaptchaByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -1192,109 +1355,87 @@ export class AnalyticsService {
     paramsData: object,
     timezone: string,
   ): Promise<object | void> {
-    const params = await this.generateParams(
-      null,
-      subQuery,
-      false,
-      paramsData,
-      true,
-      false,
-    )
+    let params: unknown = {}
+    let chart: unknown = {}
 
-    if (!_some(_values(params), val => !_isEmpty(val))) {
-      return Promise.resolve()
-    }
+    const promises = [
+      // Getting params
+      (async () => {
+        params = await this.generateParams(
+          null,
+          subQuery,
+          false,
+          paramsData,
+          true,
+          false,
+        )
 
-    const axis = this.generateXAxis(timeBucket, from, to)
-    let { x } = axis
-    const { xM } = axis
-    let query = ''
+        if (!_some(_values(params), val => !_isEmpty(val))) {
+          throw new BadRequestException(
+            'The are no parameters for the specified time frames',
+          )
+        }
+      })(),
 
-    for (let i = 0; i < _size(x); ++i) {
-      if (i > 0) {
-        query += ' UNION ALL '
-      }
+      // Getting CAPTCHA chart data
+      (async () => {
+        const x = this.generateXAxis(timeBucket, from, to)
 
-      query += `select ${i} index, count() from captcha where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery}`
-    }
+        const query = this.generateCaptchaAggregationQuery(
+          timezone,
+          timeBucket,
+          from,
+          to,
+          filtersQuery,
+        )
 
-    const result = <Array<ChartCHResponse>>(
-      (await clickhouse.query(query, paramsData).toPromise()).sort(
-        (a: ChartCHResponse, b: ChartCHResponse) => a.index - b.index,
-      )
-    )
-    let results = []
+        const result = <Array<TrafficCEFilterCHResponse>>(
+          await clickhouse.query(query, paramsData).toPromise()
+        )
+        const { count } = this.extractCaptchaChartData(result, x)
 
-    let idx = 0
-    const resSize = _size(result)
+        chart = {
+          x,
+          results: count,
+        }
+      })(),
+    ]
 
-    while (idx < resSize) {
-      const { index } = result[idx]
-      const v = result[idx]['count()']
-      results[index] = v
-      idx++
-    }
-
-    results = nullifyMissingElements(results, _size(x))
-
-    x = this.updateXAxisTimezone(x, timezone, timeBucket)
+    await Promise.all(promises)
 
     return Promise.resolve({
       params,
-      chart: {
-        x,
-        results,
-      },
+      chart,
     })
   }
 
-  extractPerformanceChartData(result: any, x: string[]) {
-    const dns = []
-    const tls = []
-    const conn = []
-    const response = []
-    const render = []
-    const domLoad = []
-    const ttfb = []
+  extractPerformanceChartData(result, x: string[]): any {
+    const dns = Array(x.length).fill(0)
+    const tls = Array(x.length).fill(0)
+    const conn = Array(x.length).fill(0)
+    const response = Array(x.length).fill(0)
+    const render = Array(x.length).fill(0)
+    const domLoad = Array(x.length).fill(0)
+    const ttfb = Array(x.length).fill(0)
 
-    let idx = 0
-    const resSize = _size(result)
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
 
-    while (idx < resSize) {
-      const res = result[idx]
-      const { index } = res
+      const index = x.indexOf(dateString)
 
-      dns[index] = _round(millisecondsToSeconds(res['avg(dns)']), 2)
-      tls[index] = _round(millisecondsToSeconds(res['avg(tls)']), 2)
-      conn[index] = _round(millisecondsToSeconds(res['avg(conn)']), 2)
-      response[index] = _round(millisecondsToSeconds(res['avg(response)']), 2)
-      render[index] = _round(millisecondsToSeconds(res['avg(render)']), 2)
-      domLoad[index] = _round(millisecondsToSeconds(res['avg(domLoad)']), 2)
-      ttfb[index] = _round(millisecondsToSeconds(res['avg(ttfb)']), 2)
-
-      idx++
-    }
-
-    for (let i = 0; i < _size(x); ++i) {
-      if (!dns[i]) dns[i] = 0
-      if (!tls[i]) tls[i] = 0
-      if (!conn[i]) conn[i] = 0
-      if (!response[i]) response[i] = 0
-      if (!render[i]) render[i] = 0
-      if (!domLoad[i]) domLoad[i] = 0
-      if (!ttfb[i]) ttfb[i] = 0
+      if (index !== -1) {
+        dns[index] = _round(millisecondsToSeconds(result[row].dns), 2)
+        tls[index] = _round(millisecondsToSeconds(result[row].tls), 2)
+        conn[index] = _round(millisecondsToSeconds(result[row].conn), 2)
+        response[index] = _round(millisecondsToSeconds(result[row].response), 2)
+        render[index] = _round(millisecondsToSeconds(result[row].render), 2)
+        domLoad[index] = _round(millisecondsToSeconds(result[row].domLoad), 2)
+        ttfb[index] = _round(millisecondsToSeconds(result[row].ttfb), 2)
+      }
     }
 
     return {
-      dns,
-      tls,
-      conn,
-      response,
-      render,
-      domLoad,
-      ttfb,
+      dns, tls, conn, response, render, domLoad, ttfb,
     }
   }
 
@@ -1307,48 +1448,52 @@ export class AnalyticsService {
     paramsData: object,
     timezone: string,
   ): Promise<object | void> {
-    const params = await this.generateParams(
-      null,
-      subQuery,
-      false,
-      paramsData,
-      false,
-      true,
-    )
+    let params: unknown = {}
+    let chart: unknown = {}
 
-    if (!_some(_values(params), val => !_isEmpty(val))) {
-      return Promise.resolve()
-    }
+    const promises = [
+      // Getting params
+      (async () => {
+        params = await this.generateParams(
+          null,
+          subQuery,
+          false,
+          paramsData,
+          false,
+          true,
+        )
 
-    const axis = this.generateXAxis(timeBucket, from, to)
-    let { x } = axis
-    const { xM } = axis
-    let query = ''
+        if (!_some(_values(params), val => !_isEmpty(val))) {
+          throw new BadRequestException(
+            'The are no parameters for the specified time frames',
+          )
+        }
+      })(),
 
-    for (let i = 0; i < _size(x); ++i) {
-      if (i > 0) {
-        query += ' UNION ALL '
-      }
+      // Getting chart data
+      (async () => {
+        const x = this.generateXAxis(timeBucket, from, to)
 
-      query += `select ${i} index, avg(dns), avg(tls), avg(conn), avg(response), avg(render), avg(domLoad), avg(ttfb) from performance where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by pid`
-    }
+        const query = this.generatePerformanceAggregationQuery(timezone, timeBucket, from, to, filtersQuery)
+        
+        const result = <Array<PerformanceCHResponse>>(
+          await clickhouse.query(query, paramsData).toPromise()
+        )
 
-    const result = <Array<ChartCHResponse>>(
-      (await clickhouse.query(query, paramsData).toPromise()).sort(
-        (a: ChartCHResponse, b: ChartCHResponse) => a.index - b.index,
-      )
-    )
+        // x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
-    x = this.updateXAxisTimezone(x, timezone, timeBucket)
+        chart = {
+          x,
+          ...this.extractPerformanceChartData(result, x),
+        }
+      })(),
+    ]
+
+    await Promise.all(promises)
 
     return Promise.resolve({
       params,
-      chart: {
-        x,
-        ...this.extractPerformanceChartData(result, x),
-      },
+      chart,
     })
   }
 
@@ -1381,52 +1526,40 @@ export class AnalyticsService {
     paramsData: object,
     timezone: string,
   ): Promise<object | void> {
-    const axis = this.generateXAxis(timeBucket, from, to)
-    let { x } = axis
-    const { xM } = axis
-    let query = ''
+    const x = this.generateXAxis(timeBucket, from, to)
 
-    for (let i = 0; i < _size(x); ++i) {
-      if (i > 0) {
-        query += ' UNION ALL '
-      }
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort('${from}'), '${timezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort('${to}'), '${timezone}')`
 
-      query += `select ${i} index, ev, count() from customEV where pid = {pid:FixedString(12)} and created between '${
-        xM[i]
-      }' and '${xM[1 + i]}' ${filtersQuery} group by pid, ev`
-    }
+    const query = `
+      SELECT
+        ${selector},
+        ev,
+        count() as count
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, '${timezone}')) as tz_created
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}, ev
+      ORDER BY ${groupBy};
+      `
 
-    const result = <Array<CustomsCHResponse>>(
-      (await clickhouse.query(query, paramsData).toPromise()).sort(
-        (a: CustomsCHResponse, b: CustomsCHResponse) => a.index - b.index,
-      )
+    const result = <Array<CustomsCHAggregatedResponse>>(
+      await clickhouse.query(query, paramsData).toPromise()
     )
 
-    const customEvents = {}
+    const events = this.extractCustomEventsChartData(result, x)
 
-    for (let i = 0; i < _size(result); ++i) {
-      const { ev, index } = result[i]
-
-      if (!customEvents[ev]) {
-        customEvents[ev] = []
-      }
-
-      customEvents[ev][index] = result[i]['count()']
-    }
-
-    const processedCustomEvents = _keys(customEvents)
-
-    for (let i = 0; i < _size(processedCustomEvents); ++i) {
-      const ev = processedCustomEvents[i]
-      customEvents[ev] = nullifyMissingElements(customEvents[ev], _size(x))
-    }
-
-    x = this.updateXAxisTimezone(x, timezone, timeBucket)
+    // x = this.updateXAxisTimezone(x, timezone, timeBucket)
 
     return Promise.resolve({
       chart: {
         x,
-        events: customEvents,
+        events,
       },
     })
   }
