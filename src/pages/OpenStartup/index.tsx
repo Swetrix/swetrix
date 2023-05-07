@@ -242,9 +242,9 @@ const OpenStartup = (): JSX.Element => {
   const { t }: any = useTranslation('common')
   const { stats } = useSelector((state: StateType) => state.ui.misc)
 
-  const events = nFormatterSeparated(Number(stats.pageviews), 2)
-  const users = nFormatterSeparated(Number(stats.users), 2)
-  const websites = nFormatterSeparated(Number(stats.projects), 2)
+  const events = nFormatterSeparated(Number(stats.pageviews), 1)
+  const users = nFormatterSeparated(Number(stats.users), 1)
+  const websites = nFormatterSeparated(Number(stats.projects), 1)
 
   useEffect(() => {
     const bbSettings = getSettings()
