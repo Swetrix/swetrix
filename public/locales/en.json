@@ -771,6 +771,18 @@
       "description": "We use {{font}} font on Swetrix websites. See more information about it on it's <url>official website</url>."
     }
   },
+  "open": {
+    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
+    "updated": "This page is updated regularly.",
+    "finance": {
+      "title": "Finance metrics",
+      "desc": "Our financial metrics, such as revenue, losses, etc."
+    },
+    "usage": {
+      "title": "Usage metrics",
+      "desc": "Our user metrics, such as amount of active users, connected websites."
+    }
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
@@ -786,7 +798,8 @@
     "changelog": "Changelog",
     "main": "Ultimate open-source analytics to satisfy all your needs",
     "press": "Media & Press",
-    "socialisation": "Socialisation"
+    "socialisation": "Socialisation",
+    "open": "Open startup"
   },
   "header": {
     "switchTheme": "Switch theme",
