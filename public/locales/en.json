@@ -673,8 +673,8 @@
     "userFlow": {
       "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
     },
-    "noDateRange": "Please select a date range.",
-    "compareDateRangeError": "This date range cannot be compared. Please select a other date range.",
+    "noDateRange": "Please select a date range",
+    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
     "previousPeriod": "Previous period",
     "disableCompare": "Disable comparison",
     "compare": "Compare"
