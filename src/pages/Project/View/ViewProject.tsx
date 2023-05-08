@@ -35,6 +35,7 @@ import _truncate from 'lodash/truncate'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
+import { periodToCompareDate } from 'utils/compareConvertDate'
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
@@ -43,7 +44,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, periodToCompareDate, filtersPeriodPairs, IS_ACTIVE_COMPARE,
+  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -484,11 +485,16 @@ const ViewProject = ({
       let key = ''
       let keyCompare = ''
       let from
-      let fromCompare
+      let fromCompare: string | undefined
       let to
-      let toCompare
+      let toCompare: string | undefined
       let customEventsChart = customEventsChartData
 
+      // das
+      // sad
+      // asd
+      const today = dayjs.utc().toDate()
+      console.log('today', today)
       if (isActiveCompare) {
         if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
           fromCompare = getFormatDate(dateRangeCompare[0])
@@ -503,8 +509,8 @@ const ViewProject = ({
           }
 
           if (date) {
-            fromCompare = getFormatDate(date.from)
-            toCompare = getFormatDate(date.to)
+            fromCompare = date.from
+            toCompare = date.to
             keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
           }
         }
@@ -1482,7 +1488,7 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
 
-  const compareDisable = () => {
+  function compareDisable() {
     setIsActiveCompare(false)
     setDateRangeCompare(null)
     setDataChartCompare({})
