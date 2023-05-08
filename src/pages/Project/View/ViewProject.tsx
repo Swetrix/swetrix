@@ -240,7 +240,13 @@ const ViewProject = ({
       return 0
     }
 
-    return _find(periodPairs, p => p.period === period)?.countDays || 0
+    const findActivePeriod = _find(periodPairs, p => p.period === period)
+
+    if (findActivePeriod?.period === 'custom' && dateRange) {
+      return dayjs.utc(dateRange[1]).diff(dayjs.utc(dateRange[0]), 'day')
+    }
+
+    return findActivePeriod?.countDays || 0
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, period])
   const [sessionDurationAVGCompare, setSessionDurationAVGCompare] = useState<any>(null)
