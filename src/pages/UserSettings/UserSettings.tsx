@@ -403,8 +403,11 @@ const UserSettings = ({
           </div> */}
           {/* Timezone selector */}
           <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50 flex items-center'>
             {t('profileSettings.timezone')}
+            <div className='ml-5'>
+              <Beta />
+            </div>
           </h3>
           <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
             <div>

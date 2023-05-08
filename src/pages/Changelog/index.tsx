@@ -17,6 +17,21 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-05-08',
+    changes: [
+      'Added an ability to compare statistics over time periods - now you can compare the current period with the previous one, or select a custom date range to compare.',
+      <>
+        Swetrix is now an Open Startup, we
+        {' '}
+        <Link to={routes.open} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+          publish
+        </Link>
+        our finance and technical metrics.
+      </>,
+      'Refactored the statistics API: now the Dashboard loads at least 2 times faster and can easily handle dozens of millions of events.',
+    ],
+  },
+  {
     date: '2023-04-27',
     changes: [
       'Added user flow feature. By using this functionality you can track user interactions and navigation patterns throughout your application, providing valuable insights for optimising user experience and engagement. To track user flow, you have to upgrade Swetrix NPM library to the version v2.2.1 or higher.',

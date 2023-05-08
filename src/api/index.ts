@@ -363,6 +363,27 @@ export const getProjectData = (
         : error.response.data.message
     })
 
+export const getProjectCompareData = (
+  pid: string,
+  tb: string = 'hour',
+  period: string = '3d',
+  filters: string[] = [],
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
+) =>
+  api
+    .get(
+      `log/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const getPerfData = (
   pid: string,
   tb: string = 'hour',

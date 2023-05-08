@@ -9,7 +9,7 @@ import {
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import {
-  area, areaSpline, spline, bar,
+  area, areaSpline, spline, bar, line,
 } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
@@ -115,14 +115,14 @@ const convertToCSV = (array: any[]) => {
   let str = 'name,value,perc\r\n'
 
   for (let i = 0; i < _size(array); ++i) {
-    let line = ''
+    let lines = ''
 
     _forEach(array[i], (index) => {
-      if (line !== '') line += ','
-      line += index
+      if (lines !== '') lines += ','
+      lines += index
     })
 
-    str += `${line}\r\n`
+    str += `${lines}\r\n`
   }
 
   return str
@@ -178,6 +178,8 @@ const CHART_METRICS_MAPPING = {
   customEvents: 'customEvents',
 }
 
+const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUnique', 'trendlines', 'customEvents']
+
 const CHART_METRICS_MAPPING_PERF = {
   full: 'full',
   timing: 'timing',
@@ -191,6 +193,8 @@ const getColumns = (chart: {
   [key: string]: string[],
 }, activeChartMetrics: {
   [key: string]: boolean,
+}, compareChart?: {
+  [key: string]: string[],
 }) => {
   const {
     views, bounce, viewsPerUnique, unique, trendlines, sessionDuration,
@@ -205,12 +209,20 @@ const getColumns = (chart: {
     if (trendlines) {
       columns.push(['trendlineUnique', ...trendline(chart.uniques)])
     }
+
+    if (compareChart?.uniques) {
+      columns.push(['uniqueCompare', ...compareChart.uniques])
+    }
   }
 
   if (views) {
     columns.push(['total', ...chart.visits])
     if (trendlines) {
       columns.push(['trendlineTotal', ...trendline(chart.visits)])
+    }
+
+    if (compareChart?.visits) {
+      columns.push(['totalCompare', ...compareChart.visits])
     }
   }
 
@@ -235,6 +247,10 @@ const getColumns = (chart: {
 
   if (sessionDuration) {
     columns.push(['sessionDuration', ...chart.sdur])
+
+    if (compareChart?.sdur) {
+      columns.push(['sessionDurationCompare', ...compareChart.sdur])
+    }
   }
 
   return columns
@@ -330,6 +346,9 @@ const getSettings = (
   customEvents?: {
     [key: string]: string[],
   },
+  compareChart?: {
+    [key: string]: string[],
+  },
 ) => {
   const xAxisSize = _size(chart.x)
   const lines = []
@@ -343,14 +362,16 @@ const getSettings = (
     [key: string]: string,
   } = {}
 
-  _forEach(_keys(customEvents), (el) => {
-    customEventsColors = {
-      ...customEventsColors,
-      [el]: stringToColour(el),
-    }
-  })
+  if (_isEmpty(compareChart)) {
+    _forEach(_keys(customEvents), (el) => {
+      customEventsColors = {
+        ...customEventsColors,
+        [el]: stringToColour(el),
+      }
+    })
+  }
 
-  if (!_isEmpty(forecasedChartData)) {
+  if (!_isEmpty(forecasedChartData) && _isEmpty(compareChart)) {
     lines.push({
       value: _last(chart?.x),
       text: 'Forecast',
@@ -361,7 +382,7 @@ const getSettings = (
     modifiedChart.sdur = [...modifiedChart.sdur, ...forecasedChartData.sdur]
   }
 
-  const columns = getColumns(modifiedChart, activeChartMetrics)
+  const columns = getColumns(modifiedChart, activeChartMetrics, compareChart)
 
   if (applyRegions) {
     let regionStart
@@ -414,21 +435,29 @@ const getSettings = (
       columns: [...columns, ...customEventsToArray],
       types: {
         unique: chartType === chartTypes.line ? area() : bar(),
+        uniqueCompare: chartType === chartTypes.line ? line() : bar(),
         total: chartType === chartTypes.line ? area() : bar(),
+        totalCompare: chartType === chartTypes.line ? line() : bar(),
         bounce: chartType === chartTypes.line ? spline() : bar(),
+        bounceCompare: chartType === chartTypes.line ? spline() : bar(),
         viewsPerUnique: chartType === chartTypes.line ? spline() : bar(),
         trendlineUnique: spline(),
         trendlineTotal: spline(),
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
+        sessionDurationCompare: chartType === chartTypes.line ? spline() : bar(),
       },
       colors: {
         unique: '#2563EB',
+        uniqueCompare: 'rgba(37, 99, 235, 0.4)',
         total: '#D97706',
+        totalCompare: 'rgba(217, 119, 6, 0.4)',
         bounce: '#2AC4B3',
+        bounceCompare: 'rgba(42, 196, 179, 0.4)',
         viewsPerUnique: '#F87171',
         trendlineUnique: '#436abf',
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
+        sessionDurationCompare: 'rgba(201, 69, 237, 0.4)',
         ...customEventsColors,
       },
       regions,
@@ -464,24 +493,117 @@ const getSettings = (
       },
     },
     tooltip: {
-      format: {
-        title: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x),
-      },
-      contents: {
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-            <li class='font-semibold'>{=TITLE}</li>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            {{
+      contents: (item: any, _: any, __: any, color: any) => {
+        const typesOptionsToTypesCompare: {
+          [key: string]: string,
+        } = {
+          unique: 'uniques',
+          total: 'visits',
+          sessionDuration: 'sdur',
+        }
+
+        if (_isEmpty(compareChart)) {
+          return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          <li class='font-semibold'>${d3.timeFormat(tbsFormatMapper[timeBucket])(item[0].x)}</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(item, (el: {
+            id: string,
+            index: number,
+            name: string,
+            value: string,
+            x: Date,
+          }) => {
+    if (el.id === 'sessionDuration') {
+      return `
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
+                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                  <span>${el.name}</span>
                 </div>
-                <span class='pl-4'>{=VALUE}</span>
+                <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
               </li>
-            }}
-          </ul>`,
+              `
+    }
+
+    if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
+      return ''
+    }
+
+    return `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${el.value}</span>
+            </li>
+            `
+  }).join('')}`
+        }
+
+        return `
+        <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          ${_map(item, (el: {
+          id: string,
+          index: number,
+          name: string,
+          value: string,
+          x: Date,
+        }) => {
+    const {
+      id, index, name, value, x,
+    } = el
+
+    const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+    const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+    const valueCompare = id === 'sessionDuration' ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index])) : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
+
+    if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
+      return ''
+    }
+
+    if (id === 'sessionDuration') {
+      return `
+              <div class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+                <span>${name}</span>
+              </div>
+            </div>
+            <hr class='border-gray-200 dark:border-gray-600' />
+            <li class='mt-1 ml-2'>
+              <p>
+                <span>${xDataValue}</span> -
+                <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
+              </p>
+              ${(valueCompare && Number(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]) > 0) ? `<p>
+                <span>${xDataValueCompare}</span> -
+                <span>${valueCompare}</span>
+              </p>` : ''}
+            </li>
+          `
+    }
+
+    return `
+            <div class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+                <span>${name}</span>
+              </div>
+            </div>
+            <hr class='border-gray-200 dark:border-gray-600' />
+            <li class='mt-1 ml-2'>
+            <p>
+              <span>${xDataValue}</span> - <span>${value}</span>
+            </p>
+            ${valueCompare ? `<p>
+              <span>${xDataValueCompare}</span> -
+              <span>${valueCompare}</span>
+            </p>` : ''}
+            </li>
+          `
+  }).join('')}
+        </ul>`
       },
     },
     point: {
@@ -500,6 +622,7 @@ const getSettings = (
           width: 10,
         },
       },
+      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
     },
     area: {
       linearGradient: true,
@@ -662,5 +785,5 @@ export {
   iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters,
   validPeriods, validTimeBacket, noRegionPeriods, getSettings,
   getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
-  CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData,
+  CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData, FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
 }

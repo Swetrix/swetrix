@@ -26,6 +26,7 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   label: string
   period: string
   tbs: string[]
+  countDays?: number
   dropdownLabel?: string
   isCustomDate?: boolean
 }[] => [{
@@ -39,23 +40,28 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
 }, {
   label: t('project.last24h'),
   period: '1d',
+  countDays: 1,
   tbs: ['hour'],
 }, {
   label: t('project.lastXDays', { amount: 7 }),
   period: '7d',
   tbs: ['hour', 'day'],
+  countDays: 7,
 }, {
   label: t('project.lastXWeeks', { amount: 4 }),
   period: '4w',
   tbs: ['day', 'week'],
+  countDays: 28,
 }, {
   label: t('project.lastXMonths', { amount: 3 }),
   period: '3M',
   tbs: ['week', 'month'],
+  countDays: 90,
 }, {
   label: t('project.lastXMonths', { amount: 12 }),
   period: '12M',
   tbs: ['week', 'month'],
+  countDays: 365,
 }, {
   label: t('project.lastXMonths', { amount: 24 }),
   period: '24M',
@@ -66,7 +72,39 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   isCustomDate: true,
   period: 'custom',
   tbs: tbs || ['custom'],
+}, {
+  label: t('project.compare'),
+  period: 'compare',
+  tbs: tbs || ['custom'],
 }]
+
+export const filtersPeriodPairs = ['1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
+
+export const tbPeriodPairsCompare = (t: Function, dates?: Date[]): {
+  label: string
+  period: string
+}[] => [{
+  label: t('project.previousPeriod'),
+  period: 'previous',
+}, {
+  label: dates ? getCustomLabel(dates, t) : t('project.custom'),
+  period: 'custom',
+}, {
+  label: t('project.disableCompare'),
+  period: 'disable',
+}]
+
+export const PERIOD_PAIRS_COMPARE: {
+  COMPARE: string
+  PREVIOS: string
+  CUSTOM: string
+  DISABLE: string
+} = {
+  COMPARE: 'compare',
+  PREVIOS: 'previous',
+  CUSTOM: 'custom',
+  DISABLE: 'disable',
+}
 
 interface IStringObject {
   [key: string]: string
@@ -206,6 +244,7 @@ export const REFRESH_TOKEN: string = 'refresh_token'
 
 // LocalStorage
 export const PAGE_FORCE_REFRESHED = 'page-force-refreshed'
+export const IS_ACTIVE_COMPARE = 'is-active-compare'
 
 // List of languages with translations available
 export const whitelist: string[] = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
