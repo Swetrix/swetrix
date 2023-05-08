@@ -499,11 +499,21 @@ const ViewProject = ({
 
       if (isActiveCompare) {
         if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
-          const start = dayjs.utc(dateRangeCompare[0])
-          const end = dayjs.utc(dateRangeCompare[1])
-          const diff = end.diff(start, 'day')
+          let start
+          let end
+          let diff
+          const startCompare = dayjs.utc(dateRangeCompare[0])
+          const endCompare = dayjs.utc(dateRangeCompare[1])
+          const diffCompare = endCompare.diff(startCompare, 'day')
+
+          if (activePeriod?.period === 'custom' && dateRange) {
+            start = dayjs.utc(dateRange[0])
+            end = dayjs.utc(dateRange[1])
+            diff = end.diff(start, 'day')
+          }
+
           // @ts-ignore
-          if (diff <= activePeriod?.countDays) {
+          if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
             keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
