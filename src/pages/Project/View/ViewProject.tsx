@@ -472,6 +472,13 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChartMetricsCustomEvents])
 
+  const compareDisable = () => {
+    setIsActiveCompare(false)
+    setDateRangeCompare(null)
+    setDataChartCompare({})
+    setActivePeriodCompare(periodPairsCompare[0].period)
+  }
+
   // this function is used for requesting the data from the API
   const loadAnalytics = async (forced = false, newFilters: any[] | null = null) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
@@ -490,16 +497,20 @@ const ViewProject = ({
       let toCompare: string | undefined
       let customEventsChart = customEventsChartData
 
-      // das
-      // sad
-      // asd
-      const today = dayjs.utc().toDate()
-      console.log('today', today)
       if (isActiveCompare) {
         if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
-          fromCompare = getFormatDate(dateRangeCompare[0])
-          toCompare = getFormatDate(dateRangeCompare[1])
-          keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+          const start = dayjs.utc(dateRangeCompare[0])
+          const end = dayjs.utc(dateRangeCompare[1])
+          const diff = end.diff(start, 'day')
+          // @ts-ignore
+          if (diff <= activePeriod?.countDays) {
+            fromCompare = getFormatDate(dateRangeCompare[0])
+            toCompare = getFormatDate(dateRangeCompare[1])
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+          } else {
+            showError(t('project.compareDateRangeError'))
+            compareDisable()
+          }
         } else {
           let date
           if (dateRange) {
@@ -515,10 +526,12 @@ const ViewProject = ({
           }
         }
 
-        if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
-          dataCompare = cache[id][keyCompare]
-        } else {
-          dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
+        if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+            dataCompare = cache[id][keyCompare]
+          } else {
+            dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
+          }
         }
 
         const processedSdur = getTimeFromSeconds(dataCompare?.avgSdur || 0)
@@ -1487,13 +1500,6 @@ const ViewProject = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
-
-  function compareDisable() {
-    setIsActiveCompare(false)
-    setDateRangeCompare(null)
-    setDataChartCompare({})
-    setActivePeriodCompare(periodPairsCompare[0].period)
-  }
 
   if (!isLoading) {
     return (
