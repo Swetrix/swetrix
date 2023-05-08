@@ -625,8 +625,6 @@ const ViewProject = ({
         const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChart, dataCompare?.chart)
         setChartData(chart)
 
-        console.log(bbSettings)
-
         setPanelsData({
           types: _keys(params),
           data: params,
