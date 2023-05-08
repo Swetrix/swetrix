@@ -369,7 +369,7 @@ export const QUERY_TIME: IStringObject = {
 }
 
 export const INVITATION_EXPIRES_IN: number = 48 // hours
-export const ENTRIES_PER_PAGE_DASHBOARD: number = 10
+export const ENTRIES_PER_PAGE_DASHBOARD: number = 11
 
 export const THEME_TYPE: IStringObject = {
   classic: 'classic',
