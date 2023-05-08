@@ -1596,7 +1596,7 @@ const ViewProject = ({
                   <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
                     {name}
                   </h2>
-                  <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap sm:flex-nowrap items-center sm:max-w-none justify-center sm:justify-between w-full sm:w-auto mx-auto sm:mx-0 custom-space-x-style'>
+                  <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap sm:flex-nowrap items-end sm:max-w-none justify-center sm:justify-between w-full sm:w-auto mx-auto sm:mx-0 custom-space-x-style gap-y-1'>
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                       <button
                         type='button'
@@ -1739,7 +1739,7 @@ const ViewProject = ({
                   </div>
                 </div>
                 <div>
-                  <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4'>
+                  <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4 gap-y-1'>
                     {activeTab === PROJECT_TABS.traffic ? (
                       !isPanelsDataEmpty && (
                         <Dropdown
