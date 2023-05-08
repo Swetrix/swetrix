@@ -145,6 +145,7 @@ const Main = (): JSX.Element => {
     },
   } = useTranslation('common')
   const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { authenticated } = useSelector((state: StateType) => state.auth)
   const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
 
   const events = nFormatterSeparated(Number(stats.pageviews), 0)
@@ -336,50 +337,52 @@ const Main = (): JSX.Element => {
               {/* end section Privacy compliance. */}
             </div>
             {/*  block singup */}
-            <div className='overflow-x-clip'>
-              <div className='py-20 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5'>
-                <div className='relative z-50 lg:col-span-6 rounded-xl'>
-                  <div className='bg-white dark:bg-slate-800/20 dark:border dark:border-slate-800 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
-                    <div className='px-4 py-8 sm:px-10'>
-                      <p className='text-lg text-gray-900 dark:text-white text-center md:text-xl font-semibold'>
-                        {t('main.signup')}
-                      </p>
-                      <div className='mt-6'>
-                        <SignUp />
-                      </div>
-                    </div>
-                    <div className='px-4 sm:px-10'>
-                      <div className='py-6 bg-transparent border-t border-gray-200 dark:border-slate-700'>
-                        <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
-                          <Trans
-                            // @ts-ignore
-                            t={t}
-                            i18nKey='main.signupTerms'
-                            components={{
-                              tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
-                              pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
-                            }}
-                          />
+            {!authenticated && (
+              <div className='overflow-x-clip'>
+                <div className='py-20 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5'>
+                  <div className='relative z-50 lg:col-span-6 rounded-xl'>
+                    <div className='bg-white dark:bg-slate-800/20 dark:border dark:border-slate-800 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
+                      <div className='px-4 py-8 sm:px-10'>
+                        <p className='text-lg text-gray-900 dark:text-white text-center md:text-xl font-semibold'>
+                          {t('main.signup')}
                         </p>
+                        <div className='mt-6'>
+                          <SignUp />
+                        </div>
+                      </div>
+                      <div className='px-4 sm:px-10'>
+                        <div className='py-6 bg-transparent border-t border-gray-200 dark:border-slate-700'>
+                          <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
+                            <Trans
+                            // @ts-ignore
+                              t={t}
+                              i18nKey='main.signupTerms'
+                              components={{
+                                tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
+                                pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
+                              }}
+                            />
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className='relative'>
-                  <div
-                    className='absolute w-36 h-[558px] z-40 left-[10vw] filter_blur'
-                    style={{
-                      background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
-                      transform: 'rotate(-50.32deg)',
-                    }}
-                  />
-                  <picture>
-                    <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
-                    <img src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'} className='relative z-50 hidden md:block' alt='Swetrix Dashboard overview' />
-                  </picture>
+                  <div className='relative'>
+                    <div
+                      className='absolute w-36 h-[558px] z-40 left-[10vw] filter_blur'
+                      style={{
+                        background: 'linear-gradient(67.59deg, #408B9B 25.75%, #0B145F 61.14%)',
+                        transform: 'rotate(-50.32deg)',
+                      }}
+                    />
+                    <picture>
+                      <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
+                      <img src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'} className='relative z-50 hidden md:block' alt='Swetrix Dashboard overview' />
+                    </picture>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             {/* end block singup */}
             {/* Core features section */}
             <section className='bg-white dark:bg-slate-900 pt-14 relative pb-14'>
