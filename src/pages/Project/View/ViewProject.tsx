@@ -185,6 +185,7 @@ const ViewProject = ({
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
+  const refCalendarCompare = useRef(null)
   const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
   const [dateRange, setDateRange] = useState<null | Date[]>(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
   const [activeTab, setActiveTab] = useState<string>(() => {
@@ -1706,7 +1707,7 @@ const ViewProject = ({
                             if (pair.period === PERIOD_PAIRS_COMPARE.CUSTOM) {
                               setTimeout(() => {
                                 // @ts-ignore
-                                refCalendar.current.openCalendar()
+                                refCalendarCompare.current.openCalendar()
                               }, 100)
                             } else {
                               setPeriodPairsCompare(tbPeriodPairsCompare(t))
@@ -1719,18 +1720,21 @@ const ViewProject = ({
                     )}
                     <FlatPicker
                       ref={refCalendar}
-                      onChange={(date) => {
-                        if (isActiveCompare) {
-                          setDateRangeCompare(date)
-                          setActivePeriodCompare(PERIOD_PAIRS_COMPARE.CUSTOM)
-                          setPeriodPairsCompare(tbPeriodPairsCompare(t, date))
-                        } else {
-                          setDateRange(date)
-                        }
-                      }}
-                      value={isActiveCompare ? dateRangeCompare || [] : dateRange || []}
+                      onChange={setDateRange}
+                      value={dateRange || []}
                       maxDateMonths={MAX_MONTHS_IN_PAST}
-                      maxRange={isActiveCompare ? maxRangeCompare : 0}
+                      maxRange={0}
+                    />
+                    <FlatPicker
+                      ref={refCalendarCompare}
+                      onChange={(date) => {
+                        setDateRangeCompare(date)
+                        setActivePeriodCompare(PERIOD_PAIRS_COMPARE.CUSTOM)
+                        setPeriodPairsCompare(tbPeriodPairsCompare(t, date))
+                      }}
+                      value={dateRangeCompare || []}
+                      maxDateMonths={MAX_MONTHS_IN_PAST}
+                      maxRange={maxRangeCompare}
                     />
                   </div>
                 </div>
