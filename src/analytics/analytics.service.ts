@@ -117,8 +117,8 @@ const validTimebuckets = [
 // mapping of allowed timebuckets per difference between days
 // (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
 const timeBucketToDays = [
-  { lt: 7, tb: [TimeBucketType.HOUR, TimeBucketType.DAY] }, // 7 days
-  { lt: 28, tb: [TimeBucketType.DAY, TimeBucketType.WEEK] }, // 4 weeks
+  { lt: 7, tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 7 days
+  { lt: 28, tb: [TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 4 weeks
   { lt: 366, tb: [TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
 ]
