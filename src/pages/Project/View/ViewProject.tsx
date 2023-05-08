@@ -933,6 +933,8 @@ const ViewProject = ({
         scrollToTopDisable: true,
       },
     })
+
+    compareDisable()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
