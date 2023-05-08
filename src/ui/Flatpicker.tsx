@@ -2,6 +2,7 @@
 import React, { memo, createRef } from 'react'
 import Flatpickr from 'react-flatpickr'
 import _size from 'lodash/size'
+import _split from 'lodash/split'
 import PropTypes from 'prop-types'
 
 import { getItem } from 'utils/localstorage'
@@ -49,8 +50,8 @@ class FlatPicker extends React.Component<FlatPickerProps, {
       minDate.setDate(minDate.getDate() - maxRange)
 
       this.setState({
-        maxDate: maxDate > new Date() ? 'today' : maxDate.toISOString().split('T')[0],
-        minDate: minDate.toISOString().split('T')[0],
+        maxDate: maxDate > new Date() ? 'today' : _split(maxDate.toISOString(), 'T')[0],
+        minDate: _split(minDate.toISOString(), 'T')[0],
       })
     }
 
