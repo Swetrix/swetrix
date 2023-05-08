@@ -388,19 +388,6 @@ const Dashboard = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage, dashboardPaginationPageShared])
 
-  const [activeDashTab, setActiveDashTab] = useState<string | null>(() => {
-    // @ts-ignore
-    const url = new URL(window.location)
-    const { searchParams } = url
-    const tab = searchParams.get('tab') as string
-
-    if (DASHBOARD_TABS[tab]) {
-      return tab
-    }
-
-    return projectTab || DASHBOARD_TABS.owned
-  })
-
   const dashboardLocTabs = useMemo(() => {
     return [
       {
@@ -421,7 +408,9 @@ const Dashboard = ({
     ]
   }, [t])
 
-  const activeDashTabLabel = useMemo(() => _find(dashboardLocTabs, tab => tab.id === activeDashTab)?.label, [dashboardLocTabs, activeDashTab])
+  const activeTabLabel = useMemo(() => {
+    return _find(dashboardLocTabs, (tab) => tab.name === tabProjects)?.label
+  }, [dashboardLocTabs, tabProjects])
 
   if (error && !isLoading) {
     return (
@@ -463,17 +452,16 @@ const Dashboard = ({
                 <div>
                   <div className='sm:hidden mb-2'>
                     <Select
-                      items={_filter(dashboardLocTabs, (tab) => {
-                        return !(tab.name === tabForSharedProject && sharedTotal <= 0)
-                      })}
+                      items={dashboardLocTabs}
                       keyExtractor={(item) => item.id}
-                      labelExtractor={(item) => t(item.label)}
+                      labelExtractor={(item) => item.label}
                       onSelect={(label) => {
-                        const selected = _find(dashboardLocTabs, (tab) => t(tab.label) === label)
-                        setTabProjects(selected?.name ? selected.name : tabForOwnedProject)
-                        setActiveDashTab(selected?.id ? selected.id : DASHBOARD_TABS.owned)
+                        const nameTab = _find(dashboardLocTabs, (tab) => t(tab.label) === label)?.name
+                        if (nameTab) {
+                          setTabProjects(nameTab)
+                        }
                       }}
-                      title={activeDashTabLabel}
+                      title={activeTabLabel}
                     />
                   </div>
                   <div className='hidden sm:block'>
