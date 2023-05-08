@@ -61,6 +61,11 @@ class FlatPicker extends React.Component<FlatPickerProps, {
 
   private openCalendar = () => {
     if (this.calendar.current) {
+      this.setState({
+        maxDate: 'today',
+        // eslint-disable-next-line react/destructuring-assignment
+        minDate: this.removeMonths(new Date(), this.props?.maxDateMonths || 24),
+      })
       this.calendar.current.flatpickr.open()
     }
   }
