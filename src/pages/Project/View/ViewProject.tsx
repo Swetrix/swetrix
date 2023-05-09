@@ -704,7 +704,7 @@ const ViewProject = ({
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -995,7 +995,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat)
 
       setMainChart(() => {
         // @ts-ignore
