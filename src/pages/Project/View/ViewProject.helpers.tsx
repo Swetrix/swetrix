@@ -474,6 +474,10 @@ const getSettings = (
     transition: {
       duration: 500,
     },
+    resize: {
+      auto: true,
+      timer: false,
+    },
     axis: {
       x: {
         clipPath: false,
