@@ -371,8 +371,6 @@ const getSettings = (
     })
   }
 
-  // test
-  
   if (!_isEmpty(forecasedChartData) && _isEmpty(compareChart)) {
     lines.push({
       value: _last(chart?.x),
@@ -645,6 +643,9 @@ const getSettingsPerf = (
   activeChartMetrics: string,
   rotateXAxias: boolean,
   chartType: string,
+  compareChart?: {
+    [key: string]: string[],
+  },
 ) => {
   const xAxisSize = _size(chart.x)
 
