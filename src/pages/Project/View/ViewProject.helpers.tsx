@@ -687,7 +687,7 @@ const getSettingsPerf = (
     data: {
       x: 'x',
       xFormat: tbsFormatMapper[timeBucket],
-      columns: getColumnsPerf(chart, activeChartMetrics),
+      columns: getColumnsPerf(chart, activeChartMetrics, compareChart),
       types: {
         dns: chartType === chartTypes.line ? areaSpline() : bar(),
         tls: chartType === chartTypes.line ? areaSpline() : bar(),
