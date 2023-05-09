@@ -34,6 +34,7 @@ const navigation = {
   company: [
     { key: 'about', href: routes.about, internal: true },
     { key: 'changelog', href: routes.changelog, internal: true },
+    { key: 'open', href: routes.open, internal: true },
     { key: 'press', href: routes.press, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'donate', href: DONATE_URL },

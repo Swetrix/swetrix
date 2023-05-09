@@ -63,6 +63,7 @@ const TransferProjectConfirm = lazy(() => import('pages/Project/Settings/Transfe
 const TransferProjectReject = lazy(() => import('pages/Project/Settings/TransferProject/TransferProjectReject'))
 const Socialised = lazy(() => import('pages/Auth/Socialised'))
 const ProjectProtectedPassword = lazy(() => import('pages/Project/ProjectProtectedPassword'))
+const OpenStartup = lazy(() => import('pages/OpenStartup'))
 
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
@@ -244,6 +245,7 @@ const App = () => {
                 <Route path={routes.transfer_reject} component={TransferProjectReject} exact />
                 <Route path={routes.socialised} component={Socialised} exact />
                 <Route path={routes.project_protected_password} component={ProjectProtectedPassword} exact />
+                <Route path={routes.open} component={OpenStartup} exact />
                 <Route path='*' component={NotFound} />
               </Switch>
             </Suspense>

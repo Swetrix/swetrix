@@ -193,7 +193,7 @@ PanelContainer.defaultProps = {
 
 // First tab with stats
 const Overview = ({
-  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId,
+  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId, sessionDurationAVGCompare, isActiveCompare, dataChartCompare, activeDropdownLabelCompare,
 }: {
   overall: any
   chartData: any
@@ -201,16 +201,27 @@ const Overview = ({
   t: (arg: string) => string
   live: number | string
   sessionDurationAVG: number
+  sessionDurationAVGCompare: number
+  isActiveCompare: boolean
+  activeDropdownLabelCompare: string | undefined
+  dataChartCompare: any
   projectId: string
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
   const pageviews = _sum(chartData?.visits) || 0
+  const pageViewsCompare = _sum(dataChartCompare?.visits) || 0
   const uniques = _sum(chartData?.uniques) || 0
+  const uniquesCompare = _sum(dataChartCompare?.uniques) || 0
   let bounceRate = 0
+  let bounceRateCompare = 0
 
   if (pageviews > 0) {
     bounceRate = _round((uniques * 100) / pageviews, 1)
+  }
+
+  if (pageViewsCompare > 0) {
+    bounceRateCompare = _round((uniquesCompare * 100) / pageViewsCompare, 1)
   }
 
   return (
@@ -231,6 +242,14 @@ const Overview = ({
               &nbsp;
               {activePeriod.label}
             </span>
+            {isActiveCompare && (
+            // return vs activeDropdownLabelCompare
+            <span className='text-sm text-gray-500 dark:text-gray-400'>
+                &nbsp;(
+              {activeDropdownLabelCompare}
+              )
+            </span>
+            )}
           </p>
 
           <div className='flex justify-between'>
@@ -240,6 +259,16 @@ const Overview = ({
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {pageviews}
+              {isActiveCompare && (
+                <span className={cx('ml-1.5 text-sm', {
+                  'text-green-500': pageViewsCompare > pageviews,
+                  'text-red-500': pageViewsCompare < pageviews,
+                })}
+                >
+                  {pageViewsCompare > pageviews ? '+' : ''}
+                  {pageViewsCompare - pageviews}
+                </span>
+              )}
             </p>
           </div>
 
@@ -250,6 +279,16 @@ const Overview = ({
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {uniques}
+              {isActiveCompare && (
+                <span className={cx('ml-1.5 text-sm', {
+                  'text-green-500': uniquesCompare > uniques,
+                  'text-red-500': uniquesCompare < uniques,
+                })}
+                >
+                  {uniquesCompare > uniques ? '+' : ''}
+                  {uniquesCompare - uniques}
+                </span>
+              )}
             </p>
           </div>
 
@@ -261,6 +300,17 @@ const Overview = ({
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {bounceRate}
               %
+              {isActiveCompare && (
+                <span className={cx('ml-1.5 text-sm', {
+                  'text-green-500': bounceRateCompare > bounceRate,
+                  'text-red-500': bounceRateCompare < bounceRate,
+                })}
+                >
+                  {bounceRateCompare > bounceRate ? '+' : ''}
+                  {_round(bounceRateCompare - bounceRate, 1)}
+                  %
+                </span>
+              )}
             </p>
           </div>
           <div className='flex justify-between'>
@@ -270,6 +320,13 @@ const Overview = ({
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {sessionDurationAVG}
+              {isActiveCompare && (
+                <span className='text-sm text-gray-500 dark:text-gray-400'>
+                  &nbsp;(
+                  {sessionDurationAVGCompare}
+                  )
+                </span>
+              )}
             </p>
           </div>
           <hr className='my-2 border-gray-200 dark:border-gray-600' />
