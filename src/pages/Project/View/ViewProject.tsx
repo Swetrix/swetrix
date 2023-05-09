@@ -755,11 +755,15 @@ const ViewProject = ({
         return
       }
 
+      if (!_isEmpty(dataCompare) && !_isEmpty(dataCompare?.chart)) {
+        setDataChartPerfCompare(dataCompare.chart)
+      }
+
       if (_isEmpty(dataPerf.params)) {
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat, dataCompare?.chart)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
