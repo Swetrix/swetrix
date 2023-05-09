@@ -665,6 +665,60 @@ const ViewProject = ({
       let key
       let from
       let to
+      let dataCompare
+      let keyCompare = ''
+      let fromCompare: string | undefined
+      let toCompare: string | undefined
+
+      if (isActiveCompare) {
+        if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
+          let start
+          let end
+          let diff
+          const startCompare = dayjs.utc(dateRangeCompare[0])
+          const endCompare = dayjs.utc(dateRangeCompare[1])
+          const diffCompare = endCompare.diff(startCompare, 'day')
+
+          if (activePeriod?.period === 'custom' && dateRange) {
+            start = dayjs.utc(dateRange[0])
+            end = dayjs.utc(dateRange[1])
+            diff = end.diff(start, 'day')
+          }
+
+          // @ts-ignore
+          if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
+            fromCompare = getFormatDate(dateRangeCompare[0])
+            toCompare = getFormatDate(dateRangeCompare[1])
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+          } else {
+            showError(t('project.compareDateRangeError'))
+            compareDisable()
+          }
+        } else {
+          let date
+          if (dateRange) {
+            date = _find(periodToCompareDate, (item) => item.period === period)?.formula(dateRange)
+          } else {
+            date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
+          }
+
+          if (date) {
+            fromCompare = date.from
+            toCompare = date.to
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+          }
+        }
+
+        if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+            dataCompare = cache[id][keyCompare]
+          } else {
+            dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone)
+          }
+        }
+
+        setProjectCachePerf(id, dataCompare || {}, keyCompare)
+      }
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
