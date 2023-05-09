@@ -539,7 +539,7 @@ const getSettings = (
 
         if (_isEmpty(compareChart)) {
           return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-          <li class='font-semibold'>${d3.timeFormat(tbsFormatMapper[timeBucket])(item[0].x)}</li>
+          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
           <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(item, (el: {
             id: string,
