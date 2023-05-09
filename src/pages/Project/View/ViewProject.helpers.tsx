@@ -471,6 +471,9 @@ const getSettings = (
         lines,
       },
     },
+    transition: {
+      duration: 500,
+    },
     axis: {
       x: {
         clipPath: false,
