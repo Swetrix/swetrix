@@ -677,6 +677,7 @@ const getSettingsPerf = (
   activeChartMetrics: string,
   rotateXAxias: boolean,
   chartType: string,
+  timeFormat: string,
   compareChart?: {
     [key: string]: string[],
   },
@@ -739,11 +740,14 @@ const getSettingsPerf = (
     },
     axis: {
       x: {
-        type: 'timeseries',
+        clipPath: false,
         tick: {
-          format: tbsFormatMapper[timeBucket],
+          fit: true,
           rotate: rotateXAxias ? 45 : 0,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
       },
       y: {
         tick: {
