@@ -1052,7 +1052,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat, dataChartPerfCompare)
 
       setMainChart(() => {
         // @ts-ignore
@@ -1572,7 +1572,11 @@ const ViewProject = ({
     }
 
     if (isActiveCompare) {
-      loadAnalytics()
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf()
+      } else {
+        loadAnalytics()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
@@ -1718,7 +1722,7 @@ const ViewProject = ({
                       keyExtractor={(pair) => pair.label}
                       onSelect={(pair) => {
                         if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
-                          if (activeTab !== PROJECT_TABS.traffic) {
+                          if (activeTab !== PROJECT_TABS.traffic && activeTab !== PROJECT_TABS.performance) {
                             return
                           }
 
