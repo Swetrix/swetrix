@@ -1704,9 +1704,7 @@ const ViewProject = ({
                       </span>
                     </div>
                     <Dropdown
-                      items={activeTab !== PROJECT_TABS.traffic ? _filter(periodPairs, (el) => {
-                        return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
-                      }) : isActiveCompare ? _filter(periodPairs, (el) => {
+                      items={isActiveCompare ? _filter(periodPairs, (el) => {
                         return _includes(filtersPeriodPairs, el.period)
                       }) : _includes(filtersPeriodPairs, period) ? periodPairs : _filter(periodPairs, (el) => {
                         return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
