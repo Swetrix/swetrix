@@ -31,6 +31,7 @@ import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
+import _includes from 'lodash/includes'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -669,6 +670,8 @@ const getSettings = (
   }
 }
 
+const perfomanceChartCompare = ['dnsCompare', 'tlsCompare', 'connCompare', 'responseCompare', 'renderCompare', 'dom_loadCompare', 'ttfbCompare', 'frontendCompare', 'networkCompare', 'backendCompare']
+
 const getSettingsPerf = (
   chart: {
   [key: string]: string[]
@@ -756,24 +759,79 @@ const getSettingsPerf = (
       },
     },
     tooltip: {
-      format: {
-        title: (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
-      },
-      contents: {
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-            <li class='font-semibold'>{=TITLE}</li>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            {{
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
-                </div>
-                <span class='pl-4'>{=VALUE}</span>
-              </li>
-            }}
-          </ul>`,
+      contents: (item: any, _: any, __: any, color: any) => {
+        const typesOptionsToTypesCompare: {
+        [key: string]: string,
+      } = {
+        unique: 'uniques',
+        total: 'visits',
+        sessionDuration: 'sdur',
+      }
+
+        if (_isEmpty(compareChart)) {
+          return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+        <hr class='border-gray-200 dark:border-gray-600' />
+        ${_map(item, (el: {
+          id: string,
+          index: number,
+          name: string,
+          value: string,
+          x: Date,
+        }) => {
+    return `
+          <li class='flex justify-between'>
+            <div class='flex justify-items-start'>
+              <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+              <span>${el.name}</span>
+            </div>
+            <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
+          </li>
+          `
+  }).join('')}`
+        }
+
+        return `
+      <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        ${_map(item, (el: {
+        id: string,
+        index: number,
+        name: string,
+        value: string,
+        x: Date,
+      }) => {
+    const {
+      id, index, name, value, x,
+    } = el
+
+    const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+    const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+    const valueCompare = getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare[id]]?.[index]), true)
+
+    if (_includes(perfomanceChartCompare, id)) {
+      return ''
+    }
+
+    return `
+          <div class='flex justify-between'>
+            <div class='flex justify-items-start'>
+              <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+              <span>${name}</span>
+            </div>
+          </div>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          <li class='mt-1 ml-2'>
+          <p>
+            <span>${xDataValue}</span> - <span>${getStringFromTime(getTimeFromSeconds(value), true)}</span>
+          </p>
+          ${valueCompare ? `<p>
+            <span>${xDataValueCompare}</span> -
+            <span>${valueCompare}</span>
+          </p>` : ''}
+          </li>
+        `
+  }).join('')}
+      </ul>`
       },
     },
     point: {
