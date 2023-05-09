@@ -867,6 +867,7 @@ const getSettingsPerf = (
           width: 10,
         },
       },
+      hide: perfomanceChartCompare,
     },
     area: {
       linearGradient: true,
