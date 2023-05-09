@@ -371,6 +371,8 @@ const getSettings = (
     })
   }
 
+  // test
+  
   if (!_isEmpty(forecasedChartData) && _isEmpty(compareChart)) {
     lines.push({
       value: _last(chart?.x),
