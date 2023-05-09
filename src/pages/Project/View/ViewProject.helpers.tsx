@@ -333,6 +333,30 @@ const getColumnsPerf = (chart: {
   return columns
 }
 
+const getValueForTooltipPerfomance = (chart: {
+  [key: string]: string[],
+}, id: string, index: number) => {
+  if (id === 'dns' || id === 'tls' || id === 'conn' || id === 'response' || id === 'render' || id === 'dom_load' || id === 'ttfb') {
+    return chart[id] ? chart[id][index] : 0
+  }
+
+  if (id === 'frontend') {
+    const sum = sumArrays(chart.render, chart.dom_load)
+    return sum ? sum[index] : 0
+  }
+
+  if (id === 'network') {
+    const sum = sumArrays(chart.dns, chart.tls, chart.conn, chart.response)
+    return sum ? sum[index] : 0
+  }
+
+  if (id === 'backend') {
+    return chart.ttfb ? chart.ttfb[index] : 0
+  }
+
+  return 0
+}
+
 const stringToColour = (str: string) => {
   let hash = 0
 
@@ -703,16 +727,16 @@ const getSettingsPerf = (
         frontend: chartType === chartTypes.line ? areaSpline() : bar(),
         network: chartType === chartTypes.line ? areaSpline() : bar(),
         backend: chartType === chartTypes.line ? areaSpline() : bar(),
-        dnsCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        tlsCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        connCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        responseCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        renderCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        dom_loadCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        ttfbCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        frontendCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        networkCompare: chartType === chartTypes.line ? areaSpline() : bar(),
-        backendCompare: chartType === chartTypes.line ? areaSpline() : bar(),
+        dnsCompare: chartType === chartTypes.line ? spline() : bar(),
+        tlsCompare: chartType === chartTypes.line ? spline() : bar(),
+        connCompare: chartType === chartTypes.line ? spline() : bar(),
+        responseCompare: chartType === chartTypes.line ? spline() : bar(),
+        renderCompare: chartType === chartTypes.line ? spline() : bar(),
+        dom_loadCompare: chartType === chartTypes.line ? spline() : bar(),
+        ttfbCompare: chartType === chartTypes.line ? spline() : bar(),
+        frontendCompare: chartType === chartTypes.line ? spline() : bar(),
+        networkCompare: chartType === chartTypes.line ? spline() : bar(),
+        backendCompare: chartType === chartTypes.line ? spline() : bar(),
       },
       colors: {
         dns: '#EC4319',
@@ -760,14 +784,6 @@ const getSettingsPerf = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        const typesOptionsToTypesCompare: {
-        [key: string]: string,
-      } = {
-        unique: 'uniques',
-        total: 'visits',
-        sessionDuration: 'sdur',
-      }
-
         if (_isEmpty(compareChart)) {
           return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
         <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
@@ -806,7 +822,8 @@ const getSettingsPerf = (
 
     const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
     const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
-    const valueCompare = getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare[id]]?.[index]), true)
+    const valueCompare = getStringFromTime(getTimeFromSeconds(getValueForTooltipPerfomance(compareChart, id, index)), true)
+    console.log(valueCompare, 'valueCompare', id)
 
     if (_includes(perfomanceChartCompare, id)) {
       return ''
