@@ -336,8 +336,12 @@ const getColumnsPerf = (chart: {
 const getValueForTooltipPerfomance = (chart: {
   [key: string]: string[],
 }, id: string, index: number) => {
-  if (id === 'dns' || id === 'tls' || id === 'conn' || id === 'response' || id === 'render' || id === 'dom_load' || id === 'ttfb') {
+  if (id === 'dns' || id === 'tls' || id === 'conn' || id === 'response' || id === 'render' || id === 'ttfb') {
     return chart[id] ? chart[id][index] : 0
+  }
+
+  if (id === 'dom_load') {
+    return chart.domLoad ? chart.domLoad[index] : 0
   }
 
   if (id === 'frontend') {
