@@ -258,7 +258,9 @@ const getColumns = (chart: {
 
 const getColumnsPerf = (chart: {
   [key: string]: string[],
-}, activeChartMetrics: string) => {
+}, activeChartMetrics: string, compareChart?: {
+  [key: string]: string[],
+}) => {
   const columns: any[] = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
@@ -271,12 +273,28 @@ const getColumnsPerf = (chart: {
     columns.push(['render', ...chart.render])
     columns.push(['dom_load', ...chart.domLoad])
     columns.push(['ttfb', ...chart.ttfb])
+
+    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response && compareChart?.render && compareChart?.domLoad && compareChart?.ttfb) {
+      columns.push(['dnsCompare', ...compareChart.dns])
+      columns.push(['tlsCompare', ...compareChart.tls])
+      columns.push(['connCompare', ...compareChart.conn])
+      columns.push(['responseCompare', ...compareChart.response])
+      columns.push(['renderCompare', ...compareChart.render])
+      columns.push(['dom_loadCompare', ...compareChart.domLoad])
+      columns.push(['ttfbCompare', ...compareChart.ttfb])
+    }
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.timing) {
     columns.push(['frontend', ...sumArrays(chart.render, chart.domLoad)])
     columns.push(['network', ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response)])
     columns.push(['backend', ...chart.ttfb])
+
+    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response && compareChart?.render && compareChart?.domLoad && compareChart?.ttfb) {
+      columns.push(['frontendCompare', ...sumArrays(compareChart.render, compareChart.domLoad)])
+      columns.push(['networkCompare', ...sumArrays(compareChart.dns, compareChart.tls, compareChart.conn, compareChart.response)])
+      columns.push(['backendCompare', ...compareChart.ttfb])
+    }
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.network) {
@@ -284,15 +302,31 @@ const getColumnsPerf = (chart: {
     columns.push(['tls', ...chart.tls])
     columns.push(['conn', ...chart.conn])
     columns.push(['response', ...chart.response])
+
+    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response) {
+      columns.push(['dnsCompare', ...compareChart.dns])
+      columns.push(['tlsCompare', ...compareChart.tls])
+      columns.push(['connCompare', ...compareChart.conn])
+      columns.push(['responseCompare', ...compareChart.response])
+    }
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend) {
     columns.push(['render', ...chart.render])
     columns.push(['dom_load', ...chart.domLoad])
+
+    if (compareChart?.render && compareChart?.domLoad) {
+      columns.push(['renderCompare', ...compareChart.render])
+      columns.push(['dom_loadCompare', ...compareChart.domLoad])
+    }
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.backend) {
     columns.push(['ttfb', ...chart.ttfb])
+
+    if (compareChart?.ttfb) {
+      columns.push(['ttfbCompare', ...compareChart.ttfb])
+    }
   }
 
   return columns
