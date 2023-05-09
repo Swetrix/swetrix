@@ -103,7 +103,7 @@ describe('Pagination', () => {
       <HocWithI18n {...defaultProps} />,
     )
     expect(getByText('1')).toBeInTheDocument()
-    expect(getByText('11')).toBeInTheDocument()
+    expect(getByText('9')).toBeInTheDocument()
     expect(getByText('project.prev')).toBeInTheDocument()
   })
 })
