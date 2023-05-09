@@ -236,6 +236,7 @@ const ViewProject = ({
   const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
+  const [dataChartPerfCompare, setDataChartPerfCompare] = useState<any>({})
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
       return 0
