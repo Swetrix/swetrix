@@ -700,6 +700,13 @@ const getSettingsPerf = (
         },
       },
     },
+    transition: {
+      duration: 500,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
     tooltip: {
       format: {
         title: (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
