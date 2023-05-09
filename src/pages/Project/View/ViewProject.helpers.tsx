@@ -826,7 +826,7 @@ const getSettingsPerf = (
 
     const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
     const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
-    const valueCompare = getStringFromTime(getTimeFromSeconds(getValueForTooltipPerfomance(compareChart, id, index)), true)
+    const valueCompare = getValueForTooltipPerfomance(compareChart, id, index)
 
     if (_includes(perfomanceChartCompare, id)) {
       return ''
@@ -846,7 +846,7 @@ const getSettingsPerf = (
           </p>
           ${valueCompare ? `<p>
             <span>${xDataValueCompare}</span> -
-            <span>${valueCompare}</span>
+            <span>${getStringFromTime(getTimeFromSeconds(valueCompare), true)}</span>
           </p>` : ''}
           </li>
         `
