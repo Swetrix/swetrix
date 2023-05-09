@@ -345,7 +345,7 @@ const getValueForTooltipPerfomance = (chart: {
   }
 
   if (id === 'frontend') {
-    const sum = sumArrays(chart.render, chart.dom_load)
+    const sum = sumArrays(chart.render, chart.domLoad)
     return sum ? sum[index] : 0
   }
 
