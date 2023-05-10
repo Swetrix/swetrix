@@ -83,6 +83,10 @@ import {
   TransferProjectBodyDto,
   ConfirmTransferProjectQueriesDto,
   CancelTransferProjectQueriesDto,
+  GetAnnotationsParamsDto,
+  GetAnnotationsQueriesDto,
+  AddAnnotationsBodyDto,
+  AddAnnotationsParamsDto
 } from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
@@ -1039,6 +1043,32 @@ export class ProjectController {
       reportFrequency: body.reportFrequency,
       origin: isDevelopment ? headers.origin : PRODUCTION_ORIGIN,
     })
+  }
+
+  @Get(':projectId/annotations')
+  @UseGuards(SelfhostedGuard)
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async getAnnotations(
+    @Param() params: GetAnnotationsParamsDto,
+    @Query() queries: GetAnnotationsQueriesDto,
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log({ params, queries }, 'GET /project/:projectId/annotations')
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const annotations = await this.projectService.getAnnotations(
+      params.projectId,
+      queries,
+    )
+
+    return annotations
   }
 
   @Get(':projectId/subscribers/invite')
