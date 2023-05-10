@@ -1589,6 +1589,8 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
 
+  console.log(project)
+
   if (!isLoading) {
     return (
       <Title title={name}>
@@ -1905,13 +1907,7 @@ const ViewProject = ({
                               {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
                             </p>
                           )}
-                          labelExtractor={(pair) => {
-                            const {
-                              label,
-                            } = pair
-
-                            return label
-                          }}
+                          labelExtractor={(pair) => pair.label}
                           keyExtractor={(pair) => pair.id}
                           onSelect={({ id: pairID }) => {
                             switchActiveChartMetric(pairID)
