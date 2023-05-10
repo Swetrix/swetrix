@@ -236,6 +236,7 @@ const ViewProject = ({
   const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
+  const [dataChartPerfCompare, setDataChartPerfCompare] = useState<any>({})
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
       return 0
@@ -664,6 +665,60 @@ const ViewProject = ({
       let key
       let from
       let to
+      let dataCompare
+      let keyCompare = ''
+      let fromCompare: string | undefined
+      let toCompare: string | undefined
+
+      if (isActiveCompare) {
+        if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
+          let start
+          let end
+          let diff
+          const startCompare = dayjs.utc(dateRangeCompare[0])
+          const endCompare = dayjs.utc(dateRangeCompare[1])
+          const diffCompare = endCompare.diff(startCompare, 'day')
+
+          if (activePeriod?.period === 'custom' && dateRange) {
+            start = dayjs.utc(dateRange[0])
+            end = dayjs.utc(dateRange[1])
+            diff = end.diff(start, 'day')
+          }
+
+          // @ts-ignore
+          if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
+            fromCompare = getFormatDate(dateRangeCompare[0])
+            toCompare = getFormatDate(dateRangeCompare[1])
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+          } else {
+            showError(t('project.compareDateRangeError'))
+            compareDisable()
+          }
+        } else {
+          let date
+          if (dateRange) {
+            date = _find(periodToCompareDate, (item) => item.period === period)?.formula(dateRange)
+          } else {
+            date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
+          }
+
+          if (date) {
+            fromCompare = date.from
+            toCompare = date.to
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+          }
+        }
+
+        if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+            dataCompare = cache[id][keyCompare]
+          } else {
+            dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone)
+          }
+        }
+
+        setProjectCachePerf(id, dataCompare || {}, keyCompare)
+      }
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
@@ -700,11 +755,15 @@ const ViewProject = ({
         return
       }
 
+      if (!_isEmpty(dataCompare) && !_isEmpty(dataCompare?.chart)) {
+        setDataChartPerfCompare(dataCompare.chart)
+      }
+
       if (_isEmpty(dataPerf.params)) {
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat, dataCompare?.chart)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -950,8 +1009,6 @@ const ViewProject = ({
         scrollToTopDisable: true,
       },
     })
-
-    compareDisable()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
@@ -995,7 +1052,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat, dataChartPerfCompare)
 
       setMainChart(() => {
         // @ts-ignore
@@ -1515,7 +1572,11 @@ const ViewProject = ({
     }
 
     if (isActiveCompare) {
-      loadAnalytics()
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf()
+      } else {
+        loadAnalytics()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
@@ -1651,9 +1712,7 @@ const ViewProject = ({
                       </span>
                     </div>
                     <Dropdown
-                      items={activeTab !== PROJECT_TABS.traffic ? _filter(periodPairs, (el) => {
-                        return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
-                      }) : isActiveCompare ? _filter(periodPairs, (el) => {
+                      items={isActiveCompare ? _filter(periodPairs, (el) => {
                         return _includes(filtersPeriodPairs, el.period)
                       }) : _includes(filtersPeriodPairs, period) ? periodPairs : _filter(periodPairs, (el) => {
                         return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
@@ -1663,7 +1722,7 @@ const ViewProject = ({
                       keyExtractor={(pair) => pair.label}
                       onSelect={(pair) => {
                         if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
-                          if (activeTab !== PROJECT_TABS.traffic) {
+                          if (activeTab !== PROJECT_TABS.traffic && activeTab !== PROJECT_TABS.performance) {
                             return
                           }
 

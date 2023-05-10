@@ -31,6 +31,7 @@ import { getTimeFromSeconds, getStringFromTime, sumArrays } from 'utils/generic'
 import countries from 'utils/isoCountries'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
+import _includes from 'lodash/includes'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -258,7 +259,9 @@ const getColumns = (chart: {
 
 const getColumnsPerf = (chart: {
   [key: string]: string[],
-}, activeChartMetrics: string) => {
+}, activeChartMetrics: string, compareChart?: {
+  [key: string]: string[],
+}) => {
   const columns: any[] = [
     ['x', ..._map(chart.x, el => dayjs(el).toDate())],
   ]
@@ -271,12 +274,28 @@ const getColumnsPerf = (chart: {
     columns.push(['render', ...chart.render])
     columns.push(['dom_load', ...chart.domLoad])
     columns.push(['ttfb', ...chart.ttfb])
+
+    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response && compareChart?.render && compareChart?.domLoad && compareChart?.ttfb) {
+      columns.push(['dnsCompare', ...compareChart.dns])
+      columns.push(['tlsCompare', ...compareChart.tls])
+      columns.push(['connCompare', ...compareChart.conn])
+      columns.push(['responseCompare', ...compareChart.response])
+      columns.push(['renderCompare', ...compareChart.render])
+      columns.push(['dom_loadCompare', ...compareChart.domLoad])
+      columns.push(['ttfbCompare', ...compareChart.ttfb])
+    }
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.timing) {
     columns.push(['frontend', ...sumArrays(chart.render, chart.domLoad)])
     columns.push(['network', ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response)])
     columns.push(['backend', ...chart.ttfb])
+
+    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response && compareChart?.render && compareChart?.domLoad && compareChart?.ttfb) {
+      columns.push(['frontendCompare', ...sumArrays(compareChart.render, compareChart.domLoad)])
+      columns.push(['networkCompare', ...sumArrays(compareChart.dns, compareChart.tls, compareChart.conn, compareChart.response)])
+      columns.push(['backendCompare', ...compareChart.ttfb])
+    }
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.network) {
@@ -284,18 +303,62 @@ const getColumnsPerf = (chart: {
     columns.push(['tls', ...chart.tls])
     columns.push(['conn', ...chart.conn])
     columns.push(['response', ...chart.response])
+
+    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response) {
+      columns.push(['dnsCompare', ...compareChart.dns])
+      columns.push(['tlsCompare', ...compareChart.tls])
+      columns.push(['connCompare', ...compareChart.conn])
+      columns.push(['responseCompare', ...compareChart.response])
+    }
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend) {
     columns.push(['render', ...chart.render])
     columns.push(['dom_load', ...chart.domLoad])
+
+    if (compareChart?.render && compareChart?.domLoad) {
+      columns.push(['renderCompare', ...compareChart.render])
+      columns.push(['dom_loadCompare', ...compareChart.domLoad])
+    }
   }
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.backend) {
     columns.push(['ttfb', ...chart.ttfb])
+
+    if (compareChart?.ttfb) {
+      columns.push(['ttfbCompare', ...compareChart.ttfb])
+    }
   }
 
   return columns
+}
+
+const getValueForTooltipPerfomance = (chart: {
+  [key: string]: string[],
+}, id: string, index: number) => {
+  if (id === 'dns' || id === 'tls' || id === 'conn' || id === 'response' || id === 'render' || id === 'ttfb') {
+    return chart[id] ? chart[id][index] : 0
+  }
+
+  if (id === 'dom_load') {
+    return chart.domLoad ? chart.domLoad[index] : 0
+  }
+
+  if (id === 'frontend') {
+    const sum = sumArrays(chart.render, chart.domLoad)
+    return sum ? sum[index] : 0
+  }
+
+  if (id === 'network') {
+    const sum = sumArrays(chart.dns, chart.tls, chart.conn, chart.response)
+    return sum ? sum[index] : 0
+  }
+
+  if (id === 'backend') {
+    return chart.ttfb ? chart.ttfb[index] : 0
+  }
+
+  return 0
 }
 
 const stringToColour = (str: string) => {
@@ -504,7 +567,7 @@ const getSettings = (
 
         if (_isEmpty(compareChart)) {
           return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-          <li class='font-semibold'>${d3.timeFormat(tbsFormatMapper[timeBucket])(item[0].x)}</li>
+          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
           <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(item, (el: {
             id: string,
@@ -635,6 +698,8 @@ const getSettings = (
   }
 }
 
+const perfomanceChartCompare = ['dnsCompare', 'tlsCompare', 'connCompare', 'responseCompare', 'renderCompare', 'dom_loadCompare', 'ttfbCompare', 'frontendCompare', 'networkCompare', 'backendCompare']
+
 const getSettingsPerf = (
   chart: {
   [key: string]: string[]
@@ -643,6 +708,10 @@ const getSettingsPerf = (
   activeChartMetrics: string,
   rotateXAxias: boolean,
   chartType: string,
+  timeFormat: string,
+  compareChart?: {
+    [key: string]: string[],
+  },
 ) => {
   const xAxisSize = _size(chart.x)
 
@@ -650,7 +719,7 @@ const getSettingsPerf = (
     data: {
       x: 'x',
       xFormat: tbsFormatMapper[timeBucket],
-      columns: getColumnsPerf(chart, activeChartMetrics),
+      columns: getColumnsPerf(chart, activeChartMetrics, compareChart),
       types: {
         dns: chartType === chartTypes.line ? areaSpline() : bar(),
         tls: chartType === chartTypes.line ? areaSpline() : bar(),
@@ -662,6 +731,16 @@ const getSettingsPerf = (
         frontend: chartType === chartTypes.line ? areaSpline() : bar(),
         network: chartType === chartTypes.line ? areaSpline() : bar(),
         backend: chartType === chartTypes.line ? areaSpline() : bar(),
+        dnsCompare: chartType === chartTypes.line ? spline() : bar(),
+        tlsCompare: chartType === chartTypes.line ? spline() : bar(),
+        connCompare: chartType === chartTypes.line ? spline() : bar(),
+        responseCompare: chartType === chartTypes.line ? spline() : bar(),
+        renderCompare: chartType === chartTypes.line ? spline() : bar(),
+        dom_loadCompare: chartType === chartTypes.line ? spline() : bar(),
+        ttfbCompare: chartType === chartTypes.line ? spline() : bar(),
+        frontendCompare: chartType === chartTypes.line ? spline() : bar(),
+        networkCompare: chartType === chartTypes.line ? spline() : bar(),
+        backendCompare: chartType === chartTypes.line ? spline() : bar(),
       },
       colors: {
         dns: '#EC4319',
@@ -674,18 +753,32 @@ const getSettingsPerf = (
         frontend: '#709775',
         network: '#F7A265',
         backend: '#00A8E8',
+        dnsCompare: 'rgba(236, 67, 25, 0.4)',
+        tlsCompare: 'rgba(242, 112, 89, 0.4)',
+        connCompare: 'rgba(247, 162, 101, 0.4)',
+        responseCompare: 'rgba(245, 211, 118, 0.4)',
+        renderCompare: 'rgba(112, 151, 117, 0.4)',
+        dom_loadCompare: 'rgba(165, 230, 171, 0.4)',
+        ttfbCompare: 'rgba(0, 168, 232, 0.4)',
+        frontendCompare: 'rgba(112, 151, 117, 0.4)',
+        networkCompare: 'rgba(247, 162, 101, 0.4)',
+        backendCompare: 'rgba(0, 168, 232, 0.4)',
       },
       groups: [
         ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
+        ['dnsCompare', 'tlsCompare', 'connCompare', 'responseCompare', 'renderCompare', 'dom_loadCompare', 'ttfbCompare', 'frontendCompare', 'networkCompare', 'backendCompare'],
       ],
     },
     axis: {
       x: {
-        type: 'timeseries',
+        clipPath: false,
         tick: {
-          format: tbsFormatMapper[timeBucket],
+          fit: true,
           rotate: rotateXAxias ? 45 : 0,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
       },
       y: {
         tick: {
@@ -694,24 +787,71 @@ const getSettingsPerf = (
       },
     },
     tooltip: {
-      format: {
-        title: (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
-      },
-      contents: {
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-            <li class='font-semibold'>{=TITLE}</li>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            {{
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
-                </div>
-                <span class='pl-4'>{=VALUE}</span>
-              </li>
-            }}
-          </ul>`,
+      contents: (item: any, _: any, __: any, color: any) => {
+        if (_isEmpty(compareChart)) {
+          return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+        <hr class='border-gray-200 dark:border-gray-600' />
+        ${_map(item, (el: {
+          id: string,
+          index: number,
+          name: string,
+          value: string,
+          x: Date,
+        }) => {
+    return `
+          <li class='flex justify-between'>
+            <div class='flex justify-items-start'>
+              <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+              <span>${el.name}</span>
+            </div>
+            <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
+          </li>
+          `
+  }).join('')}`
+        }
+
+        return `
+      <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        ${_map(item, (el: {
+        id: string,
+        index: number,
+        name: string,
+        value: string,
+        x: Date,
+      }) => {
+    const {
+      id, index, name, value, x,
+    } = el
+
+    const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+    const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+    const valueCompare = getValueForTooltipPerfomance(compareChart, id, index)
+
+    if (_includes(perfomanceChartCompare, id)) {
+      return ''
+    }
+
+    return `
+          <div class='flex justify-between'>
+            <div class='flex justify-items-start'>
+              <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+              <span>${name}</span>
+            </div>
+          </div>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          <li class='mt-1 ml-2'>
+          <p>
+            <span>${xDataValue}</span> - <span>${getStringFromTime(getTimeFromSeconds(value), true)}</span>
+          </p>
+          ${valueCompare ? `<p>
+            <span>${xDataValueCompare}</span> -
+            <span>${getStringFromTime(getTimeFromSeconds(valueCompare), true)}</span>
+          </p>` : ''}
+          </li>
+        `
+  }).join('')}
+      </ul>`
       },
     },
     point: {
@@ -730,6 +870,7 @@ const getSettingsPerf = (
           width: 10,
         },
       },
+      hide: perfomanceChartCompare,
     },
     area: {
       linearGradient: true,
