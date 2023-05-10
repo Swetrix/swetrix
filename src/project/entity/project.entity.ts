@@ -13,6 +13,7 @@ import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
 import { ProjectSubscriber } from './project-subscriber.entity'
+import { ProjectAnnotations } from './project-annotations.entity'
 import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
 
 // In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
@@ -96,4 +97,9 @@ export class Project {
     cascade: true,
   })
   subscribers: ProjectSubscriber[]
+
+  @OneToMany(() => ProjectAnnotations, annotations => annotations.project, {
+    cascade: true,
+  })
+  annotations: ProjectAnnotations[]
 }
