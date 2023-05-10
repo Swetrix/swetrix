@@ -505,6 +505,7 @@ export class AnalyticsService {
         pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         AND pg != prev
+        ${filtersQuery}
       GROUP BY
         pg,
         prev

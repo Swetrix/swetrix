@@ -570,7 +570,7 @@ export class AnalyticsController {
   async getUserFlow(
     @Query() data: GetUserFlowDTO,
     @CurrentUserId() uid: string,
-  ): Promise<IUserFlow> {
+  ): Promise<IUserFlow | { appliedFilters: any[] }> {
     const {
       pid,
       period,
@@ -607,8 +607,10 @@ export class AnalyticsController {
       ...filtersParams,
     }
 
+    const flow = await this.analyticsService.getUserFlow(params, filtersQuery)
+
     return {
-      ...this.analyticsService.getUserFlow(params, filtersQuery),
+      ...flow,
       appliedFilters: parsedFilters,
     }
   }
