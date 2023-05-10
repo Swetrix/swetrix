@@ -736,4 +736,11 @@ export class ProjectService {
   async addAnnotations(data: AddAnnotationsType) {
     return await this.projectAnnotationsRepository.save({ ...data })
   }
+
+  async removeAnnotations(projectId: string, annotationsId: string) {
+    await this.projectAnnotationsRepository.delete({
+      id: annotationsId,
+      projectId,
+    })
+  }
 }
