@@ -657,6 +657,7 @@ const ViewProject = ({
     } catch (e) {
       setAnalyticsLoading(false)
       setDataLoading(false)
+      setIsPanelsDataEmpty(true)
       console.error('[ERROR](loadAnalytics) Loading analytics data failed')
       console.error(e)
     }
@@ -796,6 +797,7 @@ const ViewProject = ({
     } catch (e) {
       setAnalyticsLoading(false)
       setDataLoading(false)
+      setIsPanelsDataEmpty(true)
       console.error('[ERROR](loadAnalytics) Loading analytics data failed')
       console.error(e)
     }
@@ -1588,8 +1590,6 @@ const ViewProject = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
-
-  console.log(project)
 
   if (!isLoading) {
     return (
