@@ -720,4 +720,14 @@ export class ProjectService {
       where: { name, admin: { id: userId } },
     })
   }
+
+  async getAnnotations(projectId: string, queries: GetSubscribersQueriesDto) {
+    const [annotations, count] =
+      await this.projectSubscriberRepository.findAndCount({
+        skip: Number(queries.offset) || 0,
+        take: Number(queries.limit) > 100 ? 100 : Number(queries.limit) || 100,
+        where: { projectId },
+      })
+    return { annotations, count }
+  }
 }

@@ -1061,14 +1061,12 @@ export class ProjectController {
 
     if (!project) {
       throw new NotFoundException('Project not found.')
-    }
+    } 
 
-    const annotations = await this.projectService.getAnnotations(
+    return await this.projectService.getAnnotations(
       params.projectId,
       queries,
     )
-
-    return annotations
   }
 
   @Get(':projectId/subscribers/invite')
