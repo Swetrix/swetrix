@@ -1087,10 +1087,10 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    return await this.projectService.addAnnotation({
-      userId,
+    return await this.projectService.addAnnotations({
       projectId: params.projectId,
-      annotation: body.annotation,
+      name: body.name,
+      date: body.date,
     })
   }
 
