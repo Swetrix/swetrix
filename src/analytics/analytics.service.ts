@@ -494,7 +494,7 @@ export class AnalyticsService {
     return { nodes, links }
   }
 
-  async getUserFlow(params: unknown): Promise<IUserFlow> {
+  async getUserFlow(params: unknown, filtersQuery: string): Promise<IUserFlow> {
     const query = `
       SELECT
         pg AS source,
@@ -505,6 +505,7 @@ export class AnalyticsService {
         pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         AND pg != prev
+        ${filtersQuery}
       GROUP BY
         pg,
         prev

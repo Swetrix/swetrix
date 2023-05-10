@@ -22,4 +22,10 @@ export class GetUserFlowDTO {
     default: DEFAULT_TIMEZONE,
   })
   timezone: string
+
+  @ApiProperty({
+    description:
+      'A stringified array of properties to filter [{ column, filter, isExclusive }]',
+  })
+  filters: string
 }
