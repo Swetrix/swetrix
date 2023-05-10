@@ -233,6 +233,7 @@ export const getProjectCacheKey = (period: string, timeBucket: string): string =
 export const getProjectCaptchaCacheKey = (period: string, timeBucket: string): string => `${period}${timeBucket}captcha`
 export const getProjectForcastCacheKey = (period: string, timeBucket: string, periodToForecast: string): string => `${period}${timeBucket}${periodToForecast}forecast`
 export const getProjectCacheCustomKey = (from: string, to: string, timeBucket: string): string => `${from}-${to}-${timeBucket}`
+export const getProjectCacheCustomKeyPerf = (from: string, to: string, timeBucket: string): string => `${from}-${to}-${timeBucket}perf`
 export const getUserFlowCacheKey = (pid: string, period: string): string => `${pid}${period}userflow`
 
 // Cookies
