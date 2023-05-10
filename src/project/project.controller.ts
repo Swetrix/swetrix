@@ -1117,7 +1117,7 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    return await this.projectService.removeAnnotations(
+    await this.projectService.removeAnnotations(
       params.projectId,
       params.annotationId,
     )
