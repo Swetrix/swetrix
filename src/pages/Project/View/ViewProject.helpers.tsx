@@ -913,6 +913,7 @@ const typeNameMapping = (t: (str: string) => string) => ({
   ca: 'utm_campaign',
   lt: t('project.mapping.lt'),
   ev: t('project.event'),
+  userFlow: t('main.competitiveFeatures.usfl'),
 })
 
 const iconClassName = 'w-6 h-6'

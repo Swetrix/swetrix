@@ -83,11 +83,7 @@ interface IProjectView extends IProject {
   isPublicVisitors?: boolean,
 }
 
-const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats,
-}: {
+interface IViewProject {
   projects: IProjectView[],
   extensions: any,
   isLoading: boolean,
@@ -119,7 +115,13 @@ const ViewProject = ({
   customEventsPrefs: any,
   setCustomEventsPrefs: (pid: string, data: any) => void,
   liveStats: ILiveStats,
-}) => {
+}
+
+const ViewProject = ({
+  projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats,
+}: IViewProject) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null,
@@ -200,6 +202,7 @@ const ViewProject = ({
 
     return projectTab || PROJECT_TABS.traffic
   })
+  const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
 
   // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
   // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
@@ -284,6 +287,11 @@ const ViewProject = ({
       },
     ]
   }, [t])
+
+  const pgPanelNameMapping = [
+    tnMapping.pg, // when fragment 0 is selected
+    tnMapping.userFlow, // when fragment 1 is selected
+  ]
 
   const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
 
@@ -2130,7 +2138,8 @@ const ViewProject = ({
                           icon={panelIcon}
                           id={type}
                           onFilter={filterHandler}
-                          name={panelName}
+                          onFragmentChange={setPgActiveFragment}
+                          name={pgPanelNameMapping[pgActiveFragment]}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
                           period={period}

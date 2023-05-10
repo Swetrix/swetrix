@@ -731,9 +731,7 @@ CustomEvents.propTypes = {
   chartData: PropTypes.objectOf(PropTypes.any).isRequired,
 }
 
-const Panel = ({
-  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab,
-}: {
+interface IPanel {
   name: string
   data: any
   rowMapper: any
@@ -753,7 +751,13 @@ const Panel = ({
   to?: string | null
   timezone?: string | null
   activeTab?: string
-}): JSX.Element => {
+  onFragmentChange?: (arg: number) => void
+}
+
+const Panel = ({
+  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters,
+  onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab, onFragmentChange,
+}: IPanel): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
   const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])
@@ -792,6 +796,14 @@ const Panel = ({
     }
   }
 
+  const _setActiveFragment = (index: number) => {
+    setActiveFragment(index)
+
+    if (onFragmentChange) {
+      onFragmentChange(index)
+    }
+  }
+
   // Showing map of stats a data
   if (id === 'cc' && activeFragment === 1 && !_isEmpty(data)) {
     return (
@@ -800,7 +812,7 @@ const Panel = ({
         icon={icon}
         type={id}
         activeFragment={activeFragment}
-        setActiveFragment={setActiveFragment}
+        setActiveFragment={_setActiveFragment}
         openModal={() => setModal(true)}
         customTabs={customTabs}
       >
@@ -833,7 +845,7 @@ const Panel = ({
         icon={icon}
         type={id}
         activeFragment={activeFragment}
-        setActiveFragment={setActiveFragment}
+        setActiveFragment={_setActiveFragment}
         openModal={() => setModal(true)}
         customTabs={customTabs}
       >
@@ -925,7 +937,7 @@ const Panel = ({
         name={name}
         icon={icon}
         type={id}
-        setActiveFragment={setActiveFragment}
+        setActiveFragment={_setActiveFragment}
         activeFragment={activeFragment}
         customTabs={customTabs}
         activeTab={activeTab}
@@ -956,7 +968,7 @@ const Panel = ({
         icon={icon}
         type={id}
         activeFragment={activeFragment}
-        setActiveFragment={setActiveFragment}
+        setActiveFragment={_setActiveFragment}
         openModal={() => setModal(true)}
         customTabs={customTabs}
         activeTab={activeTab}
@@ -968,7 +980,7 @@ const Panel = ({
   }
 
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs} activeTab={activeTab}>
+    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={_setActiveFragment} customTabs={customTabs} activeTab={activeTab}>
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}
@@ -1087,6 +1099,7 @@ Panel.propTypes = {
   linkContent: PropTypes.bool,
   hideFilters: PropTypes.bool,
   icon: PropTypes.node,
+  onFragmentChange: PropTypes.func,
 }
 
 Panel.defaultProps = {
@@ -1106,6 +1119,7 @@ Panel.defaultProps = {
   period: null,
   pid: null,
   activeTab: null,
+  onFragmentChange: () => { },
 }
 
 const PanelMemo = memo(Panel)
