@@ -51,7 +51,8 @@ import {
 } from '../common/constants'
 import { getProjectsClickhouse } from '../common/utils'
 import { ProjectSubscriber } from './entity'
-import { AddSubscriberType } from './types'
+import { ProjectAnnotations } from './entity'
+import { AddSubscriberType, AddAnnotationsType } from './types'
 import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
 import { ReportFrequency } from './enums'
 
@@ -118,6 +119,7 @@ export class ProjectService {
     private userService: UserService,
     @InjectRepository(ProjectSubscriber)
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
+    private readonly projectAnnotationsRepository: Repository<ProjectAnnotations>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
   ) {}
@@ -723,11 +725,15 @@ export class ProjectService {
 
   async getAnnotations(projectId: string, queries: GetSubscribersQueriesDto) {
     const [annotations, count] =
-      await this.projectSubscriberRepository.findAndCount({
+      await this.projectAnnotationsRepository.findAndCount({
         skip: Number(queries.offset) || 0,
         take: Number(queries.limit) > 100 ? 100 : Number(queries.limit) || 100,
         where: { projectId },
       })
     return { annotations, count }
+  }
+
+  async addAnnotations(data: AddAnnotationsType) {
+    return await this.projectAnnotationsRepository.save({ ...data })
   }
 }

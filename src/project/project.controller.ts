@@ -1069,6 +1069,31 @@ export class ProjectController {
     )
   }
 
+  @Post(':projectId/annotations')
+  @UseGuards(SelfhostedGuard)
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async addAnnotation(
+    @Param() params: GetAnnotationsParamsDto,
+    @Body() body: AddAnnotationsBodyDto,
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log({ params, body }, 'POST /project/:projectId/annotations')
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    return await this.projectService.addAnnotation({
+      userId,
+      projectId: params.projectId,
+      annotation: body.annotation,
+    })
+  }
+
   @Get(':projectId/subscribers/invite')
   @UseGuards(SelfhostedGuard)
   @HttpCode(HttpStatus.OK)
