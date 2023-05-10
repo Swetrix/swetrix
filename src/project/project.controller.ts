@@ -88,6 +88,8 @@ import {
   AddAnnotationsBodyDto,
   AddAnnotationsParamsDto,
   RemoveAnnotationParamsDto,
+  UpdateAnnotationsBodyDto,
+  UpdateAnnotationsParamsDto,
 } from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
@@ -1118,6 +1120,34 @@ export class ProjectController {
     return await this.projectService.removeAnnotations(
       params.projectId,
       params.annotationId,
+    )
+  }
+
+  @Patch(':projectId/annotations/:annotationId')
+  @UseGuards(SelfhostedGuard)
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async updateAnnotation(
+    @Param() params: UpdateAnnotationsParamsDto,
+    @Body() body: UpdateAnnotationsBodyDto,
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log(
+      { params, body },
+      'PATCH /project/:projectId/annotations/:annotationId',
+    )
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    return await this.projectService.updateAnnotations(
+      params.projectId,
+      params.annotationId,
+      body,
     )
   }
 

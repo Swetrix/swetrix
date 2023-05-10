@@ -1,6 +1,6 @@
-import { Matches, IsUUID } from 'class-validator'
+import { Matches, IsUUID, IsString } from 'class-validator'
 
-export class UpdateAnnotationsBodyDto {
+export class UpdateAnnotationsParamsDto {
   @Matches(/^(?!.*--)[a-zA-Z0-9-]{12}$/)
   readonly projectId: string
 
@@ -8,7 +8,10 @@ export class UpdateAnnotationsBodyDto {
   readonly annotationId: string
 }
 
-export class UpdateAnnotationsParamsDto {
-  @Matches(/^(?!.*--)[a-zA-Z0-9-]{12}$/)
-  readonly projectId: string
+export class UpdateAnnotationsBodyDto {
+  @IsString()
+  readonly name: string
+
+  @IsString()
+  readonly date: string
 }
