@@ -86,7 +86,8 @@ import {
   GetAnnotationsParamsDto,
   GetAnnotationsQueriesDto,
   AddAnnotationsBodyDto,
-  AddAnnotationsParamsDto
+  AddAnnotationsParamsDto,
+  RemoveAnnotationParamsDto,
 } from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
@@ -1073,7 +1074,7 @@ export class ProjectController {
   @UseGuards(SelfhostedGuard)
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
   async addAnnotation(
-    @Param() params: GetAnnotationsParamsDto,
+    @Param() params: AddAnnotationsParamsDto,
     @Body() body: AddAnnotationsBodyDto,
     @CurrentUserId() userId: string,
   ) {
@@ -1092,6 +1093,32 @@ export class ProjectController {
       name: body.name,
       date: body.date,
     })
+  }
+
+  @Delete(':projectId/annotations/:annotationId')
+  @UseGuards(SelfhostedGuard)
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async removeAnnotation(
+    @Param() params: RemoveAnnotationParamsDto,
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log(
+      { params },
+      'DELETE /project/:projectId/annotations/:annotationId',
+    )
+    const project = await this.projectService.getProject(
+      params.projectId,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    return await this.projectService.removeAnnotations(
+      params.projectId,
+      params.annotationId,
+    )
   }
 
   @Get(':projectId/subscribers/invite')
