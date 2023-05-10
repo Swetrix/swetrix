@@ -755,7 +755,6 @@ const ViewProject = ({
         return
       }
 
-      console.log(dataCompare)
       if (!_isEmpty(dataCompare) && !_isEmpty(dataCompare?.chart)) {
         setDataChartPerfCompare(dataCompare.chart)
       }
