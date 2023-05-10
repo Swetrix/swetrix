@@ -53,7 +53,7 @@ import { getProjectsClickhouse } from '../common/utils'
 import { ProjectSubscriber } from './entity'
 import { ProjectAnnotations } from './entity'
 import { AddSubscriberType, AddAnnotationsType } from './types'
-import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
+import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto, UpdateAnnotationsBodyDto } from './dto'
 import { ReportFrequency } from './enums'
 
 dayjs.extend(utc)
@@ -741,6 +741,20 @@ export class ProjectService {
     await this.projectAnnotationsRepository.delete({
       id: annotationsId,
       projectId,
+    })
+  }
+
+  async updateAnnotations(
+    projectId: string,
+    annotationsId: string,
+    data: UpdateAnnotationsBodyDto,
+  ) {
+    await this.projectAnnotationsRepository.update(
+      { id: annotationsId, projectId },
+      data,
+    )
+    return this.projectAnnotationsRepository.findOne({
+      where: { id: annotationsId, projectId },
     })
   }
 }
