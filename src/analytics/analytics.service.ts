@@ -439,10 +439,18 @@ export class AnalyticsService {
           groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
         }
       } else {
-        groupFrom = dayjs
-          .utc()
-          .subtract(parseInt(period, 10), _last(period))
-          .format('YYYY-MM-DD')
+        if (period === '1d') {
+          groupFrom = dayjs
+            .utc()
+            .subtract(parseInt(period, 10), _last(period))
+            .format('YYYY-MM-DD')
+        } else {
+          groupFrom = dayjs
+            .utc()
+            .subtract(parseInt(period, 10) - 1, _last(period))
+            .format('YYYY-MM-DD')
+        }
+
         groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
 
         if (!_isEmpty(timeBucket)) {
