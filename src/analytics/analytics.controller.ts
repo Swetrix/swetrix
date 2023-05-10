@@ -523,6 +523,74 @@ export class AnalyticsController {
     }
   }
 
+  @Get('performance/chart')
+  @Auth([], true, true)
+  async getPerfChartData(
+    @Query() data: AnalyticsGET_DTO,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.PERFORMANCE,
+    )
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      timezone,
+    )
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom,
+        groupTo,
+        ...filtersParams,
+      },
+    }
+
+    const chart = await this.analyticsService.getPerfChartData(
+      timeBucket,
+      from,
+      to,
+      filtersQuery,
+      paramsData,
+      timezone,
+    )
+
+    let appliedFilters = filters
+
+    if (filters) {
+      try {
+        appliedFilters = JSON.parse(filters)
+        // eslint-disable-next-line no-empty
+      } catch {}
+    }
+
+    return {
+      chart,
+      appliedFilters,
+    }
+  }
+
   @Get('captcha')
   @Auth([], true, true)
   async getCaptchaData(
