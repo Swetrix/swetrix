@@ -534,6 +534,13 @@ const getSettings = (
         lines,
       },
     },
+    transition: {
+      duration: 500,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
     axis: {
       x: {
         clipPath: false,
@@ -785,6 +792,13 @@ const getSettingsPerf = (
           format: (d: string) => getStringFromTime(getTimeFromSeconds(d), true),
         },
       },
+    },
+    transition: {
+      duration: 500,
+    },
+    resize: {
+      auto: true,
+      timer: false,
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
