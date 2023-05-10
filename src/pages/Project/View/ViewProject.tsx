@@ -44,7 +44,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE,
+  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, getProjectCacheCustomKeyPerf,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -689,7 +689,7 @@ const ViewProject = ({
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket)
           } else {
             showError(t('project.compareDateRangeError'))
             compareDisable()
@@ -705,7 +705,7 @@ const ViewProject = ({
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket)
           }
         }
 
@@ -755,6 +755,7 @@ const ViewProject = ({
         return
       }
 
+      console.log(dataCompare)
       if (!_isEmpty(dataCompare) && !_isEmpty(dataCompare?.chart)) {
         setDataChartPerfCompare(dataCompare.chart)
       }
