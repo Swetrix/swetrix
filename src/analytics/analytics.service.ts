@@ -1431,6 +1431,34 @@ export class AnalyticsService {
     }
   }
 
+  async getPerfChartData(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    filtersQuery: string,
+    paramsData: object,
+    timezone: string,
+  ) {
+    const x = this.generateXAxis(timeBucket, from, to)
+
+    const query = this.generatePerformanceAggregationQuery(
+      timezone,
+      timeBucket,
+      filtersQuery,
+    )
+
+    const result = <Array<PerformanceCHResponse>>(
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+
+    // x = this.updateXAxisTimezone(x, timezone, timeBucket)
+
+    return {
+      x,
+      ...this.extractPerformanceChartData(result, x),
+    }
+  }
+
   async groupPerfByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -1464,24 +1492,14 @@ export class AnalyticsService {
 
       // Getting chart data
       (async () => {
-        const x = this.generateXAxis(timeBucket, from, to)
-
-        const query = this.generatePerformanceAggregationQuery(
-          timezone,
+        chart = await this.getPerfChartData(
           timeBucket,
+          from,
+          to,
           filtersQuery,
+          paramsData,
+          timezone,
         )
-
-        const result = <Array<PerformanceCHResponse>>(
-          await clickhouse.query(query, paramsData).toPromise()
-        )
-
-        // x = this.updateXAxisTimezone(x, timezone, timeBucket)
-
-        chart = {
-          x,
-          ...this.extractPerformanceChartData(result, x),
-        }
       })(),
     ]
 
