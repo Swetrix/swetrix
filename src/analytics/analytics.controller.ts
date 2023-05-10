@@ -345,19 +345,10 @@ export class AnalyticsController {
       )
     }
 
-    let appliedFilters = filters
-
-    if (filters) {
-      try {
-        appliedFilters = JSON.parse(filters)
-        // eslint-disable-next-line no-empty
-      } catch {}
-    }
-
     if (isCaptcha) {
       return {
         ...result,
-        appliedFilters,
+        appliedFilters: parsedFilters,
       }
     }
 
@@ -369,7 +360,7 @@ export class AnalyticsController {
     return {
       ...result,
       customs,
-      appliedFilters,
+      appliedFilters: parsedFilters,
     }
   }
 
@@ -395,7 +386,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
       filters,
       DataType.ANALYTICS,
     )
@@ -437,18 +428,10 @@ export class AnalyticsController {
       timezone,
       customEVFilterApplied,
     )
-    let appliedFilters = filters
-
-    if (filters) {
-      try {
-        appliedFilters = JSON.parse(filters)
-        // eslint-disable-next-line no-empty
-      } catch {}
-    }
 
     return {
       ...result,
-      appliedFilters,
+      appliedFilters: parsedFilters,
     }
   }
 
@@ -474,7 +457,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
       filters,
       DataType.PERFORMANCE,
     )
@@ -508,18 +491,9 @@ export class AnalyticsController {
       timezone,
     )
 
-    let appliedFilters = filters
-
-    if (filters) {
-      try {
-        appliedFilters = JSON.parse(filters)
-        // eslint-disable-next-line no-empty
-      } catch {}
-    }
-
     return {
       ...result,
-      appliedFilters,
+      appliedFilters: parsedFilters,
     }
   }
 
@@ -545,7 +519,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
       filters,
       DataType.PERFORMANCE,
     )
@@ -576,18 +550,9 @@ export class AnalyticsController {
       timezone,
     )
 
-    let appliedFilters = filters
-
-    if (filters) {
-      try {
-        appliedFilters = JSON.parse(filters)
-        // eslint-disable-next-line no-empty
-      } catch {}
-    }
-
     return {
       chart,
-      appliedFilters,
+      appliedFilters: parsedFilters,
     }
   }
 
@@ -606,7 +571,14 @@ export class AnalyticsController {
     @Query() data: GetUserFlowDTO,
     @CurrentUserId() uid: string,
   ): Promise<IUserFlow> {
-    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE } = data
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE, 
+      filters,
+    } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
@@ -623,13 +595,22 @@ export class AnalyticsController {
       timezone,
     )
 
+    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
+
     const params = {
       pid,
       groupFrom,
       groupTo,
+      ...filtersParams,
     }
 
-    return this.analyticsService.getUserFlow(params)
+    return {
+      ...this.analyticsService.getUserFlow(params, filtersQuery),
+      appliedFilters: parsedFilters,
+    }
   }
 
   @Get('birdseye')
@@ -1064,7 +1045,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
       filters,
       DataType.ANALYTICS,
     )
@@ -1085,17 +1066,6 @@ export class AnalyticsController {
         groupTo,
         ...filtersParams,
       },
-    }
-
-    // let result: object | void
-
-    let appliedFilters = filters
-
-    if (filters) {
-      try {
-        appliedFilters = JSON.parse(filters)
-        // eslint-disable-next-line no-empty
-      } catch {}
     }
 
     const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
@@ -1128,7 +1098,7 @@ export class AnalyticsController {
 
     return {
       ...result,
-      appliedFilters,
+      appliedFilters: parsedFilters,
     }
   }
 }
