@@ -119,6 +119,7 @@ export class ProjectService {
     private userService: UserService,
     @InjectRepository(ProjectSubscriber)
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
+    @InjectRepository(ProjectAnnotations)
     private readonly projectAnnotationsRepository: Repository<ProjectAnnotations>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,

@@ -9,11 +9,11 @@ import { UserModule } from '../user/user.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { AppLoggerModule } from '../logger/logger.module'
-import { ProjectSubscriber } from './entity'
+import { ProjectAnnotations, ProjectSubscriber } from './entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Project, ProjectShare, ProjectSubscriber]),
+    TypeOrmModule.forFeature([Project, ProjectShare, ProjectSubscriber, ProjectAnnotations]),
     forwardRef(() => UserModule),
     AppLoggerModule,
     ActionTokensModule,
