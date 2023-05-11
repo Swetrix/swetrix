@@ -289,7 +289,6 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
-      timezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -395,7 +394,6 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
-      timezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -466,7 +464,6 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
-      timezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -528,7 +525,6 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
-      timezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -592,7 +588,6 @@ export class AnalyticsController {
       to,
       null,
       period,
-      timezone,
     )
 
     const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
@@ -1058,7 +1053,6 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
-      timezone,
     )
 
     const paramsData = {
