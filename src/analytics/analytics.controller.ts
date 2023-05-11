@@ -385,10 +385,8 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
-      filters,
-      DataType.ANALYTICS,
-    )
+    const [filtersQuery, filtersParams, parsedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -455,10 +453,8 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
-      filters,
-      DataType.PERFORMANCE,
-    )
+    const [filtersQuery, filtersParams, parsedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -516,10 +512,8 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
-      filters,
-      DataType.PERFORMANCE,
-    )
+    const [filtersQuery, filtersParams, parsedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -567,14 +561,7 @@ export class AnalyticsController {
     @Query() data: GetUserFlowDTO,
     @CurrentUserId() uid: string,
   ): Promise<IUserFlow | { appliedFilters: any[] }> {
-    const {
-      pid,
-      period,
-      from,
-      to,
-      timezone = DEFAULT_TIMEZONE, 
-      filters,
-    } = data
+    const { pid, period, from, to, filters } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
@@ -590,10 +577,8 @@ export class AnalyticsController {
       period,
     )
 
-    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
-      filters,
-      DataType.ANALYTICS,
-    )
+    const [filtersQuery, filtersParams, parsedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const params = {
       pid,
@@ -1042,10 +1027,8 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] = this.analyticsService.getFiltersQuery(
-      filters,
-      DataType.ANALYTICS,
-    )
+    const [filtersQuery, filtersParams, parsedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(

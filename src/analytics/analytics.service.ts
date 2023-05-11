@@ -12,7 +12,6 @@ import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
-import * as _clone from 'lodash/clone'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -51,9 +50,19 @@ import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
 import {
-  PerformanceCHResponse, CustomsCHResponse, CustomsCHAggregatedResponse, TrafficCEFilterCHResponse,
-  TrafficCHResponse, IGetGroupFromTo, GetFiltersQuery, IUserFlowNode, IUserFlowLink, IUserFlow,
-  IBuildUserFlow, IExtractChartData, IGenerateXAxis,
+  PerformanceCHResponse,
+  CustomsCHResponse,
+  CustomsCHAggregatedResponse,
+  TrafficCEFilterCHResponse,
+  TrafficCHResponse,
+  IGetGroupFromTo,
+  GetFiltersQuery,
+  IUserFlowNode,
+  IUserFlowLink,
+  IUserFlow,
+  IBuildUserFlow,
+  IExtractChartData,
+  IGenerateXAxis,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -106,8 +115,19 @@ const validTimebuckets = [
 // mapping of allowed timebuckets per difference between days
 // (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
 const timeBucketToDays = [
-  { lt: 7, tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 7 days
-  { lt: 28, tb: [TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 4 weeks
+  {
+    lt: 7,
+    tb: [
+      TimeBucketType.HOUR,
+      TimeBucketType.DAY,
+      TimeBucketType.WEEK,
+      TimeBucketType.MONTH,
+    ],
+  }, // 7 days
+  {
+    lt: 28,
+    tb: [TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH],
+  }, // 4 weeks
   { lt: 366, tb: [TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
 ]
@@ -385,10 +405,7 @@ export class AnalyticsService {
       groupFrom = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
 
       if (from === to) {
-        groupTo = dayjs
-          .utc()
-          .add(1, 'day')
-          .format('YYYY-MM-DD HH:mm:ss')
+        groupTo = dayjs.utc().add(1, 'day').format('YYYY-MM-DD HH:mm:ss')
       } else {
         groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
       }
@@ -402,10 +419,7 @@ export class AnalyticsService {
           .startOf('d')
           .subtract(1, 'day')
           .format('YYYY-MM-DD 00:00:00')
-        groupTo = dayjs
-          .utc()
-          .startOf('d')
-          .format('YYYY-MM-DD 00:00:00')
+        groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD 00:00:00')
       } else {
         if (period === '1d') {
           groupFrom = dayjs
@@ -860,7 +874,8 @@ export class AnalyticsService {
     }
 
     return {
-      x, xShifted,
+      x,
+      xShifted,
     }
   }
 
@@ -1160,9 +1175,6 @@ export class AnalyticsService {
 
     await Promise.all(promises)
 
-    console.log(from, to, timezone)
-    console.log(chart)
-
     return {
       params,
       chart,
@@ -1215,7 +1227,8 @@ export class AnalyticsService {
       )
 
       const uniques =
-        this.extractCustomEventsChartData(result, xShifted)?._unknown_event || []
+        this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
+        []
 
       const sdur = Array(_size(x)).fill(0)
 
@@ -1238,8 +1251,6 @@ export class AnalyticsService {
     const result = <Array<TrafficCHResponse>>(
       await clickhouse.query(query, paramsData).toPromise()
     )
-
-    console.log('generateAnalyticsAggregationQuery result:', result)
 
     const { visits, uniques, sdur } = this.extractChartData(result, xShifted)
 
@@ -1305,7 +1316,12 @@ export class AnalyticsService {
 
       // Getting CAPTCHA chart data
       (async () => {
-        const { x, xShifted } = this.generateXAxis(timeBucket, from, to, timezone)
+        const { x, xShifted } = this.generateXAxis(
+          timeBucket,
+          from,
+          to,
+          timezone,
+        )
 
         const query = this.generateCaptchaAggregationQuery(
           timezone,
