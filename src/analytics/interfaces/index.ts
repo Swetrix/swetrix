@@ -50,19 +50,6 @@ export interface IGetGroupFromTo {
   groupTo: string
 }
 
-export enum DateRelativeToUTC {
-  TODAY = 'today',
-  YESTERDAY = 'yesterday',
-  TOMORROW = 'tomorrow',
-}
-
-export enum TimeBucketToDateFormat {
-  hour = 'YYYY-MM-DD HH:mm:ss',
-  day = 'YYYY-MM-DD',
-  week = 'YYYY-MM-DD',
-  month = 'YYYY-MM',
-}
-
 export interface GetFiltersQuery extends Array<string | object> {
   // SQL query
   0: string
@@ -80,6 +67,11 @@ export interface IUserFlowLink {
   source: string
   target: string
   value: number
+}
+
+export interface IGenerateXAxis {
+  x: string[]
+  xShifted: string[]
 }
 
 export interface IBuildUserFlow {
