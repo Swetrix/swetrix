@@ -40,7 +40,7 @@ const NoEvents = ({
           <Trans
             // @ts-ignore
             t={t}
-            i18nKey='project.noCaptchaEv'
+            i18nKey='project.noEvContent'
             components={{
               // eslint-disable-next-line jsx-a11y/anchor-has-content
               url: <a href={DOCS_CAPTCHA_URL} className='hover:underline text-blue-600' target='_blank' rel='noreferrer noopener' />,
