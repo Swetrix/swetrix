@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
 import { PROJECT_TABS } from 'redux/constants'
 import { StateType } from 'redux/store'
-import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, nFormatter } from 'utils/generic'
 
 import countriesList from 'utils/countries'
 import { useSelector } from 'react-redux'
@@ -115,7 +115,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: {
                 'dark:text-red-400': !isTrafficTab && dataHover.data >= 5,
               })}
             >
-              {isTrafficTab ? dataHover.data : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
+              {isTrafficTab ? nFormatter(dataHover.data) : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
             </strong>
           </div>
         )}
