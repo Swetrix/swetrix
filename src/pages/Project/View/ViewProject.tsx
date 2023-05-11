@@ -797,7 +797,7 @@ const ViewProject = ({
     } catch (e) {
       setAnalyticsLoading(false)
       setDataLoading(false)
-      setIsPanelsDataEmpty(true)
+      setIsPanelsDataEmptyPerf(true)
       console.error('[ERROR](loadAnalytics) Loading analytics data failed')
       console.error(e)
     }
