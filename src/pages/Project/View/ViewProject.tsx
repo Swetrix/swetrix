@@ -2141,6 +2141,7 @@ const ViewProject = ({
                           period={period}
                           pid={id}
                           timeBucket={timeBucket}
+                          filters={filters}
                           from={dateRange ? getFormatDate(dateRange[0]) : null}
                           to={dateRange ? getFormatDate(dateRange[1]) : null}
                           timezone={timezone}
