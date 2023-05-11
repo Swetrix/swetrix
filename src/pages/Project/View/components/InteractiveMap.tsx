@@ -115,7 +115,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: {
                 'dark:text-red-400': !isTrafficTab && dataHover.data >= 5,
               })}
             >
-              {isTrafficTab ? nFormatter(dataHover.data) : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
+              {isTrafficTab ? nFormatter(dataHover.data, 1) : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
             </strong>
           </div>
         )}
