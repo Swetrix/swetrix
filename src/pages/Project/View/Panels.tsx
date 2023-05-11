@@ -1021,7 +1021,7 @@ const Panel = ({
                 </span>
               )}
               <span className='ml-3 dark:text-gray-50'>
-                {valueData}
+                {nFormatter(valueData)}
                 &nbsp;
                 <span className='text-gray-500 dark:text-gray-200 font-light'>
                   (
