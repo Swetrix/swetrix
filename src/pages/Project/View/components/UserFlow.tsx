@@ -61,7 +61,7 @@ const UserFlow = ({
   generateError: (message: string) => void
   t: (key: string) => string
   filters: string[]
-  setReversed: (a: boolean) => void
+  setReversed: () => void
 }) => {
   const key = getUserFlowCacheKey(pid, period)
   const userFlowAscending = userFlowAscendingCache[key]
@@ -106,7 +106,9 @@ const UserFlow = ({
     return <Loader />
   }
 
-  if (_isEmpty(userFlowAscending) || _isEmpty(userFlowDescending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes)) {
+  console.log(isReversed)
+  console.log(!isReversed ? (_isEmpty(userFlowAscending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links)) : (_isEmpty(userFlowDescending) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes)))
+  if (!isReversed ? (_isEmpty(userFlowAscending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links)) : (_isEmpty(userFlowDescending) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes))) {
     return (
       <>
         <p className='flex mt-4 items-center justify-center text-md text-gray-900 dark:text-gray-50'>
@@ -114,7 +116,9 @@ const UserFlow = ({
         </p>
         <button
           type='button'
-          onClick={() => setReversed(!isReversed)}
+          onClick={() => {
+            setReversed()
+          }}
           className='mt-2 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-700 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:w-auto sm:text-sm'
         >
           {t('project.reverse')}

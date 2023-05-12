@@ -863,7 +863,8 @@ const Panel = ({
           to={to || ''}
           timezone={timezone || ''}
           filters={filters || []}
-          setReversed={setIsReversedUserFlow}
+          isReversed={isReversedUserFlow}
+          setReversed={() => setIsReversedUserFlow(!isReversedUserFlow)}
           t={t}
         />
         <Modal
