@@ -289,6 +289,7 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
+      timezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -392,6 +393,7 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
+      timezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -460,6 +462,7 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
+      timezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -519,6 +522,7 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
+      timezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -561,7 +565,9 @@ export class AnalyticsController {
     @Query() data: GetUserFlowDTO,
     @CurrentUserId() uid: string,
   ): Promise<IUserFlow | { appliedFilters: any[] }> {
-    const { pid, period, from, to, filters } = data
+    const {
+      pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters,
+    } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
@@ -575,6 +581,7 @@ export class AnalyticsController {
       to,
       null,
       period,
+      timezone,
     )
 
     const [filtersQuery, filtersParams, parsedFilters] =
@@ -1036,6 +1043,7 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
+      timezone,
     )
 
     const paramsData = {
