@@ -106,8 +106,6 @@ const UserFlow = ({
     return <Loader />
   }
 
-  console.log(isReversed)
-  console.log(!isReversed ? (_isEmpty(userFlowAscending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links)) : (_isEmpty(userFlowDescending) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes)))
   if (!isReversed ? (_isEmpty(userFlowAscending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links)) : (_isEmpty(userFlowDescending) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes))) {
     return (
       <>
