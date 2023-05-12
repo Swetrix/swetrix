@@ -167,7 +167,10 @@ const PanelContainer = ({
       </div>
     </div>
     {/* for other tabs */}
-    <div className='flex flex-col h-full scroll-auto overflow-auto'>
+    <div className={cx('flex flex-col h-full scroll-auto', {
+      'overflow-auto': !(type === 'pg' && activeTab !== PROJECT_TABS.performance && activeFragment === 1),
+    })}
+    >
       {children}
     </div>
   </div>
@@ -753,11 +756,12 @@ interface IPanel {
   timezone?: string | null
   activeTab?: string
   onFragmentChange?: (arg: number) => void
+  filters?: string[]
 }
 
 const Panel = ({
   name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters,
-  onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab, onFragmentChange,
+  onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab, onFragmentChange, filters,
 }: IPanel): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -859,6 +863,9 @@ const Panel = ({
           from={from || ''}
           to={to || ''}
           timezone={timezone || ''}
+          filters={filters || []}
+          isReversed={isReversedUserFlow}
+          setReversed={() => setIsReversedUserFlow(!isReversedUserFlow)}
           t={t}
         />
         <Modal
@@ -884,6 +891,7 @@ const Panel = ({
                 from={from || ''}
                 to={to || ''}
                 timezone={timezone || ''}
+                filters={filters || []}
                 isReversed={isReversedUserFlow}
                 t={t}
               />
@@ -1121,6 +1129,7 @@ Panel.defaultProps = {
   pid: null,
   activeTab: null,
   onFragmentChange: () => { },
+  filters: [],
 }
 
 const PanelMemo = memo(Panel)
