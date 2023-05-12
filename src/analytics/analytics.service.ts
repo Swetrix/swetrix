@@ -15,6 +15,7 @@ import * as _filter from 'lodash/filter'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
+import * as isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import * as ipRangeCheck from 'ip-range-check'
 import validator from 'validator'
 import { hash } from 'blake3'
@@ -67,6 +68,7 @@ import {
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
+dayjs.extend(isSameOrBefore)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
@@ -375,9 +377,12 @@ export class AnalyticsService {
     to: string,
     timeBucket: TimeBucketType | null,
     period: string,
+    timezone: string,
   ): IGetGroupFromTo {
-    let groupFrom
-    let groupTo
+    let groupFrom: dayjs.Dayjs
+    let groupTo: dayjs.Dayjs
+    let formatFrom = 'YYYY-MM-DD HH:mm:ss'
+    let formatTo = 'YYYY-MM-DD HH:mm:ss'
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       if (!isValidDate(from)) {
@@ -402,42 +407,37 @@ export class AnalyticsService {
         checkIfTBAllowed(timeBucket, from, to)
       }
 
-      groupFrom = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+      groupFrom = dayjs.utc()
 
       if (from === to) {
-        groupTo = dayjs.utc().add(1, 'day').format('YYYY-MM-DD HH:mm:ss')
+        groupTo = dayjs.utc().add(1, 'day')
       } else {
-        groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        groupTo = dayjs.utc()
       }
     } else if (!_isEmpty(period)) {
       if (period === 'today') {
-        groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
-        groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        groupFrom = dayjs.utc().startOf('d')
+        groupTo = dayjs.utc()
       } else if (period === 'yesterday') {
-        groupFrom = dayjs
-          .utc()
+        groupFrom = dayjs.utc()
           .startOf('d')
           .subtract(1, 'day')
-          .format('YYYY-MM-DD 00:00:00')
-        groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD 00:00:00')
+
+        groupTo = dayjs.utc().startOf('d')
       } else {
         if (period === '1d') {
-          groupFrom = dayjs
-            .utc()
+          groupFrom = dayjs.utc()
             .subtract(parseInt(period, 10), _last(period))
-            .format('YYYY-MM-DD')
         } else {
-          groupFrom = dayjs
-            .utc()
+          groupFrom = dayjs.utc()
             .subtract(parseInt(period, 10) - 1, _last(period))
-            .format('YYYY-MM-DD')
         }
 
-        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+        groupTo = dayjs.utc()
       }
 
       if (!_isEmpty(timeBucket)) {
-        checkIfTBAllowed(timeBucket, groupFrom, groupTo)
+        checkIfTBAllowed(timeBucket, groupFrom.format(formatFrom), groupTo.format(formatTo))
       }
     } else {
       throw new BadRequestException(
@@ -445,9 +445,15 @@ export class AnalyticsService {
       )
     }
 
+    const safeTimezone = this.getSafeTimezone(timezone)
+
+    console.log('========================\ngroupFromTo')
+    console.log('utc', groupFrom.format(formatFrom), groupTo.format(formatTo))
+    console.log('tz', groupFrom.tz(safeTimezone).format(formatFrom), groupTo.tz(safeTimezone).format(formatTo))
+
     return {
-      groupFrom,
-      groupTo,
+      groupFrom: groupFrom.tz(safeTimezone).format(formatFrom),
+      groupTo: groupTo.tz(safeTimezone).format(formatTo),
     }
   }
 
@@ -821,34 +827,36 @@ export class AnalyticsService {
 
   generateXAxis(
     timeBucket: TimeBucketType,
-    from: string,
+    from: string, // timezone is already applied to the from and to parameters
     to: string,
     timezone: string,
   ): IGenerateXAxis {
-    let groupDateIterator
-    const now = dayjs.utc().endOf(timeBucket)
-    const djsTo = dayjs.utc(to).endOf(timeBucket)
-    const iterateTo = djsTo > now ? now : djsTo
+    const safeTimezone = this.getSafeTimezone(timezone)
+
+    let groupDateIterator: dayjs.Dayjs
+    // const now = dayjs.utc().tz(safeTimezone).endOf(timeBucket)
+    const djsTo = dayjs.tz(to, safeTimezone).endOf(timeBucket)
+    const iterateTo = djsTo // djsTo > now ? now : djsTo
     let format
 
     switch (timeBucket) {
       case TimeBucketType.HOUR:
-        groupDateIterator = dayjs.utc(from).startOf('hour')
+        groupDateIterator = dayjs.tz(from, safeTimezone).startOf('hour')
         format = 'YYYY-MM-DD HH:mm:ss'
         break
 
       case TimeBucketType.DAY:
-        groupDateIterator = dayjs.utc(from).startOf('day')
+        groupDateIterator = dayjs.tz(from, safeTimezone).startOf('day')
         format = 'YYYY-MM-DD'
         break
 
       case TimeBucketType.WEEK:
-        groupDateIterator = dayjs.utc(from).startOf('week')
+        groupDateIterator = dayjs.tz(from, safeTimezone).startOf('week')
         format = 'YYYY-MM-DD'
         break
 
       case TimeBucketType.MONTH:
-        groupDateIterator = dayjs.utc(from).startOf('month')
+        groupDateIterator = dayjs.tz(from, safeTimezone).startOf('month')
         format = 'YYYY-MM'
         break
 
@@ -858,20 +866,39 @@ export class AnalyticsService {
         )
     }
 
-    const safeTimezone = this.getSafeTimezone(timezone)
-
     // UTC dates
     const x = []
 
     // Timezone shifted dates (a hack to map Clickhouse timezone processed data to UTC dates)
     const xShifted = []
 
-    while (groupDateIterator < iterateTo) {
-      const nextIteration = groupDateIterator.add(1, timeBucket)
-      x.push(groupDateIterator.format(format))
-      xShifted.push(groupDateIterator.tz(safeTimezone).format(format))
-      groupDateIterator = nextIteration
+    while (groupDateIterator.isSameOrBefore(iterateTo)) {
+      x.push(groupDateIterator.utc().format(format))
+      xShifted.push(groupDateIterator.format(format))
+
+      console.log(groupDateIterator.format(format), iterateTo.format(format), groupDateIterator.isSameOrBefore(iterateTo))
+      groupDateIterator = groupDateIterator.add(1, timeBucket)
     }
+    console.log(groupDateIterator.format(format), iterateTo.format(format), groupDateIterator.isSameOrBefore(iterateTo))
+
+    // while (groupDateIterator < iterateTo) {
+    //   const nextIteration = groupDateIterator.add(1, timeBucket)
+    //   x.push(groupDateIterator.utc().format(format))
+    //   xShifted.push(groupDateIterator.format(format))
+    //   groupDateIterator = nextIteration
+    // }
+
+    console.log('-----------------------------------------------')
+    console.log(timezone)
+    console.log({
+      x,
+      xShifted,
+    })
+
+    console.log('orig', from, to)
+    console.log('asdf', groupDateIterator.format(format), iterateTo.format(format))
+
+
 
     return {
       x,
@@ -1006,12 +1033,10 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     filtersQuery: string,
   ): string {
-    const safeTimezone = this.getSafeTimezone(timezone)
+    // const safeTimezone = this.getSafeTimezone(timezone)
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1021,13 +1046,39 @@ export class AnalyticsService {
         sumIf(1, unique = 1) as uniques
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(created) as tz_created
         FROM analytics
-        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
       `
+
+
+    // const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}, 'UTC'), '${safeTimezone}')`
+    // const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}, 'UTC'), '${safeTimezone}')`
+
+    // return `
+    //   SELECT
+    //     ${selector},
+    //     avg(sdur) as sdur,
+    //     count() as pageviews,
+    //     sumIf(1, unique = 1) as uniques
+    //   FROM (
+    //     SELECT *,
+    //       ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+    //     FROM analytics
+    //     WHERE
+    //       pid = {pid:FixedString(12)}
+    //       AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+    //       ${filtersQuery}
+    //   ) as subquery
+    //   GROUP BY ${groupBy}
+    //   ORDER BY ${groupBy}
+    //   `
   }
 
   generateCustomEventsAggregationQuery(
@@ -1040,8 +1091,8 @@ export class AnalyticsService {
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}, 'UTC'), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}, 'UTC'), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1069,8 +1120,8 @@ export class AnalyticsService {
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}, 'UTC'), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}, 'UTC'), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1102,8 +1153,8 @@ export class AnalyticsService {
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}, 'UTC'), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}, 'UTC'), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1174,6 +1225,9 @@ export class AnalyticsService {
     ]
 
     await Promise.all(promises)
+
+    console.log(from, to, timezone)
+    console.log(chart)
 
     return {
       params,
@@ -1251,6 +1305,9 @@ export class AnalyticsService {
     const result = <Array<TrafficCHResponse>>(
       await clickhouse.query(query, paramsData).toPromise()
     )
+
+    console.log(query, paramsData)
+    console.log('generateAnalyticsAggregationQuery result:', result)
 
     const { visits, uniques, sdur } = this.extractChartData(result, xShifted)
 
@@ -1497,8 +1554,8 @@ export class AnalyticsService {
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}, 'UTC'), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}, 'UTC'), '${safeTimezone}')`
 
     const query = `
       SELECT
