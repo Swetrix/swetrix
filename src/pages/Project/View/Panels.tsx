@@ -29,6 +29,7 @@ import _sortBy from 'lodash/sortBy'
 import _fromPairs from 'lodash/fromPairs'
 import _toPairs from 'lodash/toPairs'
 import _reverse from 'lodash/reverse'
+import { nFormatter } from 'utils/generic'
 
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
@@ -258,7 +259,7 @@ const Overview = ({
               :
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {pageviews}
+              {nFormatter(pageviews, 1)}
               {isActiveCompare && (
                 <span className={cx('ml-1.5 text-sm', {
                   'text-green-500': pageViewsCompare > pageviews,
@@ -266,7 +267,7 @@ const Overview = ({
                 })}
                 >
                   {pageViewsCompare > pageviews ? '+' : ''}
-                  {pageViewsCompare - pageviews}
+                  {nFormatter(pageViewsCompare - pageviews, 1)}
                 </span>
               )}
             </p>
@@ -278,7 +279,7 @@ const Overview = ({
               :
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {uniques}
+              {nFormatter(uniques, 1)}
               {isActiveCompare && (
                 <span className={cx('ml-1.5 text-sm', {
                   'text-green-500': uniquesCompare > uniques,
@@ -286,7 +287,7 @@ const Overview = ({
                 })}
                 >
                   {uniquesCompare > uniques ? '+' : ''}
-                  {uniquesCompare - uniques}
+                  {nFormatter(uniquesCompare - uniques, 1)}
                 </span>
               )}
             </p>
@@ -1020,7 +1021,7 @@ const Panel = ({
                 </span>
               )}
               <span className='ml-3 dark:text-gray-50'>
-                {valueData}
+                {nFormatter(valueData, 1)}
                 &nbsp;
                 <span className='text-gray-500 dark:text-gray-200 font-light'>
                   (
