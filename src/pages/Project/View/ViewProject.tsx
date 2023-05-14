@@ -492,6 +492,7 @@ const ViewProject = ({
     setIsActiveCompare(false)
     setDateRangeCompare(null)
     setDataChartCompare({})
+    setDataChartPerfCompare({})
     setActivePeriodCompare(periodPairsCompare[0].period)
   }
 
@@ -553,7 +554,7 @@ const ViewProject = ({
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filters)) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
@@ -719,7 +720,7 @@ const ViewProject = ({
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filtersPerf)) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone)
@@ -2066,6 +2067,7 @@ const ViewProject = ({
                           icon={panelIcon}
                           id={type}
                           onFilter={filterHandler}
+                          activeTab={activeTab}
                           name={panelName}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
@@ -2081,6 +2083,7 @@ const ViewProject = ({
                         <Panel
                           t={t}
                           key={type}
+                          activeTab={activeTab}
                           icon={panelIcon}
                           id={type}
                           onFilter={filterHandler}
@@ -2101,6 +2104,7 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           name={panelName}
+                          activeTab={activeTab}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
                           rowMapper={(rowName) => (
@@ -2117,6 +2121,7 @@ const ViewProject = ({
                           key={type}
                           icon={panelIcon}
                           id={type}
+                          activeTab={activeTab}
                           onFilter={filterHandler}
                           name={panelName}
                           data={panelsData.data[type]}
@@ -2139,6 +2144,7 @@ const ViewProject = ({
                           data={panelsData.data[type]}
                           customTabs={customTabs}
                           period={period}
+                          activeTab={activeTab}
                           pid={id}
                           timeBucket={timeBucket}
                           filters={filters}
@@ -2155,6 +2161,7 @@ const ViewProject = ({
                         key={type}
                         icon={panelIcon}
                         id={type}
+                        activeTab={activeTab}
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
@@ -2212,6 +2219,7 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           name={panelName}
+                          activeTab={activeTab}
                           data={panelsDataPerf.data[type]}
                           customTabs={customTabs}
                           rowMapper={(rowName) => (
@@ -2231,6 +2239,7 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           name={panelName}
+                          activeTab={activeTab}
                           data={panelsDataPerf.data[type]}
                           customTabs={customTabs}
                           valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
