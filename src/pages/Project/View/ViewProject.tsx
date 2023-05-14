@@ -492,6 +492,7 @@ const ViewProject = ({
     setIsActiveCompare(false)
     setDateRangeCompare(null)
     setDataChartCompare({})
+    setDataChartPerfCompare({})
     setActivePeriodCompare(periodPairsCompare[0].period)
   }
 
