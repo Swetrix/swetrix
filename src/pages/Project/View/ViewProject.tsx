@@ -553,7 +553,7 @@ const ViewProject = ({
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filters)) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
@@ -719,7 +719,7 @@ const ViewProject = ({
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filtersPerf)) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone)
