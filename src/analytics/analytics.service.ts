@@ -79,6 +79,12 @@ export const getHeartbeatKey = (pid: string, sessionID: string) =>
 export const getSessionDurationKey = (sessionHash: string, pid: string) =>
   `sd:${sessionHash}:${pid}`
 
+export const GMT_0_TIMEZONES = [
+  'Atlantic/Azores',
+  'Etc/GMT',
+  // 'Africa/Casablanca',
+]
+
 export const cols = [
   'cc',
   'pg',
@@ -383,6 +389,9 @@ export class AnalyticsService {
     let groupTo: dayjs.Dayjs
     let formatFrom = 'YYYY-MM-DD HH:mm:ss'
     let formatTo = 'YYYY-MM-DD HH:mm:ss'
+    const safeTimezone = this.getSafeTimezone(timezone)
+
+    const djsNow = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc() : dayjs().tz(safeTimezone)
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       if (!isValidDate(from)) {
@@ -416,24 +425,29 @@ export class AnalyticsService {
       }
     } else if (!_isEmpty(period)) {
       if (period === 'today') {
-        groupFrom = dayjs.utc().startOf('d')
-        groupTo = dayjs.utc()
+        groupFrom = djsNow.startOf('d')
+        groupTo = djsNow
       } else if (period === 'yesterday') {
-        groupFrom = dayjs.utc()
-          .startOf('d')
+        groupFrom = djsNow
           .subtract(1, 'day')
-
-        groupTo = dayjs.utc().startOf('d')
+          .startOf('d')
+        groupTo = djsNow
+          .subtract(1, 'day')
+          .endOf('d')
       } else {
-        if (period === '1d') {
-          groupFrom = dayjs.utc()
-            .subtract(parseInt(period, 10), _last(period))
-        } else {
-          groupFrom = dayjs.utc()
-            .subtract(parseInt(period, 10) - 1, _last(period))
-        }
+        // if (period === '1d') {
+        //   groupFrom = dayjs.utc()
+        //     .subtract(parseInt(period, 10), _last(period))
+        // } else {
+        //   groupFrom = dayjs.utc()
+        //     .subtract(parseInt(period, 10) - 1, _last(period))
+        // }
 
-        groupTo = dayjs.utc()
+        groupFrom = djsNow
+          .subtract(parseInt(period, 10) - 1, _last(period))
+          .startOf('d')
+
+        groupTo = djsNow
       }
 
       if (!_isEmpty(timeBucket)) {
@@ -445,11 +459,16 @@ export class AnalyticsService {
       )
     }
 
-    const safeTimezone = this.getSafeTimezone(timezone)
+    const groupFromFormatted = groupFrom.format(formatFrom)
+    const groupToFormatted = groupTo.format(formatTo)
 
     return {
-      groupFrom: groupFrom.tz(safeTimezone).format(formatFrom),
-      groupTo: groupTo.tz(safeTimezone).format(formatTo),
+      // UTC time
+      groupFrom: groupFromFormatted,
+      groupTo: groupToFormatted,
+      // Timezone shifted time
+      groupFromUTC: groupFrom.utc().format(formatFrom),
+      groupToUTC: groupTo.utc().format(formatFrom),
     }
   }
 
@@ -829,30 +848,30 @@ export class AnalyticsService {
   ): IGenerateXAxis {
     const safeTimezone = this.getSafeTimezone(timezone)
 
+    const iterateTo = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(to) : dayjs.tz(to, safeTimezone)
+    const djsFrom = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(from) : dayjs.tz(from, safeTimezone)
+
     let groupDateIterator: dayjs.Dayjs
-    // const now = dayjs.utc().tz(safeTimezone).endOf(timeBucket)
-    const djsTo = dayjs.tz(to, safeTimezone).endOf(timeBucket)
-    const iterateTo = djsTo // djsTo > now ? now : djsTo
     let format
 
     switch (timeBucket) {
       case TimeBucketType.HOUR:
-        groupDateIterator = dayjs.tz(from, safeTimezone).startOf('hour')
+        groupDateIterator = djsFrom.startOf('hour')
         format = 'YYYY-MM-DD HH:mm:ss'
         break
 
       case TimeBucketType.DAY:
-        groupDateIterator = dayjs.tz(from, safeTimezone).startOf('day')
+        groupDateIterator = djsFrom.startOf('day')
         format = 'YYYY-MM-DD'
         break
 
       case TimeBucketType.WEEK:
-        groupDateIterator = dayjs.tz(from, safeTimezone).startOf('week')
+        groupDateIterator = djsFrom.startOf('week')
         format = 'YYYY-MM-DD'
         break
 
       case TimeBucketType.MONTH:
-        groupDateIterator = dayjs.tz(from, safeTimezone).startOf('month')
+        groupDateIterator = djsFrom.startOf('month')
         format = 'YYYY-MM'
         break
 
@@ -868,10 +887,20 @@ export class AnalyticsService {
     // Timezone shifted dates (a hack to map Clickhouse timezone processed data to UTC dates)
     const xShifted = []
 
-    while (groupDateIterator.isSameOrBefore(iterateTo)) {
+    while (groupDateIterator.isSameOrBefore(iterateTo, timeBucket)) {
       x.push(groupDateIterator.utc().format(format))
       xShifted.push(groupDateIterator.format(format))
       groupDateIterator = groupDateIterator.add(1, timeBucket)
+    }
+
+    console.log('X:', x)
+    console.log('X SHIFTED:', xShifted)
+
+    if (_includes(GMT_0_TIMEZONES, safeTimezone)) {
+      return {
+        x,
+        xShifted: x,
+      }
     }
 
     return {
@@ -1243,12 +1272,14 @@ export class AnalyticsService {
       await clickhouse.query(query, paramsData).toPromise()
     )
 
+    console.log('RESULT:', result)
+
     // maybe we need to pass x as Clickhouse now ignores timezones for data
-    const { visits, uniques, sdur } = this.extractChartData(result, xShifted)
+    const { visits, uniques, sdur } = this.extractChartData(result, x)
 
     return Promise.resolve({
       chart: {
-        x,
+        x: xShifted,
         visits,
         uniques,
         sdur,
