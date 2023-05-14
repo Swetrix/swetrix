@@ -48,6 +48,8 @@ export interface CustomsCHAggregatedResponse {
 export interface IGetGroupFromTo {
   groupFrom: string
   groupTo: string
+  groupFromUTC: string
+  groupToUTC: string
 }
 
 export interface GetFiltersQuery extends Array<string | object> {

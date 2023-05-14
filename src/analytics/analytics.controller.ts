@@ -284,7 +284,11 @@ export class AnalyticsController {
         filters,
         isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
       )
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+    
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const {
+      groupFrom, groupTo, groupFromUTC, groupToUTC,
+    } = this.analyticsService.getGroupFromTo(
       from,
       to,
       timeBucket,
@@ -313,8 +317,8 @@ export class AnalyticsController {
     const paramsData = {
       params: {
         pid,
-        groupFrom,
-        groupTo,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
         ...filtersParams,
       },
     }
@@ -329,7 +333,7 @@ export class AnalyticsController {
         subQuery,
         filtersQuery,
         paramsData,
-        timezone,
+        safeTimezone,
       )
     } else {
       result = await this.analyticsService.groupByTimeBucket(
@@ -339,7 +343,7 @@ export class AnalyticsController {
         subQuery,
         filtersQuery,
         paramsData,
-        timezone,
+        safeTimezone,
         customEVFilterApplied,
         parsedFilters,
       )
