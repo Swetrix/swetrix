@@ -1029,7 +1029,7 @@ const Panel = ({
                 </span>
               )}
               <span className='ml-3 dark:text-gray-50'>
-                {nFormatter(valueData, 1)}
+                {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
                 &nbsp;
                 <span className='text-gray-500 dark:text-gray-200 font-light'>
                   (
