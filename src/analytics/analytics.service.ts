@@ -412,18 +412,13 @@ export class AnalyticsService {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow.subtract(1, 'day').endOf('d')
       } else {
-        // if (period === '1d') {
-        //   groupFrom = dayjs.utc()
-        //     .subtract(parseInt(period, 10), _last(period))
-        // } else {
-        //   groupFrom = dayjs.utc()
-        //     .subtract(parseInt(period, 10) - 1, _last(period))
-        // }
+        if (period === '1d') {
+          groupFrom = djsNow.subtract(parseInt(period, 10), _last(period))
+        } else {
+          groupFrom = djsNow.subtract(parseInt(period, 10) - 1, _last(period))
+        }
 
-        groupFrom = djsNow
-          .subtract(parseInt(period, 10) - 1, _last(period))
-          .startOf('d')
-
+        groupFrom = groupFrom.startOf(timeBucket)
         groupTo = djsNow
       }
 
