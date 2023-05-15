@@ -241,7 +241,11 @@ const ViewProject = ({
   const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
   // dateRange is a date range for calendar
   const [dateRange, setDateRange] = useState<null | Date[]>(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
+  // activeTab traffic, performance, alerts
   const [activeTab, setActiveTab] = useState<string>(() => {
+    // first we check if we have activeTab in url
+    // if we have activeTab in url, we return it
+    // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
     // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
@@ -253,26 +257,37 @@ const ViewProject = ({
 
     return projectTab || PROJECT_TABS.traffic
   })
+  // pgActiveFragment is a active fragment for pagination
   const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
 
   // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
   // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
+  // forecastData is a data for forecast chart
   const [forecasedChartData, setForecasedChartData] = useState<any>({})
 
+  // chartDataPerf is a data for performance chart
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
+  // similar to isPanelsDataEmpty but using for performance tab
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState<boolean>(false)
+  // similar to panelsData but using for performance tab
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
+  // timeFormat is a time format for chart
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
+  // ref, size using for logic with responsive chart
   const [ref, size] = useSize() as any
+  // rotateXAxias using for logic with responsive chart
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
+  // customEventsChartData is a data for custom events on a chart
   const customEventsChartData = useMemo(() => _pickBy(customEventsPrefs[id], (value, keyCustomEvents) => _includes(activeChartMetricsCustomEvents, keyCustomEvents)), [customEventsPrefs, id, activeChartMetricsCustomEvents])
+  // chartType is a type of chart, bar or line
   const [chartType, setChartType] = useState<string>(getItem('chartType') as string || chartTypes.line)
 
-  // state for compare
+  // similar to periodPairs but using for compare
   const [periodPairsCompare, setPeriodPairsCompare] = useState<{
     label: string
     period: string
   }[]>(tbPeriodPairsCompare(t))
+  // similar to isActive but using for compare
   const [isActiveCompare, setIsActiveCompare] = useState<boolean>(() => {
     const activeCompare = getItem(IS_ACTIVE_COMPARE)
 
@@ -286,11 +301,17 @@ const ViewProject = ({
 
     return false
   })
+  // similar to activePeriod but using for compare
   const [activePeriodCompare, setActivePeriodCompare] = useState<string>(periodPairsCompare[0].period)
+  // activeDropdownLabelCompare is a label using for overview panels and dropdown
   const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
+  // dateRangeCompare is a date range for calendar when compare is enabled
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
+  // dataChartCompare is a data for chart when compare is enabled
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
+  // dataChartPerfCompare is a data for performance chart when compare is enabled
   const [dataChartPerfCompare, setDataChartPerfCompare] = useState<any>({})
+  // maxRangeCompare is a max range for calendar when compare is enabled
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
       return 0
@@ -305,8 +326,10 @@ const ViewProject = ({
     return findActivePeriod?.countDays || 0
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, period])
+  // similar for sessionDurationAVG but using in overview when compare enabled
   const [sessionDurationAVGCompare, setSessionDurationAVGCompare] = useState<any>(null)
 
+  // tabs is a tabs for project
   const tabs: {
     id: string
     label: string
@@ -339,17 +362,22 @@ const ViewProject = ({
     ]
   }, [t])
 
+  // pgPanelNameMapping is a mapping for panel names. Using for change name of panels pg if userFlow active
   const pgPanelNameMapping = [
     tnMapping.pg, // when fragment 0 is selected
     tnMapping.userFlow, // when fragment 1 is selected
   ]
 
+  // activeTabLabel is a label for active tab. Using for title in dropdown
   const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
 
+  // { name } is a project name from project
   const { name } = project
 
+  // sharedRoles is a role for shared project
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
 
+  // chartMetrics is a list of metrics for dropdown
   const chartMetrics = useMemo(() => {
     return [
       {
@@ -392,6 +420,7 @@ const ViewProject = ({
     ]
   }, [t, activeChartMetrics])
 
+  // chartMetricsPerf is a list of metrics for dropdown in performance tab
   const chartMetricsPerf = useMemo(() => {
     return [
       {
@@ -422,6 +451,7 @@ const ViewProject = ({
     ]
   }, [t, activeChartMetricsPerf])
 
+  // chartMetricsCustomEvents is a list of custom events for dropdown
   const chartMetricsCustomEvents = useMemo(() => {
     if (!_isEmpty(panelsData.customs)) {
       return _map(_keys(panelsData.customs), key => ({
@@ -433,6 +463,7 @@ const ViewProject = ({
     return []
   }, [panelsData, activeChartMetricsCustomEvents])
 
+  // dataNamesCustomEvents is a list of custom events for chart
   const dataNamesCustomEvents = useMemo(() => {
     if (!_isEmpty(panelsData.customs)) {
       return { ..._keys(panelsData.customs) }
@@ -440,6 +471,7 @@ const ViewProject = ({
     return {}
   }, [panelsData])
 
+  // dataNames is a list of metrics for chart
   const dataNames = useMemo(() => {
     return {
       unique: t('project.unique'),
@@ -453,6 +485,7 @@ const ViewProject = ({
     }
   }, [t, dataNamesCustomEvents])
 
+  // dataNamesPerf is a list of metrics for chart in performance tab
   const dataNamesPerf = useMemo(() => {
     return {
       full: t('dashboard.timing'),
@@ -469,6 +502,7 @@ const ViewProject = ({
     }
   }, [t])
 
+  // switchActiveChartMetric is a function for change activeChartMetrics
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const switchActiveChartMetric = useCallback(_debounce((pairID) => {
     if (activeTab === PROJECT_TABS.performance) {
