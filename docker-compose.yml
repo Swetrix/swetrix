@@ -34,11 +34,9 @@ services:
       - SELFHOSTED=true
     links:
       - 'redis'
-      - 'mariadb'
       - 'clickhouse'
     depends_on:
       - 'redis'
-      - 'mariadb'
       - 'clickhouse'
   redis:
     image: redis:alpine
