@@ -186,6 +186,89 @@ const deleteRefreshTokenClickhouse = async (
   return clickhouse.query(query, paramsData).toPromise()
 }
 
+interface IClickhouseUser {
+  timezone?: string
+  timeFormat?: string
+}
+
+const CLICKHOUSE_SETTINGS_ID = 'sfuser'
+
+const createUserClickhouse = async (user: IClickhouseUser) => {
+  const paramsData = {
+    params: {
+      ...user,
+      id: CLICKHOUSE_SETTINGS_ID,
+    },
+  }
+
+  const query = `INSERT INTO sfuser (*) VALUES ({id:String},{timezone:String},{timeFormat:String})`
+
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
+const getUserClickhouse = async () => {
+  const paramsData = {
+    params: {
+      id: CLICKHOUSE_SETTINGS_ID,
+    },
+  }
+
+  const query = `SELECT * FROM sfuser WHERE id = {id:String}`
+  
+  try {
+    return ((await clickhouse.query(query, paramsData).toPromise())[0] || {})
+  } catch {
+    return {}
+  }
+}
+
+const userClickhouseExists = async () => {
+  const query = `SELECT * FROM sfuser WHERE id = '${CLICKHOUSE_SETTINGS_ID}'`
+
+  try {
+    const result = await clickhouse.query(query).toPromise()
+    return !_isEmpty(result)
+  } catch {
+    return false
+  }
+}
+
+const updateUserClickhouse = async (user: IClickhouseUser) => {
+  console.log(user)
+  const userExists = await userClickhouseExists()
+
+  if (!userExists) {
+    await createUserClickhouse(user)
+  }
+
+  const paramsData = {
+    params: {
+      ...user,
+      id: CLICKHOUSE_SETTINGS_ID,
+    },
+  }
+
+  let query = 'ALTER table sfuser UPDATE '
+
+  if (user.timezone) {
+    query += `timezone={timezone:String}`
+  }
+
+  if (user.timeFormat) {
+    if (user.timezone) {
+      query += ', '
+    }
+
+    query += `timeFormat={timeFormat:String}`
+  }
+
+  query += ` WHERE id={id:String}`
+
+  console.log(query, paramsData)
+
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
 const getSelfhostedUUID = (): string => {
@@ -208,4 +291,7 @@ export {
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
+  updateUserClickhouse,
+  getUserClickhouse,
+  createUserClickhouse,
 }

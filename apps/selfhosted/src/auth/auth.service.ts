@@ -5,19 +5,18 @@ import { genSalt, hash } from 'bcrypt'
 import * as _isEmpty from 'lodash/isEmpty'
 
 import {
-  SelfhostedUser,
-  generateSelfhostedUser,
-} from 'src/user/entities/user.entity'
-import {
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
-} from 'src/common/utils'
+} from '../common/utils'
 import {
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,
   JWT_ACCESS_TOKEN_SECRET,
-} from 'src/common/constants'
+} from '../common/constants'
+import {
+  getSelfhostedUser, SelfhostedUser,
+} from '../user/entities/user.entity'
 
 @Injectable()
 export class AuthService {
@@ -56,7 +55,7 @@ export class AuthService {
       return null
     }
 
-    return generateSelfhostedUser()
+    return await getSelfhostedUser()
   }
 
   private async generateJwtRefreshToken(

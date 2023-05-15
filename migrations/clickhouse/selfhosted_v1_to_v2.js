@@ -36,7 +36,9 @@ async function runMigrations() {
     await runScript('./2023_03_20.js')
     await runScript('./2023_04_25.js')
     await runScript('./2023_04_26.js')
+    await runScript('./2023_05_07.js')
     await runScript('./selfhosted_2023_04_29.js')
+    await runScript('./selfhosted_2023_05_15.js')
 
     console.log('[INFO] SELFHOSTED MIGRATIONS FINISHED')
   } catch (err) {
