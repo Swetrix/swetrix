@@ -6,7 +6,8 @@
   "private": true,
   "license": "AGPL-3.0",
   "scripts": {
-    "deploy": "npm run prebuild && nest build",
+    "deploy": "npm run prebuild && nest build production && mv apps/production/dist dist",
+    "deploy:selfhosted": "npm run prebuild && nest build selfhosted && mv apps/selfhosted/dist dist",
     "prebuild": "rimraf dist",
     "build": "nest build production && mv apps/production/dist dist",
     "build:selfhosted": "npm run prebuild && nest build selfhosted && mv apps/selfhosted/dist dist && npm run postbuild",
