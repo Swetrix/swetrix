@@ -286,15 +286,14 @@ export class AnalyticsController {
       )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const {
-      groupFrom, groupTo, groupFromUTC, groupToUTC,
-    } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      timeBucket,
-      period,
-      safeTimezone,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        timeBucket,
+        period,
+        safeTimezone,
+      )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
@@ -463,8 +462,8 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
-    
-      const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -525,8 +524,8 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
-    
-      const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -575,9 +574,7 @@ export class AnalyticsController {
     @Query() data: GetUserFlowDTO,
     @CurrentUserId() uid: string,
   ): Promise<IUserFlow | { appliedFilters: any[] }> {
-    const {
-      pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters,
-    } = data
+    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
@@ -1048,7 +1045,6 @@ export class AnalyticsController {
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
     await this.analyticsService.checkProjectAccess(pid, uid)
-
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
