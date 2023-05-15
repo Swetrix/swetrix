@@ -217,18 +217,29 @@ const ViewProject = ({
   })
   // similar activeChartMetrics but using for performance tab
   const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
+  // sessionDurationAVG using for tab overview. It is a data for session duration
   const [sessionDurationAVG, setSessionDurationAVG] = useState<any>(null)
+  // checkIfAllMetricsAreDisabled when all metrics are disabled, we are hidden chart
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value), [activeChartMetrics, activeChartMetricsCustomEvents])
+  // filters - when we change filters we loading new data from api, update query url and update chart
   const [filters, setFilters] = useState<any[]>([])
+  // similar filters but using for performance tab
   const [filtersPerf, setFiltersPerf] = useState<any[]>([])
   // That is needed when using 'Export as image' feature,
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState<boolean>(true)
+
+  // isLoading is a true when we loading data from api
   const isLoading = authenticated ? _isLoading : false
+  // tnMapping is a mapping for panels type
   const tnMapping = typeNameMapping(t)
+  // refCalendar is a ref for calendar
   const refCalendar = useRef(null)
+  // refCalendarCompare is a ref for calendar when compare is enabled
   const refCalendarCompare = useRef(null)
+  // localStorageDateRange is a date range from local storage
   const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
+  // dateRange is a date range for calendar
   const [dateRange, setDateRange] = useState<null | Date[]>(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
   const [activeTab, setActiveTab] = useState<string>(() => {
     // @ts-ignore
