@@ -1502,6 +1502,7 @@ const ViewProject = ({
     }
   }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
 
+  // updatePeriod using for update period and timeBucket also update url
   const updatePeriod = (newPeriod: {
     period: string
     label?: string
@@ -1544,6 +1545,7 @@ const ViewProject = ({
     setForecasedChartData({})
   }
 
+  // updateTimebucket using for update timeBucket also update url
   const updateTimebucket = (newTimebucket: string) => {
     // @ts-ignore
     const url = new URL(window.location)
@@ -1571,6 +1573,7 @@ const ViewProject = ({
     history.push(_replace(routes.project_settings, ':id', id))
   }
 
+  // exportAsImageHandler using for export dashboard as image
   const exportAsImageHandler = async () => {
     setShowIcons(false)
     try {
@@ -1585,6 +1588,7 @@ const ViewProject = ({
     }
   }
 
+  // parse period from url when page is loaded
   useEffect(() => {
     try {
       // @ts-ignore
@@ -1624,6 +1628,7 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // check for conflicts in chart metrics in dropdown if conflicted disable some column of dropdown
   const isConflicted = (conflicts: string[]) => {
     const conflicted = conflicts && _some(conflicts, (conflict) => {
       const conflictPair = _find(chartMetrics, (metric) => metric.id === conflict)
@@ -1632,6 +1637,8 @@ const ViewProject = ({
     return conflicted
   }
 
+  // resetFilters using for reset filters and update url. Also using for components <NoEvents />
+  // its need for fix bug: when you select filter and you have not data and you can not reset filters
   const resetFilters = () => {
     // @ts-ignore
     const url = new URL(window.location)
