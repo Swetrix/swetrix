@@ -512,11 +512,13 @@ const ViewProject = ({
     }
   }, 0), [activeTab])
 
+  // onErrorLoading is a function for redirect to dashboard when project do not exist
   const onErrorLoading = () => {
     showError(t('project.noExist'))
     history.push(routes.dashboard)
   }
 
+  // loadCustomEvents is a function for load custom events data for chart from api
   const loadCustomEvents = async () => {
     if (_isEmpty(panelsData.customs)) {
       return
@@ -530,19 +532,24 @@ const ViewProject = ({
       setDataLoading(true)
 
       if (dateRange) {
+        // if custom date range is selected
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
       }
 
-      // write if customEventsChartData includes all activeChartMetricsCustomEvents return true if not false
+      // customEventsChartData includes all activeChartMetricsCustomEvents return true if not false
       const isAllActiveChartMetricsCustomEvents = _every(activeChartMetricsCustomEvents, (metric) => {
         return _includes(_keys(customEventsChartData), metric)
       })
 
+      // check if we need to load new date or we have data in redux/localstorage
       if (!isAllActiveChartMetricsCustomEvents) {
+        // check if activePeriod is custom
         if (period === 'custom' && dateRange) {
+          // activePeriod is custom
           data = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
         } else {
+          // activePeriod is not custom
           data = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents)
         }
       }
@@ -552,7 +559,9 @@ const ViewProject = ({
       setCustomEventsPrefs(id, events)
 
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
+      // render new settings for chart
       const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, events)
+      // set chart data
       setMainChart(() => {
         // @ts-ignore
         const generete = bb.generate(bbSettings)
@@ -566,6 +575,7 @@ const ViewProject = ({
     }
   }
 
+  // loadCustomEvents when activeChartMetricsCustomEvents changed
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
       loadCustomEvents()
@@ -573,6 +583,7 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChartMetricsCustomEvents])
 
+  // compareDisable is a function you need to use if you want to disable compare
   const compareDisable = () => {
     setIsActiveCompare(false)
     setDateRangeCompare(null)
@@ -581,7 +592,7 @@ const ViewProject = ({
     setActivePeriodCompare(periodPairsCompare[0].period)
   }
 
-  // this function is used for requesting the data from the API
+  // loadAnalytics is a function for load data for chart from api
   const loadAnalytics = async (forced = false, newFilters: any[] | null = null) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
@@ -599,6 +610,8 @@ const ViewProject = ({
       let toCompare: string | undefined
       let customEventsChart = customEventsChartData
 
+      // first we check isActiveCompare if comapre active we load compare date or check if we have data in redux/localstorage
+      // and set state dependent compare
       if (isActiveCompare) {
         if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
           let start
@@ -653,6 +666,7 @@ const ViewProject = ({
         setProjectCache(id, dataCompare || {}, keyCompare)
       }
 
+      // if activePeriod is custom we check dateRange and set key for cache
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
@@ -661,6 +675,7 @@ const ViewProject = ({
         key = getProjectCacheKey(period, timeBucket)
       }
 
+      // check if we need to load new date or we have data in redux/localstorage
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
         data = cache[id][key]
       } else {
@@ -679,6 +694,7 @@ const ViewProject = ({
         setProjectCache(id, data || {}, key)
       }
 
+      // using for extensions
       const sdkData = {
         ...(data || {}),
         filters: newFilters || filters,
@@ -749,6 +765,7 @@ const ViewProject = ({
     }
   }
 
+  // similar to loadAnalytics but using for performance tab
   const loadAnalyticsPerf = async (forced = false, newFilters: any[] | null = null) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
@@ -1039,6 +1056,7 @@ const ViewProject = ({
     sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
 
+  // this function is used for requesting the data from the API when you press the reset button
   const refreshStats = () => {
     if (!isLoading && !dataLoading) {
       if (activeTab === PROJECT_TABS.performance) {
@@ -1049,6 +1067,7 @@ const ViewProject = ({
     }
   }
 
+  // onForecastOpen is a function for open forecast modal
   const onForecastOpen = () => {
     if (isLoading || dataLoading) {
       return
@@ -1062,6 +1081,7 @@ const ViewProject = ({
     setIsForecastOpened(true)
   }
 
+  // onForecastSubmit is a function for submit forecast modal
   const onForecastSubmit = async (periodToForecast: string) => {
     setIsForecastOpened(false)
     setDataLoading(true)
@@ -1091,6 +1111,7 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forecasedChartData])
 
+  // this useEffect is used for parsing tab from url and set activeTab
   useEffect(() => {
     // @ts-ignore
     const url = new URL(window.location)
@@ -1108,6 +1129,7 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
+  // this useEffect is used for update chart settings when activeChartMetrics changed also using for perfomance tab
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
       if ((!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) || (isActiveCompare && !_isEmpty(dataChartCompare) && !_isEmpty(mainChart))) {
@@ -1159,7 +1181,7 @@ const ViewProject = ({
     }
   }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
 
-  // Initialising Swetrix SDK instance
+  // Initialising Swetrix SDK instance. Using for marketplace and extensions
   useEffect(() => {
     let sdk: any | null = null
     if (!_isEmpty(extensions)) {
@@ -1212,7 +1234,7 @@ const ViewProject = ({
     }
   }, [extensions])
 
-  // Supplying 'timeupdate' event to the SDK after loading
+  // Supplying 'timeupdate' event to the SDK after loading. Using for marketplace and extensions
   useEffect(() => {
     sdkInstance?._emitEvent('timeupdate', {
       period,
@@ -1221,7 +1243,7 @@ const ViewProject = ({
     })
   }, [sdkInstance]) // eslint-disable-line
 
-  // Supplying 'projectinfo' event to the SDK after loading
+  // Supplying 'projectinfo' event to the SDK after loading. Using for marketplace and extensions
   useEffect(() => {
     if (_isEmpty(project)) {
       return
@@ -1236,12 +1258,13 @@ const ViewProject = ({
     })
   }, [sdkInstance, name]) // eslint-disable-line
 
+  // when t update we update dropdowns translations
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t))
     setPeriodPairsCompare(tbPeriodPairsCompare(t))
   }, [t])
 
-  // Parsing initial filters from the address bar
+  // Parsing initial filters from url also using for perfomance tab
   useEffect(() => {
     // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
     if (activeTab === PROJECT_TABS.performance) {
@@ -1300,6 +1323,7 @@ const ViewProject = ({
     }
   }, [activeTab])
 
+  // Parsing timeBucket from url
   useEffect(() => {
     if (arePeriodParsed) {
       try {
@@ -1323,6 +1347,8 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arePeriodParsed])
 
+  // onRangeDateChange if is activeChartMetrics custom and we select custom date range
+  // we update url and state
   const onRangeDateChange = (dates: Date[], onRender?: boolean) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
     // @ts-ignore
@@ -1381,6 +1407,7 @@ const ViewProject = ({
     }
   }
 
+  // useEffect using for call loadAnalytics or loadAnalyticsPerf when smth dependencies changed
   useEffect(() => {
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
       if (activeTab === PROJECT_TABS.traffic) {
@@ -1394,6 +1421,7 @@ const ViewProject = ({
     }
   }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
+  // using this for fix some bugs with update custom events data for chart
   useEffect(() => {
     if (!_isEmpty(activeChartMetricsCustomEvents)) {
       setActiveChartMetricsCustomEvents([])
@@ -1425,6 +1453,7 @@ const ViewProject = ({
     return () => clearInterval(interval)
   }, [project.id, setLiveStatsForProject]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // loadProject if project is empty so more often it is need for public projects
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
       getProject(id)
