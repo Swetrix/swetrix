@@ -208,7 +208,7 @@ const isPerformanceValid = (perf: any) => {
   )
 }
 
-export const getPIDsArray = (pids, pid) => {
+const getPIDsArray = (pids, pid) => {
   const pidsEmpty = _isEmpty(pids)
   const pidEmpty = _isEmpty(pid)
   if (pidsEmpty && pidEmpty)

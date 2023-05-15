@@ -64,11 +64,6 @@ const allowedToUpdateKeys = [
 const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
   `rl:${hash(`${ipOrApiKey}${salt}`).toString('hex')}`
 
-const splitAt = (x, index): Array<Array<any> | string> => [
-  x.slice(0, index),
-  x.slice(index),
-]
-
 const getRandomTip = (language = 'en'): string => {
   return _sample(marketingTips[language])
 }
@@ -148,26 +143,6 @@ const updateProjectClickhouse = async (project: object) => {
     // @ts-ignore
   )} WHERE id='${project.id}'`
   return clickhouse.query(query).toPromise()
-}
-
-/**
- * Calculates in percent, the change between 2 numbers.
- * e.g from 1000 to 500 = 50%
- *
- * @param oldVal The initial value
- * @param newVal The value that changed
- * @param round Numbers after floating point
- */
-const getPercentageChange = (oldVal: number, newVal: number, round = 2) => {
-  if (oldVal === 0) {
-    if (newVal === 0) {
-      return 0
-    }
-    return _round(-100 * newVal, round)
-  }
-
-  const decrease = oldVal - newVal
-  return _round((decrease / oldVal) * 100, round)
 }
 
 /**
@@ -281,9 +256,7 @@ export {
   getProjectsClickhouse,
   updateProjectClickhouse,
   deleteProjectClickhouse,
-  splitAt,
   generateRecoveryCode,
-  getPercentageChange,
   calculateRelativePercentage,
   millisecondsToSeconds,
   generateRandomString,
