@@ -17,6 +17,14 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-05-15',
+    changes: [
+      'Fixed timezone related issues.',
+      'Dropped support for weekly timebucket - it\'s a pain to support it across multiple timezones, but we may add it back in the future.',
+      'Fix a bug when filters might not be applied to the chart when reloading the page.',
+    ],
+  },
+  {
     date: '2023-05-08',
     changes: [
       'Added an ability to compare statistics over time periods - now you can compare the current period with the previous one, or select a custom date range to compare.',
