@@ -76,31 +76,19 @@ export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
 export const getHeartbeatKey = (pid: string, sessionID: string) =>
   `hb:${pid}:${sessionID}`
 
-export const getSessionDurationKey = (sessionHash: string, pid: string) =>
+const getSessionDurationKey = (sessionHash: string, pid: string) =>
   `sd:${sessionHash}:${pid}`
 
-export const GMT_0_TIMEZONES = [
+const GMT_0_TIMEZONES = [
   'Atlantic/Azores',
   'Etc/GMT',
   // 'Africa/Casablanca',
 ]
 
-export const cols = [
-  'cc',
-  'pg',
-  'lc',
-  'br',
-  'os',
-  'dv',
-  'ref',
-  'so',
-  'me',
-  'ca',
-]
+const cols = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
 
-export const captchaColumns = ['cc', 'br', 'os', 'dv']
-
-export const perfColumns = ['cc', 'pg', 'dv', 'br']
+const captchaColumns = ['cc', 'br', 'os', 'dv']
+const perfColumns = ['cc', 'pg', 'dv', 'br']
 
 const validPeriods = [
   'today',
@@ -889,19 +877,6 @@ export class AnalyticsService {
     return {
       x,
       xShifted,
-    }
-  }
-
-  checkTimebucket(timeBucket: TimeBucketType): void {
-    const isValid = _includes(
-      [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.MONTH],
-      timeBucket,
-    )
-
-    if (!isValid) {
-      throw new BadRequestException(
-        `The provided time bucket (${timeBucket}) is incorrect`,
-      )
     }
   }
 

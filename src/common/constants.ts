@@ -46,7 +46,6 @@ const clickhouse = new ClickHouse({
 
 const { JWT_ACCESS_TOKEN_SECRET } = process.env
 const isSelfhosted = Boolean(process.env.SELFHOSTED)
-const isTgTokenPresent = Boolean(process.env.TG_BOT_TOKEN)
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 const isDevelopment = process.env.NODE_ENV === 'development'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
@@ -59,9 +58,6 @@ const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
 const SELFHOSTED_UUID = isSelfhosted ? getSelfhostedUUID() : ''
 
 const { TWO_FACTOR_AUTHENTICATION_APP_NAME } = process.env
-
-const JWT_LIFE_TIME = 7 * 24 * 60 * 60
-const HISTORY_LIFE_TIME_DAYS = 30
 
 const ORIGINS_REGEX =
   /^(?=.{1,255}$)([0-9A-Za-z*:](?:(?:[0-9A-Za-z*:]|-){0,61}[0-9A-Za-z*:])?(?:\.[0-9A-Za-z*:](?:(?:[0-9A-Za-z*-]|-){0,61}[0-9A-Za-z*:])?)*)?$/
@@ -116,8 +112,6 @@ const CAPTCHA_SECRET_KEY_LENGTH = 50
 
 export {
   clickhouse,
-  JWT_LIFE_TIME,
-  HISTORY_LIFE_TIME_DAYS,
   redis,
   isValidPID,
   getRedisProjectKey,
@@ -153,10 +147,8 @@ export {
   getRedisCaptchaKey,
   CAPTCHA_COOKIE_KEY,
   CAPTCHA_TOKEN_LIFETIME,
-  PID_REGEX,
   CAPTCHA_SECRET_KEY_LENGTH,
   PRODUCTION_ORIGIN,
-  isTgTokenPresent,
   DEFAULT_SELFHOSTED_UUID,
   REDIS_SSO_UUID,
   JWT_ACCESS_TOKEN_SECRET,

@@ -54,8 +54,8 @@ import {
   SSOGenerateDto,
   SSOLinkDto,
   SSOUnlinkDto,
+  SSOProviders,
 } from './dtos'
-import { SSOProviders } from './dtos/sso-generate.dto'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 
 const OAUTH_RATE_LIMIT = 15
