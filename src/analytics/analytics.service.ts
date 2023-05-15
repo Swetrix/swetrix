@@ -380,14 +380,12 @@ export class AnalyticsService {
     to: string,
     timeBucket: TimeBucketType | null,
     period: string,
-    timezone: string,
+    safeTimezone: string,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
     let formatFrom = 'YYYY-MM-DD HH:mm:ss'
     let formatTo = 'YYYY-MM-DD HH:mm:ss'
-    const safeTimezone = this.getSafeTimezone(timezone)
-
     const djsNow = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc() : dayjs().tz(safeTimezone)
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
@@ -841,10 +839,8 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     from: string, // timezone is already applied to the from and to parameters
     to: string,
-    timezone: string,
+    safeTimezone: string,
   ): IGenerateXAxis {
-    const safeTimezone = this.getSafeTimezone(timezone)
-
     console.log('GEN X AXIS:', from, ' -> ', to)
 
     const iterateTo = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(to) : dayjs.tz(to, safeTimezone)
@@ -1138,7 +1134,7 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: any,
-    timezone: string,
+    safeTimezone: string,
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
   ): Promise<object | void> {
@@ -1172,7 +1168,7 @@ export class AnalyticsService {
           subQuery,
           filtersQuery,
           paramsData,
-          timezone,
+          safeTimezone,
           customEVFilterApplied,
         )
 
@@ -1216,14 +1212,14 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: any,
-    timezone: string,
+    safeTimezone: string,
     customEVFilterApplied: boolean,
   ): Promise<object | void> {
     const avgSdur = customEVFilterApplied
       ? 0
       : await this.calculateAverageSessionDuration(subQuery, paramsData)
 
-    const { x, xShifted } = this.generateXAxis(timeBucket, from, to, timezone)
+    const { x, xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     if (customEVFilterApplied) {
       const query = this.generateCustomEventsAggregationQuery(
@@ -1302,7 +1298,7 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    safeTimezone: string,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -1332,7 +1328,7 @@ export class AnalyticsService {
           timeBucket,
           from,
           to,
-          timezone,
+          safeTimezone,
         )
 
         const query = this.generateCaptchaAggregationQuery(
@@ -1402,9 +1398,9 @@ export class AnalyticsService {
     to: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    safeTimezone: string,
   ) {
-    const { x, xShifted } = this.generateXAxis(timeBucket, from, to, timezone)
+    const { x, xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     const query = this.generatePerformanceAggregationQuery(
       timeBucket,
@@ -1428,7 +1424,7 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    safeTimezone: string,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -1460,7 +1456,7 @@ export class AnalyticsService {
           to,
           filtersQuery,
           paramsData,
-          timezone,
+          safeTimezone,
         )
       })(),
     ]
@@ -1500,15 +1496,12 @@ export class AnalyticsService {
     to: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    safeTimezone: string,
   ): Promise<object | void> {
-    const safeTimezone = this.getSafeTimezone(timezone)
-    const { x, xShifted } = this.generateXAxis(timeBucket, from, to, timezone)
+    const { x, xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}, 'UTC'), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}, 'UTC'), '${safeTimezone}')`
 
     const query = `
       SELECT
@@ -1517,12 +1510,15 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(created) as tz_created
         FROM customEV
-        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}, ev
-      ORDER BY ${groupBy};
+      ORDER BY ${groupBy}
       `
 
     const result = <Array<CustomsCHAggregatedResponse>>(
