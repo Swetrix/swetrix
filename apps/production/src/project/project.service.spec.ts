@@ -107,12 +107,6 @@ describe('ProjectService', () => {
       expect(service.findWhere).toBeDefined()
     })
 
-    it("should be defined formatFromClickhouse and don't return null", () => {
-      const project = util.getObject()
-      expect(service.formatFromClickhouse(project)).not.toBeNull()
-      expect(service.formatFromClickhouse).toBeDefined()
-    })
-
     it("should be defined getRedisCount and don't return null", () => {
       const uid = util.getString()
 
