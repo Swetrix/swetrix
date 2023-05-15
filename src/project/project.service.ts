@@ -82,7 +82,7 @@ export const deleteProjectRedis = async (id: string) => {
   }
 }
 
-export const deleteProjectsRedis = async (ids: string[]) => {
+const deleteProjectsRedis = async (ids: string[]) => {
   await Promise.all(_map(ids, deleteProjectRedis))
 }
 
@@ -100,7 +100,7 @@ export const processProjectUser = (project: Project): Project => {
   return project
 }
 
-export const processProjectsUser = (projects: Project[]): Project[] => {
+const processProjectsUser = (projects: Project[]): Project[] => {
   for (let i = 0; i < _size(projects); ++i) {
     projects[i] = processProjectUser(projects[i])
   }

@@ -5,7 +5,6 @@ import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 export enum TimeBucketType {
   HOUR = 'hour',
   DAY = 'day',
-  WEEK = 'week',
   MONTH = 'month',
 }
 

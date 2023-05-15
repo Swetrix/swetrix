@@ -12,10 +12,10 @@ import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
-import * as _clone from 'lodash/clone'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
+import * as isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import * as ipRangeCheck from 'ip-range-check'
 import validator from 'validator'
 import { hash } from 'blake3'
@@ -63,12 +63,12 @@ import {
   IUserFlow,
   IBuildUserFlow,
   IExtractChartData,
-  DateRelativeToUTC,
-  TimeBucketToDateFormat,
+  IGenerateXAxis,
 } from './interfaces'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
+dayjs.extend(isSameOrBefore)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
   `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
@@ -76,25 +76,19 @@ export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
 export const getHeartbeatKey = (pid: string, sessionID: string) =>
   `hb:${pid}:${sessionID}`
 
-export const getSessionDurationKey = (sessionHash: string, pid: string) =>
+const getSessionDurationKey = (sessionHash: string, pid: string) =>
   `sd:${sessionHash}:${pid}`
 
-export const cols = [
-  'cc',
-  'pg',
-  'lc',
-  'br',
-  'os',
-  'dv',
-  'ref',
-  'so',
-  'me',
-  'ca',
+const GMT_0_TIMEZONES = [
+  'Atlantic/Azores',
+  'Etc/GMT',
+  // 'Africa/Casablanca',
 ]
 
-export const captchaColumns = ['cc', 'br', 'os', 'dv']
+const cols = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
 
-export const perfColumns = ['cc', 'pg', 'dv', 'br']
+const captchaColumns = ['cc', 'br', 'os', 'dv']
+const perfColumns = ['cc', 'pg', 'dv', 'br']
 
 const validPeriods = [
   'today',
@@ -110,16 +104,21 @@ const validPeriods = [
 const validTimebuckets = [
   TimeBucketType.HOUR,
   TimeBucketType.DAY,
-  TimeBucketType.WEEK,
   TimeBucketType.MONTH,
 ]
 
 // mapping of allowed timebuckets per difference between days
 // (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
 const timeBucketToDays = [
-  { lt: 7, tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 7 days
-  { lt: 28, tb: [TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 4 weeks
-  { lt: 366, tb: [TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 12 months
+  {
+    lt: 7,
+    tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.MONTH],
+  }, // 7 days
+  {
+    lt: 28,
+    tb: [TimeBucketType.DAY, TimeBucketType.MONTH],
+  }, // 4 weeks
+  { lt: 366, tb: [TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
 ]
 
@@ -130,7 +129,6 @@ const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 const timeBucketConversion = {
   hour: 'toStartOfHour',
   day: 'toStartOfDay',
-  week: 'toStartOfWeek',
   month: 'toStartOfMonth',
 }
 
@@ -366,10 +364,15 @@ export class AnalyticsService {
     to: string,
     timeBucket: TimeBucketType | null,
     period: string,
-    timezone: string,
+    safeTimezone: string,
   ): IGetGroupFromTo {
-    let groupFrom
-    let groupTo
+    let groupFrom: dayjs.Dayjs
+    let groupTo: dayjs.Dayjs
+    const formatFrom = 'YYYY-MM-DD HH:mm:ss'
+    const formatTo = 'YYYY-MM-DD HH:mm:ss'
+    const djsNow = _includes(GMT_0_TIMEZONES, safeTimezone)
+      ? dayjs.utc()
+      : dayjs().tz(safeTimezone)
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       if (!isValidDate(from)) {
@@ -394,68 +397,42 @@ export class AnalyticsService {
         checkIfTBAllowed(timeBucket, from, to)
       }
 
-      groupFrom = dayjs.tz(from, timezone).utc().format('YYYY-MM-DD HH:mm:ss')
+      groupFrom = dayjs.utc()
 
       if (from === to) {
-        groupTo = dayjs
-          .tz(to, timezone)
-          .add(1, 'day')
-          .format('YYYY-MM-DD HH:mm:ss')
+        groupTo = dayjs.utc().add(1, 'day')
       } else {
-        groupTo = dayjs.tz(to, timezone).format('YYYY-MM-DD HH:mm:ss')
+        groupTo = dayjs.utc()
       }
     } else if (!_isEmpty(period)) {
       if (period === 'today') {
-        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-          groupFrom = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-          groupTo = dayjs().tz(timezone).utc().format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          groupFrom = dayjs.utc().startOf('d').format('YYYY-MM-DD')
-          groupTo = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        }
+        groupFrom = djsNow.startOf('d')
+        groupTo = djsNow
       } else if (period === 'yesterday') {
-        if (timezone !== DEFAULT_TIMEZONE && isValidTimezone(timezone)) {
-          groupFrom = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .subtract(1, 'day')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-          groupTo = dayjs()
-            .tz(timezone)
-            .startOf('d')
-            .utc()
-            .format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          groupFrom = dayjs
-            .utc()
-            .startOf('d')
-            .subtract(1, 'day')
-            .format('YYYY-MM-DD')
-          groupTo = dayjs.utc().startOf('d').format('YYYY-MM-DD HH:mm:ss')
-        }
+        groupFrom = djsNow.subtract(1, 'day').startOf('d')
+        groupTo = djsNow.subtract(1, 'day').endOf('d')
       } else {
-        if (period === '1d') {
-          groupFrom = dayjs
-            .utc()
-            .subtract(parseInt(period, 10), _last(period))
-            .format('YYYY-MM-DD')
-        } else {
-          groupFrom = dayjs
-            .utc()
-            .subtract(parseInt(period, 10) - 1, _last(period))
-            .format('YYYY-MM-DD')
-        }
+        // if (period === '1d') {
+        //   groupFrom = dayjs.utc()
+        //     .subtract(parseInt(period, 10), _last(period))
+        // } else {
+        //   groupFrom = dayjs.utc()
+        //     .subtract(parseInt(period, 10) - 1, _last(period))
+        // }
 
-        groupTo = dayjs.utc().format('YYYY-MM-DD 23:59:59')
+        groupFrom = djsNow
+          .subtract(parseInt(period, 10) - 1, _last(period))
+          .startOf('d')
 
-        if (!_isEmpty(timeBucket)) {
-          checkIfTBAllowed(timeBucket, groupFrom, groupTo)
-        }
+        groupTo = djsNow
+      }
+
+      if (!_isEmpty(timeBucket)) {
+        checkIfTBAllowed(
+          timeBucket,
+          groupFrom.format(formatFrom),
+          groupTo.format(formatTo),
+        )
       }
     } else {
       throw new BadRequestException(
@@ -463,9 +440,16 @@ export class AnalyticsService {
       )
     }
 
+    const groupFromFormatted = groupFrom.format(formatFrom)
+    const groupToFormatted = groupTo.format(formatTo)
+
     return {
-      groupFrom,
-      groupTo,
+      // UTC time
+      groupFrom: groupFromFormatted,
+      groupTo: groupToFormatted,
+      // Timezone shifted time
+      groupFromUTC: groupFrom.utc().format(formatFrom),
+      groupToUTC: groupTo.utc().format(formatFrom),
     }
   }
 
@@ -839,33 +823,29 @@ export class AnalyticsService {
 
   generateXAxis(
     timeBucket: TimeBucketType,
-    from: string,
+    from: string, // timezone is already applied to the from and to parameters
     to: string,
-  ): string[] {
-    let groupDateIterator
-    const now = dayjs.utc().endOf(timeBucket)
-    const djsTo = dayjs.utc(to).endOf(timeBucket)
-    const iterateTo = djsTo > now ? now : djsTo
+    safeTimezone: string,
+  ): IGenerateXAxis {
+    const iterateTo = _includes(GMT_0_TIMEZONES, safeTimezone)
+      ? dayjs.utc(to)
+      : dayjs.tz(to, safeTimezone)
+    let djsFrom = _includes(GMT_0_TIMEZONES, safeTimezone)
+      ? dayjs.utc(from)
+      : dayjs.tz(from, safeTimezone)
+
     let format
 
     switch (timeBucket) {
       case TimeBucketType.HOUR:
-        groupDateIterator = dayjs.utc(from).startOf('hour')
         format = 'YYYY-MM-DD HH:mm:ss'
         break
 
       case TimeBucketType.DAY:
-        groupDateIterator = dayjs.utc(from).startOf('day')
-        format = 'YYYY-MM-DD'
-        break
-
-      case TimeBucketType.WEEK:
-        groupDateIterator = dayjs.utc(from).startOf('week')
         format = 'YYYY-MM-DD'
         break
 
       case TimeBucketType.MONTH:
-        groupDateIterator = dayjs.utc(from).startOf('month')
         format = 'YYYY-MM'
         break
 
@@ -875,32 +855,28 @@ export class AnalyticsService {
         )
     }
 
+    // UTC dates
     const x = []
 
-    while (groupDateIterator < iterateTo) {
-      const nextIteration = groupDateIterator.add(1, timeBucket)
-      x.push(groupDateIterator.format(format))
-      groupDateIterator = nextIteration
+    // Timezone shifted dates (a hack to map Clickhouse timezone processed data to UTC dates)
+    const xShifted = []
+
+    while (djsFrom.isSameOrBefore(iterateTo, timeBucket)) {
+      x.push(djsFrom.utc().format(format))
+      xShifted.push(djsFrom.format(format))
+      djsFrom = djsFrom.add(1, timeBucket)
     }
 
-    return x
-  }
+    if (_includes(GMT_0_TIMEZONES, safeTimezone)) {
+      return {
+        x,
+        xShifted: x,
+      }
+    }
 
-  checkTimebucket(timeBucket: TimeBucketType): void {
-    const isValid = _includes(
-      [
-        TimeBucketType.HOUR,
-        TimeBucketType.DAY,
-        TimeBucketType.WEEK,
-        TimeBucketType.MONTH,
-      ],
-      timeBucket,
-    )
-
-    if (!isValid) {
-      throw new BadRequestException(
-        `The provided time bucket (${timeBucket}) is incorrect`,
-      )
+    return {
+      x,
+      xShifted,
     }
   }
 
@@ -973,62 +949,12 @@ export class AnalyticsService {
     return result
   }
 
-  dateRelativeToUTC(date: dayjs.Dayjs, timezone: string): DateRelativeToUTC {
-    const now = dayjs.utc().tz(timezone)
-    const localDate = date.tz(timezone)
-
-    if (localDate.isSame(now, 'day')) {
-      return DateRelativeToUTC.TODAY
-    }
-
-    if (localDate.isBefore(now, 'day')) {
-      return DateRelativeToUTC.YESTERDAY
-    }
-
-    return DateRelativeToUTC.TOMORROW
-  }
-
   getSafeTimezone(timezone: string): string {
     if (timezone === DEFAULT_TIMEZONE || !isValidTimezone(timezone)) {
       return DEFAULT_TIMEZONE
     }
 
     return timezone
-  }
-
-  updateXAxisTimezone(
-    x: string[],
-    timezone: string,
-    timeBucket: TimeBucketType,
-  ): string[] {
-    if (timezone === DEFAULT_TIMEZONE || !isValidTimezone(timezone)) {
-      return x
-    }
-
-    return _map(x, el => {
-      const date = dayjs.utc(el)
-      const convertedDate = date.tz(timezone)
-
-      if (timeBucket === TimeBucketType.HOUR) {
-        return convertedDate.format(TimeBucketToDateFormat.hour)
-      }
-
-      const relative = this.dateRelativeToUTC(date, timezone)
-
-      if (relative === DateRelativeToUTC.TODAY) {
-        return convertedDate.format(TimeBucketToDateFormat[timeBucket])
-      }
-
-      if (relative === DateRelativeToUTC.YESTERDAY) {
-        return convertedDate
-          .add(1, 'day')
-          .format(TimeBucketToDateFormat[timeBucket])
-      }
-
-      return convertedDate
-        .subtract(1, 'day')
-        .format(TimeBucketToDateFormat[timeBucket])
-    })
   }
 
   getGroupSubquery(timeBucket: TimeBucketType): [string, string] {
@@ -1059,16 +985,11 @@ export class AnalyticsService {
   }
 
   generateAnalyticsAggregationQuery(
-    timezone: string,
     timeBucket: TimeBucketType,
     filtersQuery: string,
   ): string {
-    const safeTimezone = this.getSafeTimezone(timezone)
-
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1078,9 +999,12 @@ export class AnalyticsService {
         sumIf(1, unique = 1) as uniques
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(created) as tz_created
         FROM analytics
-        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
@@ -1088,17 +1012,12 @@ export class AnalyticsService {
   }
 
   generateCustomEventsAggregationQuery(
-    timezone: string,
     timeBucket: TimeBucketType,
     filtersQuery: string,
     paramsData: any,
   ): string {
-    const safeTimezone = this.getSafeTimezone(timezone)
-
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1106,11 +1025,12 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(created) as tz_created
         FROM customEV
-        WHERE ${
-          paramsData.params.ev_exclusive ? 'NOT' : ''
-        } ev = {ev:String} AND pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+        WHERE ${paramsData.params.ev_exclusive ? 'NOT' : ''} ev = {ev:String}
+          AND pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
@@ -1118,16 +1038,11 @@ export class AnalyticsService {
   }
 
   generatePerformanceAggregationQuery(
-    timezone: string,
     timeBucket: TimeBucketType,
     filtersQuery: string,
   ): string {
-    const safeTimezone = this.getSafeTimezone(timezone)
-
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1141,9 +1056,12 @@ export class AnalyticsService {
         avg(ttfb) as ttfb
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(created) as tz_created
         FROM performance
-        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
@@ -1151,16 +1069,11 @@ export class AnalyticsService {
   }
 
   generateCaptchaAggregationQuery(
-    timezone: string,
     timeBucket: TimeBucketType,
     filtersQuery: string,
   ): string {
-    const safeTimezone = this.getSafeTimezone(timezone)
-
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1168,9 +1081,12 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(created) as tz_created
         FROM captcha
-        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
@@ -1184,7 +1100,7 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: any,
-    timezone: string,
+    safeTimezone: string,
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
   ): Promise<object | void> {
@@ -1218,7 +1134,7 @@ export class AnalyticsService {
           subQuery,
           filtersQuery,
           paramsData,
-          timezone,
+          safeTimezone,
           customEVFilterApplied,
         )
 
@@ -1262,18 +1178,22 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: any,
-    timezone: string,
+    safeTimezone: string,
     customEVFilterApplied: boolean,
   ): Promise<object | void> {
     const avgSdur = customEVFilterApplied
       ? 0
       : await this.calculateAverageSessionDuration(subQuery, paramsData)
 
-    const x = this.generateXAxis(timeBucket, from, to)
+    const { x, xShifted } = this.generateXAxis(
+      timeBucket,
+      from,
+      to,
+      safeTimezone,
+    )
 
     if (customEVFilterApplied) {
       const query = this.generateCustomEventsAggregationQuery(
-        timezone,
         timeBucket,
         filtersQuery,
         paramsData,
@@ -1288,11 +1208,9 @@ export class AnalyticsService {
 
       const sdur = Array(_size(x)).fill(0)
 
-      // x = this.updateXAxisTimezone(x, timezone, timeBucket)
-
       return Promise.resolve({
         chart: {
-          x,
+          x: xShifted,
           visits: uniques,
           uniques,
           sdur,
@@ -1301,7 +1219,6 @@ export class AnalyticsService {
       })
     }
     const query = this.generateAnalyticsAggregationQuery(
-      timezone,
       timeBucket,
       filtersQuery,
     )
@@ -1312,11 +1229,9 @@ export class AnalyticsService {
 
     const { visits, uniques, sdur } = this.extractChartData(result, x)
 
-    // x = this.updateXAxisTimezone(x, timezone, timeBucket)
-
     return Promise.resolve({
       chart: {
-        x,
+        x: xShifted,
         visits,
         uniques,
         sdur,
@@ -1350,7 +1265,7 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    safeTimezone: string,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -1376,10 +1291,14 @@ export class AnalyticsService {
 
       // Getting CAPTCHA chart data
       (async () => {
-        const x = this.generateXAxis(timeBucket, from, to)
+        const { x, xShifted } = this.generateXAxis(
+          timeBucket,
+          from,
+          to,
+          safeTimezone,
+        )
 
         const query = this.generateCaptchaAggregationQuery(
-          timezone,
           timeBucket,
           filtersQuery,
         )
@@ -1390,7 +1309,7 @@ export class AnalyticsService {
         const { count } = this.extractCaptchaChartData(result, x)
 
         chart = {
-          x,
+          x: xShifted,
           results: count,
         }
       })(),
@@ -1446,12 +1365,16 @@ export class AnalyticsService {
     to: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    safeTimezone: string,
   ) {
-    const x = this.generateXAxis(timeBucket, from, to)
+    const { x, xShifted } = this.generateXAxis(
+      timeBucket,
+      from,
+      to,
+      safeTimezone,
+    )
 
     const query = this.generatePerformanceAggregationQuery(
-      timezone,
       timeBucket,
       filtersQuery,
     )
@@ -1460,10 +1383,8 @@ export class AnalyticsService {
       await clickhouse.query(query, paramsData).toPromise()
     )
 
-    // x = this.updateXAxisTimezone(x, timezone, timeBucket)
-
     return {
-      x,
+      x: xShifted,
       ...this.extractPerformanceChartData(result, x),
     }
   }
@@ -1475,7 +1396,7 @@ export class AnalyticsService {
     subQuery: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    safeTimezone: string,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -1507,7 +1428,7 @@ export class AnalyticsService {
           to,
           filtersQuery,
           paramsData,
-          timezone,
+          safeTimezone,
         )
       })(),
     ]
@@ -1547,15 +1468,17 @@ export class AnalyticsService {
     to: string,
     filtersQuery: string,
     paramsData: object,
-    timezone: string,
+    safeTimezone: string,
   ): Promise<object | void> {
-    const safeTimezone = this.getSafeTimezone(timezone)
-    const x = this.generateXAxis(timeBucket, from, to)
+    const { x, xShifted } = this.generateXAxis(
+      timeBucket,
+      from,
+      to,
+      safeTimezone,
+    )
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const query = `
       SELECT
@@ -1564,12 +1487,15 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(created) as tz_created
         FROM customEV
-        WHERE pid = {pid:FixedString(12)} AND created BETWEEN ${tzFromDate} AND ${tzToDate} ${filtersQuery}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}, ev
-      ORDER BY ${groupBy};
+      ORDER BY ${groupBy}
       `
 
     const result = <Array<CustomsCHAggregatedResponse>>(
@@ -1578,11 +1504,9 @@ export class AnalyticsService {
 
     const events = this.extractCustomEventsChartData(result, x)
 
-    // x = this.updateXAxisTimezone(x, timezone, timeBucket)
-
     return Promise.resolve({
       chart: {
-        x,
+        x: xShifted,
         events,
       },
     })

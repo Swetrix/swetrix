@@ -51,7 +51,7 @@ import {
   JWT_ACCESS_TOKEN_SECRET,
 } from 'src/common/constants'
 import { TelegramService } from 'src/integrations/telegram/telegram.service'
-import { SSOProviders } from './dtos/sso-generate.dto'
+import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
 
