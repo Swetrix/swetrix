@@ -179,7 +179,7 @@ const customLogDTO = (
   ]
 }
 
-export const getElValue = el => {
+const getElValue = el => {
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
   return mysql.escape(el)
 }

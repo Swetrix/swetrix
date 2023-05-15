@@ -144,7 +144,7 @@ const isValidTimezone = (timezone: string): boolean => {
   }
 }
 
-export const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
+const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
   if (_isEmpty(date)) {
     return false
   }

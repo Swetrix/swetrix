@@ -62,21 +62,6 @@ const checkRateLimit = async (
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
 }
 
-const RATE_LIMIT_FOR_API_KEY_TIMEOUT = 60 * 60 // 1 hour
-export const checkRateLimitForApiKey = async (
-  apiKey: string,
-  reqAmount: number,
-): Promise<boolean> => {
-  const rlHash = getRateLimitHash(apiKey)
-  const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
-
-  if (rlCount >= reqAmount) {
-    throw new HttpException('Too many requests, please try again later', 429)
-  }
-  await redis.set(rlHash, 1 + rlCount, 'EX', RATE_LIMIT_FOR_API_KEY_TIMEOUT)
-  return true
-}
-
 const getProjectsClickhouse = async (id = null) => {
   if (!id) {
     const query = 'SELECT * FROM project;'
@@ -203,17 +188,7 @@ const deleteRefreshTokenClickhouse = async (
   return clickhouse.query(query, paramsData).toPromise()
 }
 
-const generateRecoveryCode = () =>
-  randomstring.generate({
-    length: 30,
-    charset: 'alphabetic',
-    capitalization: 'uppercase',
-  })
-
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
-
-const generateRandomString = (length: number): string =>
-  randomstring.generate(length)
 
 const getSelfhostedUUID = (): string => {
   try {
@@ -229,10 +204,8 @@ export {
   getProjectsClickhouse,
   updateProjectClickhouse,
   deleteProjectClickhouse,
-  generateRecoveryCode,
   calculateRelativePercentage,
   millisecondsToSeconds,
-  generateRandomString,
   getSelfhostedUUID,
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
