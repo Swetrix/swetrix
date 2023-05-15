@@ -12,12 +12,12 @@ import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
 import * as _find from 'lodash/find'
 
-import { AlertService } from 'src/alert/alert.service'
-import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
-import { ExtensionsService } from 'src/marketplace/extensions/extensions.service'
-import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
-import { ReportFrequency } from 'src/project/enums'
-import { TelegramService } from 'src/integrations/telegram/telegram.service'
+import { AlertService } from '../alert/alert.service'
+import { QueryCondition, QueryMetric, QueryTime } from '../alert/dto/alert.dto'
+import { ExtensionsService } from '../marketplace/extensions/extensions.service'
+import { Extension } from '../marketplace/extensions/entities/extension.entity'
+import { ReportFrequency } from '../project/enums'
+import { TelegramService } from '../integrations/telegram/telegram.service'
 import { MailerService } from '../mailer/mailer.service'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
@@ -939,6 +939,27 @@ export class TaskManagerService {
     await Promise.allSettled(promises).catch(reason => {
       this.logger.error(
         `[CRON WORKER](handleTrendingExtensions) Error occured: ${reason}`,
+      )
+    })
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async dropClickhouseLogs(): Promise<void> {
+    const queries = [
+      'DROP TABLE IF EXISTS system.asynchronous_metric_log',
+      'DROP TABLE IF EXISTS system.metric_log',
+      'DROP TABLE IF EXISTS system.query_log',
+      'DROP TABLE IF EXISTS system.trace_log',
+      'DROP TABLE IF EXISTS system.part_log',
+    ]
+
+    const promises = _map(queries, async query => {
+      await clickhouse.query(query).toPromise()
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        `[CRON WORKER](dropClickhouseLogs) Error occured: ${reason}`,
       )
     })
   }
