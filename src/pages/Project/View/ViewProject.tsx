@@ -174,21 +174,37 @@ const ViewProject = ({
 
   // areFiltersParsed used for check filters is parsed from url. If we have query params in url, we parse it and set to state
   // when areFiltersParsed and areFiltersPerfParsed changed we call loadAnalytics or loadAnalyticsPerf and other func for load data
+  // all state with Parsed in name is used for parse query params from url
   const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
   // similar areFiltersParsed but using for activeTab === 'performance'
   const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState<boolean>(false)
-  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
+  // similar areFiltersParsed and areFiltersPerfParsed but using for period
   const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
+  // similar areFiltersParsed and areFiltersPerfParsed but using for timeBucket
+  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
+
+  // panelsData is a data used for components <Panels /> and <CustomEvents />,
+  // also using for logic with custom events on chart and export data like csv
   const [panelsData, setPanelsData] = useState<any>({})
+  // isPanelsDataEmpty is a true we are display components <NoEvents /> and do not show dropdowns with activeChartMetrics
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
   const [isForecastOpened, setIsForecastOpened] = useState<boolean>(false)
+  // analyticsLoading is a boolean for show loader on chart
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
+  // period using for logic with update data on chart. Set when user change period in dropdown and when we parse query params from url
   const [period, setPeriod] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period)
+  // timeBucket using for logic with update data on chart. Set when user change timeBucket in dropdown and when we parse query params from url
   const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1] : periodPairs[3].tbs[1])
+  // activeTab using for change tabs and display other data on chart. Like performance, traffic, custom events
   const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period, periodPairs])
+  // chartData is a data for chart. It is a main data for chart
   const [chartData, setChartData] = useState<any>({})
+  // mainChart is a ref for chart
   const [mainChart, setMainChart] = useState<any>(null)
+  // dataLoading is a boolean for show loader on chart and do not load data when we have dataLoading === true
   const [dataLoading, setDataLoading] = useState<boolean>(false)
+  // activeChartMetrics is a list of metrics for logic with api, chart and dropdown
+  // when user change metrics in dropdown, we change activeChartMetrics and show other data on chart
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
     [key: string]: boolean
   }>({
@@ -199,6 +215,7 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
   })
+  // similar activeChartMetrics but using for performance tab
   const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
   const [sessionDurationAVG, setSessionDurationAVG] = useState<any>(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value), [activeChartMetrics, activeChartMetricsCustomEvents])
