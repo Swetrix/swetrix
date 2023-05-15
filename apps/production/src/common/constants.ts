@@ -47,8 +47,6 @@ const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 const isDevelopment = process.env.NODE_ENV === 'development'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
-const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
-
 const { TWO_FACTOR_AUTHENTICATION_APP_NAME } = process.env
 
 const ORIGINS_REGEX =
@@ -117,7 +115,6 @@ export {
   REDIS_LOG_CUSTOM_CACHE_KEY,
   REDIS_SESSION_SALT_KEY,
   HEARTBEAT_SID_LIFE_TIME,
-  UUIDV5_NAMESPACE,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_PAGEVIEWS_COUNT_KEY,

@@ -10,11 +10,7 @@ export enum TimeFormat {
   '24-hour' = '24-hour',
 }
 
-export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 additional ones
-
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
-
-export const TRIAL_DURATION = 14 // days
 
 export interface SelfhostedUser {
   id: string
