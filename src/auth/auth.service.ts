@@ -34,11 +34,6 @@ import {
 import { UserService } from 'src/user/user.service'
 import { ProjectService } from 'src/project/project.service'
 import {
-  saveRefreshTokenClickhouse,
-  findRefreshTokenClickhouse,
-  deleteRefreshTokenClickhouse,
-} from 'src/common/utils'
-import {
   REDIS_SSO_UUID,
   redis,
   PRODUCTION_ORIGIN,
