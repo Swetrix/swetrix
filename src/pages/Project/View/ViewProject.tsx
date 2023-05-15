@@ -122,6 +122,7 @@ const ViewProject = ({
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
   projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats,
 }: IViewProject) => {
+  // t is used for translation
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null,
@@ -130,6 +131,8 @@ const ViewProject = ({
       language: string,
     },
   } = useTranslation('common')
+
+  // periodPairs is used for dropdown and updated when t changes
   const [periodPairs, setPeriodPairs] = useState<{
     label: string
     period: string
@@ -138,11 +141,21 @@ const ViewProject = ({
     dropdownLabel?: string
     isCustomDate?: boolean
   }[]>(tbPeriodPairs(t))
+
+  // customExportTypes used for marketplace extensions if you have extensions with export
   const [customExportTypes, setCustomExportTypes] = useState<any[]>([])
+  // customPanelTabs used for marketplace extensions if you have extensions with custom panel
   const [customPanelTabs, setCustomPanelTabs] = useState<any[]>([])
+  // sdkInstance is a sdk used for dowland and working with marketplace extensions. DO NOT TOUCH IT
   const [sdkInstance, setSdkInstance] = useState<any>(null)
+
+  // activeChartMetricsCustomEvents is a list of custom events for logic with api, chart and dropdown
   const [activeChartMetricsCustomEvents, setActiveChartMetricsCustomEvents] = useState<any[]>([])
+
+  // dashboardRef is a ref for dashboard div
   const dashboardRef = useRef<HTMLDivElement>(null)
+
+  // { id } is a project id from url
   const { id }: {
     id: string
   } = useParams()
