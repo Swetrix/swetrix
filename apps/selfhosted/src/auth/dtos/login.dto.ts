@@ -1,9 +1,9 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger'
-import { RegisterRequestDto } from './register.dto'
+import { ApiProperty } from '@nestjs/swagger'
 
-export class LoginRequestDto extends OmitType(RegisterRequestDto, [
-  'checkIfLeaked',
-] as const) {}
+export class LoginRequestDto {
+  email: string
+  password: string
+}
 
 export class LoginResponseDto {
   @ApiProperty({
