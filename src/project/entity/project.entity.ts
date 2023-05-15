@@ -9,6 +9,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Alert } from 'src/alert/entity/alert.entity'
+import { ProjectExport } from 'src/projects-exports/entity/project-export.entity'
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
@@ -96,4 +97,7 @@ export class Project {
     cascade: true,
   })
   subscribers: ProjectSubscriber[]
+
+  @OneToMany(() => ProjectExport, projectExport => projectExport.project)
+  exports: ProjectExport[]
 }
