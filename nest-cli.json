@@ -1,10 +1,33 @@
 {
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/production/src",
+  "root": "apps/production",
+  "monorepo": true,
   "compilerOptions": {
     "assets": [
       { "include": "common/templates/**/*", "watchAssets": true },
       { "include": "i18n/**/*", "watchAssets": true }
-    ]
+    ],
+    "tsConfigPath": "apps/production/tsconfig.app.json"
+  },
+  "projects": {
+    "production": {
+      "type": "application",
+      "root": "apps/production",
+      "entryFile": "main",
+      "sourceRoot": "apps/production/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/production/tsconfig.app.json"
+      }
+    },
+    "selfhosted": {
+      "type": "application",
+      "root": "apps/selfhosted",
+      "entryFile": "main",
+      "sourceRoot": "apps/selfhosted/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/selfhosted/tsconfig.app.json"
+      }
+    }
   }
 }
