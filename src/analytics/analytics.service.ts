@@ -841,8 +841,6 @@ export class AnalyticsService {
     to: string,
     safeTimezone: string,
   ): IGenerateXAxis {
-    console.log('GEN X AXIS:', from, ' -> ', to)
-
     const iterateTo = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(to) : dayjs.tz(to, safeTimezone)
     let djsFrom = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(from) : dayjs.tz(from, safeTimezone)
 
@@ -878,9 +876,6 @@ export class AnalyticsService {
       xShifted.push(djsFrom.format(format))
       djsFrom = djsFrom.add(1, timeBucket)
     }
-
-    console.log('X:', x)
-    console.log('X SHIFTED:', xShifted)
 
     if (_includes(GMT_0_TIMEZONES, safeTimezone)) {
       return {
@@ -1256,9 +1251,6 @@ export class AnalyticsService {
     const result = <Array<TrafficCHResponse>>(
       await clickhouse.query(query, paramsData).toPromise()
     )
-
-    console.log('PARAMS:', paramsData.params)
-    console.log('RESULT:', result)
 
     const { visits, uniques, sdur } = this.extractChartData(result, x)
 
