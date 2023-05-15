@@ -2,7 +2,7 @@ import { put, call } from 'redux-saga/effects'
 import Debug from 'debug'
 
 import UIActions from 'redux/reducers/ui'
-
+import { isSelfhosted } from 'redux/constants'
 import {
   getInstalledExtensions,
 } from '../../../api'
@@ -10,6 +10,10 @@ import {
 const debug = Debug('swetrix:rx:s:load-extensions')
 
 export default function* loadExtensions() {
+  if (isSelfhosted) {
+    return
+  }
+
   try {
     const { extensions } = yield call(getInstalledExtensions)
 

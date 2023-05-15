@@ -5,7 +5,7 @@ import Debug from 'debug'
 
 import UIActions from 'redux/reducers/ui'
 
-import { ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
+import { ENTRIES_PER_PAGE_DASHBOARD, isSelfhosted } from 'redux/constants'
 import { IOverall } from 'redux/models/IProject'
 import {
   getSharedProjects, getOverallStats, getLiveVisitors,
@@ -14,6 +14,10 @@ import {
 const debug = Debug('swetrix:rx:s:load-projects')
 
 export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0 } }) {
+  if (isSelfhosted) {
+    return
+  }
+
   try {
     yield put(UIActions.setProjectsLoading({
       isLoading: true,

@@ -255,20 +255,18 @@ const ProfileMenu = ({
           )}
         </div>
 
-        {!isSelfhosted && (
-          <Menu.Item>
-            {({ active }) => (
-              <Link
-                to={routes.user_settings}
-                className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                  'bg-gray-100 dark:bg-slate-800': active,
-                })}
-              >
-                {t('common.accountSettings')}
-              </Link>
-            )}
-          </Menu.Item>
-        )}
+        <Menu.Item>
+          {({ active }) => (
+            <Link
+              to={routes.user_settings}
+              className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
+                'bg-gray-100 dark:bg-slate-800': active,
+              })}
+            >
+              {t('common.accountSettings')}
+            </Link>
+          )}
+        </Menu.Item>
         <Menu.Item>
           {({ active }) => (
             <p

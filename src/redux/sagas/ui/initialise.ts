@@ -5,6 +5,7 @@ import { getAccessToken } from 'utils/accessToken'
 import { getRefreshToken } from 'utils/refreshToken'
 import { getLastPost } from 'api/blog'
 import UIActions from 'redux/reducers/ui'
+import { isSelfhosted } from 'redux/constants'
 import sagaActions from '../actions'
 
 const debug = Debug('swetrix:rx:s:initialise')
@@ -22,11 +23,13 @@ export default function* initialise() {
       yield put(sagaActions.loadProjectAlerts())
     }
 
-    const lastBlogPost: {
-      title: string,
-      url_path: string,
-    } = yield call(getLastPost)
-    yield put(UIActions.setLastBlogPost(lastBlogPost))
+    if (!isSelfhosted) {
+      const lastBlogPost: {
+        title: string,
+        url_path: string,
+      } = yield call(getLastPost)
+      yield put(UIActions.setLastBlogPost(lastBlogPost))
+    }
   } catch (e) {
     debug('An error occured whilst initialising: %s', e)
   }
