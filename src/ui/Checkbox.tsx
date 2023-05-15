@@ -2,6 +2,7 @@ import React, { memo } from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 
+// Define the prop types for the component
 interface ICheckbox {
   label: string | JSX.Element,
   hint?: string | JSX.Element,
@@ -45,6 +46,7 @@ const Checkbox = ({
   )
 }
 
+// Define the prop types for the component
 Checkbox.propTypes = {
   label: PropTypes.oneOfType([
     PropTypes.string, PropTypes.node,
@@ -59,6 +61,7 @@ Checkbox.propTypes = {
   disabled: PropTypes.bool,
 }
 
+// Define the default props for the component
 Checkbox.defaultProps = {
   label: '',
   hint: '',
