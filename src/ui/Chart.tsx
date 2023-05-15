@@ -3,14 +3,18 @@ import bb from 'billboard.js'
 import 'billboard.js/dist/theme/datalab.css'
 import 'billboard.js/dist/billboard.css'
 
+// Define the prop types for the component
 interface IChart {
+  // (string): The ID of the chart container.
   current: string,
+  // (object): The chart options.
   options: any,
 }
 
 const Chart = ({ current, options }: IChart): JSX.Element => {
   let chartInstance: any = {}
 
+  // Destroy the chart instance
   const destroy = () => {
     if (chartInstance !== null) {
       try {
@@ -23,6 +27,7 @@ const Chart = ({ current, options }: IChart): JSX.Element => {
     }
   }
 
+  // Render the chart
   const renderChart = () => {
     if (current !== null) {
       chartInstance = bb.generate({
@@ -32,6 +37,7 @@ const Chart = ({ current, options }: IChart): JSX.Element => {
     }
   }
 
+  // Render the chart on mount
   useEffect(() => {
     renderChart()
     return destroy
