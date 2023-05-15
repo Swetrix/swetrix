@@ -21,6 +21,7 @@ import { AuthModule } from './auth/auth.module'
 import { CaptchaModule } from './captcha/captcha.module'
 import { isDevelopment } from './common/constants'
 import { IntegrationsModule } from './integrations/integrations.module'
+import { ProjectsExportsModule } from './projects-exports/projects-exports.module'
 
 const modules = [
   ConfigModule.forRoot({
@@ -55,6 +56,7 @@ const modules = [
   AlertModule,
   AuthModule,
   CaptchaModule,
+  ProjectsExportsModule,
 ]
 
 @Module({
