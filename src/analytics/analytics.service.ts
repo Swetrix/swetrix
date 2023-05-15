@@ -116,7 +116,6 @@ const validPeriods = [
 const validTimebuckets = [
   TimeBucketType.HOUR,
   TimeBucketType.DAY,
-  TimeBucketType.WEEK,
   TimeBucketType.MONTH,
 ]
 
@@ -128,15 +127,14 @@ const timeBucketToDays = [
     tb: [
       TimeBucketType.HOUR,
       TimeBucketType.DAY,
-      TimeBucketType.WEEK,
       TimeBucketType.MONTH,
     ],
   }, // 7 days
   {
     lt: 28,
-    tb: [TimeBucketType.DAY, TimeBucketType.WEEK, TimeBucketType.MONTH],
+    tb: [TimeBucketType.DAY, TimeBucketType.MONTH],
   }, // 4 weeks
-  { lt: 366, tb: [TimeBucketType.WEEK, TimeBucketType.MONTH] }, // 12 months
+  { lt: 366, tb: [TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
 ]
 
@@ -147,7 +145,6 @@ const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 const timeBucketConversion = {
   hour: 'toStartOfHour',
   day: 'toStartOfDay',
-  week: 'toStartOfWeek',
   month: 'toStartOfMonth',
 }
 
@@ -864,11 +861,6 @@ export class AnalyticsService {
         format = 'YYYY-MM-DD'
         break
 
-      case TimeBucketType.WEEK:
-        format = 'YYYY-MM-DD'
-        djsFrom = djsFrom.startOf('week')
-        break
-
       case TimeBucketType.MONTH:
         format = 'YYYY-MM'
         break
@@ -912,7 +904,6 @@ export class AnalyticsService {
       [
         TimeBucketType.HOUR,
         TimeBucketType.DAY,
-        TimeBucketType.WEEK,
         TimeBucketType.MONTH,
       ],
       timeBucket,
