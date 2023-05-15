@@ -848,30 +848,28 @@ export class AnalyticsService {
   ): IGenerateXAxis {
     const safeTimezone = this.getSafeTimezone(timezone)
 
-    const iterateTo = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(to) : dayjs.tz(to, safeTimezone)
-    const djsFrom = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(from) : dayjs.tz(from, safeTimezone)
+    console.log('GEN X AXIS:', from, ' -> ', to)
 
-    let groupDateIterator: dayjs.Dayjs
+    const iterateTo = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(to) : dayjs.tz(to, safeTimezone)
+    let djsFrom = _includes(GMT_0_TIMEZONES, safeTimezone) ? dayjs.utc(from) : dayjs.tz(from, safeTimezone)
+
     let format
 
     switch (timeBucket) {
       case TimeBucketType.HOUR:
-        groupDateIterator = djsFrom.startOf('hour')
         format = 'YYYY-MM-DD HH:mm:ss'
         break
 
       case TimeBucketType.DAY:
-        groupDateIterator = djsFrom.startOf('day')
         format = 'YYYY-MM-DD'
         break
 
       case TimeBucketType.WEEK:
-        groupDateIterator = djsFrom.startOf('week')
         format = 'YYYY-MM-DD'
+        djsFrom = djsFrom.startOf('week')
         break
 
       case TimeBucketType.MONTH:
-        groupDateIterator = djsFrom.startOf('month')
         format = 'YYYY-MM'
         break
 
@@ -887,10 +885,10 @@ export class AnalyticsService {
     // Timezone shifted dates (a hack to map Clickhouse timezone processed data to UTC dates)
     const xShifted = []
 
-    while (groupDateIterator.isSameOrBefore(iterateTo, timeBucket)) {
-      x.push(groupDateIterator.utc().format(format))
-      xShifted.push(groupDateIterator.format(format))
-      groupDateIterator = groupDateIterator.add(1, timeBucket)
+    while (djsFrom.isSameOrBefore(iterateTo, timeBucket)) {
+      x.push(djsFrom.utc().format(format))
+      xShifted.push(djsFrom.format(format))
+      djsFrom = djsFrom.add(1, timeBucket)
     }
 
     console.log('X:', x)
@@ -1248,14 +1246,14 @@ export class AnalyticsService {
       )
 
       const uniques =
-        this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
+        this.extractCustomEventsChartData(result, x)?._unknown_event ||
         []
 
       const sdur = Array(_size(x)).fill(0)
 
       return Promise.resolve({
         chart: {
-          x,
+          x: xShifted,
           visits: uniques,
           uniques,
           sdur,
@@ -1272,9 +1270,9 @@ export class AnalyticsService {
       await clickhouse.query(query, paramsData).toPromise()
     )
 
+    console.log('PARAMS:', paramsData.params)
     console.log('RESULT:', result)
 
-    // maybe we need to pass x as Clickhouse now ignores timezones for data
     const { visits, uniques, sdur } = this.extractChartData(result, x)
 
     return Promise.resolve({
@@ -1354,10 +1352,10 @@ export class AnalyticsService {
         const result = <Array<TrafficCEFilterCHResponse>>(
           await clickhouse.query(query, paramsData).toPromise()
         )
-        const { count } = this.extractCaptchaChartData(result, xShifted)
+        const { count } = this.extractCaptchaChartData(result, x)
 
         chart = {
-          x,
+          x: xShifted,
           results: count,
         }
       })(),
@@ -1427,8 +1425,8 @@ export class AnalyticsService {
     )
 
     return {
-      x,
-      ...this.extractPerformanceChartData(result, xShifted),
+      x: xShifted,
+      ...this.extractPerformanceChartData(result, x),
     }
   }
 
@@ -1540,11 +1538,11 @@ export class AnalyticsService {
       await clickhouse.query(query, paramsData).toPromise()
     )
 
-    const events = this.extractCustomEventsChartData(result, xShifted)
+    const events = this.extractCustomEventsChartData(result, x)
 
     return Promise.resolve({
       chart: {
-        x,
+        x: xShifted,
         events,
       },
     })
