@@ -4,7 +4,6 @@ import { ExtractJwt } from 'passport-jwt'
 import { verify } from 'jsonwebtoken'
 
 import { UserType } from 'selfhosted-src/user/entities/user.entity'
-import { UserService } from 'selfhosted-src/user/user.service'
 import { JWT_ACCESS_TOKEN_SECRET } from 'selfhosted-src/common/constants'
 import { ROLES_KEY } from '../decorators'
 
@@ -12,7 +11,6 @@ import { ROLES_KEY } from '../decorators'
 export class RolesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext) {
