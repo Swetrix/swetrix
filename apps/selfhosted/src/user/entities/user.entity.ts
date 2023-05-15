@@ -1,4 +1,6 @@
+import * as _omit from 'lodash/omit'
 import { SELFHOSTED_EMAIL, SELFHOSTED_UUID } from '../../common/constants'
+import { getUserClickhouse } from '../../common/utils'
 
 export enum UserType {
   CUSTOMER = 'customer',
@@ -19,6 +21,8 @@ export interface SelfhostedUser {
   planCode: 'enterprise'
   roles: UserType[]
   isActive: boolean
+  timezone: string
+  timeFormat: TimeFormat
 }
 
 export const generateSelfhostedUser = (): SelfhostedUser => ({
@@ -28,4 +32,22 @@ export const generateSelfhostedUser = (): SelfhostedUser => ({
   planCode: 'enterprise',
   roles: [UserType.ADMIN, UserType.CUSTOMER],
   isActive: true,
+  timezone: DEFAULT_TIMEZONE,
+  timeFormat: TimeFormat['12-hour'],
 })
+
+export const getSelfhostedUser = async (): Promise<SelfhostedUser> => {
+  const user = generateSelfhostedUser()
+  let settings = {}
+
+  try {
+    settings = _omit((await getUserClickhouse() || {}), ['id'])
+  } catch (reason) {
+    console.error('[ERROR] getSelfhostedUser: ', reason)
+  }
+
+  return {
+    ...user,
+    ...settings,
+  }
+}

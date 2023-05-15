@@ -16,8 +16,8 @@ import {
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 
-import { checkRateLimit } from 'src/common/utils'
-import { generateSelfhostedUser } from 'src/user/entities/user.entity'
+import { getUserClickhouse, checkRateLimit } from '../common/utils'
+import { generateSelfhostedUser } from '../user/entities/user.entity'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser } from './decorators'
 import { LoginResponseDto, LoginRequestDto } from './dtos'
@@ -104,7 +104,6 @@ export class AuthController {
 
     const accessToken = await this.authService.generateJwtAccessToken(
       user.id,
-      user.isTwoFactorAuthenticationEnabled,
     )
 
     return { accessToken }
