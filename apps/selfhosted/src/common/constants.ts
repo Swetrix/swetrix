@@ -1,6 +1,5 @@
 import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
-import { hash } from 'blake3'
 import * as _toNumber from 'lodash/toNumber'
 
 import { getSelfhostedUUID } from './utils'

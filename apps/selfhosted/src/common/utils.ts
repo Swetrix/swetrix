@@ -1,8 +1,6 @@
 import { NotFoundException, HttpException } from '@nestjs/common'
 import { hash } from 'blake3'
 import { v5 as uuidv5 } from 'uuid'
-import * as randomstring from 'randomstring'
-import * as _sample from 'lodash/sample'
 import * as _join from 'lodash/join'
 import * as _filter from 'lodash/filter'
 import * as _values from 'lodash/values'

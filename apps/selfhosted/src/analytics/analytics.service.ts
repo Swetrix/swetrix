@@ -209,8 +209,8 @@ export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
 
   async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
-    // const project = await this.projectService.getRedisProject(pid)
-    // this.projectService.allowedToView(project, uid)
+    const project = await this.projectService.getRedisProject(pid)
+    this.projectService.allowedToView(project, uid)
   }
 
   checkOrigin(project: Project, origin: string): void {
