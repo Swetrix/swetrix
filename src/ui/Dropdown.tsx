@@ -6,13 +6,18 @@ import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
 
+// Define the prop types for the component
 interface IDropdown {
   title: string | number | React.ReactNode,
   desc?: string | number | React.ReactNode,
   className?: string,
+  /* (array): An array of items to be displayed in the dropdown menu. */
   items: any[],
+  /* (function): A function that returns the label for each item in the dropdown menu. */
   labelExtractor: (item: any) => string | number | React.ReactNode,
+  /* (function): A function that returns the key for each item in the dropdown menu. */
   keyExtractor: (item: any) => string | number | React.ReactNode,
+  /* (function): A function that is called when an item is selected. */
   onSelect: (item: any, e?: React.MouseEvent<HTMLElement>) => void | null,
   aside?: boolean,
   buttonClassName?: string,

@@ -8,7 +8,7 @@ import {
 
 // Define the prop types for the component
 interface IAlert {
-  // The message to be displayed in the alert.
+  /* (string): The message to be displayed in the alert. */
   message: string,
   //  (object): An object containing the options for the alert, including the type property, which can have the values 'info', 'success', or 'error'.
   options: {
