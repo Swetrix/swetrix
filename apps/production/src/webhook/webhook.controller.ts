@@ -5,7 +5,6 @@ import {
   Headers,
   BadRequestException,
   NotFoundException,
-  UseGuards,
   Ip,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
@@ -120,17 +119,17 @@ export class WebhookController {
         break
       }
 
-      case 'subscription_payment_refunded': {
-        const { subscription_id: subID } = body
+      // case 'subscription_payment_refunded': {
+      //   const { subscription_id: subID } = body
 
-        await this.userService.updateBySubID(subID, {
-          planCode: PlanCode.none,
-          billingFrequency: BillingFrequency.Monthly,
-          nextBillDate: null,
-        })
+      //   await this.userService.updateBySubID(subID, {
+      //     planCode: PlanCode.none,
+      //     billingFrequency: BillingFrequency.Monthly,
+      //     nextBillDate: null,
+      //   })
 
-        break
-      }
+      //   break
+      // }
 
       case 'subscription_payment_failed': {
         const { subscription_id: subID, attempt_number: attemptNumber } = body

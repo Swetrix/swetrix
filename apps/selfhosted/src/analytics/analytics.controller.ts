@@ -1,6 +1,5 @@
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isArray from 'lodash/isArray'
-import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
@@ -52,11 +51,7 @@ import {
   redis,
   REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME,
-  REDIS_USERS_COUNT_KEY,
-  REDIS_PROJECTS_COUNT_KEY,
-  REDIS_PAGEVIEWS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
-  REDIS_PERFORMANCE_COUNT_KEY,
   clickhouse,
 } from '../common/constants'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'

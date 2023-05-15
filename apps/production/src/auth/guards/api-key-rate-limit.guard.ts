@@ -1,9 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { checkRateLimitForApiKey } from 'src/common/utils'
-import {
-  ACCOUNT_PLANS,
-  PlanCode,
-} from 'src/user/entities/user.entity'
+import { ACCOUNT_PLANS, PlanCode } from 'src/user/entities/user.entity'
 
 @Injectable()
 export class ApiKeyRateLimitGuard implements CanActivate {

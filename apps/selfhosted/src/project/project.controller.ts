@@ -161,7 +161,6 @@ export class ProjectController {
     @Param('pid') pid: string,
     @Query('from') from: string,
     @Query('to') to: string,
-    @CurrentUserId() uid: string,
   ): Promise<void> {
     this.logger.log({ from, to, pid }, 'DELETE /partially/:id')
 

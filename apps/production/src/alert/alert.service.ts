@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import {
-  Pagination,
-  PaginationOptionsInterface,
-} from 'src/common/pagination'
+import { Pagination, PaginationOptionsInterface } from 'src/common/pagination'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO } from './dto/alert.dto'
 

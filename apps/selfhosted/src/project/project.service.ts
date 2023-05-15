@@ -12,11 +12,9 @@ import * as _size from 'lodash/size'
 import * as _join from 'lodash/join'
 import * as _find from 'lodash/find'
 import * as _map from 'lodash/map'
-import * as _pick from 'lodash/pick'
 import * as _isNull from 'lodash/isNull'
 import * as _split from 'lodash/split'
 import * as _trim from 'lodash/trim'
-import * as _findIndex from 'lodash/findIndex'
 // @ts-ignore
 import * as validateIP from 'validate-ip-node'
 
@@ -45,8 +43,6 @@ export const deleteProjectRedis = async (id: string) => {
 
 @Injectable()
 export class ProjectService {
-  constructor() {}
-
   async getRedisProject(pid: string): Promise<Project | null> {
     const pidKey = getRedisProjectKey(pid)
     let project: string | Project = await redis.get(pidKey)

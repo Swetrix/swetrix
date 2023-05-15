@@ -83,9 +83,8 @@ export class UserController {
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async me(@CurrentUserId() user_id: string): Promise<User> {
+  async me(@CurrentUserId() user_id: string): Promise<Partial<User>> {
     this.logger.log({ user_id }, 'GET /user/me')
-    let user
 
     const sharedProjects = await this.projectService.findShare({
       where: {
@@ -93,7 +92,7 @@ export class UserController {
       },
       relations: ['project'],
     })
-    user = this.userService.processUser(
+    const user = this.userService.processUser(
       await this.userService.findOneWhere({ id: user_id }),
     )
 
@@ -385,7 +384,7 @@ export class UserController {
   async update(
     @Body() userDTO: AdminUpdateUserProfileDTO,
     @Param('id') id: string,
-  ): Promise<User> {
+  ): Promise<Partial<User>> {
     this.logger.log({ userDTO, id }, 'PUT /user/:id')
 
     if (userDTO.password) {
@@ -441,7 +440,7 @@ export class UserController {
     @Body() userDTO: UpdateUserProfileDTO,
     @CurrentUserId() id: string,
     @Req() request: Request,
-  ): Promise<User> {
+  ): Promise<Partial<User>> {
     this.logger.log({ userDTO, id }, 'PUT /user')
     const user = await this.userService.findOneWhere({ id })
 

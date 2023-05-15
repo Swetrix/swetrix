@@ -13,11 +13,7 @@ import * as _now from 'lodash/now'
 import * as _find from 'lodash/find'
 
 import { AlertService } from 'src/alert/alert.service'
-import {
-  QueryCondition,
-  QueryMetric,
-  QueryTime,
-} from 'src/alert/dto/alert.dto'
+import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
 import { ExtensionsService } from 'src/marketplace/extensions/extensions.service'
 import { Extension } from 'src/marketplace/extensions/entities/extension.entity'
 import { ReportFrequency } from 'src/project/enums'

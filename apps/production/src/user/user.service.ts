@@ -69,7 +69,7 @@ export class UserService {
     return this.usersRepository.count()
   }
 
-  omitSensitiveData(user: User): User {
+  omitSensitiveData(user: Partial<User>): Partial<User> {
     return _omit(user, [
       'password',
       'twoFactorRecoveryCode',
@@ -139,7 +139,7 @@ export class UserService {
     }
   }
 
-  processUser(user: User): object {
+  processUser(user: User): Partial<User> {
     // @ts-ignore
     const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
     const userData = {
