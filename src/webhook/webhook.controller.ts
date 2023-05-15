@@ -20,7 +20,6 @@ import {
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { WebhookService } from './webhook.service'
-import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 
 const MAX_PAYMENT_ATTEMPTS = 5
 
@@ -34,7 +33,6 @@ export class WebhookController {
     private readonly projectService: ProjectService,
   ) {}
 
-  @UseGuards(SelfhostedGuard)
   @Post('/paddle')
   async paddleWebhook(
     @Body() body,

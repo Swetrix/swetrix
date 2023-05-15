@@ -36,7 +36,6 @@ import {
   redis,
   REDIS_LOG_DATA_CACHE_KEY,
   REDIS_LOG_CUSTOM_CACHE_KEY,
-  isSelfhosted,
   REDIS_SESSION_SALT_KEY,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
@@ -240,10 +239,6 @@ export class TaskManagerService {
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')
   async weeklyReportsHandler(): Promise<void> {
-    if (isSelfhosted) {
-      return
-    }
-
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.WEEKLY,
@@ -294,10 +289,6 @@ export class TaskManagerService {
   // ON THE FIRST DAY OF EVERY MONTH AT 2 AM
   @Cron('0 02 1 * *')
   async monthlyReportsHandler(): Promise<void> {
-    if (isSelfhosted) {
-      return
-    }
-
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.MONTHLY,
@@ -347,10 +338,6 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_QUARTER)
   async quarterlyReportsHandler(): Promise<void> {
-    if (isSelfhosted) {
-      return
-    }
-
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.QUARTERLY,
@@ -530,10 +517,6 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async getGeneralStats(): Promise<object> {
-    if (isSelfhosted) {
-      return {}
-    }
-
     const PVquery = 'SELECT count(*) from analytics'
     const CEquery = 'SELECT count(*) from customEV'
     const PFquery = 'SELECT count(*) from performance'

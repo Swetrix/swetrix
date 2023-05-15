@@ -4,11 +4,8 @@ import { PassportStrategy } from '@nestjs/passport'
 import { Strategy, ExtractJwt } from 'passport-jwt'
 
 import {
-  isSelfhosted,
-  SELFHOSTED_UUID,
   JWT_ACCESS_TOKEN_SECRET,
 } from 'src/common/constants'
-import { generateSelfhostedUser } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
 import { IJwtPayload } from '../interfaces'
 
@@ -29,14 +26,6 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
   }
 
   public async validate(payload: IJwtPayload) {
-    if (isSelfhosted) {
-      if (payload.sub !== SELFHOSTED_UUID) {
-        throw new UnauthorizedException()
-      }
-
-      return generateSelfhostedUser()
-    }
-
     const user = await this.userService.findUserById(payload.sub)
 
     if (!user) {

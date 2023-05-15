@@ -41,7 +41,6 @@ import {
   getRedisUserCountKey,
   redis,
   clickhouse,
-  isSelfhosted,
   IP_REGEX,
   ORIGINS_REGEX,
   getRedisProjectKey,
@@ -127,9 +126,6 @@ export class ProjectService {
     let project: string | Project = await redis.get(pidKey)
 
     if (_isEmpty(project)) {
-      if (isSelfhosted) {
-        project = this.formatFromClickhouse(await getProjectsClickhouse(pid))
-      } else {
         // todo: optimise the relations - select
         // select only required columns
         // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
@@ -145,13 +141,11 @@ export class ProjectService {
             'isCaptchaEnabled',
           ],
         })
-      }
       if (_isEmpty(project))
         throw new BadRequestException(
           'The provided Project ID (pid) is incorrect',
         )
 
-      if (!isSelfhosted) {
         const share = await this.findShare({
           where: {
             project: pid,
@@ -160,7 +154,6 @@ export class ProjectService {
         })
         // @ts-ignore
         project = { ...project, share }
-      }
 
       await redis.set(
         pidKey,
@@ -456,10 +449,6 @@ export class ProjectService {
         .format('YYYY-MM-DD HH:mm:ss')
       const monthEnd = dayjs.utc().endOf('month').format('YYYY-MM-DD HH:mm:ss')
 
-      if (isSelfhosted) {
-        // selfhosted has no limits
-        return 0
-      }
       const pids = await this.find({
         where: {
           admin: uid,
