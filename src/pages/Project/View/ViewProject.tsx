@@ -159,13 +159,23 @@ const ViewProject = ({
   const { id }: {
     id: string
   } = useParams()
+  // history is a history from react-router-dom
   const history = useHistory()
+
+  // find project by id from url from state in redux projects and sharedProjects. projects and sharedProjects loading from api in Saga on page load
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
+  /* isSharedProject is a boolean check if project is shared. If isSharedProject is true,
+  we used role and other colummn from sharedProjects.
+  And it is used for remove settings button when user have role viewer or logic with Alert tabs */
   const isSharedProject = useMemo(() => {
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
   }, [id, sharedProjects])
+
+  // areFiltersParsed used for check filters is parsed from url. If we have query params in url, we parse it and set to state
+  // when areFiltersParsed and areFiltersPerfParsed changed we call loadAnalytics or loadAnalyticsPerf and other func for load data
   const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
+  // similar areFiltersParsed but using for activeTab === 'performance'
   const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState<boolean>(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
   const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
