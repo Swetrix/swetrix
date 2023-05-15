@@ -48,7 +48,6 @@ import {
   isDevelopment,
   PRODUCTION_ORIGIN,
 } from '../common/constants'
-import { getProjectsClickhouse } from '../common/utils'
 import { ProjectSubscriber } from './entity'
 import { AddSubscriberType } from './types'
 import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
@@ -340,12 +339,6 @@ export class ProjectService {
     }
   }
 
-  checkIfIDUniqueClickhouse(projects: Array<object>, projectID: string): void {
-    if (_find(projects, ({ id }) => id === projectID)) {
-      throw new BadRequestException('Selected project ID is already in use')
-    }
-  }
-
   async removeDataFromClickhouse(
     pid: string,
     from: string,
@@ -370,42 +363,6 @@ export class ProjectService {
       clickhouse.query(queryCustomEvents, params).toPromise(),
       clickhouse.query(queryPerformance, params).toPromise(),
     ])
-  }
-
-  formatToClickhouse(project: any): object {
-    const updProject = { ...project }
-    updProject.active = Number(updProject.active)
-    updProject.public = Number(updProject.public)
-
-    if (!_isNull(updProject.origins)) {
-      updProject.origins = _isString(updProject.origins)
-        ? updProject.origins
-        : _join(updProject.origins, ',')
-    }
-
-    if (!_isNull(updProject.ipBlacklist)) {
-      updProject.ipBlacklist = _isString(updProject.ipBlacklist)
-        ? updProject.ipBlacklist
-        : _join(updProject.ipBlacklist, ',')
-    }
-
-    return updProject
-  }
-
-  formatFromClickhouse(project: any): Project {
-    const updProject = { ...project }
-    updProject.active = Boolean(updProject.active)
-    updProject.public = Boolean(updProject.public)
-
-    updProject.origins = _isNull(updProject.origins)
-      ? []
-      : _split(updProject.origins, ',')
-
-    updProject.ipBlacklist = _isNull(updProject.ipBlacklist)
-      ? []
-      : _split(updProject.ipBlacklist, ',')
-
-    return updProject
   }
 
   validateProject(projectDTO: ProjectDTO) {

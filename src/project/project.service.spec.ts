@@ -48,9 +48,6 @@ describe('ProjectService', () => {
       spy.mockRestore()
       expect(service.checkIfIDUnique).toBeDefined()
     })
-    it('should be defined checkIfIDUniqueClickhouse ', () => {
-      expect(service.checkIfIDUniqueClickhouse).toBeDefined()
-    })
     it('should be defined count ', () => {
       expect(service.count()).rejects.not.toBeNull()
       expect(service.count).toBeDefined()

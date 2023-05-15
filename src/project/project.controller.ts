@@ -62,10 +62,6 @@ import {
   PRODUCTION_ORIGIN,
 } from '../common/constants'
 import {
-  getProjectsClickhouse,
-  createProjectClickhouse,
-  updateProjectClickhouse,
-  deleteProjectClickhouse,
   generateRandomString,
 } from '../common/utils'
 import {
