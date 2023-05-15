@@ -3,8 +3,6 @@ import Redis from 'ioredis'
 import { hash } from 'blake3'
 import * as _toNumber from 'lodash/toNumber'
 
-import { getSelfhostedUUID } from './utils'
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
@@ -45,17 +43,11 @@ const clickhouse = new ClickHouse({
 })
 
 const { JWT_ACCESS_TOKEN_SECRET } = process.env
-const isSelfhosted = Boolean(process.env.SELFHOSTED)
 const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 const isDevelopment = process.env.NODE_ENV === 'development'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
-const SELFHOSTED_EMAIL = process.env.EMAIL
-const SELFHOSTED_PASSWORD = process.env.PASSWORD
 const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
-const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
-
-const SELFHOSTED_UUID = isSelfhosted ? getSelfhostedUUID() : ''
 
 const { TWO_FACTOR_AUTHENTICATION_APP_NAME } = process.env
 
@@ -125,11 +117,7 @@ export {
   REDIS_LOG_CUSTOM_CACHE_KEY,
   REDIS_SESSION_SALT_KEY,
   HEARTBEAT_SID_LIFE_TIME,
-  isSelfhosted,
   UUIDV5_NAMESPACE,
-  SELFHOSTED_EMAIL,
-  SELFHOSTED_PASSWORD,
-  SELFHOSTED_UUID,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_PAGEVIEWS_COUNT_KEY,
@@ -149,7 +137,6 @@ export {
   CAPTCHA_TOKEN_LIFETIME,
   CAPTCHA_SECRET_KEY_LENGTH,
   PRODUCTION_ORIGIN,
-  DEFAULT_SELFHOSTED_UUID,
   REDIS_SSO_UUID,
   JWT_ACCESS_TOKEN_SECRET,
 }

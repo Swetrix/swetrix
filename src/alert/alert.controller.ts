@@ -33,7 +33,6 @@ import { Roles } from '../auth/decorators/roles.decorator'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO, CreateAlertDTO } from './dto/alert.dto'
 import { RolesGuard } from '../auth/guards/roles.guard'
-import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { AlertService } from './alert.service'
 
 const ALERTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxAlerts
@@ -49,7 +48,6 @@ export class AlertController {
   ) {}
 
   @Get('/')
-  @UseGuards(SelfhostedGuard)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 200, type: Alert })
@@ -83,7 +81,6 @@ export class AlertController {
   }
 
   @Post('/')
-  @UseGuards(SelfhostedGuard)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 201, type: Alert })
@@ -158,7 +155,6 @@ export class AlertController {
   }
 
   @Put('/:id')
-  @UseGuards(SelfhostedGuard)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 200, type: Alert })
@@ -208,7 +204,6 @@ export class AlertController {
   }
 
   @Delete('/:id')
-  @UseGuards(SelfhostedGuard)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 204, description: 'Empty body' })

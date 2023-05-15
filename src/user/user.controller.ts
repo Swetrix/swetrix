@@ -40,19 +40,16 @@ import {
   MAX_EMAIL_REQUESTS,
   PlanCode,
   Theme,
-  generateSelfhostedUser,
 } from './entities/user.entity'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
 import {
   GDPR_EXPORT_TIMEFRAME,
   clickhouse,
-  isSelfhosted,
   isDevelopment,
   PRODUCTION_ORIGIN,
 } from '../common/constants'
 import { RolesGuard } from '../auth/guards/roles.guard'
-import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -90,9 +87,6 @@ export class UserController {
     this.logger.log({ user_id }, 'GET /user/me')
     let user
 
-    if (isSelfhosted) {
-      user = generateSelfhostedUser()
-    } else {
       const sharedProjects = await this.projectService.findShare({
         where: {
           user: user_id,
@@ -104,7 +98,6 @@ export class UserController {
       )
 
       user.sharedProjects = sharedProjects
-    }
 
     return this.userService.omitSensitiveData(user)
   }
@@ -113,7 +106,6 @@ export class UserController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async get(
     @Query('take') take: number | undefined,
@@ -125,7 +117,6 @@ export class UserController {
 
   @Put('/theme')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async setTheme(
     @CurrentUserId() userId: string,
@@ -137,7 +128,6 @@ export class UserController {
   @Get('/search')
   @ApiQuery({ name: 'query', required: false })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async searchUsers(
     @Query('query') query: string | undefined,
@@ -148,7 +138,6 @@ export class UserController {
 
   @Post('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async create(@Body() userDTO: UserProfileDTO): Promise<User | null> {
     this.logger.log({ userDTO }, 'POST /user')
@@ -171,7 +160,6 @@ export class UserController {
 
   @Post('/api-key')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async generateApiKey(
     @CurrentUserId() userId: string,
@@ -202,7 +190,6 @@ export class UserController {
 
   @Delete('/api-key')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
     this.logger.log({ userId }, 'DELETE /user/api-key')
@@ -219,7 +206,6 @@ export class UserController {
   @Delete('/:id')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async delete(
     @Param('id') id: string,
@@ -263,7 +249,6 @@ export class UserController {
   @Delete('/')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteSelf(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
@@ -301,7 +286,6 @@ export class UserController {
 
   @Delete('/share/:shareId')
   @HttpCode(204)
-  @UseGuards(SelfhostedGuard)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
@@ -331,7 +315,6 @@ export class UserController {
 
   @Get('/share/:shareId')
   @HttpCode(204)
-  @UseGuards(SelfhostedGuard)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
@@ -363,7 +346,6 @@ export class UserController {
 
   @Post('/confirm_email')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(
     @CurrentUserId() id: string,
@@ -399,7 +381,6 @@ export class UserController {
 
   @Put('/:id')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.ADMIN)
   async update(
     @Body() userDTO: AdminUpdateUserProfileDTO,
@@ -435,7 +416,6 @@ export class UserController {
 
   @Delete('/tg/:id')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @HttpCode(204)
   async deleteTelegramConnection(
@@ -456,7 +436,6 @@ export class UserController {
 
   @Put('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async updateCurrentUser(
     @Body() userDTO: UpdateUserProfileDTO,
@@ -581,7 +560,6 @@ export class UserController {
 
   @Get('/export')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /user/export')

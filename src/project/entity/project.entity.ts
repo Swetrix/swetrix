@@ -15,8 +15,7 @@ import { ExtensionToProject } from '../../marketplace/extensions/entities/extens
 import { ProjectSubscriber } from './project-subscriber.entity'
 import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
 
-// In case of modifying some properties here, make sure to also edit them in common/constants.ts -> selfhosted -> clickhouse
-// and to add them to the GDPR data export email template
+// In case of modifying some properties here add them to the GDPR data export email template
 @Entity()
 export class Project {
   @ApiProperty()

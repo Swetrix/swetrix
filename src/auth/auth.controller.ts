@@ -30,13 +30,10 @@ import { checkRateLimit } from 'src/common/utils'
 import {
   UserType,
   User,
-  generateSelfhostedUser,
 } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
-import { isSelfhosted } from 'src/common/constants'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
-import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   RegisterResponseDto,
   RegisterRequestDto,
@@ -83,7 +80,6 @@ export class AuthController {
     description: 'User registered',
     type: RegisterResponseDto,
   })
-  @UseGuards(SelfhostedGuard)
   @Public()
   @Post('register')
   public async register(
@@ -158,13 +154,6 @@ export class AuthController {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
-    if (isSelfhosted) {
-      return {
-        ...jwtTokens,
-        user,
-      }
-    }
-
     await this.authService.sendTelegramNotification(user.id, headers, ip)
 
     if (user.isTwoFactorAuthenticationEnabled) {
@@ -183,7 +172,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email verified',
   })
-  @UseGuards(SelfhostedGuard)
   @Public()
   @Get('verify-email/:token')
   public async verifyEmail(
@@ -205,7 +193,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password reset requested',
   })
-  @UseGuards(SelfhostedGuard)
   @Public()
   @Post('reset-password')
   public async requestResetPassword(
@@ -233,7 +220,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password reset',
   })
-  @UseGuards(SelfhostedGuard)
   @Public()
   @Post('reset-password/confirm/:token')
   @HttpCode(200)
@@ -257,7 +243,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Password changed',
   })
-  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('change-password')
@@ -288,7 +273,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Resend of the verification email requested',
   })
-  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('verify-email')
@@ -320,7 +304,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email changed',
   })
-  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('change-email')
@@ -357,7 +340,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email confirmed',
   })
-  @UseGuards(SelfhostedGuard)
   @Public()
   @Get('change-email/confirm/:token')
   public async confirmChangeEmail(
@@ -388,9 +370,7 @@ export class AuthController {
     @CurrentUser('refreshToken') refreshToken: string,
     @I18n() i18n: I18nContext,
   ): Promise<{ accessToken: string }> {
-    const user = isSelfhosted
-      ? generateSelfhostedUser()
-      : await this.userService.findUserById(userId)
+    const user = await this.userService.findUserById(userId)
 
     if (!user) {
       throw new UnauthorizedException()
@@ -426,9 +406,7 @@ export class AuthController {
     @CurrentUser('refreshToken') refreshToken: string,
     @I18n() i18n: I18nContext,
   ): Promise<void> {
-    const user = isSelfhosted
-      ? generateSelfhostedUser()
-      : await this.userService.findUserById(userId)
+    const user = await this.userService.findUserById(userId)
 
     if (!user) {
       throw new UnauthorizedException()
@@ -449,7 +427,6 @@ export class AuthController {
   // SSO section
   @ApiOperation({ summary: 'Generate SSO authentication URL' })
   @Post('sso/generate')
-  @UseGuards(SelfhostedGuard)
   @Public()
   async generateAuthURL(
     @Body() body: SSOGenerateDto,
@@ -476,7 +453,6 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Process authentication token (or code)' })
   @Post('sso/process-token')
-  @UseGuards(SelfhostedGuard)
   @Public()
   async processSSOToken(
     @Body() body: ProcessSSOCodeDto,
@@ -495,7 +471,6 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Auth user' })
   @Post('sso/hash')
-  @UseGuards(SelfhostedGuard)
   @Public()
   // Validates the authorisation code and returns the JWT tokens
   async getJWTByHash(
@@ -515,7 +490,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'SSO provider linked to an existing account',
   })
-  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Post('sso/link_by_hash')
@@ -532,7 +506,6 @@ export class AuthController {
   @ApiOkResponse({
     description: 'SSO provider unlinked from an existing account',
   })
-  @UseGuards(SelfhostedGuard)
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Delete('sso/unlink')

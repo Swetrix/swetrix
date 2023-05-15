@@ -38,7 +38,6 @@ import {
   isValidPID,
   UNIQUE_SESSION_LIFE_TIME,
   clickhouse,
-  isSelfhosted,
   REDIS_SESSION_SALT_KEY,
 } from '../common/constants'
 import {
@@ -215,10 +214,8 @@ export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
 
   async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
-    if (!isSelfhosted) {
-      const project = await this.projectService.getRedisProject(pid)
-      this.projectService.allowedToView(project, uid)
-    }
+    const project = await this.projectService.getRedisProject(pid)
+    this.projectService.allowedToView(project, uid)
   }
 
   checkOrigin(project: Project, origin: string): void {
@@ -324,7 +321,6 @@ export class AnalyticsService {
       )
     }
 
-    if (!isSelfhosted) {
       if (project.admin.planCode === PlanCode.none) {
         throw new ForbiddenException(
           'You cannot send analytics to this project due to no active subscription. Please upgrade your account plan to continue sending analytics.',
@@ -340,7 +336,6 @@ export class AnalyticsService {
           'You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.',
         )
       }
-    }
 
     this.checkOrigin(project, origin)
 

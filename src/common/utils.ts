@@ -19,8 +19,6 @@ import * as _map from 'lodash/map'
 import {
   clickhouse,
   redis,
-  DEFAULT_SELFHOSTED_UUID,
-  SELFHOSTED_EMAIL,
   UUIDV5_NAMESPACE,
   isDevelopment,
 } from './constants'
@@ -241,14 +239,6 @@ const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 const generateRandomString = (length: number): string =>
   randomstring.generate(length)
 
-const getSelfhostedUUID = (): string => {
-  try {
-    return uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE)
-  } catch {
-    return DEFAULT_SELFHOSTED_UUID
-  }
-}
-
 export {
   getRandomTip,
   checkRateLimit,
@@ -260,7 +250,6 @@ export {
   calculateRelativePercentage,
   millisecondsToSeconds,
   generateRandomString,
-  getSelfhostedUUID,
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,

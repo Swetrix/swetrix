@@ -3,9 +3,9 @@ import { Reflector } from '@nestjs/core'
 import { ExtractJwt } from 'passport-jwt'
 import { verify } from 'jsonwebtoken'
 
-import { UserType, generateSelfhostedUser } from 'src/user/entities/user.entity'
+import { UserType } from 'src/user/entities/user.entity'
 import { UserService } from 'src/user/user.service'
-import { isSelfhosted, JWT_ACCESS_TOKEN_SECRET } from 'src/common/constants'
+import { JWT_ACCESS_TOKEN_SECRET } from 'src/common/constants'
 import { IS_TWO_FA_NOT_REQUIRED_KEY, ROLES_KEY } from '../decorators'
 
 @Injectable()
@@ -31,9 +31,7 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const userFromRequest = request.user
 
-    const user = isSelfhosted
-      ? generateSelfhostedUser()
-      : await this.userService.findUserById(userFromRequest.id)
+    const user = await this.userService.findUserById(userFromRequest.id)
 
     // this is a temp measure as well due to some fucking bug related to undefined user, will revert it when I find the cause
     let hasRole
@@ -53,21 +51,6 @@ export class RolesGuard implements CanActivate {
     } else {
       const extract = ExtractJwt.fromAuthHeaderAsBearerToken()
       token = extract(request)
-    }
-
-    if (isSelfhosted) {
-      try {
-        const decoded: any = verify(token, JWT_ACCESS_TOKEN_SECRET)
-
-        // If the token is not decoded, it means it's invalid
-        if (!decoded) {
-          return false
-        }
-      } catch {
-        return false
-      }
-
-      return true
     }
 
     if (isTwoFaNotRequired) {

@@ -18,7 +18,6 @@ import { UserType } from '../user/entities/user.entity'
 import { AppLoggerService } from '../logger/logger.service'
 import { MailerService } from '../mailer/mailer.service'
 import { LetterTemplate } from '../mailer/letter'
-import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import { TwoFaNotRequired, Roles, CurrentUserId } from '../auth/decorators'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { TwoFactorAuthDTO } from './dto/2fa-auth.dto'
@@ -37,7 +36,6 @@ export class TwoFactorAuthController {
 
   @Post('generate')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
   async register(@CurrentUserId() id: string) {
@@ -48,7 +46,6 @@ export class TwoFactorAuthController {
 
   @Post('enable')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
   async turnOnTwoFactorAuthentication(
@@ -98,7 +95,6 @@ export class TwoFactorAuthController {
   @Post('disable')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async turnOffTwoFactorAuthentication(
     @Body() body: TwoFactorAuthDTO,
@@ -138,7 +134,6 @@ export class TwoFactorAuthController {
   @Post('authenticate')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @UseGuards(SelfhostedGuard) // temporary this feature is not available for selfhosted
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
   async authenticate(

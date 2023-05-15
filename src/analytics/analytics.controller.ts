@@ -46,7 +46,6 @@ import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { AppLoggerService } from '../logger/logger.service'
-import { SelfhostedGuard } from '../common/guards/selfhosted.guard'
 import {
   REDIS_LOG_DATA_CACHE_KEY,
   REDIS_LOG_PERF_CACHE_KEY,
@@ -650,7 +649,6 @@ export class AnalyticsController {
     return this.analyticsService.getCaptchaSummary(pidsArray, 'w')
   }
 
-  @UseGuards(SelfhostedGuard)
   @Public()
   @Get('generalStats')
   async getGeneralStats(): Promise<object> {
