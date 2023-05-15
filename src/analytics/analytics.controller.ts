@@ -284,7 +284,7 @@ export class AnalyticsController {
         filters,
         isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
       )
-    
+
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const {
       groupFrom, groupTo, groupFromUTC, groupToUTC,
@@ -293,7 +293,7 @@ export class AnalyticsController {
       to,
       timeBucket,
       period,
-      timezone,
+      safeTimezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -392,12 +392,14 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
       timeBucket,
       period,
-      timezone,
+      safeTimezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -427,7 +429,7 @@ export class AnalyticsController {
       subQuery,
       filtersQuery,
       paramsData,
-      timezone,
+      safeTimezone,
       customEVFilterApplied,
     )
 
@@ -461,12 +463,14 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
+    
+      const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
       timeBucket,
       period,
-      timezone,
+      safeTimezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -488,7 +492,7 @@ export class AnalyticsController {
       subQuery,
       filtersQuery,
       paramsData,
-      timezone,
+      safeTimezone,
     )
 
     return {
@@ -521,12 +525,14 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
+    
+      const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
       timeBucket,
       period,
-      timezone,
+      safeTimezone,
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
@@ -545,7 +551,7 @@ export class AnalyticsController {
       to,
       filtersQuery,
       paramsData,
-      timezone,
+      safeTimezone,
     )
 
     return {
@@ -580,12 +586,13 @@ export class AnalyticsController {
 
     await this.analyticsService.checkProjectAccess(pid, uid)
 
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
       null,
       period,
-      timezone,
+      safeTimezone,
     )
 
     const [filtersQuery, filtersParams, parsedFilters] =
@@ -1042,12 +1049,14 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
     await this.analyticsService.checkProjectAccess(pid, uid)
 
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
       timeBucket,
       period,
-      timezone,
+      safeTimezone,
     )
 
     const paramsData = {
@@ -1065,7 +1074,7 @@ export class AnalyticsController {
       groupTo,
       filtersQuery,
       paramsData,
-      timezone,
+      safeTimezone,
     )
 
     let customEventss = customEvents
