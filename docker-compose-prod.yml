@@ -11,7 +11,6 @@ services:
     environment:
       - API_URL=http://localhost:8080/
       - REACT_APP_AIAPI_URL=https://aiapi.swetrix.com/
-      - REACT_APP_SELFHOSTED=true
 
   # This is the analytics API
   swetrix-api:
@@ -25,18 +24,20 @@ services:
       - JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret
       - JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret
       - REDIS_HOST=redis
+      - MYSQL_HOST=mariadb
       - CLICKHOUSE_HOST=http://clickhouse
       - API_ORIGINS=
       - SMTP_MOCK=true
       - EMAIL=test@test.com
       - PASSWORD=12345678
       - TG_BOT_TOKEN=
-      - SELFHOSTED=true
     links:
       - 'redis'
+      - 'mariadb'
       - 'clickhouse'
     depends_on:
       - 'redis'
+      - 'mariadb'
       - 'clickhouse'
   redis:
     image: redis:alpine
@@ -47,6 +48,16 @@ services:
       - REDIS_USER=default
   #   volumes:
   #     - '/opt/redis-volume:/data'
+  mariadb:
+    image: linuxserver/mariadb:alpine
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=analytics
+      - MYSQL_USER=swetrix
+      - MYSQL_PASSWORD=password
+  #   volumes:
+  #    - '/opt/mysql-volume:/var/lib/mysql'
   clickhouse:
     image: clickhouse/clickhouse-server:22.8-alpine
     environment:

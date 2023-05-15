@@ -1,0 +1,7 @@
+{
+  "isEmail": "Please enter the valid email.",
+  "isPassword": "Please enter the valid password.",
+  "isNotEmpty": "This field is required.",
+  "isBoolean": "Please enter the valid value (true or false).",
+  "isUuid": "Please enter the valid UUID."
+}
