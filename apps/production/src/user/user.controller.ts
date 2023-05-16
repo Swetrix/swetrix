@@ -29,9 +29,9 @@ import * as _isString from 'lodash/isString'
 import * as _omit from 'lodash/omit'
 import { v4 as uuidv4 } from 'uuid'
 
+import { Markup } from 'telegraf'
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { TelegramService } from '../integrations/telegram/telegram.service'
-import { Markup } from 'telegraf'
 import { UserService } from './user.service'
 import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import {

@@ -1,4 +1,11 @@
-import { Controller, Get, Put, UseGuards, Body, BadRequestException} from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Put,
+  UseGuards,
+  Body,
+  BadRequestException,
+} from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as _omit from 'lodash/omit'
 
@@ -28,7 +35,7 @@ export class UserController {
   async me(@CurrentUserId() user_id: string): Promise<SelfhostedUser> {
     this.logger.log({ user_id }, 'GET /user/me')
 
-    return await getSelfhostedUser()
+    return getSelfhostedUser()
   }
 
   @Put('/')
@@ -47,7 +54,7 @@ export class UserController {
       })
 
       const user = generateSelfhostedUser()
-      const settings = _omit((await getUserClickhouse() || {}), ['id'])
+      const settings = _omit((await getUserClickhouse()) || {}, ['id'])
 
       return {
         ...user,

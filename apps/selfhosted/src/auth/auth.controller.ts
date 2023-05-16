@@ -16,7 +16,7 @@ import {
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 
-import { getUserClickhouse, checkRateLimit } from '../common/utils'
+import { checkRateLimit } from '../common/utils'
 import { generateSelfhostedUser } from '../user/entities/user.entity'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser } from './decorators'
@@ -102,9 +102,7 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.invalidRefreshToken'))
     }
 
-    const accessToken = await this.authService.generateJwtAccessToken(
-      user.id,
-    )
+    const accessToken = await this.authService.generateJwtAccessToken(user.id)
 
     return { accessToken }
   }
