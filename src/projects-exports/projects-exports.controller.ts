@@ -1,10 +1,11 @@
-import { Controller, Post, Param, Get } from '@nestjs/common'
+import { Controller, Post, Body, Param, Get } from '@nestjs/common'
 import {
   ApiTags,
   ApiOperation,
   ApiCreatedResponse,
   ApiOkResponse,
 } from '@nestjs/swagger'
+import { CreateExportDto } from './dto/create-export.dto'
 import { ProjectExport } from './entity/project-export.entity'
 
 @ApiTags('Projects Exports')
@@ -13,7 +14,10 @@ export class ProjectsExportsController {
   @ApiOperation({ summary: 'Create an export for a project' })
   @ApiCreatedResponse({ type: ProjectExport })
   @Post()
-  async createExport(@Param('projectId') projectId: string): Promise<unknown> {
+  async createExport(
+    @Body() createExportDto: CreateExportDto,
+    @Param('projectId') projectId: string,
+  ): Promise<unknown> {
     return {}
   }
 
