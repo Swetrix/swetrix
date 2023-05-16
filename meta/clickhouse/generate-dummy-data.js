@@ -16,7 +16,7 @@ const UTM_SOURCES = ['organic', 'paid', 'referral']
 const UTM_MEDIUMS = ['email', 'social', 'search']
 const UTM_CAMPAIGNS = ['winter_sale', 'spring_sale', 'summer_sale', 'fall_sale']
 const PAGES = ['/', '/signup', '/login', '/news', '/some-interesting-page.html']
-const URLS = _.map(_.times(36, _.constant(null)), faker.internet.url)
+const URLS = Array.from({ length: 36 }, () => faker.internet.url())
 const DEVICES = ['desktop', 'mobile', 'tablet', 'wearable']
 const BROWSERS = ['Chrome', 'Firefox', 'Safari', 'Opera', 'Edge', 'IE']
 const CUSTOM_EVENTS = ['click', 'hover', 'scroll', 'submit', 'error', 'signup', 'oauth', 'test', 'hello', '235535123433']
