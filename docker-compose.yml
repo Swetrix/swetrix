@@ -20,18 +20,13 @@ services:
     ports:
       - '8080:5005'
     environment:
-      - TWO_FACTOR_AUTHENTICATION_APP_NAME=Swetrix
-      - CLIENT_URL=https://swetrix.com
       - JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret
       - JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret
       - REDIS_HOST=redis
       - CLICKHOUSE_HOST=http://clickhouse
       - API_ORIGINS=
-      - SMTP_MOCK=true
       - EMAIL=test@test.com
       - PASSWORD=12345678
-      - TG_BOT_TOKEN=
-      - SELFHOSTED=true
     links:
       - 'redis'
       - 'clickhouse'
@@ -42,9 +37,9 @@ services:
     image: redis:alpine
     restart: always
     environment:
-      - REDIS_PASSWORD=password
       - REDIS_PORT=6379
       - REDIS_USER=default
+      - REDIS_PASSWORD=password
   #   volumes:
   #     - '/opt/redis-volume:/data'
   clickhouse:
