@@ -144,7 +144,7 @@ const isValidTimezone = (timezone: string): boolean => {
   }
 }
 
-const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
+export const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
   if (_isEmpty(date)) {
     return false
   }
@@ -434,11 +434,11 @@ export class AnalyticsService {
     const groupToFormatted = groupTo.format(formatTo)
 
     return {
-      // UTC time
+      // Timezone shifted time
       groupFrom: groupFromFormatted,
       groupTo: groupToFormatted,
-      // Timezone shifted time
-      groupFromUTC: groupFrom.utc().format(formatFrom),
+      // UTC time
+      groupFromUTC: groupFrom.utc().startOf(timeBucket).format(formatFrom),
       groupToUTC: groupTo.utc().format(formatFrom),
     }
   }
@@ -1208,6 +1208,7 @@ export class AnalyticsService {
         avgSdur,
       })
     }
+
     const query = this.generateAnalyticsAggregationQuery(
       timeBucket,
       filtersQuery,
@@ -1218,6 +1219,11 @@ export class AnalyticsService {
     )
 
     const { visits, uniques, sdur } = this.extractChartData(result, x)
+
+    console.log(x, xShifted)
+
+    console.log('----------------')
+    console.log(result)
 
     return Promise.resolve({
       chart: {
