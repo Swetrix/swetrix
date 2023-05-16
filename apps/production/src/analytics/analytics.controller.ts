@@ -29,8 +29,8 @@ import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
-import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth, Public } from 'src/auth/decorators'
+import { OptionalJwtAccessTokenGuard } from '../auth/guards'
+import { Auth, Public } from '../auth/decorators'
 import {
   AnalyticsService,
   getSessionKey,
@@ -294,6 +294,8 @@ export class AnalyticsController {
         safeTimezone,
       )
     await this.analyticsService.checkProjectAccess(pid, uid)
+
+    console.log('GROUP FROM TO:', { groupFrom, groupTo, groupFromUTC, groupToUTC })
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM ${
