@@ -41,7 +41,7 @@ export const getSelfhostedUser = async (): Promise<SelfhostedUser> => {
   let settings = {}
 
   try {
-    settings = _omit((await getUserClickhouse() || {}), ['id'])
+    settings = _omit((await getUserClickhouse()) || {}, ['id'])
   } catch (reason) {
     console.error('[ERROR] getSelfhostedUser: ', reason)
   }

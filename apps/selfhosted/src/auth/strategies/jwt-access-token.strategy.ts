@@ -3,7 +3,10 @@ import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { Strategy, ExtractJwt } from 'passport-jwt'
 
-import { SELFHOSTED_UUID, JWT_ACCESS_TOKEN_SECRET } from '../../common/constants'
+import {
+  SELFHOSTED_UUID,
+  JWT_ACCESS_TOKEN_SECRET,
+} from '../../common/constants'
 import { getSelfhostedUser } from '../../user/entities/user.entity'
 import { IJwtPayload } from '../interfaces'
 
@@ -25,6 +28,6 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
       throw new UnauthorizedException()
     }
 
-    return await getSelfhostedUser()
+    return getSelfhostedUser()
   }
 }

@@ -214,9 +214,9 @@ const getUserClickhouse = async () => {
   }
 
   const query = `SELECT * FROM sfuser WHERE id = {id:String}`
-  
+
   try {
-    return ((await clickhouse.query(query, paramsData).toPromise())[0] || {})
+    return (await clickhouse.query(query, paramsData).toPromise())[0] || {}
   } catch {
     return {}
   }

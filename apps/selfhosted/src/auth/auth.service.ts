@@ -14,9 +14,7 @@ import {
   SELFHOSTED_PASSWORD,
   JWT_ACCESS_TOKEN_SECRET,
 } from '../common/constants'
-import {
-  getSelfhostedUser, SelfhostedUser,
-} from '../user/entities/user.entity'
+import { getSelfhostedUser, SelfhostedUser } from '../user/entities/user.entity'
 
 @Injectable()
 export class AuthService {
@@ -55,7 +53,7 @@ export class AuthService {
       return null
     }
 
-    return await getSelfhostedUser()
+    return getSelfhostedUser()
   }
 
   private async generateJwtRefreshToken(
