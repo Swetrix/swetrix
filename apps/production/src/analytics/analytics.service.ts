@@ -1187,12 +1187,7 @@ export class AnalyticsService {
       ? 0
       : await this.calculateAverageSessionDuration(subQuery, paramsData)
 
-    const { xShifted } = this.generateXAxis(
-      timeBucket,
-      from,
-      to,
-      safeTimezone,
-    )
+    const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     if (customEVFilterApplied) {
       const query = this.generateCustomEventsAggregationQuery(
@@ -1374,12 +1369,7 @@ export class AnalyticsService {
     paramsData: object,
     safeTimezone: string,
   ) {
-    const { xShifted } = this.generateXAxis(
-      timeBucket,
-      from,
-      to,
-      safeTimezone,
-    )
+    const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     const query = this.generatePerformanceAggregationQuery(
       timeBucket,
@@ -1478,12 +1468,7 @@ export class AnalyticsService {
     paramsData: object,
     safeTimezone: string,
   ): Promise<object | void> {
-    const { xShifted } = this.generateXAxis(
-      timeBucket,
-      from,
-      to,
-      safeTimezone,
-    )
+    const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
