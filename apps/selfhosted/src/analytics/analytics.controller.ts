@@ -28,8 +28,8 @@ import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
-import { OptionalJwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth, Public } from 'src/auth/decorators'
+import { OptionalJwtAccessTokenGuard } from '../auth/guards'
+import { Auth, Public } from '../auth/decorators'
 import {
   AnalyticsService,
   getSessionKey,
