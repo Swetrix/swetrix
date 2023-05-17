@@ -53,7 +53,6 @@ After you run this command, the following containers will be started:
 - `swetrix-fe` - the frontend server running on port 80 by default
 - Redis server for caching
 - Clickhouse server for analytics data and transactional stuff
-- (Soon to be removed) MySQL server
 
 After starting the main container you can access the dashboard at `http://{host}:80`.
 
