@@ -1187,7 +1187,7 @@ export class AnalyticsService {
       ? 0
       : await this.calculateAverageSessionDuration(subQuery, paramsData)
 
-    const { x, xShifted } = this.generateXAxis(
+    const { xShifted } = this.generateXAxis(
       timeBucket,
       from,
       to,
@@ -1207,9 +1207,10 @@ export class AnalyticsService {
       )
 
       const uniques =
-        this.extractCustomEventsChartData(result, xShifted)?._unknown_event || []
+        this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
+        []
 
-      const sdur = Array(_size(x)).fill(0)
+      const sdur = Array(_size(xShifted)).fill(0)
 
       return Promise.resolve({
         chart: {
@@ -1233,11 +1234,6 @@ export class AnalyticsService {
     )
 
     const { visits, uniques, sdur } = this.extractChartData(result, xShifted)
-
-    console.log(x, xShifted)
-
-    console.log('----------------')
-    console.log(result)
 
     return Promise.resolve({
       chart: {
@@ -1301,7 +1297,7 @@ export class AnalyticsService {
 
       // Getting CAPTCHA chart data
       (async () => {
-        const { x, xShifted } = this.generateXAxis(
+        const { xShifted } = this.generateXAxis(
           timeBucket,
           from,
           to,
@@ -1378,7 +1374,7 @@ export class AnalyticsService {
     paramsData: object,
     safeTimezone: string,
   ) {
-    const { x, xShifted } = this.generateXAxis(
+    const { xShifted } = this.generateXAxis(
       timeBucket,
       from,
       to,
@@ -1482,7 +1478,7 @@ export class AnalyticsService {
     paramsData: object,
     safeTimezone: string,
   ): Promise<object | void> {
-    const { x, xShifted } = this.generateXAxis(
+    const { xShifted } = this.generateXAxis(
       timeBucket,
       from,
       to,

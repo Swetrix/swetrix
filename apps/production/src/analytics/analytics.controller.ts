@@ -295,8 +295,6 @@ export class AnalyticsController {
       )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
-    console.log('GROUP FROM TO:', { groupFrom, groupTo, groupFromUTC, groupToUTC })
-
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM ${
       isCaptcha ? 'captcha' : 'analytics'
