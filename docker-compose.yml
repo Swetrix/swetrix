@@ -55,8 +55,11 @@ services:
     #   - 8123:8123
     restart: always
     volumes:
-      - 'swetrix-events-data:/var/lib/clickhouse'
+      - swetrix-events-data:/var/lib/clickhouse
     ulimits:
       nofile:
         soft: 262144
         hard: 262144
+volumes:
+  swetrix-events-data:
+    driver: local
