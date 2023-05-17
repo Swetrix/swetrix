@@ -2,7 +2,7 @@ version: '3.9'
 services:
   # This is the frontend, you can remove it if you want
   swetrix:
-    image: swetrix/swetrix-fe:latest
+    image: swetrix/swetrix-fe:2.0.0
     restart: always
     depends_on:
       - swetrix-api
