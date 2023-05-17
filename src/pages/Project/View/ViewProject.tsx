@@ -1294,12 +1294,12 @@ const ViewProject = ({
   useEffect(() => {
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
       if (activeTab === PROJECT_TABS.traffic) {
-        loadAnalytics(true, filters)
+        loadAnalytics()
       }
     }
     if (areFiltersPerfParsed) {
       if (activeTab === PROJECT_TABS.performance) {
-        loadAnalyticsPerf(true, filtersPerf)
+        loadAnalyticsPerf()
       }
     }
   }, [project, period, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
