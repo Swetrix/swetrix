@@ -17,13 +17,14 @@ services:
   swetrix-api:
     image: swetrix/swetrix-api:2.0.0
     restart: always
+    container_name: swetrix-api
     ports:
       - '8080:5005'
     environment:
       - JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret
       - JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret
       - REDIS_HOST=redis
-      - CLICKHOUSE_HOST=http://localhost
+      - CLICKHOUSE_HOST=http://clickhouse
       - API_ORIGINS=
       - EMAIL=test@test.com
       - PASSWORD=12345678
@@ -46,6 +47,7 @@ services:
   #     - '/opt/redis-volume:/data'
   clickhouse:
     image: clickhouse/clickhouse-server:23.4.2.11-alpine
+    container_name: clickhouse
     environment:
       - CLICKHOUSE_DATABASE=analytics
       - CLICKHOUSE_USER=default

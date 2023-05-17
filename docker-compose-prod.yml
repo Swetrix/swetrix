@@ -15,6 +15,7 @@ services:
   # This is the analytics API
   swetrix-api:
     image: swetrix/swetrix-api:latest
+    container_name: swetrix-api
     restart: always
     ports:
       - '8080:5005'
@@ -79,6 +80,7 @@ services:
      - swetrix-users-data:/var/lib/mysql
   clickhouse:
     image: clickhouse/clickhouse-server:23.4.2.11-alpine
+    container_name: clickhouse
     environment:
       - CLICKHOUSE_DATABASE=analytics
       - CLICKHOUSE_USER=default
