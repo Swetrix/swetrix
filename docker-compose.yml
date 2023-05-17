@@ -50,7 +50,7 @@ services:
       - CLICKHOUSE_DATABASE=analytics
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PORT=8123
-      - CLICKHOUSE_PASSWORD=password
+      - CLICKHOUSE_PASSWORD=
     # ports:
     #   - 8123:8123
     restart: always
