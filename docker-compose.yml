@@ -15,7 +15,7 @@ services:
 
   # This is the analytics API
   swetrix-api:
-    image: swetrix/swetrix-api:latest
+    image: swetrix/swetrix-api:2.0.0
     restart: always
     ports:
       - '8080:5005'
