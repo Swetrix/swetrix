@@ -75,8 +75,8 @@ services:
       - MYSQL_DATABASE=analytics
       - MYSQL_USER=swetrix
       - MYSQL_PASSWORD=password
-  #   volumes:
-  #    - '/opt/mysql-volume:/var/lib/mysql'
+    volumes:
+     - swetrix-users-data:/var/lib/mysql
   clickhouse:
     image: clickhouse/clickhouse-server:22.8-alpine
     environment:
@@ -93,5 +93,7 @@ services:
         hard: 262144
 volumes:
   swetrix-events-data:
+    driver: local
+  swetrix-users-data:
     driver: local
 
