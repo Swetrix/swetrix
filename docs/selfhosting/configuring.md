@@ -23,7 +23,7 @@ The following environment variables are available for configuration:
 | `JWT_REFRESH_TOKEN_SECRET` | `jwt-refresh-token-secret` | Secret for JWT refresh tokens |
 | `REDIS_HOST` | `redis` | Redis host |
 | `CLICKHOUSE_HOST` | `http://clickhouse` | ClickHouse host |
-| `API_ORIGINS` | `` | A list of allowed origins (for the `Access-Control-Allow-Origin` header) |
+| `API_ORIGINS` | | A list of allowed origins (for the `Access-Control-Allow-Origin` header) |
 
 ## Redis
 | Variable | Default | Description |
@@ -38,4 +38,4 @@ The following environment variables are available for configuration:
 | `CLICKHOUSE_DATABASE` | `analytics` | ClickHouse database |
 | `CLICKHOUSE_USER` | `default` | ClickHouse user |
 | `CLICKHOUSE_PORT` | `8123` | ClickHouse port |
-| `CLICKHOUSE_PASSWORD` | `password` | ClickHouse password |
+| `CLICKHOUSE_PASSWORD` | | ClickHouse password |
