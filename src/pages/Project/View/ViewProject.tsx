@@ -1002,11 +1002,6 @@ const ViewProject = ({
   }
 
   useEffect(() => {
-    loadAnalytics()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forecasedChartData])
-
-  useEffect(() => {
     // @ts-ignore
     const url = new URL(window.location)
     url.searchParams.delete('tab')
@@ -1299,15 +1294,15 @@ const ViewProject = ({
   useEffect(() => {
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
       if (activeTab === PROJECT_TABS.traffic) {
-        loadAnalytics()
+        loadAnalytics(true, filters)
       }
     }
     if (areFiltersPerfParsed) {
       if (activeTab === PROJECT_TABS.performance) {
-        loadAnalyticsPerf()
+        loadAnalyticsPerf(true, filtersPerf)
       }
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
+  }, [project, period, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
   useEffect(() => {
     if (!_isEmpty(activeChartMetricsCustomEvents)) {
