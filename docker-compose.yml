@@ -23,7 +23,7 @@ services:
       - JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret
       - JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret
       - REDIS_HOST=redis
-      - CLICKHOUSE_HOST=http://clickhouse
+      - CLICKHOUSE_HOST=http://localhost
       - API_ORIGINS=
       - EMAIL=test@test.com
       - PASSWORD=12345678
