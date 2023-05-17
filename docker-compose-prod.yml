@@ -59,7 +59,7 @@ services:
       - 'mariadb'
       - 'clickhouse'
   redis:
-    image: redis:alpine
+    image: redis:7.0.11-alpine
     restart: always
     environment:
       - REDIS_PASSWORD=password
