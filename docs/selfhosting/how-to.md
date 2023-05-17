@@ -38,6 +38,8 @@ Swetrix uses environment variables to configure itself. You can find the list of
 Most of the environment variables are already set by default, but you need to set the following variables:
 - `EMAIL` - email address user will use to log in to the dashboard
 - `PASSWORD` - password user will use to log in to the dashboard
+- `JWT_ACCESS_TOKEN_SECRET` - secret for JWT access tokens, basically a random string of 60 characters.
+- `JWT_REFRESH_TOKEN_SECRET` - secret for JWT refresh tokens, also a random 60 chars string, but this one should be different from the access token secret.
 
 ### 3. Run the container
 Once you've set up the server, you're ready to start up the server:
