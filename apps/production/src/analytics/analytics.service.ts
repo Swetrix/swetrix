@@ -977,9 +977,12 @@ export class AnalyticsService {
   generateAnalyticsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
+    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -989,11 +992,11 @@ export class AnalyticsService {
         sumIf(1, unique = 1) as uniques
       FROM (
         SELECT *,
-          ${timeBucketFunc}(created) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
@@ -1005,9 +1008,12 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     filtersQuery: string,
     paramsData: any,
+    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1015,11 +1021,11 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(created) as tz_created
+        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM customEV
         WHERE ${paramsData.params.ev_exclusive ? 'NOT' : ''} ev = {ev:String}
           AND pid = {pid:FixedString(12)}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
@@ -1030,9 +1036,12 @@ export class AnalyticsService {
   generatePerformanceAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
+    safeTimezone,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1046,11 +1055,11 @@ export class AnalyticsService {
         avg(ttfb) as ttfb
       FROM (
         SELECT *,
-          ${timeBucketFunc}(created) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM performance
         WHERE
           pid = {pid:FixedString(12)}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
@@ -1061,9 +1070,12 @@ export class AnalyticsService {
   generateCaptchaAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
+    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     return `
       SELECT
@@ -1071,11 +1083,11 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(created) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM captcha
         WHERE
           pid = {pid:FixedString(12)}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
@@ -1187,6 +1199,7 @@ export class AnalyticsService {
         timeBucket,
         filtersQuery,
         paramsData,
+        safeTimezone,
       )
 
       const result = <Array<TrafficCEFilterCHResponse>>(
@@ -1194,7 +1207,7 @@ export class AnalyticsService {
       )
 
       const uniques =
-        this.extractCustomEventsChartData(result, x)?._unknown_event || []
+        this.extractCustomEventsChartData(result, xShifted)?._unknown_event || []
 
       const sdur = Array(_size(x)).fill(0)
 
@@ -1212,13 +1225,14 @@ export class AnalyticsService {
     const query = this.generateAnalyticsAggregationQuery(
       timeBucket,
       filtersQuery,
+      safeTimezone,
     )
 
     const result = <Array<TrafficCHResponse>>(
       await clickhouse.query(query, paramsData).toPromise()
     )
 
-    const { visits, uniques, sdur } = this.extractChartData(result, x)
+    const { visits, uniques, sdur } = this.extractChartData(result, xShifted)
 
     console.log(x, xShifted)
 
@@ -1297,12 +1311,13 @@ export class AnalyticsService {
         const query = this.generateCaptchaAggregationQuery(
           timeBucket,
           filtersQuery,
+          safeTimezone,
         )
 
         const result = <Array<TrafficCEFilterCHResponse>>(
           await clickhouse.query(query, paramsData).toPromise()
         )
-        const { count } = this.extractCaptchaChartData(result, x)
+        const { count } = this.extractCaptchaChartData(result, xShifted)
 
         chart = {
           x: xShifted,
@@ -1373,6 +1388,7 @@ export class AnalyticsService {
     const query = this.generatePerformanceAggregationQuery(
       timeBucket,
       filtersQuery,
+      safeTimezone,
     )
 
     const result = <Array<PerformanceCHResponse>>(
@@ -1381,7 +1397,7 @@ export class AnalyticsService {
 
     return {
       x: xShifted,
-      ...this.extractPerformanceChartData(result, x),
+      ...this.extractPerformanceChartData(result, xShifted),
     }
   }
 
@@ -1475,6 +1491,8 @@ export class AnalyticsService {
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const query = `
       SELECT
@@ -1483,11 +1501,11 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(created) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM customEV
         WHERE
           pid = {pid:FixedString(12)}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}, ev
@@ -1498,7 +1516,7 @@ export class AnalyticsService {
       await clickhouse.query(query, paramsData).toPromise()
     )
 
-    const events = this.extractCustomEventsChartData(result, x)
+    const events = this.extractCustomEventsChartData(result, xShifted)
 
     return Promise.resolve({
       chart: {
