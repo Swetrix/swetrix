@@ -40,6 +40,8 @@ services:
       - REDIS_PORT=6379
       - REDIS_USER=default
       - REDIS_PASSWORD=password
+    # ports:
+    #   - 6379:6379
   #   volumes:
   #     - '/opt/redis-volume:/data'
   clickhouse:
@@ -49,6 +51,8 @@ services:
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PORT=8123
       - CLICKHOUSE_PASSWORD=password
+    # ports:
+    #   - 8123:8123
     restart: always
     volumes:
       - '/opt/clickhouse-volume:/var/lib/clickhouse'
