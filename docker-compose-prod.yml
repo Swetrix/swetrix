@@ -78,7 +78,7 @@ services:
     volumes:
      - swetrix-users-data:/var/lib/mysql
   clickhouse:
-    image: clickhouse/clickhouse-server:22.8-alpine
+    image: clickhouse/clickhouse-server:23.4.2.11-alpine
     environment:
       - CLICKHOUSE_DATABASE=analytics
       - CLICKHOUSE_USER=default
