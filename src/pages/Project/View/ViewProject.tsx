@@ -576,7 +576,7 @@ const ViewProject = ({
         key = getProjectCacheKey(period, timeBucket)
       }
 
-      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
+      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]) && !_isEmpty(newFilters || filters)) {
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
@@ -1297,12 +1297,12 @@ const ViewProject = ({
         loadAnalytics()
       }
     }
-    if (areFiltersPerfParsed) {
+    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed) {
       if (activeTab === PROJECT_TABS.performance) {
         loadAnalyticsPerf()
       }
     }
-  }, [project, period, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
+  }, [project, period, chartType, filters, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
   useEffect(() => {
     if (!_isEmpty(activeChartMetricsCustomEvents)) {
@@ -1559,16 +1559,6 @@ const ViewProject = ({
     setItem('chartType', type)
     setChartType(type)
   }
-
-  // useEffect to change chart if we change chart type
-  useEffect(() => {
-    if (activeTab === PROJECT_TABS.performance) {
-      loadAnalyticsPerf()
-    } else {
-      loadAnalytics()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartType])
 
   // loadAnalytics when compare period change or compare selected
   useEffect(() => {
