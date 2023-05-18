@@ -249,7 +249,6 @@ export const PROJECTS_PROTECTED_PASSWORD: string = 'projects_protected_password'
 
 export const IS_ACTIVE_COMPARE = 'is-active-compare'
 
-
 // List of languages with translations available
 export const whitelist: string[] = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
 export const defaultLanguage: string = 'en'
