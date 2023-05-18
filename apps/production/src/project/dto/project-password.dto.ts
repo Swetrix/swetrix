@@ -16,3 +16,9 @@ export class ProjectPasswordDto {
   @ValidateIf(o => o.isPasswordProtected !== null)
   isPasswordProtected?: boolean | null
 }
+
+export class GetProtectedProjectDto {
+  @IsOptional()
+  @ValidateIf(o => o.password !== null)
+  password?: string | null
+}
