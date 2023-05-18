@@ -969,13 +969,14 @@ export const getUserFlow = (
   pid: string,
   tb: string = 'hour',
   period: string = '3d',
+  filters: string[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',
 ) =>
   api
     .get(
-      `log/user-flow?pid=${pid}&timeBucket=${tb}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`,
+      `log/user-flow?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
     )
     .then((response) => response.data)
     .catch((error) => {

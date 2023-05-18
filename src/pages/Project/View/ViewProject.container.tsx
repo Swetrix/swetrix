@@ -56,8 +56,8 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   setProjectCache: (pid: string, data: any, key: string) => {
     dispatch(UIActions.setProjectCache({
       pid,
-      data,
       key,
+      data,
     }))
   },
   setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[]) => {

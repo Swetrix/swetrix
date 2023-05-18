@@ -1,10 +1,8 @@
-import { isDevelopment } from 'redux/constants'
+import { isDevelopment, isSelfhosted } from 'redux/constants'
 
 const COOKIE_DOMAIN = 'swetrix.com'
 
-const COOKIE_SUFFIX = isDevelopment ? '' : `; domain=${COOKIE_DOMAIN}; secure`
-
-// const COOKIE_SUFFIX = '; domain=swetrix.com; secure'
+const COOKIE_SUFFIX = (isDevelopment || isSelfhosted) ? '' : `; domain=${COOKIE_DOMAIN}; secure`
 
 export const getCookie = (key: string) => {
   const match = document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`))

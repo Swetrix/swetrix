@@ -5,7 +5,7 @@ import Debug from 'debug'
 
 import { getGeneralStats } from 'api'
 import UIActions from 'redux/reducers/ui'
-import { GENERAL_STATS_UPDATE_INTERVAL } from 'redux/constants'
+import { GENERAL_STATS_UPDATE_INTERVAL, isSelfhosted } from 'redux/constants'
 import { IStats } from 'redux/models/IStats'
 
 const debug = Debug('swetrix:rx:s:general-stats')
@@ -13,6 +13,10 @@ const debug = Debug('swetrix:rx:s:general-stats')
 const NOT_AUTHED_INTERVAL = 5000 // 5 seconds
 
 export default function* generalStats() {
+  if (isSelfhosted) {
+    return
+  }
+
   while (true) {
     const isAuthenticated: boolean = yield select(state => state.auth.authenticated)
     if (isAuthenticated) {

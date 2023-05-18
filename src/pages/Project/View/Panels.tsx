@@ -29,6 +29,7 @@ import _sortBy from 'lodash/sortBy'
 import _fromPairs from 'lodash/fromPairs'
 import _toPairs from 'lodash/toPairs'
 import _reverse from 'lodash/reverse'
+import { nFormatter } from 'utils/generic'
 
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
@@ -166,7 +167,10 @@ const PanelContainer = ({
       </div>
     </div>
     {/* for other tabs */}
-    <div className='flex flex-col h-full scroll-auto overflow-auto'>
+    <div className={cx('flex flex-col h-full scroll-auto', {
+      'overflow-auto': !(type === 'pg' && activeTab !== PROJECT_TABS.performance && activeFragment === 1),
+    })}
+    >
       {children}
     </div>
   </div>
@@ -258,7 +262,7 @@ const Overview = ({
               :
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {pageviews}
+              {nFormatter(pageviews, 1)}
               {isActiveCompare && (
                 <span className={cx('ml-1.5 text-sm', {
                   'text-green-500': pageViewsCompare > pageviews,
@@ -266,7 +270,7 @@ const Overview = ({
                 })}
                 >
                   {pageViewsCompare > pageviews ? '+' : ''}
-                  {pageViewsCompare - pageviews}
+                  {nFormatter(pageViewsCompare - pageviews, 1)}
                 </span>
               )}
             </p>
@@ -278,7 +282,7 @@ const Overview = ({
               :
             </p>
             <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {uniques}
+              {nFormatter(uniques, 1)}
               {isActiveCompare && (
                 <span className={cx('ml-1.5 text-sm', {
                   'text-green-500': uniquesCompare > uniques,
@@ -286,7 +290,7 @@ const Overview = ({
                 })}
                 >
                   {uniquesCompare > uniques ? '+' : ''}
-                  {uniquesCompare - uniques}
+                  {nFormatter(uniquesCompare - uniques, 1)}
                 </span>
               )}
             </p>
@@ -731,9 +735,7 @@ CustomEvents.propTypes = {
   chartData: PropTypes.objectOf(PropTypes.any).isRequired,
 }
 
-const Panel = ({
-  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab,
-}: {
+interface IPanel {
   name: string
   data: any
   rowMapper: any
@@ -753,7 +755,14 @@ const Panel = ({
   to?: string | null
   timezone?: string | null
   activeTab?: string
-}): JSX.Element => {
+  onFragmentChange?: (arg: number) => void
+  filters?: string[]
+}
+
+const Panel = ({
+  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters,
+  onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab, onFragmentChange, filters,
+}: IPanel): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
   const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])
@@ -792,6 +801,14 @@ const Panel = ({
     }
   }
 
+  const _setActiveFragment = (index: number) => {
+    setActiveFragment(index)
+
+    if (onFragmentChange) {
+      onFragmentChange(index)
+    }
+  }
+
   // Showing map of stats a data
   if (id === 'cc' && activeFragment === 1 && !_isEmpty(data)) {
     return (
@@ -800,7 +817,7 @@ const Panel = ({
         icon={icon}
         type={id}
         activeFragment={activeFragment}
-        setActiveFragment={setActiveFragment}
+        setActiveFragment={_setActiveFragment}
         openModal={() => setModal(true)}
         customTabs={customTabs}
       >
@@ -833,7 +850,7 @@ const Panel = ({
         icon={icon}
         type={id}
         activeFragment={activeFragment}
-        setActiveFragment={setActiveFragment}
+        setActiveFragment={_setActiveFragment}
         openModal={() => setModal(true)}
         customTabs={customTabs}
       >
@@ -846,6 +863,9 @@ const Panel = ({
           from={from || ''}
           to={to || ''}
           timezone={timezone || ''}
+          filters={filters || []}
+          isReversed={isReversedUserFlow}
+          setReversed={() => setIsReversedUserFlow(!isReversedUserFlow)}
           t={t}
         />
         <Modal
@@ -871,6 +891,7 @@ const Panel = ({
                 from={from || ''}
                 to={to || ''}
                 timezone={timezone || ''}
+                filters={filters || []}
                 isReversed={isReversedUserFlow}
                 t={t}
               />
@@ -925,7 +946,7 @@ const Panel = ({
         name={name}
         icon={icon}
         type={id}
-        setActiveFragment={setActiveFragment}
+        setActiveFragment={_setActiveFragment}
         activeFragment={activeFragment}
         customTabs={customTabs}
         activeTab={activeTab}
@@ -956,7 +977,7 @@ const Panel = ({
         icon={icon}
         type={id}
         activeFragment={activeFragment}
-        setActiveFragment={setActiveFragment}
+        setActiveFragment={_setActiveFragment}
         openModal={() => setModal(true)}
         customTabs={customTabs}
         activeTab={activeTab}
@@ -968,7 +989,7 @@ const Panel = ({
   }
 
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment} customTabs={customTabs} activeTab={activeTab}>
+    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={_setActiveFragment} customTabs={customTabs} activeTab={activeTab}>
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}
@@ -1008,7 +1029,7 @@ const Panel = ({
                 </span>
               )}
               <span className='ml-3 dark:text-gray-50'>
-                {valueData}
+                {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
                 &nbsp;
                 <span className='text-gray-500 dark:text-gray-200 font-light'>
                   (
@@ -1087,6 +1108,7 @@ Panel.propTypes = {
   linkContent: PropTypes.bool,
   hideFilters: PropTypes.bool,
   icon: PropTypes.node,
+  onFragmentChange: PropTypes.func,
 }
 
 Panel.defaultProps = {
@@ -1106,6 +1128,8 @@ Panel.defaultProps = {
   period: null,
   pid: null,
   activeTab: null,
+  onFragmentChange: () => { },
+  filters: [],
 }
 
 const PanelMemo = memo(Panel)

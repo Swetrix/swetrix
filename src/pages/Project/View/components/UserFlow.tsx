@@ -38,7 +38,9 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
 })
 
 const UserFlow = ({
-  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache, userFlowDescendingCache, isReversed, setUserFlowAscending, setUserFlowDescending, generateError, t,
+  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache,
+  userFlowDescendingCache, filters, setReversed,
+  isReversed, setUserFlowAscending, setUserFlowDescending, generateError, t,
 }: {
   disableLegend?: boolean
   pid: string
@@ -58,6 +60,8 @@ const UserFlow = ({
   setUserFlowDescending: (data: IUserFlow, id: string, pd: string) => void
   generateError: (message: string) => void
   t: (key: string) => string
+  filters: string[]
+  setReversed: () => void
 }) => {
   const key = getUserFlowCacheKey(pid, period)
   const userFlowAscending = userFlowAscendingCache[key]
@@ -66,7 +70,7 @@ const UserFlow = ({
 
   const fetchUserFlow = async () => {
     setIsLoading(true)
-    await getUserFlow(pid, timeBucket, period, from, to, timezone)
+    await getUserFlow(pid, timeBucket, period, filters, from, to, timezone)
       .then((res: {
         ascending: IUserFlow
         descending: IUserFlow
@@ -93,15 +97,32 @@ const UserFlow = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, timeBucket, from, to, timezone, pid])
 
+  useEffect(() => {
+    fetchUserFlow()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
+
   if (isLoading) {
     return <Loader />
   }
 
-  if ((_isEmpty(userFlowAscending) && _isEmpty(userFlowDescending)) || (_isEmpty(userFlowAscending?.nodes) && _isEmpty(userFlowDescending?.links))) {
+  if (!isReversed ? (_isEmpty(userFlowAscending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links)) : (_isEmpty(userFlowDescending) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes))) {
     return (
-      <p className='flex mt-4 items-center justify-center text-md text-gray-900 dark:text-gray-50'>
-        {t('project.userFlow.noData')}
-      </p>
+      <>
+        <p className='flex mt-4 items-center justify-center text-md text-gray-900 dark:text-gray-50'>
+          {t('project.userFlow.noData')}
+        </p>
+        <button
+          type='button'
+          onClick={() => {
+            setReversed()
+          }}
+          className='mt-2 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-700 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:w-auto sm:text-sm'
+        >
+          {t('project.reverse')}
+        </button>
+
+      </>
     )
   }
 

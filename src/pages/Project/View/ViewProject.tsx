@@ -47,7 +47,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED,
+  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -86,11 +86,7 @@ interface IProjectView extends IProject {
   isPublicVisitors?: boolean,
 }
 
-const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password,
-}: {
+interface IViewProject {
   projects: IProjectView[],
   extensions: any,
   isLoading: boolean,
@@ -125,7 +121,13 @@ const ViewProject = ({
   password: {
     [key: string]: string,
   },
-}) => {
+}
+
+const ViewProject = ({
+  projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
+  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password,
+}: IViewProject) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null,
@@ -208,6 +210,7 @@ const ViewProject = ({
 
     return projectTab || PROJECT_TABS.traffic
   })
+  const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
 
   // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
   // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
@@ -244,6 +247,7 @@ const ViewProject = ({
   const activeDropdownLabelCompare = useMemo(() => _find(periodPairsCompare, p => p.period === activePeriodCompare)?.label, [periodPairsCompare, activePeriodCompare])
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
+  const [dataChartPerfCompare, setDataChartPerfCompare] = useState<any>({})
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
       return 0
@@ -291,6 +295,11 @@ const ViewProject = ({
       },
     ]
   }, [t])
+
+  const pgPanelNameMapping = [
+    tnMapping.pg, // when fragment 0 is selected
+    tnMapping.userFlow, // when fragment 1 is selected
+  ]
 
   const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
 
@@ -491,6 +500,7 @@ const ViewProject = ({
     setIsActiveCompare(false)
     setDateRangeCompare(null)
     setDataChartCompare({})
+    setDataChartPerfCompare({})
     setActivePeriodCompare(periodPairsCompare[0].period)
   }
 
@@ -552,7 +562,7 @@ const ViewProject = ({
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filters)) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
@@ -574,7 +584,7 @@ const ViewProject = ({
         key = getProjectCacheKey(period, timeBucket)
       }
 
-      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
+      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]) && !_isEmpty(newFilters || filters)) {
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
@@ -656,6 +666,7 @@ const ViewProject = ({
     } catch (e) {
       setAnalyticsLoading(false)
       setDataLoading(false)
+      setIsPanelsDataEmpty(true)
       console.error('[ERROR](loadAnalytics) Loading analytics data failed')
       console.error(e)
     }
@@ -672,6 +683,60 @@ const ViewProject = ({
       let key
       let from
       let to
+      let dataCompare
+      let keyCompare = ''
+      let fromCompare: string | undefined
+      let toCompare: string | undefined
+
+      if (isActiveCompare) {
+        if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
+          let start
+          let end
+          let diff
+          const startCompare = dayjs.utc(dateRangeCompare[0])
+          const endCompare = dayjs.utc(dateRangeCompare[1])
+          const diffCompare = endCompare.diff(startCompare, 'day')
+
+          if (activePeriod?.period === 'custom' && dateRange) {
+            start = dayjs.utc(dateRange[0])
+            end = dayjs.utc(dateRange[1])
+            diff = end.diff(start, 'day')
+          }
+
+          // @ts-ignore
+          if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
+            fromCompare = getFormatDate(dateRangeCompare[0])
+            toCompare = getFormatDate(dateRangeCompare[1])
+            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket)
+          } else {
+            showError(t('project.compareDateRangeError'))
+            compareDisable()
+          }
+        } else {
+          let date
+          if (dateRange) {
+            date = _find(periodToCompareDate, (item) => item.period === period)?.formula(dateRange)
+          } else {
+            date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
+          }
+
+          if (date) {
+            fromCompare = date.from
+            toCompare = date.to
+            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket)
+          }
+        }
+
+        if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filtersPerf)) {
+            dataCompare = cache[id][keyCompare]
+          } else {
+            dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone)
+          }
+        }
+
+        setProjectCachePerf(id, dataCompare || {}, keyCompare)
+      }
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
@@ -708,11 +773,15 @@ const ViewProject = ({
         return
       }
 
+      if (!_isEmpty(dataCompare) && !_isEmpty(dataCompare?.chart)) {
+        setDataChartPerfCompare(dataCompare.chart)
+      }
+
       if (_isEmpty(dataPerf.params)) {
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat, dataCompare?.chart)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -737,6 +806,7 @@ const ViewProject = ({
     } catch (e) {
       setAnalyticsLoading(false)
       setDataLoading(false)
+      setIsPanelsDataEmptyPerf(true)
       console.error('[ERROR](loadAnalytics) Loading analytics data failed')
       console.error(e)
     }
@@ -940,11 +1010,6 @@ const ViewProject = ({
   }
 
   useEffect(() => {
-    loadAnalytics()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forecasedChartData])
-
-  useEffect(() => {
     // @ts-ignore
     const url = new URL(window.location)
     url.searchParams.delete('tab')
@@ -958,8 +1023,6 @@ const ViewProject = ({
         scrollToTopDisable: true,
       },
     })
-
-    compareDisable()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
@@ -1003,7 +1066,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat, dataChartPerfCompare)
 
       setMainChart(() => {
         // @ts-ignore
@@ -1242,12 +1305,12 @@ const ViewProject = ({
         loadAnalytics()
       }
     }
-    if (areFiltersPerfParsed) {
+    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed) {
       if (activeTab === PROJECT_TABS.performance) {
         loadAnalyticsPerf()
       }
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
+  }, [project, period, chartType, filters, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
   useEffect(() => {
     if (!_isEmpty(activeChartMetricsCustomEvents)) {
@@ -1510,16 +1573,6 @@ const ViewProject = ({
     setChartType(type)
   }
 
-  // useEffect to change chart if we change chart type
-  useEffect(() => {
-    if (activeTab === PROJECT_TABS.performance) {
-      loadAnalyticsPerf()
-    } else {
-      loadAnalytics()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartType])
-
   // loadAnalytics when compare period change or compare selected
   useEffect(() => {
     setItem(IS_ACTIVE_COMPARE, JSON.stringify(isActiveCompare))
@@ -1528,7 +1581,11 @@ const ViewProject = ({
     }
 
     if (isActiveCompare) {
-      loadAnalytics()
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf()
+      } else {
+        loadAnalytics()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
@@ -1664,9 +1721,7 @@ const ViewProject = ({
                       </span>
                     </div>
                     <Dropdown
-                      items={activeTab !== PROJECT_TABS.traffic ? _filter(periodPairs, (el) => {
-                        return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
-                      }) : isActiveCompare ? _filter(periodPairs, (el) => {
+                      items={isActiveCompare ? _filter(periodPairs, (el) => {
                         return _includes(filtersPeriodPairs, el.period)
                       }) : _includes(filtersPeriodPairs, period) ? periodPairs : _filter(periodPairs, (el) => {
                         return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
@@ -1676,7 +1731,7 @@ const ViewProject = ({
                       keyExtractor={(pair) => pair.label}
                       onSelect={(pair) => {
                         if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
-                          if (activeTab !== PROJECT_TABS.traffic) {
+                          if (activeTab !== PROJECT_TABS.traffic && activeTab !== PROJECT_TABS.performance) {
                             return
                           }
 
@@ -1851,13 +1906,7 @@ const ViewProject = ({
                               {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
                             </p>
                           )}
-                          labelExtractor={(pair) => {
-                            const {
-                              label,
-                            } = pair
-
-                            return label
-                          }}
+                          labelExtractor={(pair) => pair.label}
                           keyExtractor={(pair) => pair.id}
                           onSelect={({ id: pairID }) => {
                             switchActiveChartMetric(pairID)
@@ -2016,6 +2065,7 @@ const ViewProject = ({
                           icon={panelIcon}
                           id={type}
                           onFilter={filterHandler}
+                          activeTab={activeTab}
                           name={panelName}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
@@ -2031,6 +2081,7 @@ const ViewProject = ({
                         <Panel
                           t={t}
                           key={type}
+                          activeTab={activeTab}
                           icon={panelIcon}
                           id={type}
                           onFilter={filterHandler}
@@ -2051,6 +2102,7 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           name={panelName}
+                          activeTab={activeTab}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
                           rowMapper={(rowName) => (
@@ -2067,6 +2119,7 @@ const ViewProject = ({
                           key={type}
                           icon={panelIcon}
                           id={type}
+                          activeTab={activeTab}
                           onFilter={filterHandler}
                           name={panelName}
                           data={panelsData.data[type]}
@@ -2084,12 +2137,15 @@ const ViewProject = ({
                           icon={panelIcon}
                           id={type}
                           onFilter={filterHandler}
-                          name={panelName}
+                          onFragmentChange={setPgActiveFragment}
+                          name={pgPanelNameMapping[pgActiveFragment]}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
                           period={period}
+                          activeTab={activeTab}
                           pid={id}
                           timeBucket={timeBucket}
+                          filters={filters}
                           from={dateRange ? getFormatDate(dateRange[0]) : null}
                           to={dateRange ? getFormatDate(dateRange[1]) : null}
                           timezone={timezone}
@@ -2103,6 +2159,7 @@ const ViewProject = ({
                         key={type}
                         icon={panelIcon}
                         id={type}
+                        activeTab={activeTab}
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
@@ -2160,6 +2217,7 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           name={panelName}
+                          activeTab={activeTab}
                           data={panelsDataPerf.data[type]}
                           customTabs={customTabs}
                           rowMapper={(rowName) => (
@@ -2179,6 +2237,7 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           name={panelName}
+                          activeTab={activeTab}
                           data={panelsDataPerf.data[type]}
                           customTabs={customTabs}
                           valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
