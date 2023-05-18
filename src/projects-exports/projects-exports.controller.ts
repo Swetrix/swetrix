@@ -7,6 +7,7 @@ import {
   Query,
   DefaultValuePipe,
   ParseIntPipe,
+  NotFoundException,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -56,7 +57,17 @@ export class ProjectsExportsController {
   async getExport(
     @Param('projectId') projectId: string,
     @Param('exportId') exportId: string,
-  ): Promise<unknown> {
-    return {}
+  ): Promise<ProjectExport> {
+    const projectExport =
+      await this.projectExportRepository.findProjectExportById(
+        projectId,
+        exportId,
+      )
+
+    if (!projectExport) {
+      throw new NotFoundException('Project export not found.')
+    }
+
+    return projectExport
   }
 }

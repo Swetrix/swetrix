@@ -22,4 +22,13 @@ export class ProjectExportRepository {
     })
     return { exports, count }
   }
+
+  async findProjectExportById(
+    projectId: string,
+    exportId: string,
+  ): Promise<ProjectExport> {
+    return this.projectExportRepository.findOne({
+      where: { id: exportId, projectId },
+    })
+  }
 }
