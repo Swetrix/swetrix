@@ -992,7 +992,7 @@ export class ProjectController {
     }
 
     console.log(body.password)
-    console.log(body)
+    console.log(project)
     try {
       this.projectService.allowedToView(project, userId, body.password)
     } catch {
@@ -1253,7 +1253,7 @@ export class ProjectController {
       project.passwordHash = null
     }
 
-    await this.projectService.update(id, _omit(project, ['share', 'admin', 'passwordHash']))
+    await this.projectService.update(id, _omit(project, ['share', 'admin']))
 
     // await updateProjectRedis(id, project)
     await deleteProjectRedis(id)
@@ -1330,7 +1330,7 @@ export class ProjectController {
       }
     }
 
-    this.projectService.allowedToView(project, uid)
+    this.projectService.allowedToView(project, uid, body.password)
 
     return {
       ..._omit(project, ['admin', 'passwordHash']),
