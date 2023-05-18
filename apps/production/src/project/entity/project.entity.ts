@@ -95,4 +95,14 @@ export class Project {
     cascade: true,
   })
   subscribers: ProjectSubscriber[]
+
+  @Column('varchar', {
+    default: null,
+    length: 60,
+    nullable: true,
+  })
+  passwordHash: string | null
+
+  @Column('boolean', { default: false })
+  isPasswordProtected: boolean
 }
