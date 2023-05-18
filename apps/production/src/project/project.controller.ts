@@ -975,6 +975,27 @@ export class ProjectController {
     })
   }
 
+  @Get('password/:projectId')
+  @Auth([], true, true)
+  @ApiResponse({ status: 200, type: Project })
+  async checkPassword(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() userId: string,
+    @Body() body: ProjectPasswordDto,
+  ): Promise<Boolean> {
+    this.logger.log({ projectId }, 'GET /project/password/:projectId')
+
+    const project = await this.projectService.getProjectById(projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToView(project, userId, body.passwordHash)
+
+    return true
+  }
+
   @Get(':projectId/subscribers/invite')
   @HttpCode(HttpStatus.OK)
   async confirmSubscriberInvite(
