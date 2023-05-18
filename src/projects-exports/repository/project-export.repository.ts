@@ -9,4 +9,17 @@ export class ProjectExportRepository {
     @InjectRepository(ProjectExport)
     private readonly projectExportRepository: Repository<ProjectExport>,
   ) {}
+
+  async findAndCountProjectExports(
+    projectId: string,
+    offset: number,
+    limit: number,
+  ): Promise<{ exports: ProjectExport[]; count: number }> {
+    const [exports, count] = await this.projectExportRepository.findAndCount({
+      skip: offset,
+      take: limit > 100 ? 100 : limit,
+      where: { projectId },
+    })
+    return { exports, count }
+  }
 }
