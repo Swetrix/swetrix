@@ -305,7 +305,7 @@ export class ProjectService {
   }
 
   allowedToView(project: Project, uid: string | null, password?: string | null): void {
-    if (project.public && project.isPasswordProtected && password) {
+    if (project.isPasswordProtected && password) {
       if (compareSync(password, project.passwordHash)) {
         return null
       }
