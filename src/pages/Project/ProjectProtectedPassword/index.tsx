@@ -1,33 +1,23 @@
 import React, { useState, useEffect, memo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import PropTypes from 'prop-types'
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
-import _isString from 'lodash/isString'
 import _replace from 'lodash/replace'
 
 import Title from 'components/Title'
-import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import Checkbox from 'ui/Checkbox'
 import {
-  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
+  isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
-import { PROJECTS_PROTECTED, isSelfhosted } from 'redux/constants'
-import { checkPassword, submit2FA } from 'api'
+import { PROJECTS_PROTECTED } from 'redux/constants'
+import { checkPassword } from 'api'
 import { setItem } from 'utils/localstorage'
-import { setAccessToken, removeAccessToken } from 'utils/accessToken'
-import { setRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 
 interface IProjectProtectedPasswordForm {
   password: string,
-}
-
-interface IProjectProtectedPassword {
-  //
 }
 
 const ProjectProtectedPassword = (): JSX.Element => {
