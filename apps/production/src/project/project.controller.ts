@@ -1218,7 +1218,6 @@ export class ProjectController {
     project.name = projectDTO.name
     project.public = projectDTO.public
 
-    console.log(projectDTO)
     if (projectDTO.isPasswordProtected && projectDTO.passwordHash) {
       project.isPasswordProtected = true
       project.passwordHash = await hash(projectDTO.passwordHash, 10)
@@ -1296,7 +1295,7 @@ export class ProjectController {
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
     }
-    console.log(project)
+
     if (project.isPasswordProtected && _isEmpty(body.passwordHash)) {
       return {
         isPasswordProtected: true,
