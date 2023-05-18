@@ -47,7 +47,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED_PASSWORD,
+  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -152,7 +152,8 @@ const ViewProject = ({
   } = useParams()
   const history = useHistory()
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
-  const projectPassword: string = useMemo(() => password[id] || getItem(PROJECTS_PROTECTED_PASSWORD)?.[id] || '', [id, password])
+  const projectPassword: string = useMemo(() => password[id] || getItem(PROJECTS_PROTECTED)?.[id] || '', [id, password])
+  console.log('projectPassword', projectPassword)
   const isSharedProject = useMemo(() => {
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
@@ -1281,10 +1282,10 @@ const ViewProject = ({
 
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
-      getProject(id)
+      getProject(id, false, projectPassword)
         .then(projectRes => {
           if (!_isEmpty(projectRes)) {
-            if (projectRes.isPasswordProtected) {
+            if (projectRes.isPasswordProtected && !projectRes.isOwner && !projectPassword) {
               history.push(_replace(routes.project_protected_password, ':id', id))
               return
             }

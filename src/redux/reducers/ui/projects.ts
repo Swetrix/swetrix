@@ -2,7 +2,7 @@ import { createSlice, current, PayloadAction } from '@reduxjs/toolkit'
 import _filter from 'lodash/filter'
 import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
-import { tabForOwnedProject, PROJECT_TABS, PROJECTS_PROTECTED_PASSWORD } from 'redux/constants'
+import { tabForOwnedProject, PROJECT_TABS, PROJECTS_PROTECTED } from 'redux/constants'
 import { setItem, getItem } from 'utils/localstorage'
 import { IProject, ICaptchaProject, ILiveStats } from 'redux/models/IProject'
 import { ISharedProject } from 'redux/models/ISharedProject'
@@ -53,7 +53,7 @@ const initialState: IInitialState = {
   alerts: [],
   subscribers: [],
   liveStats: {},
-  password: getItem(PROJECTS_PROTECTED_PASSWORD) || {},
+  password: getItem(PROJECTS_PROTECTED) || {},
 }
 
 const projectsSlice = createSlice({
@@ -207,7 +207,7 @@ const projectsSlice = createSlice({
         ...state.password,
         [id]: password,
       }
-      setItem(PROJECTS_PROTECTED_PASSWORD, JSON.stringify(state.password))
+      setItem(PROJECTS_PROTECTED, JSON.stringify(state.password))
     },
     reset(state) {
       state.projects = []

@@ -12,9 +12,9 @@ import Button from 'ui/Button'
 import {
   isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
-import { PROJECTS_PROTECTED } from 'redux/constants'
 import { checkPassword } from 'api'
-import { setItem } from 'utils/localstorage'
+import { useDispatch } from 'react-redux'
+import UIActions from 'redux/reducers/ui'
 
 interface IProjectProtectedPasswordForm {
   password: string,
@@ -39,6 +39,7 @@ const ProjectProtectedPassword = (): JSX.Element => {
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const history = useHistory()
+  const dispatch = useDispatch()
 
   const validate = () => {
     const allErrors = {} as {
@@ -65,7 +66,10 @@ const ProjectProtectedPassword = (): JSX.Element => {
       await checkPassword(id, data.password)
         .then((res) => {
           if (res) {
-            setItem(PROJECTS_PROTECTED, data.password)
+            dispatch(UIActions.setProjectProtectedPassword({
+              id,
+              password: data.password,
+            }))
             history.push(_replace(routes.project, ':id', id))
           }
           setErrors({
