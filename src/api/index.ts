@@ -984,3 +984,16 @@ export const getUserFlow = (
         ? error.response.data
         : error.response.data.message
     })
+
+export const checkPassword = (pid: string, password: string) =>
+  api
+    .get(`project/password/${pid}`, {
+      data: {
+        password,
+      },
+    })
+    .then((response): Boolean => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error.response.data
+    })
