@@ -1196,10 +1196,10 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
-    @Body() projectDTO: ProjectDTO,
+    @Body() projectDTO: UpdateProjectDto,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
+    this.logger.log({ ..._omit(projectDTO, ['password']), uid, id }, 'PUT /project/:id')
     this.projectService.validateProject(projectDTO)
     const project = await this.projectService.findOne(id, {
       relations: ['admin', 'share', 'share.user'],
@@ -1218,7 +1218,15 @@ export class ProjectController {
     project.name = projectDTO.name
     project.public = projectDTO.public
 
-    await this.projectService.update(id, _omit(project, ['share', 'admin']))
+    if (projectDTO.isPasswordProtected && projectDTO.password) {
+      project.isPasswordProtected = true
+      project.passwordHash = await hash(projectDTO.password, 10)
+    } else {
+      project.isPasswordProtected = false
+      project.passwordHash = null
+    }
+
+    await this.projectService.update(id, _omit(project, ['share', 'admin', 'passwordHash']))
 
     // await updateProjectRedis(id, project)
     await deleteProjectRedis(id)
@@ -1271,6 +1279,7 @@ export class ProjectController {
   async getOne(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
+    @Body() body: ProjectPasswordDto,
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) {
@@ -1285,6 +1294,13 @@ export class ProjectController {
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
+    }
+    
+    if (project.isPasswordProtected && _isEmpty(body.password)) {
+      return {
+        isPasswordProtected: true,
+        id: project.id,
+      }
     }
 
     this.projectService.allowedToView(project, uid)
