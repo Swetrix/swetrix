@@ -5,6 +5,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
+import _replace from 'lodash/replace'
 
 import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -15,8 +16,9 @@ import Checkbox from 'ui/Checkbox'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
-import { isSelfhosted } from 'redux/constants'
+import { PROJECTS_PROTECTED, isSelfhosted } from 'redux/constants'
 import { checkPassword, submit2FA } from 'api'
+import { setItem } from 'utils/localstorage'
 import { setAccessToken, removeAccessToken } from 'utils/accessToken'
 import { setRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 
@@ -72,12 +74,16 @@ const ProjectProtectedPassword = (): JSX.Element => {
       setIsLoading(true)
       await checkPassword(id, data.password)
         .then((res) => {
-          console.log(res)
-        })
-        .catch(() => {
+          if (res) {
+            setItem(PROJECTS_PROTECTED, data.password)
+            history.push(_replace(routes.project, { id }))
+          }
           setErrors({
             password: t('auth.common.wrongPassword'),
           })
+        })
+        .catch((err) => {
+          console.log(err)
         })
         .finally(() => {
           setIsLoading(false)

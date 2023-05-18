@@ -995,5 +995,7 @@ export const checkPassword = (pid: string, password: string) =>
     .then((response): Boolean => response.data)
     .catch((error) => {
       debug('%s', error)
-      console.log(error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
     })
