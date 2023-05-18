@@ -32,6 +32,7 @@ import * as dayjs from 'dayjs'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
 import { isValidDate } from 'src/analytics/analytics.service'
+import { hash } from 'bcrypt'
 import {
   ProjectService,
   processProjectUser,
@@ -75,6 +76,9 @@ import {
   TransferProjectBodyDto,
   ConfirmTransferProjectQueriesDto,
   CancelTransferProjectQueriesDto,
+  GetProtectedProjectDto,
+  ProjectPasswordDto,
+  UpdateProjectDto,
 } from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
@@ -1182,7 +1186,7 @@ export class ProjectController {
 
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
 
-    return project
+    return _omit(project, ['passwordHash'])
   }
 
   @Put('/:id')
@@ -1286,7 +1290,7 @@ export class ProjectController {
     this.projectService.allowedToView(project, uid)
 
     return {
-      ..._omit(project, ['admin']),
+      ..._omit(project, ['admin', 'passwordHash']),
       isOwner: uid === project.admin?.id,
     }
   }
