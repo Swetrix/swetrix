@@ -46,6 +46,14 @@ export class ProjectsExportsController {
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
     @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
   ): Promise<{ exports: ProjectExport[]; count: number }> {
+    const project = await this.projectExportRepository.findProjectById(
+      projectId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
     return this.projectExportRepository.findAndCountProjectExports(
       projectId,
       offset,

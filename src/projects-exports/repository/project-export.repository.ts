@@ -10,6 +10,10 @@ export class ProjectExportRepository {
     private readonly projectExportRepository: Repository<ProjectExport>,
   ) {}
 
+  async findProjectById(projectId: string): Promise<ProjectExport> {
+    return this.projectExportRepository.findOne(projectId)
+  }
+
   async findAndCountProjectExports(
     projectId: string,
     offset: number,
