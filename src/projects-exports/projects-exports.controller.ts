@@ -16,6 +16,8 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger'
 import { CreateExportDto } from './dto/create-export.dto'
+import { IsExportIdDto } from './dto/is-export-id.dto'
+import { IsProjectIdDto } from './dto/is-project-id.dto'
 import { ProjectExport } from './entity/project-export.entity'
 import { ProjectExportRepository } from './repository/project-export.repository'
 
@@ -31,7 +33,7 @@ export class ProjectsExportsController {
   @Post()
   async createProjectExport(
     @Body() createExportDto: CreateExportDto,
-    @Param('projectId') projectId: string,
+    @Param() { projectId }: IsProjectIdDto,
   ): Promise<unknown> {
     return {}
   }
@@ -40,7 +42,7 @@ export class ProjectsExportsController {
   @ApiOkResponse({ type: ProjectExport, isArray: true })
   @Get()
   async getProjectExports(
-    @Param('projectId') projectId: string,
+    @Param() { projectId }: IsProjectIdDto,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
     @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
   ): Promise<{ exports: ProjectExport[]; count: number }> {
@@ -55,8 +57,7 @@ export class ProjectsExportsController {
   @ApiOkResponse({ type: ProjectExport })
   @Get(':exportId')
   async getProjectExport(
-    @Param('projectId') projectId: string,
-    @Param('exportId') exportId: string,
+    @Param() { projectId, exportId }: IsProjectIdDto & IsExportIdDto,
   ): Promise<ProjectExport> {
     const projectExport =
       await this.projectExportRepository.findProjectExportById(
