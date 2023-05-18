@@ -991,8 +991,6 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    console.log(body.password)
-    console.log(project)
     try {
       this.projectService.allowedToView(project, userId, body.password)
     } catch {
