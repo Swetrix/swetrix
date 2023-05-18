@@ -1284,6 +1284,11 @@ const ViewProject = ({
       getProject(id)
         .then(projectRes => {
           if (!_isEmpty(projectRes)) {
+            if (projectRes.isPasswordProtected) {
+              history.push(_replace(routes.project_protected_password, ':id', id))
+              return
+            }
+
             if (projectRes.isPublic && !projectRes.isOwner) {
               getOverallStats([id])
                 .then(res => {
