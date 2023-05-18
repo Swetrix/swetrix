@@ -29,7 +29,7 @@ export class ProjectsExportsController {
   @ApiOperation({ summary: 'Create an export for a project' })
   @ApiCreatedResponse({ type: ProjectExport })
   @Post()
-  async createExport(
+  async createProjectExport(
     @Body() createExportDto: CreateExportDto,
     @Param('projectId') projectId: string,
   ): Promise<unknown> {
@@ -39,7 +39,7 @@ export class ProjectsExportsController {
   @ApiOperation({ summary: 'Get all exports for a project' })
   @ApiOkResponse({ type: ProjectExport, isArray: true })
   @Get()
-  async getExports(
+  async getProjectExports(
     @Param('projectId') projectId: string,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
     @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
@@ -54,7 +54,7 @@ export class ProjectsExportsController {
   @ApiOperation({ summary: 'Get a specific export for a project' })
   @ApiOkResponse({ type: ProjectExport })
   @Get(':exportId')
-  async getExport(
+  async getProjectExport(
     @Param('projectId') projectId: string,
     @Param('exportId') exportId: string,
   ): Promise<ProjectExport> {
