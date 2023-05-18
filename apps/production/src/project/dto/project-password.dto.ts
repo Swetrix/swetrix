@@ -10,7 +10,7 @@ export class ProjectPasswordDto {
         'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character (!@#$%^&*).',
     },
   )
-  password?: string | null
+  passwordHash?: string | null
 
   @IsOptional()
   @ValidateIf(o => o.isPasswordProtected !== null)
