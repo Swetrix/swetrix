@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
@@ -16,7 +16,7 @@ import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
 import { isSelfhosted } from 'redux/constants'
-import { submit2FA } from 'api'
+import { checkPassword, submit2FA } from 'api'
 import { setAccessToken, removeAccessToken } from 'utils/accessToken'
 import { setRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 
@@ -41,6 +41,9 @@ const ProjectProtectedPassword = (): JSX.Element => {
   const [errors, setErrors] = useState<{
     password?: string,
   }>({})
+  const { id }: {
+    id: string
+  } = useParams()
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const history = useHistory()
@@ -64,10 +67,21 @@ const ProjectProtectedPassword = (): JSX.Element => {
     validate()
   }, [form]) // eslint-disable-line
 
-  const onSubmit = (data: IProjectProtectedPasswordForm) => {
+  const onSubmit = async (data: IProjectProtectedPasswordForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      // login(data, loginCallback)
+      await checkPassword(id, data.password)
+        .then((res) => {
+          console.log(res)
+        })
+        .catch(() => {
+          setErrors({
+            password: t('auth.common.wrongPassword'),
+          })
+        })
+        .finally(() => {
+          setIsLoading(false)
+        })
     }
   }
 
