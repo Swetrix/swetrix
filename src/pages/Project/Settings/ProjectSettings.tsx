@@ -167,7 +167,7 @@ const ProjectSettings = ({
     name?: string,
     origins?: string,
     ipBlacklist?: string,
-    passwordHash?: string,
+    password?: string,
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [showDelete, setShowDelete] = useState<boolean>(false)
@@ -296,7 +296,7 @@ const ProjectSettings = ({
       name?: string,
       origins?: string,
       ipBlacklist?: string,
-      passwordHash?: string,
+      password?: string,
     } = {}
 
     if (_isEmpty(form.name)) {
@@ -315,8 +315,8 @@ const ProjectSettings = ({
       allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
     }
 
-    if (!_isEmpty(form?.passwordHash) && _size(form.passwordHash) > 0 && !isValidPassword(form?.passwordHash || '')) {
-      allErrors.passwordHash = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
+    if (!_isEmpty(form?.password) && _size(form.password) > 0 && !isValidPassword(form?.password || '')) {
+      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -377,8 +377,8 @@ const ProjectSettings = ({
         isPasswordProtected: true,
       })
 
-      if (!_isEmpty(form.passwordHash) && !_isEmpty(form.id)) {
-        setProjectProtectedPassword(form?.id || '', form?.passwordHash || '')
+      if (!_isEmpty(form.password) && !_isEmpty(form.id)) {
+        setProjectProtectedPassword(form?.id || '', form?.password || '')
       }
 
       setShowProtected(false)
@@ -574,15 +574,15 @@ const ProjectSettings = ({
                 {t('project.settings.protectedHint')}
               </p>
               <Input
-                name='passwordHash'
-                id='passwordHash'
+                name='password'
+                id='password'
                 type='password'
                 label={t('project.settings.password')}
-                value={form?.passwordHash || ''}
+                value={form?.password || ''}
                 placeholder={t('project.settings.password')}
                 className='mt-4'
                 onChange={handleInput}
-                error={beenSubmitted ? errors.passwordHash : null}
+                error={beenSubmitted ? errors.password : null}
               />
             </div>
           )}

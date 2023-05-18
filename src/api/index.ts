@@ -988,7 +988,7 @@ export const getUserFlow = (
 export const checkPassword = (pid: string, password: string) =>
   api
     .get(`project/password/${pid}`, {
-      data: {
+      headers: {
         password,
       },
     })

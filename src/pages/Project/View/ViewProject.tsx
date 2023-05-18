@@ -89,7 +89,7 @@ interface IProjectView extends IProject {
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, passwordHash,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password,
 }: {
   projects: IProjectView[],
   extensions: any,
@@ -122,7 +122,7 @@ const ViewProject = ({
   customEventsPrefs: any,
   setCustomEventsPrefs: (pid: string, data: any) => void,
   liveStats: ILiveStats,
-  passwordHash: {
+  password: {
     [key: string]: string,
   },
 }) => {
@@ -152,7 +152,7 @@ const ViewProject = ({
   } = useParams()
   const history = useHistory()
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
-  const projectPassword: string = useMemo(() => passwordHash[id] || getItem(PROJECTS_PROTECTED_PASSWORD)?.[id] || '', [id, passwordHash])
+  const projectPassword: string = useMemo(() => password[id] || getItem(PROJECTS_PROTECTED_PASSWORD)?.[id] || '', [id, password])
   const isSharedProject = useMemo(() => {
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)

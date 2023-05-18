@@ -13,7 +13,7 @@ type PropsType = {
 
 export const withProjectProtected = <P extends PropsType>(WrappedComponent: any) => {
   const WithProjectProtected = (props: P) => {
-    const passwords = useSelector((state: StateType) => state.ui.projects.passwordHash)
+    const passwords = useSelector((state: StateType) => state.ui.projects.password)
     const projects = useSelector((state: StateType) => state.ui.projects.projects)
 
     const { id }: {

@@ -76,7 +76,7 @@ const ProjectProtectedPassword = (): JSX.Element => {
         .then((res) => {
           if (res) {
             setItem(PROJECTS_PROTECTED, data.password)
-            history.push(_replace(routes.project, { id }))
+            history.push(_replace(routes.project, ':id', id))
           }
           setErrors({
             password: t('auth.common.wrongPassword'),
