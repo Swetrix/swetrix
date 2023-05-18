@@ -981,7 +981,7 @@ export class ProjectController {
   async checkPassword(
     @Param('projectId') projectId: string,
     @CurrentUserId() userId: string,
-    @Body() body: ProjectPasswordDto,
+    @Headers() body: ProjectPasswordDto,
   ): Promise<Boolean> {
     this.logger.log({ projectId }, 'GET /project/password/:projectId')
 
@@ -991,8 +991,10 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
+    console.log(body.password)
+    console.log(body)
     try {
-      this.projectService.allowedToView(project, userId, body.passwordHash)
+      this.projectService.allowedToView(project, userId, body.password)
     } catch {
       return false
     }
@@ -1243,9 +1245,9 @@ export class ProjectController {
     project.name = projectDTO.name
     project.public = projectDTO.public
 
-    if (projectDTO.isPasswordProtected && projectDTO.passwordHash) {
+    if (projectDTO.isPasswordProtected && projectDTO.password) {
       project.isPasswordProtected = true
-      project.passwordHash = await hash(projectDTO.passwordHash, 10)
+      project.passwordHash = await hash(projectDTO.password, 10)
     } else {
       project.isPasswordProtected = false
       project.passwordHash = null
@@ -1304,7 +1306,7 @@ export class ProjectController {
   async getOne(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
-    @Body() body: ProjectPasswordDto,
+    @Headers() body: ProjectPasswordDto,
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) {
@@ -1321,7 +1323,7 @@ export class ProjectController {
       throw new NotFoundException('Project was not found in the database')
     }
 
-    if (project.isPasswordProtected && _isEmpty(body.passwordHash)) {
+    if (project.isPasswordProtected && _isEmpty(body.password)) {
       return {
         isPasswordProtected: true,
         id: project.id,
