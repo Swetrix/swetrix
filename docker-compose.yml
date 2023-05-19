@@ -40,7 +40,7 @@ services:
     environment:
       - REDIS_PORT=6379
       - REDIS_USER=default
-      - REDIS_PASSWORD=password
+      - REDIS_PASSWORD=
     # ports:
     #   - 6379:6379
   #   volumes:
