@@ -63,9 +63,9 @@ services:
     image: redis:7.0.11-alpine
     restart: always
     environment:
-      - REDIS_PASSWORD=password
       - REDIS_PORT=6379
       - REDIS_USER=default
+      - REDIS_PASSWORD=
   #   volumes:
   #     - '/opt/redis-volume:/data'
   mariadb:
