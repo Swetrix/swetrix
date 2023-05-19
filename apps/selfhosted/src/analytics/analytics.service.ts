@@ -758,18 +758,21 @@ export class AnalyticsService {
       params[col] = {}
 
       const size = _size(res)
-      for (let j = 0; j < size; ++j) {
-        const key = res[j][col]
 
-        if (isPerformance) {
+      if (isPerformance) {
+        for (let j = 0; j < size; ++j) {
+          const key = res[j][col]
           params[col][key] = _round(
             millisecondsToSeconds(res[j]['avg(pageLoad)']),
             2,
           )
-          continue
         }
-
-        params[col][key] = res[j]['count()']
+      } else {
+        for (let j = 0; j < size; ++j) {
+          console.log(`iteration #${j} for ${col}`)
+          const key = res[j][col]
+          params[col][key] = res[j]['count()']
+        }
       }
     })
 
