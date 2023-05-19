@@ -212,8 +212,8 @@ const parseParams = (container: Element): object => ({
   theme: container.getAttribute('data-theme'),
 })
 
-const main = () => {
-  if ('swecaptcha' in window) {
+const main = (forced = false) => {
+  if (!forced && 'swecaptcha' in window) {
     log(LOG_ACTIONS.warn, 'Captcha is already loaded.')
   }
 
@@ -236,4 +236,7 @@ const main = () => {
   }
 }
 
-document.addEventListener('DOMContentLoaded', main)
+// @ts-ignore
+window.swetrixCaptchaForceLoad = () => main(true)
+
+document.addEventListener('DOMContentLoaded', () => main())

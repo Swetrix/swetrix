@@ -158,8 +158,8 @@ const parseParams = (container) => ({
     respName: container.getAttribute('data-response-input-name') || DEFAULT_RESPONSE_INPUT_NAME,
     theme: container.getAttribute('data-theme'),
 });
-const main = () => {
-    if ('swecaptcha' in window) {
+const main = (forced = false) => {
+    if (!forced && 'swecaptcha' in window) {
         log(LOG_ACTIONS.warn, 'Captcha is already loaded.');
     }
     // TODO: Add some callbacks here
@@ -176,5 +176,7 @@ const main = () => {
         renderCaptcha(container, params);
     }
 };
-document.addEventListener('DOMContentLoaded', main);
+// @ts-ignore
+window.swetrixCaptchaForceLoad = () => main(true);
+document.addEventListener('DOMContentLoaded', () => main());
 //# sourceMappingURL=captcha-loader.js.map

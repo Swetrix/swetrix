@@ -30,4 +30,4 @@ declare const generateCaptchaFrame: (params: any) => HTMLIFrameElement;
 declare const generateHiddenInput: (params: any) => HTMLInputElement;
 declare const validateParams: (params: any) => boolean;
 declare const parseParams: (container: Element) => object;
-declare const main: () => void;
+declare const main: (forced?: boolean) => void;
