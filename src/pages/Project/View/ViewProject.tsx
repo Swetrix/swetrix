@@ -32,6 +32,7 @@ import _pickBy from 'lodash/pickBy'
 import _every from 'lodash/every'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
+import _isString from 'lodash/isString'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
@@ -1072,8 +1073,11 @@ const ViewProject = ({
   // Initialising Swetrix SDK instance
   useEffect(() => {
     let sdk: any | null = null
-    if (!_isEmpty(extensions)) {
-      const processedExtensions = _map(extensions, (ext) => {
+
+    const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
+
+    if (!_isEmpty(filteredExtensions)) {
+      const processedExtensions = _map(filteredExtensions, (ext) => {
         const { id: extId, fileURL } = ext
         return {
           id: extId,
