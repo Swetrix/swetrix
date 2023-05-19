@@ -264,10 +264,12 @@ const Overview = ({
             <p title={String(pageviews)} className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {nFormatter(pageviews, 1)}
               {isActiveCompare && (
-                <span title={`${pageViewsCompare > pageviews ? '+' : ''}${pageViewsCompare - pageviews}`} className={cx('ml-1.5 text-sm', {
-                  'text-green-500': pageViewsCompare > pageviews,
-                  'text-red-500': pageViewsCompare < pageviews,
-                })}
+                <span
+                  title={`${pageViewsCompare > pageviews ? '+' : ''}${pageViewsCompare - pageviews}`}
+                  className={cx('ml-1.5 text-sm', {
+                    'text-green-500': pageViewsCompare > pageviews,
+                    'text-red-500': pageViewsCompare < pageviews,
+                  })}
                 >
                   {pageViewsCompare > pageviews ? '+' : ''}
                   {nFormatter(pageViewsCompare - pageviews, 1)}
@@ -284,10 +286,12 @@ const Overview = ({
             <p title={String(pageviews)} className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {nFormatter(uniques, 1)}
               {isActiveCompare && (
-                <span title={`${uniquesCompare > uniques ? '+' : ''}${uniquesCompare - uniques}`} className={cx('ml-1.5 text-sm', {
-                  'text-green-500': uniquesCompare > uniques,
-                  'text-red-500': uniquesCompare < uniques,
-                })}
+                <span
+                  title={`${uniquesCompare > uniques ? '+' : ''}${uniquesCompare - uniques}`}
+                  className={cx('ml-1.5 text-sm', {
+                    'text-green-500': uniquesCompare > uniques,
+                    'text-red-500': uniquesCompare < uniques,
+                  })}
                 >
                   {uniquesCompare > uniques ? '+' : ''}
                   {nFormatter(uniquesCompare - uniques, 1)}
