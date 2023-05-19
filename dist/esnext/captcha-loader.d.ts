@@ -1,6 +1,7 @@
+declare const isDevelopment: any;
 declare const CAPTCHA_SELECTOR = ".swecaptcha";
-declare const LIGHT_CAPTCHA_IFRAME_URL = "./light.html";
-declare const DARK_CAPTCHA_IFRAME_URL = "./dark.html";
+declare const LIGHT_CAPTCHA_IFRAME_URL: string;
+declare const DARK_CAPTCHA_IFRAME_URL: string;
 declare const DEFAULT_RESPONSE_INPUT_NAME = "swetrix-captcha-response";
 declare const MESSAGE_IDENTIFIER = "swetrix-captcha";
 declare const ID_PREFIX = "swetrix-captcha-";
