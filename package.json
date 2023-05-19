@@ -1,6 +1,6 @@
 {
   "name": "@swetrix/captcha",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Swetrix CAPTCHA",
   "captchaloader": "dist/captcha-loader.js",
   "captcha": "dist/captcha.js",
