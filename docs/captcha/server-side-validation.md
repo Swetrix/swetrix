@@ -24,7 +24,7 @@ To validate the token, you have to send a POST request to the `https://api.swetr
 
 <br />
 
-The successfull response will have the `success` field set to `true` and the `data` field will contain the following fields:
+The successful response will have the `success` field set to `true` and the `data` field will contain the following fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
