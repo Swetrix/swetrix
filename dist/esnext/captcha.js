@@ -1,5 +1,7 @@
 "use strict";
-const API_URL = 'http://localhost:5005/v1/captcha';
+// @ts-ignore
+const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false;
+const API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrix.com/v1/captcha';
 const MSG_IDENTIFIER = 'swetrix-captcha';
 const DEFAULT_THEME = 'light';
 const CAPTCHA_TOKEN_LIFETIME = 300; // seconds (5 minutes).

@@ -1,4 +1,5 @@
-declare const API_URL = "http://localhost:5005/v1/captcha";
+declare const isDevelopment: any;
+declare const API_URL: string;
 declare const MSG_IDENTIFIER = "swetrix-captcha";
 declare const DEFAULT_THEME = "light";
 declare const CAPTCHA_TOKEN_LIFETIME = 300;
