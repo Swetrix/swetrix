@@ -70,8 +70,6 @@ const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v2'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
-const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
-const REDIS_PERFORMANCE_COUNT_KEY = 'stats:performance'
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -100,11 +98,9 @@ export {
   SELFHOSTED_UUID,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
-  REDIS_PAGEVIEWS_COUNT_KEY,
   IP_REGEX,
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
-  REDIS_PERFORMANCE_COUNT_KEY,
   isDevelopment,
   DEFAULT_SELFHOSTED_UUID,
   JWT_ACCESS_TOKEN_SECRET,

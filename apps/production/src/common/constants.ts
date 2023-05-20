@@ -68,8 +68,7 @@ const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v2'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
-const REDIS_PAGEVIEWS_COUNT_KEY = 'stats:pageviews'
-const REDIS_PERFORMANCE_COUNT_KEY = 'stats:performance'
+const REDIS_EVENTS_COUNT_KEY = 'stats:events'
 const REDIS_SSO_UUID = 'sso:uuid'
 
 // Captcha service
@@ -117,7 +116,7 @@ export {
   HEARTBEAT_SID_LIFE_TIME,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
-  REDIS_PAGEVIEWS_COUNT_KEY,
+  REDIS_EVENTS_COUNT_KEY,
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
@@ -125,7 +124,6 @@ export {
   isNewRelicEnabled,
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
-  REDIS_PERFORMANCE_COUNT_KEY,
   CAPTCHA_SALT,
   CAPTCHA_ENCRYPTION_KEY,
   isDevelopment,
