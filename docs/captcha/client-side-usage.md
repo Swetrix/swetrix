@@ -28,6 +28,8 @@ Once the CAPTCHA script is installed (or embedded) on your website, you can use 
 
 Inside the `.swecaptcha` element, the widget will automatically render a frame with the CAPTCHA challenge and an input field where the token will be stored. The CAPTCHA is designed to be embedded to HTML forms, but you can use it anywhere on your website.
 
+After the CAPTCHA loader script is loaded, it will add a `window.swetrixCaptchaForceLoad` function to the global scope. You can use this function to forcefully reload the CAPTCHA widget. This function can be useful if you changed the CAPTCHA configuration and want to reload the widget without reloading the page.
+
 ### Customisation
 You can customise the appearance of the CAPTCHA widget by adding the following attributes to the `.swecaptcha` element:
 
