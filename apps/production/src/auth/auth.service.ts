@@ -22,25 +22,25 @@ import { v4 as uuidv4 } from 'uuid'
 import {
   ActionToken,
   ActionTokenType,
-} from 'src/action-tokens/action-token.entity'
-import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
-import { LetterTemplate } from 'src/mailer/letter'
-import { MailerService } from 'src/mailer/mailer.service'
+} from '../action-tokens/action-token.entity'
+import { ActionTokensService } from '../action-tokens/action-tokens.service'
+import { LetterTemplate } from '../mailer/letter'
+import { MailerService } from '../mailer/mailer.service'
 import {
   MAX_EMAIL_REQUESTS,
   User,
   TRIAL_DURATION,
-} from 'src/user/entities/user.entity'
-import { UserService } from 'src/user/user.service'
-import { ProjectService } from 'src/project/project.service'
+} from '../user/entities/user.entity'
+import { UserService } from '../user/user.service'
+import { ProjectService } from '../project/project.service'
 import {
   REDIS_SSO_UUID,
   redis,
   PRODUCTION_ORIGIN,
   isDevelopment,
   JWT_ACCESS_TOKEN_SECRET,
-} from 'src/common/constants'
-import { TelegramService } from 'src/integrations/telegram/telegram.service'
+} from '../common/constants'
+import { TelegramService } from '../integrations/telegram/telegram.service'
 import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'

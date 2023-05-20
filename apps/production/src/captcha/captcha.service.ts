@@ -10,7 +10,7 @@ import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 
-import { ProjectService } from 'src/project/project.service'
+import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isDevelopment,
