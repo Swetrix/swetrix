@@ -11,5 +11,4 @@ These cookies are encrypted and only store 2 variables: `automaticallyVerified` 
 
 The CAPTCHA challenge is presented to the user in the form of sequence of letters and numbers. The user has to type the letters and numbers in the correct order to solve the challenge.
 
-
-
+You can find the demonstration of the CAPTCHA widget [here](https://captcha.swetrix.com/demo).
