@@ -17,7 +17,7 @@ const initialState: IInitialState = {
   stats: {
     users: 0,
     projects: 0,
-    pageviews: 0,
+    events: 0,
   },
   paddleLoaded: false,
   paddle: {},
