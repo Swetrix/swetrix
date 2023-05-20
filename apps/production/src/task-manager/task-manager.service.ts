@@ -39,11 +39,10 @@ import {
   REDIS_SESSION_SALT_KEY,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
-  REDIS_PAGEVIEWS_COUNT_KEY,
+  REDIS_EVENTS_COUNT_KEY,
   REDIS_LOG_PERF_CACHE_KEY,
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
-  REDIS_PERFORMANCE_COUNT_KEY,
   REDIS_LOG_CAPTCHA_CACHE_KEY,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
@@ -517,29 +516,27 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async getGeneralStats(): Promise<object> {
-    const PVquery = 'SELECT count(*) from analytics'
-    const CEquery = 'SELECT count(*) from customEV'
-    const PFquery = 'SELECT count(*) from performance'
+    const trafficQuery = 'SELECT count(*) FROM analytics'
+    const customEVQuery = 'SELECT count(*) FROM customEV'
+    const performanceQuery = 'SELECT count(*) FROM performance'
+    const captchaQuery = 'SELECT count(*) FROM captcha'
 
     const users = await this.userService.count()
     const projects = await this.projectService.count()
-    const pageviews =
-      (await clickhouse.query(PVquery).toPromise())[0]['count()'] +
-      (await clickhouse.query(CEquery).toPromise())[0]['count()']
-    const performance = (await clickhouse.query(PFquery).toPromise())[0][
-      'count()'
-    ]
+    const events =
+      (await clickhouse.query(trafficQuery).toPromise())[0]['count()'] +
+      (await clickhouse.query(customEVQuery).toPromise())[0]['count()'] +
+      (await clickhouse.query(performanceQuery).toPromise())[0]['count()'] +
+      (await clickhouse.query(captchaQuery).toPromise())[0]['count()']
 
     await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
     await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
-    await redis.set(REDIS_PAGEVIEWS_COUNT_KEY, pageviews, 'EX', 630)
-    await redis.set(REDIS_PERFORMANCE_COUNT_KEY, performance, 'EX', 630)
+    await redis.set(REDIS_EVENTS_COUNT_KEY, events, 'EX', 630)
 
     return {
       users,
       projects,
-      pageviews,
-      performance,
+      events,
     }
   }
 
