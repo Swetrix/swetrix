@@ -53,6 +53,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:dev": "cross-env REACT_APP_RUNNING_DEV_SCRIPT=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios)/\"",
     "test:ci": "CI=true npm run test",

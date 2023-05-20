@@ -20,8 +20,13 @@ import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
 
 const debug = Debug('swetrix:api')
+
+const envApiURL = process.env.REACT_APP_RUNNING_DEV_SCRIPT === 'true'
+  ? process.env.REACT_APP_API_STAGING_URL
+  : process.env.REACT_APP_API_URL
+
 // @ts-ignore
-const baseURL: string = isSelfhosted ? window.env.API_URL : process.env.REACT_APP_API_URL
+const baseURL: string = isSelfhosted ? window.env.API_URL : envApiURL
 
 const api = axios.create({
   baseURL,
