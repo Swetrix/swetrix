@@ -148,9 +148,9 @@ const Main = (): JSX.Element => {
   const { authenticated } = useSelector((state: StateType) => state.auth)
   const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
 
-  const events = nFormatterSeparated(Number(stats.events), 0)
-  const users = nFormatterSeparated(Number(stats.users), 0)
-  const websites = nFormatterSeparated(Number(stats.projects), 0)
+  const events = nFormatterSeparated(Number(stats.events))
+  const users = nFormatterSeparated(Number(stats.users))
+  const websites = nFormatterSeparated(Number(stats.projects))
 
   return (
     <Title title={t('titles.main')}>
