@@ -1,5 +1,5 @@
 export interface IStats {
-    users: number
-    projects: number
-    pageviews: number
+  users: number
+  projects: number
+  events: number
 }
