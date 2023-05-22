@@ -285,6 +285,6 @@ export class UserService {
   }
 
   getCurrencyByCountry(country: string) {
-    return CURRENCY_BY_COUNTRY[country] || GBP
+    return CURRENCY_BY_COUNTRY[country] || USD
   }
 }
