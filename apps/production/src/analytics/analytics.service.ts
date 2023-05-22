@@ -790,7 +790,6 @@ export class AnalyticsService {
         }
       } else {
         for (let j = 0; j < size; ++j) {
-          console.log(`iteration #${j} for ${col}`)
           const key = res[j][col]
           params[col][key] = res[j]['count()']
         }
