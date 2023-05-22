@@ -12,7 +12,9 @@ import cx from 'clsx'
 
 import Modal from 'ui/Modal'
 import Spin from 'ui/icons/Spin'
-import { CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS } from 'redux/constants'
+import {
+  CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS, CURRENCIES,
+} from 'redux/constants'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { authActions } from 'redux/reducers/auth'
@@ -22,14 +24,16 @@ import routes from 'routes'
 import { IUser } from 'redux/models/IUser'
 import { AppDispatch, StateType } from 'redux/store'
 
+type CurrencyCode = 'USD' | 'EUR' | 'GBP'
+
 const getNonStandardTiers = (t: (key: string, options?: {
   [key: string]: any
-}) => string) => ({
+}) => string, currencyCode: CurrencyCode) => ({
   free: {
     name: t('pricing.free'),
     planCode: 'free',
-    priceMonthly: PLAN_LIMITS.free.priceMonthly,
-    priceYearly: PLAN_LIMITS.free.priceYearly,
+    priceMonthly: PLAN_LIMITS.free.price[currencyCode].monthly,
+    priceYearly: PLAN_LIMITS.free.price[currencyCode].yearly,
     legacy: PLAN_LIMITS.free.legacy,
     includedFeatures: [
       t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.free.monthlyUsageLimit.toLocaleString() }),
@@ -47,8 +51,8 @@ const getNonStandardTiers = (t: (key: string, options?: {
   trial: {
     name: t('pricing.tiers.trial'),
     planCode: 'trial',
-    priceMonthly: PLAN_LIMITS.trial.priceMonthly,
-    priceYearly: PLAN_LIMITS.trial.priceYearly,
+    priceMonthly: PLAN_LIMITS.trial.price[currencyCode].monthly,
+    priceYearly: PLAN_LIMITS.trial.price[currencyCode].yearly,
     legacy: PLAN_LIMITS.trial.legacy,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
@@ -58,12 +62,12 @@ const getNonStandardTiers = (t: (key: string, options?: {
 
 const getTiers = (t: (key: string, options?: {
   [key: string]: any
-}) => string) => [
+}) => string, currencyCode: CurrencyCode) => [
   {
     name: t('pricing.tiers.hobby'),
     planCode: 'hobby',
-    priceMonthly: PLAN_LIMITS.hobby.priceMonthly,
-    priceYearly: PLAN_LIMITS.hobby.priceYearly,
+    priceMonthly: PLAN_LIMITS.hobby.price[currencyCode].monthly,
+    priceYearly: PLAN_LIMITS.hobby.price[currencyCode].yearly,
     includedFeatures: [
       t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString() }),
       t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.hobby.maxProjects }),
@@ -82,8 +86,8 @@ const getTiers = (t: (key: string, options?: {
   {
     name: t('pricing.tiers.freelancer'),
     planCode: 'freelancer',
-    priceMonthly: PLAN_LIMITS.freelancer.priceMonthly,
-    priceYearly: PLAN_LIMITS.freelancer.priceYearly,
+    priceMonthly: PLAN_LIMITS.freelancer.price[currencyCode].monthly,
+    priceYearly: PLAN_LIMITS.freelancer.price[currencyCode].yearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
       t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString() }),
@@ -98,8 +102,8 @@ const getTiers = (t: (key: string, options?: {
   {
     name: t('pricing.tiers.startup'),
     planCode: 'startup',
-    priceMonthly: PLAN_LIMITS.startup.priceMonthly,
-    priceYearly: PLAN_LIMITS.startup.priceYearly,
+    priceMonthly: PLAN_LIMITS.startup.price[currencyCode].monthly,
+    priceYearly: PLAN_LIMITS.startup.price[currencyCode].yearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
       t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.startup.monthlyUsageLimit.toLocaleString() }),
@@ -113,8 +117,8 @@ const getTiers = (t: (key: string, options?: {
   {
     name: t('pricing.tiers.enterprise'),
     planCode: 'enterprise',
-    priceMonthly: PLAN_LIMITS.enterprise.priceMonthly,
-    priceYearly: PLAN_LIMITS.enterprise.priceYearly,
+    priceMonthly: PLAN_LIMITS.enterprise.price[currencyCode].monthly,
+    priceYearly: PLAN_LIMITS.enterprise.price[currencyCode].yearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.startup') }),
       t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.enterprise.monthlyUsageLimit.toLocaleString() }),
@@ -132,10 +136,7 @@ const BillingFrequency = {
   yearly: 'yearly',
 }
 
-const PricingItem = ({
-  tier, user, t, authenticated, billingFrequency, onPlanChange, downgradeHandler, downgrade,
-  planCodeLoading, planCodeID, userPlancodeID,
-}: {
+interface IPricingItem {
   tier: any
   user: IUser
   t: (key: string, options?: {
@@ -154,8 +155,16 @@ const PricingItem = ({
   planCodeLoading: boolean | string | null
   planCodeID: string | number
   userPlancodeID: string | number
-}) => {
+  currencyCode: CurrencyCode
+}
+
+const PricingItem = ({
+  tier, user, t, authenticated, billingFrequency, onPlanChange, downgradeHandler, downgrade,
+  planCodeLoading, planCodeID, userPlancodeID, currencyCode,
+}: IPricingItem) => {
   let action
+
+  const currency = CURRENCIES[currencyCode]
 
   if (planCodeID > userPlancodeID) {
     action = t('pricing.upgrade')
@@ -200,7 +209,7 @@ const PricingItem = ({
         )}
         <p className='mt-4 text-center'>
           <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
-            $
+            {currency.symbol}
             {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
           </span>
           &nbsp;
@@ -252,14 +261,19 @@ const PricingItem = ({
   )
 }
 
-const Pricing = ({ t, language }: {
+interface IPricing {
   t: (key: string) => string,
   language: string,
-}) => {
+}
+
+const Pricing = ({ t, language }: IPricing) => {
   const dispatch: AppDispatch = useDispatch()
   const { authenticated, user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
-  const { lastEvent } = useSelector((state: StateType) => state.ui.misc.paddle)
+  const { paddle, metainfo } = useSelector((state: StateType) => state.ui.misc)
+  const { lastEvent } = paddle
+  const currencyCode = user?.tierCurrency || metainfo.code
+
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
   const [downgradeTo, setDowngradeTo] = useState<{
     planCode: string,
@@ -269,12 +283,12 @@ const Pricing = ({ t, language }: {
   } | null>(null)
   const [showDowngradeModal, setShowDowngradeModal] = useState<boolean>(false)
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
-  const tiers = getTiers(t)
+  const tiers = getTiers(t, currencyCode)
   const nonStandardTiers: {
     [key: string]: {
       [key: string]: any,
     },
-  } = getNonStandardTiers(t)
+  } = getNonStandardTiers(t, currencyCode)
   const isNonStandardTier = authenticated && !_isEmpty(nonStandardTiers[user.planCode])
 
   useEffect(() => {
@@ -341,6 +355,7 @@ const Pricing = ({ t, language }: {
           frameStyle: 'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
           locale: paddleLanguageMapping[language] || language,
           displayModeTheme: theme,
+          country: metainfo.country,
         })
         setTimeout(() => {
           // @ts-ignore
@@ -359,6 +374,7 @@ const Pricing = ({ t, language }: {
         locale: paddleLanguageMapping[language] || language,
         title: tier.name,
         displayModeTheme: theme,
+        country: metainfo.country,
       })
     }
   }
@@ -430,6 +446,7 @@ const Pricing = ({ t, language }: {
                 authenticated={authenticated}
                 planCodeID={user.planCode}
                 userPlancodeID={user.planCode}
+                currencyCode={currencyCode}
               />
             )}
             {_map(tiers, (tier) => {
@@ -450,6 +467,7 @@ const Pricing = ({ t, language }: {
                   authenticated={authenticated}
                   planCodeID={planCodeID}
                   userPlancodeID={userPlancodeID}
+                  currencyCode={currencyCode}
                 />
               )
             })}

@@ -3,9 +3,11 @@ import { LOW_EVENTS_WARNING } from 'redux/constants'
 import { setCookie } from 'utils/cookie'
 import { secondsTillNextMonth } from 'utils/generic'
 import { IStats } from 'redux/models/IStats'
+import { IMetainfo } from 'redux/models/IMetainfo'
 
 interface IInitialState {
   stats: IStats
+  metainfo: IMetainfo
   paddleLoaded: boolean
   paddle: any
   showNoEventsLeftBanner: boolean
@@ -18,6 +20,11 @@ const initialState: IInitialState = {
     users: 0,
     projects: 0,
     events: 0,
+  },
+  metainfo: {
+    country: null,
+    symbol: '$',
+    code: 'USD',
   },
   paddleLoaded: false,
   paddle: {},
@@ -46,6 +53,9 @@ const miscSlice = createSlice({
     },
     setExtensions(state, { payload }: PayloadAction<any[]>) {
       state.extensions = payload
+    },
+    setMetainfo(state, { payload }: PayloadAction<IMetainfo>) {
+      state.metainfo = payload
     },
     setLastBlogPost(state, { payload }: PayloadAction<any>) {
       state.lastBlogPost = payload

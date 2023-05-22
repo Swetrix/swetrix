@@ -33,4 +33,5 @@ export interface IUser {
   googleId: string | null
   githubId: number | null
   registeredWithGithub: boolean
+  tierCurrency: 'USD' | 'EUR' | 'GBP' | null
 }

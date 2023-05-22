@@ -948,3 +948,14 @@ export const getUserFlow = (
         ? error.response.data
         : error.response.data.message
     })
+
+export const getPaymentMetainfo = () =>
+  api
+    .get('user/metainfo')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
