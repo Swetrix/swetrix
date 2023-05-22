@@ -5,6 +5,7 @@ import {
   Headers,
   BadRequestException,
   NotFoundException,
+  HttpCode,
   Ip,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
@@ -33,6 +34,7 @@ export class WebhookController {
   ) {}
 
   @Post('/paddle')
+  @HttpCode(200)
   async paddleWebhook(
     @Body() body,
     @Headers() headers,
