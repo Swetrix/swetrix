@@ -1347,7 +1347,7 @@ const ViewProject = ({
       getProject(id, false, projectPassword)
         .then(projectRes => {
           if (!_isEmpty(projectRes)) {
-            if (projectRes.isPasswordProtected && !projectRes.isOwner && !projectPassword) {
+            if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
               history.push(_replace(routes.project_protected_password, ':id', id))
               return
             }

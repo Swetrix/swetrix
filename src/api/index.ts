@@ -265,7 +265,7 @@ export const getSharedProjects = (take: number = 0, skip: number = 0) =>
 export const getProject = (pid: string, isCaptcha: boolean = false, password?: string) =>
   api
     .get(`/project/${pid}?isCaptcha=${isCaptcha}`, {
-      data: {
+      headers: {
         password,
       },
     })
@@ -361,7 +361,7 @@ export const getProjectData = (
     .get(
       `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
       {
-        data: {
+        headers: {
           password,
         },
       },
