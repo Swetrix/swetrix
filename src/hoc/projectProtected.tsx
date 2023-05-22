@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { Redirect, useParams } from 'react-router-dom'
 
 import _find from 'lodash/find'
-
+import _replace from 'lodash/replace'
 import { StateType } from 'redux/store'
 import routes from 'routes'
 
@@ -22,8 +22,8 @@ export const withProjectProtected = <P extends PropsType>(WrappedComponent: any)
 
     const project = _find(projects, { id })
 
-    if (project?.isPasswordProtected && !passwords[id]) {
-      return <Redirect to={routes.project_protected_password} />
+    if (project?.isPasswordProtected && !project.isOwner && !passwords[id]) {
+      return <Redirect to={_replace(routes.project_protected_password, ':id', id)} />
     }
 
     return <WrappedComponent {...props} />
