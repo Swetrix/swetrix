@@ -14,6 +14,53 @@ import { RefreshToken } from './entities/refresh-token.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 
+const EUR = {
+  symbol: '€',
+  code: 'EUR',
+}
+
+const USD = {
+  symbol: '$',
+  code: 'USD',
+}
+
+const GBP = {
+  symbol: '£',
+  code: 'GBP',
+}
+
+const CURRENCY_BY_COUNTRY = {
+  AT: EUR, // Austria
+  BE: EUR, // Belgium
+  BG: EUR, // Bulgaria
+  CY: EUR, // Cyprus
+  CZ: EUR, // Czech Republic
+  DE: EUR, // Germany
+  DK: EUR, // Denmark
+  EE: EUR, // Estonia
+  ES: EUR, // Spain
+  FI: EUR, // Finland
+  FR: EUR, // France
+  GB: GBP, // United Kingdom
+  GR: EUR, // Greece
+  HR: EUR, // Croatia
+  HU: EUR, // Hungary
+  IE: EUR, // Ireland
+  IT: EUR, // Italy
+  LT: EUR, // Lithuania
+  LU: EUR, // Luxembourg
+  LV: EUR, // Latvia
+  MT: EUR, // Malta
+  NL: EUR, // Netherlands
+  PL: EUR, // Poland
+  PT: EUR, // Portugal
+  RO: EUR, // Romania
+  SE: EUR, // Sweden
+  SI: EUR, // Slovenia
+  SK: EUR, // Slovakia
+  US: USD, // United States
+}
+
 @Injectable()
 export class UserService {
   constructor(
@@ -235,5 +282,9 @@ export class UserService {
       telegramChatId: _isNull(telegramId) ? null : String(telegramId),
       isTelegramChatIdConfirmed,
     })
+  }
+
+  getCurrencyByCountry(country: string) {
+    return CURRENCY_BY_COUNTRY[country] || USD
   }
 }
