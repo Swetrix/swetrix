@@ -24,6 +24,8 @@ export default function* initialise() {
     }
 
     if (!isSelfhosted) {
+      yield put(sagaActions.loadMetainfo())
+
       const lastBlogPost: {
         title: string,
         url_path: string,
