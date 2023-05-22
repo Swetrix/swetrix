@@ -261,8 +261,8 @@ export class AnalyticsController {
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
-    @Headers() body: ProjectPasswordDto,
     isCaptcha = false,
+    @Headers() body: ProjectPasswordDto,
   ): Promise<any> {
     const {
       pid,
@@ -569,7 +569,7 @@ export class AnalyticsController {
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    return this.getData(data, uid, true)
+    return this.getData(data, uid, true, {})
   }
 
   @Get('user-flow')
