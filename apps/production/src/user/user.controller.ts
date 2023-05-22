@@ -617,13 +617,11 @@ export class UserController {
 
   @Get('metainfo')
   @Public()
-  async getMetaInfo(
-    @Headers() headers,
-  ): Promise<any> {
+  async getMetaInfo(@Headers() headers): Promise<any> {
     const country = headers['cf-ipcountry'] || 'XX'
 
     return {
-      country: (country === 'XX' || country === 'T1') ? null : country,
+      country: country === 'XX' || country === 'T1' ? null : country,
       ...this.userService.getCurrencyByCountry(country),
     }
   }
