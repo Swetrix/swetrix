@@ -382,10 +382,16 @@ export const getProjectCompareData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
       `log/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
@@ -409,7 +415,7 @@ export const getPerfData = (
     .get(
       `log/performance?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
       {
-        data: {
+        headers: {
           password,
         },
       },
@@ -447,7 +453,7 @@ export const getOverallStats = (pids: string[], password?: string) =>
     .get(
       `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`,
       {
-        data: {
+        headers: {
           password,
         },
       },
@@ -460,13 +466,9 @@ export const getOverallStats = (pids: string[], password?: string) =>
         : error.response.data.message
     })
 
-export const getOverallStatsCaptcha = (pids: string[], password?: string) =>
+export const getOverallStatsCaptcha = (pids: string[]) =>
   api
-    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
-      data: {
-        password,
-      },
-    })
+    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
     .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -478,7 +480,7 @@ export const getOverallStatsCaptcha = (pids: string[], password?: string) =>
 export const getLiveVisitors = (pids: string[], password?: string) =>
   api
     .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
-      data: {
+      headers: {
         password,
       },
     })
@@ -661,7 +663,7 @@ export interface IGetLiveVisitorsInfo {
 export const getLiveVisitorsInfo = (pid: string, password?: string) =>
   api
     .get(`log/liveVisitors?pid=${pid}`, {
-      data: {
+      headers: {
         password,
       },
     })
@@ -823,7 +825,7 @@ export const getProjectDataCustomEvents = (
     .get(
       `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&customEvents=${JSON.stringify(customEvents)}`,
       {
-        data: {
+        headers: {
           password,
         },
       },
@@ -973,10 +975,16 @@ export const getUserFlow = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
       `log/user-flow?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
