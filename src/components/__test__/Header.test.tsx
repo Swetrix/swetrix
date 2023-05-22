@@ -50,6 +50,7 @@ describe('Header', () => {
     googleId: null,
     githubId: null,
     registeredWithGithub: false,
+    tierCurrency: 'USD',
   }
 
   beforeEach(() => {
