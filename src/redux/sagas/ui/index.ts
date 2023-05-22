@@ -8,6 +8,7 @@ import generalStats from './worker_general_stats'
 import isEventsAvailable from './worker_is_events_available'
 import shareVerify from './share_verify'
 import loadExtensions from './load_extensions'
+import loadMetainfo from './load_metainfo'
 import logout from './logout'
 import loadSharedProjects from './load_shared_projects'
 import loadProjectAlerts from './load_alerts'
@@ -19,6 +20,8 @@ function* mainUISaga() {
   yield fork(generalStats)
   // @ts-ignore
   yield takeEvery(sagaTypes.LOAD_PROJECTS, loadProjects)
+  // @is-ignore
+  yield takeEvery(sagaTypes.LOAD_METAINFO, loadMetainfo)
   // @ts-ignore
   yield takeEvery(sagaTypes.LOAD_SHARED_PROJECTS, loadSharedProjects)
   yield takeEvery(sagaTypes.LOAD_EXTENSIONS, loadExtensions)

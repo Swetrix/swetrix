@@ -20,6 +20,7 @@ dayjs.extend(duration)
 
 const Billing = (): JSX.Element => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
+  const { metainfo } = useSelector((state: StateType) => state.ui.misc)
   const { user }: {
     user: IUser
   } = useSelector((state: StateType) => state.auth)
@@ -95,6 +96,7 @@ const Billing = (): JSX.Element => {
       frameStyle: 'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
       locale: paddleLanguageMapping[language] || language,
       displayModeTheme: theme,
+      country: metainfo.country,
     })
     setTimeout(() => {
       // @ts-ignore
@@ -118,6 +120,7 @@ const Billing = (): JSX.Element => {
       frameStyle: 'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
       locale: paddleLanguageMapping[language] || language,
       displayModeTheme: theme,
+      country: metainfo.country,
     })
     setTimeout(() => {
       // @ts-ignore

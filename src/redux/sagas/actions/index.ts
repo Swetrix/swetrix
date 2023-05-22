@@ -12,6 +12,10 @@ const loadProjects = (take?: number, skip?: number) => ({
   payload: { take, skip },
 })
 
+const loadMetainfo = () => ({
+  type: types.LOAD_METAINFO,
+})
+
 const loadSharedProjects = (take?: number, skip?: number) => ({
   type: types.LOAD_SHARED_PROJECTS,
   payload: { take, skip },
@@ -138,6 +142,7 @@ const sagaActions = {
   shareVerifyAsync,
   linkSSO,
   unlinkSSO,
+  loadMetainfo,
 }
 
 export default sagaActions
