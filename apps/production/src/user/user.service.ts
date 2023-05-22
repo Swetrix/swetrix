@@ -33,13 +33,10 @@ export const CURRENCIES = {
   EUR, USD, GBP,
 }
 
-// TODO: EUR only for Eurozone countries
 const CURRENCY_BY_COUNTRY = {
   AT: EUR, // Austria
   BE: EUR, // Belgium
-  BG: EUR, // Bulgaria
   CY: EUR, // Cyprus
-  CZ: EUR, // Czech Republic
   DE: EUR, // Germany
   DK: EUR, // Denmark
   EE: EUR, // Estonia
@@ -49,7 +46,6 @@ const CURRENCY_BY_COUNTRY = {
   GB: GBP, // United Kingdom
   GR: EUR, // Greece
   HR: EUR, // Croatia
-  HU: EUR, // Hungary
   IE: EUR, // Ireland
   IT: EUR, // Italy
   LT: EUR, // Lithuania
@@ -57,10 +53,7 @@ const CURRENCY_BY_COUNTRY = {
   LV: EUR, // Latvia
   MT: EUR, // Malta
   NL: EUR, // Netherlands
-  PL: EUR, // Poland
   PT: EUR, // Portugal
-  RO: EUR, // Romania
-  SE: EUR, // Sweden
   SI: EUR, // Slovenia
   SK: EUR, // Slovakia
   US: USD, // United States
