@@ -22,7 +22,11 @@ export const withProjectProtected = <P extends PropsType>(WrappedComponent: any)
 
     const project = _find(projects, { id })
 
-    if (project?.isPasswordProtected && !project.isOwner && !passwords[id]) {
+    if (project?.isOwner) {
+      return <WrappedComponent {...props} />
+    }
+
+    if (project?.isPasswordProtected && !passwords[id]) {
       return <Redirect to={_replace(routes.project_protected_password, ':id', id)} />
     }
 
