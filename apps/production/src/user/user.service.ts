@@ -30,7 +30,9 @@ const GBP = {
 }
 
 export const CURRENCIES = {
-  EUR, USD, GBP,
+  EUR,
+  USD,
+  GBP,
 }
 
 const CURRENCY_BY_COUNTRY = {
@@ -283,6 +285,6 @@ export class UserService {
   }
 
   getCurrencyByCountry(country: string) {
-    return CURRENCY_BY_COUNTRY[country] || USD
+    return CURRENCY_BY_COUNTRY[country] || GBP
   }
 }
