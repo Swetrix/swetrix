@@ -1352,7 +1352,7 @@ const ViewProject = ({
               return
             }
 
-            if (projectRes.isPublic && !projectRes.isOwner && projectRes?.isPasswordProtected) {
+            if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.isOwner) {
               getOverallStats([id], projectPassword)
                 .then(res => {
                   setPublicProject({
