@@ -306,8 +306,7 @@ export class ProjectService {
     }
 
     if (
-      (project.isPasswordProtected && uid !== project.admin?.id) ||
-      (project.isPasswordProtected && !password)
+      (project.isPasswordProtected && uid !== project.admin?.id)
     ) {
       throw new ForbiddenException('This project is password protected')
     }
