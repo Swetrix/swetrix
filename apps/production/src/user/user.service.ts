@@ -29,6 +29,11 @@ const GBP = {
   code: 'GBP',
 }
 
+export const CURRENCIES = {
+  EUR, USD, GBP,
+}
+
+// TODO: EUR only for Eurozone countries
 const CURRENCY_BY_COUNTRY = {
   AT: EUR, // Austria
   BE: EUR, // Belgium
