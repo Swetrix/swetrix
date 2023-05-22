@@ -694,13 +694,14 @@ export class AnalyticsController {
   async getHeartBeatStats(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Headers() body: ProjectPasswordDto,
   ): Promise<object> {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
+      await this.analyticsService.checkProjectAccess(currentPID, uid, body.password)
     })
 
     await Promise.all(validationPromises)
