@@ -246,6 +246,9 @@ export class User {
   @Column({ type: 'date', nullable: true })
   cancellationEffectiveDate: Date | null
 
+  @Column('varchar', { length: 3, nullable: true })
+  tierCurrency: string
+
   @Column({
     type: 'varchar',
     length: 36,

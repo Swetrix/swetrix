@@ -31,6 +31,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { Markup } from 'telegraf'
 import { JwtAccessTokenGuard } from '../auth/guards'
+
+import { Public, Roles, CurrentUserId } from '../auth/decorators'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { UserService } from './user.service'
 import { ProjectService, deleteProjectRedis } from '../project/project.service'
@@ -41,7 +43,6 @@ import {
   PlanCode,
   Theme,
 } from './entities/user.entity'
-import { Roles } from '../auth/decorators/roles.decorator'
 import { Pagination } from '../common/pagination/pagination'
 import {
   GDPR_EXPORT_TIMEFRAME,
@@ -52,7 +53,6 @@ import {
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
-import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
@@ -613,5 +613,16 @@ export class UserController {
     })
 
     return user
+  }
+
+  @Get('metainfo')
+  @Public()
+  async getMetaInfo(@Headers() headers): Promise<any> {
+    const country = headers['cf-ipcountry'] || 'XX'
+
+    return {
+      country: country === 'XX' || country === 'T1' ? null : country,
+      ...this.userService.getCurrencyByCountry(country),
+    }
   }
 }

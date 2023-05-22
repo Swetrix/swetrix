@@ -5,12 +5,13 @@ import {
   Headers,
   BadRequestException,
   NotFoundException,
+  HttpCode,
   Ip,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as _find from 'lodash/find'
 
-import { ProjectService } from 'src/project/project.service'
+import { ProjectService } from '../project/project.service'
 import {
   PlanCode,
   ACCOUNT_PLANS,
@@ -33,6 +34,7 @@ export class WebhookController {
   ) {}
 
   @Post('/paddle')
+  @HttpCode(200)
   async paddleWebhook(
     @Body() body,
     @Headers() headers,
@@ -55,6 +57,7 @@ export class WebhookController {
           cancel_url: subCancelURL,
           update_url: subUpdateURL,
           next_bill_date: nextBillDate,
+          currency,
         } = body
         let uid
 
@@ -91,6 +94,7 @@ export class WebhookController {
           billingFrequency: monthlyBilling
             ? BillingFrequency.Monthly
             : BillingFrequency.Yearly,
+          tierCurrency: currency,
         }
 
         if (uid) {
@@ -114,6 +118,7 @@ export class WebhookController {
           billingFrequency: BillingFrequency.Monthly,
           nextBillDate: null,
           cancellationEffectiveDate,
+          tierCurrency: null,
         })
 
         break
@@ -126,6 +131,7 @@ export class WebhookController {
       //     planCode: PlanCode.none,
       //     billingFrequency: BillingFrequency.Monthly,
       //     nextBillDate: null,
+      //     tierCurrency: null,
       //   })
 
       //   break
@@ -139,6 +145,7 @@ export class WebhookController {
             planCode: PlanCode.none,
             billingFrequency: BillingFrequency.Monthly,
             nextBillDate: null,
+            tierCurrency: null,
           })
         }
 
