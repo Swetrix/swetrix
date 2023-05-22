@@ -47,7 +47,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf
+  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
