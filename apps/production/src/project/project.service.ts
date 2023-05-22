@@ -305,13 +305,12 @@ export class ProjectService {
       throw new ConflictException('Incorrect password')
     }
 
-    // if (
-    //   (project.isPasswordProtected && uid !== project.admin?.id) ||
-    //   (project.isPasswordProtected &&
-    //     _findIndex(project.share, ({ user }) => user?.id !== uid) !== -1)
-    // ) {
-    //   throw new ForbiddenException('This project is password protected')
-    // }
+    if (
+      (project.isPasswordProtected && uid !== project.admin?.id) ||
+      (project.isPasswordProtected && !password)
+    ) {
+      throw new ForbiddenException('This project is password protected')
+    }
 
     if (
       project.public ||
