@@ -345,25 +345,6 @@ const Pricing = ({ t, language }: IPricing) => {
         return
       }
 
-      if (tier.planCode === 'free') {
-        // @ts-ignore
-        window.Paddle.Checkout.open({
-          override: user.subCancelURL,
-          method: 'inline',
-          frameTarget: 'checkout-container',
-          frameInitialHeight: 416,
-          frameStyle: 'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
-          locale: paddleLanguageMapping[language] || language,
-          displayModeTheme: theme,
-          country: metainfo.country,
-        })
-        setTimeout(() => {
-          // @ts-ignore
-          document.querySelector('#checkout-container').scrollIntoView()
-        }, 500)
-        return
-      }
-
       // @ts-ignore
       window.Paddle.Checkout.open({
         product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
