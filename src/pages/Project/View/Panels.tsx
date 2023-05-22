@@ -197,7 +197,7 @@ PanelContainer.defaultProps = {
 
 // First tab with stats
 const Overview = ({
-  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId, sessionDurationAVGCompare, isActiveCompare, dataChartCompare, activeDropdownLabelCompare,
+  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId, sessionDurationAVGCompare, isActiveCompare, dataChartCompare, activeDropdownLabelCompare, projectPassword,
 }: {
   overall: any
   chartData: any
@@ -210,6 +210,7 @@ const Overview = ({
   activeDropdownLabelCompare: string | undefined
   dataChartCompare: any
   projectId: string
+  projectPassword: string | undefined
 }) => {
   const pageviewsDidGrowUp = overall.percChange >= 0
   const uniqueDidGrowUp = overall.percChangeUnique >= 0
@@ -236,7 +237,7 @@ const Overview = ({
           {t('dashboard.liveVisitors')}
           :
         </div>
-        <LiveVisitorsDropdown projectId={projectId} live={live} />
+        <LiveVisitorsDropdown projectId={projectId} live={live} projectPassword={projectPassword} />
       </div>
       {!_isEmpty(chartData) && (
         <>
