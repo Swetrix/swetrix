@@ -342,6 +342,8 @@ export class AnalyticsService {
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
+    let groupFromUTC: string
+    let groupToUTC: string
     const formatFrom = 'YYYY-MM-DD HH:mm:ss'
     const formatTo = 'YYYY-MM-DD HH:mm:ss'
     const djsNow = _includes(GMT_0_TIMEZONES, safeTimezone)
@@ -371,12 +373,33 @@ export class AnalyticsService {
         checkIfTBAllowed(timeBucket, from, to)
       }
 
-      groupFrom = dayjs.utc()
+      // TODO:
+      // THE FOLLOWING CODE SHOULD BE TIMEZONE SPECIFIC BUT HAS SOME ISSUES WITH DATE SHIFTS
+      // IT SHOULD BE REFACTORED AND USED IN THE FUTURE
+      // if (from === to) {
+      //   // When from and to are the same we need to return timezone specific data for 1 specified day
+      //   groupFrom = dayjs.tz(from, safeTimezone).startOf('d')
+      //   groupTo = groupFrom.endOf('d')
+      //   groupFromUTC = groupFrom.utc().format(formatFrom)
+      //   groupToUTC = groupTo.utc().format(formatTo)
+      // } else {
+      //   groupFrom = dayjs.tz(from, safeTimezone)
+      //   groupTo = dayjs.tz(to, safeTimezone)
+      //   groupFromUTC = groupFrom.utc().startOf(timeBucket).format(formatFrom)
+      //   groupToUTC = groupTo.utc().endOf(timeBucket).format(formatTo)
+      // }
 
+      // THIS SHOULD BE REPLACED BY THE CODE ABOVE WHEN IT'S FIXED
       if (from === to) {
-        groupTo = dayjs.utc().add(1, 'day')
+        groupFrom = dayjs.tz(from, safeTimezone).startOf('d')
+        groupTo = dayjs.tz(from, safeTimezone).endOf('d')
+        groupFromUTC = groupFrom.utc().format(formatFrom)
+        groupToUTC = groupTo.utc().format(formatFrom)
       } else {
-        groupTo = dayjs.utc()
+        groupFrom = dayjs.utc(from)
+        groupTo = dayjs.utc(to)
+        groupFromUTC = groupFrom.utc().startOf(timeBucket).format(formatFrom)
+        groupToUTC = groupTo.utc().endOf(timeBucket).format(formatTo)
       }
     } else if (!_isEmpty(period)) {
       if (period === 'today') {
@@ -403,6 +426,9 @@ export class AnalyticsService {
           groupTo.format(formatTo),
         )
       }
+
+      groupFromUTC = groupFrom.utc().startOf(timeBucket).format(formatFrom)
+      groupToUTC = groupTo.utc().format(formatFrom)
     } else {
       throw new BadRequestException(
         'The timeframe (either from/to pair or period) has to be provided',
@@ -413,12 +439,12 @@ export class AnalyticsService {
     const groupToFormatted = groupTo.format(formatTo)
 
     return {
-      // UTC time
+      // Timezone shifted time
       groupFrom: groupFromFormatted,
       groupTo: groupToFormatted,
-      // Timezone shifted time
-      groupFromUTC: groupFrom.utc().format(formatFrom),
-      groupToUTC: groupTo.utc().format(formatFrom),
+      // UTC time
+      groupFromUTC,
+      groupToUTC,
     }
   }
 
