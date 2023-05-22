@@ -623,7 +623,7 @@ export class UserController {
     const country = headers['cf-ipcountry'] || 'XX'
 
     return {
-      country,
+      country: (country === 'XX' || country === 'T1') ? null : country,
       ...this.userService.getCurrencyByCountry(country),
     }
   }
