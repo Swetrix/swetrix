@@ -283,7 +283,7 @@ const Overview = ({
               {t('dashboard.unique')}
               :
             </p>
-            <p title={String(pageviews)} className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
+            <p title={String(uniques)} className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {nFormatter(uniques, 1)}
               {isActiveCompare && (
                 <span
