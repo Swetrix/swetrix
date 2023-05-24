@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { NestjsFormDataModule } from 'nestjs-form-data'
 
 import { I18nModule } from 'nestjs-i18n'
+import { BullModule } from '@nestjs/bull'
 import { UserModule } from './user/user.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { ProjectModule } from './project/project.module'
@@ -39,6 +40,18 @@ const modules = [
     database: process.env.MYSQL_DATABASE,
     synchronize: isDevelopment,
     entities: [`${__dirname}/**/*.entity{.ts,.js}`],
+  }),
+  BullModule.forRootAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: async (configService: ConfigService) => ({
+      redis: {
+        host: configService.get<string>('REDIS_HOST') || 'localhost',
+        port: configService.get<number>('REDIS_PORT') || 6379,
+        username: configService.get<string>('REDIS_USER') || 'default',
+        password: configService.get<string>('REDIS_PASSWORD') || '',
+      },
+    }),
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
