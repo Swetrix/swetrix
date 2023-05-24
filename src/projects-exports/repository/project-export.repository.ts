@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import { CreateExportDto } from '../dto/create-export.dto'
 import { ProjectExport } from '../entity/project-export.entity'
 
 @Injectable()
@@ -10,8 +11,11 @@ export class ProjectExportRepository {
     private readonly projectExportRepository: Repository<ProjectExport>,
   ) {}
 
-  async findProjectById(projectId: string): Promise<ProjectExport> {
-    return this.projectExportRepository.findOne(projectId)
+  async createProjectExport(
+    projectId: string,
+    createExportDto: CreateExportDto,
+  ): Promise<ProjectExport> {
+    return this.projectExportRepository.save({ projectId, ...createExportDto })
   }
 
   async findAndCountProjectExports(

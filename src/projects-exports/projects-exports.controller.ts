@@ -1,13 +1,13 @@
 import {
   Controller,
   Post,
-  Body,
   Param,
+  Body,
+  NotFoundException,
   Get,
   Query,
   DefaultValuePipe,
   ParseIntPipe,
-  NotFoundException,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -15,16 +15,20 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
 } from '@nestjs/swagger'
+import { ProjectService } from 'src/project/project.service'
 import { CreateExportDto } from './dto/create-export.dto'
 import { IsExportIdDto } from './dto/is-export-id.dto'
 import { IsProjectIdDto } from './dto/is-project-id.dto'
 import { ProjectExport } from './entity/project-export.entity'
+import { ProjectsExportsService } from './projects-exports.service'
 import { ProjectExportRepository } from './repository/project-export.repository'
 
 @ApiTags('Projects Exports')
 @Controller({ path: 'projects/:projectId/exports', version: '1' })
 export class ProjectsExportsController {
   constructor(
+    private readonly projectService: ProjectService,
+    private readonly projectsExportsService: ProjectsExportsService,
     private readonly projectExportRepository: ProjectExportRepository,
   ) {}
 
@@ -32,10 +36,19 @@ export class ProjectsExportsController {
   @ApiCreatedResponse({ type: ProjectExport })
   @Post()
   async createProjectExport(
-    @Body() createExportDto: CreateExportDto,
     @Param() { projectId }: IsProjectIdDto,
+    @Body() createExportDto: CreateExportDto,
   ): Promise<unknown> {
-    return {}
+    const project = await this.projectService.findProjectById(projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    return this.projectsExportsService.createProjectExport(
+      projectId,
+      createExportDto,
+    )
   }
 
   @ApiOperation({ summary: 'Get all exports for a project' })
@@ -46,9 +59,7 @@ export class ProjectsExportsController {
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
     @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
   ): Promise<{ exports: ProjectExport[]; count: number }> {
-    const project = await this.projectExportRepository.findProjectById(
-      projectId,
-    )
+    const project = await this.projectService.findProjectById(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
