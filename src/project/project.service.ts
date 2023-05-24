@@ -720,4 +720,8 @@ export class ProjectService {
       where: { name, admin: { id: userId } },
     })
   }
+
+  async findProjectById(projectId: string): Promise<Project> {
+    return this.projectsRepository.findOne({ where: { id: projectId } })
+  }
 }
