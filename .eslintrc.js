@@ -38,6 +38,7 @@ module.exports = {
     'import/no-cycle': 'off',
     'import/no-named-as-default': 'off',
     'import/no-named-as-default-member': 'off',
+    'import/no-extraneous-dependencies': 'off',
     'import/prefer-default-export': 'off',
     'linebreak-style': 'off',
     'lines-between-class-members': 'off',
