@@ -22,6 +22,14 @@ export class ProjectExport {
   @Column('varchar', { nullable: true, default: null })
   url: string | null
 
+  @ApiProperty()
+  @Column('date')
+  startDate: Date
+
+  @ApiProperty()
+  @Column('date')
+  endDate: Date
+
   @ManyToOne(() => Project, project => project.exports)
   @JoinColumn()
   project: Project
