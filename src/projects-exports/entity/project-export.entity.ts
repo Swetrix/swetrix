@@ -4,6 +4,8 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  CreateDateColumn,
+  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
@@ -22,13 +24,21 @@ export class ProjectExport {
   @Column('varchar', { nullable: true, default: null })
   url: string | null
 
-  @ApiProperty()
+  @ApiProperty({ format: 'date' })
   @Column('date')
   startDate: Date
 
-  @ApiProperty()
+  @ApiProperty({ format: 'date' })
   @Column('date')
   endDate: Date
+
+  @ApiProperty()
+  @CreateDateColumn()
+  createdAt: Date
+
+  @ApiProperty()
+  @UpdateDateColumn()
+  updatedAt: Date
 
   @ManyToOne(() => Project, project => project.exports)
   @JoinColumn()
