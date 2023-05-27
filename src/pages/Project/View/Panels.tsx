@@ -343,11 +343,11 @@ const Overview = ({
       <p className='text-lg font-semibold dark:text-gray-50'>
         {t('project.weeklyStats')}
       </p>
-      <div className='flex justify-between'>
-        <p className='text-lg dark:text-gray-50'>
+      <dl className='flex justify-between'>
+        <dt className='text-lg dark:text-gray-50'>
           {t('dashboard.pageviews')}
           :
-        </p>
+        </dt>
         <dd className='flex items-baseline'>
           <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
             {overall.thisWeek}
@@ -377,12 +377,12 @@ const Overview = ({
             %
           </p>
         </dd>
-      </div>
-      <div className='flex justify-between'>
-        <p className='text-lg dark:text-gray-50'>
+      </dl>
+      <dl className='flex justify-between'>
+        <dt className='text-lg dark:text-gray-50'>
           {t('dashboard.unique')}
           :
-        </p>
+        </dt>
         <dd className='flex items-baseline'>
           <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
             {overall.thisWeekUnique}
@@ -412,7 +412,7 @@ const Overview = ({
             %
           </p>
         </dd>
-      </div>
+      </dl>
     </PanelContainer>
   )
 }

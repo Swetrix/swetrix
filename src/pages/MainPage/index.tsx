@@ -239,7 +239,7 @@ const Main = (): JSX.Element => {
                     <Lines />
                     <picture>
                       <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
-                      <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} className='rounded-xl dark:border border-slate-800 relative' style={{ height: '100%', minWidth: '880px' }} width='100%' height='auto' alt='Swetrix Analytics dashboard' />
+                      <img src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'} className='h-full min-w-[880px] rounded-xl dark:border border-slate-800 relative' width='100%' height='auto' alt='Swetrix Analytics dashboard' />
                     </picture>
                   </div>
                 </div>

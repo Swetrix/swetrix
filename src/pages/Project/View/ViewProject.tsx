@@ -1661,6 +1661,7 @@ const ViewProject = ({
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                       <button
                         type='button'
+                        title={t('project.refreshStats')}
                         onClick={refreshStats}
                         className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
                           'cursor-not-allowed opacity-50': isLoading || dataLoading,
@@ -1677,6 +1678,7 @@ const ViewProject = ({
                       >
                         <button
                           type='button'
+                          title={t('modals.forecast.title')}
                           onClick={onForecastOpen}
                           disabled={!_isEmpty(filters)}
                           className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
@@ -1952,6 +1954,7 @@ const ViewProject = ({
                     >
                       <button
                         type='button'
+                        title={t('project.barChart')}
                         onClick={() => setChartTypeOnClick(chartTypes.bar)}
                         className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
                           'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.bar,
@@ -1962,6 +1965,7 @@ const ViewProject = ({
                       </button>
                       <button
                         type='button'
+                        title={t('project.lineChart')}
                         onClick={() => setChartTypeOnClick(chartTypes.line)}
                         className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
                           'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.line,

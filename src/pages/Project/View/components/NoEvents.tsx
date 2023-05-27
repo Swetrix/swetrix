@@ -43,7 +43,7 @@ const NoEvents = ({
             i18nKey='project.noEvContent'
             components={{
               // eslint-disable-next-line jsx-a11y/anchor-has-content
-              url: <a href={DOCS_URL} className='hover:underline text-blue-600' target='_blank' rel='noreferrer noopener' />,
+              url: <a title={`${t('titles.docs')} (opens in a new tab)`} href={DOCS_URL} className='hover:underline text-blue-600' target='_blank' rel='noreferrer noopener' />,
             }}
           />
         </h2>
