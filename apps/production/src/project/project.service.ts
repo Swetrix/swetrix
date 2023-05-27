@@ -444,7 +444,10 @@ export class ProjectService {
 
       const [pageviews, customEvents, captcha] = await Promise.all(promises)
 
-      count = pageviews[0]['count()'] + customEvents[0]['count()'] + captcha[0]['count()']
+      count =
+        pageviews[0]['count()'] +
+        customEvents[0]['count()'] +
+        captcha[0]['count()']
 
       await redis.set(
         countKey,
@@ -507,7 +510,9 @@ export class ProjectService {
         clickhouse.query(countCaptchaQuery).toPromise(),
       ]
 
-      const [rawTraffic, rawCustomEvents, rawCaptcha] = await Promise.all(promises)
+      const [rawTraffic, rawCustomEvents, rawCaptcha] = await Promise.all(
+        promises,
+      )
 
       const traffic = rawTraffic[0]['count()']
       const customEvents = rawCustomEvents[0]['count()']
