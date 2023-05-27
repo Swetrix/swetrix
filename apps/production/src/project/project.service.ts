@@ -157,7 +157,6 @@ export class ProjectService {
         },
         relations: ['user'],
       })
-      // @ts-ignore
       project = { ...project, share }
 
       await redis.set(
@@ -174,8 +173,7 @@ export class ProjectService {
       }
     }
 
-    // @ts-ignore
-    return project
+    return project as Project
   }
 
   async paginate(
@@ -451,13 +449,12 @@ export class ProjectService {
 
       await redis.set(
         countKey,
-        `${pageviews}`,
+        `${count}`,
         'EX',
         redisProjectCountCacheTimeout,
       )
     } else {
       try {
-        // @ts-ignore
         count = Number(count)
       } catch (reason) {
         count = 0
