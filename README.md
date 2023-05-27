@@ -1,8 +1,8 @@
-<img src="/src/assets/logo_blue.svg" alt="" height="100" />
+<img src="/src/assets/logo_blue.png" alt="" height="80" />
 
 ## Description
 
-Swetrix CAPTCHA is a privacy-oriented, simple and opensource CAPTCHA service.\
+Swetrix CAPTCHA is a privacy-oriented, simple and opensource CAPTCHA service.
 
 See the full documentation at https://docs.swetrix.com/captcha/introduction
 
