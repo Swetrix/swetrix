@@ -51,23 +51,19 @@ const Dropdown = ({
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items static className={cx('z-50 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none', menuItemsClassName)}>
-            <div className='py-1'>
-              {_map(items, item => (
-                <Menu.Item key={keyExtractor ? keyExtractor(item) : item}>
-                  <span
-                    className={selectItemClassName || 'text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'}
-                    role='menuitem'
-                    // @ts-ignore
-                    tabIndex='-1'
-                    id='menu-item-0'
-                    onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
-                  >
-                    {labelExtractor ? labelExtractor(item) : item}
-                  </span>
-                </Menu.Item>
-              ))}
-            </div>
+          <Menu.Items static className={cx('z-50 py-1 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none', menuItemsClassName)}>
+            {_map(items, item => (
+              <Menu.Item key={keyExtractor ? keyExtractor(item) : item}>
+                <span
+                  className={selectItemClassName || 'text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'}
+                  role='menuitem'
+                  tabIndex={0}
+                  onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
+                >
+                  {labelExtractor ? labelExtractor(item) : item}
+                </span>
+              </Menu.Item>
+            ))}
           </Menu.Items>
         </Transition>
       </>
