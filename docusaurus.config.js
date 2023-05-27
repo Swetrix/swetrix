@@ -27,12 +27,13 @@ module.exports = {
     navbar: {
       logo: {
         alt: 'Swetrix',
-        src: 'img/logo_blue.svg',
-        srcDark: 'img/logo_white.svg',
+        src: 'img/logo_blue.png',
+        srcDark: 'img/logo_white.png',
         href: 'https://swetrix.com',
         target: '_blank',
-        // width: '130px',
-        // height: '50px',
+        style: {
+          height: '28px',
+        }
       },
       items: [
         {

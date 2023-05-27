@@ -32,10 +32,6 @@
   --ifm-footer-link-hover-color: var(--ifm-color-primary);
 }
 
-.navbar .navbar__logo {
-  height: 40px;
-}
-
 .docusaurus-highlight-code-line {
   background-color: rgb(72, 77, 91);
   display: block;
