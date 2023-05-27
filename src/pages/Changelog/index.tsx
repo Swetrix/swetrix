@@ -17,6 +17,13 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-05-27',
+    changes: [
+      'Added Plan usage section to the Billing page.',
+      'Added currency localisation: now you can pay for your plan with GBP (if you\'re located in the UK) or EUR (if you\'re located in Eurozone), for all other countries the default currency is still the US Dollar.',
+    ],
+  },
+  {
     date: '2023-05-15',
     changes: [
       'Fixed timezone related issues.',

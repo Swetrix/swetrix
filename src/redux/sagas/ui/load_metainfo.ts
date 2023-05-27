@@ -8,7 +8,7 @@ import {
   getPaymentMetainfo,
 } from '../../../api'
 
-const debug = Debug('swetrix:rx:s:load-extensions')
+const debug = Debug('swetrix:rx:s:metainfo')
 
 export default function* loadMetainfo() {
   if (isSelfhosted) {
