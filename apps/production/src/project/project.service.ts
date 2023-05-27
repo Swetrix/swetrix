@@ -447,12 +447,7 @@ export class ProjectService {
         customEvents[0]['count()'] +
         captcha[0]['count()']
 
-      await redis.set(
-        countKey,
-        `${count}`,
-        'EX',
-        redisProjectCountCacheTimeout,
-      )
+      await redis.set(countKey, `${count}`, 'EX', redisProjectCountCacheTimeout)
     } else {
       try {
         count = Number(count)
