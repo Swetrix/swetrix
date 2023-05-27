@@ -28,7 +28,6 @@ import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 import PropTypes from 'prop-types'
 
-import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
@@ -48,7 +47,7 @@ import {
   getProject, getOverallStats, getLiveVisitors, getCaptchaData,
 } from 'api'
 import {
-  Panel, Overview, CustomEvents,
+  Panel, CustomEvents, // Overview,
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
@@ -117,7 +116,6 @@ const ViewProject = ({
   }>({
     [CHART_METRICS_MAPPING.results]: true,
   })
-  const [sessionDurationAVG, setSessionDurationAVG] = useState<any>(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState<any[]>([])
   // That is needed when using 'Export as image' feature,
@@ -206,11 +204,8 @@ const ViewProject = ({
       }
 
       const {
-        chart, params, customs, appliedFilters, avgSdur,
+        chart, params, customs, appliedFilters,
       } = data
-      const processedSdur = getTimeFromSeconds(avgSdur)
-
-      setSessionDurationAVG(getStringFromTime(processedSdur))
 
       if (!_isEmpty(appliedFilters)) {
         setFilters(appliedFilters)
