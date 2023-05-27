@@ -616,7 +616,7 @@
       "noPeople": "No people have been added to this project yet.",
       "removeMember": "Remove member",
       "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
-      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports to this user?",
       "removeUser": "Remove {{user}}?",
       "people": "People",
       "inviteCoworkers": "Invite your coworkers",
