@@ -218,7 +218,7 @@ const Billing = (): JSX.Element => {
               values={{ email: CONTACT_EMAIL }}
               // @ts-ignore
               components={{
-                mail: <a href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
+                mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
                 amount: 5,
               }}
             />
