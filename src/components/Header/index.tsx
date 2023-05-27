@@ -186,29 +186,26 @@ const ProfileMenu = ({
                   leaveTo='transform opacity-0 scale-95'
                 >
                   <Menu.Items
-                    className='z-50 origin-top-right absolute right-0 mt-1 w-full min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none'
+                    className='z-50 py-1 origin-top-right absolute right-0 mt-1 w-full min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none'
                     static
                   >
-                    <div className='py-1'>
-                      {_map(whitelist, lng => (
-                        <Menu.Item key={lng}>
-                          <span
-                            className='text-gray-700 dark:text-gray-50 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
-                            role='menuitem'
-                            tabIndex={-1}
-                            id='menu-item-0'
-                            onClick={() => onLanguageChange(lng)}
-                          >
-                            <div className='flex'>
-                              <div className='pt-1'>
-                                <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={20} alt={languageFlag[lng]} />
-                              </div>
-                              {languages[lng]}
+                    {_map(whitelist, lng => (
+                      <Menu.Item key={lng}>
+                        <span
+                          className='text-gray-700 dark:text-gray-50 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
+                          role='menuitem'
+                          tabIndex={0}
+                          onClick={() => onLanguageChange(lng)}
+                        >
+                          <div className='flex'>
+                            <div className='pt-1'>
+                              <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={20} alt={languageFlag[lng]} />
                             </div>
-                          </span>
-                        </Menu.Item>
-                      ))}
-                    </div>
+                            {languages[lng]}
+                          </div>
+                        </span>
+                      </Menu.Item>
+                    ))}
                   </Menu.Items>
                 </Transition>
               </>
@@ -306,7 +303,7 @@ const AuthedHeader = ({
           {/* Logo */}
           <Link to={routes.main}>
             <span className='sr-only'>Swetrix</span>
-            <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
+            <img className='h-7' height='28px' src='/assets/logo_white.png' alt='Swetrix' />
           </Link>
 
           <div className='hidden ml-10 space-x-1 lg:flex'>
@@ -412,7 +409,7 @@ const NotAuthedHeader = ({
           {/* Logo */}
           <Link to={routes.main}>
             <span className='sr-only'>Swetrix</span>
-            <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
+            <img className='h-7' height='28px' src='/assets/logo_white.png' alt='Swetrix' />
           </Link>
 
           <div className='hidden ml-10 space-x-1 lg:flex'>
@@ -632,14 +629,9 @@ const Header = ({
                 <Link to={routes.main}>
                   <span className='sr-only'>Swetrix</span>
                   {theme === 'dark' ? (
-                    // themeType === THEME_TYPE.christmas ? (
-                    //   <img className='h-10' src='/assets/logo_white_christmas.png' alt='Swetrix' />
-                    // ) : (
-                    //   <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
-                    // )
-                    <img className='h-10' src='/assets/logo_white.svg' alt='Swetrix' />
+                    <img className='h-7' height='28px' src='/assets/logo_white.png' alt='Swetrix' />
                   ) : (
-                    <img className='h-10' src='/assets/logo_blue.svg' alt='Swetrix' />
+                    <img className='h-7' height='28px' src='/assets/logo_blue.png' alt='Swetrix' />
                   )}
                 </Link>
                 <Popover.Button ref={buttonRef} className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
