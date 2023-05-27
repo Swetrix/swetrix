@@ -431,15 +431,20 @@ export class ProjectService {
         _map(pids, el => `'${el.id}'`),
         ',',
       )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const countCaptchaQuery = `SELECT COUNT() FROM captcha WHERE pid IN (${_join(
+        _map(pids, el => `'${el.id}'`),
+        ',',
+      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
 
-      const pageviews = (await clickhouse.query(countEVQuery).toPromise())[0][
-        'count()'
+      const promises = [
+        clickhouse.query(countEVQuery).toPromise(),
+        clickhouse.query(countCustomEVQuery).toPromise(),
+        clickhouse.query(countCaptchaQuery).toPromise(),
       ]
-      const customEvents = (
-        await clickhouse.query(countCustomEVQuery).toPromise()
-      )[0]['count()']
 
-      count = pageviews + customEvents
+      const [pageviews, customEvents, captcha] = await Promise.all(promises)
+
+      count = pageviews[0]['count()'] + customEvents[0]['count()'] + captcha[0]['count()']
 
       await redis.set(
         countKey,
@@ -451,9 +456,9 @@ export class ProjectService {
       try {
         // @ts-ignore
         count = Number(count)
-      } catch (e) {
+      } catch (reason) {
         count = 0
-        console.error(e)
+        console.error(`[ERROR][project -> getRedisCount] ${reason}`)
         throw new InternalServerErrorException('Error while processing project')
       }
     }
@@ -496,9 +501,17 @@ export class ProjectService {
         ',',
       )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
 
-      const traffic = (await clickhouse.query(countEVQuery).toPromise())[0]['count()']
-      const customEvents = (await clickhouse.query(countCustomEVQuery).toPromise())[0]['count()']
-      const captcha = (await clickhouse.query(countCaptchaQuery).toPromise())[0]['count()']
+      const promises = [
+        clickhouse.query(countEVQuery).toPromise(),
+        clickhouse.query(countCustomEVQuery).toPromise(),
+        clickhouse.query(countCaptchaQuery).toPromise(),
+      ]
+
+      const [rawTraffic, rawCustomEvents, rawCaptcha] = await Promise.all(promises)
+
+      const traffic = rawTraffic[0]['count()']
+      const customEvents = rawCustomEvents[0]['count()']
+      const captcha = rawCaptcha[0]['count()']
 
       const total = traffic + customEvents + captcha
 
