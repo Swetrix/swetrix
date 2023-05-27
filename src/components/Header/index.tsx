@@ -303,7 +303,7 @@ const AuthedHeader = ({
           {/* Logo */}
           <Link to={routes.main}>
             <span className='sr-only'>Swetrix</span>
-            <img className='h-7' height='28px' src='/assets/logo_white.png' alt='Swetrix' />
+            <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
           </Link>
 
           <div className='hidden ml-10 space-x-1 lg:flex'>
@@ -409,7 +409,7 @@ const NotAuthedHeader = ({
           {/* Logo */}
           <Link to={routes.main}>
             <span className='sr-only'>Swetrix</span>
-            <img className='h-7' height='28px' src='/assets/logo_white.png' alt='Swetrix' />
+            <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
           </Link>
 
           <div className='hidden ml-10 space-x-1 lg:flex'>
@@ -629,9 +629,9 @@ const Header = ({
                 <Link to={routes.main}>
                   <span className='sr-only'>Swetrix</span>
                   {theme === 'dark' ? (
-                    <img className='h-7' height='28px' src='/assets/logo_white.png' alt='Swetrix' />
+                    <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
                   ) : (
-                    <img className='h-7' height='28px' src='/assets/logo_blue.png' alt='Swetrix' />
+                    <img className='h-7' height='28' src='/assets/logo_blue.png' alt='Swetrix' />
                   )}
                 </Link>
                 <Popover.Button ref={buttonRef} className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
