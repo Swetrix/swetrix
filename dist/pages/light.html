@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
@@ -32,6 +32,7 @@
       background-color: #f9fafb;
       border: 1px solid #e9e9e9;
       height: 65px;
+      -webkit-user-select: none;
       user-select: none;
       padding-left: 10px;
       padding-right: 10px;
@@ -218,20 +219,20 @@
       </div>
     </div>
     <div id="branding">
-      <a href="https://swetrix.com" target="_blank">
-        <img src="../assets/logo_blue.svg" alt="Swetrix" height="25" />
+      <a href="https://swetrix.com" target="_blank" rel="noopener noreferrer">
+        <img src="../assets/logo_blue.png" alt="Swetrix" width="81" height="18" />
       </a>
       <div id="legal">
-        <a href="https://swetrix.com/privacy" target="_blank">Privacy</a>
+        <a href="https://swetrix.com/privacy" target="_blank" rel="noopener noreferrer">Privacy</a>
         <span class="separator"></span>
-        <a href="https://swetrix.com/terms" target="_blank">Terms</a>
+        <a href="https://swetrix.com/terms" target="_blank" rel="noopener noreferrer">Terms</a>
       </div>
     </div>
   </div>
   <div id="manual-challenge" class="hidden">
     <div id="input-n-captcha">
       <div id="svg-captcha"></div>
-      <input type="text" id="svg-captcha-input" autocomplete="off" />
+      <input aria-label="Enter the code from image" type="text" id="svg-captcha-input" autocomplete="off" />
     </div>
     <div id="manual-submit-btn">
       Submit
