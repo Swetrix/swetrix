@@ -21,11 +21,11 @@ import * as utc from 'dayjs/plugin/utc'
 // @ts-ignore
 import * as validateIP from 'validate-ip-node'
 
-import { UserService } from 'src/user/user.service'
-import { ActionTokensService } from 'src/action-tokens/action-tokens.service'
-import { ActionTokenType } from 'src/action-tokens/action-token.entity'
-import { MailerService } from 'src/mailer/mailer.service'
-import { LetterTemplate } from 'src/mailer/letter'
+import { UserService } from '../user/user.service'
+import { ActionTokensService } from '../action-tokens/action-tokens.service'
+import { ActionTokenType } from '../action-tokens/action-token.entity'
+import { MailerService } from '../mailer/mailer.service'
+import { LetterTemplate } from '../mailer/letter'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectShare, Role } from './entity/project-share.entity'
@@ -43,7 +43,10 @@ import {
   redisProjectCacheTimeout,
   isDevelopment,
   PRODUCTION_ORIGIN,
+  getRedisUserUsageInfoKey,
+  redisUserUsageinfoCacheTimeout,
 } from '../common/constants'
+import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber } from './entity'
 import { AddSubscriberType } from './types'
 import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
@@ -65,6 +68,13 @@ dayjs.extend(utc)
 //     await redis.del(key)
 //   }
 // }
+
+const DEFAULT_USAGE_INFO = {
+  total: 0,
+  traffic: 0,
+  customEvents: 0,
+  captcha: 0,
+}
 
 export const deleteProjectRedis = async (id: string) => {
   const key = getRedisProjectKey(id)
@@ -147,7 +157,6 @@ export class ProjectService {
         },
         relations: ['user'],
       })
-      // @ts-ignore
       project = { ...project, share }
 
       await redis.set(
@@ -164,8 +173,7 @@ export class ProjectService {
       }
     }
 
-    // @ts-ignore
-    return project
+    return project as Project
   }
 
   async paginate(
@@ -390,7 +398,7 @@ export class ProjectService {
     })
   }
 
-  // Returns amount of exirsting events starting from month
+  // Returns amount of existing events starting from month
   async getRedisCount(uid: string): Promise<number | null> {
     const countKey = getRedisUserCountKey(uid)
     let count: string | number = await redis.get(countKey)
@@ -421,35 +429,112 @@ export class ProjectService {
         _map(pids, el => `'${el.id}'`),
         ',',
       )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const countCaptchaQuery = `SELECT COUNT() FROM captcha WHERE pid IN (${_join(
+        _map(pids, el => `'${el.id}'`),
+        ',',
+      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
 
-      const pageviews = (await clickhouse.query(countEVQuery).toPromise())[0][
-        'count()'
+      const promises = [
+        clickhouse.query(countEVQuery).toPromise(),
+        clickhouse.query(countCustomEVQuery).toPromise(),
+        clickhouse.query(countCaptchaQuery).toPromise(),
       ]
-      const customEvents = (
-        await clickhouse.query(countCustomEVQuery).toPromise()
-      )[0]['count()']
 
-      count = pageviews + customEvents
+      const [pageviews, customEvents, captcha] = await Promise.all(promises)
 
-      await redis.set(
-        countKey,
-        `${pageviews}`,
-        'EX',
-        redisProjectCountCacheTimeout,
-      )
+      count =
+        pageviews[0]['count()'] +
+        customEvents[0]['count()'] +
+        captcha[0]['count()']
+
+      await redis.set(countKey, `${count}`, 'EX', redisProjectCountCacheTimeout)
     } else {
       try {
-        // @ts-ignore
         count = Number(count)
-      } catch (e) {
+      } catch (reason) {
         count = 0
-        console.error(e)
+        console.error(`[ERROR][project -> getRedisCount] ${reason}`)
         throw new InternalServerErrorException('Error while processing project')
       }
     }
 
-    // @ts-ignore
-    return count
+    return count as number
+  }
+
+  async getRedisUsageInfo(uid: string): Promise<IUsageInfoRedis | null> {
+    const key = getRedisUserUsageInfoKey(uid)
+    let info: string | IUsageInfoRedis = await redis.get(key)
+
+    if (_isEmpty(info)) {
+      const monthStart = dayjs
+        .utc()
+        .startOf('month')
+        .format('YYYY-MM-DD HH:mm:ss')
+      const monthEnd = dayjs.utc().endOf('month').format('YYYY-MM-DD HH:mm:ss')
+
+      const pids = await this.find({
+        where: {
+          admin: uid,
+        },
+        select: ['id'],
+      })
+
+      if (_isEmpty(pids)) {
+        return DEFAULT_USAGE_INFO
+      }
+
+      const countEVQuery = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(
+        _map(pids, el => `'${el.id}'`),
+        ',',
+      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const countCustomEVQuery = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(
+        _map(pids, el => `'${el.id}'`),
+        ',',
+      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const countCaptchaQuery = `SELECT COUNT() FROM captcha WHERE pid IN (${_join(
+        _map(pids, el => `'${el.id}'`),
+        ',',
+      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+
+      const promises = [
+        clickhouse.query(countEVQuery).toPromise(),
+        clickhouse.query(countCustomEVQuery).toPromise(),
+        clickhouse.query(countCaptchaQuery).toPromise(),
+      ]
+
+      const [rawTraffic, rawCustomEvents, rawCaptcha] = await Promise.all(
+        promises,
+      )
+
+      const traffic = rawTraffic[0]['count()']
+      const customEvents = rawCustomEvents[0]['count()']
+      const captcha = rawCaptcha[0]['count()']
+
+      const total = traffic + customEvents + captcha
+
+      info = {
+        total,
+        traffic,
+        customEvents,
+        captcha,
+      }
+
+      await redis.set(
+        key,
+        JSON.stringify(info),
+        'EX',
+        redisUserUsageinfoCacheTimeout,
+      )
+    } else {
+      try {
+        info = JSON.parse(info)
+      } catch (reason) {
+        console.error(`[ERROR][project -> getRedisUsageInfo] ${reason}`)
+        info = DEFAULT_USAGE_INFO
+      }
+    }
+
+    return info as IUsageInfoRedis
   }
 
   async clearProjectsRedisCache(uid: string): Promise<void> {
