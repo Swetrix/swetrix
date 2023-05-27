@@ -1,4 +1,4 @@
-<img src="https://swetrix.com/assets/logo_blue.svg" alt="" height="100" />
+<img src="https://swetrix.com/assets/logo_blue.png" alt="" height="80" />
 
 [![JSDelivr hits](https://data.jsdelivr.com/v1/package/gh/Swetrix/swetrix-js/badge?style=rounded)](https://data.jsdelivr.com/v1/package/gh/Swetrix/swetrix-js/stats)
 [![Package size](https://img.shields.io/bundlephobia/minzip/swetrix)](https://bundlephobia.com/api/size?package=swetrix)
