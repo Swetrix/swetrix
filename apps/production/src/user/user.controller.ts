@@ -27,6 +27,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _includes from 'lodash/includes'
 import * as _isString from 'lodash/isString'
 import * as _omit from 'lodash/omit'
+import * as _round from 'lodash/round'
 import { v4 as uuidv4 } from 'uuid'
 
 import { Markup } from 'telegraf'
@@ -61,6 +62,7 @@ import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
 import { checkRateLimit } from '../common/utils'
+import { IUsageInfo, IMetaInfo } from './interfaces'
 
 dayjs.extend(utc)
 
@@ -617,12 +619,26 @@ export class UserController {
 
   @Get('metainfo')
   @Public()
-  async getMetaInfo(@Headers() headers): Promise<any> {
+  async getMetaInfo(@Headers() headers): Promise<IMetaInfo> {
     const country = headers['cf-ipcountry'] || 'XX'
 
     return {
       country: country === 'XX' || country === 'T1' ? null : country,
       ...this.userService.getCurrencyByCountry(country),
     }
+  }
+
+  @Get('usageinfo')
+  async getUsageInfo(@CurrentUserId() uid: string): Promise<IUsageInfo> {
+    const rawInfo = await this.projectService.getRedisUsageInfo(uid)
+
+    const info: IUsageInfo = {
+      ...rawInfo,
+      trafficPerc: _round((rawInfo.traffic / rawInfo.total) * 100, 2),
+      customEventsPerc: _round((rawInfo.customEvents / rawInfo.total) * 100, 2),
+      captchaPerc: _round((rawInfo.captcha / rawInfo.total) * 100, 2),
+    }
+
+    return info
   }
 }

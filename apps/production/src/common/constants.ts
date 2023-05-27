@@ -59,6 +59,7 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
+const getRedisUserUsageInfoKey = (uid: string) => `user_ui_${uid}`
 const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
 const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
@@ -80,6 +81,9 @@ const redisProjectCacheTimeout = 3600
 
 // 15 minutes
 const redisProjectCountCacheTimeout = 900
+
+// 5 minutes
+const redisUserUsageinfoCacheTimeout = 300
 
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
@@ -134,4 +138,6 @@ export {
   PRODUCTION_ORIGIN,
   REDIS_SSO_UUID,
   JWT_ACCESS_TOKEN_SECRET,
+  getRedisUserUsageInfoKey,
+  redisUserUsageinfoCacheTimeout,
 }
