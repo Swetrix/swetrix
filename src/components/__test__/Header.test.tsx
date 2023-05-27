@@ -51,6 +51,7 @@ describe('Header', () => {
     githubId: null,
     registeredWithGithub: false,
     tierCurrency: 'USD',
+    maxEventsCount: 5000000,
   }
 
   beforeEach(() => {
