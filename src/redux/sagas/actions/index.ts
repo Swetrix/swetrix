@@ -16,6 +16,10 @@ const loadMetainfo = () => ({
   type: types.LOAD_METAINFO,
 })
 
+const loadUsageinfo = () => ({
+  type: types.LOAD_USAGEINFO,
+})
+
 const loadSharedProjects = (take?: number, skip?: number) => ({
   type: types.LOAD_SHARED_PROJECTS,
   payload: { take, skip },
@@ -143,6 +147,7 @@ const sagaActions = {
   linkSSO,
   unlinkSSO,
   loadMetainfo,
+  loadUsageinfo,
 }
 
 export default sagaActions

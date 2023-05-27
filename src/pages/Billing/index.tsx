@@ -1,13 +1,19 @@
 /* eslint-disable jsx-a11y/anchor-has-content, lodash/prefer-lodash-method */
-import React, { memo, useMemo, useState } from 'react'
+import React, {
+  memo, useMemo, useState, useEffect,
+} from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { HashLink } from 'react-router-hash-link'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import duration from 'dayjs/plugin/duration'
 import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import _round from 'lodash/round'
 
 import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
+import routes from 'routes'
+import sagaActions from 'redux/sagas/actions'
 import { withAuthentication, auth } from 'hoc/protected'
 import Title from 'components/Title'
 import Modal from 'ui/Modal'
@@ -20,11 +26,12 @@ dayjs.extend(duration)
 
 const Billing = (): JSX.Element => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
-  const { metainfo } = useSelector((state: StateType) => state.ui.misc)
+  const { metainfo, usageinfo } = useSelector((state: StateType) => state.ui.misc)
   const { user }: {
     user: IUser
   } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const dispatch = useDispatch()
   const { t, i18n: { language } }: {
     t: (key: string, optinions?: {
       [key: string]: string | number,
@@ -34,11 +41,16 @@ const Billing = (): JSX.Element => {
     },
   } = useTranslation('common')
   const {
-    nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat, cancellationEffectiveDate, subCancelURL,
+    nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat, cancellationEffectiveDate, subCancelURL, maxEventsCount,
   } = user
 
   const isTrial: boolean = planCode === 'trial'
   const isNoSub: boolean = planCode === 'none'
+  const totalUsage = _round((usageinfo.total / maxEventsCount) * 100, 2)
+
+  useEffect(() => {
+    dispatch(sagaActions.loadUsageinfo())
+  }, [dispatch])
 
   const isTrialEnded = useMemo(() => {
     if (!trialEndDate) {
@@ -151,6 +163,10 @@ const Billing = (): JSX.Element => {
           </div>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('billing.desc')}
+            <br />
+            <HashLink to={`${routes.billing}#usage`} className='text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-500'>
+              {t('billing.gotoUsage')}
+            </HashLink>
           </p>
           <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
           {cancellationEffectiveDate && (
@@ -207,6 +223,39 @@ const Billing = (): JSX.Element => {
               }}
             />
           </p>
+          <h2 id='usage' className='mt-5 text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
+            {t('billing.planUsage')}
+          </h2>
+          <p className='mt-1 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            {t('billing.usageOverview', {
+              tracked: usageinfo.total,
+              trackedPerc: totalUsage,
+              maxEvents: maxEventsCount,
+            })}
+          </p>
+          <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            {t('billing.breakdown')}
+            <ul className='list-disc list-inside'>
+              <li>
+                {t('billing.pageviews', {
+                  quantity: usageinfo.traffic,
+                  percentage: usageinfo.trafficPerc,
+                })}
+              </li>
+              <li>
+                {t('billing.customEvents', {
+                  quantity: usageinfo.customEvents,
+                  percentage: usageinfo.customEventsPerc,
+                })}
+              </li>
+              <li>
+                {t('billing.captcha', {
+                  quantity: usageinfo.captcha,
+                  percentage: usageinfo.captchaPerc,
+                })}
+              </li>
+            </ul>
+          </div>
         </div>
         <Modal
           onClose={() => {

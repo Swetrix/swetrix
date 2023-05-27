@@ -689,7 +689,14 @@
     "cancelSub": "Cancel subscription",
     "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
     "inactive": "Inactive",
-    "cancelledSubMessage": "You've cancelled your subscription.\nThe subscription will be active until {{date}}.\nAfter that, no new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled."
+    "cancelledSubMessage": "You've cancelled your subscription.\nThe subscription will be active until {{date}}.\nAfter that, no new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
+    "planUsage": "Plan usage",
+    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
+    "breakdown": "Breakdown by the event type:",
+    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
+    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Go to plan usage"
   },
   "modals": {
     "paidFeature": {
