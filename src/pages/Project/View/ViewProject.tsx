@@ -298,6 +298,8 @@ const ViewProject = ({
 
   const { name } = project
 
+  const pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveStats[id]} - ${name}` : name
+
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
 
   const chartMetrics = useMemo(() => {
@@ -1583,7 +1585,7 @@ const ViewProject = ({
 
   if (!isLoading) {
     return (
-      <Title title={name}>
+      <Title title={pageTitle}>
         <EventsRunningOutBanner />
         <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
           <div

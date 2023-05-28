@@ -166,6 +166,18 @@ export const changeUserDetails = (data: IUser) =>
       throw new Error(errorsArray)
     })
 
+export const setShowLiveVisitorsInTitle = (show: boolean) =>
+  api
+    .put('/user/live-visitors', { show })
+    .then((response): Partial<IUser> => response.data)
+    .catch((error) => {
+      const errorsArray = error.response.data.message
+      if (_isArray(errorsArray)) {
+        throw errorsArray
+      }
+      throw new Error(errorsArray)
+    })
+
 export const forgotPassword = (email: {
   email: string
 }) =>

@@ -130,6 +130,13 @@ const logout = (basedOn401Error: boolean) => {
   }
 }
 
+const updateShowLiveVisitorsInTitle = (show: boolean, callback: (isSuccess: boolean) => void) => ({
+  type: types.UPDATE_SHOW_LIVE_VISITORS_IN_TITLE,
+  payload: {
+    show, callback,
+  },
+})
+
 const sagaActions = {
   loadProjects,
   loadSharedProjects,
@@ -148,6 +155,7 @@ const sagaActions = {
   unlinkSSO,
   loadMetainfo,
   loadUsageinfo,
+  updateShowLiveVisitorsInTitle,
 }
 
 export default sagaActions

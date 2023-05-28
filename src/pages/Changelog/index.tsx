@@ -17,6 +17,13 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-05-28',
+    changes: [
+      'Added an indicator that shows how many live visitors your Project has at the moment on the browser tab.',
+      'Updated Swetrix logo.',
+    ],
+  },
+  {
     date: '2023-05-27',
     changes: [
       'Added Plan usage section to the Billing page.',

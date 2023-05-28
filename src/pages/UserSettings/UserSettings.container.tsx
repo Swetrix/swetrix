@@ -141,6 +141,9 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       ),
     )
   },
+  updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => {
+    dispatch(sagaActions.updateShowLiveVisitorsInTitle(show, callback))
+  },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserSettings)
