@@ -115,7 +115,8 @@ const ProjectProtectedPassword = (): JSX.Element => {
       <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-            {t('auth.signin.title')}
+            {t('auth.common.password')}
+            {id}
           </h2>
           <Input
             name='password'
