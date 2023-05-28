@@ -17,6 +17,7 @@ import {
   getSelfhostedUser,
 } from './entities/user.entity'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
+import { SetShowLiveVisitorsDTO } from './dto/set-show-live-visitors.dto'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -36,6 +37,29 @@ export class UserController {
     this.logger.log({ user_id }, 'GET /user/me')
 
     return getSelfhostedUser()
+  }
+
+  @Put('/live-visitors')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async setShowLiveVisitors(
+    @Body() body: SetShowLiveVisitorsDTO,
+  ): Promise<Partial<SelfhostedUser>> {
+    const { show } = body
+
+    try {
+      await updateUserClickhouse({
+        showLiveVisitorsInTitle: Number(show),
+      })
+    } catch (_) {
+      throw new BadRequestException(
+        'An error occurred while updating live visitors user setting',
+      )
+    }
+
+    return {
+      showLiveVisitorsInTitle: show,
+    }
   }
 
   @Put('/')

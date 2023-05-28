@@ -54,6 +54,7 @@ import {
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
+import { SetShowLiveVisitorsDTO } from './dto/set-show-live-visitors.dto'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
@@ -124,6 +125,22 @@ export class UserController {
     @Body('theme') theme: Theme,
   ): Promise<User> {
     return this.userService.update(userId, { theme })
+  }
+
+  @Put('/live-visitors')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async setShowLiveVisitors(
+    @CurrentUserId() userId: string,
+    @Body() body: SetShowLiveVisitorsDTO,
+  ): Promise<Partial<User>> {
+    const { show } = body
+
+    await this.userService.update(userId, { showLiveVisitorsInTitle: show })
+
+    return {
+      showLiveVisitorsInTitle: show,
+    }
   }
 
   @Get('/search')

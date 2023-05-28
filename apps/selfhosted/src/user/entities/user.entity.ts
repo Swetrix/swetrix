@@ -23,6 +23,7 @@ export interface SelfhostedUser {
   isActive: boolean
   timezone: string
   timeFormat: TimeFormat
+  showLiveVisitorsInTitle: boolean
 }
 
 export const generateSelfhostedUser = (): SelfhostedUser => ({
@@ -34,6 +35,7 @@ export const generateSelfhostedUser = (): SelfhostedUser => ({
   isActive: true,
   timezone: DEFAULT_TIMEZONE,
   timeFormat: TimeFormat['12-hour'],
+  showLiveVisitorsInTitle: false,
 })
 
 export const getSelfhostedUser = async (): Promise<SelfhostedUser> => {
