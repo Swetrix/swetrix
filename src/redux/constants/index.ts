@@ -221,7 +221,6 @@ export const SECURITY_EMAIL: string = 'security@swetrix.com'
 export const isSelfhosted: boolean = Boolean(process.env.REACT_APP_SELFHOSTED)
 
 export const LIVE_VISITORS_UPDATE_INTERVAL: number = 40000
-export const GENERAL_STATS_UPDATE_INTERVAL: number = 60000
 
 // Functions
 export const getProjectCacheKey = (period: string, timeBucket: string): string => `${period}${timeBucket}`
