@@ -216,6 +216,9 @@ export class User {
   @Column({ default: false })
   trialReminderSent: boolean
 
+  @Column({ default: false })
+  showLiveVisitorsInTitle: boolean
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date()

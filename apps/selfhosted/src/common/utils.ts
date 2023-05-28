@@ -189,6 +189,7 @@ const deleteRefreshTokenClickhouse = async (
 interface IClickhouseUser {
   timezone?: string
   timeFormat?: string
+  showLiveVisitorsInTitle?: number
 }
 
 const CLICKHOUSE_SETTINGS_ID = 'sfuser'
@@ -201,7 +202,7 @@ const createUserClickhouse = async (user: IClickhouseUser) => {
     },
   }
 
-  const query = `INSERT INTO sfuser (*) VALUES ({id:String},{timezone:String},{timeFormat:String})`
+  const query = `INSERT INTO sfuser (*) VALUES ({id:String},{timezone:String},{timeFormat:String},{showLiveVisitorsInTitle:Int8})`
 
   return clickhouse.query(query, paramsData).toPromise()
 }
@@ -234,7 +235,6 @@ const userClickhouseExists = async () => {
 }
 
 const updateUserClickhouse = async (user: IClickhouseUser) => {
-  console.log(user)
   const userExists = await userClickhouseExists()
 
   if (!userExists) {
@@ -249,22 +249,24 @@ const updateUserClickhouse = async (user: IClickhouseUser) => {
   }
 
   let query = 'ALTER table sfuser UPDATE '
+  let separator = ''
 
   if (user.timezone) {
-    query += `timezone={timezone:String}`
+    query += `${separator}timezone={timezone:String}`
+    separator = ', '
   }
 
   if (user.timeFormat) {
-    if (user.timezone) {
-      query += ', '
-    }
+    query += `${separator}timeFormat={timeFormat:String}`
+    separator = ', '
+  }
 
-    query += `timeFormat={timeFormat:String}`
+  if (user.showLiveVisitorsInTitle) {
+    query += `${separator}showLiveVisitorsInTitle={showLiveVisitorsInTitle:Int8}`
+    separator = ', '
   }
 
   query += ` WHERE id={id:String}`
-
-  console.log(query, paramsData)
 
   return clickhouse.query(query, paramsData).toPromise()
 }
