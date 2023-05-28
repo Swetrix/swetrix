@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
 import {
@@ -11,6 +11,22 @@ const Contact = (): JSX.Element => {
   const { t }: {
     t: (key: string) => string
   } = useTranslation('common')
+
+  useEffect(() => {
+    const intergram = document.querySelector('#intergramPlaceholder')
+
+    if (!intergram) {
+      return
+    }
+
+    intergram.classList.remove('hidden')
+    intergram.classList.add('flex')
+
+    return () => {
+      intergram.classList.remove('flex')
+      intergram.classList.add('hidden')
+    }
+  }, [])
 
   return (
     <Title title={t('titles.contact')}>
