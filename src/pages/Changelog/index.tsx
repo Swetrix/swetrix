@@ -21,6 +21,7 @@ const changelog = [
     changes: [
       'Added an indicator that shows how many live visitors your Project has at the moment on the browser tab.',
       'Updated Swetrix logo.',
+      'Hidden the "Hi! How can we help?" chat widget on all pages except the Contact page (yeah, it was a terrible idea to display it on ALL of the pages).',
     ],
   },
   {
