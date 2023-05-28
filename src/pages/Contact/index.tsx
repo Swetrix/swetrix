@@ -35,7 +35,7 @@ const Contact = (): JSX.Element => {
           <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('titles.contact')}
           </h1>
-          <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('contact.howTo')}
 
             <ol className='list-decimal ml-5 sm:ml-10'>
@@ -75,7 +75,7 @@ const Contact = (): JSX.Element => {
                 {t('contact.ways.chat')}
               </li>
             </ol>
-          </p>
+          </div>
         </div>
       </div>
     </Title>
