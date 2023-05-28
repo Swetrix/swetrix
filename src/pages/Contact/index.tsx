@@ -16,7 +16,7 @@ const Contact = (): JSX.Element => {
     const intergram = document.querySelector('#intergramPlaceholder')
 
     if (!intergram) {
-      return
+      return () => {}
     }
 
     intergram.classList.remove('hidden')
