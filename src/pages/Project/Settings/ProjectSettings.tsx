@@ -473,6 +473,14 @@ const ProjectSettings = ({
               <Checkbox
                 checked={Boolean(form.isPasswordProtected)}
                 onChange={() => {
+                  if (!form.public && form.isPasswordProtected) {
+                    setForm({
+                      ...form,
+                      isPasswordProtected: false,
+                    })
+                    return
+                  }
+
                   if (!form.public) {
                     setShowProtected(true)
                   }
