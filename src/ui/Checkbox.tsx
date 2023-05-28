@@ -29,14 +29,15 @@ const Checkbox = ({
           id={identifier}
           aria-describedby={identifier}
           name={name}
+          disabled={disabled}
           type='checkbox'
           checked={checked}
           onChange={onChange}
-          className={cx('focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 dark:border-slate-800 dark:bg-slate-700 dark:checked:bg-indigo-600 rounded cursor-pointer', { 'cursor-not-allowed': disabled, 'opacity-50': disabled })}
+          className={cx('focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 dark:border-slate-800 dark:bg-slate-700 dark:checked:bg-indigo-600 rounded cursor-pointer', { '!cursor-not-allowed': disabled, 'opacity-50': disabled })}
         />
       </div>
       <div className='ml-3 text-sm'>
-        <label htmlFor={identifier} className={cx('font-medium text-gray-700 dark:text-gray-200 cursor-pointer', { 'cursor-not-allowed': disabled })}>{label}</label>
+        <label htmlFor={identifier} className={cx('font-medium text-gray-700 dark:text-gray-200 cursor-pointer', { '!cursor-not-allowed': disabled })}>{label}</label>
         {hint && (
           <p id={`${identifier}-description`} className={cx('text-gray-500 dark:text-gray-300', hintClassName)}>{hint}</p>
         )}

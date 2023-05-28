@@ -458,7 +458,12 @@ const ProjectSettings = ({
               />
               <Checkbox
                 checked={Boolean(form.public)}
-                onChange={handleInput}
+                onChange={(e) => {
+                  if (!form.isPasswordProtected) {
+                    handleInput(e)
+                  }
+                }}
+                disabled={form?.isPasswordProtected}
                 name='public'
                 id='public'
                 className='mt-4'
@@ -468,8 +473,11 @@ const ProjectSettings = ({
               <Checkbox
                 checked={Boolean(form.isPasswordProtected)}
                 onChange={() => {
-                  setShowProtected(true)
+                  if (!form.public) {
+                    setShowProtected(true)
+                  }
                 }}
+                disabled={form?.public}
                 name='isPasswordProtected'
                 id='isPasswordProtected'
                 className='mt-4'
