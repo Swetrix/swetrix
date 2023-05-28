@@ -35,4 +35,5 @@ export interface IUser {
   registeredWithGithub: boolean
   maxEventsCount: number
   tierCurrency: 'USD' | 'EUR' | 'GBP' | null
+  showLiveVisitorsInTitle: boolean
 }

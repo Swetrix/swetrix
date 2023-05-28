@@ -50,6 +50,9 @@ const authSlice = createSlice({
     updateUserProfileSuccess: (state, { payload }: PayloadAction<IUser>) => {
       state.user = payload
     },
+    partiallyOverwriteUser: (state, { payload }: PayloadAction<Partial<IUser>>) => {
+      state.user = { ...state.user, ...payload }
+    },
     logout: (state) => {
       state.user = {} as IUser
       state.authenticated = false
