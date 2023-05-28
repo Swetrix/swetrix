@@ -261,13 +261,15 @@ const Overview = ({
               {t('dashboard.pageviews')}
               :
             </p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
+            <p title={String(pageviews)} className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {nFormatter(pageviews, 1)}
               {isActiveCompare && (
-                <span className={cx('ml-1.5 text-sm', {
-                  'text-green-500': pageViewsCompare > pageviews,
-                  'text-red-500': pageViewsCompare < pageviews,
-                })}
+                <span
+                  title={`${pageViewsCompare > pageviews ? '+' : ''}${pageViewsCompare - pageviews}`}
+                  className={cx('ml-1.5 text-sm', {
+                    'text-green-500': pageViewsCompare > pageviews,
+                    'text-red-500': pageViewsCompare < pageviews,
+                  })}
                 >
                   {pageViewsCompare > pageviews ? '+' : ''}
                   {nFormatter(pageViewsCompare - pageviews, 1)}
@@ -281,13 +283,15 @@ const Overview = ({
               {t('dashboard.unique')}
               :
             </p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
+            <p title={String(uniques)} className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
               {nFormatter(uniques, 1)}
               {isActiveCompare && (
-                <span className={cx('ml-1.5 text-sm', {
-                  'text-green-500': uniquesCompare > uniques,
-                  'text-red-500': uniquesCompare < uniques,
-                })}
+                <span
+                  title={`${uniquesCompare > uniques ? '+' : ''}${uniquesCompare - uniques}`}
+                  className={cx('ml-1.5 text-sm', {
+                    'text-green-500': uniquesCompare > uniques,
+                    'text-red-500': uniquesCompare < uniques,
+                  })}
                 >
                   {uniquesCompare > uniques ? '+' : ''}
                   {nFormatter(uniquesCompare - uniques, 1)}
@@ -339,11 +343,11 @@ const Overview = ({
       <p className='text-lg font-semibold dark:text-gray-50'>
         {t('project.weeklyStats')}
       </p>
-      <div className='flex justify-between'>
-        <p className='text-lg dark:text-gray-50'>
+      <dl className='flex justify-between'>
+        <dt className='text-lg dark:text-gray-50'>
           {t('dashboard.pageviews')}
           :
-        </p>
+        </dt>
         <dd className='flex items-baseline'>
           <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
             {overall.thisWeek}
@@ -373,12 +377,12 @@ const Overview = ({
             %
           </p>
         </dd>
-      </div>
-      <div className='flex justify-between'>
-        <p className='text-lg dark:text-gray-50'>
+      </dl>
+      <dl className='flex justify-between'>
+        <dt className='text-lg dark:text-gray-50'>
           {t('dashboard.unique')}
           :
-        </p>
+        </dt>
         <dd className='flex items-baseline'>
           <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
             {overall.thisWeekUnique}
@@ -408,7 +412,7 @@ const Overview = ({
             %
           </p>
         </dd>
-      </div>
+      </dl>
     </PanelContainer>
   )
 }

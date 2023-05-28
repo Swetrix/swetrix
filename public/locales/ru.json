@@ -650,8 +650,7 @@
         "partially": "Сбросить частично",
         "partiallyDesc": "Функция \"Сбросить частично\" позволяет вам сбросить данные конкретного проекта в пределах заданного временного диапазона.",
         "partiallyHint": "Чтобы сбросить данные конкретного проекта в пределах временного диапазона, выберите даты начала и окончания диапазона и проект, который вы хотите сбросить.\nДважды проверьте, что вы выбрали правильный проект и временной диапазон, прежде чем сбросить его.\nКак только вы нажмете 'Сбросить', все данные, связанные с выбранным проектом в пределах выбранного временного диапазона, будут навсегда удалены и не могут быть восстановлены."
-      },
-      "noDateRange": "Пожалуйста, выберите временной диапазон."
+      }
     },
     "captcha": {
       "settings": {
@@ -673,7 +672,12 @@
     "reverse": "Обратить",
     "userFlow": {
       "noData": "Пользовательский поток ещё не доступен из-за нехватки данных, или вы отключили эту функцию в параметрах скрипта отслеживания"
-    }
+    },
+    "noDateRange": "Please select a date range",
+    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
+    "previousPeriod": "Previous period",
+    "disableCompare": "Disable comparison",
+    "compare": "Compare"
   },
   "billing": {
     "title": "Цены и тарифы",
@@ -685,7 +689,14 @@
     "cancelSub": "Отменить подписку",
     "noSubWarning": "У вас нет активной подписки.\nНовые аналитические данные не будут сохраняться в нашей базе данных, но вы сможете просмотреть данные, собранные до отмены подписки.",
     "inactive": "Неактивен",
-    "cancelledSubMessage": "Вы отменили подписку.\nПодписка будет активна до {{date}}.\nПосле этого в нашу базу данных не будут храниться новые аналитические данные. Вы можете просмотреть данные, собранные до отмены подписки."
+    "cancelledSubMessage": "Вы отменили подписку.\nПодписка будет активна до {{date}}.\nПосле этого в нашу базу данных не будут храниться новые аналитические данные. Вы можете просмотреть данные, собранные до отмены подписки.",
+    "planUsage": "Plan usage",
+    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
+    "breakdown": "Breakdown by the event type:",
+    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
+    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Go to plan usage"
   },
   "modals": {
     "paidFeature": {
@@ -771,6 +782,19 @@
       "description": "Мы используем шрифт {{font}} на сайтах Swetrix. Подробнее о шрифте вы можете прочитать на <url>официальном сайте</url>."
     }
   },
+  "open": {
+    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
+    "updated": "This page is updated regularly.",
+    "finance": {
+      "title": "Finance metrics",
+      "desc": "Our financial metrics, such as revenue, losses, etc."
+    },
+    "usage": {
+      "title": "Usage metrics",
+      "desc": "Our user metrics, such as amount of active users, connected websites.",
+      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
+    }
+  },
   "titles": {
     "recovery": "Восстановление аккаунта",
     "signin": "Авторизация",
@@ -786,7 +810,8 @@
     "changelog": "История изменений",
     "main": "Лучший сервис аналитики для удовлетворения всех ваших нужд",
     "press": "Медиа и пресса",
-    "socialisation": "Социализация"
+    "socialisation": "Социализация",
+    "open": "Open startup"
   },
   "header": {
     "switchTheme": "Переключить тему",
@@ -822,6 +847,7 @@
     "changelog": "История изменений",
     "captcha": "Капча",
     "press": "Медиа и пресса",
+    "open": "Open startup",
     "about": "О нас",
     "comparisons": "Сравнения"
   }

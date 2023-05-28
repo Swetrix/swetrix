@@ -1,13 +1,14 @@
 import { takeLatest, all, call } from 'redux-saga/effects'
-import signIn from 'redux/sagas/auth/workers/signin'
-import signUp from 'redux/sagas/auth/workers/signup'
-import logout from 'redux/sagas/auth/workers/logout'
-import verifyEmail from 'redux/sagas/auth/workers/verifyEmail'
-import updateUserProfile from 'redux/sagas/auth/workers/updateUserProfile'
-import deleteUserAccount from 'redux/sagas/auth/workers/deleteUserAccount'
-import ssoAuth from 'redux/sagas/auth/workers/sso_auth'
-import ssoLink from 'redux/sagas/auth/workers/sso_link'
-import ssoUnlink from 'redux/sagas/auth/workers/sso_unlink'
+import signIn from '../workers/signin'
+import signUp from '../workers/signup'
+import logout from '../workers/logout'
+import verifyEmail from '../workers/verifyEmail'
+import updateUserProfile from '../workers/updateUserProfile'
+import deleteUserAccount from '../workers/deleteUserAccount'
+import ssoAuth from '../workers/sso_auth'
+import ssoLink from '../workers/sso_link'
+import ssoUnlink from '../workers/sso_unlink'
+import updateShowLiveVisitorsInTitle from '../workers/update_show_live_visitors_in_title'
 import sagaTypes from '../../actions/types'
 
 function* watchLogin() {
@@ -55,11 +56,16 @@ function* watchUnlinkSSO() {
   yield takeLatest(sagaTypes.UNLINK_SSO, ssoUnlink)
 }
 
+function* watchUpdateShowLiveVisitorsInTitle() {
+  // @ts-ignore
+  yield takeLatest(sagaTypes.UPDATE_SHOW_LIVE_VISITORS_IN_TITLE, updateShowLiveVisitorsInTitle)
+}
+
 export default function* watchAuth() {
   yield all([
     call(watchLogin), call(watchSignup), call(watchVerifyEmail),
     call(watchUpdateUserProfile), call(watchDeleteUserProfile),
     call(watchLogout), call(watchAuthSSO), call(watchLinkSSO),
-    call(watchUnlinkSSO),
+    call(watchUnlinkSSO), call(watchUpdateShowLiveVisitorsInTitle),
   ])
 }

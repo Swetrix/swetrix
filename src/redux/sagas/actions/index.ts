@@ -12,6 +12,14 @@ const loadProjects = (take?: number, skip?: number) => ({
   payload: { take, skip },
 })
 
+const loadMetainfo = () => ({
+  type: types.LOAD_METAINFO,
+})
+
+const loadUsageinfo = () => ({
+  type: types.LOAD_USAGEINFO,
+})
+
 const loadSharedProjects = (take?: number, skip?: number) => ({
   type: types.LOAD_SHARED_PROJECTS,
   payload: { take, skip },
@@ -122,6 +130,13 @@ const logout = (basedOn401Error: boolean) => {
   }
 }
 
+const updateShowLiveVisitorsInTitle = (show: boolean, callback: (isSuccess: boolean) => void) => ({
+  type: types.UPDATE_SHOW_LIVE_VISITORS_IN_TITLE,
+  payload: {
+    show, callback,
+  },
+})
+
 const sagaActions = {
   loadProjects,
   loadSharedProjects,
@@ -138,6 +153,9 @@ const sagaActions = {
   shareVerifyAsync,
   linkSSO,
   unlinkSSO,
+  loadMetainfo,
+  loadUsageinfo,
+  updateShowLiveVisitorsInTitle,
 }
 
 export default sagaActions

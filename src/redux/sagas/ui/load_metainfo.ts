@@ -3,26 +3,27 @@ import Debug from 'debug'
 
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
+import { IMetainfo } from 'redux/models/IMetainfo'
 import {
-  getInstalledExtensions,
+  getPaymentMetainfo,
 } from '../../../api'
 
-const debug = Debug('swetrix:rx:s:load-extensions')
+const debug = Debug('swetrix:rx:s:metainfo')
 
-export default function* loadExtensions() {
+export default function* loadMetainfo() {
   if (isSelfhosted) {
     return
   }
 
   try {
-    const { extensions } = yield call(getInstalledExtensions)
+    const metainfo: IMetainfo = yield call(getPaymentMetainfo)
 
-    yield put(UIActions.setExtensions(extensions))
+    yield put(UIActions.setMetainfo(metainfo))
   } catch (e: unknown) {
     const { message } = e as { message: string }
     // if (_isString(message)) {
     //   yield put(UIActions.setProjectsError(message))
     // }
-    debug('failed to load extensions: %s', message)
+    debug('failed to load metainfo: %s', message)
   }
 }

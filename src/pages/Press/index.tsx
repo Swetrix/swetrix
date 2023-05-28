@@ -9,11 +9,13 @@ import routes from 'routes'
 const FONT_INTER_URL = 'https://rsms.me/inter/'
 const FONT_NAME = 'Inter'
 
-const LogoComponent = ({ description, logoSVG, logoPNG }: {
+interface ILogoComponent {
   description: string
-  logoSVG: string | null
   logoPNG: string
-}): JSX.Element => (
+  logoSVG?: string
+}
+
+const LogoComponent = ({ description, logoSVG, logoPNG }: ILogoComponent): JSX.Element => (
   <p>
     <b className='font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
       {description}
@@ -49,6 +51,10 @@ const LogoComponent = ({ description, logoSVG, logoPNG }: {
   </p>
 )
 
+LogoComponent.defaultProps = {
+  logoSVG: null,
+}
+
 const Press = (): JSX.Element => {
   const { t }: {
     t: (key: string) => string
@@ -77,12 +83,10 @@ const Press = (): JSX.Element => {
           <div className='grid grid-cols-2 gap-4 mt-2'>
             <LogoComponent
               description={t('press.logo')}
-              logoSVG='/assets/logo_blue.svg'
               logoPNG='/assets/logo_blue.png'
             />
             <LogoComponent
               description={t('press.logoWhiteText')}
-              logoSVG='/assets/logo_white.svg'
               logoPNG='/assets/logo_white.png'
             />
           </div>
@@ -90,7 +94,6 @@ const Press = (): JSX.Element => {
             <LogoComponent
               description={t('press.logoNoText')}
               logoPNG='/logo512.png'
-              logoSVG={null}
             />
           </div>
 
@@ -103,6 +106,7 @@ const Press = (): JSX.Element => {
               i18nKey='press.font.description'
               components={{
                 url: <a
+                  aria-label='Inter font website (opens in a new tab)'
                   href={FONT_INTER_URL}
                   className='font-medium hover:underline text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
                   target='_blank'

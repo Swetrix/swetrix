@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
 import {
@@ -12,6 +12,22 @@ const Contact = (): JSX.Element => {
     t: (key: string) => string
   } = useTranslation('common')
 
+  useEffect(() => {
+    const intergram = document.querySelector('#intergramPlaceholder')
+
+    if (!intergram) {
+      return () => {}
+    }
+
+    intergram.classList.remove('hidden')
+    intergram.classList.add('flex')
+
+    return () => {
+      intergram.classList.remove('flex')
+      intergram.classList.add('hidden')
+    }
+  }, [])
+
   return (
     <Title title={t('titles.contact')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -19,7 +35,7 @@ const Contact = (): JSX.Element => {
           <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('titles.contact')}
           </h1>
-          <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             {t('contact.howTo')}
 
             <ol className='list-decimal ml-5 sm:ml-10'>
@@ -59,7 +75,7 @@ const Contact = (): JSX.Element => {
                 {t('contact.ways.chat')}
               </li>
             </ol>
-          </p>
+          </div>
         </div>
       </div>
     </Title>

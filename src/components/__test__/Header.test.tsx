@@ -50,6 +50,9 @@ describe('Header', () => {
     googleId: null,
     githubId: null,
     registeredWithGithub: false,
+    tierCurrency: 'USD',
+    maxEventsCount: 5000000,
+    showLiveVisitorsInTitle: false,
   }
 
   beforeEach(() => {

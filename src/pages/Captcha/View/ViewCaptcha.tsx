@@ -28,7 +28,6 @@ import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 import PropTypes from 'prop-types'
 
-import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import { getItem, setItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
@@ -48,7 +47,7 @@ import {
   getProject, getOverallStats, getLiveVisitors, getCaptchaData,
 } from 'api'
 import {
-  Panel, Overview, CustomEvents,
+  Panel, CustomEvents, // Overview,
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
@@ -117,7 +116,6 @@ const ViewProject = ({
   }>({
     [CHART_METRICS_MAPPING.results]: true,
   })
-  const [sessionDurationAVG, setSessionDurationAVG] = useState<any>(null)
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState<any[]>([])
   // That is needed when using 'Export as image' feature,
@@ -143,7 +141,7 @@ const ViewProject = ({
     return [
       {
         id: CHART_METRICS_MAPPING.results,
-        label: t('dashboard.results'),
+        label: t('project.results'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.results],
       },
     ]
@@ -206,11 +204,8 @@ const ViewProject = ({
       }
 
       const {
-        chart, params, customs, appliedFilters, avgSdur,
+        chart, params, customs, appliedFilters,
       } = data
-      const processedSdur = getTimeFromSeconds(avgSdur)
-
-      setSessionDurationAVG(getStringFromTime(processedSdur))
 
       if (!_isEmpty(appliedFilters)) {
         setFilters(appliedFilters)
@@ -654,6 +649,7 @@ const ViewProject = ({
                 <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                   <button
                     type='button'
+                    title={t('project.refreshStats')}
                     onClick={refreshStats}
                     className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
                       'cursor-not-allowed opacity-50': isLoading || dataLoading,
@@ -774,6 +770,7 @@ const ViewProject = ({
                 <div className='absolute right-0 z-10 -top-2'>
                   <button
                     type='button'
+                    title={t('project.barChart')}
                     onClick={() => setChartTypeOnClick(chartTypes.bar)}
                     className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-900 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
                       'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.bar,
@@ -784,6 +781,7 @@ const ViewProject = ({
                   </button>
                   <button
                     type='button'
+                    title={t('project.lineChart')}
                     onClick={() => setChartTypeOnClick(chartTypes.line)}
                     className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-900 dark:hover:bg-gray-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
                       'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.line,
@@ -824,17 +822,17 @@ const ViewProject = ({
               </div>
               )}
               <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                {!_isEmpty(project.overall) && (
-                <Overview
-                  t={t}
-                  overall={project.overall}
-                  chartData={chartData}
-                  activePeriod={activePeriod}
-                  sessionDurationAVG={sessionDurationAVG}
-                  live={liveStats[id] || 'N/A'}
-                  projectId={id}
-                />
-                )}
+                {/* {!_isEmpty(project.overall) && (
+                  <Overview
+                    t={t}
+                    overall={project.overall}
+                    chartData={chartData}
+                    activePeriod={activePeriod}
+                    sessionDurationAVG={sessionDurationAVG}
+                    live={liveStats[id] || 'N/A'}
+                    projectId={id}
+                  />
+                )} */}
                 {_map(panelsData.types, (type: keyof typeof tnMapping) => {
                   const panelName = tnMapping[type]
                   // @ts-ignore

@@ -64,6 +64,7 @@ const PanelContainer = ({
             &nbsp;
           </>
         )}
+        {name}
       </h3>
       <div className='flex'>
         {(checkIfBarsNeeded(type)) && (

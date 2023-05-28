@@ -32,6 +32,7 @@ import _pickBy from 'lodash/pickBy'
 import _every from 'lodash/every'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
+import _isString from 'lodash/isString'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
@@ -374,8 +375,10 @@ const ViewProject = ({
   // { name } is a project name from project
   const { name } = project
 
-  // sharedRoles is a role for shared project
+  const pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveStats[id]} - ${name}` : name
+  
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
+  // sharedRoles is a role for shared project
 
   // chartMetrics is a list of metrics for dropdown
   const chartMetrics = useMemo(() => {
@@ -674,9 +677,10 @@ const ViewProject = ({
       } else {
         key = getProjectCacheKey(period, timeBucket)
       }
-
+ 
       // check if we need to load new date or we have data in redux/localstorage
-      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
+      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]) && !_isEmpty(newFilters || filters)) {
+
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
@@ -1184,8 +1188,11 @@ const ViewProject = ({
   // Initialising Swetrix SDK instance. Using for marketplace and extensions
   useEffect(() => {
     let sdk: any | null = null
-    if (!_isEmpty(extensions)) {
-      const processedExtensions = _map(extensions, (ext) => {
+
+    const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
+
+    if (!_isEmpty(filteredExtensions)) {
+      const processedExtensions = _map(filteredExtensions, (ext) => {
         const { id: extId, fileURL } = ext
         return {
           id: extId,
@@ -1414,12 +1421,12 @@ const ViewProject = ({
         loadAnalytics()
       }
     }
-    if (areFiltersPerfParsed) {
+    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed) {
       if (activeTab === PROJECT_TABS.performance) {
         loadAnalyticsPerf()
       }
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
+  }, [project, period, chartType, filters, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
   // using this for fix some bugs with update custom events data for chart
   useEffect(() => {
@@ -1686,16 +1693,6 @@ const ViewProject = ({
     setChartType(type)
   }
 
-  // useEffect to change chart if we change chart type
-  useEffect(() => {
-    if (activeTab === PROJECT_TABS.performance) {
-      loadAnalyticsPerf()
-    } else {
-      loadAnalytics()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartType])
-
   // loadAnalytics when compare period change or compare selected
   useEffect(() => {
     setItem(IS_ACTIVE_COMPARE, JSON.stringify(isActiveCompare))
@@ -1715,7 +1712,7 @@ const ViewProject = ({
 
   if (!isLoading) {
     return (
-      <Title title={name}>
+      <Title title={pageTitle}>
         <EventsRunningOutBanner />
         <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
           <div
@@ -1793,6 +1790,7 @@ const ViewProject = ({
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                       <button
                         type='button'
+                        title={t('project.refreshStats')}
                         onClick={refreshStats}
                         className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
                           'cursor-not-allowed opacity-50': isLoading || dataLoading,
@@ -1809,6 +1807,7 @@ const ViewProject = ({
                       >
                         <button
                           type='button'
+                          title={t('modals.forecast.title')}
                           onClick={onForecastOpen}
                           disabled={!_isEmpty(filters)}
                           className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
@@ -2084,6 +2083,7 @@ const ViewProject = ({
                     >
                       <button
                         type='button'
+                        title={t('project.barChart')}
                         onClick={() => setChartTypeOnClick(chartTypes.bar)}
                         className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
                           'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.bar,
@@ -2094,6 +2094,7 @@ const ViewProject = ({
                       </button>
                       <button
                         type='button'
+                        title={t('project.lineChart')}
                         onClick={() => setChartTypeOnClick(chartTypes.line)}
                         className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
                           'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.line,

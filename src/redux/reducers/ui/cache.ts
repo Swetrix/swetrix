@@ -75,7 +75,9 @@ const cacheSlice = createSlice({
       }
     },
     deleteProjectCache(state, { payload }: PayloadAction<{ pid?: string, period?: string, timeBucket?: string }>) {
-      const { pid, period, timeBucket } = payload
+      const {
+        pid, period, timeBucket,
+      } = payload
       let key: string
 
       if (period && timeBucket) {
@@ -175,21 +177,6 @@ const cacheSlice = createSlice({
           ...state.analyticsPerf[payload.pid],
           [payload.key]: payload.data,
         },
-      }
-    },
-    deleteProjectCachePerf(state, { payload }: PayloadAction<{ pid: string, period: string, timeBucket: string }>) {
-      const { pid, period, timeBucket } = payload
-      const key = getProjectCacheKey(period, timeBucket)
-
-      if (_isEmpty(period) || _isEmpty(timeBucket)) {
-        if (_isEmpty(pid)) {
-          state.analyticsPerf = {}
-        }
-        state.analyticsPerf = _filter(state.analyticsPerf, (project) => project !== pid)
-      }
-      state.analyticsPerf = {
-        ...state.analyticsPerf,
-        [pid]: _filter(state.analyticsPerf[pid], (ckey) => ckey !== key),
       }
     },
     setProjectForecastCache(state, { payload }: PayloadAction<{ pid: string, key: string, data: any }>) {
