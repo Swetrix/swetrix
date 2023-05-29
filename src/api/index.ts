@@ -278,9 +278,14 @@ export const getSharedProjects = (take: number = 0, skip: number = 0) =>
         : error.response.data.message
     })
 
-export const getProject = (pid: string, isCaptcha: boolean = false) =>
+// eslint-disable-next-line default-param-last
+export const getProject = (pid: string, isCaptcha: boolean = false, password?: string) =>
   api
-    .get(`/project/${pid}?isCaptcha=${isCaptcha}`)
+    .get(`/project/${pid}?isCaptcha=${isCaptcha}`, {
+      headers: {
+        'x-password': password,
+      },
+    })
     .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -367,10 +372,16 @@ export const getProjectData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
       `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
@@ -388,10 +399,16 @@ export const getProjectCompareData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
       `log/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
@@ -409,10 +426,16 @@ export const getPerfData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
       `log/performance?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
@@ -442,9 +465,16 @@ export const getCaptchaData = (
         : error.response.data.message
     })
 
-export const getOverallStats = (pids: string[]) =>
+export const getOverallStats = (pids: string[], password?: string) =>
   api
-    .get(`log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .get(
+      `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
     .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -464,9 +494,13 @@ export const getOverallStatsCaptcha = (pids: string[]) =>
         : error.response.data.message
     })
 
-export const getLiveVisitors = (pids: string[]) =>
+export const getLiveVisitors = (pids: string[], password?: string) =>
   api
-    .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
+      headers: {
+        'x-password': password,
+      },
+    })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -643,9 +677,13 @@ export interface IGetLiveVisitorsInfo {
   cc: string
 }
 
-export const getLiveVisitorsInfo = (pid: string) =>
+export const getLiveVisitorsInfo = (pid: string, password?: string) =>
   api
-    .get(`log/liveVisitors?pid=${pid}`)
+    .get(`log/liveVisitors?pid=${pid}`, {
+      headers: {
+        'x-password': password,
+      },
+    })
     .then((response): IGetLiveVisitorsInfo[] => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -798,10 +836,16 @@ export const getProjectDataCustomEvents = (
   to: string = '',
   timezone: string = '',
   customEvents: string[] = [],
+  password: string | undefined = '',
 ) =>
   api
     .get(
       `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&customEvents=${JSON.stringify(customEvents)}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
     )
     .then((response) => response.data)
     .catch((error) => {
@@ -948,12 +992,33 @@ export const getUserFlow = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  password: string | undefined = '',
 ) =>
   api
     .get(
       `log/user-flow?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
     )
     .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const checkPassword = (pid: string, password: string) =>
+  api
+    .get(`project/password/${pid}`, {
+      headers: {
+        'x-password': password,
+      },
+    })
+    .then((response): Boolean => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message)

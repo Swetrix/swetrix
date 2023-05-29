@@ -123,7 +123,7 @@ const DEFAULT_PROJECT_NAME = 'Untitled Project'
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
-  deleteProjectCache,
+  deleteProjectCache, setProjectProtectedPassword,
 }: {
   updateProjectFailed: (message: string) => void,
   createNewProjectFailed: (message: string) => void,
@@ -139,6 +139,7 @@ const ProjectSettings = ({
   isSharedProject: boolean,
   sharedProjects: ISharedProject[],
   deleteProjectCache: (pid: string) => void,
+  setProjectProtectedPassword: (pid: string, password: string) => void,
 }) => {
   const { t }: {
     t: (key: string, options?: {
@@ -165,6 +166,7 @@ const ProjectSettings = ({
     name?: string,
     origins?: string,
     ipBlacklist?: string,
+    password?: string,
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [showDelete, setShowDelete] = useState<boolean>(false)
@@ -176,6 +178,7 @@ const ProjectSettings = ({
   const [transferEmail, setTransferEmail] = useState<string>('')
   const [dateRange, setDateRange] = useState<Date[]>([])
   const [tab, setTab] = useState<string>(tabDeleteDataModal[0].name)
+  const [showProtected, setShowProtected] = useState<boolean>(false)
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
@@ -228,7 +231,6 @@ const ProjectSettings = ({
         }
 
         loadProjects(isSharedProject)
-        history.push(routes.dashboard)
       } catch (e) {
         if (isSettings) {
           updateProjectFailed(e as string)
@@ -292,6 +294,7 @@ const ProjectSettings = ({
       name?: string,
       origins?: string,
       ipBlacklist?: string,
+      password?: string,
     } = {}
 
     if (_isEmpty(form.name)) {
@@ -357,6 +360,23 @@ const ProjectSettings = ({
         setShowTransfer(false)
         setTransferEmail('')
       })
+  }
+
+  const onProtected = () => {
+    setBeenSubmitted(true)
+
+    if (validated) {
+      onSubmit({
+        ...form,
+        isPasswordProtected: true,
+      })
+
+      if (!_isEmpty(form.password) && !_isEmpty(form.id)) {
+        setProjectProtectedPassword(form?.id || '', form?.password || '')
+      }
+
+      setShowProtected(false)
+    }
   }
 
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
@@ -432,13 +452,42 @@ const ProjectSettings = ({
               />
               <Checkbox
                 checked={Boolean(form.public)}
-                onChange={handleInput}
+                onChange={(e) => {
+                  if (!form.isPasswordProtected) {
+                    handleInput(e)
+                  }
+                }}
+                disabled={form?.isPasswordProtected}
                 name='public'
                 id='public'
                 className='mt-4'
                 label={t('project.settings.public')}
                 hint={t('project.settings.publicHint')}
               />
+              {!isSelfhosted && (
+                <Checkbox
+                  checked={Boolean(form.isPasswordProtected)}
+                  onChange={() => {
+                    if (!form.public && form.isPasswordProtected) {
+                      setForm({
+                        ...form,
+                        isPasswordProtected: false,
+                      })
+                      return
+                    }
+
+                    if (!form.public) {
+                      setShowProtected(true)
+                    }
+                  }}
+                  disabled={form?.public}
+                  name='isPasswordProtected'
+                  id='isPasswordProtected'
+                  className='mt-4'
+                  label={t('project.settings.protected')}
+                  hint={t('project.settings.protectedHint')}
+                />
+              )}
               <div className='flex justify-between mt-8 h-20 sm:h-min'>
                 <div className='flex flex-wrap items-center'>
                   <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
@@ -524,6 +573,32 @@ const ProjectSettings = ({
           submitType='danger'
           type='error'
           isOpened={showReset}
+        />
+        <Modal
+          onClose={() => setShowProtected(false)}
+          onSubmit={onProtected}
+          submitText={t('common.save')}
+          closeText={t('common.cancel')}
+          title={t('project.settings.protected')}
+          message={(
+            <div>
+              <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
+                {t('project.settings.protectedHint')}
+              </p>
+              <Input
+                name='password'
+                id='password'
+                type='password'
+                label={t('project.settings.password')}
+                value={form?.password || ''}
+                placeholder={t('project.settings.password')}
+                className='mt-4'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.password : null}
+              />
+            </div>
+          )}
+          isOpened={showProtected}
         />
         <Modal
           onClose={() => {

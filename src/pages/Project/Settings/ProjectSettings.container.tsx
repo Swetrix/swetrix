@@ -67,6 +67,12 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       message,
     }))
   },
+  setProjectProtectedPassword(id: string, password: string) {
+    dispatch(UIActions.setProjectProtectedPassword({
+      id,
+      password,
+    }))
+  },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProjectSettings)

@@ -36,16 +36,19 @@ import _isString from 'lodash/isString'
 import PropTypes from 'prop-types'
 import * as SwetrixSDK from '@swetrix/sdk'
 
+import { withProjectProtected } from 'hoc/projectProtected'
+
 import { periodToCompareDate } from 'utils/compareConvertDate'
+
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
-import { getItem, setItem } from 'utils/localstorage'
+import { getItem, setItem, removeItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, getProjectCacheCustomKeyPerf,
+  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -116,12 +119,15 @@ interface IViewProject {
   customEventsPrefs: any,
   setCustomEventsPrefs: (pid: string, data: any) => void,
   liveStats: ILiveStats,
+  password: {
+    [key: string]: string,
+  },
 }
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password,
 }: IViewProject) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -149,6 +155,7 @@ const ViewProject = ({
   } = useParams()
   const history = useHistory()
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
+  const projectPassword: string = useMemo(() => password[id] || getItem(PROJECTS_PROTECTED)?.[id] || '', [id, password])
   const isSharedProject = useMemo(() => {
     const foundProject = _find([..._map(sharedProjects, (item) => item.project)], p => p.id === id)
     return !_isEmpty(foundProject)
@@ -432,6 +439,7 @@ const ViewProject = ({
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
+    removeItem(PROJECTS_PROTECTED)
     history.push(routes.dashboard)
   }
 
@@ -459,9 +467,9 @@ const ViewProject = ({
 
       if (!isAllActiveChartMetricsCustomEvents) {
         if (period === 'custom' && dateRange) {
-          data = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
+          data = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents, projectPassword)
         } else {
-          data = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents)
+          data = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents, projectPassword)
         }
       }
 
@@ -560,7 +568,7 @@ const ViewProject = ({
           if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filters)) {
             dataCompare = cache[id][keyCompare]
           } else {
-            dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone)
+            dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone, projectPassword)
           }
         }
 
@@ -583,11 +591,11 @@ const ViewProject = ({
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
-          data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone)
-          customEventsChart = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents)
+          data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone, projectPassword)
+          customEventsChart = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents, projectPassword)
         } else {
-          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone)
-          customEventsChart = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents)
+          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone, projectPassword)
+          customEventsChart = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents, projectPassword)
         }
 
         customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
@@ -726,7 +734,7 @@ const ViewProject = ({
           if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filtersPerf)) {
             dataCompare = cache[id][keyCompare]
           } else {
-            dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone)
+            dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone, projectPassword)
           }
         }
 
@@ -745,9 +753,9 @@ const ViewProject = ({
         dataPerf = cachePerf[id][key]
       } else {
         if (period === 'custom' && dateRange) {
-          dataPerf = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, from, to, timezone)
+          dataPerf = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, from, to, timezone, projectPassword)
         } else {
-          dataPerf = await getPerfData(id, timeBucket, period, newFilters || filtersPerf, '', '', timezone)
+          dataPerf = await getPerfData(id, timeBucket, period, newFilters || filtersPerf, '', '', timezone, projectPassword)
         }
 
         setProjectCachePerf(id, dataPerf || {}, key)
@@ -1325,7 +1333,7 @@ const ViewProject = ({
   useEffect(() => {
     const updateLiveVisitors = async () => {
       const { id: pid } = project
-      const result = await getLiveVisitors([pid])
+      const result = await getLiveVisitors([pid], projectPassword)
 
       setLiveStatsForProject(pid, result[pid])
     }
@@ -1343,11 +1351,16 @@ const ViewProject = ({
 
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
-      getProject(id)
+      getProject(id, false, projectPassword)
         .then(projectRes => {
           if (!_isEmpty(projectRes)) {
-            if (projectRes.isPublic && !projectRes.isOwner) {
-              getOverallStats([id])
+            if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
+              history.push(_replace(routes.project_protected_password, ':id', id))
+              return
+            }
+
+            if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.isOwner) {
+              getOverallStats([id], projectPassword)
                 .then(res => {
                   setPublicProject({
                     ...projectRes,
@@ -1368,7 +1381,7 @@ const ViewProject = ({
                   }])
                 })
                 .then(() => {
-                  return getLiveVisitors([id])
+                  return getLiveVisitors([id], projectPassword)
                 })
                 .then(res => {
                   setLiveStatsForProject(id, res[id])
@@ -2046,6 +2059,7 @@ const ViewProject = ({
                       dataChartCompare={dataChartCompare}
                       live={liveStats[id]}
                       projectId={id}
+                      projectPassword={projectPassword}
                     />
                   )}
                   {!_isEmpty(panelsData.types) && _map(TRAFFIC_PANELS_ORDER, (type: keyof typeof tnMapping) => {
@@ -2329,4 +2343,4 @@ ViewProject.defaultProps = {
   timezone: DEFAULT_TIMEZONE,
 }
 
-export default memo(ViewProject)
+export default memo(withProjectProtected(ViewProject))
