@@ -30,6 +30,7 @@ import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Beta from 'ui/Beta'
 import Select from 'ui/Select'
+import Checkbox from 'ui/Checkbox'
 import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
@@ -71,6 +72,7 @@ interface IProps {
   linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
   unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
   theme: string,
+  updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => void,
 }
 
 interface IForm extends Partial<IUser> {
@@ -84,7 +86,7 @@ const UserSettings = ({
   setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData,
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
   accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
-  linkSSO, unlinkSSO, theme,
+  linkSSO, unlinkSSO, theme, updateShowLiveVisitorsInTitle,
 }: IProps): JSX.Element => {
   const history = useHistory()
   const { t }: {
@@ -115,6 +117,7 @@ const UserSettings = ({
   const [copied, setCopied] = useState<boolean>(false)
   const translatedFrequencies: string[] = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
   const translatedTimeFormat: string[] = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
+  const [settingUpdating, setSettingUpdating] = useState<boolean>(false)
 
   const copyTimerRef = useRef(null)
 
@@ -203,6 +206,26 @@ const UserSettings = ({
         timezone,
       })
     }
+  }
+
+  const handleShowLiveVisitorsSave = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (settingUpdating) {
+      return
+    }
+
+    const { checked } = e.target
+
+    setSettingUpdating(true)
+    updateShowLiveVisitorsInTitle(checked, (isSuccess: boolean) => {
+      setSettingUpdating(false)
+
+      if (isSuccess) {
+        accountUpdated(t('profileSettings.updated'))
+        return
+      }
+
+      genericError(t('apiNotifications.somethingWentWrong'))
+    })
   }
 
   const handleIntegrationSave = (data: any, callback = () => { }) => {
@@ -466,8 +489,27 @@ const UserSettings = ({
               <Button className='mt-4' onClick={handleReportSave} primary large>
                 {t('common.save')}
               </Button>
-              <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+            </>
+          )}
 
+          {/* UI Settings */}
+          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('profileSettings.uiSettings')}
+          </h3>
+          <Checkbox
+            checked={user.showLiveVisitorsInTitle}
+            onChange={handleShowLiveVisitorsSave}
+            disabled={settingUpdating}
+            name='active'
+            id='active'
+            className='mt-4'
+            label={t('profileSettings.showVisitorsInTitle')}
+          />
+
+          {!isSelfhosted && (
+            <>
+              <hr className='mt-5 border-gray-200 dark:border-gray-600' />
               {/* Integrations setup */}
               <h3 id='integrations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
                 {t('profileSettings.integrations')}

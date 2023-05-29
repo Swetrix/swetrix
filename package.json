@@ -53,13 +53,15 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:dev": "cross-env REACT_APP_RUNNING_DEV_SCRIPT=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios)/\"",
     "test:ci": "CI=true npm run test",
     "eject": "react-scripts eject",
     "analyse": "source-map-explorer 'build/static/js/*.js'",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix"
+    "lint:fix": "eslint src --fix",
+    "lint:tsc": "tsc --noEmit"
   },
   "eslintConfig": {
     "extends": [

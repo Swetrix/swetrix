@@ -23,14 +23,14 @@
     "enterACorrectNumber": "Wprowadź poprawną liczbę",
     "numberCantBeNegative": "Liczba nie może być ujemna",
     "forecastNumberCantBeBigger": "Liczba prognozy nie może być większa niż {{max}} dla wybranej częstotliwości",
-    "invalidToken": "Invalid token",
-    "transferRequestSent": "Transfer request sent",
-    "transferProjectReject": "The project transfer request has been cancelled",
-    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
-    "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
-    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
-    "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
-    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
+    "invalidToken": "Nieważny token",
+    "transferRequestSent": "Wysłany wniosek o przekazanie",
+    "transferProjectReject": "Wniosek o przeniesienie projektu został anulowany",
+    "socialisationGenericError": "Wystąpił błąd podczas łączenia konta Swetrix z usługą strony trzeciej",
+    "socialisationUnlinkGenericError": "Wystąpił błąd podczas rozłączania konta Swetrix z usługą strony trzeciej",
+    "socialisationAuthGenericError": "Wystąpił błąd podczas uwierzytelniania za pomocą usługi strony trzeciej",
+    "socialAccountLinked": "Konto Swetrix zostało połączone z wybranym dostawcą",
+    "socialAccountUninked": "Konto Swetrix zostało odłączone od wybranego dostawcy"
   },
   "common": {
     "features": "Funkcje",
@@ -39,7 +39,7 @@
     "billing": "Rozliczenie",
     "pricing": "Cennik",
     "faqs": "FAQ",
-    "accountSettings": "Account settings",
+    "accountSettings": "Ustawienia konta",
     "explore": "Przeglądaj",
     "liveDemo": "Zobacz demo",
     "dashboard": "Panel",
@@ -73,10 +73,10 @@
     "new": "Nowy",
     "loading": "Ładowanie..",
     "edit": "Edycja",
-    "account": "Account",
-    "transferring": "Transferring",
+    "account": "Konto",
+    "transferring": "Przekazanie",
     "link": "Link",
-    "unlink": "Unlink"
+    "unlink": "Odłącz"
   },
   "main": {
     "ukrSupport": "Wspieraj ukraińską armię w walce z rosyjską inwazją.",
@@ -286,8 +286,8 @@
       "success": "Twój adres e-mail został pomyślnie zweryfikowany!"
     },
     "socialisation": {
-      "success": "Socialisation successful",
-      "orSingUpWith": "or sign up with"
+      "success": "Socjalizacja zakończona sukcesem",
+      "orSingUpWith": "lub zapisać się do"
     },
     "common": {
       "signinInstead": "Zamiast tego zaloguj się",
@@ -305,9 +305,9 @@
       "signin": "Zaloguj się",
       "checkLeakedPassword": "Sprawdź, czy Twoje hasło wyciekło",
       "checkLeakedPasswordDesc": "Po włączeniu sprawdzamy hasło z bazą danych <db>{{database}}</db>. Nie wysyłamy twojego hasła do usługi. Najpierw hashujemy twoje hasło (używając SHA1) i wysyłamy tylko pierwsze 5 znaków tego hasha do usługi. Serwis zwraca wszystkie wyciekłe hasła, które zaczynają się od tych 5 znaków. Na naszym końcu sprawdzamy, czy jedno z nich pasuje do Twojego hasła. Pokażemy Ci ostrzeżenie, jeśli został on wyciekły wcześniej. Nigdy nie przechowujemy Twojego hasła w postaci zwykłego tekstu.",
-      "addedOn": "Added on",
-      "continueWithGoogle": "Continue with Google",
-      "continueWithGithub": "Continue with Github"
+      "addedOn": "Dodano na",
+      "continueWithGoogle": "Kontynuuj z Google",
+      "continueWithGithub": "Kontynuuj z Githubem"
     }
   },
   "features": {
@@ -385,7 +385,7 @@
     "weekly": "Co tydzień",
     "monthly": "Co miesiąc",
     "never": "Nigdy",
-    "quarterly": "Quarterly",
+    "quarterly": "Kwartalnik",
     "reportSent": "Raport danych GDPR został wysłany na Twój adres e-mail.",
     "tryAgainInXDays": "Spróbuj ponownie później. Możesz wnioskować o eksport GDPR tylko raz na {{amount}} dni.",
     "updated": "Ustawienia konta zostały zaktualizowane",
@@ -433,8 +433,8 @@
       "tgHint": "Napisz wiadomość do <url>{{username}}</url>, aby uzyskać ID czatu. Ten bot zostanie użyty później, aby wysyłać powiadomienia lub alerty."
     },
     "socialisations": "Socialisations",
-    "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
-    "cantUnlinkSocialisation": "You can't unlink this socialisation because it was used to register your account.",
+    "socialisationsDesc": "Funkcja socjalizacji umożliwia powiązanie kont stron trzecich (takich jak Google lub Twitter) z kontem Swetrix i używanie ich do logowania się do Swetrix.",
+    "cantUnlinkSocialisation": "Nie możesz odłączyć tej socjalizacji, ponieważ została ona użyta do rejestracji konta.",
     "addIntegration": "Dodaj integrację",
     "removeIntegration": "Usuń integrację",
     "chatID": "ID czatu",
@@ -443,17 +443,17 @@
     "timeFormat": "Notacja czasowa",
     "selectTimeFormat": "Będzie to notacja czasu używana na wykresie, służy ona jedynie do wizualizacji danych na wykresie w formacie 12 lub 24 godzinnym.",
     "captcha": "CAPTCHA",
-    "selectProject": "Select project",
-    "captchaSecretKey": "CAPTCHA secret key",
-    "generateSecretKey": "Generate secret key",
-    "regenerateSecretKey": "Regenerate secret key",
-    "regenerateSecretKeyTitle": "Regenerate secret key?",
-    "regenerateSecretKeyMessage": "Are you sure you want to regenerate your secret key?\nAll the existing CAPTCHA widgets will stop working and you will need to update them with the new secret key.",
-    "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone."
+    "selectProject": "Wybierz projekt",
+    "captchaSecretKey": "Tajny klucz CAPTCHA",
+    "generateSecretKey": "Wygenerowanie tajnego klucza",
+    "regenerateSecretKey": "Regeneruj tajny klucz",
+    "regenerateSecretKeyTitle": "Regenerować tajny klucz?",
+    "regenerateSecretKeyMessage": "Czy na pewno chcesz zregenerować swój tajny klucz?\nWszystkie istniejące widżety CAPTCHA przestaną działać i będziesz musiał je zaktualizować za pomocą nowego tajnego klucza.",
+    "captchaSecretKeyHint": "To jest twój tajny klucz, jest używany do weryfikacji odpowiedzi CAPTCHA na twoim serwerze. Zachowaj go w tajemnicy i nie dziel się nim z nikim."
   },
   "dashboard": {
     "newProject": "Nowy projekt",
-    "newCaptchaProject": "New CAPTCHA project",
+    "newCaptchaProject": "Nowy projekt CAPTCHA",
     "verifyEmailTitle": "Proszę najpierw zweryfikować adres e-mail",
     "verifyEmailDesc": "Aby zacząć korzystać z naszego serwisu i tworzyć swoje projekty, musisz najpierw potwierdzić swój adres e-mail.\n\nNa podany podczas rejestracji adres e-mail został wysłany link do potwierdzenia konta, jeśli nie został dostarczony - możesz poprosić o ponowne przesłanie linku w ustawieniach konta.",
     "lowEventsTitle": "Kończą Ci się zdarzenia!",
@@ -546,7 +546,7 @@
     "trendlineUnique": "Linia trendu unikalnych odwiedzających",
     "trendlineTotal": "Linia trendu odsłon witryny",
     "noEvContent": "Nie przechwycono żadnych zdarzeń dla określonego przedziału czasowego.\nJeśli nie śledziłeś jeszcze żadnych zdarzeń, możesz sprawdzić naszą <url>Dokumentację</url>, aby łatwo zintegrować śledzenie w swojej aplikacji.",
-    "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
+    "noCaptchaEv": "Nie przechwycono żadnych zdarzeń dla określonych ram czasowych.\nJeśli jeszcze nie skonfigurowałeś CAPTCHA, możesz sprawdzić nasze <url>Docs</url>, aby łatwo zintegrować go z aplikacją.",
     "mapping": {
       "cc": "Kraj",
       "pg": "Strona",
@@ -570,7 +570,7 @@
     "prev": "Poprzedni",
     "next": "Następny",
     "unique": "Unikalni użytkownicy",
-    "results": "Results",
+    "results": "Wyniki",
     "total": "Łączna liczba odsłon",
     "today": "Dziś",
     "yesterday": "Wczoraj",
@@ -616,7 +616,7 @@
       "noPeople": "Do tego projektu nie dodano jeszcze żadnych osób.",
       "removeMember": "Usuń użytkownika",
       "removeConfirm": "Czy na pewno chcesz przestać udostępniać swój projekt temu użytkownikowi?",
-      "removeReportConfirm": "Are you sure you want to stop sending project reports this user?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports to this user?",
       "removeUser": "Usunąć {{user}}?",
       "people": "Użytkownicy",
       "inviteCoworkers": "Zaproś swoich współpracowników",
@@ -640,40 +640,44 @@
       "errorNoRole": "Wybierz rolę.",
       "ipBlacklist": "Dodaj adresy IP do czarnej listy",
       "ipBlacklistHint": "Lista adresów IP, z których nie będzie zbierana analityka na tym projekcie.\nTa funkcjonalność jest przydatna, jeśli chcesz na przykład zignorować analitykę z Twojego IP.\nPrzykład: 172.126.10.16, 192.168.0.1/32, ::1",
-      "transfer": "Transfer project",
-      "transferTo": "Transfer project",
-      "transferHint": "You can transfer '{{name}}' project to another user.\nThis user will become the project's owner and will be able to manage the project's settings, add/remove members, and invite new users.\nYou will be assigned to the project as an administrator. However, the new owner will be able to remove you from the project.",
-      "transfereeEmail": "Transferee email",
+      "transfer": "Projekt przeniesienia",
+      "transferTo": "Projekt przeniesienia",
+      "transferHint": "Możesz przenieść projekt '{{name}}' do innego użytkownika.\nUżytkownik ten stanie się właścicielem projektu i będzie mógł zarządzać jego ustawieniami, dodawać/usuwać członków oraz zapraszać nowych użytkowników.\nZostaniesz przypisany do projektu jako administrator. Jednak nowy właściciel będzie mógł usunąć Cię z projektu.",
+      "transfereeEmail": "Adres e-mail odbiorcy",
       "reseted": {
-        "all": "Reset all",
-        "allHint": "All of the project's related analytics data will be permanently removed from our servers, but the project itself, it's settings and the ID will still be available.",
-        "partially": "Reset partially",
-        "partiallyDesc": "The 'Reset partially' function allows you to reset the data of a specific project within a given date range.",
-        "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered."
-      },
-      "noDateRange": "Please select a date range."
+        "all": "Wyzerować wszystkie",
+        "allHint": "Wszystkie dane analityczne związane z projektem zostaną trwale usunięte z naszych serwerów, ale sam projekt, jego ustawienia i ID będą nadal dostępne.",
+        "partially": "Resetować częściowo",
+        "partiallyDesc": "Funkcja \"Resetuj częściowo\" pozwala na zresetowanie danych konkretnego projektu w określonym zakresie dat.",
+        "partiallyHint": "Aby zresetować dane określonego projektu w ramach zakresu dat, wybierz datę początkową i końcową zakresu oraz projekt, który chcesz zresetować.\nPrzed kliknięciem \"Resetuj\" sprawdź dwukrotnie, czy wybrałeś właściwy projekt i zakres dat.\nPo kliknięciu przycisku \"Resetuj\" wszystkie dane związane z wybranym projektem w wybranym zakresie dat zostaną trwale usunięte i nie będzie można ich odzyskać."
+      }
     },
     "captcha": {
       "settings": {
-        "general": "General settings",
-        "inheritance": "Inheritance",
-        "name": "CAPTCHA project name",
-        "pid": "CAPTCHA project ID",
-        "enabled": "CAPTCHA enabled",
-        "enabledHint": "Disabled CAPTCHA projects will not count any newly incoming events.\nYou will still be able to access the analytics in dashboard."
+        "general": "Ustawienia ogólne",
+        "inheritance": "Dziedziczenie",
+        "name": "Nazwa projektu CAPTCHA",
+        "pid": "ID projektu CAPTCHA",
+        "enabled": "CAPTCHA włączone",
+        "enabledHint": "Wyłączone projekty CAPTCHA nie będą zliczać żadnych nowo przychodzących zdarzeń.\nNadal będziesz miał dostęp do analityki w dashboardzie."
       }
     },
     "emails": {
-      "title": "Email reports",
-      "description": "Send regular email reports to as many recipients as you want",
-      "add": "Add a recipient",
-      "reportFrequency": "Report frequency"
+      "title": "Raporty e-mailowe",
+      "description": "Wysyłaj regularne raporty pocztą elektroniczną do dowolnej liczby odbiorców",
+      "add": "Dodaj odbiorcę",
+      "reportFrequency": "Częstotliwość raportowania"
     },
     "page": "Strona",
-    "reverse": "Reverse",
+    "reverse": "Odwrócona",
     "userFlow": {
-      "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
-    }
+      "noData": "Przepływ użytkownika nie jest jeszcze dostępny z powodu braku danych lub wyłączono tę funkcję w parametrach skryptu śledzenia"
+    },
+    "noDateRange": "Please select a date range",
+    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
+    "previousPeriod": "Previous period",
+    "disableCompare": "Disable comparison",
+    "compare": "Compare"
   },
   "billing": {
     "title": "Cennik i plany",
@@ -685,7 +689,14 @@
     "cancelSub": "Anuluj subskrypcję",
     "noSubWarning": "Nie masz aktywnej subskrypcji.\nŻadne nowe dane analityczne nie zostaną zapisane w naszej bazie danych. Nadal możesz wyświetlić dane, które zostały zebrane przed anulowaniem subskrypcji.",
     "inactive": "Nieaktywny",
-    "cancelledSubMessage": "Anulowałeś subskrypcję.\nSubskrypcja będzie aktywna do {{date}}.\nNastępnie żadne nowe dane analityczne nie zostaną zapisane w naszej bazie danych. Nadal możesz wyświetlić dane, które zostały zebrane przed anulowaniem subskrypcji."
+    "cancelledSubMessage": "Anulowałeś subskrypcję.\nSubskrypcja będzie aktywna do {{date}}.\nNastępnie żadne nowe dane analityczne nie zostaną zapisane w naszej bazie danych. Nadal możesz wyświetlić dane, które zostały zebrane przed anulowaniem subskrypcji.",
+    "planUsage": "Plan usage",
+    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
+    "breakdown": "Breakdown by the event type:",
+    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
+    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Go to plan usage"
   },
   "modals": {
     "paidFeature": {
@@ -740,7 +751,7 @@
       "dataOwnership": "100% własności danych",
       "dashboards": "Współdzielone i publiczne panele",
       "reports": "Raporty e-mail",
-      "userFlowAnalysis": "User flow analysis"
+      "userFlowAnalysis": "Analiza przepływu użytkownika"
     },
     "downgradeTitle": "Czy na pewno chcesz obniżyć swój plan?",
     "downgradeDesc": "Po obniżeniu planu, będzie zawierał on mniej projektów i dostępnych zdarzeń na miesiąc. W przypadku, gdy Twoja strona zawiera więcej ruchu niż zawiera plan, do którego chcesz przejść, spowoduje to, że nie wszystkie zdarzenia zostaną zapisane w naszej bazie danych.\nW każdej chwili będziesz mógł powrócić do swojego obecnego planu.\nJeśli masz jakiekolwiek pytania, zawsze możesz wysłać do nas e-mail na adres {{email}}.",
@@ -761,14 +772,27 @@
     "description": "Ta funkcja znajduje się w fazie Beta. Używaj jej ostrożnie, ponieważ mogą wystąpić działania niepożądane."
   },
   "press": {
-    "description": "Our assets for use in your articles and other media. If you use any of the assets below, we'd be grateful if you'd leave a link to one of our pages on your website. If you need other assets or have any questions, please <url>contact us</url>.",
-    "logos": "Logos",
+    "description": "Nasze aktywa do wykorzystania w Twoich artykułach i innych mediach. Jeśli użyjesz któregoś z poniższych aktywów, będziemy wdzięczni, jeśli zostawisz link do jednej z naszych stron na swojej stronie. Jeśli potrzebujesz innych aktywów lub masz jakieś pytania, prosimy <url>kontakt z nami</url>.",
+    "logos": "Loga",
     "logo": "Logo",
-    "logoNoText": "Logo without text",
-    "logoWhiteText": "Logo with white text",
+    "logoNoText": "Logo bez tekstu",
+    "logoWhiteText": "Logo z białym tekstem",
     "font": {
-      "title": "Font",
-      "description": "We use {{font}} font on Swetrix websites. See more information about it on it's <url>official website</url>."
+      "title": "Czcionka",
+      "description": "Na stronach Swetrixa używamy czcionki {{font}}. Zobacz więcej informacji o nim na jego <url>oficjalnej stronie</url>."
+    }
+  },
+  "open": {
+    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
+    "updated": "This page is updated regularly.",
+    "finance": {
+      "title": "Finance metrics",
+      "desc": "Our financial metrics, such as revenue, losses, etc."
+    },
+    "usage": {
+      "title": "Usage metrics",
+      "desc": "Our user metrics, such as amount of active users, connected websites.",
+      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
     }
   },
   "titles": {
@@ -785,14 +809,15 @@
     "contact": "Kontakt",
     "changelog": "Lista zmian",
     "main": "Najlepszy serwis analityczny, który spełni wszystkie Twoje potrzeby",
-    "press": "Media & Press",
-    "socialisation": "Socialisation"
+    "press": "Media i prasa",
+    "socialisation": "Socjalizacja",
+    "open": "Open startup"
   },
   "header": {
-    "switchTheme": "Switch theme",
-    "dark": "Dark",
+    "switchTheme": "Motyw przełącznika",
+    "dark": "Ciemne",
     "light": "Light",
-    "signedInAs": "Signed in as"
+    "signedInAs": "Podpisany jako"
   },
   "footer": {
     "slogan": "Najlepsze aplikacje potrzebują najlepszych usług.",
@@ -821,7 +846,8 @@
     "donate": "Przekaż darowiznę",
     "changelog": "Lista zmian",
     "captcha": "CAPTCHA",
-    "press": "Media & Press",
+    "press": "Media i prasa",
+    "open": "Open startup",
     "about": "O nas",
     "comparisons": "Porównania"
   }

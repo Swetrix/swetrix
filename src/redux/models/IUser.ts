@@ -33,4 +33,7 @@ export interface IUser {
   googleId: string | null
   githubId: number | null
   registeredWithGithub: boolean
+  maxEventsCount: number
+  tierCurrency: 'USD' | 'EUR' | 'GBP' | null
+  showLiveVisitorsInTitle: boolean
 }

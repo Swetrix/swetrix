@@ -650,8 +650,7 @@
         "partially": "Скинути частково",
         "partiallyDesc": "Функція \"Скинути частково\" дозволяє вам скинути дані певного проєкту за заданим часовим діапазоном.",
         "partiallyHint": "Щоб скинути дані конкретного проєкту за певний проміжок часу, виберіть дати початку і закінчення діапазону, і проєкт, який ви хочете скинути.\nДвічі перевірте, що ви вибрали правильний проєкт і часовий діапазон перед тим, як натиснути кнопку \"Скинути\".\nКоли ви натиснете 'Скинути', всі дані, пов'язані з обраним проєктом протягом обраного часового діапазону будуть назавжди видалені і не можуть бути відновлені."
-      },
-      "noDateRange": "Будь ласка, виберіть проміжок часу."
+      }
     },
     "captcha": {
       "settings": {
@@ -673,7 +672,12 @@
     "reverse": "Навпаки",
     "userFlow": {
       "noData": "Потік користувача поки що не доступний через брак даних, або ви вимкнули цю функцію в параметрах скрипта"
-    }
+    },
+    "noDateRange": "Please select a date range",
+    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
+    "previousPeriod": "Previous period",
+    "disableCompare": "Disable comparison",
+    "compare": "Compare"
   },
   "billing": {
     "title": "Ціни та тарифи",
@@ -685,7 +689,14 @@
     "cancelSub": "Скасувати підписку",
     "noSubWarning": "У вас немає активної підписки.\nНові дані аналітики не будуть зберігатися в нашій базі даних. Ви все ще можете переглянути дані, зібрані до того, як підписка була скасована.",
     "inactive": "Неактивний",
-    "cancelledSubMessage": "Ви скасували підписку.\nПідписка буде активна до {{date}}.\nПісля цього нові дані аналітики не будуть зберігатися в нашій базі даних. Ви все ще можете переглянути дані, зібрані до того, як підписка була скасована."
+    "cancelledSubMessage": "Ви скасували підписку.\nПідписка буде активна до {{date}}.\nПісля цього нові дані аналітики не будуть зберігатися в нашій базі даних. Ви все ще можете переглянути дані, зібрані до того, як підписка була скасована.",
+    "planUsage": "Plan usage",
+    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
+    "breakdown": "Breakdown by the event type:",
+    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
+    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Go to plan usage"
   },
   "modals": {
     "paidFeature": {
@@ -771,6 +782,19 @@
       "description": "Ми використовуємо шрифт {{font}} на сайтах Swetrix. Докладніше про нього можна дізнатися <url>на офіційному сайті</url>."
     }
   },
+  "open": {
+    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
+    "updated": "This page is updated regularly.",
+    "finance": {
+      "title": "Finance metrics",
+      "desc": "Our financial metrics, such as revenue, losses, etc."
+    },
+    "usage": {
+      "title": "Usage metrics",
+      "desc": "Our user metrics, such as amount of active users, connected websites.",
+      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
+    }
+  },
   "titles": {
     "recovery": "Відновлення акаунту",
     "signin": "Авторизація",
@@ -786,7 +810,8 @@
     "changelog": "Історія змін",
     "main": "Найкращий сервіс аналітики для задоволення всіх ваших потреб",
     "press": "Медіа та преса",
-    "socialisation": "Соціалізація"
+    "socialisation": "Соціалізація",
+    "open": "Open startup"
   },
   "header": {
     "switchTheme": "Змінити тему",
@@ -822,6 +847,7 @@
     "changelog": "Історія змін",
     "captcha": "CAPTCHA",
     "press": "Медіа та преса",
+    "open": "Open startup",
     "about": "Про нас",
     "comparisons": "Порівняння"
   }

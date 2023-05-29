@@ -221,7 +221,6 @@ export const SECURITY_EMAIL: string = 'security@swetrix.com'
 export const isSelfhosted: boolean = Boolean(process.env.REACT_APP_SELFHOSTED)
 
 export const LIVE_VISITORS_UPDATE_INTERVAL: number = 40000
-export const GENERAL_STATS_UPDATE_INTERVAL: number = 60000
 
 // Functions
 export const getProjectCacheKey = (period: string, timeBucket: string): string => `${period}${timeBucket}`
@@ -376,64 +375,153 @@ export const THEME_TYPE: IStringObject = {
 
 export const DEFAULT_ALERTS_TAKE: number = 100
 
-// TODO: Eventually this should be fetched from the API, e.g. GET /config route
-export const PLAN_LIMITS: {
-  [key: string]: {
-    monthlyUsageLimit: number
-    maxProjects: number
-    maxAlerts: number
-    legacy: boolean
-    priceMonthly: number
-    priceYearly: number
+const EUR = {
+  symbol: '€',
+  code: 'EUR',
+}
+
+const USD = {
+  symbol: '$',
+  code: 'USD',
+}
+
+const GBP = {
+  symbol: '£',
+  code: 'GBP',
+}
+
+type ICurrencies = {
+  [key in 'EUR' | 'USD' | 'GBP']: {
+    symbol: string
+    code: string
   }
-} = {
+}
+
+export const CURRENCIES: ICurrencies = {
+  EUR, USD, GBP,
+}
+
+// TODO: Eventually this should be fetched from the API, e.g. GET /config route
+export const PLAN_LIMITS = {
   free: {
-    priceMonthly: 0,
-    priceYearly: 0,
     monthlyUsageLimit: 5000,
     maxProjects: 10,
     maxAlerts: 1,
     legacy: true,
+    price: {
+      USD: {
+        monthly: 0,
+        yearly: 0,
+      },
+      EUR: {
+        monthly: 0,
+        yearly: 0,
+      },
+      GBP: {
+        monthly: 0,
+        yearly: 0,
+      },
+    },
   },
   trial: {
     monthlyUsageLimit: 100000,
     maxProjects: 20,
     maxAlerts: 20,
     legacy: false,
-    priceMonthly: 0,
-    priceYearly: 0,
+    price: {
+      USD: {
+        monthly: 0,
+        yearly: 0,
+      },
+      EUR: {
+        monthly: 0,
+        yearly: 0,
+      },
+      GBP: {
+        monthly: 0,
+        yearly: 0,
+      },
+    },
   },
   hobby: {
     monthlyUsageLimit: 10000,
     maxProjects: 20,
     maxAlerts: 10,
     legacy: false,
-    priceMonthly: 5,
-    priceYearly: 50,
+    price: {
+      USD: {
+        monthly: 5,
+        yearly: 50,
+      },
+      EUR: {
+        monthly: 5,
+        yearly: 50,
+      },
+      GBP: {
+        monthly: 4,
+        yearly: 40,
+      },
+    },
   },
   freelancer: {
     monthlyUsageLimit: 100000,
     maxProjects: 20,
     maxAlerts: 20,
     legacy: false,
-    priceMonthly: 15,
-    priceYearly: 150,
+    price: {
+      USD: {
+        monthly: 15,
+        yearly: 150,
+      },
+      EUR: {
+        monthly: 15,
+        yearly: 150,
+      },
+      GBP: {
+        monthly: 14,
+        yearly: 140,
+      },
+    },
   },
   startup: {
     monthlyUsageLimit: 1000000,
     maxProjects: 30,
     maxAlerts: 50,
     legacy: false,
-    priceMonthly: 59,
-    priceYearly: 590,
+    price: {
+      USD: {
+        monthly: 59,
+        yearly: 590,
+      },
+      EUR: {
+        monthly: 57,
+        yearly: 570,
+      },
+      GBP: {
+        monthly: 49,
+        yearly: 490,
+      },
+    },
   },
   enterprise: {
     monthlyUsageLimit: 5000000,
     maxProjects: 50,
     maxAlerts: 100,
     legacy: false,
-    priceMonthly: 110,
-    priceYearly: 1100,
+    price: {
+      USD: {
+        monthly: 110,
+        yearly: 1100,
+      },
+      EUR: {
+        monthly: 110,
+        yearly: 1100,
+      },
+      GBP: {
+        monthly: 95,
+        yearly: 950,
+      },
+    },
   },
 }
 

@@ -41,7 +41,8 @@ const ProjectAlerts = ({
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const history = useHistory()
 
-  const limits = PLAN_LIMITS[user?.planCode]
+  // @ts-ignore
+  const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
   const isLimitReached = authenticated && (total >= limits?.maxAlerts)
 
   const projectAlerts = useMemo(() => {
