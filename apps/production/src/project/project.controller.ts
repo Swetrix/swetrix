@@ -76,8 +76,6 @@ import {
   TransferProjectBodyDto,
   ConfirmTransferProjectQueriesDto,
   CancelTransferProjectQueriesDto,
-  GetProtectedProjectDto,
-  ProjectPasswordDto,
   UpdateProjectDto,
 } from './dto'
 
@@ -981,7 +979,7 @@ export class ProjectController {
   async checkPassword(
     @Param('projectId') projectId: string,
     @CurrentUserId() userId: string,
-    @Headers() body: ProjectPasswordDto,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<Boolean> {
     this.logger.log({ projectId }, 'GET /project/password/:projectId')
 
@@ -992,7 +990,7 @@ export class ProjectController {
     }
 
     try {
-      this.projectService.allowedToView(project, userId, body.password)
+      this.projectService.allowedToView(project, userId, headers['x-password'])
     } catch {
       return false
     }
@@ -1304,7 +1302,7 @@ export class ProjectController {
   async getOne(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
-    @Headers() body: ProjectPasswordDto,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) {
@@ -1321,14 +1319,14 @@ export class ProjectController {
       throw new NotFoundException('Project was not found in the database')
     }
 
-    if (project.isPasswordProtected && _isEmpty(body.password)) {
+    if (project.isPasswordProtected && _isEmpty(headers['x-password'])) {
       return {
         isPasswordProtected: true,
         id: project.id,
       }
     }
 
-    this.projectService.allowedToView(project, uid, body.password)
+    this.projectService.allowedToView(project, uid, headers['x-password'])
 
     return {
       ..._omit(project, ['admin', 'passwordHash']),
