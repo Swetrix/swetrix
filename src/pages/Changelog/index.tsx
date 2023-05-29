@@ -17,6 +17,12 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-05-29',
+    changes: [
+      'Added password protected Projects functionality: now you can set a password on your Dashboard and share it with other people, only those who know the password will be able to access it.',
+    ],
+  },
+  {
     date: '2023-05-28',
     changes: [
       'Added an indicator that shows how many live visitors your Project has at the moment on the browser tab.',
