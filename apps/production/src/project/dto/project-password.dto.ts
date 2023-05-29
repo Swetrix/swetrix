@@ -1,10 +1,18 @@
-import { IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator'
+import {
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateIf,
+} from 'class-validator'
 
 export const MAX_PROJECT_PASSWORD_LENGTH = 80
 
 export class ProjectPasswordDto {
   @IsString()
-  @MaxLength(MAX_PROJECT_PASSWORD_LENGTH, { message: 'Max length is $constraint1 characters' })
+  @MaxLength(MAX_PROJECT_PASSWORD_LENGTH, {
+    message: 'Max length is $constraint1 characters',
+  })
   @MinLength(1, { message: 'Min length is $constraint1 characters' })
   password?: string | null
 
