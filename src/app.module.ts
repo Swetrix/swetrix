@@ -45,9 +45,15 @@ const modules = [
     imports: [ConfigModule],
     inject: [ConfigService],
     useFactory: async (configService: ConfigService) => ({
+      defaultJobOptions: {
+        attempts: 3,
+        delay: 15000,
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
       redis: {
         host: configService.get<string>('REDIS_HOST') || 'localhost',
-        port: configService.get<number>('REDIS_PORT') || 6379,
+        port: Number(configService.get<number>('REDIS_PORT')) || 6379,
         username: configService.get<string>('REDIS_USER') || 'default',
         password: configService.get<string>('REDIS_PASSWORD') || '',
       },
