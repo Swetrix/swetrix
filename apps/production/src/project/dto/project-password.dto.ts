@@ -1,15 +1,11 @@
-import { IsOptional, Matches, ValidateIf } from 'class-validator'
+import { IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator'
+
+export const MAX_PROJECT_PASSWORD_LENGTH = 80
 
 export class ProjectPasswordDto {
-  @IsOptional()
-  @ValidateIf(o => o.password !== null)
-  @Matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{8,72}$/,
-    {
-      message:
-        'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character (!@#$%^&*).',
-    },
-  )
+  @IsString()
+  @MaxLength(MAX_PROJECT_PASSWORD_LENGTH, { message: 'Max length is $constraint1 characters' })
+  @MinLength(1, { message: 'Min length is $constraint1 characters' })
   password?: string | null
 
   @IsOptional()

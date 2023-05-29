@@ -32,6 +32,7 @@ import { Project } from './entity/project.entity'
 import { ProjectShare, Role } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
+import { MAX_PROJECT_PASSWORD_LENGTH } from './dto/project-password.dto'
 import {
   isValidPID,
   redisProjectCountCacheTimeout,
@@ -306,7 +307,7 @@ export class ProjectService {
 
   allowedToView(project: Project, uid: string | null, password?: string | null): void {
     if (project.isPasswordProtected && password) {
-      if (compareSync(password, project.passwordHash)) {
+      if (_size(password) <= MAX_PROJECT_PASSWORD_LENGTH && compareSync(password, project.passwordHash)) {
         return null
       }
 
