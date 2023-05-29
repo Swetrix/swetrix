@@ -32,6 +32,7 @@ import * as dayjs from 'dayjs'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Auth, Public } from 'src/auth/decorators'
 import { isValidDate } from 'src/analytics/analytics.service'
+import { hash } from 'bcrypt'
 import {
   ProjectService,
   processProjectUser,
@@ -75,6 +76,7 @@ import {
   TransferProjectBodyDto,
   ConfirmTransferProjectQueriesDto,
   CancelTransferProjectQueriesDto,
+  UpdateProjectDto,
 } from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
@@ -971,6 +973,31 @@ export class ProjectController {
     })
   }
 
+  @Get('password/:projectId')
+  @Auth([], true, true)
+  @ApiResponse({ status: 200, type: Project })
+  async checkPassword(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<boolean> {
+    this.logger.log({ projectId }, 'GET /project/password/:projectId')
+
+    const project = await this.projectService.getProjectById(projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    try {
+      this.projectService.allowedToView(project, userId, headers['x-password'])
+    } catch {
+      return false
+    }
+
+    return true
+  }
+
   @Get(':projectId/subscribers/invite')
   @HttpCode(HttpStatus.OK)
   async confirmSubscriberInvite(
@@ -1182,7 +1209,7 @@ export class ProjectController {
 
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
 
-    return project
+    return _omit(project, ['passwordHash'])
   }
 
   @Put('/:id')
@@ -1192,10 +1219,13 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
-    @Body() projectDTO: ProjectDTO,
+    @Body() projectDTO: UpdateProjectDto,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
+    this.logger.log(
+      { ..._omit(projectDTO, ['password']), uid, id },
+      'PUT /project/:id',
+    )
     this.projectService.validateProject(projectDTO)
     const project = await this.projectService.findOne(id, {
       relations: ['admin', 'share', 'share.user'],
@@ -1213,6 +1243,14 @@ export class ProjectController {
     project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
     project.name = projectDTO.name
     project.public = projectDTO.public
+
+    if (projectDTO.isPasswordProtected && projectDTO.password) {
+      project.isPasswordProtected = true
+      project.passwordHash = await hash(projectDTO.password, 10)
+    } else {
+      project.isPasswordProtected = false
+      project.passwordHash = null
+    }
 
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
 
@@ -1267,6 +1305,7 @@ export class ProjectController {
   async getOne(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) {
@@ -1283,10 +1322,17 @@ export class ProjectController {
       throw new NotFoundException('Project was not found in the database')
     }
 
-    this.projectService.allowedToView(project, uid)
+    if (project.isPasswordProtected && _isEmpty(headers['x-password'])) {
+      return {
+        isPasswordProtected: true,
+        id: project.id,
+      }
+    }
+
+    this.projectService.allowedToView(project, uid, headers['x-password'])
 
     return {
-      ..._omit(project, ['admin']),
+      ..._omit(project, ['admin', 'passwordHash']),
       isOwner: uid === project.admin?.id,
     }
   }

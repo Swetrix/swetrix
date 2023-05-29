@@ -18,6 +18,7 @@ import * as _findIndex from 'lodash/findIndex'
 import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
+import { compareSync } from 'bcrypt'
 // @ts-ignore
 import * as validateIP from 'validate-ip-node'
 
@@ -31,6 +32,7 @@ import { Project } from './entity/project.entity'
 import { ProjectShare, Role } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
 import { UserType } from '../user/entities/user.entity'
+import { MAX_PROJECT_PASSWORD_LENGTH } from './dto/project-password.dto'
 import {
   isValidPID,
   redisProjectCountCacheTimeout,
@@ -144,6 +146,8 @@ export class ProjectService {
           'ipBlacklist',
           'captchaSecretKey',
           'isCaptchaEnabled',
+          'passwordHash',
+          'isPasswordProtected',
         ],
       })
       if (_isEmpty(project))
@@ -301,7 +305,26 @@ export class ProjectService {
     return this.projectsRepository.findOne({ where, ...params })
   }
 
-  allowedToView(project: Project, uid: string | null): void {
+  allowedToView(
+    project: Project,
+    uid: string | null,
+    password?: string | null,
+  ): void {
+    if (project.isPasswordProtected && password) {
+      if (
+        _size(password) <= MAX_PROJECT_PASSWORD_LENGTH &&
+        compareSync(password, project.passwordHash)
+      ) {
+        return null
+      }
+
+      throw new ConflictException('Incorrect password')
+    }
+
+    if (project.isPasswordProtected && uid !== project.admin?.id) {
+      throw new ForbiddenException('This project is password protected')
+    }
+
     if (
       project.public ||
       uid === project.admin?.id ||
