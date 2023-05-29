@@ -260,8 +260,8 @@ export class AnalyticsController {
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
-    isCaptcha = false,
     @Headers() headers: { 'x-password'?: string },
+    isCaptcha = false,
   ): Promise<any> {
     const {
       pid,
@@ -294,7 +294,11 @@ export class AnalyticsController {
         period,
         safeTimezone,
       )
-    await this.analyticsService.checkProjectAccess(pid, uid, headers['x-password'])
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM ${
@@ -401,7 +405,11 @@ export class AnalyticsController {
       period,
       safeTimezone,
     )
-    await this.analyticsService.checkProjectAccess(pid, uid, headers['x-password'])
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     let customEVFilterApplied = false
@@ -473,7 +481,11 @@ export class AnalyticsController {
       period,
       safeTimezone,
     )
-    await this.analyticsService.checkProjectAccess(pid, uid, headers['x-password'])
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
@@ -536,7 +548,11 @@ export class AnalyticsController {
       period,
       safeTimezone,
     )
-    await this.analyticsService.checkProjectAccess(pid, uid, headers['x-password'])
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const paramsData = {
       params: {
@@ -585,7 +601,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid, headers['x-password'])
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
@@ -632,7 +652,11 @@ export class AnalyticsController {
       // fix needed
       // fix needed
       // passwords and for projects protected []
-      await this.analyticsService.checkProjectAccess(currentPID, uid, headers['x-password'])
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        headers['x-password'],
+      )
     })
 
     await Promise.all(validationPromises)
@@ -700,7 +724,11 @@ export class AnalyticsController {
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid, headers['x-password'])
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        headers['x-password'],
+      )
     })
 
     await Promise.all(validationPromises)
@@ -733,7 +761,11 @@ export class AnalyticsController {
     const { pid } = data
 
     this.analyticsService.validatePID(pid)
-    await this.analyticsService.checkProjectAccess(pid, uid, headers['x-password'])
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const keys = await redis.keys(`sd:*:${pid}`)
 
@@ -1056,7 +1088,11 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
-    await this.analyticsService.checkProjectAccess(pid, uid, headers['x-password'])
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(

@@ -980,7 +980,7 @@ export class ProjectController {
     @Param('projectId') projectId: string,
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<Boolean> {
+  ): Promise<boolean> {
     this.logger.log({ projectId }, 'GET /project/password/:projectId')
 
     const project = await this.projectService.getProjectById(projectId)
@@ -1222,7 +1222,10 @@ export class ProjectController {
     @Body() projectDTO: UpdateProjectDto,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    this.logger.log({ ..._omit(projectDTO, ['password']), uid, id }, 'PUT /project/:id')
+    this.logger.log(
+      { ..._omit(projectDTO, ['password']), uid, id },
+      'PUT /project/:id',
+    )
     this.projectService.validateProject(projectDTO)
     const project = await this.projectService.findOne(id, {
       relations: ['admin', 'share', 'share.user'],

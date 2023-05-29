@@ -297,18 +297,23 @@ export class ProjectService {
     return this.projectsRepository.findOne({ where, ...params })
   }
 
-  allowedToView(project: Project, uid: string | null, password?: string | null): void {
+  allowedToView(
+    project: Project,
+    uid: string | null,
+    password?: string | null,
+  ): void {
     if (project.isPasswordProtected && password) {
-      if (_size(password) <= MAX_PROJECT_PASSWORD_LENGTH && compareSync(password, project.passwordHash)) {
+      if (
+        _size(password) <= MAX_PROJECT_PASSWORD_LENGTH &&
+        compareSync(password, project.passwordHash)
+      ) {
         return null
       }
 
       throw new ConflictException('Incorrect password')
     }
 
-    if (
-      (project.isPasswordProtected && uid !== project.admin?.id)
-    ) {
+    if (project.isPasswordProtected && uid !== project.admin?.id) {
       throw new ForbiddenException('This project is password protected')
     }
 
