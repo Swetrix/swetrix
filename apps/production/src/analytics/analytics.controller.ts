@@ -583,7 +583,7 @@ export class AnalyticsController {
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    return this.getData(data, uid, true, {})
+    return this.getData(data, uid, {}, true)
   }
 
   @Get('user-flow')
