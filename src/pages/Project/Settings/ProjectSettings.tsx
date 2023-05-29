@@ -33,7 +33,6 @@ import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import FlatPicker from 'ui/Flatpicker'
 import { nanoid } from 'utils/random'
-import { isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
 import { getFormatDate } from '../View/ViewProject.helpers'
@@ -232,7 +231,6 @@ const ProjectSettings = ({
         }
 
         loadProjects(isSharedProject)
-        history.push(routes.dashboard)
       } catch (e) {
         if (isSettings) {
           updateProjectFailed(e as string)
@@ -313,10 +311,6 @@ const ProjectSettings = ({
 
     if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
       allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
-    }
-
-    if (!_isEmpty(form?.password) && _size(form.password) > 0 && !isValidPassword(form?.password || '')) {
-      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
     }
 
     const valid = _isEmpty(_keys(allErrors))
