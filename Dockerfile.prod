@@ -1,0 +1,59 @@
+#Stage 1
+FROM node:lts-alpine as build
+WORKDIR /build
+COPY . .
+RUN npm i -g pnpm && pnpm i && npm run deploy
+
+#Stage 2
+FROM node:lts-alpine as run
+ENV TZ=UTC \
+    MYSQL_HOST=localhost \
+    MYSQL_USER=root \
+    TWO_FACTOR_AUTHENTICATION_APP_NAME=Swetrix \
+    CLIENT_URL=https://swetrix.com \
+    JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret \
+    JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret \
+    MYSQL_ROOT_PASSWORD=password \
+    MYSQL_DATABASE=analytics \
+    REDIS_HOST=localhost \
+    REDIS_USER=default \
+    REDIS_PASSWORD=password \
+    REDIS_PORT=6379 \
+    CLICKHOUSE_HOST=http://localhost \
+    CLICKHOUSE_USER=default \
+    CLICKHOUSE_PORT=8123 \
+    CLICKHOUSE_PASSWORD=password \
+    CLICKHOUSE_DATABASE=analytics \
+    API_ORIGINS= \
+    SMTP_HOST=localhost \
+    SMTP_BROADCAST_HOST=localhost \
+    SMTP_PORT=1025 \
+    SMTP_USER=smtp_user_name \
+    SMTP_PASSWORD=smtp_password \
+    FROM_EMAIL=mailer@smtp.example.com \
+    USE_NEW_RELIC= \
+    NEW_RELIC_LICENSE_KEY= \
+    CDN_URL=http://localhost:5006 \
+    CDN_ACCESS_TOKEN=SOME_SECRET_TOKEN \
+    CAPTCHA_SALT= \
+    CAPTCHA_ENCRYPTION_KEY= \
+    GOOGLE_OAUTH2_CLIENT_ID= \
+    GOOGLE_OAUTH2_CLIENT_SECRET= \
+    GITHUB_OAUTH2_CLIENT_ID= \
+    GITHUB_OAUTH2_CLIENT_SECRET= \
+    ENABLE_INTEGRATIONS=true \
+    ENABLE_TELEGRAM_INTEGRATION=true \
+    TELEGRAM_BOT_TOKEN= \
+    TELEGRAM_WEBHOOK_DOMAIN= \
+    TELEGRAM_WEBHOOK_PATH='/v1/telegram/webhook' \
+    TELEGRAM_WEBHOOK_IP_ADDRESS= \
+    TELEGRAM_WEBHOOK_SECRET_TOKEN=
+RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
+WORKDIR /app
+COPY --from=build /build/package*.json ./
+COPY --from=build /build/dist/ ./dist/
+COPY --from=build /build/migrations ./migrations
+COPY --from=build /build/node_modules/ ./node_modules/
+CMD [ "npm", "run", "start:prod" ]
+EXPOSE 5005
+HEALTHCHECK CMD wget -nv -t1 --spider 'http://localhost:5005/ping' || exit 1

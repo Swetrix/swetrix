@@ -1,0 +1,101 @@
+version: '3.9'
+services:
+  # This is the frontend, you can remove it if you want
+  swetrix:
+    image: swetrix/swetrix-fe:2.0.0
+    restart: always
+    depends_on:
+      - swetrix-api
+    ports:
+      - '80:80'
+    environment:
+      - API_URL=http://localhost:8080/
+      - REACT_APP_AIAPI_URL=https://aiapi.swetrix.com/
+
+  # This is the analytics API
+  swetrix-api:
+    image: swetrix/swetrix-api:latest
+    container_name: swetrix-api
+    restart: always
+    ports:
+      - '8080:5005'
+    environment:
+      - TWO_FACTOR_AUTHENTICATION_APP_NAME=Swetrix
+      - CLIENT_URL=https://swetrix.com
+      - JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret
+      - JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret
+      - REDIS_HOST=redis
+      - MYSQL_HOST=mariadb
+      - CLICKHOUSE_HOST=http://clickhouse
+      - API_ORIGINS=
+      - SMTP_HOST=localhost
+      - SMTP_BROADCAST_HOST=localhost
+      - SMTP_PORT=1025
+      - SMTP_USER=smtp_user_name
+      - SMTP_PASSWORD=smtp_password
+      - FROM_EMAIL=mailer@smtp.example.com
+      - USE_NEW_RELIC=
+      - NEW_RELIC_LICENSE_KEY=
+      - CDN_URL=http://localhost:5006
+      - CDN_ACCESS_TOKEN=SOME_SECRET_TOKEN
+      - CAPTCHA_SALT=
+      - CAPTCHA_ENCRYPTION_KEY=
+      - GOOGLE_OAUTH2_CLIENT_ID=
+      - GOOGLE_OAUTH2_CLIENT_SECRET=
+      - GITHUB_OAUTH2_CLIENT_ID=
+      - GITHUB_OAUTH2_CLIENT_SECRET=
+      - ENABLE_INTEGRATIONS=true
+      - ENABLE_TELEGRAM_INTEGRATION=true
+      - TELEGRAM_BOT_TOKEN=
+      - TELEGRAM_WEBHOOK_DOMAIN=
+      - TELEGRAM_WEBHOOK_PATH='/v1/telegram/webhook'
+      - TELEGRAM_WEBHOOK_IP_ADDRESS=
+      - TELEGRAM_WEBHOOK_SECRET_TOKEN=
+    links:
+      - 'redis'
+      - 'mariadb'
+      - 'clickhouse'
+    depends_on:
+      - 'redis'
+      - 'mariadb'
+      - 'clickhouse'
+  redis:
+    image: redis:7.0.11-alpine
+    restart: always
+    environment:
+      - REDIS_PORT=6379
+      - REDIS_USER=default
+      - REDIS_PASSWORD=
+  #   volumes:
+  #     - '/opt/redis-volume:/data'
+  mariadb:
+    image: linuxserver/mariadb:alpine
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=analytics
+      - MYSQL_USER=swetrix
+      - MYSQL_PASSWORD=password
+    volumes:
+     - swetrix-users-data:/var/lib/mysql
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.4.2.11-alpine
+    container_name: clickhouse
+    environment:
+      - CLICKHOUSE_DATABASE=analytics
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PORT=8123
+      - CLICKHOUSE_PASSWORD=password
+    restart: always
+    volumes:
+      - swetrix-events-data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+volumes:
+  swetrix-events-data:
+    driver: local
+  swetrix-users-data:
+    driver: local
+

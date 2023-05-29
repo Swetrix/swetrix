@@ -4,15 +4,8 @@ services:
     image: redis:7.0.11-alpine
     ports:
       - 6379:6379
-  mysql:
-    image: mysql:8.0.33
-    environment:
-      MYSQL_DATABASE: 'analytics'
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-    ports:
-      - 3306:3306
   clickhouse:
-    image: clickhouse/clickhouse-server:23.2.6.34-alpine
+    image: clickhouse/clickhouse-server:23.4.2.11-alpine
     environment:
       CLICKHOUSE_DB: 'analytics'
     ports:

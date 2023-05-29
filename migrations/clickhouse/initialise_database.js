@@ -24,7 +24,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     cc Nullable(FixedString(2)),
     sdur Nullable(UInt32), 
     unique UInt8,
-    created DateTime
+    created DateTime('UTC')
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -45,7 +45,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     me Nullable(String),
     ca Nullable(String),
     cc Nullable(FixedString(2)),
-    created DateTime
+    created DateTime('UTC')
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -67,7 +67,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     domLoad Nullable(UInt32),
     pageLoad Nullable(UInt32),
     ttfb Nullable(UInt32),
-    created DateTime
+    created DateTime('UTC')
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -82,7 +82,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     os Nullable(String),
     cc Nullable(FixedString(2)),
     manuallyPassed UInt8,
-    created DateTime
+    created DateTime('UTC')
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)

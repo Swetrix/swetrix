@@ -16,7 +16,7 @@ const UTM_SOURCES = ['organic', 'paid', 'referral']
 const UTM_MEDIUMS = ['email', 'social', 'search']
 const UTM_CAMPAIGNS = ['winter_sale', 'spring_sale', 'summer_sale', 'fall_sale']
 const PAGES = ['/', '/signup', '/login', '/news', '/some-interesting-page.html']
-const URLS = _.map(_.times(36, _.constant(null)), faker.internet.url)
+const URLS = Array.from({ length: 36 }, () => faker.internet.url())
 const DEVICES = ['desktop', 'mobile', 'tablet', 'wearable']
 const BROWSERS = ['Chrome', 'Firefox', 'Safari', 'Opera', 'Edge', 'IE']
 const CUSTOM_EVENTS = ['click', 'hover', 'scroll', 'submit', 'error', 'signup', 'oauth', 'test', 'hello', '235535123433']
@@ -62,7 +62,7 @@ const insertData = async (pid, rowCount, processedRecords, table) => {
   }
 }
 
-const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
+const generateAnalyticsData = async (pid, rowCount, from, to) => {
   const records = []
 
   for (let i = 0; i < rowCount; ++i) {
@@ -74,15 +74,15 @@ const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
       faker.helpers.arrayElement(DEVICES), // dv
       faker.helpers.arrayElement(BROWSERS), // br
       faker.helpers.arrayElement(OS), // os
-      _.toLower(faker.address.countryCode()), // lc
+      _.toLower(faker.location.countryCode()), // lc
       faker.helpers.arrayElement(URLS), // ref
       faker.helpers.arrayElement(UTM_SOURCES), // so
       faker.helpers.arrayElement(UTM_MEDIUMS), // me
       faker.helpers.arrayElement(UTM_CAMPAIGNS), // ca
-      faker.address.countryCode(), // cc
-      faker.datatype.number({ min: 0, max: 10000 }), // sdur
-      faker.datatype.number({ min: 0, max: 9 }) === 0 ? 1 : 0, // unique; 10% chance of unique record
-      _.split(faker.date.between(beginDate, endDate).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
+      faker.location.countryCode(), // cc
+      faker.number.int({ min: 0, max: 10000 }), // sdur
+      faker.number.int({ min: 0, max: 9 }) === 0 ? 1 : 0, // unique; 10% chance of unique record
+      _.split(faker.date.between({ from, to }).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
     ]
     records.push(record)
   }
@@ -95,7 +95,7 @@ const generateAnalyticsData = async (pid, rowCount, beginDate, endDate) => {
   insertData(pid, rowCount, processedRecords, 'analytics')
 }
 
-const generateCaptchaData = async (pid, rowCount, beginDate, endDate) => {
+const generateCaptchaData = async (pid, rowCount, from, to) => {
   const records = []
 
   for (let i = 0; i < rowCount; ++i) {
@@ -104,9 +104,9 @@ const generateCaptchaData = async (pid, rowCount, beginDate, endDate) => {
       faker.helpers.arrayElement(DEVICES), // dv
       faker.helpers.arrayElement(BROWSERS), // br
       faker.helpers.arrayElement(OS), // os
-      faker.address.countryCode(), // cc
-      faker.datatype.number({ min: 0, max: 2 }) === 0 ? 1 : 0, // manuallyPassed; 33% chance of manuallyPassed record
-      _.split(faker.date.between(beginDate, endDate).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
+      faker.location.countryCode(), // cc
+      faker.number.int({ min: 0, max: 2 }) === 0 ? 1 : 0, // manuallyPassed; 33% chance of manuallyPassed record
+      _.split(faker.date.between({ from, to }).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
     ]
     records.push(record)
   }
@@ -119,7 +119,7 @@ const generateCaptchaData = async (pid, rowCount, beginDate, endDate) => {
   insertData(pid, rowCount, processedRecords, 'captcha')
 }
 
-const generateCustomEventsData = async (pid, rowCount, beginDate, endDate) => {
+const generateCustomEventsData = async (pid, rowCount, from, to) => {
   const records = []
 
   for (let i = 0; i < rowCount; ++i) {
@@ -130,13 +130,13 @@ const generateCustomEventsData = async (pid, rowCount, beginDate, endDate) => {
       faker.helpers.arrayElement(DEVICES), // dv
       faker.helpers.arrayElement(BROWSERS), // br
       faker.helpers.arrayElement(OS), // os
-      _.toLower(faker.address.countryCode()), // lc
+      _.toLower(faker.location.countryCode()), // lc
       faker.helpers.arrayElement(URLS), // ref
       faker.helpers.arrayElement(UTM_SOURCES), // so
       faker.helpers.arrayElement(UTM_MEDIUMS), // me
       faker.helpers.arrayElement(UTM_CAMPAIGNS), // ca
-      faker.address.countryCode(), // cc
-      _.split(faker.date.between(beginDate, endDate).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
+      faker.location.countryCode(), // cc
+      _.split(faker.date.between({ from, to }).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
     ]
     records.push(record)
   }
@@ -149,7 +149,7 @@ const generateCustomEventsData = async (pid, rowCount, beginDate, endDate) => {
   insertData(pid, rowCount, processedRecords, 'customEV')
 }
 
-const generatePerformanceData = async (pid, rowCount, beginDate, endDate) => {
+const generatePerformanceData = async (pid, rowCount, from, to) => {
   const records = []
 
   for (let i = 0; i < rowCount; ++i) {
@@ -158,16 +158,16 @@ const generatePerformanceData = async (pid, rowCount, beginDate, endDate) => {
       faker.helpers.arrayElement(PAGES), // pg
       faker.helpers.arrayElement(DEVICES), // dv
       faker.helpers.arrayElement(BROWSERS), // br
-      faker.address.countryCode(), // cc
-      faker.datatype.number({ min: 0, max: 500 }), // dns
-      faker.datatype.number({ min: 0, max: 1000 }), // tls
-      faker.datatype.number({ min: 0, max: 100 }), // conn
-      faker.datatype.number({ min: 0, max: 500 }), // response
-      faker.datatype.number({ min: 0, max: 1500 }), // render
-      faker.datatype.number({ min: 300, max: 2000 }), // domLoad
-      faker.datatype.number({ min: 300, max: 2000 }), // pageLoad
-      faker.datatype.number({ min: 0, max: 500 }), // ttfb
-      _.split(faker.date.between(beginDate, endDate).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
+      faker.location.countryCode(), // cc
+      faker.number.int({ min: 0, max: 500 }), // dns
+      faker.number.int({ min: 0, max: 1000 }), // tls
+      faker.number.int({ min: 0, max: 100 }), // conn
+      faker.number.int({ min: 0, max: 500 }), // response
+      faker.number.int({ min: 0, max: 1500 }), // render
+      faker.number.int({ min: 300, max: 2000 }), // domLoad
+      faker.number.int({ min: 300, max: 2000 }), // pageLoad
+      faker.number.int({ min: 0, max: 500 }), // ttfb
+      _.split(faker.date.between({ from, to }).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
     ]
     records.push(record)
   }
