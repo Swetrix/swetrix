@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { ProjectModule } from 'src/project/project.module'
 import { ProjectExport } from './entity/project-export.entity'
 import { ProjectsExportsController } from './projects-exports.controller'
+import { ProjectsExportsProcessor } from './projects-exports.processor'
 import { ProjectsExportsService } from './projects-exports.service'
 import { ProjectExportRepository } from './repository/project-export.repository'
 
@@ -14,6 +15,10 @@ import { ProjectExportRepository } from './repository/project-export.repository'
     ProjectModule,
   ],
   controllers: [ProjectsExportsController],
-  providers: [ProjectsExportsService, ProjectExportRepository],
+  providers: [
+    ProjectsExportsService,
+    ProjectExportRepository,
+    ProjectsExportsProcessor,
+  ],
 })
 export class ProjectsExportsModule {}
