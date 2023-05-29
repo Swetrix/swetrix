@@ -41,7 +41,7 @@ import { withProjectProtected } from 'hoc/projectProtected'
 import { periodToCompareDate } from 'utils/compareConvertDate'
 
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
-import { getItem, setItem } from 'utils/localstorage'
+import { getItem, setItem, removeItem } from 'utils/localstorage'
 import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
@@ -439,6 +439,7 @@ const ViewProject = ({
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
+    removeItem(PROJECTS_PROTECTED)
     history.push(routes.dashboard)
   }
 
