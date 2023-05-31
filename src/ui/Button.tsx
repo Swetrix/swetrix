@@ -7,25 +7,34 @@ import PropTypes from 'prop-types'
 import Spin from './icons/Spin'
 import './ButtonChristmas.css'
 
+// Define the prop types for the component
 interface IButton {
+  // (string): The text to be displayed in the button.
   text?: string,
+  // (node): The content to be displayed in the button.
   children?: JSX.Element | string,
   primary?: boolean,
   secondary?: boolean,
   danger?: boolean,
+  // (function): The function to be called when the button is clicked.
   onClick?: () => void,
   white?: boolean,
   small?: boolean,
   regular?: boolean,
   large?: boolean,
   giant?: boolean,
+  // (string): The type of button to be rendered.
   type?: 'button' | 'submit' | 'reset',
+  // (string): Additional CSS classes to be applied to the button.
   className?: string,
+  // (boolean): Whether the button is in a loading state.
   loading?: boolean,
   semiSmall?: boolean,
   semiDanger?: boolean,
+  // (boolean): Whether the button is in a focus state.
   focus?: boolean,
   noBorder?: boolean,
+  // (boolean): Whether the button is disabled.
   disabled?: boolean,
 }
 
@@ -83,6 +92,7 @@ const Button = ({
   )
 }
 
+// Define the prop types for the component
 Button.propTypes = {
   text: PropTypes.string,
   children: PropTypes.node,
@@ -105,6 +115,7 @@ Button.propTypes = {
   disabled: PropTypes.bool,
 }
 
+// Define the default props for the component
 Button.defaultProps = {
   text: null,
   onClick: () => { },

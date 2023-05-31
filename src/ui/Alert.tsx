@@ -6,18 +6,25 @@ import {
   CheckCircleIcon, InformationCircleIcon, XCircleIcon, XMarkIcon,
 } from '@heroicons/react/24/solid'
 
+// Define the prop types for the component
 interface IAlert {
+  /* (string): The message to be displayed in the alert. */
   message: string,
+  //  (object): An object containing the options for the alert, including the type property, which can have the values 'info', 'success', or 'error'.
   options: {
     type: 'info' | 'success' | 'error',
   },
+  // (string): Additional CSS classes to be applied to the alert container.
   className: string,
+  // (function): A callback function to be called when the alert is closed.
   close: () => void,
 }
 
+// AlertTemplate component
 const AlertTemplate = ({
   message, options, className, close,
 }: IAlert): JSX.Element => {
+  // Determine the type of the alert
   const { type } = options
   const isInfo = type === 'info'
   const isSuccess = type === 'success'
@@ -61,6 +68,7 @@ const AlertTemplate = ({
   )
 }
 
+// Define prop types for the component
 AlertTemplate.propTypes = {
   message: PropTypes.string,
   className: PropTypes.string,
@@ -70,6 +78,7 @@ AlertTemplate.propTypes = {
   close: PropTypes.func,
 }
 
+// Define default props for the component
 AlertTemplate.defaultProps = {
   message: '',
   className: '',
