@@ -239,6 +239,8 @@ export const REFRESH_TOKEN: string = 'refresh_token'
 
 // LocalStorage
 export const PAGE_FORCE_REFRESHED = 'page-force-refreshed'
+export const PROJECTS_PROTECTED = 'projects_protected'
+
 export const IS_ACTIVE_COMPARE = 'is-active-compare'
 
 // List of languages with translations available

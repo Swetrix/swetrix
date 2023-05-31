@@ -15,7 +15,7 @@ export const setItem: setItemType = (key, value) => {
   localStorage.setItem(key, value)
 }
 
-type getItemType = (key: string) => string | null | {}
+type getItemType = (key: string) => any
 
 export const getItem: getItemType = (key) => {
   if (currentLocalStorage[key]) {

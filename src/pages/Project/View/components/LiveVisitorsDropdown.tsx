@@ -10,9 +10,10 @@ import Flag from 'react-flagkit'
 
 import { getLiveVisitorsInfo, IGetLiveVisitorsInfo } from 'api'
 
-const LiveVisitorsDropdown = ({ live, projectId }: {
+const LiveVisitorsDropdown = ({ live, projectId, projectPassword }: {
   live: number | string,
-  projectId: string
+  projectId: string,
+  projectPassword?: string,
 }): JSX.Element => {
   const { t } = useTranslation()
   const [show, setShow] = useState<boolean>(false)
@@ -20,7 +21,7 @@ const LiveVisitorsDropdown = ({ live, projectId }: {
   const [loading, setLoading] = useState<boolean>(true)
 
   const getLiveVisitors = async () => {
-    await getLiveVisitorsInfo(projectId)
+    await getLiveVisitorsInfo(projectId, projectPassword)
       .then((res) => {
         setLiveInfo(res)
       })
@@ -86,6 +87,10 @@ const LiveVisitorsDropdown = ({ live, projectId }: {
       )}
     </OutsideClickHandler>
   )
+}
+
+LiveVisitorsDropdown.defaultProps = {
+  projectPassword: '',
 }
 
 export default LiveVisitorsDropdown

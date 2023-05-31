@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { ResponsiveSankey } from '@nivo/sankey'
 import { connect } from 'react-redux'
 import { StateType, AppDispatch } from 'redux/store'
@@ -6,13 +6,15 @@ import UIActions from 'redux/reducers/ui'
 import { errorsActions } from 'redux/reducers/errors'
 import { IUserFlow } from 'redux/models/IUserFlow'
 import _isEmpty from 'lodash/isEmpty'
-import { getUserFlowCacheKey } from 'redux/constants'
+import { getUserFlowCacheKey, PROJECTS_PROTECTED } from 'redux/constants'
 import { getUserFlow } from 'api'
+import { getItem } from 'utils/localstorage'
 import Loader from 'ui/Loader'
 
 const mapStateToProps = (state: StateType) => ({
   userFlowAscendingCache: state.ui.cache.userFlowAscending,
   userFlowDescendingCache: state.ui.cache.userFlowDescending,
+  password: state.ui.projects.password,
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
@@ -41,6 +43,7 @@ const UserFlow = ({
   disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache,
   userFlowDescendingCache, filters, setReversed,
   isReversed, setUserFlowAscending, setUserFlowDescending, generateError, t,
+  password,
 }: {
   disableLegend?: boolean
   pid: string
@@ -62,15 +65,19 @@ const UserFlow = ({
   t: (key: string) => string
   filters: string[]
   setReversed: () => void
+  password: {
+    [key: string]: string
+  }
 }) => {
   const key = getUserFlowCacheKey(pid, period)
   const userFlowAscending = userFlowAscendingCache[key]
   const userFlowDescending = userFlowDescendingCache[key]
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const projectPassword: string = useMemo(() => password[pid] || getItem(PROJECTS_PROTECTED)?.[pid] || '', [pid, password])
 
   const fetchUserFlow = async () => {
     setIsLoading(true)
-    await getUserFlow(pid, timeBucket, period, filters, from, to, timezone)
+    await getUserFlow(pid, timeBucket, period, filters, from, to, timezone, projectPassword)
       .then((res: {
         ascending: IUserFlow
         descending: IUserFlow

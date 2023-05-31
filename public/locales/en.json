@@ -30,7 +30,9 @@
     "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
     "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
     "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
-    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider",
+    "enterPassword": "Please enter the password",
+    "incorrectPassword": "Incorrect password, please try again."
   },
   "common": {
     "features": "Features",
@@ -655,7 +657,10 @@
         "partially": "Reset partially",
         "partiallyDesc": "The 'Reset partially' function allows you to reset the data of a specific project within a given date range.",
         "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered."
-      }
+      },
+      "protected": "Password protected Dashboard",
+      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
+      "password": "Dashboard password"
     },
     "captcha": {
       "settings": {
@@ -816,7 +821,8 @@
     "main": "Ultimate open-source analytics to satisfy all your needs",
     "press": "Media & Press",
     "socialisation": "Socialisation",
-    "open": "Open startup"
+    "open": "Open startup",
+    "passwordProtected": "This project is password protected"
   },
   "header": {
     "switchTheme": "Switch theme",
