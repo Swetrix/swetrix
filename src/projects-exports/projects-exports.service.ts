@@ -1,18 +1,23 @@
+import { InjectQueue } from '@nestjs/bull'
 import { Injectable } from '@nestjs/common'
 import * as AdmZip from 'adm-zip'
-import { rm, writeFile } from 'fs/promises'
+import { Queue } from 'bull'
+import { mkdir, rm, writeFile } from 'fs/promises'
 import { parseAsync } from 'json2csv'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { clickhouse } from 'src/common/constants'
 import { CreateExportDto } from './dto/create-export.dto'
 import { ProjectExport } from './entity/project-export.entity'
+import { FileName } from './enum/file-name.enum'
 import { ProjectData } from './interface/project-data.interface'
 import { ProjectExportRepository } from './repository/project-export.repository'
 
 @Injectable()
 export class ProjectsExportsService {
   constructor(
+    @InjectQueue('projects-exports')
+    private readonly projectsExportsQueue: Queue,
     private readonly projectExportRepository: ProjectExportRepository,
   ) {}
 
@@ -25,6 +30,13 @@ export class ProjectsExportsService {
         startDate,
         endDate,
       })
+
+    const { id } = projectExport
+
+    const exportDir = join(tmpdir(), id)
+    await mkdir(exportDir)
+
+    await this.projectsExportsQueue.add('export', projectExport)
 
     return projectExport
   }
@@ -76,7 +88,7 @@ export class ProjectsExportsService {
   async convertJSONtoCSV(
     jsonData: object[],
     exportId: string,
-    fileName: 'analytics' | 'captcha' | 'custom-events' | 'performance',
+    fileName: FileName,
   ): Promise<void> {
     if (jsonData.length === 0) {
       return
