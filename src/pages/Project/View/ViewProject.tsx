@@ -63,7 +63,7 @@ import Robot from 'ui/icons/Robot'
 import Forecast from 'modals/Forecast'
 import routes from 'routes'
 import {
-  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents, getProjectCompareData,
+  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents, getProjectCompareData, checkPassword,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import {
@@ -438,8 +438,21 @@ const ViewProject = ({
   }, 0), [activeTab])
 
   const onErrorLoading = () => {
+    if (projectPassword) {
+      checkPassword(id, projectPassword).then((res) => {
+        if (res) {
+          history.push(_replace(routes.project, ':id', id))
+          return
+        }
+
+        showError(t('apiNotifications.incorrectPassword'))
+        history.push(_replace(routes.project_protected_password, ':id', id))
+        removeItem(PROJECTS_PROTECTED)
+      })
+      return
+    }
+
     showError(t('project.noExist'))
-    removeItem(PROJECTS_PROTECTED)
     history.push(routes.dashboard)
   }
 
