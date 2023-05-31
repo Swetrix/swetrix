@@ -445,7 +445,7 @@ const ViewProject = ({
           return
         }
 
-        showError(t('project.wrongPassword'))
+        showError(t('apiNotifications.incorrectPassword'))
         history.push(_replace(routes.project_protected_password, ':id', id))
       })
       return
