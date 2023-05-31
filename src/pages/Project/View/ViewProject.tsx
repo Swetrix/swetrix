@@ -447,6 +447,7 @@ const ViewProject = ({
 
         showError(t('apiNotifications.incorrectPassword'))
         history.push(_replace(routes.project_protected_password, ':id', id))
+        removeItem(PROJECTS_PROTECTED)
       })
       return
     }
