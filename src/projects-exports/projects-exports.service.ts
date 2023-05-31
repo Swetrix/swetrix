@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import AdmZip from 'adm-zip'
-import { writeFile } from 'fs/promises'
+import * as AdmZip from 'adm-zip'
+import { rm, writeFile } from 'fs/promises'
 import { parseAsync } from 'json2csv'
 import { tmpdir } from 'os'
 import { join } from 'path'
@@ -78,13 +78,22 @@ export class ProjectsExportsService {
     exportId: string,
     fileName: 'analytics' | 'captcha' | 'custom-events' | 'performance',
   ): Promise<void> {
+    if (jsonData.length === 0) {
+      return
+    }
+
     const csvData = await parseAsync(jsonData)
-    await writeFile(join(tmpdir(), exportId, `${fileName}.csv`), csvData)
+    const filePath = join(tmpdir(), exportId, `${fileName}.csv`)
+    await writeFile(filePath, csvData)
   }
 
-  async createZipArchive(exportId: string): Promise<void> {
+  async createZipArchive(exportId: string): Promise<{ path: string }> {
     const zip = new AdmZip()
-    zip.addLocalFolder(join(tmpdir(), exportId))
-    zip.writeZip(join(tmpdir(), `${exportId}.zip`))
+    const folderPath = join(tmpdir(), exportId)
+    zip.addLocalFolder(folderPath)
+    const zipPath = join(tmpdir(), `${exportId}.zip`)
+    zip.writeZip(zipPath)
+    await rm(folderPath, { recursive: true, force: true })
+    return { path: zipPath }
   }
 }
