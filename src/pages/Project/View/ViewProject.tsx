@@ -173,7 +173,7 @@ const ViewProject = ({
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
 
   const projectPassword: string = useMemo(() => password[id] || getItem(PROJECTS_PROTECTED)?.[id] || '', [id, password])
-  
+
   /* isSharedProject is a boolean check if project is shared. If isSharedProject is true,
   we used role and other colummn from sharedProjects.
   And it is used for remove settings button when user have role viewer or logic with Alert tabs */
@@ -385,9 +385,9 @@ const ViewProject = ({
   const { name } = project
 
   const pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveStats[id]} - ${name}` : name
-  
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
+
   // sharedRoles is a role for shared project
+  const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
 
   // chartMetrics is a list of metrics for dropdown
   const chartMetrics = useMemo(() => {
@@ -687,10 +687,9 @@ const ViewProject = ({
       } else {
         key = getProjectCacheKey(period, timeBucket)
       }
- 
+
       // check if we need to load new date or we have data in redux/localstorage
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]) && !_isEmpty(newFilters || filters)) {
-
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
