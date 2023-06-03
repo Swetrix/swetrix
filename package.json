@@ -55,6 +55,119 @@
     "swetrix": "^2.2.1",
     "timezone-soft": "^1.4.1"
   },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "airbnb",
+      "eslint:recommended",
+      "plugin:react/recommended"
+    ],
+    "globals": {
+      "JSX": "readonly"
+    },
+    "plugins": [
+      "lodash",
+      "react-hooks"
+    ],
+    "rules": {
+      "arrow-body-style": "off",
+      "arrow-parens": "off",
+      "import/no-cycle": "off",
+      "import/no-named-as-default": "off",
+      "import/no-named-as-default-member": "off",
+      "import/prefer-default-export": "off",
+      "no-param-reassign": "off",
+      "import/extensions": [
+        "error",
+        "ignorePackages",
+        {
+          "js": "never",
+          "jsx": "never",
+          "ts": "never",
+          "tsx": "never"
+        }
+      ],
+      "jsx-a11y/click-events-have-key-events": "off",
+      "jsx-a11y/control-has-associated-label": "off",
+      "jsx-a11y/label-has-for": "off",
+      "jsx-a11y/no-noninteractive-element-interactions": "off",
+      "jsx-a11y/no-static-element-interactions": "off",
+      "jsx-quotes": [
+        "error",
+        "prefer-single"
+      ],
+      "linebreak-style": "off",
+      "lines-between-class-members": "off",
+      "lodash/prefer-lodash-method": "warn",
+      "max-len": "off",
+      "no-console": "off",
+      "no-bitwise": "off",
+      "no-continue": "off",
+      "no-empty-function": "off",
+      "no-nested-ternary": "off",
+      "no-plusplus": "off",
+      "no-underscore-dangle": "off",
+      "no-unused-vars": "off",
+      "react/display-name": "warn",
+      "react/jsx-filename-extension": [
+        "warn",
+        {
+          "extensions": [
+            ".js",
+            ".jsx",
+            ".tsx",
+            ".ts"
+          ]
+        }
+      ],
+      "react/jsx-props-no-spreading": "off",
+      "react/prefer-stateless-function": "off",
+      "react/prop-types": "off",
+      "react/state-in-constructor": "off",
+      "react/static-property-placement": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/exhaustive-deps": "warn",
+      "react/function-component-definition": "off",
+      "semi": [
+        "error",
+        "never"
+      ]
+    },
+    "settings": {
+      "import/resolver": {
+        "node": {
+          "moduleDirectory": [
+            "node_modules",
+            "src"
+          ],
+          "extensions": [
+            ".js",
+            ".jsx",
+            ".ts",
+            ".tsx"
+          ]
+        }
+      }
+    },
+    "env": {
+      "browser": true,
+      "jest": true
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "devDependencies": {
     "@remix-run/dev": "^1.16.1",
     "@remix-run/eslint-config": "^1.16.1",
