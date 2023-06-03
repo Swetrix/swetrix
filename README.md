@@ -1,53 +1,53 @@
-# Welcome to Remix!
+<img src="/public/assets/logo_blue.png" alt="" height="80" />
 
-- [Remix Docs](https://remix.run/docs)
+[![Dockerhub pulls](https://img.shields.io/docker/pulls/swetrix/swetrix-fe.svg?style=flat)](https://hub.docker.com/r/swetrix/swetrix-fe)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/swetrix/swetrix-fe/issues)
 
-## Development
+## Description
 
-From your terminal:
+Swetrix is a privacy-oriented, simple and fully cookie-less web analytics service.\
+It provides lots of metrics like unique visitors, live visitors monitoring, custom events, pageviews and many more.
 
-```sh
-npm run dev
-```
+The service also supports many other features, like dashboard metrics & GDPR exports, email reports and more.
 
-This starts your app in development mode, rebuilding assets on file changes.
+The project's purpose is to fight web analytics giants like Google Analytics while providing better quality and experience of using service.
 
-## Deployment
+## License
 
-First, build your app for production:
+Swetrix is released under the AGPL v3.0 licence, see [LICENSE](LICENSE).
 
-```sh
-npm run build
-```
+## Install Swetrix
 
-Then run the app in production mode:
+See the API installation process at https://github.com/Swetrix/swetrix-api#readme. \
+To selfhost the frontend part of Swetrix, you simply need to set up `.env` variables, install the dependencies (`npm i`), build the code (`npm run build`) and host it as a regular React application ([how to host react apps](https://create-react-app.dev/docs/deployment/)).\
+On production, swetrix.com uses Cloudflare Pages to host the frontend part of the application.\
+The minimum supported NodeJS version is v14.
 
-```sh
-npm start
-```
+### Docker Setup
 
-Now you'll need to pick a host to deploy it to.
+Swetrix provides a Docker Image based on Alpine, Nginx and Node.
+To use it you just just pull `swetrix/swetrixfe` from dockerhub.
 
-### DIY
+#### Docker Environment Variables
 
-If you're familiar with deploying node applications, the built-in Remix app server is production-ready.
+The following environment variables are available, alongside their default values.  
+`API_URL` = `https://example.com/` | The URL of the Swetrix API  
+`TZ` = `Etc/UTC` | Sets the Timezone of the Container
 
-Make sure to deploy the output of `remix build`
+## Bugs and security
 
-- `build/`
-- `public/build/`
+Swetrix is open to pull-requests. Feel free to propose new features or submit bug requests via pull reuqests.\
+For severe security issues, please contact us at security@swetrix.com
 
-### Using a Template
+## Contributions
+Contributions are welcome! You can find and pick any task on our [public roadmap](https://github.com/orgs/Swetrix/projects/2) page.\
+Feel free to also offer any feature or improvement proposal, all of it is highly appreciated!\
+You can also contribute translations on your [Crowdin](https://crowdin.com/project/swetrix) page.
 
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over your `app/` folder to the new project that's pre-configured for your target server.
+## Contact
 
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
-```
+You can contact us via email at contact@swetrix.com
+
+## Donate
+You can support the project by donating us at https://ko-fi.com/andriir \
+We can only run our services by once again asking for your financial support!
