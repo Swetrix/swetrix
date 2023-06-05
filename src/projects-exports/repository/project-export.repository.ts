@@ -39,4 +39,8 @@ export class ProjectExportRepository {
       where: { id: exportId, projectId },
     })
   }
+
+  async updateProjectExportUrl(exportId: string, url: string): Promise<void> {
+    this.projectExportRepository.update({ id: exportId }, { url })
+  }
 }

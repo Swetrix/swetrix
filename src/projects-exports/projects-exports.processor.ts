@@ -3,11 +3,13 @@ import { Job } from 'bull'
 import { ProjectExport } from './entity/project-export.entity'
 import { FileName } from './enum/file-name.enum'
 import { ProjectsExportsService } from './projects-exports.service'
+import { ProjectExportRepository } from './repository/project-export.repository'
 
 @Processor('projects-exports')
 export class ProjectsExportsProcessor {
   constructor(
     private readonly projectsExportsService: ProjectsExportsService,
+    private readonly projectExportRepository: ProjectExportRepository,
   ) {}
 
   @Process('export')
@@ -36,5 +38,18 @@ export class ProjectsExportsProcessor {
     })
 
     await Promise.all(convertTasks)
+
+    // const { zipFileData, zipFileName, zipFilePath } =
+    //   await this.projectsExportsService.createZipArchive(id)
+
+    // const cdnUrl = await this.projectsExportsService.uploadZipArchive(
+    //   zipFileData,
+    //   zipFileName,
+    //   zipFilePath,
+    // )
+
+    // await this.projectExportRepository.updateProjectExportUrl(id, cdnUrl)
+
+    // TODO: send email
   }
 }
