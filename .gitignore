@@ -136,3 +136,10 @@ crowdin.yml
 yarn.lock
 
 **/__snapshots__
+
+.DS_Store
+
+# remix.run
+
+/build
+/public/build
