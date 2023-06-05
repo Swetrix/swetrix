@@ -29,5 +29,8 @@ module.exports = {
       'selfhosting/how-to',
       'selfhosting/configuring',
     ],
+    'Contribute': [
+      'contribute/how-to',
+    ],
   },
 }
