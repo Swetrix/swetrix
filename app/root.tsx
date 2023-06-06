@@ -8,6 +8,7 @@ import {
   ScrollRestoration,
 } from '@remix-run/react'
 import tailwindCss from './css/tailwind.css'
+import Footer from './components/Footer'
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
@@ -27,6 +28,7 @@ export default function App() {
         <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}
+        <Footer />
       </body>
     </html>
   )

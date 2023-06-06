@@ -1,6 +1,5 @@
 import React, { memo } from 'react'
-import { Link } from 'react-router-dom'
-import { HashLink } from 'react-router-hash-link'
+import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import Flag from 'react-flagkit'
@@ -10,8 +9,8 @@ import {
   isSelfhosted, DONATE_URL, FIREFOX_ADDON_URL, CHROME_EXTENSION_URL, GITHUB_URL,
   LINKEDIN_URL, STATUSPAGE_URL, TWITTER_URL, BLOG_URL, UTM_GENERATOR_URL, SWETRIX_VS_GOOGLE,
   SWETRIX_VS_CLOUDFLARE, DOCS_URL, SWETRIX_VS_SIMPLE_ANALYTICS, DISCORD_URL, CAPTCHA_URL,
-} from 'redux/constants'
-import routes from 'routes'
+} from '~/constants'
+import links from '~/links'
 
 const navigation = {
   support: [
@@ -19,7 +18,7 @@ const navigation = {
       key: string
       href: string
       internal: boolean
-    } => (authenticated ? { key: 'billing', href: routes.billing, internal: true } : { key: 'pricing', href: `${routes.main}#pricing`, internal: true }),
+    } => (authenticated ? { key: 'billing', href: links.billing, internal: true } : { key: 'pricing', href: `${links.main}#pricing`, internal: true }),
     (): {
       key: string
       href: string
@@ -29,13 +28,13 @@ const navigation = {
       key: string
       href: string
       internal: boolean
-    } => ({ key: 'contact', href: routes.contact, internal: true }),
+    } => ({ key: 'contact', href: links.contact, internal: true }),
   ],
   company: [
-    { key: 'about', href: routes.about, internal: true },
-    { key: 'changelog', href: routes.changelog, internal: true },
-    { key: 'open', href: routes.open, internal: true },
-    { key: 'press', href: routes.press, internal: true },
+    { key: 'about', href: links.about, internal: true },
+    { key: 'changelog', href: links.changelog, internal: true },
+    { key: 'open', href: links.open, internal: true },
+    { key: 'press', href: links.press, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'donate', href: DONATE_URL },
     { key: 'blog', href: BLOG_URL },
@@ -43,9 +42,9 @@ const navigation = {
     { key: 'utm', href: UTM_GENERATOR_URL },
   ],
   legal: [
-    { key: 'privacy', href: routes.privacy },
-    { key: 'terms', href: routes.terms },
-    { key: 'cookie', href: routes.cookiePolicy },
+    { key: 'privacy', href: links.privacy },
+    { key: 'terms', href: links.terms },
+    { key: 'cookie', href: links.cookiePolicy },
   ],
   comparisons: [
     { value: 'Google Analytics', href: SWETRIX_VS_GOOGLE },
@@ -120,7 +119,7 @@ const SelfHostedFooter = () => {
       <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
         <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
           <div className='px-5 py-2'>
-            <Link to={routes.contact} className='text-base text-gray-300 hover:text-white'>
+            <Link to={links.contact} className='text-base text-gray-300 hover:text-white'>
               {t('footer.contact')}
             </Link>
           </div>
@@ -135,7 +134,7 @@ const SelfHostedFooter = () => {
             </a>
           </div>
           <div className='px-5 py-2'>
-            <Link to={routes.about} className='text-base text-gray-300 hover:text-white'>
+            <Link to={links.about} className='text-base text-gray-300 hover:text-white'>
               {t('footer.about')}
             </Link>
           </div>
@@ -162,22 +161,22 @@ const Footer = ({ minimal, authenticated }: {
         <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
           <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
             <div className='px-5 py-2'>
-              <Link to={routes.contact} className='text-base text-gray-300 hover:text-white'>
+              <Link to={links.contact} className='text-base text-gray-300 hover:text-white'>
                 {t('footer.contact')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routes.privacy} className='text-base text-gray-300 hover:text-white'>
+              <Link to={links.privacy} className='text-base text-gray-300 hover:text-white'>
                 {t('footer.pp')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routes.terms} className='text-base text-gray-300 hover:text-white'>
+              <Link to={links.terms} className='text-base text-gray-300 hover:text-white'>
                 {t('footer.tos')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routes.about} className='text-base text-gray-300 hover:text-white'>
+              <Link to={links.about} className='text-base text-gray-300 hover:text-white'>
                 {t('footer.about')}
               </Link>
             </div>
@@ -266,9 +265,9 @@ const Footer = ({ minimal, authenticated }: {
                     return (
                       <li key={key}>
                         {internal ? (
-                          <HashLink to={href} className='text-base text-gray-300 hover:text-white'>
+                          <Link to={href} className='text-base text-gray-300 hover:text-white'>
                             {t(`footer.${key}`)}
-                          </HashLink>
+                          </Link>
                         ) : (
                           <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}>
                             {t(`footer.${key}`)}
