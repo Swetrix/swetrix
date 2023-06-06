@@ -36,7 +36,8 @@ async function hydrate() {
         setItem('i18nextLng', defaultLanguage)
       }
 
-      const language = navigator.language || navigator.userLanguage
+      // @ts-ignore
+      const language = navigator.language || navigator?.userLanguage
 
       if (_isString(language)) {
         const subLanguage = language.substring(0, 2)
