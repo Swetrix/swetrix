@@ -3,10 +3,9 @@ import React, {
   memo, Fragment, useRef, useMemo, MutableRefObject,
 } from 'react'
 import PropTypes from 'prop-types'
-import { Link, NavLink } from 'react-router-dom'
-import { HashLink } from 'react-router-hash-link'
-import { useAppDispatch } from 'redux/store'
-import { useDispatch } from 'react-redux'
+import { Link, NavLink } from '@remix-run/react'
+// import { useAppDispatch } from 'redux/store'
+// import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
@@ -25,16 +24,16 @@ import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import cx from 'clsx'
 
-import routes from 'routes'
-import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
-import UIActions from 'redux/reducers/ui'
+import routesPath from '~/routesPath'
+// import { authActions } from 'redux/reducers/auth'
+// import sagaActions from 'redux/sagas/actions'
+// import UIActions from 'redux/reducers/ui'
 import {
   whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
   DOCS_URL, SUPPORTED_THEMES,
-} from 'redux/constants'
-import Dropdown from 'ui/Dropdown'
-import { IUser } from 'redux/models/IUser'
+} from '~/constants'
+import Dropdown from '~/ui/Dropdown'
+// import { IUser } from 'redux/models/IUser'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -112,7 +111,8 @@ const ThemeMenu = ({
 const ProfileMenu = ({
   user, logoutHandler, t, onLanguageChange, language,
 }: {
-  user: IUser,
+  // user: IUser,
+  user: any,
   logoutHandler: () => void,
   t: (key: string, options?: {
     [key: string]: string | number | null,
@@ -215,7 +215,7 @@ const ProfileMenu = ({
           <Menu.Item>
             {({ active }) => (
               <Link
-                to={routes.changelog}
+                to={routesPath.changelog}
                 className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
                   'bg-gray-100 dark:bg-slate-800': active,
                 })}
@@ -227,7 +227,7 @@ const ProfileMenu = ({
           <Menu.Item>
             {({ active }) => (
               <Link
-                to={routes.contact}
+                to={routesPath.contact}
                 className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
                   'bg-gray-100 dark:bg-slate-800': active,
                 })}
@@ -240,7 +240,7 @@ const ProfileMenu = ({
             <Menu.Item>
               {({ active }) => (
                 <Link
-                  to={routes.billing}
+                  to={routesPath.billing}
                   className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
                     'bg-gray-100 dark:bg-slate-800': active,
                   })}
@@ -255,7 +255,7 @@ const ProfileMenu = ({
         <Menu.Item>
           {({ active }) => (
             <Link
-              to={routes.user_settings}
+              to={routesPath.user_settings}
               className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
                 'bg-gray-100 dark:bg-slate-800': active,
               })}
@@ -284,7 +284,8 @@ const ProfileMenu = ({
 const AuthedHeader = ({
   user, switchTheme, theme, onLanguageChange, rawStatus, status, t, language, logoutHandler,
 }: {
-  user: IUser
+  // user: IUser
+  user: any
   switchTheme: (thm?: string) => void
   theme: string
   onLanguageChange: (lng: string) => void
@@ -301,7 +302,7 @@ const AuthedHeader = ({
       <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-gray-300 lg:border-none'>
         <div className='flex items-center'>
           {/* Logo */}
-          <Link to={routes.main}>
+          <Link to={routesPath.main}>
             <span className='sr-only'>Swetrix</span>
             <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
           </Link>
@@ -309,7 +310,7 @@ const AuthedHeader = ({
           <div className='hidden ml-10 space-x-1 lg:flex'>
             {user?.planCode === 'trial' && (
               <Link
-                to={routes.billing}
+                to={routesPath.billing}
                 className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
                   'text-amber-800 bg-amber-200 dark:bg-amber-300 hover:bg-amber-300 dark:hover:bg-amber-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                   'text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
@@ -321,7 +322,7 @@ const AuthedHeader = ({
             )}
             {user?.planCode === 'none' && (
               <Link
-                to={routes.billing}
+                to={routesPath.billing}
                 className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
                 key='NoSubscription'
               >
@@ -336,7 +337,7 @@ const AuthedHeader = ({
               <DocumentTextIcon className='w-5 h-5 mr-1' />
               {t('common.docs')}
             </a>
-            <Link to={routes.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md'>
+            <Link to={routesPath.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md'>
               <PresentationChartLineIcon className='w-5 h-5 mr-1' />
               {t('common.dashboard')}
             </Link>
@@ -384,7 +385,7 @@ const AuthedHeader = ({
           <DocumentTextIcon className='w-5 h-5 mr-1' />
           {t('common.docs')}
         </a>
-        <Link to={routes.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md'>
+        <Link to={routesPath.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md'>
           <PresentationChartLineIcon className='w-5 h-5 mr-1' />
           {t('common.dashboard')}
         </Link>
@@ -407,7 +408,7 @@ const NotAuthedHeader = ({
       <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-gray-300 lg:border-none'>
         <div className='flex items-center'>
           {/* Logo */}
-          <Link to={routes.main}>
+          <Link to={routesPath.main}>
             <span className='sr-only'>Swetrix</span>
             <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
           </Link>
@@ -419,14 +420,14 @@ const NotAuthedHeader = ({
             </a>
             {!isSelfhosted && (
               <>
-                <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-slate-800' key='Features'>
+                <NavLink to={routesPath.features} className={({ isActive }) => `flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md + ${isActive ? 'bg-indigo-700 hover:bg-indigo-700 dark:bg-slate-800' : ''}`} key='Features'>
                   <CircleStackIcon className='w-5 h-5 mr-1' />
                   {t('common.features')}
                 </NavLink>
-                <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+                <Link to={`${routesPath.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
                   <CreditCardIcon className='w-5 h-5 mr-1' />
                   {t('common.pricing')}
-                </HashLink>
+                </Link>
               </>
             )}
             <a href={DOCS_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
@@ -458,7 +459,7 @@ const NotAuthedHeader = ({
                 {languages[language]}
               </>
             )}
-            labelExtractor={(lng) => (
+            labelExtractor={(lng: string) => (
               <div className='flex'>
                 <div className='pt-1'>
                   <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
@@ -468,11 +469,11 @@ const NotAuthedHeader = ({
             )}
             onSelect={onLanguageChange}
           />
-          <Link to={routes.signin} className='inline-block select-none bg-indigo-500 dark:bg-slate-800 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-slate-700'>
+          <Link to={routesPath.signin} className='inline-block select-none bg-indigo-500 dark:bg-slate-800 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-slate-700'>
             {t('auth.common.signin')}
           </Link>
           {!isSelfhosted && (
-            <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-slate-800 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-slate-700' aria-label={t('titles.signup')}>
+            <Link to={routesPath.signup} className='inline-block select-none bg-white dark:bg-slate-800 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-slate-700' aria-label={t('titles.signup')}>
               {t('common.getStarted')}
             </Link>
           )}
@@ -501,11 +502,11 @@ const NotAuthedHeader = ({
           <RssIcon className='w-5 h-5 mr-1' />
           {t('footer.blog')}
         </a>
-        <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
+        <Link to={`${routesPath.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
           <CreditCardIcon className='w-5 h-5 mr-1' />
           {t('common.pricing')}
-        </HashLink>
-        <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-slate-800' key='Features'>
+        </Link>
+        <NavLink to={routesPath.features} className={({ isActive }) => `flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md ${isActive ? 'bg-indigo-700 hover:bg-indigo-700 dark:bg-slate-800' : ''}`} key='Features'>
           <CircleStackIcon className='w-5 h-5 mr-1' />
           {t('common.features')}
         </NavLink>
@@ -526,7 +527,8 @@ const Header = ({
   authenticated: boolean,
   theme: string,
   // themeType: string,
-  user: IUser,
+  // user: IUser,
+  user: any,
 }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -534,8 +536,8 @@ const Header = ({
     }) => string,
     i18n: { language: string },
   } = useTranslation('common')
-  const dispatch = useAppDispatch()
-  const _dispatch = useDispatch()
+  // const dispatch = useAppDispatch()
+  // const _dispatch = useDispatch()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
 
@@ -574,13 +576,13 @@ const Header = ({
   }, [user, t])
 
   const logoutHandler = () => {
-    dispatch(authActions.logout())
-    _dispatch(sagaActions.logout(false))
+    // dispatch(authActions.logout())
+    // _dispatch(sagaActions.logout(false))
   }
 
   const switchTheme = (_theme?: string) => {
     const newTheme = (_includes(SUPPORTED_THEMES, _theme) && _theme) || (theme === 'dark' ? 'light' : 'dark')
-    dispatch(UIActions.setTheme(newTheme as 'light' | 'dark'))
+    // dispatch(UIActions.setTheme(newTheme as 'light' | 'dark'))
   }
 
   const onLanguageChange = (id: string) => {
@@ -626,7 +628,7 @@ const Header = ({
           <div className='rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white dark:bg-gray-750 divide-y-2 divide-gray-50 dark:divide-gray-800'>
             <div className='pt-5 pb-6 px-5'>
               <div className='flex items-center justify-between'>
-                <Link to={routes.main}>
+                <Link to={routesPath.main}>
                   <span className='sr-only'>Swetrix</span>
                   {theme === 'dark' ? (
                     <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
@@ -655,7 +657,7 @@ const Header = ({
                       {languages[language]}
                     </>
                   )}
-                  labelExtractor={(lng) => (
+                  labelExtractor={(lng: string) => (
                     <div className='flex'>
                       <div className='pt-1'>
                         <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
@@ -669,7 +671,7 @@ const Header = ({
                   <>
                     {user?.planCode === 'trial' && (
                       <Link
-                        to={routes.billing}
+                        to={routesPath.billing}
                         className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
                           'text-amber-800 bg-amber-200 dark:bg-amber-300 hover:bg-amber-300 dark:hover:bg-amber-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                           'text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
@@ -681,7 +683,7 @@ const Header = ({
                     )}
                     {user?.planCode === 'none' && (
                       <Link
-                        to={routes.billing}
+                        to={routesPath.billing}
                         className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
                         key='NoSubscription'
                       >
@@ -691,7 +693,7 @@ const Header = ({
                     {/* Temporarily put it here until the header is fully redesigned */}
                     {!isSelfhosted && user?.planCode !== 'none' && user?.planCode !== 'trial' && (
                       <Link
-                        to={routes.billing}
+                        to={routesPath.billing}
                         className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
                         key='Billing'
                       >
@@ -699,7 +701,7 @@ const Header = ({
                       </Link>
                     )}
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routes.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'>
+                      <Link to={routesPath.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'>
                         {t('common.accountSettings')}
                       </Link>
                     </div>
@@ -712,12 +714,12 @@ const Header = ({
                 ) : (
                   <>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routes.signin} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50'>
+                      <Link to={routesPath.signin} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50'>
                         {t('auth.common.signin')}
                       </Link>
                     </div>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routes.signup} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700' aria-label={t('titles.signup')}>
+                      <Link to={routesPath.signup} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700' aria-label={t('titles.signup')}>
                         {t('common.getStarted')}
                       </Link>
                     </div>

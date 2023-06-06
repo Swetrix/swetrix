@@ -10,7 +10,7 @@ import {
   LINKEDIN_URL, STATUSPAGE_URL, TWITTER_URL, BLOG_URL, UTM_GENERATOR_URL, SWETRIX_VS_GOOGLE,
   SWETRIX_VS_CLOUDFLARE, DOCS_URL, SWETRIX_VS_SIMPLE_ANALYTICS, DISCORD_URL, CAPTCHA_URL,
 } from '~/constants'
-import links from '~/links'
+import routesPath from '~/routesPath'
 
 const navigation = {
   support: [
@@ -18,7 +18,7 @@ const navigation = {
       key: string
       href: string
       internal: boolean
-    } => (authenticated ? { key: 'billing', href: links.billing, internal: true } : { key: 'pricing', href: `${links.main}#pricing`, internal: true }),
+    } => (authenticated ? { key: 'billing', href: routesPath.billing, internal: true } : { key: 'pricing', href: `${routesPath.main}#pricing`, internal: true }),
     (): {
       key: string
       href: string
@@ -28,13 +28,13 @@ const navigation = {
       key: string
       href: string
       internal: boolean
-    } => ({ key: 'contact', href: links.contact, internal: true }),
+    } => ({ key: 'contact', href: routesPath.contact, internal: true }),
   ],
   company: [
-    { key: 'about', href: links.about, internal: true },
-    { key: 'changelog', href: links.changelog, internal: true },
-    { key: 'open', href: links.open, internal: true },
-    { key: 'press', href: links.press, internal: true },
+    { key: 'about', href: routesPath.about, internal: true },
+    { key: 'changelog', href: routesPath.changelog, internal: true },
+    { key: 'open', href: routesPath.open, internal: true },
+    { key: 'press', href: routesPath.press, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'donate', href: DONATE_URL },
     { key: 'blog', href: BLOG_URL },
@@ -42,9 +42,9 @@ const navigation = {
     { key: 'utm', href: UTM_GENERATOR_URL },
   ],
   legal: [
-    { key: 'privacy', href: links.privacy },
-    { key: 'terms', href: links.terms },
-    { key: 'cookie', href: links.cookiePolicy },
+    { key: 'privacy', href: routesPath.privacy },
+    { key: 'terms', href: routesPath.terms },
+    { key: 'cookie', href: routesPath.cookiePolicy },
   ],
   comparisons: [
     { value: 'Google Analytics', href: SWETRIX_VS_GOOGLE },
@@ -119,7 +119,7 @@ const SelfHostedFooter = () => {
       <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
         <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
           <div className='px-5 py-2'>
-            <Link to={links.contact} className='text-base text-gray-300 hover:text-white'>
+            <Link to={routesPath.contact} className='text-base text-gray-300 hover:text-white'>
               {t('footer.contact')}
             </Link>
           </div>
@@ -134,7 +134,7 @@ const SelfHostedFooter = () => {
             </a>
           </div>
           <div className='px-5 py-2'>
-            <Link to={links.about} className='text-base text-gray-300 hover:text-white'>
+            <Link to={routesPath.about} className='text-base text-gray-300 hover:text-white'>
               {t('footer.about')}
             </Link>
           </div>
@@ -161,22 +161,22 @@ const Footer = ({ minimal, authenticated }: {
         <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
           <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
             <div className='px-5 py-2'>
-              <Link to={links.contact} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routesPath.contact} className='text-base text-gray-300 hover:text-white'>
                 {t('footer.contact')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={links.privacy} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routesPath.privacy} className='text-base text-gray-300 hover:text-white'>
                 {t('footer.pp')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={links.terms} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routesPath.terms} className='text-base text-gray-300 hover:text-white'>
                 {t('footer.tos')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={links.about} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routesPath.about} className='text-base text-gray-300 hover:text-white'>
                 {t('footer.about')}
               </Link>
             </div>
