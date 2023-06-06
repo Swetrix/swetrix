@@ -1,0 +1,854 @@
+{
+  "apiNotifications": {
+    "somethingWentWrong": "出现问题，请再试一次",
+    "emailRegistered": "当前电子邮箱已存在",
+    "leakedPassword": "输入的密码已泄露，请使用其他密码",
+    "rateLimitHit": "请求太多，请稍后再试",
+    "cancelSubFirst": "Please cancel your paid subscription first",
+    "accountDeleted": "Your account has been deleted",
+    "accountDeleteError": "Error while deleting your account",
+    "roleUpdated": "User's role has been changed",
+    "roleUpdateError": "Error occurred while changing user's role",
+    "userInvited": "The user has been invited to your project",
+    "userInviteError": "Error occurred while inviting the user to your project",
+    "userRemoved": "The user has been removed from your project",
+    "userRemoveError": "Error occurred while removing the user from your project",
+    "quitProjectError": "Error occurred while quitting the project",
+    "quitProject": "You have quit the project",
+    "acceptInvitationError": "Error occurred while accepting the project invitation",
+    "acceptInvitation": "The project invitation has been accepted",
+    "subscriptionUpdated": "Your subscription has been updated",
+    "generate2FAError": "Error occurred while generating 2FA code",
+    "integrationRemovalError": "Error occurred while removing the integration",
+    "enterACorrectNumber": "Please enter a correct number",
+    "numberCantBeNegative": "The number cannot be negative",
+    "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
+    "invalidToken": "Invalid token",
+    "transferRequestSent": "Transfer request sent",
+    "transferProjectReject": "The project transfer request has been cancelled",
+    "socialisationGenericError": "Error occurred while linking Swetrix account with a 3rd party service",
+    "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
+    "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
+    "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
+  },
+  "common": {
+    "features": "功能",
+    "docs": "文档",
+    "getStarted": "开始",
+    "billing": "帐单",
+    "pricing": "定价",
+    "faqs": "常见问题",
+    "accountSettings": "Account settings",
+    "explore": "使用",
+    "liveDemo": "Demo演示",
+    "dashboard": "管理板面",
+    "logout": "登出",
+    "save": "保存",
+    "continue": "继续",
+    "error": "错误",
+    "close": "关闭",
+    "cancel": "取消",
+    "gotIt": "知道了",
+    "settings": "设置",
+    "openMenu": "开启菜单",
+    "closeMenu": "关闭菜单",
+    "learnMore": "Learn more",
+    "yes": "是",
+    "no": "否",
+    "is": "is",
+    "isNot": "is not",
+    "invite": "Invite",
+    "pending": "Pending",
+    "notConnected": "Not connected",
+    "connected": "Connected",
+    "goBack": "Go back",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "quit": "Quit",
+    "enable": "Enable",
+    "disable": "Disable",
+    "copied": "Copied",
+    "new": "New",
+    "loading": "Loading..",
+    "edit": "Edit",
+    "account": "Account",
+    "transferring": "Transferring",
+    "link": "Link",
+    "unlink": "Unlink"
+  },
+  "main": {
+    "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
+    "slogan": "<span>Ultimate open-source analytics</span> to satisfy all your needs.",
+    "trackEveryMetric": "在不侵犯用户隐私的情况下跟踪您需要的每个指标。",
+    "description": " Swetrix 为您的 Web 应用程序带来了高级且可定制的分析服务。",
+    "start": "Start for free",
+    "signup": "免费注册",
+    "signupTerms": "注册即表示您同意我们的<tos>条款和条件</tos>以及<pp>隐私政策。</pp>",
+    "techDetails": "想了解更多技术细节？",
+    "lookAtDocs": "查看文档和功能页面。",
+    "readyToStart": "准备好了吗？",
+    "exploreService": "探索我们的服务或创建一个帐户。",
+    "coreFeatures": {
+      "title": "Core Analytics Features",
+      "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
+    },
+    "marketplace": {
+      "title": "Marketplace & build-in Extensions",
+      "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
+      "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
+    },
+    "visitAddons": "Visit Swetrix Marketplace",
+    "privacy": {
+      "title": "Privacy compliance",
+      "list": [
+        {
+          "label": "GDPR",
+          "desc": "data and processing based in EU zone."
+        },
+        {
+          "label": "HIPAA",
+          "desc": "protect sensitive info."
+        },
+        {
+          "label": "PCI DSS",
+          "desc": "payment data security."
+        },
+        {
+          "label": "CCPA",
+          "desc": "control over the personal information."
+        }
+      ]
+    },
+    "dataProtection": "More about Data Protection",
+    "faq": {
+      "title": "得到一些问题的答案",
+      "list": [
+        {
+          "question": " Swetrix 跟踪是否需要 cookie？",
+          "answer": "不，不需要。 我们的分析脚本完全没有 cookie。 您无需在网站上使用 cookie 通知即可使用我们的服务。\n我们遵守 《一般资料保护规范》、《隐私暨电子通讯规则》、《加州消费者隐私法》、《电子隐私指令》和 《儿童在线隐私权保护法》等法规。"
+        },
+        {
+          "question": "您是否使用/共享/出售最终用户的数据？",
+          "answer": "不，我们不会。此外，我们收集的所有数据都是匿名的。 我们不会存储任何可让识别特定用户身份的数据。我们尽量做到透明和尊重隐私。"
+        },
+        {
+          "question": "我需要为您们的服务付费吗？",
+          "answer": "我们提供免费和付费帐户。虽然付费级别的大部分功能都包含在免费级别中，但付费级别每月可提供更多的活动。您可以随时升级或降级您的帐户订阅。"
+        },
+        {
+          "question": "我的数据是否安全？",
+          "answer": "我们遵守有关数据存储和处理安全的所有标准。所有数据都安全存储，第三方无法访问，所有通信始终通过加密通道 (HTTPS) 进行。"
+        }
+      ]
+    },
+    "features": [
+      {
+        "name": "Measure website traffic with 99% accuracy",
+        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
+      },
+      {
+        "name": "Demo & Geo reports",
+        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
+      },
+      {
+        "name": "UTM & Reffers tracking",
+        "desc": "All the traffic from your companies and websites will be shown without a data loss."
+      },
+      {
+        "name": "Agile system",
+        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
+      },
+      {
+        "name": "Custom events\n(really easy to setup)",
+        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
+      },
+      {
+        "name": "User flow",
+        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
+      }
+    ],
+    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
+    "mFeatures": [
+      {
+        "name": "Expand your possibilities",
+        "desc": "Browser extensions, notifications, 2FA, flexible functionality and more!"
+      },
+      {
+        "name": "Opensource",
+        "desc": "Customise Swetrix for your needs or selfhost it easily."
+      },
+      {
+        "name": "Marketplace options",
+        "desc": "Marketplace with community made extensions to improve your analytic capabilities."
+      },
+      {
+        "name": "Easy integration",
+        "desc": "Integrate your projects, add new extensions, dive into the world of analytics easily."
+      },
+      {
+        "name": "Solve your tasks, not create",
+        "desc": "Get insights and use the best solutions to solve your problems."
+      },
+      {
+        "name": "Share your best solutions",
+        "desc": "Share your best solutions with the community, get popularity and money."
+      }
+    ],
+    "supports": "Supports all popular platforms",
+    "becomeDev": "Become a developer",
+    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "marketplaceBlock": "Marketplace and extension features",
+    "coreFeaturesBlock": "Core features",
+    "testimonials": "Testimonials",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Startup founder",
+        "desc": "We use several analytics systems for the project in order to obtain the most accurate data.\nFor web analytics, we chose Swetrix as a solution where the team is constantly making new improvements and features."
+      },
+      {
+        "name": "Michael",
+        "role": "Small business owner",
+        "desc": "In business, I need to understand how customers behave on a website and why they buy or don't buy my product.\nSwetrix gives me the necessary data and valuable insights to understand my website visitors and help me increase sales."
+      },
+      {
+        "name": "Rachel",
+        "role": "CMO at NDA Company",
+        "desc": "I am working on a fairly large project and we need to comply with the GDPR agreements and a number of other requirements.\nWe work with large companies around the world and visitors to our resources want to see that we are loyal to them, but at the same time allow our department to increase conversion on the site and receive valuable insights to test new product hypotheses.\nThese tasks are completely solved by Swetrix."
+      }
+    ],
+    "opensourceAdv": "Advantages of using <url>open source</url>",
+    "opensource": [
+      {
+        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
+      },
+      {
+        "desc": "Find bugs and suggest improvements - the community will be grateful to you."
+      },
+      {
+        "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
+      }
+    ],
+    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
+    "whyUs": "为何选择我们",
+    "ourStats": "我们的统计数据",
+    "statsDesc": "Swetrix的服务强大，同时处理千万用户的数据访问",
+    "users": "用户注册",
+    "websites": "网站添加",
+    "pageviews": "Events tracked",
+    "whyUseSwetrix": "Why use <swetrix>Swetrix</swetrix> if there is <competitor></competitor>?",
+    "competitiveFeatures": {
+      "perf": "Performance monitoring",
+      "ext": "Custom extensions",
+      "gdpr": "GDPR-compatible",
+      "usfl": "User flow",
+      "alrt": "Custom alerts",
+      "pbld": "Public dashboards",
+      "shad": "Dashboard sharing",
+      "open": "Open source",
+      "ckfree": "Cookie free analytics",
+      "api": "Developer API",
+      "2fa": "Two-factor authentication"
+    }
+  },
+  "auth": {
+    "recovery": {
+      "title": "帐户恢复",
+      "save": "保存新密码",
+      "newPassword": "您的新密码",
+      "updated": "您的密码已更新"
+    },
+    "forgot": {
+      "sent": "密码重置邮件已发送至指定地址",
+      "reset": "重置密码"
+    },
+    "signin": {
+      "title": "登录您的账户",
+      "forgot": "忘记密码？",
+      "button": "登录",
+      "2fa": "Two-factor authentication",
+      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
+      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
+      "6digitCode": "6-digit authentication code"
+    },
+    "signup": {
+      "button": "注册",
+      "tos": "我接受<tos>条款和条件</tos>以及<pp>隐私政策</pp>。",
+      "email": "电子邮件地址",
+      "create": "创建您的帐户",
+      "trial": "Start your free {{amount}} day trial",
+      "noCC": "No credit card required."
+    },
+    "verification": {
+      "success": "您的邮箱已成功验证！"
+    },
+    "socialisation": {
+      "success": "Socialisation successful",
+      "orSingUpWith": "or sign up with"
+    },
+    "common": {
+      "signinInstead": "改为登录",
+      "signupInstead": "改为注册",
+      "password": "密码",
+      "noRemember": "不记得我了。",
+      "repeat": "重复密码",
+      "hint": "长于 {{amount}} 个字符",
+      "xCharsError": "密码必须至少包含 {{amount}} 个字符。",
+      "noMatchError": "密码必须匹配。",
+      "badEmailError": "请提供有效的电子邮件。",
+      "passwordTooLong": "您的密码过长最大长度为 {{amount}}",
+      "tosError": "您必须接受我们的《服务条款》 和《隐私政策》才能使用我们的服务。",
+      "email": "电子邮件",
+      "signin": "登录",
+      "checkLeakedPassword": "检查密码是否泄露",
+      "checkLeakedPasswordDesc": "当启用时，我们使用 <db> {{database}} </db> 数据库检查您的密码。我们不会把你的密码直接上传至服务器。首先，我们对密码进行哈希处理(使用SHA1)，并将该哈希的前5个字符发送给服务器。服务器将返回所有以这5个字符开头的泄露密码。在我们的服务器中，我们会检查其中一个是否与您的密码匹配。如果之前泄露过，我们会给您一个警告。我们从不以纯文本存储您的密码。",
+      "addedOn": "Added on",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithGithub": "Continue with Github"
+    }
+  },
+  "features": {
+    "feature1Name": "透明度",
+    "feature1Content": "在 Swetrix，我们相信每个人都享有隐私权和透明度。尤其是在分析方面。\n我们不会收集超越我们<docs>声明</docs>范围的信息，所有数据都存储在位于欧盟的服务器上，我们的分析脚本是公开可用的，并且可以通过我们的 <gh>Github</gh>访问。",
+    "feature2Name": "浏览器插件",
+    "feature2Content": "需要快速查看您网站的统计数据?\n我们已经开发了<chrome>Chrome</chrome>和<firefox>Firefox</firefox>扩展插件。\n使用这些，你可以立即查看最重要的见解，收到流量峰值通知和更多!",
+    "ready": "准备好了解您的用户了吗？",
+    "start": "立即开始使用 Swetrix。",
+    "list": [
+      {
+        "name": "Performance monitoring",
+        "content": "With Swetrix you can stop guessing how fast does your website load across the globe.\nWe offer a wide range of metrics, such as page load time, DNS lookup time, TTFB and more.\nYou can see data breakdowns by time spent on frontend, backend or network, view this data for the specific countries, browsers, devices.\nAll of this is available in real-time, so you can see how your website performs at any given moment."
+      },
+      {
+        "name": "Custom alerts",
+        "content": "Do you want to track traffic spikes? Or maybe the pageviews for a specific time period? All this is available with custom alerts.\nYou can set up alerts for a wide range of metrics and receive notifications via messengers like Telegram when they get triggered."
+      },
+      {
+        "name": "Extensions & Extension Marketplace",
+        "content": "Is there some feature missing or you want to modify the Dashboard specifically for your needs? All of this is possible with Swetrix Extensions: we offer a customisable SDK which will allow you to modify the dashboard in any way you want, you can also publish your extension for other people to use or install addons people created from our Extension Marketplace."
+      },
+      {
+        "name": "AI forecasting",
+        "content": "You can forecast your website traffic with our AI-powered forecasting tool."
+      },
+      {
+        "name": "Public & Shared Dashboards",
+        "content": "With Swetrix you can make your dashboard available for other people to view.\nYou can also invite other Swetrix users to your projects, assign different roles to them."
+      },
+      {
+        "name": "Simplicity",
+        "content": "When we created our service we tried to make it as simple and flexible as possible.\nNo more confusing metrics and complicated dashboards - with us you can have control over all your projects and data in a simple and straightforward way."
+      },
+      {
+        "name": "页面查看跟踪",
+        "content": "Swetrix 提供了跟踪页面浏览量的能力，包括独特的浏览量和用户流。\n所有视图都包含广泛的数据，例如用户国家、区域设置、设备类型、页面加载时间等。\n我们不使用 cookie 或任何其他类型的用户分析来收集数据。"
+      },
+      {
+        "name": "自定义活动跟踪",
+        "content": "除了跟踪页面浏览量，我们还提供跟踪自定义活动的功能。\n您可以跟踪任何活动，例如按钮点击、注册或授权。\n所有这些对用户来说也是完全私有的，因为我们不会将他们的任何其他信息与活动一起存储。\n您可以在我们的文档中阅读有关自定义活动的更多信息。"
+      },
+      {
+        "name": "开发者 API",
+        "content": "We offer a developer API, which allows you to integrate Swetrix into your own applications.\nYou can use our API to create custom dashboards, or to integrate Swetrix into your own applications."
+      },
+      {
+        "name": "Convenience",
+        "content": "Besides the big features we try to focus on small things that make any project better.\nYou can customise Swetrix for your needs, for example use your native language or your favourite theme, set up 2FA, use a timezone or a time notation you prefer."
+      },
+      {
+        "name": "速度",
+        "content": "我们速度很快。我们的分析脚本尽可能优化并使用 CDN 进行交付，这确保脚本不会减慢您的网站速度。"
+      },
+      {
+        "name": "相信",
+        "content": "我们是一家小企业，不是大公司。\n我们感兴趣的是创造一种优质的产品，以便满意客户使用，而不是从我们的用户那里榨取尽可能多的钱或出售您的个人数据。"
+      }
+    ]
+  },
+  "profileSettings": {
+    "general": "常规设置",
+    "update": "更新个人资料",
+    "email": "电子邮件报告",
+    "timezone": "Timezone preference",
+    "frequency": "我们应该多久向您发送一封有关您网站的电子邮件摘要？",
+    "noLink": "没有收到确认电子邮件地址的链接？ 请求一个新的！",
+    "requestExport": "请求数据导出",
+    "delete": "删除帐户",
+    "deactivateConfirmation": "您确定要停用您的帐户吗？\n您的所有数据都将从我们的服务器中永久删除。\n此操作无法撤消。",
+    "exportConfirmation": "根据《一般数据保护条例》 (GDPR) 第 20 条的要求，您有权接收我们存储的您的个人数据。此报告不包括每个项目的活动数据。\n数据报告将发送到您的电子邮件地址。\n注：您每两周只能请求一次数据导出。",
+    "dataExport": "数据导出",
+    "aDelete": "删除我的账户",
+    "qDelete": "要删除您的账户吗？",
+    "weekly": "每周",
+    "monthly": "每月",
+    "never": "从不",
+    "quarterly": "Quarterly",
+    "reportSent": " 《一般数据保护条例》数据报告已发送至您的电子邮件地址。",
+    "tryAgainInXDays": "请稍后再试。您每 {{amount}} 天只能请求一次 《一般数据保护条例》导出。",
+    "updated": "您的账户设置已更新",
+    "confTimeout": "电子邮件已发送，请检查您的邮箱或过几分钟再试",
+    "confSent": "账户确认链接已发送至您的邮箱",
+    "noConfLeft": "很遗憾，您的电子邮件确认请求已用完。\n请确保您能够接收电子邮件并再次检查您的垃圾邮件文件夹中的邮件。\n您可以尝试使用其他电子邮件地址或 联系我们的客户支持服务。",
+    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
+    "quitProject": "Are you sure you want to quit this project?",
+    "quitProjectTitle": "Quit {{project}}?",
+    "shared": "Shared projects",
+    "owned": "Owned projects",
+    "sharedTable": {
+      "project": "Project",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
+    "noSharedProjects": "Nobody is sharing a project with you yet.",
+    "2fa": "Two-factor authentication (2FA)",
+    "2faEnable": "Enable 2FA to make your account more secure.",
+    "2faEnableBtn": "Enable 2FA",
+    "2faDisableBtn": "Disable 2FA",
+    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
+    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
+    "enter2faToEnable": "Enter your one-time code to enable 2FA",
+    "enter2faToDisable": "Enter your one-time code or a recovery code",
+    "yourOneTimeCode": "Your one-time code",
+    "invalid2fa": "Invalid 2FA code, please try again",
+    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
+    "2faRecoverySaved": "I have saved this recovery code",
+    "2faEnabled": "Two-factor authenticated is enabled on your account.",
+    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
+    "apiKey": "API Key",
+    "noApiKey": "You haven't created any API keys yet.",
+    "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
+    "addApiKeyBtn": "Generate API Key",
+    "deleteApiKeyBtn": "Delete API Key",
+    "apiKeyDelete": "Delete your API Key?",
+    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
+    "theme": "Theme",
+    "selectTheme": "Select theme",
+    "integrations": "Integrations",
+    "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
+    "integrationsList": {
+      "telegram": "Receive notifications directly into a Telegram bot.",
+      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
+    },
+    "socialisations": "Socialisations",
+    "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
+    "cantUnlinkSocialisation": "You can't unlink this socialisation because it was used to register your account.",
+    "addIntegration": "Add integration",
+    "removeIntegration": "Remove integration",
+    "chatID": "Chat ID",
+    "12-hour": "12 hour",
+    "24-hour": "24 hour",
+    "timeFormat": "Time notation",
+    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format.",
+    "captcha": "CAPTCHA",
+    "selectProject": "Select project",
+    "captchaSecretKey": "CAPTCHA secret key",
+    "generateSecretKey": "Generate secret key",
+    "regenerateSecretKey": "Regenerate secret key",
+    "regenerateSecretKeyTitle": "Regenerate secret key?",
+    "regenerateSecretKeyMessage": "Are you sure you want to regenerate your secret key?\nAll the existing CAPTCHA widgets will stop working and you will need to update them with the new secret key.",
+    "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone."
+  },
+  "dashboard": {
+    "newProject": "新项目",
+    "newCaptchaProject": "New CAPTCHA project",
+    "verifyEmailTitle": "请先验证电子邮件地址",
+    "verifyEmailDesc": "若要开始使用我们的服务并创建您的项目，您首先需要确认您的电子邮件地址。\n\n确认您的帐户的链接已发送到您在注册时提供的电子邮件地址，如果未发送 - 您可以在帐户设置中再次请求链接。",
+    "lowEventsTitle": "You are running out of events!",
+    "lowEventsDesc": "You have used more than 85% of the available events per your tier for this month.\nThat means that in case you use 100% of the available events until the end of the month, all the subsequent traffic will not be saved.\nTo avoid this we recommend that you update your tier on the Billing page.",
+    "eventsXPercUsed": "You have used more than {{amount}}% of the available events per your tier for this month.",
+    "noProjects": "您尚未创建任何项目",
+    "createProject": "在此处创建一个新项目以开始使用我们的服务",
+    "active": "活跃",
+    "public": "公开",
+    "shared": "Shared",
+    "disabled": "已禁用",
+    "pageviews": "页面浏览量",
+    "unique": "独特浏览量",
+    "createdAt": "创建时间",
+    "inc": "增加了",
+    "dec": "减少了",
+    "liveVisitors": "实时访客",
+    "live": "Live",
+    "bounceRate": "Bounce rate",
+    "viewsPerUnique": "Views per session",
+    "trendlines": "Trend lines",
+    "invitationFor": "Invitation for {{project}}",
+    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
+    "sessionDuration": "Session duration",
+    "traffic": "Traffic",
+    "performance": "Performance",
+    "alerts": "Alerts",
+    "alertsDesc": "Automated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Network",
+    "timing": "Timing breakdown",
+    "timingFull": "Timing breakdown (full)",
+    "dns": "DNS",
+    "conn": "Connection",
+    "tls": "TLS Setup",
+    "ttfb": "Time to first byte (TTFB)",
+    "domLoad": "DOM Content Load",
+    "pageLoad": "Page load time",
+    "render": "Browser render",
+    "response": "Response Time"
+  },
+  "alert": {
+    "create": "Create an alert",
+    "add": "Add Alert",
+    "delete": "Delete alert",
+    "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
+    "noNotification": "No notification channels set",
+    "lastTriggered": "Last Triggered",
+    "never": "Never",
+    "qDelete": "Delete the alert?",
+    "settingsOf": "Settings of {{name}}",
+    "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
+    "name": "Alert name",
+    "metric": "Query metric",
+    "condition": "Trigger when the metric is",
+    "threshold": "Threshold",
+    "time": "During the last",
+    "xMinutes": "{{amount}} minutes",
+    "xHours": "{{amount}} hours",
+    "xHour": "{{amount}} hour",
+    "enabled": "Alert enabled",
+    "enabledHint": "Disabled alerts will not notify you of any events.",
+    "conditions": {
+      "greater_than": "Greater than",
+      "greater_equal_than": "Greater or equal to",
+      "less_than": "Less than",
+      "less_equal_than": "Less or equal to"
+    },
+    "metrics": {
+      "page_views": "Page views",
+      "unique_page_views": "Unique sessions",
+      "online_users": "Online users"
+    }
+  },
+  "notFoundPage": {
+    "title": "Page not found",
+    "description": "Sorry, we couldn’t find the page you’re looking for.\nPlease check the URL in the address bar and try again.",
+    "goHome": "Go back home",
+    "support": "Contact support"
+  },
+  "project": {
+    "ad": "你的网站需要这些数据吗？",
+    "noExist": "所选项目不存在",
+    "exportData": "导出数据",
+    "asImage": "作为图像",
+    "asCSV": "作为CSV",
+    "noEvTitle": "尚无活动",
+    "showAll": "Show all views",
+    "trendlineUnique": "Unique visitors trendline",
+    "trendlineTotal": "Pageviews trendline",
+    "noEvContent": "在指定的时间范围内没有捕获任何活动。\n如果您还没有跟踪任何活动，您可以查看我们的<url>文档</url>以轻松地将跟踪集成到您的应用中。",
+    "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
+    "mapping": {
+      "cc": "国家",
+      "pg": "页面",
+      "lc": "语言环境",
+      "ref": "推荐人",
+      "dv": "设备类型",
+      "br": "浏览器",
+      "os": "操作系统名称",
+      "lt": "加载时间"
+    },
+    "overview": "概览",
+    "weeklyStats": "每周统计数据",
+    "statsFor": "统计数据",
+    "event": "活动",
+    "quantity": "数量",
+    "conversion": "转换",
+    "ratio": "比率",
+    "customEv": "自定义获得",
+    "noParamData": "此参数尚无数据",
+    "conflictMetric": "The metric you selected conflicts with an already selected one",
+    "prev": "上一个",
+    "next": "下一个",
+    "unique": "独特访客",
+    "results": "Results",
+    "total": "总页面浏览量",
+    "today": "今天",
+    "yesterday": "昨天",
+    "last24h": "过去24小时",
+    "lastXDays": "最后 {{amount}} 天",
+    "lastXWeeks": "最近 {{amount}} 周",
+    "lastXMonths": "最近 {{amount}} 个月",
+    "custom": "其他日期",
+    "hour": "小时",
+    "day": "天",
+    "week": "周",
+    "month": "月",
+    "resetFilters": "Reset filters",
+    "exportImgError": "Exporting data as image failed",
+    "codeExample": "Or insert the following code into your website to track your events:",
+    "metricVis": "Metrics visualisation",
+    "settings": {
+      "verify": "请先验证您的电子邮件地址",
+      "updated": "项目的设置已更新",
+      "created": "项目已创建",
+      "pxCharsError": "项目名称不能超过 {{amount}} 个字符。",
+      "oxCharsError": "允许的来源列表必须小于 {{amount}} 符号",
+      "noNameError": "请输入项目名称。",
+      "create": "创建一个新项目",
+      "settings": "设置",
+      "name": "项目名称",
+      "pid": "项目 ID ",
+      "origins": "允许起源",
+      "originsHint": "允许将脚本与您的 ProjectID 一起使用的来源（域）列表，以逗号分隔。\n将其留空以允许所有来源（默认设置）。\n例如：cornell.edu, app.example。 com, ssu.gov.ua ",
+      "enabled": "项目已启用",
+      "public": "管理面板是公开的",
+      "enabledHint": "禁用的项目不会计算任何新传入的活动或浏览量。\n您仍然可以在管理面板中访问项目的分析。",
+      "publicHint": "通过勾选此项，互联网上的任何人（包括 Google）都可以看到该项目的管理面板。\n只有项目的管理员可以编辑设置。",
+      "createHint": "*您在创建项目后将能够更彻底地进行设置",
+      "delete": "删除项目",
+      "reset": "Reset project",
+      "qDelete": "删除项目？",
+      "qReset": "Reset the project?",
+      "deleteHint": "通过按“删除项目”，您了解此操作是不可逆的。\n该项目及其所有相关数据将从我们的服务器中删除。",
+      "resetHint": "By pressing 'Reset project' you understand, that this action is irreversible.\nThe project's pageviews and custom events will be removed from our servers, but the project identifier and other configuration will be retained.",
+      "deleted": "The project has been deleted",
+      "resetted": "The project has been resetted",
+      "noPeople": "No people have been added to this project yet.",
+      "removeMember": "Remove member",
+      "removeConfirm": "Are you sure you want to stop sharing your project with this user?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports to this user?",
+      "removeUser": "Remove {{user}}?",
+      "people": "People",
+      "inviteCoworkers": "Invite your coworkers",
+      "invite": "Invite a user",
+      "inviteTo": "Invite a user to {{project}}",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteExpity": "The invitation will expire in {{amount}} hours.",
+      "role": "Role",
+      "roles": {
+        "admin": {
+          "name": "Administrator",
+          "desc": "Can manage the project's settings, add/remove members, and invite new users.",
+          "shortDesc": "Can manage the project"
+        },
+        "viewer": {
+          "name": "Viewer",
+          "desc": "Has a read-only access to the project.",
+          "shortDesc": "Can only view the project"
+        }
+      },
+      "errorNoRole": "Please select a role.",
+      "ipBlacklist": "IP's to blacklist",
+      "ipBlacklistHint": "A list of IP addresses from which no analytics will be collected on this project.\nThis functionality is handy if you want to ignore analytics from your IP, for example.\nExample: 172.126.10.16, 192.168.0.1/32, ::1",
+      "transfer": "Transfer project",
+      "transferTo": "Transfer project",
+      "transferHint": "You can transfer '{{name}}' project to another user.\nThis user will become the project's owner and will be able to manage the project's settings, add/remove members, and invite new users.\nYou will be assigned to the project as an administrator. However, the new owner will be able to remove you from the project.",
+      "transfereeEmail": "Transferee email",
+      "reseted": {
+        "all": "Reset all",
+        "allHint": "All of the project's related analytics data will be permanently removed from our servers, but the project itself, it's settings and the ID will still be available.",
+        "partially": "Reset partially",
+        "partiallyDesc": "The 'Reset partially' function allows you to reset the data of a specific project within a given date range.",
+        "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered."
+      }
+    },
+    "captcha": {
+      "settings": {
+        "general": "General settings",
+        "inheritance": "Inheritance",
+        "name": "CAPTCHA project name",
+        "pid": "CAPTCHA project ID",
+        "enabled": "CAPTCHA enabled",
+        "enabledHint": "Disabled CAPTCHA projects will not count any newly incoming events.\nYou will still be able to access the analytics in dashboard."
+      }
+    },
+    "emails": {
+      "title": "Email reports",
+      "description": "Send regular email reports to as many recipients as you want",
+      "add": "Add a recipient",
+      "reportFrequency": "Report frequency"
+    },
+    "page": "Page",
+    "reverse": "Reverse",
+    "userFlow": {
+      "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
+    },
+    "noDateRange": "Please select a date range",
+    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
+    "previousPeriod": "Previous period",
+    "disableCompare": "Disable comparison",
+    "compare": "Compare"
+  },
+  "billing": {
+    "title": "账单和计划",
+    "desc": "我们提供免费服务。\n如果您需要处理更多流量，您可能需要升级您的计划。\n以下是现有计划列表。没有隐藏费用或其他隐蔽条款，清晰透明！",
+    "contact": "Need to track more than {{amount}} million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
+    "update": "更新付款详细信息",
+    "nextBillDate": "Next bill date:",
+    "trialEnds": "Trial ends {{date}}",
+    "cancelSub": "Cancel subscription",
+    "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
+    "inactive": "Inactive",
+    "cancelledSubMessage": "You've cancelled your subscription.\nThe subscription will be active until {{date}}.\nAfter that, no new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
+    "planUsage": "Plan usage",
+    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
+    "breakdown": "Breakdown by the event type:",
+    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
+    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Go to plan usage"
+  },
+  "modals": {
+    "paidFeature": {
+      "title": "Upgrade your plan to use this feature",
+      "desc": "We apologise for the inconvenience, but you must subscribe to a paid plan to use this feature.\n\nWe realise that you might not be ready to buy a paid subscription yet, but buying it will give you not only access to this feature, but also many other great perks, such as access to all the other paid features, higher limits on visits per month and number of websites available, and you will support the growth of a small business :)"
+    },
+    "forecast": {
+      "title": "Traffic forecast",
+      "desc": "This is a rough estimate of how much traffic you can expect to get on your website, based on Swetrix AI models.",
+      "input": "The quantity of '{{frequency}}' you want to forecast"
+    }
+  },
+  "pricing": {
+    "title": "定价计划",
+    "adv": "免费开始，无需信用卡。\n当您的业务增长时，您可以随时升级您的计划。",
+    "currentPlan": "当前计划",
+    "mostPopular": "最受欢迎",
+    "free": "免费",
+    "legacy": "Legacy",
+    "perMonth": "月",
+    "perYear": "yr",
+    "yourPlan": "您的计划",
+    "downgrade": "降级",
+    "upgrade": "升级",
+    "whatIncl": "包括什么",
+    "monthlyBilling": "Monthly billing",
+    "yearlyBilling": "Yearly billing",
+    "switchToMonthly": "Switch to monthly billing",
+    "switchToYearly": "Switch to yearly billing",
+    "xTrialDaysLeft": "{{amount}} trial days left",
+    "trialEnded": "Trial ended",
+    "trialEndsToday": "Trial ends today",
+    "trialEndsTomorrow": "Trial ends tomorrow",
+    "tiers": {
+      "hobby": "爱好",
+      "freelancer": "自由职业者",
+      "startup": "启动",
+      "enterprise": "企业",
+      "trial": "Free trial",
+      "upToXEVMo": "Up to {{amount}} events per month",
+      "xEvMo": "{{amount}} events per month",
+      "upToXVMo": "Up to {{amount}} visits per month",
+      "xVMo": "{{amount}} visits per month",
+      "xAlertsSingular": "{{amount}} alerting rule",
+      "xAlertsPlural": "{{amount}} alerting rules",
+      "upToXProjects": "Create up to {{amount}} projects",
+      "upToXWebsites": "Add up to {{amount}} websites",
+      "xMoDataRetention": "{{amount}} months of data retention",
+      "evXPlanIncl": "Everything {{plan}} plan includes",
+      "smallBusiSupport": "By buying this you are supporting a small business",
+      "dataExports": "Unlimited data exports",
+      "dataOwnership": "100% data ownership",
+      "dashboards": "Shared & Public Dashboards",
+      "reports": "Email reports",
+      "userFlowAnalysis": "User flow analysis"
+    },
+    "downgradeTitle": "你确定要下调等级吗？",
+    "downgradeDesc": "降级后，你的套餐将减少可用内容。如果您的网站流量超过了降级的套餐，这将导致无法记录在我们的数据库中。\n你可以随时回到之前的套餐。\n如果您有任何问题，请随时发送电子邮件至 {{email}}。",
+    "cancelTitle": "Are you sure you want to cancel your subscription?",
+    "cancelDesc": "After cancelling your subscription, no new events will be collected by Swetrix for your projects.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
+  },
+  "contact": {
+    "howTo": "Have something to ask? There are several ways on how to contact us:",
+    "ways": {
+      "email": "You can drop us an email at <mail>{{email}}</mail>",
+      "twitter": "Tweet or message us at <url>{{twitter}}</url>",
+      "discord": "Join our Discord server by following <url>this link</url>",
+      "chat": "Use a chatbox located on the bottom right of this page"
+    }
+  },
+  "beta": {
+    "title": "测试版",
+    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
+  },
+  "press": {
+    "description": "Our assets for use in your articles and other media. If you use any of the assets below, we'd be grateful if you'd leave a link to one of our pages on your website. If you need other assets or have any questions, please <url>contact us</url>.",
+    "logos": "Logos",
+    "logo": "Logo",
+    "logoNoText": "Logo without text",
+    "logoWhiteText": "Logo with white text",
+    "font": {
+      "title": "Font",
+      "description": "We use {{font}} font on Swetrix websites. See more information about it on it's <url>official website</url>."
+    }
+  },
+  "open": {
+    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
+    "updated": "This page is updated regularly.",
+    "finance": {
+      "title": "Finance metrics",
+      "desc": "Our financial metrics, such as revenue, losses, etc."
+    },
+    "usage": {
+      "title": "Usage metrics",
+      "desc": "Our user metrics, such as amount of active users, connected websites.",
+      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
+    }
+  },
+  "titles": {
+    "recovery": "账户恢复",
+    "signin": "登录",
+    "signup": "注册",
+    "verification": "电子邮箱验证",
+    "invitation": "Shared project invitation",
+    "profileSettings": "个人资料设置",
+    "features": "功能",
+    "dashboard": "管理面板",
+    "docs": "文档",
+    "billing": "账单",
+    "contact": "联系方式",
+    "changelog": "Changelog",
+    "main": "Ultimate open-source analytics to satisfy all your needs",
+    "press": "Media & Press",
+    "socialisation": "Socialisation",
+    "open": "Open startup"
+  },
+  "header": {
+    "switchTheme": "Switch theme",
+    "dark": "Dark",
+    "light": "Light",
+    "signedInAs": "Signed in as"
+  },
+  "footer": {
+    "slogan": "最好的应用需要最好的服务。",
+    "description": " Swetrix 是一个尊重用户隐私的强大分析平台",
+    "madeIn": "制造",
+    "hostedIn": "托管于",
+    "ukraine": "乌克兰",
+    "eu": "欧盟",
+    "support": "支持",
+    "company": "公司",
+    "legal": "法律",
+    "copy": " Swetrix Analytics。保留所有权利。",
+    "contact": "联系人",
+    "pp": "隐私政策",
+    "tos": "服务条款",
+    "blog": "博客",
+    "utm": "UTM Generator",
+    "billing": "账单",
+    "pricing": "定价",
+    "docs": "文档",
+    "guides": "指南",
+    "privacy": "隐私",
+    "cookie": "Cookie Policy",
+    "terms": "条款",
+    "status": "状态",
+    "donate": "捐",
+    "changelog": "Changelog",
+    "captcha": "CAPTCHA",
+    "press": "Media & Press",
+    "open": "Open startup",
+    "about": "About us",
+    "comparisons": "Comparisons"
+  }
+}

@@ -1,0 +1,854 @@
+{
+  "apiNotifications": {
+    "somethingWentWrong": "Ein Fehler ist aufgetreten. Bitte noch einmal versuchen",
+    "emailRegistered": "Ein Benutzer mit diesem Benutzernamen existiert bereits",
+    "leakedPassword": "Das angegebene Passwort ist geleakt worden und daher nicht sicher, bitte verwenden Sie ein anderes",
+    "rateLimitHit": "Zu viele Anfragen. Bitte versuchen Sie es später erneut",
+    "cancelSubFirst": "Bitte kündigen Sie zuerst Ihr bezahltes Abonnement",
+    "accountDeleted": "Ihr Konto wurde gelöscht",
+    "accountDeleteError": "Fehler beim Löschen Ihres Kontos",
+    "roleUpdated": "Die Rolle des Benutzers wurde geändert",
+    "roleUpdateError": "Fehler beim Ändern der Benutzerrolle",
+    "userInvited": "Der Benutzer wurde zu Ihrem Projekt eingeladen",
+    "userInviteError": "Fehler beim Einladen des Benutzers in Ihr Projekt",
+    "userRemoved": "Der Benutzer wurde aus Ihrem Projekt entfernt",
+    "userRemoveError": "Fehler beim Entfernen des Benutzers aus Ihrem Projekt",
+    "quitProjectError": "Es ist ein Fehler beim Verlassen des Projekts aufgetreten",
+    "quitProject": "Sie haben das Projekt verlassen",
+    "acceptInvitationError": "Beim Akzeptieren der Einladung ist ein Fehler aufgetreten",
+    "acceptInvitation": "Die Einladung zum Projekt wurde angenommen",
+    "subscriptionUpdated": "Ihr Abonnement wurde aktualisiert",
+    "generate2FAError": "Fehler beim Generieren des 2FA-Codes",
+    "integrationRemovalError": "Beim Entfernen der Integration ist ein Fehler aufgetreten",
+    "enterACorrectNumber": "Bitte geben Sie eine korrekte Zahl ein",
+    "numberCantBeNegative": "Die Zahl darf nicht negativ sein",
+    "forecastNumberCantBeBigger": "Die prognostizierte Zahl kann nicht größer sein als {{max}} für die gewählte Frequenz",
+    "invalidToken": "Ungültiger Token",
+    "transferRequestSent": "Transferanfrage gesendet",
+    "transferProjectReject": "Die Anfrage zum Projekttransfer wurde abgebrochen",
+    "socialisationGenericError": "Fehler beim Verknüpfen des Swetrix-Kontos mit einem Drittanbieter Dienst",
+    "socialisationUnlinkGenericError": "Fehler beim Entfernen der Verknüpfung des Swetrix-Kontos mit dem Drittanbieter Dienst",
+    "socialisationAuthGenericError": "Fehler bei der Authentifizierung mit einem Drittanbieter Dienst",
+    "socialAccountLinked": "Das Swetrix-Konto wurde mit dem ausgewählten Anbieter verknüpft",
+    "socialAccountUninked": "Das Swetrix-Konto wurde vom gewählten Anbieter getrennt"
+  },
+  "common": {
+    "features": "Funktionen",
+    "docs": "Dokumentation",
+    "getStarted": "Erste Schritte",
+    "billing": "Rechnung",
+    "pricing": "Preise",
+    "faqs": "FAQ",
+    "accountSettings": "Konto-Einstellungen",
+    "explore": "Entdecken",
+    "liveDemo": "Live Demo",
+    "dashboard": "Dashboard",
+    "logout": "Abmelden",
+    "save": "Speichern",
+    "continue": "Fortfahren",
+    "error": "Fehler",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "gotIt": "Verstanden",
+    "settings": "Einstellungen",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen",
+    "learnMore": "Mehr erfahren",
+    "yes": "Ja",
+    "no": "Nein",
+    "is": "ist",
+    "isNot": "ist nicht",
+    "invite": "Einladen",
+    "pending": "Ausstehend",
+    "notConnected": "Nicht verbunden",
+    "connected": "Verbunden",
+    "goBack": "Zurück",
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen",
+    "delete": "Löschen",
+    "quit": "Verlassen",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "copied": "Kopiert",
+    "new": "Neu",
+    "loading": "Laden...",
+    "edit": "Bearbeiten",
+    "account": "Konto",
+    "transferring": "Übertragung",
+    "link": "Verknüpfung",
+    "unlink": "Verknüpfung aufheben"
+  },
+  "main": {
+    "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
+    "slogan": "<span>Ultimative Open-Source-Analytics</span> um alle Ihre Wünsche zu befriedigen.",
+    "trackEveryMetric": "Analysieren Sie alle benötigten Metriken, ohne die Privatsphäre Ihrer Anwender zu verletzen.",
+    "description": "Swetrix bietet einen fortgeschrittenen und konfigurierbaren Analysedienst für Ihre Webanwendungen.",
+    "start": "Kostenlos beginnen",
+    "signup": "Jetzt gratis registrieren!",
+    "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
+    "techDetails": "Möchten Sie weitere technische Details erfahren?",
+    "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
+    "readyToStart": "Sind Sie bereit los zu legen?",
+    "exploreService": "Erkundigen Sie sich über unseren Dienst oder registrieren Sie sich.",
+    "coreFeatures": {
+      "title": "Kern-Analysefunktionen",
+      "desc": "Leistungsfähige und einfache Analytics um alle benötigten Kennzahlen anzuzeigen. Frei von Cookies. Man muss kein Datenwissenschaftler sein, um unsere Analytics zu verstehen."
+    },
+    "marketplace": {
+      "title": "Marktplatz & integrierte Erweiterungen",
+      "desc1": "Benötigen Sie zusätzliche Funktionen? Verwenden Sie Erweiterungen oder programmieren Sie Ihre eigenen! Ab jetzt brauchen Sie nicht mehr viele Datenquellen aus verschiedenen Systemen zu nutzen - erweitern und ergänzen Sie alles in einem!",
+      "desc2": "Installieren Sie Erweiterungen und verkaufen Sie Ihre eigenen. Sie haben eine tolle Erweiterung für Ihr Unternehmen entwickelt? Großartig! Veröffentlichen Sie es auf dem Markt und teilen Sie Ihre Einblicke mit der ganzen Community."
+    },
+    "visitAddons": "Besuche Swetrix Marktplatz",
+    "privacy": {
+      "title": "Datenschutzkonform",
+      "list": [
+        {
+          "label": "DSGVO",
+          "desc": "daten und Verarbeitung mit Sitz in der EU Zone."
+        },
+        {
+          "label": "HIPAA",
+          "desc": "vertrauliche Informationen schützen."
+        },
+        {
+          "label": "PCI DSS",
+          "desc": "Sicherheit der Zahlungsdaten."
+        },
+        {
+          "label": "CCPA",
+          "desc": "Kontrolle über die persönlichen Informationen."
+        }
+      ]
+    },
+    "dataProtection": "Mehr zum Datenschutz",
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "list": [
+        {
+          "question": "Benutzt Swetrix Cookies?",
+          "answer": "Nein. Unser Tracking-Script arbeitet komplett ohne den Einsatz von Cookies. Sie können unseren Dienst nutzen, ohne einen Cookie-Banner auf ihrer Webseite einzubauen. \nWir sind mit Richtlinien wie GDPR, PECR, CCPA, ePrivacy und COPPA konform."
+        },
+        {
+          "question": "Werden die Daten der Endnutzer verwendet, weitergegeben oder verkauft?",
+          "answer": "Nein, die Daten werden weder verwendet, weitergegeben oder verkauft. Alle gesammelten Daten werden zudem anonymisiert und wir speichern keine personenbezogenen Daten. Wir versuchen so transparent und respektvoll wie möglich mit Privatsphäre umzugehen."
+        },
+        {
+          "question": "Muss ich für ihren Dienst bezahlen?",
+          "answer": "Wir bieten sowohl kostenfreie als auch kostenpflichtige Abos an. Während die meisten Funktionen des kostenpflichtigen Abos auch im kostenfreien Abo enthalten sind, erhalten Sie in den kostenpflichtigen Abos mehr Tracking-Events pro Monat. Sie können Ihr Abo jederzeit herauf- oder herabstufen."
+        },
+        {
+          "question": "Sind meine Daten sicher?",
+          "answer": "Wir halten uns an alle Standards zur Sicherheit der Datenspeicherung und -verarbeitung. Alle Daten werden sicher gespeichert, können von Dritten nicht eingesehen werden und die gesamte Kommunikation erfolgt stets über verschlüsselte Kanäle (HTTPS)."
+        }
+      ]
+    },
+    "features": [
+      {
+        "name": "Website-Traffic mit 99% Genauigkeit messen",
+        "desc": "Die genaueste Analytics-Lösung, um alle grundlegenden Metriken zu verfolgen und die RICHTIGEN Daten zu sehen."
+      },
+      {
+        "name": "Demo & Geo-Berichte",
+        "desc": "Ja, es ist ein Standard. Aber wir verfolgen genau, wo Ihre Benutzer sind."
+      },
+      {
+        "name": "UTM & Reffer-Tracking",
+        "desc": "Der gesamte Datenverkehr Ihrer Unternehmen und Websites wird ohne Datenverlust angezeigt."
+      },
+      {
+        "name": "Agiles System",
+        "desc": "Ein flexibles Einstellungssystem für die Grundregeln - wie die Session-Definition, Traffic-Accounting usw. ist einfach einzurichten und anzupassen."
+      },
+      {
+        "name": "Eigene Ereignisse\n(sehr einfach einzurichten)",
+        "desc": "Die benutzerfreundliche Oberfläche und das einfache Setzen von Zielen wird Ihnen helfen, die Effektivität Ihrer Website zu messen."
+      },
+      {
+        "name": "Benutzerfluss",
+        "desc": "Verfolgen Sie, wie Benutzer auf Ihre Website gelangen und wohin sie gehen. Lernen Sie das Verhalten und die Muster Ihrer Besucher."
+      }
+    ],
+    "demoGeoReports": "Ja, es ist ein Standard. Aber wir verfolgen genau, wo Ihre Benutzer sind.",
+    "mFeatures": [
+      {
+        "name": "Erweitern Sie Ihre Möglichkeiten",
+        "desc": "Browser-Erweiterungen, Benachrichtigungen, 2FA, flexible Funktionalität und mehr!"
+      },
+      {
+        "name": "Open-Source",
+        "desc": "Passen Sie Swetrix ganz einfach an Ihre Bedürfnisse an oder betreiben Sie es kinderleicht selbst."
+      },
+      {
+        "name": "Marktplatz-Einstellungen",
+        "desc": "Marktplatz mit von der Community entwickelten Erweiterungen, um Ihre analytischen Fähigkeiten zu verbessern."
+      },
+      {
+        "name": "Einfache Integration",
+        "desc": "Integrieren Sie Ihre Projekte, fügen Sie neue Erweiterungen hinzu, tauchen Sie ein in die Welt der Analyse."
+      },
+      {
+        "name": "Ihre Aufgaben lösen, statt weitere zu erzeugen",
+        "desc": "Holen Sie sich Einblicke und nutzen Sie die besten Lösungen, um Ihre Probleme zu lösen."
+      },
+      {
+        "name": "Teilen Sie Ihre besten Lösungen",
+        "desc": "Teilen Sie Ihre besten Lösungen mit der Community, erhalten Sie dafür Popularität und Geld."
+      }
+    ],
+    "supports": "Unterstützt alle beliebten Plattformen",
+    "becomeDev": "Werden Sie Entwickler",
+    "becomeDevDesc": "Schreiben Sie Ihre Erweiterungen, folgen Sie den Neuigkeiten und treten Sie unserer Entwicklercommunity bei.",
+    "marketplaceBlock": "Marktplatz- und Erweiterungsfunktionen",
+    "coreFeaturesBlock": "Kernfunktionen",
+    "testimonials": "Kundenmeinungen",
+    "lTestimonials": [
+      {
+        "name": "Alex",
+        "role": "Startup-Gründer",
+        "desc": "Wir verwenden für unser Projekt mehrere Analysesysteme, um die genauesten Daten zu erhalten.\nFür Webanalytik haben wir Swetrix als Lösung gewählt, bei der das Team ständig neue Verbesserungen und Funktionen vornimmt."
+      },
+      {
+        "name": "Michael",
+        "role": "Kleinunternehmer",
+        "desc": "Im Geschäftsleben muss ich verstehen, wie sich Kunden auf einer Website verhalten und warum sie mein Produkt kaufen oder nicht kaufen.\nSwetrix gibt mir die notwendigen Daten und wertvolle Einblicke, um meine Website-Besucher zu verstehen und mir zu helfen, den Umsatz zu steigern."
+      },
+      {
+        "name": "Rachel",
+        "role": "Vorstand eines Non-Profit-Unternehmens",
+        "desc": "Ich arbeite an einem ziemlich großen Projekt, und wir müssen die DPR-Abkommen und eine Reihe anderer Anforderungen erfüllen.\nWir arbeiten mit großen Unternehmen auf der ganzen Welt und Besucher unserer Ressourcen wollen sehen, dass wir ihnen treu sind aber gleichzeitig unsere Abteilung in die Lage versetzen, die Umstellung auf der Website zu erhöhen und wertvolle Einblicke zu erhalten, um neue Produktideen zu testen.\nDiese Aufgaben werden von Swetrix vollständig gelöst."
+      }
+    ],
+    "opensourceAdv": "Vorteile der Verwendung von <url>Open-Source-</url>",
+    "opensource": [
+      {
+        "desc": "Installieren Sie Swetrix auf Ihren eigenen Servern - der Quellcode ist für alle verfügbar."
+      },
+      {
+        "desc": "Finden Sie Fehler und schlagen Sie Verbesserungen vor - die Community wird Ihnen dankbar sein."
+      },
+      {
+        "desc": "Ihre Daten sind geschützt, alle Funktionen und Verbesserungen werden in wenigen Tagen von unseren Entwicklern implementiert."
+      }
+    ],
+    "os": "<gradi>Open-Source</gradi> Analytics - ein leistungsstarkes und einfaches Werkzeug.",
+    "custSupport": "Ist ihre Frage hier nicht aufgelistet? Wenden Sie sich gerne an unseren <mail>Kundendienst</mail>.",
+    "whyUs": "Warum uns",
+    "ourStats": "Unsere Statistiken",
+    "statsDesc": "Swetrix basiert auf dem Vertrauen der Nutzer in den Dienst und ist auch in der Lage, Tausende von Benutzern und Websites zu verwalten.",
+    "users": "Registrierte Nutzer",
+    "websites": "Hinzugefügte Webseiten",
+    "pageviews": "Events verfolgt",
+    "whyUseSwetrix": "Warum <swetrix>Swetrix</swetrix> verwenden, wenn es <competitor></competitor> gibt?",
+    "competitiveFeatures": {
+      "perf": "Leistungsüberwachung",
+      "ext": "Individuelle Erweiterungen",
+      "gdpr": "GDPR-kompatibel",
+      "usfl": "Benutzerfluss",
+      "alrt": "Eigene Alarme",
+      "pbld": "Öffentliche Dashboards",
+      "shad": "Dashboard-Freigabe",
+      "open": "Open-Source",
+      "ckfree": "Cookie-freie Analysen",
+      "api": "Entwickler-API",
+      "2fa": "Zwei-Faktor-Authentifizierung"
+    }
+  },
+  "auth": {
+    "recovery": {
+      "title": "Kontenwiederherstellung",
+      "save": "Neues Passwort speichern",
+      "newPassword": "Neues Passwort",
+      "updated": "Das Passwort wurde geändert."
+    },
+    "forgot": {
+      "sent": "Eine E-Mail zum Zurücksetzen des Passworts wurde an die angegebene Adresse gesendet.",
+      "reset": "Passwort zurücksetzen"
+    },
+    "signin": {
+      "title": "Bei Ihrem Konto anmelden",
+      "forgot": "Passwort vergessen?",
+      "button": "Anmelden",
+      "2fa": "Zwei-Faktor-Authentifizierung",
+      "2faDesc": "Öffnen Sie die Zwei-Faktor-Authentifizierungs-App auf Ihrem Gerät, um Ihren Authentifizierungscode anzuzeigen und Ihre Identität zu bestätigen.\nSie können auch Ihren Wiederherstellungs-Code verwenden.",
+      "2faUnavailable": "Sie haben keinen Zugriff auf 2FA?\n<ctl>Kontaktieren Sie den Support</ctl>.",
+      "6digitCode": "6-stelliger Authentifizierungscode"
+    },
+    "signup": {
+      "button": "Registrieren",
+      "tos": "Ich akzeptiere die <tos>Allgemeinen Geschäftsbedingungen</tos> und die <pp>Datenschutzerklärung</pp>.",
+      "email": "E-Mail-Adresse",
+      "create": "Erstellen Sie ihr Konto",
+      "trial": "Starten Sie Ihre kostenlose {{amount}}-Tage Testversion",
+      "noCC": "Keine Kreditkarte erforderlich."
+    },
+    "verification": {
+      "success": "Deine E-Mail wurde erfolgreich verifiziert!"
+    },
+    "socialisation": {
+      "success": "Social-Login erfolgreich",
+      "orSingUpWith": "oder registrieren mit"
+    },
+    "common": {
+      "signinInstead": "Stattdessen anmelden",
+      "signupInstead": "Stattdessen registrieren",
+      "password": "Passwort",
+      "noRemember": "Nicht erinnern",
+      "repeat": "Passwort wiederholen",
+      "hint": "Länger als {{amount}} Zeichen",
+      "xCharsError": "Das Passwort muss aus mindestens {{amount}} Zeichen bestehen.",
+      "noMatchError": "Die Passwörter stimmen nicht überein.",
+      "badEmailError": "Bitte geben Sie eine gültige E-Mail-Adresse an.",
+      "passwordTooLong": "Das angegebene Kennwort ist zu lang, die maximale Länge beträgt {{amount}} Zeichen",
+      "tosError": "Sie müssen unsere AGB und Datenschutzerklärung akzeptieren, um unsere Dienste nutzen zu können.",
+      "email": "E-Mail",
+      "signin": "Anmelden",
+      "checkLeakedPassword": "Prüfen, ob das Passwort geleakt worden ist",
+      "checkLeakedPasswordDesc": "Bei Aktivierung überprüfen wir Ihr Passwort mit der <db>{{database}}</db> Datenbank. Wir senden Ihr Passwort nicht an den Dienst. Zuerst hashen wir Ihr Passwort (mittels SHA1) und senden nur die ersten 5 Zeichen dieses Hashs an den Dienst. Der Dienst gibt alle geleakten Passwörter zurück, die mit diesen 5 Zeichen beginnen. An unserem Ende überprüfen wir, ob eines dieser Passwörter mit Ihrem Passwort übereinstimmt. Wir zeigen Ihnen eine Warnung, wenn es vorher geleakt wurde. Wir speichern Ihr Passwort nie im Klartext.",
+      "addedOn": "Hinzugefügt am",
+      "continueWithGoogle": "Weiter mit Google",
+      "continueWithGithub": "Weiter mit Github"
+    }
+  },
+  "features": {
+    "feature1Name": "Transparenz",
+    "feature1Content": "Wir bei Swetrix glauben, dass jeder ein Recht auf Privatsphäre und Transparenz hat, insbesondere wenn es um Datenanalyse geht.\nWir sammeln nicht mehr Informationen, als wir <docs>angeben</docs>, alle Daten werden auf Servern gespeichert, die sich physisch in der Europäischen Union befinden und unser Tracking-Script ist quelloffen und für alle auf unserem <gh>Github</gh> öffentlich zugänglich.",
+    "feature2Name": "Browser-Addons",
+    "feature2Content": "Benötigen Sie schnell Statistiken für Ihre Website?\nZu diesem Zweck haben wir <chrome>Chrome</chrome> und <firefox>Firefox</firefox> Erweiterungen entwickelt.\nMit diesen ershalten Sie sofort die wichtigsten Einblicke und erhalten Benachrichtigungen zu Traffic-Spikes und vieles mehr!",
+    "ready": "Bereit ihre Nutzer zu verstehen?",
+    "start": "Beginnen Sie noch heute mit Swetrix.",
+    "list": [
+      {
+        "name": "Leistungsüberwachung",
+        "content": "Mit Swetrix können Sie aufhören zu schätzen, wie schnell Ihre Website auf der ganzen Welt lädt.\nWir bieten eine breite Palette von Metriken, wie z. B. Seitenladezeit, DNS-Lookup-Zeit, TTFB und viele weitere.\nSie können sich eine chronologische Aufschlüsselung der Daten ansehen, die für Frontend, Backend oder Netzwerk genutzt wurden, und diese Daten für bestimmte Länder, Browser und Geräte einsehen.\nAll dies ist in Echtzeit möglich, so dass Sie jederzeit sehen können, wie sich Ihre Website schlägt."
+      },
+      {
+        "name": "Eigene Alarme",
+        "content": "Möchten Sie Datenverkehrsspitzen messen? Oder vielleicht die Seitenaufrufe für einen bestimmten Zeitraum? All dies ist mit benutzerdefinierten Alarmen möglich.\nSie können Alarme für eine breite Palette von Metriken einrichten und sich über Messenger wie Telegram benachrichtigen lassen, wenn sie ausgelöst werden."
+      },
+      {
+        "name": "Erweiterungen & Erweiterungs-Marktplatz",
+        "content": "Fehlt Ihnen eine Funktion oder möchten Sie das Dashboard speziell für Ihre Bedürfnisse anpassen? All das ist mit Swetrix-Erweiterungen möglich: Wir bieten ein flexibles Entwicklungskit (SDK), mit dem Sie das Dashboard nach Belieben verändern können. Sie können Ihre Erweiterung auch veröffentlichen, damit andere sie nutzen können, oder von anderen erstellte Addons aus unserem Erweiterungsmarktplatz installieren."
+      },
+      {
+        "name": "KI-Prognose",
+        "content": "Mit unserem KI-gestützten Prognosetool können Sie den Traffic Ihrer Website vorhersagen."
+      },
+      {
+        "name": "Öffentliche & geteilte Dashboards",
+        "content": "Mit Swetrix können Sie Ihr Dashboard für andere Personen zur Ansicht bereitstellen.\nSie können auch andere Swetrix-Benutzer zu Ihren Projekten einladen und ihnen verschiedene Rollen zuweisen."
+      },
+      {
+        "name": "Einfachheit",
+        "content": "Bei der Entwicklung unseres Dienstes haben wir versucht, alles so einfach und flexibel wie möglich zu gestalten.\nSchluss mit verwirrenden Metriken und komplizierten Dashboards - mit uns haben Sie die Kontrolle über alle Ihre Projekte und sehen ihre Daten auf einfache und unkomplizierte Weise."
+      },
+      {
+        "name": "Verfolgung von Seitenaufrufen",
+        "content": "Swetrix bietet die Funktion einzigartige Seitenaufrufe und den User-Flow zu tracken.\nAlle Oberflächen enthalten eine Vielzahl von Daten, wie z. B. das Herkunftsland Nutzers, die Sprache, den Gerätetyp, die Seitenladezeit und vieles mehr.\nWir verwenden keine Cookies oder andere Arten von Profiling, um Daten zu sammeln. Alle eingehenden Daten werden anonymisiert, sodass eine Rückverfolgung auf Personen nicht möglich ist."
+      },
+      {
+        "name": "Benutzerdefiniertes Events-Tracking",
+        "content": "Zusätzlich zur Verfolgung der Seitenaufrufe bieten wir auch die Möglichkeit, benutzerdefinierte Tracking-Events zu erfassen.\nSie können jedes Ereignis nachvollziehen, z. B. Button-Klicks, Registrierungen oder Freigaben.\nAll dies ist auch für den Nutzer völlig unbedenklich, da wir keine anderen Informationen über ihn zusammen mit den Ereignissen speichern.\nWeitere Informationen zu benutzerdefinierten Tracking-Events finden Sie in unserer Dokumentation."
+      },
+      {
+        "name": "Entwickler-API",
+        "content": "Wir bieten eine Entwickler-API, mit der Sie Swetrix in Ihre eigenen Anwendungen integrieren können.\nSie können unsere API verwenden, um benutzerdefinierte Dashboards zu erstellen oder um Swetrix in Ihre eigenen Anwendungen zu integrieren."
+      },
+      {
+        "name": "Komfort",
+        "content": "Neben den großen Funktionen versuchen wir, uns auf kleine Dinge zu konzentrieren, die jedes Projekt noch weiter verbessern.\nSie können Swetrix an Ihre Bedürfnisse anpassen, z. B. Ihre Muttersprache oder Ihr bevorzugtes Design verwenden, 2FA einrichten, eine Zeitzone oder eine von Ihnen bevorzugte Zeitnotation verwenden."
+      },
+      {
+        "name": "Schnelligkeit",
+        "content": "Wir sind schnell. Unser Tracking-Script ist so weit wie möglich optimiert und verwendet globale CDNs für seine Bereitstellung, wodurch gewährleistet wird, dass das Script Ihre Websites nicht verlangsamt."
+      },
+      {
+        "name": "Vertrauen",
+        "content": "Wir sind ein kleines Unternehmen und kein Großkonzern.\nUnser Ziel ist es, ein einwandfreies und hochwertiges Produkt zu entwickeln, das von zufriedenen Kunden genutzt wird und nicht so viel Geld wie möglich aus unseren Nutzern herauszuholen oder Ihre persönlichen Daten zu verkaufen."
+      }
+    ]
+  },
+  "profileSettings": {
+    "general": "Allgemeine Einstellungen",
+    "update": "Konto aktualisieren",
+    "email": "E-Mail Berichte",
+    "timezone": "Zeitzonen-Einstellung",
+    "frequency": "Wie oft sollen wir Ihnen eine E-Mail-Zusammenfassung über Ihre Websites schicken?",
+    "noLink": "Sie haben keinen Link zur Bestätigung Ihrer E-Mail-Adresse erhalten? Fordern Sie ihn einfach erneut an.",
+    "requestExport": "Datenexport anfordern",
+    "delete": "Konto löschen",
+    "deactivateConfirmation": "Sind Sie sicher, dass Sie Ihr Konto deaktivieren möchten?\nAlle Ihre Daten werden dauerhaft und unwiderruflich von unseren Servern entfernt.\nDiese Aktion kann nicht rückgängig gemacht werden.",
+    "exportConfirmation": "Gemäß Art. 20 der General Data Protection Regulation (GDPR) haben Sie das Recht, Ihre bei uns gespeicherten persönlichen Daten einzusehen. Dieser Bericht enthält keine projektbezogenen Eventdaten.\nDer Datenbericht wird an Ihre E-Mail-Adresse gesendet.\nHinweis: Sie können den Datenexport nur einmal alle zwei Wochen anfordern.",
+    "dataExport": "Datenexport",
+    "aDelete": "Mein Konto Löschen",
+    "qDelete": "Ihr Konto löschen?",
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich",
+    "never": "Nie",
+    "quarterly": "Vierteljährlich",
+    "reportSent": "Der GDPR-Datenbericht wurde an Ihre E-Mail-Adresse gesendet.",
+    "tryAgainInXDays": "Bitte versuchen Sie es später noch einmal. Sie können einen GDPR-Datenbericht nur einmal innerhalb von {{amount}} Tagen anfordern.",
+    "updated": "Ihre Kontoeinstellungen wurden aktualisiert",
+    "confTimeout": "Eine E-Mail wurde bereits versendet. Überprüfen Sie Ihr Postfach oder versuchen Sie es in ein paar Minuten erneut.",
+    "confSent": "Ein Link zur Kontobestätigung wurde an Ihre E-Mail-Adresse gesendet.",
+    "noConfLeft": "Leider sind Ihre E-Mail-Bestätigungsanfragen aufgebraucht.\nBitte vergewissern Sie sich, dass Sie in der Lage sind, E-Mails zu empfangen, und überprüfen Sie Ihren Spam-Ordner erneut auf Nachrichten.\nSie können versuchen, eine andere E-Mail-Adresse zu verwenden oder unseren Kundendienst zu kontaktieren.",
+    "timezoneDesc": "Dies ist die Zeitzone, in der die Daten angezeigt werden. Sie wird nur zur Visualisierung verwendet.\nEs werden keine Daten auf Basis dieser Einstellung geändert.",
+    "quitProject": "Sind Sie sicher, dass Sie dieses Projekt verlassen möchten?",
+    "quitProjectTitle": "{{project}} beenden?",
+    "shared": "Geteilte Projekte",
+    "owned": "Eigene Projekte",
+    "sharedTable": {
+      "project": "Projekt",
+      "role": "Rolle",
+      "joinedOn": "Beigetreten am"
+    },
+    "noSharedProjects": "Niemand teilt bisher ein Projekt mit Ihnen.",
+    "2fa": "Zwei-Faktor-Authentifizierungscode (2FA)",
+    "2faEnable": "Aktivieren Sie 2FA, um Ihr Konto sicherer zu machen.",
+    "2faEnableBtn": "2FA aktivieren",
+    "2faDisableBtn": "2FA deaktivieren",
+    "2faDesc": "Eine Authentifikator-App, die zeitbasierte Einmalpasswörter unterstützt wie zum Beispiel \"Google Authenticator\" kann den QR-Code unten scannen, um 2FA auf Ihrem Swetrix-Konto zu aktivieren:",
+    "2faQRAlt": "Sie können den QR-Code nicht scannen?\nVerwenden Sie stattdessen diesen geheimen Schlüssel: {{key}}",
+    "enter2faToEnable": "Geben Sie Ihren Einmalcode ein, um 2FA zu aktivieren",
+    "enter2faToDisable": "Geben Sie Ihren Einmalcode oder einen Wiederherstellungscode ein",
+    "yourOneTimeCode": "Ihr Einmalcode",
+    "invalid2fa": "Ungültiger Code. Bitte versuchen Sie es erneut",
+    "2faRecoveryNote": "Wichtig: Wenn Sie irgendwann Ihre Authentifizierungs-App nicht verwenden können, weil Sie die App gelöscht haben oder Ihr Gerät verloren haben, benötigen Sie eine Möglichkeit, auf Ihr Konto zuzugreifen um 2FA zu deaktivieren.\n\nSie können dann diesen Wiederherstellungscode verwenden, um 2FA zu deaktivieren. Notieren und speichern Sie ihn an einem sicheren Ort.",
+    "2faRecoverySaved": "Ich habe diesen Wiederherstellungscode gespeichert",
+    "2faEnabled": "Zwei-Faktor-Authentifizierung ist auf Ihrem Konto aktiviert.",
+    "2faDisableHint": "Um die Zwei-Faktor-Authentifizierung zu deaktivieren, geben Sie bitte Ihren 6-stelligen Code oder einen Ihrer Wiederherstellungscodes unten ein.",
+    "apiKey": "API-Schlüssel",
+    "noApiKey": "Sie haben noch keine API-Schlüssel erstellt.",
+    "apiKeyWarning": "Behandeln Sie Ihren API-Schlüssel wie ein Passwort und bewahren Sie ihn geheim auf. Hardcodieren Sie ihn niemals in Ihre Programme und teilen Sie ihn mit niemandem.",
+    "addApiKeyBtn": "API-Schlüssel generieren",
+    "deleteApiKeyBtn": "API-Schlüssel löschen",
+    "apiKeyDelete": "API-Schlüssel löschen?",
+    "apiKeyDeleteConf": "Sind Sie sicher, dass Sie Ihren API-Schlüssel löschen möchten?\nAlle API-Zugriffe über diesen Schlüssel werden deaktiviert.",
+    "theme": "Thema",
+    "selectTheme": "Theme zuweisen",
+    "integrations": "Integrationen",
+    "integrationsDesc": "Mithilfe von Integrationen können Sie Ihre bevorzugten Messenger mit Swetrix verbinden und Updates wie Benachrichtigungen, Berichte oder Alarme direkt empfangen.",
+    "integrationsList": {
+      "telegram": "Empfangen Sie Benachrichtigungen direkt in einem Telegram-Bot.",
+      "tgHint": "Schreiben Sie eine Nachricht an <url>{{username}}</url> um Ihre Chat-ID zu erhalten. Dieser Bot wird später verwendet, um Ihnen Benachrichtigungen oder Alarme zu senden."
+    },
+    "socialisations": "Social-Logins",
+    "socialisationsDesc": "Die Funktion „Social-Login“ ermöglicht es Ihnen, Konten Dritter (wie Google oder Twitter) mit Ihrem Swetrix Konto zu verknüpfen und sie zur Anmeldung bei Swetrix zu verwenden.",
+    "cantUnlinkSocialisation": "Sie können diese Sozialer-Login-Verknüpfung nicht aufheben, da sie verwendet wurde, um Ihr Konto zu registrieren.",
+    "addIntegration": "Integration anlegen",
+    "removeIntegration": "Integration löschen",
+    "chatID": "Chat-ID",
+    "12-hour": "12-Stunden-Format",
+    "24-hour": "24-Stunden-Format",
+    "timeFormat": "Zeitnotation",
+    "selectTimeFormat": "Dies ist die Zeitnotation, die in Diagrammen verwendet wird. Sie wird nur verwendet, um die Daten im Diagramm im 12- oder 24-Stunden-Format darzustellen.",
+    "captcha": "CAPTCHA",
+    "selectProject": "Projekt auswählen",
+    "captchaSecretKey": "CAPTCHA Geheimschlüssel",
+    "generateSecretKey": "Geheimschlüssel generieren",
+    "regenerateSecretKey": "Geheimschlüssel neu generieren",
+    "regenerateSecretKeyTitle": "Geheimschlüssel neu generieren?",
+    "regenerateSecretKeyMessage": "Sind Sie sicher, dass Sie Ihren geheimen Schlüssel neu generieren möchten?\nAlle existierenden CAPTCHA Widgets funktionieren nicht mehr und Sie müssen sie mit dem neuen geheimen Schlüssel aktualisieren.",
+    "captchaSecretKeyHint": "Dies ist Ihr geheimer Schlüssel, der verwendet wird, um die CAPTCHA-Antwort auf Ihrem Server zu überprüfen. Halten Sie ihn geheim und teilen Sie ihn mit niemandem."
+  },
+  "dashboard": {
+    "newProject": "Neues Projekt",
+    "newCaptchaProject": "Neues CAPTCHA Projekt",
+    "verifyEmailTitle": "Bitte bestätigen Sie zuerst die E-Mail-Adresse.",
+    "verifyEmailDesc": "Um unseren Dienst nutzen und Ihre Projekte erstellen zu können, müssen Sie zunächst Ihre E-Mail-Adresse bestätigen.\n\nEin Link zur Bestätigung Ihres Kontos wurde an die E-Mail-Adresse geschickt, die Sie bei der Registrierung angegeben haben. Wenn er nicht zugestellt wurde, können Sie den Link in Ihren Kontoeinstellungen erneut anfordern.",
+    "lowEventsTitle": "Sie haben keine Events mehr!",
+    "lowEventsDesc": "Sie haben für diesen Monat mehr als 85% des Eventkontingents ihres Abonnements verwendet.\nFalls Sie ihren gebuchten Kontigent noch diesen Monat überschreiten sollten, werden alle weiteren Events nicht mehr getrackt.\nUm dies zu vermeiden, empfehlen wir Ihnen, Ihr Abo auf der Rechnungsseite hochzustufen.",
+    "eventsXPercUsed": "Sie haben für diesen Monat mehr als {{amount}}% ihres verfügbaren Event-Kontingents für ihr Abonnement verbraucht.",
+    "noProjects": "Sie haben noch keine Projekte erstellt",
+    "createProject": "Erstellen Sie hier ein neues Projekt, um unseren Dienst zu nutzen",
+    "active": "Aktiv",
+    "public": "Öffentliche",
+    "shared": "Freigegeben",
+    "disabled": "Deaktiviert",
+    "pageviews": "Seitenaufrufe",
+    "unique": "Einzigartige Ansichten",
+    "createdAt": "Erstellt am",
+    "inc": "Gestiegen um",
+    "dec": "Gesunken um",
+    "liveVisitors": "Live-Besucher",
+    "live": "Online",
+    "bounceRate": "Absprungrate",
+    "viewsPerUnique": "Ansichten pro Sitzung",
+    "trendlines": "Trendlinien",
+    "invitationFor": "Einladung zu {{project}}",
+    "invitationDesc": "Sie wurden eingeladen, dem Projekt {{project}} beizutreten.\nSie können die Einladung entweder annehmen oder in Ihren Kontoeinstellungen ablehnen.",
+    "sessionDuration": "Dauer der Sitzung",
+    "traffic": "Verkehr",
+    "performance": "Leistung",
+    "alerts": "Alarme",
+    "alertsDesc": "Automatisierte Benachrichtigungen sind ein leistungsstarkes Tool, mit dem Sie automatisierte Aufgaben ausführen können, wenn bestimmte Ereignisse eintreten.\nWir können Ihr Projekt automatisch auf Datenverkehrsspitzen überwachen und Sie über Telegram benachrichtigen.",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "network": "Netzwerk",
+    "timing": "Zeitliche Aufschlüsselung",
+    "timingFull": "Zeitliche Aufschlüsselung (vollständig)",
+    "dns": "DNS",
+    "conn": "Verbindung",
+    "tls": "TLS-Einrichtung",
+    "ttfb": "Zeit zum ersten Byte (TTFB)",
+    "domLoad": "DOM-Inhalte laden",
+    "pageLoad": "Ladezeit der Seite",
+    "render": "Browser Rendern",
+    "response": "Antwortzeit"
+  },
+  "alert": {
+    "create": "Alarm einrichten",
+    "add": "Alert hinzufügen",
+    "delete": "Alarm löschen",
+    "noIntegration": "Sie haben noch keine Integration konfiguriert. Erstellen Sie eine in Ihren <url>Kontoeinstellungen</url>.",
+    "noNotification": "Keine Benachrichtigungskanäle festgelegt",
+    "lastTriggered": "Zuletzt ausgelöst",
+    "never": "Nie",
+    "qDelete": "Diesen Alarm löschen?",
+    "settingsOf": "Einstellungen von {{name}}",
+    "deleteHint": "Diese Aktion ist unwiderruflich.\nDie Benachrichtigung und alle damit verbundenen Daten werden von unseren Servern gelöscht.",
+    "name": "Alarmname",
+    "metric": "Abfrage metrisch",
+    "condition": "Auslösen, wenn die Metrik ist",
+    "threshold": "Schwellenwert",
+    "time": "Während des letzten",
+    "xMinutes": "{{amount}} Minuten",
+    "xHours": "{{amount}} Stunden",
+    "xHour": "{{amount}} Stunde",
+    "enabled": "Alarmierung aktiviert",
+    "enabledHint": "Deaktivierte Alarme werden Sie nicht über Ereignisse benachrichtigen.",
+    "conditions": {
+      "greater_than": "Größer als",
+      "greater_equal_than": "Größer oder gleich",
+      "less_than": "Weniger als",
+      "less_equal_than": "Weniger oder gleich"
+    },
+    "metrics": {
+      "page_views": "Seitenaufrufe",
+      "unique_page_views": "Eindeutige Sitzungen",
+      "online_users": "Online-Benutzer"
+    }
+  },
+  "notFoundPage": {
+    "title": "Seite nicht gefunden",
+    "description": "Leider konnten wir die gesuchte Seite nicht finden.\nBitte überprüfen Sie die URL in der Adressleiste und versuchen Sie es erneut.",
+    "goHome": "Zurück auf die Homepage",
+    "support": "Support kontaktieren"
+  },
+  "project": {
+    "ad": "Sie möchten diese Statistiken für Ihre eigene Webseite?",
+    "noExist": "Das ausgewählte Projekt existiert nicht",
+    "exportData": "Daten exportieren",
+    "asImage": "Als Bild",
+    "asCSV": "Als CSV",
+    "noEvTitle": "Noch keine Tracking-Events",
+    "showAll": "Alle Ansichten anzeigen",
+    "trendlineUnique": "Einzigartige Besucher Trendlinie",
+    "trendlineTotal": "Seitenansichten Trendlinie",
+    "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <url>Doku</url> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
+    "noCaptchaEv": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, können Sie sich unsere <url>Docs</url> anschauen, um es einfach in Ihre App zu integrieren.",
+    "mapping": {
+      "cc": "Land",
+      "pg": "Seite",
+      "lc": "Sprache",
+      "ref": "Referrer",
+      "dv": "Gerätetyp",
+      "br": "Browser",
+      "os": "Betriebssystem",
+      "lt": "Ladezeit"
+    },
+    "overview": "Übersicht",
+    "weeklyStats": "Wöchentliche Statistik",
+    "statsFor": "Statistik für",
+    "event": "Ereignis",
+    "quantity": "Anzahl",
+    "conversion": "Konversionsrate",
+    "ratio": "Verhältnis",
+    "customEv": "benutzerdefinierte Tracking-Events",
+    "noParamData": "Noch keine Daten für diesen Parameter vorhanden.",
+    "conflictMetric": "Die von Ihnen ausgewählte Metrik steht im Widerspruch zu einer anderen bereits ausgewählten Metrik",
+    "prev": "Zurück",
+    "next": "Weitere",
+    "unique": "Einzigartige Besucher",
+    "results": "Ergebnisse",
+    "total": "Seitenaufrufe insgesamt",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "last24h": "Letzte 24 Stunden",
+    "lastXDays": "Letzte {{amount}} Tage",
+    "lastXWeeks": "Letzte {{amount}} Wochen",
+    "lastXMonths": "Letzte {{amount}} Monate",
+    "custom": "Benutzerdefiniertes Datum",
+    "hour": "Stunde",
+    "day": "Tag",
+    "week": "Woche",
+    "month": "Monat",
+    "resetFilters": "Filter zurücksetzen",
+    "exportImgError": "Exportieren der Daten als Bild fehlgeschlagen",
+    "codeExample": "Oder fügen Sie den folgenden Code in Ihre Website ein, um Ihre Events zu tracken:",
+    "metricVis": "Visualisierung von Metriken",
+    "settings": {
+      "verify": "Bitte bestätigen Sie zunächst Ihre E-Mail-Adresse",
+      "updated": "Die Projekteinstellungen wurden aktualisiert",
+      "created": "Das Projekt wurde erstellt",
+      "pxCharsError": "Der Projektname darf nicht länger als {{amount}} Zeichen sein.",
+      "oxCharsError": "Die Liste der Allowed-Origins darf nicht kürzer als {{amount}} Zeichen sein.",
+      "noNameError": "Bitte geben Sie einen Projektnamen ein.",
+      "create": "Neues Projekt erstellen",
+      "settings": "Einstellungen von",
+      "name": "Projektname",
+      "pid": "Projekt-ID",
+      "origins": "Allowed-Origins",
+      "originsHint": "Eine kommaseparierte Liste von Allowed-Origins (Herkunftsdomänen), die Ihre Project-ID in ihrem Tracking-Script verwenden dürfen.\nLassen Sie das Feld leer, um alle Herkünfte zuzulassen (Standardeinstellung).\nBeispiel: cornell.edu, app.example.com, ssu.gov.ua",
+      "enabled": "Projekt aktiviert",
+      "public": "Das Dashboard ist öffentlich",
+      "enabledHint": "Deaktivierte Projekte zählen keine neuen Tracking-Events oder Seitenaufrufe.\nSie können weiterhin auf die bisherigen Analysen des Projekts im Dashboard zugreifen.",
+      "publicHint": "Wenn Sie diese Option aktivieren, kann jeder im Internet (einschließlich Google) das Dashboard dieses Projekts sehen. Nur der Projektadministrator kann die Einstellungen bearbeiten.",
+      "createHint": "*Sie können Ihr Projekt im Anschluss an die Erstellung noch weiter einrichten.",
+      "delete": "Projekt löschen",
+      "reset": "Projekt zurücksetzen",
+      "qDelete": "Das Projekt löschen?",
+      "qReset": "Projekt zurücksetzen?",
+      "deleteHint": "Wenn Sie auf \"Projekt löschen\" klicken, verstehen Sie, dass diese Aktion nicht rückgängig zu machen ist.\nDas Projekt und alle damit verbundenen Daten werden von unseren Servern gelöscht.",
+      "resetHint": "Wenn Sie \"Projekt zurücksetzen\" drücken, verstehen Sie, dass diese Aktion unumkehrbar ist.\nDie Seitenansichten und benutzerdefinierte Ereignisse des Projekts werden von unseren Servern entfernt, aber die Projektkennung und andere Einstellungen werden beibehalten.",
+      "deleted": "Das Projekt wurde gelöscht",
+      "resetted": "Das Projekt wurde zurückgesetzt",
+      "noPeople": "Zu diesem Projekt wurden noch keine Personen hinzugefügt.",
+      "removeMember": "Mitglied entfernen",
+      "removeConfirm": "Sind Sie sicher, dass Sie das Teilen Ihres Projekts mit diesem Benutzer beenden möchten?",
+      "removeReportConfirm": "Are you sure you want to stop sending project reports to this user?",
+      "removeUser": "{{user}} entfernen?",
+      "people": "Personen",
+      "inviteCoworkers": "Laden Sie Ihre Kollegen ein",
+      "invite": "Benutzer einladen",
+      "inviteTo": "Einen Benutzer zu {{project}} einladen",
+      "inviteDesc": "Geben Sie die E-Mail-Adresse und Rolle der Person ein, für die Sie Ihr Projekt freigeben möchten.\nWir werden uns per E-Mail mit dieser Person in Verbindung setzen, um ihr den Zugriff auf das Projekt zu ermöglichen.",
+      "inviteExpity": "Die Einladung wird in {{amount}} Stunden ablaufen.",
+      "role": "Rolle",
+      "roles": {
+        "admin": {
+          "name": "Verwalter",
+          "desc": "Sie können die Einstellungen des Projekts verwalten, Mitglieder hinzufügen oder entfernen und neue Benutzer einladen.",
+          "shortDesc": "Kann das Projekt verwalten"
+        },
+        "viewer": {
+          "name": "Betrachter",
+          "desc": "Hat nur lesenden Zugriff auf das Projekt.",
+          "shortDesc": "Kann das Projekt nur ansehen"
+        }
+      },
+      "errorNoRole": "Bitte wählen Sie eine Rolle.",
+      "ipBlacklist": "IP-Adressen für die Sperrliste",
+      "ipBlacklistHint": "Eine Liste von IP-Adressen, von denen keine Metriken für dieses Projekt gesammelt werden.\nDiese Funktion ist praktisch, wenn Sie z.B. Analysen von Ihrer eigenen IP-Adresse ignorieren möchten.\nBeispiel: 172.126.10.16, 192.168.0.1/32, ::1",
+      "transfer": "Projekt übertragen",
+      "transferTo": "Projekt übertragen",
+      "transferHint": "Sie können '{{name}}' Projekt an einen anderen Benutzer übertragen.\nDieser Benutzer wird der Projektbesitzer und kann die Einstellungen des Projekts verwalten, Mitglieder hinzufügen/entfernen und neue Benutzer einladen.\nSie werden dem Projekt als Administrator zugewiesen. Der neue Eigentümer kann Sie jedoch aus dem Projekt entfernen.",
+      "transfereeEmail": "Transfer-Empfänger E-Mail",
+      "reseted": {
+        "all": "Alle zurücksetzen",
+        "allHint": "Alle zugehörigen Analysedaten des Projekts werden dauerhaft von unseren Servern entfernt aber das Projekt selbst, seine Einstellungen und die ID sind immer noch verfügbar.",
+        "partially": "Teilweise zurücksetzen",
+        "partiallyDesc": "Mit der Funktion 'Teilweise zurücksetzen' können Sie die Daten eines bestimmten Projekts innerhalb eines bestimmten Zeitraums zurücksetzen.",
+        "partiallyHint": "Um die Daten eines bestimmten Projekts innerhalb eines Datumsbereichs zurückzusetzen, wählen Sie die Start- und Enddaten des Bereichs und das Projekt, das Sie zurücksetzen möchten.\nÜberprüfen Sie, ob Sie den richtigen Projekt- und Datumsbereich ausgewählt haben, bevor Sie auf „Zurücksetzen“ klicken.\nSobald Sie auf „Zurücksetzen“ klicken, werden alle Daten, die mit dem ausgewählten Projekt im ausgewählten Zeitraum verknüpft sind, dauerhaft gelöscht und können nicht wiederhergestellt werden."
+      }
+    },
+    "captcha": {
+      "settings": {
+        "general": "Allgemeine Einstellungen",
+        "inheritance": "Vererbung",
+        "name": "CAPTCHA Projektname",
+        "pid": "CAPTCHA Projekt-ID",
+        "enabled": "CAPTCHA aktiviert",
+        "enabledHint": "Deaktivierte CAPTCHA-Projekte werden keine neu eingehenden Ereignisse berücksichtigen.\nSie können weiterhin auf die Analyse im Dashboard zugreifen."
+      }
+    },
+    "emails": {
+      "title": "E-Mail Berichte",
+      "description": "Sende reguläre E-Mail-Berichte an beliebig viele Empfänger",
+      "add": "Empfänger hinzufügen",
+      "reportFrequency": "Bericht-Frequenz"
+    },
+    "page": "Seite",
+    "reverse": "Umkehren",
+    "userFlow": {
+      "noData": "Benutzerfluss ist aufgrund fehlender Daten noch nicht verfügbar, oder Sie haben diese Funktion in den Tracking-Skriptparametern deaktiviert"
+    },
+    "noDateRange": "Please select a date range",
+    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
+    "previousPeriod": "Previous period",
+    "disableCompare": "Disable comparison",
+    "compare": "Compare"
+  },
+  "billing": {
+    "title": "Rechnung & Abonnement",
+    "desc": "Der Einstieg und die Nutzung unserer Dienste ist gratis.\nWenn Sie mehr Datenverkehr bewältigen müssen, empfiehlt sich wahrscheinlich ein Upgrade Ihres Abonnements.\nNachstehend finden Sie eine Liste der verfügbaren Abomodelle. Keine versteckten Gebühren oder sonstiger Blödsinn, alles ist klar und transparent!",
+    "contact": "Sie möchten mehr als {{amount}} Millionen Events pro Monat messen?\nKontaktieren Sie uns unter <mail>{{email}}</mail>, um Ihre Wünsche zu besprechen.",
+    "update": "Zahlungsmethode aktualisieren",
+    "nextBillDate": "Nächstes Abrechnungsdatum:",
+    "trialEnds": "Testphase endet am {{date}}",
+    "cancelSub": "Abonnement kündigen",
+    "noSubWarning": "Sie haben kein aktives Abonnement.\nEs werden keine neuen Analysedaten in unserer Datenbank gespeichert. Sie können die Daten, die vor der Kündigung des Abonnements gesammelt wurden, weiterhin einsehen.",
+    "inactive": "Inaktiv",
+    "cancelledSubMessage": "Sie haben Ihr Abonnement gekündigt.\nDas Abonnement ist noch bis {{date}} aktiv.\nDanach werden keine neuen Analysedaten mehr in unserer Datenbank gespeichert. Sie können die Daten, die vor der Kündigung des Abonnements gesammelt wurden, weiterhin einsehen.",
+    "planUsage": "Plan usage",
+    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
+    "breakdown": "Breakdown by the event type:",
+    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
+    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Go to plan usage"
+  },
+  "modals": {
+    "paidFeature": {
+      "title": "Erhöhen Sie Ihren Abonnementplan, um diese Funktion zu nutzen",
+      "desc": "Wir entschuldigen uns für die Unannehmlichkeiten, aber Sie müssen ein kostenpflichtiges Abo abschließen, um diese Funktion nutzen zu können.\n\nWir wissen, dass Sie vielleicht noch nicht bereit sind, ein kostenpflichtiges Abonnement abzuschließen, aber wenn Sie ein Abonnement abschließen, haben Sie nicht nur Zugang zu dieser Funktion, sondern auch zu allen anderen kostenpflichtigen Funktionen, höhere Limits für die monatlichen Besuchszahlen und die Anzahl der zur Verfügung stehenden Websites. Außerdem unterstützen Sie das Wachstum eines kleinen Unternehmens :)"
+    },
+    "forecast": {
+      "title": "Traffic-Prognose",
+      "desc": "Dies ist eine grobe Schätzung, wie viel Traffic Sie auf Ihrer Website erwarten können, basierend auf den KI-Modellen von Swetrix.",
+      "input": "Die Menge von '{{frequency}}' die Sie vorhersagen möchten"
+    }
+  },
+  "pricing": {
+    "title": "Abomodelle",
+    "adv": "Sie können gratis anfangen. Es wird keine Kreditkarte benötigt.\nWenn Ihr Unternehmen wächst, können Sie Ihr Abonnement jederzeit aufstufen.",
+    "currentPlan": "Derzeitiges Abo",
+    "mostPopular": "Beliebteste",
+    "free": "Gratis",
+    "legacy": "Legacy",
+    "perMonth": "mo",
+    "perYear": "Jahr",
+    "yourPlan": "Ihr Abonnement",
+    "downgrade": "Herabstufen",
+    "upgrade": "Aufstufen",
+    "whatIncl": "Was ist enthalten?",
+    "monthlyBilling": "Monatliche Abrechnung",
+    "yearlyBilling": "Jährliche Abrechnung",
+    "switchToMonthly": "Zu monatlicher Abrechnung wechseln",
+    "switchToYearly": "Zu jährlicher Abrechnung wechseln",
+    "xTrialDaysLeft": "{{amount}} Testtage verbleibend",
+    "trialEnded": "Testversion abgelaufen",
+    "trialEndsToday": "Die Testversion endet heute",
+    "trialEndsTomorrow": "Testversion endet morgen",
+    "tiers": {
+      "hobby": "Hobby",
+      "freelancer": "Freelancer",
+      "startup": "Startup",
+      "enterprise": "Enterprise",
+      "trial": "Kostenlose Testversion",
+      "upToXEVMo": "Bis zu {{amount}} Tracking-Events pro Monat",
+      "xEvMo": "{{amount}} Tracking-Events pro Monat",
+      "upToXVMo": "Bis zu {{amount}} Besuche pro Monat",
+      "xVMo": "{{amount}} Besuche pro Monat",
+      "xAlertsSingular": "{{amount}} Warnregel",
+      "xAlertsPlural": "{{amount}} Warnregeln",
+      "upToXProjects": "Erstellen Sie bis zu {{amount}} Projekte",
+      "upToXWebsites": "Bis zu {{amount}} Webseiten hinzufügen",
+      "xMoDataRetention": "{{amount}} Monate Datenspeicherung",
+      "evXPlanIncl": "Alles was das {{plan}} Abo enthält",
+      "smallBusiSupport": "Mit dem Kauf unterstützen Sie ein kleines Unternehmen",
+      "dataExports": "Unbegrenzte Datenexporte",
+      "dataOwnership": "100 % iges Dateneigentum",
+      "dashboards": "Freigegebene und öffentliche Dashboards",
+      "reports": "E-Mail Berichte",
+      "userFlowAnalysis": "Benutzerfluss-Analyse"
+    },
+    "downgradeTitle": "Sind Sie sicher, dass Sie ein Downgrade durchführen möchten?",
+    "downgradeDesc": "Nach dem Downgrade wird Ihr Abonnement weniger Projekte und verfügbare Ereignisse pro Monat enthalten. Falls Ihre Website mehr Traffic aufweist, als der Plan, auf den Sie downgraden möchten, umfasst, werden nicht alle Ereignisse in unserer Datenbank gespeichert.\nSie können jederzeit zu Ihrem aktuellen Abonnement zurückkehren.\nWenn Sie Fragen haben, können Sie uns jederzeit eine E-Mail an {{email}} schicken.",
+    "cancelTitle": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen wollen?",
+    "cancelDesc": "Nachdem Sie Ihr Abonnement gekündigt haben, werden von Swetrix keine neuen Events mehr für Ihre Projekte gesammelt.\nSie können jederzeit zu Ihrem aktuellen Abonnement zurückkehren.\nWenn Sie Fragen haben, können Sie uns jederzeit eine E-Mail an {{email}} schicken."
+  },
+  "contact": {
+    "howTo": "Haben Sie noch Fragen? Es gibt verschiedene Möglichkeiten, wie Sie uns erreichen können:",
+    "ways": {
+      "email": "Sie können uns eine E-Mail an <mail>{{email}}</mail> schicken",
+      "twitter": "Twittern oder schreiben Sie uns auf<url>{{twitter}}</url>",
+      "discord": "Treten Sie unserem <url>Discord-Server</url> bei",
+      "chat": "Verwenden Sie die Chat-Box, die sich unten rechts auf dieser Seite befindet"
+    }
+  },
+  "beta": {
+    "title": "Beta",
+    "description": "Diese Funktion befindet sich in der Beta-Phase. Verwenden Sie sie mit Vorsicht, da es Nebeneffekte geben kann."
+  },
+  "press": {
+    "description": "Unsere Assets zur Verwendung in Ihren Artikeln und anderen Medien. Wenn Sie eines der unten aufgeführten Assets verwenden, wären wir Ihnen dankbar, wenn Sie einen Link zu einer unserer Seiten auf Ihrer Website hinterlassen. Wenn Sie weitere Materialien benötigen oder Fragen haben, <url>kontaktieren Sie uns</url> bitte.",
+    "logos": "Logos",
+    "logo": "Logo",
+    "logoNoText": "Logo ohne Text",
+    "logoWhiteText": "Logo mit weißem Text",
+    "font": {
+      "title": "Schriftart",
+      "description": "Wir verwenden die Schriftart {{font}} auf Swetrix-Websites. Weitere Informationen dazu finden Sie auf der <url>offiziellen Website</url>."
+    }
+  },
+  "open": {
+    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
+    "updated": "This page is updated regularly.",
+    "finance": {
+      "title": "Finance metrics",
+      "desc": "Our financial metrics, such as revenue, losses, etc."
+    },
+    "usage": {
+      "title": "Usage metrics",
+      "desc": "Our user metrics, such as amount of active users, connected websites.",
+      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
+    }
+  },
+  "titles": {
+    "recovery": "Kontenwiederherstellung",
+    "signin": "Anmelden",
+    "signup": "Registrieren",
+    "verification": "E-Mail Verifizierung",
+    "invitation": "Einladung zum gemeinsamen Projekt",
+    "profileSettings": "Profil-Einstellungen",
+    "features": "Funktionen",
+    "dashboard": "Dashboard",
+    "docs": "Dokumentation",
+    "billing": "Rechnung",
+    "contact": "Kontakt",
+    "changelog": "Neuerungen",
+    "main": "Ultimative Open-Source-Analytics um alle Ihre Wünsche zu befriedigen",
+    "press": "Medien & Presse",
+    "socialisation": "Social-Login",
+    "open": "Open startup"
+  },
+  "header": {
+    "switchTheme": "Design wechseln",
+    "dark": "Dunkel",
+    "light": "Hell",
+    "signedInAs": "Angemeldet als"
+  },
+  "footer": {
+    "slogan": "Die besten Apps brauchen den besten Service.",
+    "description": "Swetrix ist eine leistungsstarke Analyseplattform, welche die Privatsphäre der Nutzer respektiert.",
+    "madeIn": "Entwickelt in der",
+    "hostedIn": "Betrieben in der",
+    "ukraine": "Ukraine",
+    "eu": "Europäischen Union",
+    "support": "Kundendienst",
+    "company": "Unternehmen",
+    "legal": "Rechtliches",
+    "copy": "Swetrix Analytics. Alle Rechte vorbehalten.",
+    "contact": "Kontakt",
+    "pp": "Datenschutzerklärung",
+    "tos": "Allgemeine Geschäftsbedingungen",
+    "blog": "Blog",
+    "utm": "UTM-Generator",
+    "billing": "Rechnung",
+    "pricing": "Preisangaben",
+    "docs": "Dokumentation",
+    "guides": "Anleitungen",
+    "privacy": "Datenschutz",
+    "cookie": "Cookie-Richtlinien",
+    "terms": "AGB",
+    "status": "Status",
+    "donate": "Unterstützen",
+    "changelog": "Neuerungen",
+    "captcha": "CAPTCHA",
+    "press": "Medien & Presse",
+    "open": "Open startup",
+    "about": "Über uns",
+    "comparisons": "Vergleiche"
+  }
+}
