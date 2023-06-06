@@ -140,6 +140,4 @@ yarn.lock
 .DS_Store
 
 # remix.run
-
-/build
 /public/build
