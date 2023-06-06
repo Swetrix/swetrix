@@ -81,6 +81,8 @@
       "import/no-named-as-default-member": "off",
       "import/prefer-default-export": "off",
       "no-param-reassign": "off",
+      "@typescript-eslint/camelcase": "off",
+      "camelcase": "off",
       "import/extensions": [
         "error",
         "ignorePackages",
