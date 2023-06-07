@@ -45,8 +45,9 @@ module.exports = {
         },
         {
           href: 'https://github.com/Swetrix',
-          label: 'GitHub',
           position: 'right',
+          className: 'header-github-link',
+          'aria-label': 'GitHub organisation',
         },
         // {
         //   type: "localeDropdown",
