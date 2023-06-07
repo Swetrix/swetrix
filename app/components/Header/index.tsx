@@ -4,8 +4,8 @@ import React, {
 } from 'react'
 import PropTypes from 'prop-types'
 import { Link, NavLink } from '@remix-run/react'
-// import { useAppDispatch } from 'redux/store'
-// import { useDispatch } from 'react-redux'
+import { useAppDispatch } from 'redux/store'
+import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
@@ -25,15 +25,15 @@ import _includes from 'lodash/includes'
 import cx from 'clsx'
 
 import routesPath from 'routesPath'
-// import { authActions } from 'redux/reducers/auth'
-// import sagaActions from 'redux/sagas/actions'
-// import UIActions from 'redux/reducers/ui'
+import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
+import UIActions from 'redux/reducers/ui'
 import {
   whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
   DOCS_URL, SUPPORTED_THEMES,
-} from 'constants'
+} from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
-// import { IUser } from 'redux/models/IUser'
+import { IUser } from 'redux/models/IUser'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -111,8 +111,7 @@ const ThemeMenu = ({
 const ProfileMenu = ({
   user, logoutHandler, t, onLanguageChange, language,
 }: {
-  // user: IUser,
-  user: any,
+  user: IUser,
   logoutHandler: () => void,
   t: (key: string, options?: {
     [key: string]: string | number | null,
@@ -284,8 +283,7 @@ const ProfileMenu = ({
 const AuthedHeader = ({
   user, switchTheme, theme, onLanguageChange, rawStatus, status, t, language, logoutHandler,
 }: {
-  // user: IUser
-  user: any
+  user: IUser
   switchTheme: (thm?: string) => void
   theme: string
   onLanguageChange: (lng: string) => void
@@ -527,8 +525,7 @@ const Header = ({
   authenticated: boolean,
   theme: string,
   // themeType: string,
-  // user: IUser,
-  user: any,
+  user: IUser,
 }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -536,8 +533,8 @@ const Header = ({
     }) => string,
     i18n: { language: string },
   } = useTranslation('common')
-  // const dispatch = useAppDispatch()
-  // const _dispatch = useDispatch()
+  const dispatch = useAppDispatch()
+  const _dispatch = useDispatch()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
 
@@ -576,13 +573,13 @@ const Header = ({
   }, [user, t])
 
   const logoutHandler = () => {
-    // dispatch(authActions.logout())
-    // _dispatch(sagaActions.logout(false))
+    dispatch(authActions.logout())
+    _dispatch(sagaActions.logout(false))
   }
 
   const switchTheme = (_theme?: string) => {
     const newTheme = (_includes(SUPPORTED_THEMES, _theme) && _theme) || (theme === 'dark' ? 'light' : 'dark')
-    // dispatch(UIActions.setTheme(newTheme as 'light' | 'dark'))
+    dispatch(UIActions.setTheme(newTheme as 'light' | 'dark'))
   }
 
   const onLanguageChange = (id: string) => {
