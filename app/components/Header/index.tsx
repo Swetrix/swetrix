@@ -24,15 +24,15 @@ import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import cx from 'clsx'
 
-import routesPath from '~/routesPath'
+import routesPath from 'routesPath'
 // import { authActions } from 'redux/reducers/auth'
 // import sagaActions from 'redux/sagas/actions'
 // import UIActions from 'redux/reducers/ui'
 import {
   whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
   DOCS_URL, SUPPORTED_THEMES,
-} from '~/constants'
-import Dropdown from '~/ui/Dropdown'
+} from 'constants'
+import Dropdown from 'ui/Dropdown'
 // import { IUser } from 'redux/models/IUser'
 
 dayjs.extend(utc)

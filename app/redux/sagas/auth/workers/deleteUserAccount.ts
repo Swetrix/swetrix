@@ -2,7 +2,7 @@ import { call, put } from 'redux-saga/effects'
 
 import { authActions } from 'redux/reducers/auth'
 import { alertsActions } from 'redux/reducers/alerts'
-import { deleteUser } from 'api'
+// import { deleteUser } from 'api'
 
 export default function* deleteUserAccountWorker({ payload: { errorCallback, successCallback, t } }: {
   payload: {
@@ -12,7 +12,7 @@ export default function* deleteUserAccountWorker({ payload: { errorCallback, suc
   },
 }) {
   try {
-    yield call(deleteUser)
+    // yield call(deleteUser)
     yield call(successCallback)
     yield put(authActions.deleteAccountSuccess())
     yield put(alertsActions.accountDeleted({

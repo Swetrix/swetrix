@@ -7,9 +7,11 @@ import {
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react'
-import tailwindCss from './css/tailwind.css'
+
 import Footer from './components/Footer'
 import Header from './components/Header'
+
+import tailwindCss from './css/tailwind.css'
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },

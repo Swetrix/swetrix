@@ -15,6 +15,8 @@ import Backend from 'i18next-http-backend'
 import { getInitialNamespaces } from 'remix-i18next'
 import _isString from 'lodash/isString'
 import _includes from 'lodash/includes'
+import { store } from 'redux/store'
+import { Provider } from 'react-redux'
 import i18n from './i18n'
 
 import { whitelist, defaultLanguage } from './constants'
@@ -89,7 +91,9 @@ async function hydrate() {
       document,
       <I18nextProvider i18n={i18next}>
         <StrictMode>
-          <RemixBrowser />
+          <Provider store={store}>
+            <RemixBrowser />
+          </Provider>
         </StrictMode>
       </I18nextProvider>,
     )
