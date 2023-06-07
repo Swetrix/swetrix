@@ -6,7 +6,7 @@ import { errorsActions } from 'redux/reducers/errors'
 
 import UIActions from 'redux/reducers/ui'
 import { setAccessToken } from 'utils/accessToken'
-// import { login } from 'api'
+import { login } from 'api'
 import { setRefreshToken } from 'utils/refreshToken'
 import sagaActions from '../../actions/index'
 
@@ -24,8 +24,7 @@ export default function* singinWorker({ payload: { credentials, callback } }: {
     const { dontRemember } = credentials
     const {
       user, accessToken, refreshToken,
-    } = {}
-    // yield call(login, _omit(credentials, ['dontRemember']))
+    } = yield call(login, _omit(credentials, ['dontRemember']))
 
     yield put(authActions.setDontRemember(dontRemember))
 
