@@ -25,6 +25,7 @@ module.exports = {
       respectPrefersColorScheme: true,
     },
     navbar: {
+      hideOnScroll: true,
       logo: {
         alt: 'Swetrix',
         src: 'img/logo_blue.png',
