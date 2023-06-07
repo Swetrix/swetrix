@@ -95,6 +95,11 @@ module.exports = {
       ],
       copyright: `Copyright © 2021-${new Date().getFullYear()} Swetrix. Built with Docusaurus.`,
     },
+    algolia: {
+      appId: 'O1G1A8JI1K',
+      apiKey: '4571f2913147bee4d59f82805c995d52',
+      indexName: 'swetrix',
+    },
     // prism: {
     //   theme: lightCodeTheme,
     //   darkTheme: darkCodeTheme,
@@ -134,15 +139,6 @@ module.exports = {
   //       },
   //     };
   //   },
-  //   // [
-  //   //   require.resolve('@cmfcmf/docusaurus-search-local'),
-  //   //   {
-  //   //     indexDocs: true,
-  //   //     indexPages: false,
-  //   //     language: ["en", "zh", "ru"],
-  //   //     maxSearchResults: 10,
-  //   //   },
-  //   // ],
   // ],
   // i18n: {
   //   defaultLocale: 'en',
