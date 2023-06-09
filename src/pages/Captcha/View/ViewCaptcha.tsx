@@ -815,9 +815,9 @@ const ViewProject = ({
               />
               {dataLoading && (
               <div className='loader bg-transparent static mt-4' id='loader'>
-                <div className='loader-head'>
-                  <div className='first' />
-                  <div className='second' />
+                <div className='loader-head dark:bg-slate-800'>
+                  <div className='first dark:bg-slate-600' />
+                  <div className='second dark:bg-slate-600' />
                 </div>
               </div>
               )}
