@@ -657,7 +657,7 @@ const ViewProject = ({
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, newFilters || filters)
           } else {
             showError(t('project.compareDateRangeError'))
             compareDisable()
@@ -673,12 +673,12 @@ const ViewProject = ({
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, newFilters || filters)
           }
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filters)) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone, projectPassword)
@@ -696,13 +696,13 @@ const ViewProject = ({
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket)
+        key = getProjectCacheCustomKey(from, to, timeBucket, newFilters || filters)
       } else {
-        key = getProjectCacheKey(period, timeBucket)
+        key = getProjectCacheKey(period, timeBucket, newFilters || filters)
       }
 
       // check if we need to load new date or we have data in redux/localstorage
-      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]) && !_isEmpty(newFilters || filters)) {
+      if ((!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]))) {
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
@@ -827,7 +827,7 @@ const ViewProject = ({
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket, newFilters || filtersPerf)
           } else {
             showError(t('project.compareDateRangeError'))
             compareDisable()
@@ -843,12 +843,12 @@ const ViewProject = ({
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket, newFilters || filtersPerf)
           }
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filtersPerf)) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone, projectPassword)
@@ -861,9 +861,9 @@ const ViewProject = ({
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket)
+        key = getProjectCacheCustomKey(from, to, timeBucket, newFilters || filtersPerf)
       } else {
-        key = getProjectCacheKey(period, timeBucket)
+        key = getProjectCacheKey(period, timeBucket, newFilters || filtersPerf)
       }
 
       if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
@@ -1111,7 +1111,7 @@ const ViewProject = ({
   const onForecastSubmit = async (periodToForecast: string) => {
     setIsForecastOpened(false)
     setDataLoading(true)
-    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast)
+    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast, filters)
     const data = cache[id][key]
 
     if (!_isEmpty(data)) {

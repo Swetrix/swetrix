@@ -74,14 +74,14 @@ const cacheSlice = createSlice({
         },
       }
     },
-    deleteProjectCache(state, { payload }: PayloadAction<{ pid?: string, period?: string, timeBucket?: string }>) {
+    deleteProjectCache(state, { payload }: PayloadAction<{ pid?: string, period?: string, timeBucket?: string, filters?: any }>) {
       const {
-        pid, period, timeBucket,
+        pid, period, timeBucket, filters,
       } = payload
       let key: string
 
-      if (period && timeBucket) {
-        key = getProjectCacheKey(period, timeBucket)
+      if (period && timeBucket && filters) {
+        key = getProjectCacheKey(period, timeBucket, filters)
       }
 
       if (_isEmpty(period) || _isEmpty(timeBucket)) {
@@ -98,7 +98,9 @@ const cacheSlice = createSlice({
       }
     },
     deleteCaptchaProjectCache(state, { payload }: PayloadAction<{ pid: string, period?: string, timeBucket?: string }>) {
-      const { pid, period, timeBucket } = payload
+      const {
+        pid, period, timeBucket,
+      } = payload
       let key: string
 
       if (period && timeBucket) {
@@ -197,16 +199,16 @@ const cacheSlice = createSlice({
         },
       }
     },
-    setUserFlowAscending(state, { payload }: PayloadAction<{ pid: string, period: string, data: IUserFlow }>) {
-      const key = getUserFlowCacheKey(payload.pid, payload.period)
+    setUserFlowAscending(state, { payload }: PayloadAction<{ pid: string, period: string, data: IUserFlow, filters: any }>) {
+      const key = getUserFlowCacheKey(payload.pid, payload.period, payload.filters)
 
       state.userFlowAscending = {
         ...state.userFlowAscending,
         [key]: payload.data,
       }
     },
-    setUserFlowDescending(state, { payload }: PayloadAction<{ pid: string, period: string, data: IUserFlow }>) {
-      const key = getUserFlowCacheKey(payload.pid, payload.period)
+    setUserFlowDescending(state, { payload }: PayloadAction<{ pid: string, period: string, data: IUserFlow, filters: any }>) {
+      const key = getUserFlowCacheKey(payload.pid, payload.period, payload.filters)
 
       state.userFlowDescending = {
         ...state.userFlowDescending,
