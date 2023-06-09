@@ -12,28 +12,28 @@ type setItemType = (key: string, value: string) => void
 
 export const setItem: setItemType = (key, value) => {
   currentLocalStorage[key] = value
-  localStorage.setItem(key, value)
+  // localStorage.setItem(key, value)
 }
 
 type getItemType = (key: string) => any
 
 export const getItem: getItemType = (key) => {
-  if (currentLocalStorage[key]) {
-    return currentLocalStorage[key]
-  }
+  // if (currentLocalStorage[key]) {
+  //   return currentLocalStorage[key]
+  // }
 
-  const storedValue: any = localStorage.getItem(key)
+  // const storedValue: any = localStorage.getItem(key)
 
-  try {
-    return JSON.parse(storedValue)
-  } catch {
-    return storedValue
-  }
+  // try {
+  //   return JSON.parse(storedValue)
+  // } catch {
+  //   return storedValue
+  // }
 }
 
 type removeItemType = (key: string) => void
 
 export const removeItem: removeItemType = (key) => {
-  delete currentLocalStorage[key]
-  localStorage.removeItem(key)
+  // delete currentLocalStorage[key]
+  // localStorage.removeItem(key)
 }

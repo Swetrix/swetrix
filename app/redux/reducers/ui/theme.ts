@@ -3,26 +3,26 @@ import _includes from 'lodash/includes'
 import { LS_THEME_SETTING, SUPPORTED_THEMES, THEME_TYPE } from 'redux/constants'
 
 const setThemeToDOM = (theme: string) => {
-  const root = window.document.documentElement
+  // const root = window.document.documentElement
   const isDark = theme === 'dark'
 
-  root.classList.remove(isDark ? 'light' : 'dark')
-  root.classList.add(theme)
+  // root.classList.remove(isDark ? 'light' : 'dark')
+  // root.classList.add(theme)
 }
 
 const setTheme = (theme: string): string => {
   setThemeToDOM(theme)
-  localStorage.setItem(LS_THEME_SETTING, theme)
+  // localStorage.setItem(LS_THEME_SETTING, theme)
   return theme
 }
 
 const getInitialTheme = (): 'light' | 'dark' => {
   if (typeof window !== 'undefined' && window.localStorage) {
-    const lsTheme: any = window.localStorage.getItem(LS_THEME_SETTING)
-    if (_includes(SUPPORTED_THEMES, lsTheme)) {
-      setThemeToDOM(lsTheme)
-      return lsTheme
-    }
+    // const lsTheme: any = window.localStorage.getItem(LS_THEME_SETTING)
+    // if (_includes(SUPPORTED_THEMES, lsTheme)) {
+    //   setThemeToDOM(lsTheme)
+    //   return lsTheme
+    // }
 
     const userMedia = window.matchMedia('(prefers-color-scheme: dark)')
     if (userMedia.matches) {

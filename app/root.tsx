@@ -7,6 +7,8 @@ import {
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react'
+import { store } from 'redux/store'
+import { Provider } from 'react-redux'
 
 import Footer from './components/Footer'
 import Header from './components/Header'
@@ -27,12 +29,14 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Header />
-        <Outlet />
-        <ScrollRestoration />
-        <Scripts />
-        {process.env.NODE_ENV === 'development' && <LiveReload />}
-        <Footer />
+        <Provider store={store}>
+          <Header />
+          <Outlet />
+          <ScrollRestoration />
+          <Scripts />
+          {process.env.NODE_ENV === 'development' && <LiveReload />}
+          <Footer />
+        </Provider>
       </body>
     </html>
   )
