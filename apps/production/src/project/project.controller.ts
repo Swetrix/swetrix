@@ -1244,9 +1244,11 @@ export class ProjectController {
     project.name = projectDTO.name
     project.public = projectDTO.public
 
-    if (projectDTO.isPasswordProtected && projectDTO.password) {
-      project.isPasswordProtected = true
-      project.passwordHash = await hash(projectDTO.password, 10)
+    if (projectDTO.isPasswordProtected) {
+      if (projectDTO.password) {
+        project.isPasswordProtected = true
+        project.passwordHash = await hash(projectDTO.password, 10)
+      }
     } else {
       project.isPasswordProtected = false
       project.passwordHash = null
