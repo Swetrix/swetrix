@@ -1,5 +1,5 @@
 import React from 'react'
-import { Helmet } from 'react-helmet-async'
+// import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -18,29 +18,29 @@ const Title: React.FC<ITitle> = ({ title, children }) => {
   if (_isEmpty(title)) {
     return (
       <>
-        <Helmet>
+        {/* <Helmet> */}
           <title>Swetrix Analytics</title>
-        </Helmet>
+        {/* </Helmet> */}
         {children}
       </>
     )
   }
 
   const displayTitle = `${title} ${TITLE_SUFFIX}`
-  const pageURL = `${window.location.origin}${window.location.pathname}`
+  // const pageURL = `${window.location.origin}${window.location.pathname}`
 
   return (
     <>
-      <Helmet>
+      {/* <Helmet> */}
         <html lang={language} />
         <title>{displayTitle}</title>
         {/* <meta property='og:title' content={displayTitle} />
         <meta name='twitter:title' content={displayTitle} /> */}
         {_map(whitelist, (lang) => (
-          <link key={lang} rel='alternate' hrefLang={lang} href={`${pageURL}?lng=${lang}`} />
+          <link key={lang} rel='alternate' hrefLang={lang} href={`${''}?lng=${lang}`} />
         ))}
-        <link rel='alternate' hrefLang='x-default' href={pageURL} />
-      </Helmet>
+        <link rel='alternate' hrefLang='x-default' href={''} />
+      {/* </Helmet> */}
       {children}
     </>
   )
