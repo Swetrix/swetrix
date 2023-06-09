@@ -4,6 +4,7 @@
   "scripts": {
     "build": "remix build",
     "dev": "remix dev",
+    "dev:dev": "cross-env REACT_APP_RUNNING_DEV_SCRIPT=true remix dev",
     "start": "remix-serve build",
     "typecheck": "tsc",
     "lint": "eslint app",
