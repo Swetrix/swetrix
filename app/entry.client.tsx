@@ -7,7 +7,6 @@
 import { RemixBrowser } from '@remix-run/react'
 import { startTransition, StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
-import { HelmetProvider } from 'react-helmet-async'
 
 import i18next from 'i18next'
 import { I18nextProvider, initReactI18next } from 'react-i18next'

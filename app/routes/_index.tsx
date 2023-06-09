@@ -14,7 +14,6 @@ import _isEmpty from 'lodash/isEmpty'
 
 import routesPath from 'routesPath'
 import { nFormatterSeparated } from 'utils/generic'
-import Title from 'components/Title'
 import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL } from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
@@ -39,8 +38,15 @@ import Wix from 'ui/icons/Wix'
 
 export const meta: V2_MetaFunction = () => {
   return [
-    { title: 'New Remix App' },
-    { name: 'description', content: 'Welcome to Remix!' },
+    { title: 'Swetrix Analytics' },
+    {
+      name: 'description',
+      content: 'Swetrix Analytics is a privacy-focused, open-source alternative to Google Analytics.',
+    },
+    {
+      name: 'keywords',
+      content: 'analytics, google analytics, privacy, open-source, alternative',
+    },
   ]
 }
 
@@ -160,7 +166,7 @@ const Main = (): JSX.Element => {
   const websites = nFormatterSeparated(Number(stats.projects))
 
   return (
-    <Title title={t('titles.main')}>
+    <div>
       <div className='flex justify-center items-center bg-slate-900 py-2 px-2'>
         <a href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi' target='_blank' rel='noreferrer noopener' className='text-white border-gray-900 border-b-2 hover:border-white text-center'>
           {t('main.ukrSupport')}
@@ -755,7 +761,7 @@ const Main = (): JSX.Element => {
           </main>
         </div>
       </div>
-    </Title>
+    </div>
   )
 }
 
