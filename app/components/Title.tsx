@@ -1,5 +1,5 @@
 import React from 'react'
-// import { Helmet } from 'react-helmet-async'
+import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -18,9 +18,9 @@ const Title: React.FC<ITitle> = ({ title, children }) => {
   if (_isEmpty(title)) {
     return (
       <>
-        {/* <Helmet> */}
+        <Helmet>
           <title>Swetrix Analytics</title>
-        {/* </Helmet> */}
+        </Helmet>
         {children}
       </>
     )
@@ -31,7 +31,7 @@ const Title: React.FC<ITitle> = ({ title, children }) => {
 
   return (
     <>
-      {/* <Helmet> */}
+      <Helmet>
         <html lang={language} />
         <title>{displayTitle}</title>
         {/* <meta property='og:title' content={displayTitle} />
@@ -40,7 +40,7 @@ const Title: React.FC<ITitle> = ({ title, children }) => {
           <link key={lang} rel='alternate' hrefLang={lang} href={`${''}?lng=${lang}`} />
         ))}
         <link rel='alternate' hrefLang='x-default' href={''} />
-      {/* </Helmet> */}
+      </Helmet>
       {children}
     </>
   )

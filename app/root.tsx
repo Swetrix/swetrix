@@ -9,6 +9,7 @@ import {
 } from '@remix-run/react'
 import { store } from 'redux/store'
 import { Provider } from 'react-redux'
+import { HelmetProvider } from 'react-helmet-async'
 
 import Footer from './components/Footer'
 import Header from './components/Header'
@@ -30,12 +31,14 @@ export default function App() {
       </head>
       <body>
         <Provider store={store}>
-          <Header />
-          <Outlet />
-          <ScrollRestoration />
-          <Scripts />
-          {process.env.NODE_ENV === 'development' && <LiveReload />}
-          <Footer />
+          <HelmetProvider>
+            <Header />
+            <Outlet />
+            <ScrollRestoration />
+            <Scripts />
+            {process.env.NODE_ENV === 'development' && <LiveReload />}
+            <Footer />
+          </HelmetProvider>
         </Provider>
       </body>
     </html>
