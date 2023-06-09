@@ -14,6 +14,7 @@ export class ProjectPasswordDto {
     message: 'Max length is $constraint1 characters',
   })
   @MinLength(1, { message: 'Min length is $constraint1 characters' })
+  @IsOptional()
   password?: string | null
 
   @IsOptional()
