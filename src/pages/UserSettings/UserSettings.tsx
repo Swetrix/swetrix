@@ -11,11 +11,12 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import {
-  EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, CurrencyDollarIcon, ClipboardDocumentIcon,
+  EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, CurrencyDollarIcon, ClipboardDocumentIcon, ChevronDownIcon,
 } from '@heroicons/react/24/outline'
 import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
+import cx from 'clsx'
 
 import {
   reportFrequencies, DEFAULT_TIMEZONE, WEEKLY_REPORT_FREQUENCY, CONFIRMATION_TIMEOUT,
@@ -101,6 +102,7 @@ const UserSettings = ({
     repeat: '',
     timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
+  const [showPasswordFields, setShowPasswordFields] = useState<boolean>(false)
   const [timezone, setTimezone] = useState<string>(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const [timezoneChanged, setTimezoneChanged] = useState<boolean>(false)
@@ -359,6 +361,10 @@ const UserSettings = ({
     }
   }
 
+  const toggleShowPasswordFields = () => {
+    setShowPasswordFields((prev) => !prev)
+  }
+
   return (
     <Title title={t('titles.profileSettings')}>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
@@ -383,31 +389,44 @@ const UserSettings = ({
           />
           {!isSelfhosted && (
             <>
-              <div className='grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mt-4'>
-                <Input
-                  name='password'
-                  id='password'
-                  type='password'
-                  label={t('auth.common.password')}
-                  hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-                  value={form.password}
-                  placeholder={t('auth.common.password')}
-                  className='sm:col-span-3'
-                  onChange={handleInput}
-                  error={beenSubmitted ? errors.password : null}
+              <span
+                onClick={toggleShowPasswordFields}
+                className='flex items-center cursor-pointer max-w-max text-gray-900 dark:text-gray-50 hover:underline'
+              >
+                {t('auth.common.changePassword')}
+                <ChevronDownIcon
+                  className={cx('w-4 h-4 ml-2', {
+                    'rotate-180': showPasswordFields,
+                  })}
                 />
-                <Input
-                  name='repeat'
-                  id='repeat'
-                  type='password'
-                  label={t('auth.common.repeat')}
-                  value={form.repeat}
-                  placeholder={t('auth.common.repeat')}
-                  className='sm:col-span-3'
-                  onChange={handleInput}
-                  error={beenSubmitted ? errors.repeat : null}
-                />
-              </div>
+              </span>
+              {showPasswordFields && (
+                <div className='grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mt-4'>
+                  <Input
+                    name='password'
+                    id='password'
+                    type='password'
+                    label={t('auth.common.password')}
+                    hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                    value={form.password}
+                    placeholder={t('auth.common.password')}
+                    className='sm:col-span-3'
+                    onChange={handleInput}
+                    error={beenSubmitted ? errors.password : null}
+                  />
+                  <Input
+                    name='repeat'
+                    id='repeat'
+                    type='password'
+                    label={t('auth.common.repeat')}
+                    value={form.repeat}
+                    placeholder={t('auth.common.repeat')}
+                    className='sm:col-span-3'
+                    onChange={handleInput}
+                    error={beenSubmitted ? errors.repeat : null}
+                  />
+                </div>
+              )}
               <Button className='mt-4' type='submit' primary large>
                 {t('profileSettings.update')}
               </Button>

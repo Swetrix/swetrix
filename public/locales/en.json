@@ -297,6 +297,7 @@
       "password": "Password",
       "noRemember": "Don't remember me.",
       "repeat": "Repeat password",
+      "changePassword": "Change password",
       "hint": "Longer than {{amount}} chars",
       "xCharsError": "The password has to consist of at least {{amount}} characters.",
       "noMatchError": "Passwords have to match.",
