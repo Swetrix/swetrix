@@ -7,6 +7,9 @@ import { useSelector } from 'react-redux'
 import {
   ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon, CheckIcon, XMarkIcon, ChevronRightIcon,
 } from '@heroicons/react/24/solid'
+import {
+  CodeBracketIcon, PuzzlePieceIcon, ShareIcon, ArrowsPointingOutIcon, LightBulbIcon, ArrowTrendingUpIcon,
+} from '@heroicons/react/20/solid'
 import { TypeAnimation } from 'react-type-animation'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
@@ -126,6 +129,15 @@ const Lines = (): JSX.Element => (
     <div className='absolute rotate-[96deg] top-[22.26rem] xl:top-[23.5rem] -left-60 ml-[-0.5px] h-96 w-[2px] rounded-full bg-gradient-to-t from-emerald-600 dark:from-emerald-700 opacity-50' />
   </div>
 )
+
+const M_FEATURES_ICONS = [
+  <ArrowsPointingOutIcon className='w-5 h-5' key='ArrowsPointingOutIcon' />,
+  <CodeBracketIcon className='w-5 h-5' key='CodeBracketIcon' />,
+  <PuzzlePieceIcon className='w-5 h-5' key='PuzzlePieceIcon' />,
+  <ArrowTrendingUpIcon className='w-5 h-5' key='ArrowTrendingUpIcon' />,
+  <LightBulbIcon className='w-5 h-5' key='LightBulbIcon' />,
+  <ShareIcon className='w-5 h-5' key='ShareIcon' />,
+]
 
 const Main = (): JSX.Element => {
   const { t, i18n: { language } }: {
@@ -512,15 +524,19 @@ const Main = (): JSX.Element => {
                 <h2 className='mt-20 text-center text-3xl sm:text-5xl text-slate-900 dark:text-white font-extrabold max-w-lg w-full mx-auto'>
                   {t('main.marketplaceBlock')}
                 </h2>
-                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-24 justify-between justify-items-center text-slate-900 dark:text-white pt-20 pb-36'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-10 sm:gap-y-24 justify-between justify-items-center text-slate-900 dark:text-white pt-20 pb-36'>
                   {_map(t('main.mFeatures', { returnObjects: true }), (item: {
                     name: string
                     desc: string
                   }, index: number) => (
                     <div key={item.name} className='max-w-[310px] w-full'>
                       <div className='flex items-center'>
-                        <span className='text-slate-900 dark:text-gray-200 font-bold text-[26px] mr-[18px]'>{1 + index}</span>
-                        <h2 className='font-semibold text-xl'>{item.name}</h2>
+                        <span className='text-slate-900 dark:text-gray-200 text-xl mr-4'>
+                          {M_FEATURES_ICONS[index]}
+                        </span>
+                        <h2 className='font-semibold text-xl'>
+                          {item.name}
+                        </h2>
                       </div>
                       <p className='pl-9 text-slate-700 dark:text-gray-300'>{item.desc}</p>
                     </div>
