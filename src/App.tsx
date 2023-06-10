@@ -101,13 +101,12 @@ const Fallback = ({ isMinimalFooter }: FallbackProps): JSX.Element => {
 
 const App = () => {
   const dispatch = useAppDispatch()
-  const location = useLocation()
+  const { pathname } = useLocation()
   const alert = useAlert()
   const {
-    loading, authenticated, user,
+    loading, authenticated,
   } = useSelector((state: StateType) => state.auth)
   const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
   // const themeType = useSelector(state => state.ui.theme.type)
@@ -189,19 +188,16 @@ const App = () => {
     }
   }, [message, type]) // eslint-disable-line
 
-  const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(location.pathname, page))
+  const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
   return (
     <>
       {(!accessToken || !loading) && (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
-        <Header
-          authenticated={authenticated}
-          theme={theme}
-          // themeType={themeType}
-          user={user}
-        />
+        {pathname !== routes.main && (
+          <Header />
+        )}
         {/* {location.pathname === routes.main && (
           <Snowfall />
         )} */}

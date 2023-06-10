@@ -2,11 +2,9 @@
 import React, {
   memo, Fragment, useRef, useMemo, MutableRefObject,
 } from 'react'
-import PropTypes from 'prop-types'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
-import { useAppDispatch } from 'redux/store'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
@@ -14,8 +12,7 @@ import {
   Popover, Transition, Menu,
 } from '@headlessui/react'
 import {
-  Bars3Icon, XMarkIcon, DocumentTextIcon, CreditCardIcon, CircleStackIcon, RssIcon,
-  ChevronDownIcon, PresentationChartLineIcon,
+  Bars3Icon, XMarkIcon, ChevronDownIcon, ArrowSmallRightIcon,
 } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import dayjs from 'dayjs'
@@ -35,6 +32,7 @@ import {
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 import { IUser } from 'redux/models/IUser'
+import { useAppDispatch, StateType } from 'redux/store'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -57,14 +55,14 @@ const ThemeMenu = ({
 }) => (
   <Menu as='div' className='relative ml-3'>
     <div>
-      <Menu.Button className='flex justify-center items-center text-base font-medium text-white focus:outline-none hover:text-indigo-100 hover:dark:text-gray-200'>
+      <Menu.Button className='flex justify-center items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
         <span className='sr-only'>
           {t('header.switchTheme')}
         </span>
         {theme === 'dark' ? (
           <SunIcon className='h-6 w-6 text-gray-200 hover:text-gray-300 cursor-pointer' aria-hidden='true' />
         ) : (
-          <MoonIcon className='h-6 w-6 text-indigo-100 hover:text-indigo-200 cursor-pointer' aria-hidden='true' />
+          <MoonIcon className='h-6 w-6 text-slate-700 hover:text-slate-600 cursor-pointer' aria-hidden='true' />
         )}
       </Menu.Button>
     </div>
@@ -122,11 +120,11 @@ const ProfileMenu = ({
 }) => (
   <Menu as='div' className='relative ml-3'>
     <div>
-      <Menu.Button className='flex justify-center items-center text-base font-medium text-white focus:outline-none hover:text-indigo-100 hover:dark:text-gray-200'>
+      <Menu.Button className='flex justify-center items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
         <span>
           {t('common.account')}
         </span>
-        <ChevronDownIcon className='h-4 w-4 ml-1' aria-hidden='true' />
+        <ChevronDownIcon className='h-4 w-4 ml-1 stroke-2' aria-hidden='true' />
       </Menu.Button>
     </div>
     <Transition
@@ -171,7 +169,7 @@ const ProfileMenu = ({
                       <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={20} alt='' aria-hidden='true' />
                       {languages[language]}
                     </div>
-                    <ChevronDownIcon className='-mr-1 ml-2 h-5 w-5' aria-hidden='true' />
+                    <ChevronDownIcon className='-mr-1 ml-2 h-5 w-5 stroke-2' aria-hidden='true' />
                   </Menu.Button>
                 </div>
 
@@ -282,7 +280,7 @@ const ProfileMenu = ({
 )
 
 const AuthedHeader = ({
-  user, switchTheme, theme, onLanguageChange, rawStatus, status, t, language, logoutHandler,
+  user, switchTheme, theme, onLanguageChange, rawStatus, status, t, language, logoutHandler, colourBackground,
 }: {
   user: IUser
   switchTheme: (thm?: string) => void
@@ -295,24 +293,34 @@ const AuthedHeader = ({
   }) => string
   language: string
   logoutHandler: () => void
+  colourBackground: boolean
 }): JSX.Element => (
-  <header className='bg-indigo-600 dark:bg-gray-750 relative overflow-x-clip'>
+  <header
+    className={cx('relative overflow-x-clip', {
+      'bg-gray-50 dark:bg-slate-900': colourBackground,
+    })}
+  >
     <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
-      <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-gray-300 lg:border-none'>
+      <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-slate-600 lg:border-none'>
         <div className='flex items-center'>
           {/* Logo */}
           <Link to={routes.main}>
             <span className='sr-only'>Swetrix</span>
-            <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
+            <img
+              className='h-7'
+              height='28'
+              src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
+              alt='Swetrix'
+            />
           </Link>
 
-          <div className='hidden ml-10 space-x-1 lg:flex'>
+          <div className='hidden ml-10 space-x-1 lg:flex gap-4'>
             {user?.planCode === 'trial' && (
               <Link
                 to={routes.billing}
-                className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
-                  'text-amber-800 bg-amber-200 dark:bg-amber-300 hover:bg-amber-300 dark:hover:bg-amber-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-                  'text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
+                className={cx('font-semibold leading-6 text-base', {
+                  'text-amber-600 hover:text-amber-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
+                  'text-rose-600 hover:text-rose-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
                 })}
                 key='TrialNotification'
               >
@@ -322,22 +330,32 @@ const AuthedHeader = ({
             {user?.planCode === 'none' && (
               <Link
                 to={routes.billing}
-                className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
+                className='font-semibold leading-6 text-base text-rose-600 hover:text-rose-500'
                 key='NoSubscription'
               >
                 {t('billing.inactive')}
               </Link>
             )}
-            <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
-              <RssIcon className='w-5 h-5 mr-1' />
+            <a
+              href={BLOG_URL}
+              className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              target='_blank'
+              rel='noreferrer noopener'
+            >
               {t('footer.blog')}
             </a>
-            <a href={DOCS_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
-              <DocumentTextIcon className='w-5 h-5 mr-1' />
+            <a
+              href={DOCS_URL}
+              className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              target='_blank'
+              rel='noreferrer noopener'
+            >
               {t('common.docs')}
             </a>
-            <Link to={routes.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md'>
-              <PresentationChartLineIcon className='w-5 h-5 mr-1' />
+            <Link
+              to={routes.dashboard}
+              className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+            >
               {t('common.dashboard')}
             </Link>
           </div>
@@ -364,7 +382,7 @@ const AuthedHeader = ({
             </div>
           ) : (
             <div className='transition-all duration-1000 ease-in-out'>
-              <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+              <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-slate-700 hover:text-slate-600 cursor-pointer' />
             </div>
           )}
           <Popover.Button className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
@@ -375,17 +393,27 @@ const AuthedHeader = ({
           </Popover.Button>
         </div>
       </div>
-      <div className='py-4 flex flex-wrap justify-center space-x-2 lg:hidden'>
-        <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
-          <RssIcon className='w-5 h-5 mr-1' />
+      <div className='py-4 flex gap-4 flex-wrap justify-center space-x-2 lg:hidden'>
+        <a
+          href={BLOG_URL}
+          className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+          target='_blank'
+          rel='noreferrer noopener'
+        >
           {t('footer.blog')}
         </a>
-        <a href={DOCS_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
-          <DocumentTextIcon className='w-5 h-5 mr-1' />
+        <a
+          href={DOCS_URL}
+          className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+          target='_blank'
+          rel='noreferrer noopener'
+        >
           {t('common.docs')}
         </a>
-        <Link to={routes.dashboard} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md'>
-          <PresentationChartLineIcon className='w-5 h-5 mr-1' />
+        <Link
+          to={routes.dashboard}
+          className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+        >
           {t('common.dashboard')}
         </Link>
       </div>
@@ -394,67 +422,75 @@ const AuthedHeader = ({
 )
 
 const NotAuthedHeader = ({
-  switchTheme, theme, onLanguageChange, t, language,
+  switchTheme, theme, onLanguageChange, t, language, colourBackground,
 }: {
   switchTheme: (a?: string) => void,
   theme: string,
   onLanguageChange: (lang: string) => void,
   t: (key: string) => string,
   language: string,
+  colourBackground: boolean,
 }) => (
-  <header className='bg-indigo-600 dark:bg-gray-750 relative overflow-x-clip'>
+  <header
+    className={cx('relative overflow-x-clip', {
+      'bg-indigo-600 dark:bg-slate-900': colourBackground,
+    })}
+  >
     <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
-      <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-gray-300 lg:border-none'>
+      <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-slate-600 lg:border-none'>
         <div className='flex items-center'>
           {/* Logo */}
           <Link to={routes.main}>
             <span className='sr-only'>Swetrix</span>
-            <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
+            <img
+              className='h-7'
+              height='28'
+              src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
+              alt='Swetrix'
+            />
           </Link>
 
-          <div className='hidden ml-10 space-x-1 lg:flex'>
-            <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
-              <RssIcon className='w-5 h-5 mr-1' />
+          <div className='hidden ml-10 space-x-1 lg:flex gap-4 items-center'>
+            <a
+              href={BLOG_URL}
+              className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              target='_blank'
+              rel='noreferrer noopener'
+            >
               {t('footer.blog')}
             </a>
             {!isSelfhosted && (
               <>
-                <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-slate-800' key='Features'>
-                  <CircleStackIcon className='w-5 h-5 mr-1' />
+                <Link
+                  to={routes.features}
+                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                >
                   {t('common.features')}
-                </NavLink>
-                <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
-                  <CreditCardIcon className='w-5 h-5 mr-1' />
+                </Link>
+                <HashLink
+                  to={`${routes.main}#pricing`}
+                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  key='Pricing'
+                >
                   {t('common.pricing')}
                 </HashLink>
               </>
             )}
-            <a href={DOCS_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-2 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
-              <DocumentTextIcon className='w-5 h-5 mr-1' />
+            <a href={DOCS_URL} className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white' target='_blank' rel='noreferrer noopener'>
+              {/* <DocumentTextIcon className='w-5 h-5 mr-1' /> */}
               {t('common.docs')}
             </a>
           </div>
         </div>
         <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
-          {/* Theme switch */}
-          {theme === 'dark' ? (
-            <div className='transition-all duration-1000 ease-in-out rotate-180'>
-              <SunIcon onClick={() => switchTheme()} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
-            </div>
-          ) : (
-            <div className='transition-all duration-1000 ease-in-out'>
-              <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
-            </div>
-          )}
-
           {/* Language selector */}
           <Dropdown
             items={whitelist}
-            buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 border dark:border-slate-800'
+            buttonClassName='inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 text-sm font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
             selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
             title={(
               <>
-                <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' aria-hidden='true' />
+                <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={18} alt='' aria-hidden='true' />
                 {languages[language]}
               </>
             )}
@@ -468,14 +504,18 @@ const NotAuthedHeader = ({
             )}
             onSelect={onLanguageChange}
           />
-          <Link to={routes.signin} className='inline-block select-none bg-indigo-500 dark:bg-slate-800 mt-1 sm:mt-0 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 hover:dark:bg-slate-700'>
+          <ThemeMenu
+            theme={theme}
+            switchTheme={switchTheme}
+            t={t}
+          />
+          <span className='text-slate-700'>
+            |
+          </span>
+          <Link to={routes.signin} className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
             {t('auth.common.signin')}
+            <ArrowSmallRightIcon className='ml-1 stroke-2 h-4 w-4 mt-[1px]' />
           </Link>
-          {!isSelfhosted && (
-            <Link to={routes.signup} className='inline-block select-none bg-white dark:bg-slate-800 dark:text-gray-50 py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 hover:dark:bg-slate-700' aria-label={t('titles.signup')}>
-              {t('common.getStarted')}
-            </Link>
-          )}
         </div>
         <div className='md:hidden flex justify-center items-center'>
           {/* Theme switch */}
@@ -485,7 +525,7 @@ const NotAuthedHeader = ({
             </div>
           ) : (
             <div className='transition-all duration-1000 ease-in-out'>
-              <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-indigo-100 hover:text-indigo-200 cursor-pointer' />
+              <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-slate-700 hover:text-slate-600 cursor-pointer' />
             </div>
           )}
           <Popover.Button className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
@@ -496,21 +536,34 @@ const NotAuthedHeader = ({
           </Popover.Button>
         </div>
       </div>
-      <div className='py-4 flex flex-wrap justify-center space-x-2 lg:hidden'>
-        <a href={BLOG_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
-          <RssIcon className='w-5 h-5 mr-1' />
+      <div className='py-4 flex gap-4 flex-wrap justify-center space-x-2 lg:hidden'>
+        <a
+          href={BLOG_URL}
+          className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+          target='_blank'
+          rel='noreferrer noopener'
+        >
           {t('footer.blog')}
         </a>
-        <HashLink to={`${routes.main}#pricing`} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' key='Pricing'>
-          <CreditCardIcon className='w-5 h-5 mr-1' />
+        <HashLink
+          to={`${routes.main}#pricing`}
+          className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+          key='Pricing'
+        >
           {t('common.pricing')}
         </HashLink>
-        <NavLink to={routes.features} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' activeClassName='bg-indigo-700 hover:bg-indigo-700 dark:bg-slate-800' key='Features'>
-          <CircleStackIcon className='w-5 h-5 mr-1' />
+        <Link
+          to={routes.features}
+          className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+        >
           {t('common.features')}
-        </NavLink>
-        <a href={DOCS_URL} className='flex justify-center items-center text-base select-none font-medium text-white hover:text-indigo-50 py-1 px-2 dark:hover:bg-gray-700 hover:bg-indigo-500 rounded-md' target='_blank' rel='noreferrer noopener'>
-          <DocumentTextIcon className='w-5 h-5 mr-1' />
+        </Link>
+        <a
+          href={DOCS_URL}
+          className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+          target='_blank'
+          rel='noreferrer noopener'
+        >
           {t('common.docs')}
         </a>
       </div>
@@ -518,16 +571,7 @@ const NotAuthedHeader = ({
   </header>
 )
 
-const Header = ({
-  authenticated, theme,
-  // themeType,
-  user,
-}: {
-  authenticated: boolean,
-  theme: string,
-  // themeType: string,
-  user: IUser,
-}): JSX.Element => {
+const Header = (): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null
@@ -536,6 +580,9 @@ const Header = ({
   } = useTranslation('common')
   const dispatch = useAppDispatch()
   const _dispatch = useDispatch()
+  const { authenticated, user } = useSelector((state: StateType) => state.auth)
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { pathname } = useLocation()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
 
@@ -588,7 +635,7 @@ const Header = ({
   }
 
   return (
-    <Popover className='relative bg-white'>
+    <Popover className='relative'>
       {/* Computer / Laptop / Tablet layout header */}
       {authenticated ? (
         <AuthedHeader
@@ -600,6 +647,7 @@ const Header = ({
           theme={theme}
           onLanguageChange={onLanguageChange}
           language={language}
+          colourBackground={pathname !== routes.main}
           t={t}
         />
       ) : (
@@ -608,6 +656,7 @@ const Header = ({
           theme={theme}
           onLanguageChange={onLanguageChange}
           language={language}
+          colourBackground={pathname !== routes.main}
           t={t}
         />
       )}
@@ -628,11 +677,12 @@ const Header = ({
               <div className='flex items-center justify-between'>
                 <Link to={routes.main}>
                   <span className='sr-only'>Swetrix</span>
-                  {theme === 'dark' ? (
-                    <img className='h-7' height='28' src='/assets/logo_white.png' alt='Swetrix' />
-                  ) : (
-                    <img className='h-7' height='28' src='/assets/logo_blue.png' alt='Swetrix' />
-                  )}
+                  <img
+                    className='h-7'
+                    height='28'
+                    src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
+                    alt='Swetrix'
+                  />
                 </Link>
                 <Popover.Button ref={buttonRef} className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
                   <span className='sr-only'>
@@ -670,9 +720,9 @@ const Header = ({
                     {user?.planCode === 'trial' && (
                       <Link
                         to={routes.billing}
-                        className={cx('flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md', {
-                          'text-amber-800 bg-amber-200 dark:bg-amber-300 hover:bg-amber-300 dark:hover:bg-amber-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-                          'text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
+                        className={cx('font-semibold leading-6 text-base', {
+                          'text-amber-600 hover:text-amber-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
+                          'text-rose-600 hover:text-rose-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
                         })}
                         key='TrialNotification'
                       >
@@ -682,7 +732,7 @@ const Header = ({
                     {user?.planCode === 'none' && (
                       <Link
                         to={routes.billing}
-                        className='flex justify-center items-center text-base select-none font-medium py-2 px-2 rounded-md text-rose-800 bg-rose-200 dark:bg-rose-300 hover:bg-rose-300 dark:hover:bg-rose-200'
+                        className='font-semibold leading-6 text-base text-rose-600 hover:text-rose-500'
                         key='NoSubscription'
                       >
                         {t('billing.inactive')}
@@ -730,18 +780,6 @@ const Header = ({
       </Transition>
     </Popover>
   )
-}
-
-Header.propTypes = {
-  authenticated: PropTypes.bool.isRequired,
-  theme: PropTypes.string.isRequired,
-  // themeType: PropTypes.string.isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
-  user: PropTypes.object,
-}
-
-Header.defaultProps = {
-  user: {},
 }
 
 export default memo(Header)
