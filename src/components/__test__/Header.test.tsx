@@ -75,33 +75,18 @@ describe('Header', () => {
     })
   })
 
-  test('renders authed header if authenticated', () => {
+  test('renders header', () => {
     render(
       // @ts-ignore
       <Router history={history}>
         <Provider store={store}>
           <I18nextProvider i18n={i18n}>
-            <Header authenticated={authenticated} theme={theme} user={user} />
+            <Header />
           </I18nextProvider>
         </Provider>
       </Router>,
     )
 
     expect(screen.getAllByText(/common.dashboard/i)).toHaveLength(2)
-  })
-
-  test('renders not-authed header if not authenticated', () => {
-    render(
-      // @ts-ignore
-      <Router history={history}>
-        <Provider store={store}>
-          <I18nextProvider i18n={i18n}>
-            <Header authenticated={false} theme={theme} user={user} />
-          </I18nextProvider>
-        </Provider>
-      </Router>,
-    )
-
-    expect(screen.getByText(/auth.common.signin/i)).toBeInTheDocument()
   })
 })

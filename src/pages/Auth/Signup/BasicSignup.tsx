@@ -195,13 +195,15 @@ const BasicSignup = (): JSX.Element => {
         <p className='text-sm mt-2 mb-2 text-center text-gray-500 dark:text-gray-100'>
           {t('auth.socialisation.orSingUpWith')}
         </p>
-        <div className='space-x-5'>
+        <div className='flex justify-around space-x-5'>
           <GoogleAuth
+            className='w-full flex justify-center'
             setIsLoading={setIsLoading}
             authSSO={authSSO}
             isMiniButton
           />
           <GithubAuth
+            className='w-full flex justify-center'
             setIsLoading={setIsLoading}
             authSSO={authSSO}
             isMiniButton

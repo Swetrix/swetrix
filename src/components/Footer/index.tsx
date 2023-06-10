@@ -120,22 +120,22 @@ const SelfHostedFooter = () => {
       <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
         <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
           <div className='px-5 py-2'>
-            <Link to={routes.contact} className='text-base text-gray-300 hover:text-white'>
+            <Link to={routes.contact} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
               {t('footer.contact')}
             </Link>
           </div>
           <div className='px-5 py-2'>
-            <a href={UTM_GENERATOR_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
+            <a href={UTM_GENERATOR_URL} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
               {t('footer.utm')}
             </a>
           </div>
           <div className='px-5 py-2'>
-            <a href={DONATE_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
+            <a href={DONATE_URL} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
               {t('footer.donate')}
             </a>
           </div>
           <div className='px-5 py-2'>
-            <Link to={routes.about} className='text-base text-gray-300 hover:text-white'>
+            <Link to={routes.about} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
               {t('footer.about')}
             </Link>
           </div>
@@ -158,31 +158,31 @@ const Footer = ({ minimal, authenticated }: {
 
   if (minimal) {
     return (
-      <footer className='bg-gray-800 dark:bg-slate-900 dark:border-t dark:border-slate-800/50'>
+      <footer className='bg-gray-50 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800/50'>
         <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
           <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
             <div className='px-5 py-2'>
-              <Link to={routes.contact} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routes.contact} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
                 {t('footer.contact')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routes.privacy} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routes.privacy} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
                 {t('footer.pp')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routes.terms} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routes.terms} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
                 {t('footer.tos')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routes.about} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routes.about} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
                 {t('footer.about')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <a href={STATUSPAGE_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
+              <a href={STATUSPAGE_URL} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
                 {t('footer.status')}
               </a>
             </div>
