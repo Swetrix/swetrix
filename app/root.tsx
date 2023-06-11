@@ -8,10 +8,29 @@ import {
 } from '@remix-run/react'
 import { store } from 'redux/store'
 import { Provider } from 'react-redux'
+// @ts-ignore
+import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
+import AlertTemplate from 'ui/Alert'
+import { trackViews } from 'utils/analytics'
 
 import AppWrapper from 'App'
 
 import tailwindCss from './css/tailwind.css'
+
+trackViews()
+
+console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests are welcome to be sent to security@swetrix.com', 'color: #818cf8;background: #1f2937;font-size: 20px;text-shadow: 2px 2px black')
+
+const options = {
+  position: positions.BOTTOM_RIGHT,
+  timeout: 8000,
+  offset: '30px',
+  transition: transitions.SCALE,
+}
+
+if (process.env.NODE_ENV !== 'production') {
+  localStorage.debug = 'swetrix:*'
+}
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
