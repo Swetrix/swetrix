@@ -3,15 +3,13 @@ import {
   Links,
   LiveReload,
   Meta,
-  Outlet,
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react'
 import { store } from 'redux/store'
 import { Provider } from 'react-redux'
 
-import Footer from './components/Footer'
-import Header from './components/Header'
+import AppWrapper from 'App'
 
 import tailwindCss from './css/tailwind.css'
 
@@ -30,12 +28,10 @@ export default function App() {
       </head>
       <body>
         <Provider store={store}>
-          <Header />
-          <Outlet />
+          <AppWrapper />
           <ScrollRestoration />
           <Scripts />
           {process.env.NODE_ENV === 'development' && <LiveReload />}
-          <Footer />
         </Provider>
       </body>
     </html>
