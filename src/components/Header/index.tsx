@@ -307,7 +307,7 @@ const AuthedHeader = ({
           <Link to={routes.main}>
             <span className='sr-only'>Swetrix</span>
             <img
-              className='h-7'
+              className='h-7 -translate-y-[3px]'
               height='28'
               src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
               alt='Swetrix'
@@ -443,7 +443,7 @@ const NotAuthedHeader = ({
           <Link to={routes.main}>
             <span className='sr-only'>Swetrix</span>
             <img
-              className='h-7'
+              className='h-7 -translate-y-[3px]'
               height='28'
               src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
               alt='Swetrix'
