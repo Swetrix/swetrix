@@ -362,6 +362,11 @@ const UserSettings = ({
   }
 
   const toggleShowPasswordFields = () => {
+    setForm((prev) => ({
+      ...prev,
+      password: '',
+      repeat: '',
+    }))
     setShowPasswordFields((prev) => !prev)
   }
 
@@ -476,7 +481,7 @@ const UserSettings = ({
                 label={t('profileSettings.selectTimeFormat')}
                 className='w-full'
                 items={translatedTimeFormat}
-                onSelect={(f) => setForm({ ...form, timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)] })}
+                onSelect={(f) => setForm((prev) => ({ ...prev, timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)] }))}
               />
             </div>
           </div>
