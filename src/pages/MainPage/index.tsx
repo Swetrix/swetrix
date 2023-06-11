@@ -226,7 +226,7 @@ const Main = (): JSX.Element => {
                     />
                   </h1>
                   <div className='flex items-center overflow-hidden mt-2 mb-2 sm:text-xl lg:text-lg xl:text-lg'>
-                    <p className='rounded-full bg-indigo-500/10 px-3 py-1 text-sm font-semibold leading-6 text-indigo-600 dark:text-indigo-400 ring-1 ring-inset ring-indigo-500/20'>
+                    <p className='rounded-full bg-indigo-500/10 px-3 py-1 text-sm text-center font-semibold leading-6 text-indigo-600 dark:text-indigo-400 ring-1 ring-inset ring-indigo-500/20'>
                       Latest news
                     </p>
                     {_isEmpty(lastBlogPost) ? (
