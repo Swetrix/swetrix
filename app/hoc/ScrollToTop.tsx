@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from '@remix-run/react'
 import _isEmpty from 'lodash/isEmpty'
 
 interface IScrollToTop {
@@ -29,29 +29,29 @@ interface IHistoryListener {
   * @param {HTMLElement} children The children covered by the listener.
   */
 const ScrollToTop: React.FC<IScrollToTop> = ({ children }) => {
-  const history = useHistory()
+  const history = useNavigate()
 
-  useEffect(() => {
-    const unlisten = history.listen((location: any) => {
-      const { hash, state } = location as IHistoryListener
+  // useEffect(() => {
+  //   const unlisten = useNavigate.listen((location: any) => {
+  //     const { hash, state } = location as IHistoryListener
 
-      if (!_isEmpty(state) && state?.scrollToTopDisable) {
-        return
-      }
+  //     if (!_isEmpty(state) && state?.scrollToTopDisable) {
+  //       return
+  //     }
 
-      if (hash !== '') {
-        return
-      }
+  //     if (hash !== '') {
+  //       return
+  //     }
 
-      setTimeout(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth',
-        })
-      }, 0)
-    })
-    return unlisten
-  }, [history])
+  //     setTimeout(() => {
+  //       window.scrollTo({
+  //         top: 0,
+  //         behavior: 'smooth',
+  //       })
+  //     }, 0)
+  //   })
+  //   return unlisten
+  // }, [history])
 
   return children
 }
