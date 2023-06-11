@@ -7,25 +7,26 @@ const STORE_AUTH_TOKEN_FOR = 8467200
 
 // It's important to first check in cookie, then in session storage, not vice versa.
 export const getAccessToken = () => {
-  let accessToken = getCookie(TOKEN)
+  // let accessToken = getCookie(TOKEN)
 
-  if (_isEmpty(accessToken)) {
-    accessToken = sessionStorage.getItem(TOKEN)
-  }
+  // if (_isEmpty(accessToken)) {
+  //   accessToken = sessionStorage.getItem(TOKEN)
+  // }
 
-  return accessToken
+  // return accessToken
+  return null
 }
 
 export const setAccessToken = (token: string, temporary: boolean = false) => {
   if (temporary) {
-    sessionStorage.setItem(TOKEN, token)
+    // sessionStorage.setItem(TOKEN, token)
     return
   }
 
-  setCookie(TOKEN, token, STORE_AUTH_TOKEN_FOR)
+  // setCookie(TOKEN, token, STORE_AUTH_TOKEN_FOR)
 }
 
 export const removeAccessToken = () => {
-  deleteCookie(TOKEN)
-  sessionStorage.removeItem(TOKEN)
+  // deleteCookie(TOKEN)
+  // sessionStorage.removeItem(TOKEN)
 }
