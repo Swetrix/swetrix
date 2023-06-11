@@ -1,9 +1,9 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Redirect } from 'react-router-dom'
+import { useNavigate } from '@remix-run/react'
 
 import { StateType } from 'redux/store'
-import routes from 'routes'
+import routes from 'routesPath'
 
 type AuthParamType = {
   selector: (state: StateType) => boolean,
@@ -28,9 +28,11 @@ export const auth = {
 export const withAuthentication = <P extends PropsType>(WrappedComponent: any, authParam: AuthParamType) => {
   const WithAuthentication = (props: P) => {
     const selector = useSelector(authParam.selector)
+    const navigate = useNavigate()
 
     if (!selector) {
-      return <Redirect to={authParam.redirectPath} />
+      navigate(authParam.redirectPath)
+      return null
     }
 
     return <WrappedComponent {...props} />
