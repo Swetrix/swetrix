@@ -297,7 +297,7 @@ const AuthedHeader = ({
 }): JSX.Element => (
   <header
     className={cx('relative overflow-x-clip', {
-      'bg-gray-50 dark:bg-slate-900': colourBackground,
+      'bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-600/40': colourBackground,
     })}
   >
     <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
@@ -433,7 +433,7 @@ const NotAuthedHeader = ({
 }) => (
   <header
     className={cx('relative overflow-x-clip', {
-      'bg-indigo-600 dark:bg-slate-900': colourBackground,
+      'bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-600/40': colourBackground,
     })}
   >
     <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
