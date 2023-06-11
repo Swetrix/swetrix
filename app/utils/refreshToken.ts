@@ -7,25 +7,26 @@ import { getCookie, setCookie, deleteCookie } from './cookie'
 const STORE_REFRESH_TOKEN_FOR = 8467200
 
 export const getRefreshToken = () => {
-  let refreshToken = getCookie(REFRESH_TOKEN)
+  // let refreshToken = getCookie(REFRESH_TOKEN)
 
-  if (_isEmpty(refreshToken)) {
-    refreshToken = sessionStorage.getItem(REFRESH_TOKEN)
-  }
+  // if (_isEmpty(refreshToken)) {
+    // refreshToken = sessionStorage.getItem(REFRESH_TOKEN)
+  // }
 
-  return refreshToken
+  // return refreshToken
+  return
 }
 
 export const setRefreshToken = (token: string, temporary: boolean = false) => {
   if (temporary) {
-    sessionStorage.setItem(REFRESH_TOKEN, token)
+    // sessionStorage.setItem(REFRESH_TOKEN, token)
     return
   }
 
-  setCookie(REFRESH_TOKEN, token, STORE_REFRESH_TOKEN_FOR)
+  // setCookie(REFRESH_TOKEN, token, STORE_REFRESH_TOKEN_FOR)
 }
 
 export const removeRefreshToken = () => {
-  deleteCookie(REFRESH_TOKEN)
-  sessionStorage.removeItem(REFRESH_TOKEN)
+  // deleteCookie(REFRESH_TOKEN)
+  // sessionStorage.removeItem(REFRESH_TOKEN)
 }
