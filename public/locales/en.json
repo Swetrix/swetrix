@@ -840,7 +840,7 @@
     "eu": "European Union",
     "support": "Support",
     "company": "Company",
-    "legal": "Legal",
+    "legal": "Support & Legal",
     "copy": "Swetrix Analytics. All rights reserved.",
     "contact": "Contact",
     "pp": "Privacy Policy",
@@ -861,6 +861,6 @@
     "press":"Media & Press",
     "open": "Open startup",
     "about": "About us",
-    "comparisons": "Comparisons"
+    "features": "Features"
   }
 }
