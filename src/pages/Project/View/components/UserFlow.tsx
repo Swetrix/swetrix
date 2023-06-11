@@ -18,18 +18,20 @@ const mapStateToProps = (state: StateType) => ({
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  setUserFlowAscending: (data: IUserFlow, pid: string, period: string) => {
+  setUserFlowAscending: (data: IUserFlow, pid: string, period: string, filters: any) => {
     dispatch(UIActions.setUserFlowAscending({
       data,
       pid,
       period,
+      filters,
     }))
   },
-  setUserFlowDescending: (data: IUserFlow, pid: string, period: string) => {
+  setUserFlowDescending: (data: IUserFlow, pid: string, period: string, filters: any) => {
     dispatch(UIActions.setUserFlowDescending({
       data,
       pid,
       period,
+      filters,
     }))
   },
   generateError: (message: string) => {
@@ -59,8 +61,8 @@ const UserFlow = ({
   from: string
   to: string
   isReversed?: boolean
-  setUserFlowAscending: (data: IUserFlow, id: string, pd: string) => void
-  setUserFlowDescending: (data: IUserFlow, id: string, pd: string) => void
+  setUserFlowAscending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
+  setUserFlowDescending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
   generateError: (message: string) => void
   t: (key: string) => string
   filters: string[]
@@ -69,7 +71,7 @@ const UserFlow = ({
     [key: string]: string
   }
 }) => {
-  const key = getUserFlowCacheKey(pid, period)
+  const key = getUserFlowCacheKey(pid, period, filters)
   const userFlowAscending = userFlowAscendingCache[key]
   const userFlowDescending = userFlowDescendingCache[key]
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -84,8 +86,8 @@ const UserFlow = ({
       }) => {
         const { ascending, descending } = res
 
-        setUserFlowAscending(ascending, pid, period)
-        setUserFlowDescending(descending, pid, period)
+        setUserFlowAscending(ascending, pid, period, filters)
+        setUserFlowDescending(descending, pid, period, filters)
       })
       .catch((err: Error) => {
         generateError(err.message)
