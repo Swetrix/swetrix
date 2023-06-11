@@ -10,11 +10,11 @@ export const getRefreshToken = () => {
   // let refreshToken = getCookie(REFRESH_TOKEN)
 
   // if (_isEmpty(refreshToken)) {
-    // refreshToken = sessionStorage.getItem(REFRESH_TOKEN)
+  //    refreshToken = sessionStorage.getItem(REFRESH_TOKEN)
   // }
 
   // return refreshToken
-  return
+  return null
 }
 
 export const setRefreshToken = (token: string, temporary: boolean = false) => {

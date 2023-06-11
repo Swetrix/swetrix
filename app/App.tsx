@@ -110,12 +110,18 @@ const App = () => {
   }, [paddleLoaded, authenticated]) // eslint-disable-line
 
   useEffect(() => {
-    const loaderEl = document.getElementById('loader')
+    let loaderEl: HTMLElement | null = null
+
+    if (document) {
+      loaderEl = document.getElementById('loader')
+    }
 
     if (loaderEl) {
       loaderEl.classList.add('available')
       setTimeout(() => {
-        loaderEl.outerHTML = ''
+        if (loaderEl) {
+          loaderEl.outerHTML = ''
+        }
       }, 1000)
     }
   }, [])

@@ -31,7 +31,7 @@ const options = {
 }
 
 if (process.env.NODE_ENV !== 'production') {
-  localStorage.debug = 'swetrix:*'
+  // localStorage.debug = 'swetrix:*'
 }
 
 export const links: LinksFunction = () => [
