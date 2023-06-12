@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 
-import { getFormatDate } from '../pages/Project/View/ViewProject.helpers'
+import { getFormatDate } from 'routes/project/view/__ViewProject.helpers'
 
 dayjs.extend(utc)
 

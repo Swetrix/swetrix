@@ -1,10 +1,10 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
 import Modal from 'ui/Modal'
-import routes from 'routes'
+import routes from 'routesPath'
 
 const PaidFeature = ({ onClose, isOpened }: {
   onClose: () => void,
@@ -13,10 +13,10 @@ const PaidFeature = ({ onClose, isOpened }: {
   const { t }: {
     t: (key: string, options?: { [key: string]: string | number }) => string,
   } = useTranslation('common')
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const onSubmit = () => {
-    history.push(routes.billing)
+    navigate(routes.billing)
   }
 
   return (

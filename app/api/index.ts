@@ -29,7 +29,7 @@ const envApiURL = process.env.REACT_APP_RUNNING_DEV_SCRIPT === 'true'
 const baseURL: string = isSelfhosted ? window.env.API_URL : envApiURL
 
 const api = axios.create({
-  baseURL,
+  baseURL: 'https://api.swetrix.com/',
 })
 
 // Function that will be called to refresh authorization

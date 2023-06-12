@@ -1,0 +1,15 @@
+html.dark .bb-legend-item text {
+  fill: #f9fafb;
+}
+
+html.dark .bb-axis {
+  fill: #f9fafb;
+}
+
+@media (max-width: 640px) {
+  .custom-space-x-style > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 0 !important;
+    margin-right: calc(0.5rem * var(--tw-space-x-reverse)) !important;
+    margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse))) !important;
+  }
+}
