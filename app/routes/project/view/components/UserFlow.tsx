@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { ResponsiveSankey } from '@nivo/sankey'
+// import { ResponsiveSankey } from '@nivo/sankey'
 import { connect } from 'react-redux'
 import { StateType, AppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
@@ -133,50 +133,50 @@ const UserFlow = ({
     )
   }
 
-  return (
-    <ResponsiveSankey
-      // @ts-ignore
-      data={isReversed ? userFlowDescending : userFlowAscending}
-      margin={{
-        top: 0,
-        // right: disableLegend ? 0 : 120,
-        right: 0,
-        bottom: 0,
-        left: 20,
-      }}
-      align='justify'
-      colors={{ scheme: 'nivo' }}
-      nodeOpacity={1}
-      nodeHoverOthersOpacity={0.35}
-      nodeThickness={18}
-      nodeSpacing={24}
-      nodeBorderWidth={0}
-      nodeBorderColor={{
-        from: 'color',
-        modifiers: [
-          [
-            'darker',
-            0.8,
-          ],
-        ],
-      }}
-      nodeBorderRadius={3}
-      linkOpacity={0.5}
-      linkHoverOthersOpacity={0.1}
-      linkContract={3}
-      enableLinkGradient
-      labelPosition='outside'
-      labelOrientation='vertical'
-      labelPadding={16}
-      labelTextColor={{
-        from: 'color',
-        modifiers: [
-          [
-            'darker',
-            1,
-          ],
-        ],
-      }}
+  return null
+    // <ResponsiveSankey
+    //   // @ts-ignore
+    //   data={isReversed ? userFlowDescending : userFlowAscending}
+    //   margin={{
+    //     top: 0,
+    //     // right: disableLegend ? 0 : 120,
+    //     right: 0,
+    //     bottom: 0,
+    //     left: 20,
+    //   }}
+    //   align='justify'
+    //   colors={{ scheme: 'nivo' }}
+    //   nodeOpacity={1}
+    //   nodeHoverOthersOpacity={0.35}
+    //   nodeThickness={18}
+    //   nodeSpacing={24}
+    //   nodeBorderWidth={0}
+    //   nodeBorderColor={{
+    //     from: 'color',
+    //     modifiers: [
+    //       [
+    //         'darker',
+    //         0.8,
+    //       ],
+    //     ],
+    //   }}
+    //   nodeBorderRadius={3}
+    //   linkOpacity={0.5}
+    //   linkHoverOthersOpacity={0.1}
+    //   linkContract={3}
+    //   enableLinkGradient
+    //   labelPosition='outside'
+    //   labelOrientation='vertical'
+    //   labelPadding={16}
+    //   labelTextColor={{
+    //     from: 'color',
+    //     modifiers: [
+    //       [
+    //         'darker',
+      //       1,
+      //     ],
+      //   ],
+      // }}
       // legends={!disableLegend ? [
       //   {
       //     anchor: 'bottom-right',
@@ -198,8 +198,8 @@ const UserFlow = ({
       //     ],
       //   },
       // ] : []}
-    />
-  )
+    // />
+  // )
 }
 
 UserFlow.defaultProps = {
