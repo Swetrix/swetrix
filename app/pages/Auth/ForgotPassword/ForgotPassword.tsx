@@ -1,13 +1,12 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 
 import { forgotPassword } from 'api'
-import Title from 'components/Title'
 import { withAuthentication, auth } from 'hoc/protected'
-import routes from 'routes'
+import routes from 'routesPath'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { isValidEmail } from 'utils/validator'
@@ -21,7 +20,7 @@ const ForgotPassword = ({
   const { t }: {
     t: (key: string) => string,
   } = useTranslation('common')
-  const history = useHistory()
+  const navigate = useNavigate()
   const [form, setForm] = useState<{
     email: string,
   }>({
@@ -63,7 +62,7 @@ const ForgotPassword = ({
         await forgotPassword(data)
 
         newPassword(t('auth.forgot.sent'))
-        history.push(routes.main)
+        navigate(routes.main)
       } catch (e: any) {
         createNewPasswordFailed(e.toString())
       } finally {
@@ -94,7 +93,7 @@ const ForgotPassword = ({
   }
 
   return (
-    <Title title={t('titles.recovery')}>
+    <div>
       <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
@@ -121,7 +120,7 @@ const ForgotPassword = ({
           </div>
         </form>
       </div>
-    </Title>
+    </div>
   )
 }
 
