@@ -179,9 +179,9 @@ const ViewProject = ({
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket)
+        key = getProjectCacheCustomKey(from, to, timeBucket, newFilters || filters)
       } else {
-        key = getProjectCaptchaCacheKey(period, timeBucket)
+        key = getProjectCaptchaCacheKey(period, timeBucket, newFilters || filters)
       }
 
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {

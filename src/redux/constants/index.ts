@@ -223,12 +223,12 @@ export const isSelfhosted: boolean = Boolean(process.env.REACT_APP_SELFHOSTED)
 export const LIVE_VISITORS_UPDATE_INTERVAL: number = 40000
 
 // Functions
-export const getProjectCacheKey = (period: string, timeBucket: string): string => `${period}${timeBucket}`
-export const getProjectCaptchaCacheKey = (period: string, timeBucket: string): string => `${period}${timeBucket}captcha`
-export const getProjectForcastCacheKey = (period: string, timeBucket: string, periodToForecast: string): string => `${period}${timeBucket}${periodToForecast}forecast`
-export const getProjectCacheCustomKey = (from: string, to: string, timeBucket: string): string => `${from}-${to}-${timeBucket}`
-export const getProjectCacheCustomKeyPerf = (from: string, to: string, timeBucket: string): string => `${from}-${to}-${timeBucket}perf`
-export const getUserFlowCacheKey = (pid: string, period: string): string => `${pid}${period}userflow`
+export const getProjectCacheKey = (period: string, timeBucket: string, filters?: any): string => `${period}${timeBucket}${filters ? JSON.stringify(filters) : ''}}`
+export const getProjectCaptchaCacheKey = (period: string, timeBucket: string, filters?: any): string => `${period}${timeBucket}captcha${filters ? JSON.stringify(filters) : ''}}`
+export const getProjectForcastCacheKey = (period: string, timeBucket: string, periodToForecast: string, filters: any): string => `${period}${timeBucket}${periodToForecast}forecast${filters ? JSON.stringify(filters) : ''}`
+export const getProjectCacheCustomKey = (from: string, to: string, timeBucket: string, filters: any): string => `${from}-${to}-${timeBucket}${filters ? JSON.stringify(filters) : ''}}`
+export const getProjectCacheCustomKeyPerf = (from: string, to: string, timeBucket: string, filters: any): string => `${from}-${to}-${timeBucket}perf${filters ? JSON.stringify(filters) : ''}`
+export const getUserFlowCacheKey = (pid: string, period: string, filters: any): string => `${pid}${period}userflow${filters ? JSON.stringify(filters) : ''}`
 
 // Cookies
 export const GDPR_REQUEST: string = 'gdpr_request'
