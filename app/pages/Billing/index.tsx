@@ -4,7 +4,7 @@ import React, {
 } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { HashLink } from 'react-router-hash-link'
+import { Link } from '@remix-run/react'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import duration from 'dayjs/plugin/duration'
@@ -12,10 +12,9 @@ import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react
 import _round from 'lodash/round'
 
 import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
-import routes from 'routes'
+import routes from 'routesPath'
 import sagaActions from 'redux/sagas/actions'
 import { withAuthentication, auth } from 'hoc/protected'
-import Title from 'components/Title'
 import Modal from 'ui/Modal'
 import { IUser } from 'redux/models/IUser'
 import { StateType } from 'redux/store/index'
@@ -141,149 +140,147 @@ const Billing = (): JSX.Element => {
   }
 
   return (
-    <Title title={t('titles.billing')}>
-      <div className='bg-gray-50 dark:bg-slate-900'>
-        <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-          <div className='flex justify-between flex-wrap gap-y-2 mb-4'>
-            <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
-              {t('billing.title')}
-            </h1>
-            <div>
-              {subUpdateURL && (
-                <span onClick={onUpdatePaymentDetails} className='inline-flex select-none cursor-pointer mr-2 items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
-                  {t('billing.update')}
-                </span>
-              )}
-              {subCancelURL && (
-                <span onClick={() => setIsCancelSubModalOpened(true)} className='inline-flex select-none cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-4 py-2 text-sm'>
-                  {t('billing.cancelSub')}
-                </span>
-              )}
-            </div>
-          </div>
-          <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('billing.desc')}
-            <br />
-            <HashLink to={`${routes.billing}#usage`} className='text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-500'>
-              {t('billing.gotoUsage')}
-            </HashLink>
-          </p>
-          <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
-          {cancellationEffectiveDate && (
-            <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <InformationCircleIcon className='h-10 w-10 mr-2 text-blue-600' aria-hidden='true' />
-              <span className='font-bold max-w-prose'>
-                {t('billing.cancelledSubMessage', {
-                  date: language === 'en'
-                    ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
-                    : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
-                })}
-              </span>
-            </div>
-          )}
-          {nextBillDate && (
-            <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <span className='font-bold'>
-                {t('billing.nextBillDate')}
-              </span>
-              &nbsp;
-              <span>
-                {language === 'en'
-                  ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
-                  : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY')}
-              </span>
-            </div>
-          )}
-          {isTrial && trialMessage && (
-            <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <span className='font-bold'>
-                {trialMessage}
-              </span>
-            </div>
-          )}
-          {isNoSub && (
-            <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <ExclamationTriangleIcon className='h-10 w-10 mr-2 text-red-600' aria-hidden='true' />
-              <span className='font-bold max-w-prose'>
-                {t('billing.noSubWarning')}
-              </span>
-            </div>
-          )}
-          <Pricing t={t} language={language} />
-          <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
-            <Trans
-              // @ts-ignore
-              t={t}
-              i18nKey='billing.contact'
-              values={{ email: CONTACT_EMAIL }}
-              // @ts-ignore
-              components={{
-                mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
-                amount: 5,
-              }}
-            />
-          </p>
-          <h2 id='usage' className='mt-5 text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
-            {t('billing.planUsage')}
-          </h2>
-          <p className='mt-1 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('billing.usageOverview', {
-              tracked: usageinfo.total,
-              trackedPerc: totalUsage,
-              maxEvents: maxEventsCount,
-            })}
-          </p>
-          <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('billing.breakdown')}
-            <ul className='list-disc list-inside'>
-              <li>
-                {t('billing.pageviews', {
-                  quantity: usageinfo.traffic,
-                  percentage: usageinfo.trafficPerc,
-                })}
-              </li>
-              <li>
-                {t('billing.customEvents', {
-                  quantity: usageinfo.customEvents,
-                  percentage: usageinfo.customEventsPerc,
-                })}
-              </li>
-              <li>
-                {t('billing.captcha', {
-                  quantity: usageinfo.captcha,
-                  percentage: usageinfo.captchaPerc,
-                })}
-              </li>
-            </ul>
+    <div className='bg-gray-50 dark:bg-slate-900'>
+      <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
+        <div className='flex justify-between flex-wrap gap-y-2 mb-4'>
+          <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
+            {t('billing.title')}
+          </h1>
+          <div>
+            {subUpdateURL && (
+            <span onClick={onUpdatePaymentDetails} className='inline-flex select-none cursor-pointer mr-2 items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
+              {t('billing.update')}
+            </span>
+            )}
+            {subCancelURL && (
+            <span onClick={() => setIsCancelSubModalOpened(true)} className='inline-flex select-none cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-4 py-2 text-sm'>
+              {t('billing.cancelSub')}
+            </span>
+            )}
           </div>
         </div>
-        <Modal
-          onClose={() => {
-            setIsCancelSubModalOpened(false)
-          }}
-          onSubmit={() => {
-            setIsCancelSubModalOpened(false)
-            onSubscriptionCancel()
-          }}
-          submitText={t('common.yes')}
-          closeText={t('common.no')}
-          title={t('pricing.cancelTitle')}
-          submitType='danger'
-          type='error'
-          message={(
-            <Trans
+        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('billing.desc')}
+          <br />
+          <Link to={`${routes.billing}#usage`} className='text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-500'>
+            {t('billing.gotoUsage')}
+          </Link>
+        </p>
+        <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
+        {cancellationEffectiveDate && (
+        <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <InformationCircleIcon className='h-10 w-10 mr-2 text-blue-600' aria-hidden='true' />
+          <span className='font-bold max-w-prose'>
+            {t('billing.cancelledSubMessage', {
+              date: language === 'en'
+                ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
+                : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
+            })}
+          </span>
+        </div>
+        )}
+        {nextBillDate && (
+        <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <span className='font-bold'>
+            {t('billing.nextBillDate')}
+          </span>
+              &nbsp;
+          <span>
+            {language === 'en'
+              ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
+              : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY')}
+          </span>
+        </div>
+        )}
+        {isTrial && trialMessage && (
+        <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <span className='font-bold'>
+            {trialMessage}
+          </span>
+        </div>
+        )}
+        {isNoSub && (
+        <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <ExclamationTriangleIcon className='h-10 w-10 mr-2 text-red-600' aria-hidden='true' />
+          <span className='font-bold max-w-prose'>
+            {t('billing.noSubWarning')}
+          </span>
+        </div>
+        )}
+        <Pricing t={t} language={language} />
+        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
+          <Trans
               // @ts-ignore
-              t={t}
-              i18nKey='pricing.cancelDesc'
-              values={{
-                email: CONTACT_EMAIL,
-              }}
-            />
-          )}
-          isOpened={isCancelSubModalOpened}
-        />
+            t={t}
+            i18nKey='billing.contact'
+            values={{ email: CONTACT_EMAIL }}
+              // @ts-ignore
+            components={{
+              mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
+              amount: 5,
+            }}
+          />
+        </p>
+        <h2 id='usage' className='mt-5 text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
+          {t('billing.planUsage')}
+        </h2>
+        <p className='mt-1 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('billing.usageOverview', {
+            tracked: usageinfo.total,
+            trackedPerc: totalUsage,
+            maxEvents: maxEventsCount,
+          })}
+        </p>
+        <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('billing.breakdown')}
+          <ul className='list-disc list-inside'>
+            <li>
+              {t('billing.pageviews', {
+                quantity: usageinfo.traffic,
+                percentage: usageinfo.trafficPerc,
+              })}
+            </li>
+            <li>
+              {t('billing.customEvents', {
+                quantity: usageinfo.customEvents,
+                percentage: usageinfo.customEventsPerc,
+              })}
+            </li>
+            <li>
+              {t('billing.captcha', {
+                quantity: usageinfo.captcha,
+                percentage: usageinfo.captchaPerc,
+              })}
+            </li>
+          </ul>
+        </div>
       </div>
-    </Title>
+      <Modal
+        onClose={() => {
+          setIsCancelSubModalOpened(false)
+        }}
+        onSubmit={() => {
+          setIsCancelSubModalOpened(false)
+          onSubscriptionCancel()
+        }}
+        submitText={t('common.yes')}
+        closeText={t('common.no')}
+        title={t('pricing.cancelTitle')}
+        submitType='danger'
+        type='error'
+        message={(
+          <Trans
+              // @ts-ignore
+            t={t}
+            i18nKey='pricing.cancelDesc'
+            values={{
+              email: CONTACT_EMAIL,
+            }}
+          />
+          )}
+        isOpened={isCancelSubModalOpened}
+      />
+    </div>
   )
 }
 
