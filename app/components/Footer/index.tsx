@@ -12,14 +12,6 @@ import {
 } from 'redux/constants'
 import routesPath from 'routesPath'
 
-import LogoWhiteImage from 'assets/logo_white.png'
-import LinkedinImage from 'assets/linkedin.svg'
-import FirefoxImage from 'assets/firefox.svg'
-import ChromeImage from 'assets/chrome.svg'
-import PciImage from 'assets/pci.png'
-import VisaImage from 'assets/visa.png'
-import McImage from 'assets/mc.png'
-
 const navigation = {
   support: [
     (authenticated: boolean | undefined): {
@@ -99,21 +91,21 @@ const navigation = {
       name: 'LinkedIn',
       href: LINKEDIN_URL,
       icon: () => (
-        <img className='h-6 w-6 opacity-75 hover:opacity-90 bg-white rounded' aria-hidden='true' src={LinkedinImage} alt='LinkedIn' />
+        <img className='h-6 w-6 opacity-75 hover:opacity-90 bg-white rounded' aria-hidden='true' src='/assets/linkedin.svg' alt='LinkedIn' />
       ),
     },
     {
       name: 'Firefox Addon',
       href: FIREFOX_ADDON_URL,
       icon: () => (
-        <img className='h-6 w-6 opacity-75 hover:opacity-90' aria-hidden='true' src={FirefoxImage} alt='Firefox' />
+        <img className='h-6 w-6 opacity-75 hover:opacity-90' aria-hidden='true' src='/assets/firefox.svg' alt='Firefox' />
       ),
     },
     {
       name: 'Chrome Extension',
       href: CHROME_EXTENSION_URL,
       icon: () => (
-        <img className='h-6 w-6 opacity-75 hover:opacity-90' aria-hidden='true' src={ChromeImage} alt='Chrome' />
+        <img className='h-6 w-6 opacity-75 hover:opacity-90' aria-hidden='true' src='/assets/chrome.svg' alt='Chrome' />
       ),
     },
   ],
@@ -208,7 +200,7 @@ const Footer = ({ minimal, authenticated }: {
         <div className='xl:grid xl:grid-cols-3 xl:gap-8'>
           <div className='space-y-8 xl:col-span-1'>
             <div className='flex gap-5 flex-wrap'>
-              <img className='h-7' height='28px' src={LogoWhiteImage} loading='lazy' alt='Swetrix Analytics' />
+              <img className='h-7' height='28px' src='/assets/logo_white.png' loading='lazy' alt='Swetrix Analytics' />
             </div>
             <p className='text-gray-300 text-base'>
               {t('footer.slogan')}
@@ -324,9 +316,9 @@ const Footer = ({ minimal, authenticated }: {
               </div>
             </div>
             <div className='flex gap-5 flex-wrap col-span-2 items-center justify-end'>
-              <img className='h-10 w-auto' src={PciImage} height='40' width='auto' loading='lazy' alt='PCI DSS' />
-              <img className='h-10 w-auto' src={VisaImage} height='40' width='auto' loading='lazy' alt='Visa' />
-              <img className='h-10 w-auto' src={McImage} height='40' width='auto' loading='lazy' alt='Mastercard' />
+              <img className='h-10 w-auto' src='/assets/pci.png' height='40' width='auto' loading='lazy' alt='PCI DSS' />
+              <img className='h-10 w-auto' src='/assets/visa.png' height='40' width='auto' loading='lazy' alt='Visa' />
+              <img className='h-10 w-auto' src='/assets/mc.png' height='40' width='auto' loading='lazy' alt='Mastercard' />
             </div>
           </div>
         </div>
