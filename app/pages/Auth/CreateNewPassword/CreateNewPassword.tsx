@@ -27,9 +27,7 @@ const CreateNewPassword = ({
     t: (key: string, options?: { [key: string]: string | number }) => string,
   } = useTranslation('common')
   const navigate = useNavigate()
-  const { id }: {
-    id: string,
-  } = useParams()
+  const { id } = useParams()
   const [form, setForm] = useState<FormSubmitData>({
     password: '',
     repeat: '',
@@ -75,7 +73,7 @@ const CreateNewPassword = ({
       setIsLoading(true)
       try {
         const { password } = data
-        await createNewPassword(id, password)
+        await createNewPassword(id as string, password)
 
         newPassword(t('auth.recovery.updated'))
         navigate(routes.signin)
