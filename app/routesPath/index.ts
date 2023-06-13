@@ -1,15 +1,15 @@
 const routes = Object.freeze({
-  signin: '/login',
-  signup: '/signup',
-  reset_password: '/recovery',
-  new_password_form: '/password-reset/:id',
+  signin: '/login', // add
+  signup: '/signup', // add
+  reset_password: '/recovery', // add
+  new_password_form: '/password-reset/:id', // add
   confirm_share: '/share/:id',
   confirm_subcription: '/projects/:id/subscribers/invite',
   main: '/',
   dashboard: '/dashboard',
   user_settings: '/settings',
-  verify: '/verify-email/:id',
-  change_email: '/change-email/:id',
+  verify: '/verify-email/:id', // add
+  change_email: '/change-email/:id', // add
   new_project: '/projects/new',
   new_captcha: '/captchas/new',
   project_settings: '/projects/settings/:id',
@@ -29,7 +29,7 @@ const routes = Object.freeze({
   press: '/press',
   transfer_confirm: '/project/transfer/confirm',
   transfer_reject: '/project/transfer/cancel',
-  socialised: '/socialised',
+  socialised: '/socialised', // add
   project_protected_password: '/projects/:id/password',
   open: '/open',
 })
