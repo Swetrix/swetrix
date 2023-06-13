@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link, useHistory, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
@@ -7,8 +7,7 @@ import _isEmpty from 'lodash/isEmpty'
 
 import { createNewPassword } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
-import Title from 'components/Title'
-import routes from 'routes'
+import routes from 'routesPath'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
@@ -27,7 +26,7 @@ const CreateNewPassword = ({
   const { t }: {
     t: (key: string, options?: { [key: string]: string | number }) => string,
   } = useTranslation('common')
-  const history = useHistory()
+  const navigate = useNavigate()
   const { id }: {
     id: string,
   } = useParams()
@@ -79,7 +78,7 @@ const CreateNewPassword = ({
         await createNewPassword(id, password)
 
         newPassword(t('auth.recovery.updated'))
-        history.push(routes.signin)
+        navigate(routes.signin)
       } catch (e: any) {
         createNewPasswordFailed(e.toString())
       } finally {
@@ -110,7 +109,7 @@ const CreateNewPassword = ({
   }
 
   return (
-    <Title title={t('titles.recovery')}>
+    <div>
       <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
@@ -149,7 +148,7 @@ const CreateNewPassword = ({
           </div>
         </form>
       </div>
-    </Title>
+    </div>
   )
 }
 
