@@ -17,6 +17,7 @@ import { getRefreshToken } from 'utils/refreshToken'
 
 import AppWrapper from 'App'
 
+import mainCss from 'styles/index.css'
 import tailwindCss from './css/tailwind.css'
 
 trackViews()
@@ -36,6 +37,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
+  { rel: 'stylesheet', href: mainCss },
 ]
 
 const removeObsoleteAuthTokens = () => {

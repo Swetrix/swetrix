@@ -29,6 +29,7 @@ import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
+import swetrixLogo from 'assets/logo_blue.png'
 
 import { getRefreshToken } from 'utils/refreshToken'
 import { authMe } from './api'
@@ -58,11 +59,42 @@ const Fallback = ({ isMinimalFooter }: FallbackProps): JSX.Element => {
     }
   }, [])
 
+  console.log('showLoader', showLoader)
+
   return (
     <div className={cx('bg-gray-50 dark:bg-slate-900', { 'min-h-page': !isMinimalFooter, 'min-h-min-footer': isMinimalFooter })}>
       {showLoader && (
         <Loader />
       )}
+    </div>
+  )
+}
+
+let isHydrating = true
+
+const HocThrowErrorWhenWindowIsUndefined = ({ children }: { children: React.ReactNode }) => {
+  const [isHydrated, setIsHydrated] = React.useState(
+    !isHydrating,
+  )
+
+  React.useEffect(() => {
+    isHydrating = false
+    setIsHydrated(true)
+  }, [])
+
+  if (isHydrated) {
+    return children
+  }
+
+  return (
+    <div className='loader' id='loader'>
+      <div className='loader-head'>
+        <div className='first' />
+        <div className='second' />
+      </div>
+      <div className='logo-frame'>
+        <img className='logo-frame-img' width='361' height='80' src={swetrixLogo} alt='' />
+      </div>
     </div>
   )
 }
@@ -166,14 +198,14 @@ const App = () => {
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(location.pathname, page))
 
   return (
-    <>
+    <HocThrowErrorWhenWindowIsUndefined>
       {(!accessToken || !loading) && (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
         <Header
           authenticated={authenticated}
           theme={theme}
-          // themeType={themeType}
+              // themeType={themeType}
           user={user}
         />
         {/* {location.pathname === routes.main && (
@@ -194,7 +226,7 @@ const App = () => {
       </Suspense>
       )}
       <div className='hidden' />
-    </>
+    </HocThrowErrorWhenWindowIsUndefined>
   )
 }
 
