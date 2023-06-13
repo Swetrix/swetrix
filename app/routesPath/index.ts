@@ -20,7 +20,7 @@ const routes = Object.freeze({
   billing: '/billing',
   privacy: '/privacy',
   cookiePolicy: '/cookie-policy',
-  terms: '/terms',
+  terms: '/terms', // add
   contact: '/contact', // add
   changelog: '/changelog', // add
   about: '/about', // add
