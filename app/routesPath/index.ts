@@ -21,7 +21,7 @@ const routes = Object.freeze({
   privacy: '/privacy',
   cookiePolicy: '/cookie-policy',
   terms: '/terms',
-  contact: '/contact',
+  contact: '/contact', // add
   changelog: '/changelog', // add
   about: '/about', // add
   create_alert: '/projects/:pid/alerts/create',
