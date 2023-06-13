@@ -29,7 +29,6 @@ import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
-import swetrixLogo from 'assets/logo_blue.png'
 
 import { getRefreshToken } from 'utils/refreshToken'
 import { authMe } from './api'
@@ -93,7 +92,7 @@ const HocThrowErrorWhenWindowIsUndefined = ({ children }: { children: React.Reac
         <div className='second' />
       </div>
       <div className='logo-frame'>
-        <img className='logo-frame-img' width='361' height='80' src={swetrixLogo} alt='' />
+        <img className='logo-frame-img' width='361' height='80' src='assets/logo_blue.png' alt='Swetrix' />
       </div>
     </div>
   )
