@@ -1,7 +1,7 @@
 /* eslint-disable no-confusing-arrow */
 import React, { memo, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link } from '@remix-run/react'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 import _isNil from 'lodash/isNil'
@@ -20,7 +20,7 @@ import { alertsActions } from 'redux/reducers/alerts'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { authMe } from 'api'
-import routes from 'routes'
+import routes from 'routesPath'
 import { IUser } from 'redux/models/IUser'
 import { AppDispatch, StateType } from 'redux/store'
 
