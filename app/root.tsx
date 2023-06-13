@@ -18,7 +18,7 @@ import { getRefreshToken } from 'utils/refreshToken'
 import AppWrapper from 'App'
 
 import mainCss from 'styles/index.css'
-import tailwindCss from './css/tailwind.css'
+import tailwindCss from 'styles/tailwind.css'
 
 trackViews()
 
