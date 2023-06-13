@@ -39,31 +39,31 @@ const CookiePolicy = () => {
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
                         <th
-                            scope='col'
-                            className='w-1/5 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'
-                          >
-                            Cookie
-                          </th>
+                          scope='col'
+                          className='w-1/5 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'
+                        >
+                          Cookie
+                        </th>
                         <th
-                            scope='col'
-                            className='w-4/5 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
-                          >
-                            Description
-                          </th>
+                          scope='col'
+                          className='w-4/5 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
+                        >
+                          Description
+                        </th>
                       </tr>
                     </thead>
                     <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-slate-800'>
                       {_map(typesOfCookies, ({
                         cookie, description,
                       }) => (
-                          <tr key={cookie}>
-                            <td className='w-1/5 px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
-                              {cookie}
-                            </td>
-                            <td className='break-words w-4/5 px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
-                              {description}
-                            </td>
-                          </tr>
+                        <tr key={cookie}>
+                          <td className='w-1/5 px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
+                            {cookie}
+                          </td>
+                          <td className='break-words w-4/5 px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                            {description}
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </table>
