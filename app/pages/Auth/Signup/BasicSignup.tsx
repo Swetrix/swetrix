@@ -1,7 +1,7 @@
 import React, { memo, useState, useEffect } from 'react'
 import sagaActions from 'redux/sagas/actions'
 import { useTranslation, Trans } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from '@remix-run/react'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
@@ -19,7 +19,7 @@ import { trackCustom } from 'utils/analytics'
 import { useAppDispatch } from 'redux/store'
 import GoogleAuth from 'components/GoogleAuth'
 import GithubAuth from 'components/GithubAuth'
-import routes from 'routes'
+import routes from 'routesPath'
 
 interface ISignUpForm {
   email: string,
@@ -36,7 +36,7 @@ const BasicSignup = (): JSX.Element => {
       [key: string]: string | number,
     }) => string,
   } = useTranslation('common')
-  const history = useHistory()
+  const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const [form, setForm] = useState<ISignUpForm>({
     email: '',
@@ -59,7 +59,7 @@ const BasicSignup = (): JSX.Element => {
   const signUpCallback = (result: boolean) => {
     if (result) {
       trackCustom('SIGNUP_BASIC')
-      history.push(routes.dashboard)
+      navigate(routes.dashboard)
     } else {
       setIsLoading(false)
     }

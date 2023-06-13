@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '@remix-run/react'
 import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
@@ -7,11 +7,10 @@ import _keys from 'lodash/keys'
 import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 
-import Title from 'components/Title'
 import GoogleAuth from 'components/GoogleAuth'
 import GithubAuth from 'components/GithubAuth'
 import { withAuthentication, auth } from 'hoc/protected'
-import routes from 'routes'
+import routes from 'routesPath'
 import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
 import Tooltip from 'ui/Tooltip'
@@ -143,7 +142,7 @@ const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
   }
 
   return (
-    <Title title={t('titles.signup')}>
+    <div>
       <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
@@ -270,7 +269,7 @@ const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
           </div>
         </form>
       </div>
-    </Title>
+    </div>
   )
 }
 
