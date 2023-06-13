@@ -16,7 +16,7 @@ const routes = Object.freeze({
   captcha_settings: '/captchas/settings/:id',
   project: '/projects/:id',
   captcha: '/captchas/:id',
-  features: '/features',
+  features: '/features', // add
   billing: '/billing', // add
   privacy: '/privacy', // add
   cookiePolicy: '/cookie-policy', // add

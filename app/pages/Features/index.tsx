@@ -1,14 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import React, { Fragment } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _map from 'lodash/map'
 
-import Title from 'components/Title'
 import {
   CHROME_EXTENSION_URL, FIREFOX_ADDON_URL, DOCS_URL,
 } from 'redux/constants'
-import routes from 'routes'
+import routes from 'routesPath'
 
 const Features = (): JSX.Element => {
   const { t }: {
@@ -18,7 +17,7 @@ const Features = (): JSX.Element => {
   } = useTranslation('common')
 
   return (
-    <Title title={t('titles.features')}>
+    <>
       <div className='bg-gray-50 dark:bg-slate-900'>
         <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
           <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
@@ -30,7 +29,7 @@ const Features = (): JSX.Element => {
           </h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             <Trans
-              // @ts-ignore
+            // @ts-ignore
               t={t}
               i18nKey='features.feature1Content'
               components={{
@@ -45,7 +44,7 @@ const Features = (): JSX.Element => {
           </h3>
           <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
             <Trans
-              // @ts-ignore
+            // @ts-ignore
               t={t}
               i18nKey='features.feature2Content'
               components={{
@@ -55,17 +54,17 @@ const Features = (): JSX.Element => {
             />
           </p>
           {_map(t('features.list', { returnObjects: true }), (feature: {
-            name: string
-            content: string
-          }) => (
-            <Fragment key={feature.name}>
-              <h3 className='text-2xl font-normal text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
-                {feature.name}
-              </h3>
-              <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-                {feature.content}
-              </p>
-            </Fragment>
+          name: string
+          content: string
+        }) => (
+          <Fragment key={feature.name}>
+            <h3 className='text-2xl font-normal text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+              {feature.name}
+            </h3>
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+              {feature.content}
+            </p>
+          </Fragment>
           ))}
         </div>
       </div>
@@ -90,7 +89,8 @@ const Features = (): JSX.Element => {
           </div>
         </div>
       </div>
-    </Title>
+
+    </>
   )
 }
 
