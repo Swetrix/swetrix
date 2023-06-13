@@ -19,6 +19,7 @@ import AppWrapper from 'App'
 
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
+import BillboardCss from 'billboard.js/dist/billboard.min.css'
 
 trackViews()
 
@@ -38,6 +39,7 @@ if (process.env.NODE_ENV !== 'production') {
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
   { rel: 'stylesheet', href: mainCss },
+  { rel: 'stylesheet', href: BillboardCss },
 ]
 
 const removeObsoleteAuthTokens = () => {

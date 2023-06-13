@@ -31,7 +31,7 @@ const routes = Object.freeze({
   transfer_reject: '/project/transfer/cancel',
   socialised: '/socialised', // add
   project_protected_password: '/projects/:id/password',
-  open: '/open',
+  open: '/open-startup', // add
 })
 
 export default routes

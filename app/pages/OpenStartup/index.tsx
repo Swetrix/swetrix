@@ -1,18 +1,25 @@
 /* eslint-disable */
 import React, { useEffect } from 'react'
+import type { LinksFunction } from '@remix-run/node'
 import _map from 'lodash/map'
 import bb, {
   bar, line,
 } from 'billboard.js'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link } from '@remix-run/react'
 import { useSelector } from 'react-redux'
 
 import { nFormatterSeparated } from 'utils/generic'
 import { StateType } from 'redux/store/index'
-import Title from 'components/Title'
 import { LIVE_DEMO_URL } from 'redux/constants'
-import '../Project/View/styles.css'
+
+import Style from 'styles/ProjectViewStyle.css'
+
+export const links: LinksFunction = () => {
+  return [
+    { rel: 'stylesheet', href: Style },
+  ]
+}
 
 // This should be generated on the API side, will be done later.
 const financeData = {
@@ -288,87 +295,85 @@ const OpenStartup = (): JSX.Element => {
   }, [])
 
   return (
-    <Title title={t('titles.open')}>
-      <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
-        <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-          <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('titles.open')}
-          </h1>
+    <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
+      <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
+        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('titles.open')}
+        </h1>
 
-          <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('open.desc')}
-          </p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('open.desc')}
+        </p>
 
-          <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('open.updated')}
-          </p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('open.updated')}
+        </p>
 
-          <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('open.finance.title')}
-          </h2>
+        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('open.finance.title')}
+        </h2>
 
-          <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('open.finance.desc')}
-          </p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('open.finance.desc')}
+        </p>
 
-          <div className='h-80 mt-4' id='open-startup' />
+        <div className='h-80 mt-4' id='open-startup' />
 
-          <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('open.usage.title')}
-          </h2>
+        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('open.usage.title')}
+        </h2>
 
-          <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('open.usage.desc')}
-          </p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('open.usage.desc')}
+        </p>
 
-          <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('main.users')}
-            {': '}
-            {users[0]}
-            {users[1] && (
-              <span className='text-gray-900 dark:text-indigo-200'>
-                {users[1]}
-                +
-              </span>
-            )}
-          </p>
+        <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('main.users')}
+          {': '}
+          {users[0]}
+          {users[1] && (
+            <span className='text-gray-900 dark:text-indigo-200'>
+              {users[1]}
+              +
+            </span>
+          )}
+        </p>
 
-          <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('main.websites')}
-            {': '}
-            {websites[0]}
-            {websites[1] && (
-              <span className='text-gray-900 dark:text-indigo-200'>
-                {websites[1]}
-                +
-              </span>
-            )}
-          </p>
+        <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('main.websites')}
+          {': '}
+          {websites[0]}
+          {websites[1] && (
+            <span className='text-gray-900 dark:text-indigo-200'>
+              {websites[1]}
+              +
+            </span>
+          )}
+        </p>
 
-          <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
-            {t('main.pageviews')}
-            {': '}
-            {events[0]}
-            {events[1] && (
-              <span className='text-gray-900 dark:text-indigo-200'>
-                {events[1]}
-                +
-              </span>
-            )}
-          </p>
+        <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('main.pageviews')}
+          {': '}
+          {events[0]}
+          {events[1] && (
+            <span className='text-gray-900 dark:text-indigo-200'>
+              {events[1]}
+              +
+            </span>
+          )}
+        </p>
 
-          <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            <Trans
-              t={t}
-              i18nKey='open.usage.live'
-              components={{
-                livedemo: <Link to={LIVE_DEMO_URL} className='font-medium hover:underline text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' />,
-              }}
-            />
-          </p>
-        </div>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <Trans
+            t={t}
+            i18nKey='open.usage.live'
+            components={{
+              livedemo: <Link to={LIVE_DEMO_URL} className='font-medium hover:underline text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' />,
+            }}
+          />
+        </p>
       </div>
-    </Title>
+    </div>
   )
 }
 
