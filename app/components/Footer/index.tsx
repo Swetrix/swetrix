@@ -13,7 +13,16 @@ import {
 import routesPath from 'routesPath'
 
 const navigation = {
-  support: [
+  company: [
+    { key: 'about', href: routesPath.about, internal: true },
+    { key: 'changelog', href: routesPath.changelog, internal: true },
+    { key: 'open', href: routesPath.open, internal: true },
+    { key: 'press', href: routesPath.press, internal: true },
+    { key: 'status', href: STATUSPAGE_URL },
+    { key: 'donate', href: DONATE_URL },
+    { key: 'blog', href: BLOG_URL },
+  ],
+  legal: [
     (authenticated: boolean | undefined): {
       key: string
       href: string
@@ -29,27 +38,28 @@ const navigation = {
       href: string
       internal: boolean
     } => ({ key: 'contact', href: routesPath.contact, internal: true }),
+    (): {
+      key: string
+      href: string
+      internal: boolean
+    } => ({ key: 'privacy', href: routesPath.privacy, internal: true }),
+    (): {
+      key: string
+      href: string
+      internal: boolean
+    } => ({ key: 'terms', href: routesPath.terms, internal: true }),
+    (): {
+      key: string
+      href: string
+      internal: boolean
+    } => ({ key: 'cookie', href: routesPath.cookiePolicy, internal: true }),
   ],
-  company: [
-    { key: 'about', href: routesPath.about, internal: true },
-    { key: 'changelog', href: routesPath.changelog, internal: true },
-    { key: 'open', href: routesPath.open, internal: true },
-    { key: 'press', href: routesPath.press, internal: true },
-    { key: 'status', href: STATUSPAGE_URL },
-    { key: 'donate', href: DONATE_URL },
-    { key: 'blog', href: BLOG_URL },
-    { key: 'captcha', href: CAPTCHA_URL },
-    { key: 'utm', href: UTM_GENERATOR_URL },
-  ],
-  legal: [
-    { key: 'privacy', href: routesPath.privacy },
-    { key: 'terms', href: routesPath.terms },
-    { key: 'cookie', href: routesPath.cookiePolicy },
-  ],
-  comparisons: [
-    { value: 'Google Analytics', href: SWETRIX_VS_GOOGLE },
-    { value: 'Cloudflare Analytics', href: SWETRIX_VS_CLOUDFLARE },
-    { value: 'Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS },
+  features: [
+    { value: 'vs Google Analytics', href: SWETRIX_VS_GOOGLE },
+    { value: 'vs Cloudflare Analytics', href: SWETRIX_VS_CLOUDFLARE },
+    { value: 'vs Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS },
+    { key: 'captcha', href: CAPTCHA_URL, internal: false },
+    { key: 'utm', href: UTM_GENERATOR_URL, internal: false },
   ],
   social: [
     {
@@ -119,22 +129,22 @@ const SelfHostedFooter = () => {
       <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
         <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
           <div className='px-5 py-2'>
-            <Link to={routesPath.contact} className='text-base text-gray-300 hover:text-white'>
+            <Link to={routesPath.contact} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
               {t('footer.contact')}
             </Link>
           </div>
           <div className='px-5 py-2'>
-            <a href={UTM_GENERATOR_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
+            <a href={UTM_GENERATOR_URL} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
               {t('footer.utm')}
             </a>
           </div>
           <div className='px-5 py-2'>
-            <a href={DONATE_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
+            <a href={DONATE_URL} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
               {t('footer.donate')}
             </a>
           </div>
           <div className='px-5 py-2'>
-            <Link to={routesPath.about} className='text-base text-gray-300 hover:text-white'>
+            <Link to={routesPath.about} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
               {t('footer.about')}
             </Link>
           </div>
@@ -157,31 +167,31 @@ const Footer = ({ minimal, authenticated }: {
 
   if (minimal) {
     return (
-      <footer className='bg-gray-800 dark:bg-slate-900 dark:border-t dark:border-slate-800/50'>
+      <footer className='bg-gray-50 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800/50'>
         <div className='max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8'>
           <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
             <div className='px-5 py-2'>
-              <Link to={routesPath.contact} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routesPath.contact} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
                 {t('footer.contact')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routesPath.privacy} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routesPath.privacy} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
                 {t('footer.pp')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routesPath.terms} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routesPath.terms} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
                 {t('footer.tos')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <Link to={routesPath.about} className='text-base text-gray-300 hover:text-white'>
+              <Link to={routesPath.about} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'>
                 {t('footer.about')}
               </Link>
             </div>
             <div className='px-5 py-2'>
-              <a href={STATUSPAGE_URL} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
+              <a href={STATUSPAGE_URL} className='leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t('footer.status')} (opens in a new tab)`}>
                 {t('footer.status')}
               </a>
             </div>
@@ -196,9 +206,9 @@ const Footer = ({ minimal, authenticated }: {
       <h2 id='footer-heading' className='sr-only'>
         Footer
       </h2>
-      <div className='w-11/12 mx-auto pt-8 pb-5 px-4 sm:px-6 lg:px-8'>
-        <div className='xl:grid xl:grid-cols-3 xl:gap-8'>
-          <div className='space-y-8 xl:col-span-1'>
+      <div className='w-11/12 pt-8 pb-5 px-4 sm:px-6 lg:px-8'>
+        <div className='xl:grid xl:grid-cols-2 xl:gap-8'>
+          <div className='space-y-5 xl:col-span-1'>
             <div className='flex gap-5 flex-wrap'>
               <img className='h-7' height='28px' src='/assets/logo_white.png' loading='lazy' alt='Swetrix Analytics' />
             </div>
@@ -233,44 +243,43 @@ const Footer = ({ minimal, authenticated }: {
                 </a>
               ))}
             </div>
+            <p className='text-base pt-10 text-gray-300'>
+              &copy;
+              {' '}
+              {year}
+              {' '}
+              {t('footer.copy')}
+            </p>
           </div>
-          <div className='mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2'>
-            <div className='md:grid md:grid-cols-2 md:gap-8'>
+          <div className='mt-12 xl:mt-0'>
+            <div className='grid grid-cols-2 md:grid-cols-3 gap-8'>
               <div>
                 <h3 className='text-sm font-semibold text-white tracking-wider uppercase'>
-                  {t('footer.comparisons')}
+                  {t('footer.features')}
                 </h3>
                 <ul className='mt-4 space-y-4'>
-                  {_map(navigation.comparisons, (data) => {
-                    const { value, href } = data
+                  {_map(navigation.features, (data) => {
+                    const {
+                      value, key, href, internal,
+                    } = data
+
+                    const displayValue = value || t(`footer.${key}`)
 
                     return (
-                      <li key={value}>
-                        <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${value} (opens in a new tab)`}>
-                          {value}
-                        </a>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-              <div className='mt-12 md:mt-0'>
-                <h3 className='text-sm font-semibold text-white tracking-wider uppercase'>
-                  {t('footer.support')}
-                </h3>
-                <ul className='mt-4 space-y-4'>
-                  {_map(navigation.support, (func) => {
-                    const { key, href, internal } = func(authenticated)
-
-                    return (
-                      <li key={key}>
+                      <li key={displayValue}>
                         {internal ? (
                           <Link to={href} className='text-base text-gray-300 hover:text-white'>
-                            {t(`footer.${key}`)}
+                            {displayValue}
                           </Link>
                         ) : (
-                          <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}>
-                            {t(`footer.${key}`)}
+                          <a
+                            href={href}
+                            className='text-base text-gray-300 hover:text-white'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            aria-label={`${displayValue} (opens in a new tab)`}
+                          >
+                            {displayValue}
                           </a>
                         )}
                       </li>
@@ -278,8 +287,6 @@ const Footer = ({ minimal, authenticated }: {
                   })}
                 </ul>
               </div>
-            </div>
-            <div className='md:grid md:grid-cols-2 md:gap-8'>
               <div>
                 <h3 className='text-sm font-semibold text-white tracking-wider uppercase'>
                   {t('footer.company')}
@@ -305,31 +312,27 @@ const Footer = ({ minimal, authenticated }: {
                   {t('footer.legal')}
                 </h3>
                 <ul className='mt-4 space-y-4'>
-                  {_map(navigation.legal, ({ key, href }) => (
-                    <li key={key}>
-                      <Link to={href} className='text-base text-gray-300 hover:text-white'>
-                        {t(`footer.${key}`)}
-                      </Link>
-                    </li>
-                  ))}
+                  {_map(navigation.legal, (func) => {
+                    const { key, href, internal } = func(authenticated)
+
+                    return (
+                      <li key={key}>
+                        {internal ? (
+                          <Link to={href} className='text-base text-gray-300 hover:text-white'>
+                            {t(`footer.${key}`)}
+                          </Link>
+                        ) : (
+                          <a href={href} className='text-base text-gray-300 hover:text-white' target='_blank' rel='noopener noreferrer' aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}>
+                            {t(`footer.${key}`)}
+                          </a>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             </div>
-            <div className='flex gap-5 flex-wrap col-span-2 items-center justify-end'>
-              <img className='h-10 w-auto' src='/assets/pci.png' height='40' width='auto' loading='lazy' alt='PCI DSS' />
-              <img className='h-10 w-auto' src='/assets/visa.png' height='40' width='auto' loading='lazy' alt='Visa' />
-              <img className='h-10 w-auto' src='/assets/mc.png' height='40' width='auto' loading='lazy' alt='Mastercard' />
-            </div>
           </div>
-        </div>
-        <div className='mt-6 border-t border-[#727987] pt-5'>
-          <p className='text-base text-gray-300 xl:text-center'>
-            &copy;
-            {' '}
-            {year}
-            {' '}
-            {t('footer.copy')}
-          </p>
         </div>
       </div>
     </footer>

@@ -29,6 +29,7 @@ import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
+import routesPath from 'routesPath'
 
 import { getRefreshToken } from 'utils/refreshToken'
 import { authMe } from './api'
@@ -100,13 +101,12 @@ const HocThrowErrorWhenWindowIsUndefined = ({ children }: { children: React.Reac
 
 const App = () => {
   const dispatch = useAppDispatch()
-  const location = useLocation()
+  const { pathname } = useLocation()
   const alert = useAlert()
   const {
-    loading, authenticated, user,
+    loading, authenticated,
   } = useSelector((state: StateType) => state.auth)
   const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
   // const themeType = useSelector(state => state.ui.theme.type)
@@ -194,19 +194,16 @@ const App = () => {
     }
   }, [message, type]) // eslint-disable-line
 
-  const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(location.pathname, page))
+  const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
   return (
     <HocThrowErrorWhenWindowIsUndefined>
       {(!accessToken || !loading) && (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
-        <Header
-          authenticated={authenticated}
-          theme={theme}
-              // themeType={themeType}
-          user={user}
-        />
+        {pathname !== routesPath.main && (
+          <Header />
+        )}
         {/* {location.pathname === routes.main && (
           <Snowfall />
         )} */}

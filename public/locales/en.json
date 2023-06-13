@@ -297,6 +297,7 @@
       "password": "Password",
       "noRemember": "Don't remember me.",
       "repeat": "Repeat password",
+      "changePassword": "Change password",
       "hint": "Longer than {{amount}} chars",
       "xCharsError": "The password has to consist of at least {{amount}} characters.",
       "noMatchError": "Passwords have to match.",
@@ -839,7 +840,7 @@
     "eu": "European Union",
     "support": "Support",
     "company": "Company",
-    "legal": "Legal",
+    "legal": "Support & Legal",
     "copy": "Swetrix Analytics. All rights reserved.",
     "contact": "Contact",
     "pp": "Privacy Policy",
@@ -860,6 +861,6 @@
     "press":"Media & Press",
     "open": "Open startup",
     "about": "About us",
-    "comparisons": "Comparisons"
+    "features": "Features"
   }
 }

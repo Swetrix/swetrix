@@ -96,8 +96,8 @@ const PanelContainer = ({
         {(checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs)) && (
           <Bars4Icon
             className={cx(iconClassName, 'cursor-pointer', {
-              'text-blue-500': activeFragment === 0,
-              'text-gray-900 dark:text-gray-50': activeFragment === 1,
+              'text-slate-900 dark:text-gray-50': activeFragment === 0,
+              'text-slate-400 dark:text-slate-500': activeFragment === 1,
             })}
             onClick={() => setActiveFragment(0)}
           />
@@ -108,13 +108,13 @@ const PanelContainer = ({
           <>
             <MapIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                'text-blue-500': activeFragment === 1,
-                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+                'text-slate-900 dark:text-gray-50': activeFragment === 1,
+                'text-slate-400 dark:text-slate-500': activeFragment === 0,
               })}
               onClick={() => setActiveFragment(1)}
             />
             <ArrowsPointingOutIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
+              className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
                 hidden: activeFragment === 0,
               })}
               onClick={openModal}
@@ -126,8 +126,8 @@ const PanelContainer = ({
           <>
             <RectangleGroupIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                'text-blue-500': activeFragment === 1,
-                'text-gray-900 dark:text-gray-50': activeFragment === 0,
+                'text-slate-900 dark:text-gray-50': activeFragment === 1,
+                'text-slate-400 dark:text-slate-500': activeFragment === 0,
               })}
               onClick={() => setActiveFragment(1)}
             />
@@ -144,8 +144,8 @@ const PanelContainer = ({
         {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
           <ChartPieIcon
             className={cx(iconClassName, 'ml-2 cursor-pointer', {
-              'text-blue-500': activeFragment === 1,
-              'text-gray-900 dark:text-gray-50': activeFragment === 0,
+              'text-slate-900 dark:text-gray-50': activeFragment === 1,
+              'text-slate-400 dark:text-slate-500': activeFragment === 0,
             })}
             onClick={() => setActiveFragment(1)}
           />
@@ -156,8 +156,8 @@ const PanelContainer = ({
               <PuzzlePieceIcon
                 key={`${extensionID}-${panelID}`}
                 className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                  'text-blue-500': activeFragment === extensionID,
-                  'text-gray-900 dark:text-gray-50': activeFragment === 0,
+                  'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
+                  'text-slate-400 dark:text-slate-500': activeFragment === 0,
                 })}
                 onClick={() => setActiveFragment(extensionID)}
               />

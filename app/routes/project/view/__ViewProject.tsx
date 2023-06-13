@@ -657,7 +657,7 @@ const ViewProject = ({
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, newFilters || filters)
           } else {
             showError(t('project.compareDateRangeError'))
             compareDisable()
@@ -673,12 +673,12 @@ const ViewProject = ({
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, newFilters || filters)
           }
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filters)) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone, projectPassword)
@@ -696,13 +696,13 @@ const ViewProject = ({
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket)
+        key = getProjectCacheCustomKey(from, to, timeBucket, newFilters || filters)
       } else {
-        key = getProjectCacheKey(period, timeBucket)
+        key = getProjectCacheKey(period, timeBucket, newFilters || filters)
       }
 
       // check if we need to load new date or we have data in redux/localstorage
-      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]) && !_isEmpty(newFilters || filters)) {
+      if ((!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]))) {
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
@@ -827,7 +827,7 @@ const ViewProject = ({
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket, newFilters || filtersPerf)
           } else {
             showError(t('project.compareDateRangeError'))
             compareDisable()
@@ -843,12 +843,12 @@ const ViewProject = ({
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket)
+            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket, newFilters || filtersPerf)
           }
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare]) && _isEmpty(newFilters || filtersPerf)) {
+          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, fromCompare, toCompare, timezone, projectPassword)
@@ -861,9 +861,9 @@ const ViewProject = ({
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket)
+        key = getProjectCacheCustomKey(from, to, timeBucket, newFilters || filtersPerf)
       } else {
-        key = getProjectCacheKey(period, timeBucket)
+        key = getProjectCacheKey(period, timeBucket, newFilters || filtersPerf)
       }
 
       if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
@@ -1081,7 +1081,7 @@ const ViewProject = ({
   const onForecastSubmit = async (periodToForecast: string) => {
     setIsForecastOpened(false)
     setDataLoading(true)
-    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast)
+    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast, filters)
     const data = cache[id][key]
 
     if (!_isEmpty(data)) {
@@ -1718,7 +1718,7 @@ const ViewProject = ({
                           }}
                           className={cx(
                             isCurrent
-                              ? 'border-indigo-700 text-indigo-700 dark:text-gray-50 dark:border-gray-50'
+                              ? 'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300',
                             'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
                           )}
@@ -1726,7 +1726,7 @@ const ViewProject = ({
                         >
                           <tab.icon
                             className={cx(
-                              isCurrent ? 'text-indigo-700 dark:text-gray-50' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
+                              isCurrent ? 'text-slate-900 dark:text-gray-50' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
                               '-ml-0.5 mr-2 h-5 w-5',
                             )}
                             aria-hidden='true'
@@ -2047,8 +2047,8 @@ const ViewProject = ({
                         title={t('project.barChart')}
                         onClick={() => setChartTypeOnClick(chartTypes.bar)}
                         className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
-                          'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.bar,
-                          'text-gray-400 dark:text-gray-500': chartType !== chartTypes.bar,
+                          'text-slate-900 dark:text-gray-50 shadow-md': chartType === chartTypes.bar,
+                          'text-slate-500 dark:text-gray-500': chartType !== chartTypes.bar,
                         })}
                       >
                         <PresentationChartBarIcon className='w-6 h-6' />
@@ -2058,8 +2058,8 @@ const ViewProject = ({
                         title={t('project.lineChart')}
                         onClick={() => setChartTypeOnClick(chartTypes.line)}
                         className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
-                          'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.line,
-                          'text-gray-400 dark:text-gray-500': chartType !== chartTypes.line,
+                          'text-slate-900 dark:text-gray-50 shadow-md': chartType === chartTypes.line,
+                          'text-slate-500 dark:text-gray-500': chartType !== chartTypes.line,
                         })}
                       >
                         <PresentationChartLineIcon className='w-6 h-6' />
@@ -2114,9 +2114,9 @@ const ViewProject = ({
                 />
                 {dataLoading && (
                   <div className='loader bg-transparent static mt-4' id='loader'>
-                    <div className='loader-head'>
-                      <div className='first' />
-                      <div className='second' />
+                    <div className='loader-head dark:bg-slate-800'>
+                      <div className='first dark:bg-slate-600' />
+                      <div className='second dark:bg-slate-600' />
                     </div>
                   </div>
                 )}
@@ -2281,9 +2281,9 @@ const ViewProject = ({
                 />
                 {dataLoading && (
                   <div className='loader bg-transparent static mt-4' id='loader'>
-                    <div className='loader-head'>
-                      <div className='first' />
-                      <div className='second' />
+                    <div className='loader-head dark:bg-slate-800'>
+                      <div className='first dark:bg-slate-600' />
+                      <div className='second dark:bg-slate-600' />
                     </div>
                   </div>
                 )}
