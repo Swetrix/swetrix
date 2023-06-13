@@ -1,16 +1,15 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '@remix-run/react'
 import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 
-import Title from 'components/Title'
 import GoogleAuth from 'components/GoogleAuth'
 import GithubAuth from 'components/GithubAuth'
 import { withAuthentication, auth } from 'hoc/protected'
-import routes from 'routes'
+import routes from 'routesPath'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
@@ -159,125 +158,121 @@ const Signin = ({
 
   if (isTwoFARequired) {
     return (
-      <Title title={t('titles.signin')}>
-        <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-          <form className='max-w-prose mx-auto' onSubmit={_submit2FA}>
-            <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-              {t('auth.signin.2fa')}
-            </h2>
-            <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
-              {t('auth.signin.2faDesc')}
-            </p>
-            <Input
-              type='text'
-              label={t('profileSettings.enter2faToDisable')}
-              value={twoFACode}
-              placeholder={t('auth.signin.6digitCode')}
-              className='mt-4'
-              onChange={handle2FAInput}
-              disabled={isLoading}
-              error={twoFACodeError}
-            />
-            <div className='flex justify-between mt-3'>
-              <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
-                {!isSelfhosted && (
-                  <Trans
+      <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <form className='max-w-prose mx-auto' onSubmit={_submit2FA}>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+            {t('auth.signin.2fa')}
+          </h2>
+          <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
+            {t('auth.signin.2faDesc')}
+          </p>
+          <Input
+            type='text'
+            label={t('profileSettings.enter2faToDisable')}
+            value={twoFACode}
+            placeholder={t('auth.signin.6digitCode')}
+            className='mt-4'
+            onChange={handle2FAInput}
+            disabled={isLoading}
+            error={twoFACodeError}
+          />
+          <div className='flex justify-between mt-3'>
+            <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
+              {!isSelfhosted && (
+              <Trans
                     // @ts-ignore
-                    t={t}
-                    i18nKey='auth.signin.2faUnavailable'
-                    components={{
-                      ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />,
-                    }}
-                  />
-                )}
-              </div>
-              <Button type='submit' loading={isLoading} primary large>
-                {t('common.continue')}
-              </Button>
+                t={t}
+                i18nKey='auth.signin.2faUnavailable'
+                components={{
+                  ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />,
+                }}
+              />
+              )}
             </div>
-          </form>
-        </div>
-      </Title>
+            <Button type='submit' loading={isLoading} primary large>
+              {t('common.continue')}
+            </Button>
+          </div>
+        </form>
+      </div>
     )
   }
 
   return (
-    <Title title={t('titles.signin')}>
-      <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-            {t('auth.signin.title')}
-          </h2>
-          <Input
-            name='email'
-            id='email'
-            type='email'
-            label={t('auth.common.email')}
-            value={form.email}
-            placeholder='you@example.com'
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted && errors.email}
-          />
-          <Input
-            name='password'
-            id='password'
-            type='password'
-            label={t('auth.common.password')}
-            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-            value={form.password}
-            placeholder={t('auth.common.password')}
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted && errors.password}
-          />
-          <Checkbox
-            checked={form.dontRemember}
-            onChange={handleInput}
-            name='dontRemember'
-            id='dontRemember'
-            className='mt-4'
-            label={t('auth.common.noRemember')}
-          />
-          <div className='flex justify-between mt-3'>
-            <div className='pt-1'>
-              {!isSelfhosted && (
-                <>
-                  <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
-                    {t('auth.signin.forgot')}
-                  </Link>
-                  <span className='text-gray-900 dark:text-gray-50'>&nbsp;|&nbsp;</span>
-                  <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500' aria-label={t('titles.signup')}>
-                    {t('auth.common.signupInstead')}
-                  </Link>
-                </>
-              )}
-            </div>
-            <Button type='submit' loading={isLoading} primary large>
-              {t('auth.signin.button')}
-            </Button>
+    <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+          {t('auth.signin.title')}
+        </h2>
+        <Input
+          name='email'
+          id='email'
+          type='email'
+          label={t('auth.common.email')}
+          value={form.email}
+          placeholder='you@example.com'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.email}
+        />
+        <Input
+          name='password'
+          id='password'
+          type='password'
+          label={t('auth.common.password')}
+          hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+          value={form.password}
+          placeholder={t('auth.common.password')}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.password}
+        />
+        <Checkbox
+          checked={form.dontRemember}
+          onChange={handleInput}
+          name='dontRemember'
+          id='dontRemember'
+          className='mt-4'
+          label={t('auth.common.noRemember')}
+        />
+        <div className='flex justify-between mt-3'>
+          <div className='pt-1'>
+            {!isSelfhosted && (
+            <>
+              <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
+                {t('auth.signin.forgot')}
+              </Link>
+              <span className='text-gray-900 dark:text-gray-50'>&nbsp;|&nbsp;</span>
+              <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500' aria-label={t('titles.signup')}>
+                {t('auth.common.signupInstead')}
+              </Link>
+            </>
+            )}
           </div>
-          {!isSelfhosted && (
-            <div className='flex flex-wrap'>
-              <GoogleAuth
-                className='mt-4 mr-5'
-                setIsLoading={setIsLoading}
-                authSSO={authSSO}
-                callback={loginCallback}
-                dontRemember={form.dontRemember}
-              />
-              <GithubAuth
-                className='mt-4'
-                setIsLoading={setIsLoading}
-                authSSO={authSSO}
-                callback={loginCallback}
-                dontRemember={form.dontRemember}
-              />
-            </div>
-          )}
-        </form>
-      </div>
-    </Title>
+          <Button type='submit' loading={isLoading} primary large>
+            {t('auth.signin.button')}
+          </Button>
+        </div>
+        {!isSelfhosted && (
+        <div className='flex flex-wrap'>
+          <GoogleAuth
+            className='mt-4 mr-5'
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            callback={loginCallback}
+            dontRemember={form.dontRemember}
+          />
+          <GithubAuth
+            className='mt-4'
+            setIsLoading={setIsLoading}
+            authSSO={authSSO}
+            callback={loginCallback}
+            dontRemember={form.dontRemember}
+          />
+        </div>
+        )}
+      </form>
+    </div>
   )
 }
 
