@@ -5,7 +5,7 @@ const routes = Object.freeze({
   new_password_form: '/password-reset/:id', // add
   confirm_share: '/share/:id',
   confirm_subcription: '/projects/:id/subscribers/invite',
-  main: '/',
+  main: '/', // add
   dashboard: '/dashboard',
   user_settings: '/settings',
   verify: '/verify-email/:id', // add
@@ -26,7 +26,7 @@ const routes = Object.freeze({
   about: '/about', // add
   create_alert: '/projects/:pid/alerts/create',
   alert_settings: '/projects/:pid/alerts/settings/:id',
-  press: '/press',
+  press: '/press', // add
   transfer_confirm: '/project/transfer/confirm',
   transfer_reject: '/project/transfer/cancel',
   socialised: '/socialised', // add
