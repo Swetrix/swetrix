@@ -6,7 +6,7 @@ const routes = Object.freeze({
   confirm_share: '/share/:id',
   confirm_subcription: '/projects/:id/subscribers/invite',
   main: '/', // add
-  dashboard: '/dashboard',
+  dashboard: '/dashboard', // add
   user_settings: '/settings',
   verify: '/verify-email/:id', // add
   change_email: '/change-email/:id', // add

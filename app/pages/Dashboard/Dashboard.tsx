@@ -2,7 +2,7 @@
 import React, {
   memo, useState, useEffect, useMemo,
 } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from '@remix-run/react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
@@ -22,12 +22,11 @@ import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
 import { withAuthentication, auth } from 'hoc/protected'
-import Title from 'components/Title'
 import Loader from 'ui/Loader'
 import {
   ActivePin, InactivePin, WarningPin, CustomPin,
 } from 'ui/Pin'
-import routes from 'routes'
+import routes from 'routesPath'
 import { nFormatter } from 'utils/generic'
 import {
   isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject,
@@ -135,7 +134,7 @@ const ProjectCard = ({
 }: IProjectCard): JSX.Element => {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const role = useMemo(() => getRole && getRole(id), [getRole, id])
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const onAccept = async () => {
     // @ts-ignore
@@ -168,7 +167,7 @@ const ProjectCard = ({
 
   return (
     <div onClick={() => {
-      history.push(_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id))
+      navigate(_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id))
     }}
     >
       <li
@@ -347,7 +346,7 @@ const Dashboard = ({
     }) => string
   } = useTranslation('common')
   const [showActivateEmailModal, setShowActivateEmailModal] = useState<boolean>(false)
-  const history = useHistory()
+  const navigate = useNavigate()
   const [tabProjects, setTabProjects] = useState<string>(dashboardTabs)
   const pageAmountShared: number = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmount: number = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
@@ -357,9 +356,9 @@ const Dashboard = ({
   const onNewProject = () => {
     if (user.isActive || isSelfhosted) {
       if (dashboardTabs === tabForCaptchaProject) {
-        history.push(routes.new_captcha)
+        navigate(routes.new_captcha)
       } else {
-        history.push(routes.new_project)
+        navigate(routes.new_project)
       }
     } else {
       setShowActivateEmailModal(true)
@@ -414,25 +413,23 @@ const Dashboard = ({
 
   if (error && !isLoading) {
     return (
-      <Title title={t('titles.dashboard')}>
-        <div className='flex justify-center pt-10'>
-          <div className='rounded-md bg-red-50 p-4 w-11/12 lg:w-4/6'>
-            <div className='flex'>
-              <div className='flex-shrink-0'>
-                <XCircleIcon className='h-5 w-5 text-red-400' aria-hidden='true' />
-              </div>
-              <div className='ml-3'>
-                <h3 className='text-sm font-medium text-red-800'>{error}</h3>
-              </div>
+      <div className='flex justify-center pt-10'>
+        <div className='rounded-md bg-red-50 p-4 w-11/12 lg:w-4/6'>
+          <div className='flex'>
+            <div className='flex-shrink-0'>
+              <XCircleIcon className='h-5 w-5 text-red-400' aria-hidden='true' />
+            </div>
+            <div className='ml-3'>
+              <h3 className='text-sm font-medium text-red-800'>{error}</h3>
             </div>
           </div>
         </div>
-      </Title>
+      </div>
     )
   }
 
   return (
-    <Title title={t('titles.dashboard')}>
+    <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <EventsRunningOutBanner />
         <div className='flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
@@ -495,11 +492,9 @@ const Dashboard = ({
               </div>
             )}
             {isLoading ? (
-              <Title title={t('titles.dashboard')}>
-                <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                  <Loader />
-                </div>
-              </Title>
+              <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+                <Loader />
+              </div>
             ) : (
               <>
                 {tabProjects === tabForOwnedProject && (
@@ -656,7 +651,7 @@ const Dashboard = ({
         message={t('dashboard.verifyEmailDesc')}
         isOpened={showActivateEmailModal}
       />
-    </Title>
+    </>
   )
 }
 
