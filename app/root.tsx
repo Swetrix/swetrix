@@ -41,10 +41,15 @@ if (process.env.NODE_ENV !== 'production') {
   // localStorage.debug = 'swetrix:*'
 }
 
+const FONTS_PROVIDER = 'https://fonts.bunny.net'
+const FONTS_URL = 'https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800'
+
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
   { rel: 'stylesheet', href: mainCss },
   { rel: 'stylesheet', href: BillboardCss },
+  { rel: 'preconnect', href: FONTS_PROVIDER },
+  { rel: 'stylesheet', href: FONTS_URL },
 ]
 
 const removeObsoleteAuthTokens = () => {
