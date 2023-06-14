@@ -1,111 +1,66 @@
-/**
- * By default, Remix will handle generating the HTTP Response for you.
- * You are free to delete this file if you'd like to, but if you ever want it revealed again, you can run `npx remix reveal` ✨
- * For more information, see https://remix.run/file-conventions/entry.server
- */
-
+import type { EntryContext } from '@remix-run/node'
 import { PassThrough } from 'node:stream'
-
-import type { AppLoadContext, EntryContext } from '@remix-run/node'
+import { resolve } from 'node:path'
+import { createInstance } from 'i18next'
+import { I18nextProvider, initReactI18next } from 'react-i18next'
+import FSBackend from 'i18next-fs-backend'
 import { Response } from '@remix-run/node'
 import { RemixServer } from '@remix-run/react'
 import isbot from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
 
+import i18next from './i18next.server'
+import i18n, { detectLanguage } from './i18n'
+
 const ABORT_DELAY = 5_000
 
-export default function handleRequest(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  remixContext: EntryContext,
-  loadContext: AppLoadContext,
-) {
-  return isbot(request.headers.get('user-agent'))
-    // eslint-disable-next-line no-use-before-define
-    ? handleBotRequest(
-      request,
-      responseStatusCode,
-      responseHeaders,
-      remixContext,
-    )
-    // eslint-disable-next-line no-use-before-define
-    : handleBrowserRequest(
-      request,
-      responseStatusCode,
-      responseHeaders,
-      remixContext,
-    )
-}
-
-function handleBotRequest(
+export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
-  return new Promise((resolve, reject) => {
-    const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
-        url={request.url}
-        abortDelay={ABORT_DELAY}
-      />,
-      {
-        onAllReady() {
-          const body = new PassThrough()
+  const instance = createInstance()
+  const lng = detectLanguage(request)
+  const ns = i18next.getRouteNamespaces(remixContext)
 
-          responseHeaders.set('Content-Type', 'text/html')
-
-          resolve(
-            new Response(body, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            }),
-          )
-
-          pipe(body)
-        },
-        onShellError(error: unknown) {
-          reject(error)
-        },
-        onError(error: unknown) {
-          responseStatusCode = 500
-          console.error(error)
-        },
+  await instance
+    .use(initReactI18next)
+    .use(FSBackend)
+    .init({
+      ...i18n,
+      lng,
+      ns,
+      backend: {
+        loadPath: resolve('./public/locales/{{lng}}.json')
       },
-    )
+    })
 
-    setTimeout(abort, ABORT_DELAY)
-  })
-}
+  const callbackName = isbot(request.headers.get('user-agent'))
+    ? 'onAllReady'
+    : 'onShellReady'
 
-function handleBrowserRequest(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  remixContext: EntryContext,
-) {
   return new Promise((resolve, reject) => {
+    let didError = false
+
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
-        url={request.url}
-        abortDelay={ABORT_DELAY}
-      />,
+      <I18nextProvider i18n={instance}>
+        <RemixServer
+          context={remixContext}
+          url={request.url}
+          abortDelay={ABORT_DELAY}
+        />
+      </I18nextProvider>,
       {
-        onShellReady() {
+        [callbackName]: () => {
           const body = new PassThrough()
-
           responseHeaders.set('Content-Type', 'text/html')
-
           resolve(
             new Response(body, {
               headers: responseHeaders,
-              status: responseStatusCode,
+              status: didError ? 500 : responseStatusCode,
             }),
           )
-
           pipe(body)
         },
         onShellError(error: unknown) {
@@ -113,7 +68,7 @@ function handleBrowserRequest(
         },
         onError(error: unknown) {
           console.error(error)
-          responseStatusCode = 500
+          didError = true
         },
       },
     )

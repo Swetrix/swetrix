@@ -197,7 +197,7 @@ const App = () => {
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
   return (
-    <HocThrowErrorWhenWindowIsUndefined>
+    <>
       {(!accessToken || !loading) && (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
@@ -222,7 +222,7 @@ const App = () => {
       </Suspense>
       )}
       <div className='hidden' />
-    </HocThrowErrorWhenWindowIsUndefined>
+    </>
   )
 }
 
