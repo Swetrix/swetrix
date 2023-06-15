@@ -31,7 +31,6 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import FlatPicker from 'ui/Flatpicker'
-import { nanoid } from 'utils/random'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routesPath'
 import { getFormatDate } from '../View/ViewProject.helpers'
@@ -155,7 +154,7 @@ const ProjectSettings = ({
 
   const [form, setForm] = useState<IForm>({
     name: '',
-    id: id || nanoid,
+    id,
     public: false,
     origins: null,
     ipBlacklist: null,
@@ -222,7 +221,6 @@ const ProjectSettings = ({
           generateAlerts(t('project.settings.updated'))
         } else {
           await createProject({
-            id: data.id || nanoid,
             name: data.name || DEFAULT_PROJECT_NAME,
           })
           trackCustom('PROJECT_CREATED')
@@ -404,19 +402,19 @@ const ProjectSettings = ({
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}
         />
-        <Input
-          name='id'
-          id='id'
-          type='text'
-          label={t('project.settings.pid')}
-          value={form.id}
-          className='mt-4'
-          onChange={handleInput}
-          error={null}
-          disabled
-        />
         {isSettings ? (
           <>
+            <Input
+              name='id'
+              id='id'
+              type='text'
+              label={t('project.settings.pid')}
+              value={form.id}
+              className='mt-4'
+              onChange={handleInput}
+              error={null}
+              disabled
+            />
             <Input
               name='origins'
               id='origins'

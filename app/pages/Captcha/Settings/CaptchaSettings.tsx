@@ -30,7 +30,6 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
-import { nanoid } from 'utils/random'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routes'
 import { ICaptchaProject, IProject, IProjectNames } from 'redux/models/IProject'
@@ -93,7 +92,7 @@ const CaptchaSettings = ({
   const history = useHistory()
   const [form, setForm] = useState<IForm>({
     name: '',
-    id: id || nanoid(),
+    id,
     public: false,
     isCaptcha: true,
   })
@@ -168,7 +167,6 @@ const CaptchaSettings = ({
             await createCaptchaInherited(formalisedData.id)
           } else {
             await createProject({
-              id: formalisedData.id,
               name: formalisedData.name,
               isCaptcha: true,
             })

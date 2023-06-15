@@ -295,7 +295,6 @@ export const getProject = (pid: string, isCaptcha: boolean = false, password?: s
     })
 
 export const createProject = (data: {
-  id: string
   name: string
   isCaptcha?: boolean
 }) =>
