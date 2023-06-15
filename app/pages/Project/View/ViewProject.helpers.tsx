@@ -6,7 +6,6 @@ import {
   ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon,
 } from '@heroicons/react/24/outline'
 // @ts-ignore
-import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import {
   area, areaSpline, spline, bar, line,
@@ -34,6 +33,14 @@ import countries from 'utils/isoCountries'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import _includes from 'lodash/includes'
+
+const loadD3 = async () => {
+  const d3 = await import('d3')
+
+  return d3
+}
+
+const d3 = loadD3()
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
