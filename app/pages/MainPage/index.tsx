@@ -749,7 +749,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
           <picture>
             <source srcSet={theme === 'dark' ? '/assets/opensource_dark.webp' : '/assets/opensource_light.webp'} type='image/webp' />
             <img
-              className='ring-1 ring-gray-900/10 dark:ring-white/10 rounded-xl'
+              className='ring-1 md:max-w-xl ring-gray-900/10 dark:ring-white/10 rounded-xl'
               src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'}
               loading='lazy'
               alt='Swetrix open source'
