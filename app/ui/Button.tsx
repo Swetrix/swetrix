@@ -5,7 +5,6 @@ import PropTypes from 'prop-types'
 // import { useSelector } from 'react-redux'
 // import { THEME_TYPE } from 'redux/constants'
 import Spin from './icons/Spin'
-import './ButtonChristmas.css'
 
 // Define the prop types for the component
 interface IButton {

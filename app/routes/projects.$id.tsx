@@ -1,5 +1,6 @@
 import ViewProject from 'pages/Project/View'
-import type { V2_MetaFunction } from '@remix-run/node'
+import type { V2_MetaFunction, LinksFunction } from '@remix-run/node'
+import ProjectViewStyle from 'styles/ProjectViewStyle.css'
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -9,6 +10,10 @@ export const meta: V2_MetaFunction = () => {
     },
   ]
 }
+
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: ProjectViewStyle },
+]
 
 export default function Index() {
   return <ViewProject />

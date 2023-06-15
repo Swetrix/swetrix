@@ -15,6 +15,7 @@ import _map from 'lodash/map'
 // @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
+// import { getCookie } from 'utils/cookie'
 
 import AlertTemplate from 'ui/Alert'
 import { trackViews } from 'utils/analytics'
@@ -25,6 +26,13 @@ import { detectLanguage } from 'i18n'
 
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
+import FlatpickerCss from 'styles/Flatpicker.css'
+import FlatpickerLibaryCss from 'flatpickr/dist/themes/dark.css'
+
+// if (getCookie('colour-theme') === 'light') {
+//   // @ts-ignore
+//   FlatpickerLibaryCss = import('flatpickr/dist/themes/light.css')
+// }
 
 trackViews()
 
@@ -48,6 +56,8 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
   { rel: 'stylesheet', href: mainCss },
   { rel: 'stylesheet', href: BillboardCss },
+  { rel: 'stylesheet', href: FlatpickerCss },
+  { rel: 'stylesheet', href: FlatpickerLibaryCss },
   { rel: 'preconnect', href: FONTS_PROVIDER },
   { rel: 'stylesheet', href: FONTS_URL },
 ]

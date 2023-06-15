@@ -34,7 +34,7 @@ import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
 import _isString from 'lodash/isString'
 import PropTypes from 'prop-types'
-import * as SwetrixSDK from '@swetrix/sdk'
+// import * as SwetrixSDK from '@swetrix/sdk'
 
 import { withProjectProtected } from 'hoc/projectProtected'
 
@@ -78,7 +78,6 @@ import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import ProjectAlertsView from '../Alerts/View'
-import './styles.css'
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
@@ -255,17 +254,19 @@ const ViewProject = ({
     // first we check if we have activeTab in url
     // if we have activeTab in url, we return it
     // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
+    return projectTab || PROJECT_TABS.traffic
+  })
+
+  useEffect(() => {
     // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
     const tab = searchParams.get('tab') as string
 
     if (PROJECT_TABS[tab]) {
-      return tab || 'traffic'
+      setActiveTab(tab)
     }
-
-    return projectTab || PROJECT_TABS.traffic
-  })
+  }, [])
   // pgActiveFragment is a active fragment for pagination
   const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
 
@@ -1171,60 +1172,60 @@ const ViewProject = ({
   }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
 
   // Initialising Swetrix SDK instance. Using for marketplace and extensions
-  useEffect(() => {
-    let sdk: any | null = null
+  // useEffect(() => {
+  //   let sdk: any | null = null
 
-    const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
+  //   const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
 
-    if (!_isEmpty(filteredExtensions)) {
-      const processedExtensions = _map(filteredExtensions, (ext) => {
-        const { id: extId, fileURL } = ext
-        return {
-          id: extId,
-          cdnURL: `${CDN_URL}file/${fileURL}`,
-        }
-      })
+  //   if (!_isEmpty(filteredExtensions)) {
+  //     const processedExtensions = _map(filteredExtensions, (ext) => {
+  //       const { id: extId, fileURL } = ext
+  //       return {
+  //         id: extId,
+  //         cdnURL: `${CDN_URL}file/${fileURL}`,
+  //       }
+  //     })
 
-      // @ts-ignore
-      sdk = new SwetrixSDK(processedExtensions, {
-        debug: isDevelopment,
-      }, {
-        onAddExportDataRow: (label: any, onClick: (e: any) => void) => {
-          setCustomExportTypes((prev) => [
-            ...prev,
-            {
-              label,
-              onClick,
-            },
-          ])
-        },
-        onRemoveExportDataRow: (label: any) => {
-          setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
-        },
-        onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
-          setCustomPanelTabs((prev) => [
-            ...prev,
-            {
-              extensionID,
-              panelID,
-              tabContent,
-              onOpen,
-            },
-          ])
-        },
-        onRemovePanelTab: (extensionID: string, panelID: string) => {
-          setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
-        },
-      })
-      setSdkInstance(sdk)
-    }
+  //     // @ts-ignore
+  //     sdk = new SwetrixSDK(processedExtensions, {
+  //       debug: isDevelopment,
+  //     }, {
+  //       onAddExportDataRow: (label: any, onClick: (e: any) => void) => {
+  //         setCustomExportTypes((prev) => [
+  //           ...prev,
+  //           {
+  //             label,
+  //             onClick,
+  //           },
+  //         ])
+  //       },
+  //       onRemoveExportDataRow: (label: any) => {
+  //         setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
+  //       },
+  //       onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
+  //         setCustomPanelTabs((prev) => [
+  //           ...prev,
+  //           {
+  //             extensionID,
+  //             panelID,
+  //             tabContent,
+  //             onOpen,
+  //           },
+  //         ])
+  //       },
+  //       onRemovePanelTab: (extensionID: string, panelID: string) => {
+  //         setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
+  //       },
+  //     })
+  //     setSdkInstance(sdk)
+  //   }
 
-    return () => {
-      if (sdk) {
-        sdk._destroy()
-      }
-    }
-  }, [extensions])
+  //   return () => {
+  //     if (sdk) {
+  //       sdk._destroy()
+  //     }
+  //   }
+  // }, [extensions])
 
   // Supplying 'timeupdate' event to the SDK after loading. Using for marketplace and extensions
   useEffect(() => {

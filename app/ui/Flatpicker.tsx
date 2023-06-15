@@ -5,17 +5,7 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import PropTypes from 'prop-types'
 
-import { getCookie } from 'utils/cookie'
 import { MAX_MONTHS_IN_PAST } from 'redux/constants'
-import './Flatpicker.css'
-
-if (getCookie('colour-theme') === 'light') {
-  // @ts-ignore
-  import('flatpickr/dist/themes/light.css')
-} else {
-  // @ts-ignore
-  import('flatpickr/dist/themes/dark.css')
-}
 
 interface FlatPickerProps {
   onChange?: (dates: Date[]) => void,
