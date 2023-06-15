@@ -16,5 +16,7 @@ module.exports = {
   },
   serverDependenciesToBundle: [
     'axios',
+    'd3',
+    /^d3-*/,
   ],
 }
