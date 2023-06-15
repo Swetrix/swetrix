@@ -1,6 +1,5 @@
 import { takeEvery, fork, takeLatest } from 'redux-saga/effects'
 import sagaTypes from '../actions/types'
-
 import loadProjects from './load_projects'
 import initialise from './initialise'
 import liveVisitors from './worker_live_visitors'

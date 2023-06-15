@@ -2,8 +2,8 @@ import { call, put } from 'redux-saga/effects'
 
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
-import { setShowLiveVisitorsInTitle } from 'api'
 import { IUser } from '../../../models/IUser'
+const { setShowLiveVisitorsInTitle } = require('api')
 
 interface IPayload {
   show: boolean

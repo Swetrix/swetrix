@@ -4,7 +4,7 @@ import _isString from 'lodash/isString'
 import UIActions from 'redux/reducers/ui'
 import { errorsActions } from 'redux/reducers/errors'
 import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
-import { getAlerts } from 'api'
+const { getAlerts } = require('api')
 
 const debug = Debug('swetrix:rx:s:load-extensions')
 

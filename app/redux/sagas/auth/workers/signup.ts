@@ -4,9 +4,9 @@ import { errorsActions } from 'redux/reducers/errors'
 import _omit from 'lodash/omit'
 
 import { setAccessToken } from 'utils/accessToken'
-import { signup } from 'api'
 import { setRefreshToken } from 'utils/refreshToken'
 import sagaActions from '../../actions'
+const { signup } = require('api')
 
 export default function* signupWorder({ payload: { data: rawData, callback } }: {
   payload: {

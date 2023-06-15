@@ -6,9 +6,9 @@ import { errorsActions } from 'redux/reducers/errors'
 
 import UIActions from 'redux/reducers/ui'
 import { setAccessToken } from 'utils/accessToken'
-import { login } from 'api'
 import { setRefreshToken } from 'utils/refreshToken'
 import sagaActions from '../../actions/index'
+const { login } = require('api')
 
 export default function* singinWorker({ payload: { credentials, callback } }: {
   payload: {

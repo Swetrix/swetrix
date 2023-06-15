@@ -3,10 +3,10 @@ import {
 } from 'redux-saga/effects'
 import Debug from 'debug'
 
-import { getGeneralStats } from 'api'
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 import { IStats } from 'redux/models/IStats'
+const { getGeneralStats } = require('api')
 
 const debug = Debug('swetrix:rx:s:general-stats')
 

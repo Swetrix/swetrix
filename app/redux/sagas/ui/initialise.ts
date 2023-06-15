@@ -3,10 +3,10 @@ import Debug from 'debug'
 
 import { getAccessToken } from 'utils/accessToken'
 import { getRefreshToken } from 'utils/refreshToken'
-import { getLastPost } from 'api/blog'
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 import sagaActions from '../actions'
+const { getLastPost } = require('api/blog')
 
 const debug = Debug('swetrix:rx:s:initialise')
 

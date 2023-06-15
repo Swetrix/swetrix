@@ -5,10 +5,10 @@ import _includes from 'lodash/includes'
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
-import {
-  unlinkSSO, authMe,
-} from 'api'
 import { SSO_PROVIDERS } from 'redux/constants'
+const {
+  unlinkSSO, authMe,
+} = require('api')
 
 export interface ISSOUnlink {
   payload: {

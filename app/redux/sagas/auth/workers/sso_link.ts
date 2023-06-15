@@ -3,10 +3,10 @@ import { call, put, delay } from 'redux-saga/effects'
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
-import {
-  linkBySSOHash, generateSSOAuthURL, authMe,
-} from 'api'
 import { openBrowserWindow } from 'utils/generic'
+const {
+  linkBySSOHash, generateSSOAuthURL, authMe,
+} = require('api')
 
 const AUTH_WINDOW_WIDTH = 600
 const AUTH_WINDOW_HEIGHT = 800

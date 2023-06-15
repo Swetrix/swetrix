@@ -3,12 +3,12 @@ import { call, put, delay } from 'redux-saga/effects'
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { setAccessToken } from 'utils/accessToken'
-import {
-  getJWTBySSOHash, generateSSOAuthURL,
-} from 'api'
 import { setRefreshToken } from 'utils/refreshToken'
 import { openBrowserWindow } from 'utils/generic'
 import sagaActions from '../../actions/index'
+const {
+  getJWTBySSOHash, generateSSOAuthURL,
+} = require('api')
 
 const AUTH_WINDOW_WIDTH = 600
 const AUTH_WINDOW_HEIGHT = 800

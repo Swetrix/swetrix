@@ -7,9 +7,9 @@ import UIActions from 'redux/reducers/ui'
 
 import { ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
 import { IOverall } from 'redux/models/IProject'
-import {
-  getProjects, getOverallStats, getLiveVisitors, getOverallStatsCaptcha,
-} from '../../../api'
+const {
+  getProjects, getOverallStats, getLiveVisitors, getOverallStatsCaptcha, logoutApi,
+} = require('../../../api')
 
 const debug = Debug('swetrix:rx:s:load-projects')
 

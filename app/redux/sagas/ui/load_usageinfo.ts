@@ -4,9 +4,9 @@ import Debug from 'debug'
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 import { IUsageInfo } from 'redux/models/IUsageinfo'
-import {
+const {
   getUsageInfo,
-} from '../../../api'
+} = require('api')
 
 const debug = Debug('swetrix:rx:s:usageinfo')
 
