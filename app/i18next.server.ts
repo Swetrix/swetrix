@@ -1,8 +1,8 @@
 import { RemixI18Next } from 'remix-i18next'
 import Backend from 'i18next-fs-backend'
 import { resolve } from 'node:path'
-import i18n from './i18n'
 import { defaultLanguage, whitelist } from 'redux/constants'
+import i18n from './i18n'
 
 const i18next = new RemixI18Next({
   detection: {

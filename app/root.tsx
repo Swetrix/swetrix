@@ -1,11 +1,11 @@
 import type { LinksFunction, LoaderArgs } from '@remix-run/node'
 import { json } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
 import {
   Links,
   LiveReload,
   Meta,
   Scripts,
+  useLoaderData,
   ScrollRestoration,
 } from '@remix-run/react'
 import { store } from 'redux/store'
@@ -92,10 +92,10 @@ export default function App() {
   } = useLoaderData<typeof loader>()
   const { i18n } = useTranslation()
 
-  const alternateLinks = _map(whitelist, (locale) => ({
+  const alternateLinks = _map(whitelist, (lc) => ({
     rel: 'alternate',
-    hrefLang: locale,
-    href: `${url}?lng=${locale}`,
+    hrefLang: lc,
+    href: `${url}?lng=${lc}`,
   }))
 
   useChangeLanguage(locale)

@@ -20,7 +20,7 @@ const ABORT_DELAY = 5_000
 const { isSitemapUrl, sitemap } = createSitemapGenerator({
   siteUrl: MAIN_URL,
   autoLastmod: false,
-  priority: 0.8
+  priority: 0.8,
 })
 
 export default async function handleRequest(
@@ -30,7 +30,8 @@ export default async function handleRequest(
   remixContext: EntryContext,
 ) {
   if (isSitemapUrl(request)) {
-    return await sitemap(request, remixContext)
+    const stm = await sitemap(request, remixContext)
+    return stm
   }
 
   const instance = createInstance()
@@ -45,7 +46,7 @@ export default async function handleRequest(
       lng,
       ns,
       backend: {
-        loadPath: resolve('./public/locales/{{lng}}.json')
+        loadPath: resolve('./public/locales/{{lng}}.json'),
       },
     })
 

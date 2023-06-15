@@ -7,6 +7,6 @@ Sitemap: https://swetrix.com/sitemap.xml`
     status: 200,
     headers: {
       'Content-Type': 'text/plain',
-    }
+    },
   })
 }
