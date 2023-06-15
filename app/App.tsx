@@ -59,8 +59,6 @@ const Fallback = ({ isMinimalFooter }: FallbackProps): JSX.Element => {
     }
   }, [])
 
-  console.log('showLoader', showLoader)
-
   return (
     <div className={cx('bg-gray-50 dark:bg-slate-900', { 'min-h-page': !isMinimalFooter, 'min-h-min-footer': isMinimalFooter })}>
       {showLoader && (
