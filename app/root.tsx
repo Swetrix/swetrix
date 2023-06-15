@@ -18,8 +18,6 @@ import BillboardCss from 'billboard.js/dist/billboard.min.css'
 
 import AlertTemplate from 'ui/Alert'
 import { trackViews } from 'utils/analytics'
-import { getAccessToken, removeAccessToken } from 'utils/accessToken'
-import { getRefreshToken } from 'utils/refreshToken'
 import { useChangeLanguage } from 'remix-i18next'
 import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
