@@ -10,6 +10,7 @@ import isbot from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
 import { createSitemapGenerator } from 'remix-sitemap'
 
+import { MAIN_URL } from './redux/constants'
 import i18next from './i18next.server'
 import i18n, { detectLanguage } from './i18n'
 
@@ -17,7 +18,7 @@ const ABORT_DELAY = 5_000
 
 // TODO: Exclude /project/* endpoints from sitemap
 const { isSitemapUrl, sitemap } = createSitemapGenerator({
-  siteUrl: 'https://swetrix.com',
+  siteUrl: MAIN_URL,
   autoLastmod: false,
   priority: 0.8
 })

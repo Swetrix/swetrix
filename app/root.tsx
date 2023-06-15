@@ -9,7 +9,9 @@ import {
   ScrollRestoration,
 } from '@remix-run/react'
 import { store } from 'redux/store'
+import { MAIN_URL, whitelist } from 'redux/constants'
 import { Provider } from 'react-redux'
+import _map from 'lodash/map'
 // @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
@@ -64,9 +66,10 @@ const removeObsoleteAuthTokens = () => {
 removeObsoleteAuthTokens()
 
 export async function loader({ request }: LoaderArgs) {
+  const { url } = request
   const locale = detectLanguage(request)
 
-  return json({ locale })
+  return json({ locale, url })
 }
 
 export const handle = {
@@ -74,8 +77,14 @@ export const handle = {
 }
 
 export default function App() {
-  const { locale } = useLoaderData<typeof loader>()
+  const { locale, url } = useLoaderData<typeof loader>()
   const { i18n } = useTranslation()
+
+  const alternateLinks = _map(whitelist, (locale) => ({
+    rel: 'alternate',
+    hrefLang: locale,
+    href: `${url}?lng=${locale}`,
+  }))
 
   useChangeLanguage(locale)
 
@@ -86,6 +95,9 @@ export default function App() {
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Meta />
         <Links />
+        {_map(alternateLinks, (link) => (
+          <link key={link.hrefLang} {...link} />
+        ))}
         <link rel='preload' href={`/locales/${locale}.json`} as='fetch' type='application/json' crossOrigin='anonymous' />
       </head>
       <body>
