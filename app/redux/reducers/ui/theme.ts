@@ -1,9 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import _includes from 'lodash/includes'
+import { setCookie, getCookie } from 'utils/cookie'
+import { isBrowser } from 'redux/constants'
 import { LS_THEME_SETTING, SUPPORTED_THEMES, THEME_TYPE } from 'redux/constants'
 
 const setThemeToDOM = (theme: string) => {
-  if (typeof window === 'undefined') {
+  if (!isBrowser) {
     return
   }
 
@@ -16,28 +18,29 @@ const setThemeToDOM = (theme: string) => {
 
 const setTheme = (theme: string): string => {
   setThemeToDOM(theme)
-  if (typeof window !== 'undefined' && window.localStorage) {
-    window.localStorage.setItem(LS_THEME_SETTING, theme)
-  }
+  setCookie(LS_THEME_SETTING, theme)
   return theme
 }
 
 const getInitialTheme = (): 'light' | 'dark' => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const lsTheme: any = window.localStorage.getItem(LS_THEME_SETTING)
-    if (_includes(SUPPORTED_THEMES, lsTheme)) {
-      setThemeToDOM(lsTheme)
-      return lsTheme
-    }
-
-    const userMedia = window.matchMedia('(prefers-color-scheme: dark)')
-    if (userMedia.matches) {
-      setThemeToDOM('dark')
-      return 'dark'
-    }
+  if (!isBrowser) {
+    return 'light'
   }
 
-  setThemeToDOM('light')
+  const lsTheme: any = getCookie(LS_THEME_SETTING)
+
+  if (_includes(SUPPORTED_THEMES, lsTheme)) {
+    setThemeToDOM(lsTheme)
+    return lsTheme
+  }
+
+  const userMedia = window.matchMedia('(prefers-color-scheme: dark)')
+  if (userMedia.matches) {
+    setTheme('dark')
+    return 'dark'
+  }
+
+  setTheme('light')
   return 'light' // light theme as the default
 }
 

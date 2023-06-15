@@ -54,22 +54,34 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: FONTS_URL },
 ]
 
-const removeObsoleteAuthTokens = () => {
-  const accessToken = getAccessToken()
-  const refreshToken = getRefreshToken()
+// const removeObsoleteAuthTokens = () => {
+//   const accessToken = getAccessToken()
+//   const refreshToken = getRefreshToken()
 
-  if (accessToken && !refreshToken) {
-    removeAccessToken()
+//   if (accessToken && !refreshToken) {
+//     removeAccessToken()
+//   }
+// }
+
+// removeObsoleteAuthTokens()
+
+export function detectTheme(request: Request): string {
+  const cookie = request.headers.get('Cookie')
+  const theme = cookie?.match(/(?<=colour-theme=)[^;]*/)?.[0]
+
+  if (theme === 'dark') {
+    return 'dark'
   }
-}
 
-removeObsoleteAuthTokens()
+  return 'light'
+}
 
 export async function loader({ request }: LoaderArgs) {
   const { url } = request
   const locale = detectLanguage(request)
+  const theme = detectTheme(request)
 
-  return json({ locale, url })
+  return json({ locale, url, theme })
 }
 
 export const handle = {
@@ -77,7 +89,9 @@ export const handle = {
 }
 
 export default function App() {
-  const { locale, url } = useLoaderData<typeof loader>()
+  const {
+    locale, url, theme,
+  } = useLoaderData<typeof loader>()
   const { i18n } = useTranslation()
 
   const alternateLinks = _map(whitelist, (locale) => ({
@@ -89,7 +103,7 @@ export default function App() {
   useChangeLanguage(locale)
 
   return (
-    <html lang={locale} dir={i18n.dir()}>
+    <html className={theme} lang={locale} dir={i18n.dir()}>
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
