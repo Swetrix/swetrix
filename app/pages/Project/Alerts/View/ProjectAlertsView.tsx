@@ -10,14 +10,14 @@ import _values from 'lodash/values'
 import _reduce from 'lodash/reduce'
 import _filter from 'lodash/filter'
 import _trucate from 'lodash/truncate'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import {
   BellIcon, CurrencyDollarIcon, PencilSquareIcon, FolderPlusIcon,
 } from '@heroicons/react/24/outline'
 
-import routes from 'routes'
+import routes from 'routesPath'
 import Button from 'ui/Button'
 import PaidFeature from 'modals/PaidFeature'
 import { QUERY_METRIC, PLAN_LIMITS } from 'redux/constants'
@@ -39,7 +39,7 @@ const ProjectAlerts = ({
     i18n: { language: string },
   } = useTranslation()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
-  const history = useHistory()
+  const navigate = useNavigate()
 
   // @ts-ignore
   const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
@@ -71,7 +71,7 @@ const ProjectAlerts = ({
       return
     }
 
-    history.push(_replace(routes.create_alert, ':pid', projectId))
+    navigate(_replace(routes.create_alert, ':pid', projectId))
   }
 
   return (
@@ -174,7 +174,7 @@ const ProjectAlerts = ({
                       )}
                       <Button
                         onClick={() => {
-                          history.push(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
+                          navigate(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
                         }}
                         className='dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
                         secondary
