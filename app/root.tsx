@@ -113,6 +113,15 @@ export default function App() {
         <link rel='preload' href={`/locales/${locale}.json`} as='fetch' type='application/json' crossOrigin='anonymous' />
       </head>
       <body>
+        <div className='loader' id='loader'>
+          <div className='loader-head'>
+            <div className='first' />
+            <div className='second' />
+          </div>
+          <div className='logo-frame'>
+            <img className='logo-frame-img' width='361' height='80' src='assets/logo_blue.png' alt='Swetrix' />
+          </div>
+        </div>
         <Provider store={store}>
           <AlertProvider template={AlertTemplate} {...options}>
             <AppWrapper />
