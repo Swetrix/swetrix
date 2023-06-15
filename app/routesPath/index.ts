@@ -25,7 +25,7 @@ const routes = Object.freeze({
   changelog: '/changelog', // add
   about: '/about', // add
   create_alert: '/projects/:pid/alerts/create',
-  alert_settings: '/projects/:pid/alerts/settings/:id',
+  alert_settings: '/projects/:pid/alerts/settings/:id', // add
   press: '/press', // add
   transfer_confirm: '/project/transfer/confirm', // add
   transfer_reject: '/project/transfer/cancel', // add
