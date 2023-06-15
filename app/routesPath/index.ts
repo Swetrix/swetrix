@@ -27,8 +27,8 @@ const routes = Object.freeze({
   create_alert: '/projects/:pid/alerts/create',
   alert_settings: '/projects/:pid/alerts/settings/:id',
   press: '/press', // add
-  transfer_confirm: '/project/transfer/confirm',
-  transfer_reject: '/project/transfer/cancel',
+  transfer_confirm: '/project/transfer/confirm', // add
+  transfer_reject: '/project/transfer/cancel', // add
   socialised: '/socialised', // add
   project_protected_password: '/projects/:id/password',
   open: '/open-startup', // add
