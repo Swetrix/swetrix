@@ -36,7 +36,7 @@ const getNonStandardTiers = (t: (key: string, options?: {
     priceYearly: PLAN_LIMITS.free.price[currencyCode].yearly,
     legacy: PLAN_LIMITS.free.legacy,
     includedFeatures: [
-      t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.free.monthlyUsageLimit.toLocaleString() }),
+      t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.free.monthlyUsageLimit.toLocaleString('en-US') }),
       t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.free.maxProjects }),
       // t('pricing.tiers.xMoDataRetention', { amount: 3 }),
       t('pricing.tiers.xAlertsSingular', { amount: PLAN_LIMITS.free.maxAlerts }),
@@ -69,7 +69,7 @@ const getTiers = (t: (key: string, options?: {
     priceMonthly: PLAN_LIMITS.hobby.price[currencyCode].monthly,
     priceYearly: PLAN_LIMITS.hobby.price[currencyCode].yearly,
     includedFeatures: [
-      t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString() }),
+      t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString('en-US') }),
       t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.hobby.maxProjects }),
       // t('pricing.tiers.xMoDataRetention', { amount: 3 }),
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.hobby.maxAlerts }),
@@ -90,7 +90,7 @@ const getTiers = (t: (key: string, options?: {
     priceYearly: PLAN_LIMITS.freelancer.price[currencyCode].yearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
-      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString() }),
+      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US') }),
       t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.freelancer.maxProjects }),
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.freelancer.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
@@ -106,7 +106,7 @@ const getTiers = (t: (key: string, options?: {
     priceYearly: PLAN_LIMITS.startup.price[currencyCode].yearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
-      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.startup.monthlyUsageLimit.toLocaleString() }),
+      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.startup.monthlyUsageLimit.toLocaleString('en-US') }),
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.startup.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
     ],
@@ -121,7 +121,7 @@ const getTiers = (t: (key: string, options?: {
     priceYearly: PLAN_LIMITS.enterprise.price[currencyCode].yearly,
     includedFeatures: [
       t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.startup') }),
-      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.enterprise.monthlyUsageLimit.toLocaleString() }),
+      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.enterprise.monthlyUsageLimit.toLocaleString('en-US') }),
       t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.enterprise.maxProjects }),
       t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.enterprise.maxAlerts }),
       // t('pricing.tiers.xMoDataRetention', { amount: 24 }),
