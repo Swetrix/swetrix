@@ -34,13 +34,13 @@ import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import _includes from 'lodash/includes'
 
-const loadD3 = async () => {
-  const d3 = await import('d3')
+// const loadD3 = async () => {
+//   const d3 = await import('d3')
 
-  return d3
-}
+//   return d3
+// }
 
-const d3 = loadD3()
+// const d3 = loadD3()
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -556,7 +556,7 @@ const getSettings = (
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+          // format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -588,7 +588,11 @@ const getSettings = (
 
         if (_isEmpty(compareChart)) {
           return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour']
+  // ?
+  // d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+}
+          </li>
           <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(item, (el: {
             id: string,
@@ -638,8 +642,10 @@ const getSettings = (
       id, index, name, value, x,
     } = el
 
-    const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-    const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+    const xDataValueCompare = timeFormat === TimeFormat['24-hour']
+    // ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+    const xDataValue = timeFormat === TimeFormat['24-hour']
+    // ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
     const valueCompare = id === 'sessionDuration' ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index])) : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
 
     if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
@@ -796,7 +802,7 @@ const getSettingsPerf = (
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+          // format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -818,7 +824,9 @@ const getSettingsPerf = (
       contents: (item: any, _: any, __: any, color: any) => {
         if (_isEmpty(compareChart)) {
           return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-        <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+        <li class='font-semibold'>${timeFormat === TimeFormat['24-hour']
+  // ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+}</li>
         <hr class='border-gray-200 dark:border-gray-600' />
         ${_map(item, (el: {
           id: string,
@@ -852,8 +860,10 @@ const getSettingsPerf = (
       id, index, name, value, x,
     } = el
 
-    const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-    const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+    const xDataValueCompare = timeFormat === TimeFormat['24-hour']
+    // ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+    const xDataValue = timeFormat === TimeFormat['24-hour']
+    // ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
     const valueCompare = getValueForTooltipPerfomance(compareChart, id, index)
 
     if (_includes(perfomanceChartCompare, id)) {
