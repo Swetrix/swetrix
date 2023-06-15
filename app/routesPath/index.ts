@@ -4,7 +4,7 @@ const routes = Object.freeze({
   reset_password: '/recovery', // add
   new_password_form: '/password-reset/:id', // add
   confirm_share: '/share/:id', // add
-  confirm_subcription: '/projects/:id/subscribers/invite',
+  confirm_subcription: '/projects/:id/subscribers/invite', // add
   main: '/', // add
   dashboard: '/dashboard', // add
   user_settings: '/user-settings', // add
