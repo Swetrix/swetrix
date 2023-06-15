@@ -11,6 +11,8 @@ import alertsProjectsSlice from '../reducers/ui/alerts'
 import themeSlice from '../reducers/ui/theme'
 import cacheSlice from '../reducers/ui/cache'
 
+import { isDevelopment } from 'redux/constants'
+
 const rootReducer = combineReducers({
   auth: authSlice,
   errors: errorsSlice,
@@ -29,7 +31,7 @@ const sagaMiddleware = createSagaMiddleware()
 export const store = configureStore({
   reducer: rootReducer,
   middleware: [sagaMiddleware],
-  devTools: true,
+  devTools: isDevelopment,
 })
 
 sagaMiddleware.run(rootSaga)
