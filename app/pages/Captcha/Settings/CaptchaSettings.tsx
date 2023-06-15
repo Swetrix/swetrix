@@ -134,7 +134,7 @@ const CaptchaSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, history, showError, projectDeleting, t])
+  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {

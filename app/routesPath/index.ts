@@ -13,7 +13,7 @@ const routes = Object.freeze({
   new_project: '/projects/new', // add
   new_captcha: '/captchas/new', // add
   project_settings: '/projects/settings/:id', // add
-  captcha_settings: '/captchas/settings/:id',
+  captcha_settings: '/captchas/settings/:id', // add
   project: '/projects/:id', // add
   captcha: '/captchas/:id',
   features: '/features', // add
