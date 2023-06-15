@@ -3,7 +3,7 @@ import React, {
   useState, useEffect, useMemo, memo, useRef, Fragment,
 } from 'react'
 import useSize from 'hooks/useSize'
-import { useHistory, useParams, Link } from 'react-router-dom'
+import { useNavigate, useParams, Link } from '@remix-run/react'
 // @ts-ignore
 import domToImage from 'dom-to-image'
 // @ts-ignore
@@ -29,7 +29,6 @@ import _some from 'lodash/some'
 import PropTypes from 'prop-types'
 
 import { getItem, setItem } from 'utils/localstorage'
-import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
@@ -42,7 +41,7 @@ import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import FlatPicker from 'ui/Flatpicker'
-import routes from 'routes'
+import routes from 'routesPath'
 import {
   getProject, getOverallStats, getLiveVisitors, getCaptchaData,
 } from 'api'
@@ -57,7 +56,6 @@ import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
-import './styles.css'
 
 interface IProjectView extends ICaptchaProject {
   isPublicVisitors?: boolean,
@@ -90,7 +88,7 @@ const ViewProject = ({
   const { id }: {
     id: string,
   } = useParams()
-  const history = useHistory()
+  const navigate = useNavigate()
   const project: IProjectView = useMemo(() => _find(projects, p => p.id === id) || {} as IProjectView, [projects, id])
   const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
@@ -160,7 +158,7 @@ const ViewProject = ({
 
   const onErrorLoading = () => {
     showError(t('project.noExist'))
-    history.push(routes.dashboard)
+    navigate(routes.dashboard)
   }
 
   // this function is used for requesting the data from the API
@@ -262,13 +260,7 @@ const ViewProject = ({
       const url = new URL(window.location)
       url.searchParams.delete(column)
       const { pathname, search } = url
-      history.push({
-        pathname,
-        search,
-        state: {
-          scrollToTopDisable: true,
-        },
-      })
+      navigate(`${pathname}${search}`)
     } else {
       // selected filter is not present in the filters array -> applying it
       // sroting filter in the state
@@ -283,13 +275,7 @@ const ViewProject = ({
       const url = new URL(window.location)
       url.searchParams.append(column, filter)
       const { pathname, search } = url
-      history.push({
-        pathname,
-        search,
-        state: {
-          scrollToTopDisable: true,
-        },
-      })
+      navigate(`${pathname}${search}`)
     }
 
     loadAnalytics(true, newFilters)
@@ -318,13 +304,7 @@ const ViewProject = ({
     url.searchParams.append(column, filter)
 
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
   }
 
   const refreshStats = () => {
@@ -404,13 +384,7 @@ const ViewProject = ({
           url.searchParams.delete('timeBucket')
           url.searchParams.append('timeBucket', eventEmitTimeBucket)
           const { pathname, search } = url
-          history.push({
-            pathname,
-            search,
-            state: {
-              scrollToTopDisable: true,
-            },
-          })
+          navigate(`${pathname}${search}`)
           setTimebucket(eventEmitTimeBucket)
         }
 
@@ -422,13 +396,7 @@ const ViewProject = ({
         url.searchParams.append('to', dates[1].toISOString())
 
         const { pathname, search } = url
-        history.push({
-          pathname,
-          search,
-          state: {
-            scrollToTopDisable: true,
-          },
-        })
+        navigate(`${pathname}${search}`)
 
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates))
         setPeriod('custom')
@@ -506,13 +474,7 @@ const ViewProject = ({
       setDateRange(null)
     }
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
   }
 
   const updateTimebucket = (newTimebucket: string) => {
@@ -521,19 +483,13 @@ const ViewProject = ({
     url.searchParams.delete('timeBucket')
     url.searchParams.append('timeBucket', newTimebucket)
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
     setTimebucket(newTimebucket)
     setProjectViewPrefs(id, period, newTimebucket, dateRange)
   }
 
   const openSettingsHandler = () => {
-    history.push(_replace(routes.captcha_settings, ':id', id))
+    navigate(_replace(routes.captcha_settings, ':id', id))
   }
 
   const exportAsImageHandler = async () => {
@@ -593,13 +549,7 @@ const ViewProject = ({
       searchParams.delete(key)
     })
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
     setFilters([])
     loadAnalytics(true, [])
   }
@@ -628,7 +578,7 @@ const ViewProject = ({
 
   if (!isLoading) {
     return (
-      <Title title={name}>
+      <>
         <EventsRunningOutBanner />
         <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
           <div
@@ -938,16 +888,14 @@ const ViewProject = ({
             </div>
           </div>
         )}
-      </Title>
+      </>
     )
   }
 
   return (
-    <Title title={name}>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-        <Loader />
-      </div>
-    </Title>
+    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+      <Loader />
+    </div>
   )
 }
 
