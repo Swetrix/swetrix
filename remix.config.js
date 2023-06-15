@@ -18,5 +18,8 @@ module.exports = {
     'axios',
     'd3',
     /^d3-*/,
+    'nivo',
+    /^nivo-*/,
+    /^@nivo*/,
   ],
 }
