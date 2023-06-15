@@ -1,13 +1,12 @@
 import React, { useState, useEffect, memo } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
 
-import Title from 'components/Title'
-import routes from 'routes'
+import routes from 'routesPath'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { checkPassword } from 'api'
@@ -38,7 +37,7 @@ const ProjectProtectedPassword = (): JSX.Element => {
   } = useParams()
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const history = useHistory()
+  const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const validate = () => {
@@ -74,7 +73,7 @@ const ProjectProtectedPassword = (): JSX.Element => {
               id,
               password: data.password,
             }))
-            history.push(_replace(routes.project, ':id', id))
+            navigate(_replace(routes.project, ':id', id))
           }
           setErrors({
             password: t('apiNotifications.incorrectPassword'),
@@ -111,38 +110,36 @@ const ProjectProtectedPassword = (): JSX.Element => {
   }
 
   const onCancel = () => {
-    history.push(routes.main)
+    navigate(routes.main)
   }
 
   return (
-    <Title title={t('titles.passwordProtected')}>
-      <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-            {t('titles.passwordProtected')}
-          </h2>
-          <Input
-            name='password'
-            id='password'
-            type='password'
-            label={t('auth.common.password')}
-            value={form.password}
-            placeholder={t('auth.common.password')}
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted && errors.password}
-          />
-          <div className='mt-5'>
-            <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
-              {t('common.cancel')}
-            </Button>
-            <Button type='submit' loading={isLoading} primary regular>
-              {t('common.continue')}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </Title>
+    <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+          {t('titles.passwordProtected')}
+        </h2>
+        <Input
+          name='password'
+          id='password'
+          type='password'
+          label={t('auth.common.password')}
+          value={form.password}
+          placeholder={t('auth.common.password')}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted && errors.password}
+        />
+        <div className='mt-5'>
+          <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+            {t('common.cancel')}
+          </Button>
+          <Button type='submit' loading={isLoading} primary regular>
+            {t('common.continue')}
+          </Button>
+        </div>
+      </form>
+    </div>
   )
 }
 
