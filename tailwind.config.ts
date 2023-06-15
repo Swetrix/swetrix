@@ -50,9 +50,9 @@ export default {
     },
     minHeight: {
       72: '18rem',
-      page: 'calc(100vh - 74px)', // header height -> 74px
-      'min-footer': 'calc(100vh - 160px)', // 74px + 88px footer height
-      'min-footer-ad': 'calc(100vh - 265px)', // 74px + 88px footer height
+     page: 'calc(100vh - 74px)', // header height -> 74px
+     'min-footer': 'calc(100vh - 148px)',
+     'min-footer-ad': 'calc(100vh - 265px)',
     },
   },
   variants: {
