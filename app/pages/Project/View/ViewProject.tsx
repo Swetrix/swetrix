@@ -3,7 +3,7 @@ import React, {
   useState, useEffect, useMemo, memo, useRef, Fragment, useCallback,
 } from 'react'
 import useSize from 'hooks/useSize'
-import { useHistory, useParams, Link } from 'react-router-dom'
+import { useNavigate, useParams, Link } from '@remix-run/react'
 // @ts-ignore
 import domToImage from 'dom-to-image'
 // @ts-ignore
@@ -42,7 +42,6 @@ import { periodToCompareDate } from 'utils/compareConvertDate'
 
 import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
 import { getItem, setItem, removeItem } from 'utils/localstorage'
-import Title from 'components/Title'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
@@ -61,7 +60,7 @@ import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
 import Robot from 'ui/icons/Robot'
 import Forecast from 'modals/Forecast'
-import routes from 'routes'
+import routes from 'routesPath'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents, getProjectCompareData, checkPassword,
 } from 'api'
@@ -167,7 +166,7 @@ const ViewProject = ({
     id: string
   } = useParams()
   // history is a history from react-router-dom
-  const history = useHistory()
+  const navigate = useNavigate()
 
   // find project by id from url from state in redux projects and sharedProjects. projects and sharedProjects loading from api in Saga on page load
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
@@ -529,19 +528,19 @@ const ViewProject = ({
     if (projectPassword) {
       checkPassword(id, projectPassword).then((res) => {
         if (res) {
-          history.push(_replace(routes.project, ':id', id))
+          navigate(_replace(routes.project, ':id', id))
           return
         }
 
         showError(t('apiNotifications.incorrectPassword'))
-        history.push(_replace(routes.project_protected_password, ':id', id))
+        navigate(_replace(routes.project_protected_password, ':id', id))
         removeItem(PROJECTS_PROTECTED)
       })
       return
     }
 
     showError(t('project.noExist'))
-    history.push(routes.dashboard)
+    navigate(routes.dashboard)
   }
 
   // loadCustomEvents is a function for load custom events data for chart from api
@@ -946,13 +945,7 @@ const ViewProject = ({
         const url = new URL(window.location)
         url.searchParams.delete(columnPerf)
         const { pathname, search } = url
-        history.push({
-          pathname,
-          search,
-          state: {
-            scrollToTopDisable: true,
-          },
-        })
+        navigate(`${pathname}${search}`)
         setFiltersPerf(newFiltersPerf)
       } else {
         newFiltersPerf = [
@@ -964,13 +957,7 @@ const ViewProject = ({
         const url = new URL(window.location)
         url.searchParams.append(columnPerf, filter)
         const { pathname, search } = url
-        history.push({
-          pathname,
-          search,
-          state: {
-            scrollToTopDisable: true,
-          },
-        })
+        navigate(`${pathname}${search}`)
         setFiltersPerf(newFiltersPerf)
       }
     } else {
@@ -987,13 +974,7 @@ const ViewProject = ({
         const url = new URL(window.location)
         url.searchParams.delete(column)
         const { pathname, search } = url
-        history.push({
-          pathname,
-          search,
-          state: {
-            scrollToTopDisable: true,
-          },
-        })
+        navigate(`${pathname}${search}`)
       } else {
         // selected filter is not present in the filters array -> applying it
         // sroting filter in the state
@@ -1009,13 +990,7 @@ const ViewProject = ({
         const url = new URL(window.location)
         url.searchParams.append(column, filter)
         const { pathname, search } = url
-        history.push({
-          pathname,
-          search,
-          state: {
-            scrollToTopDisable: true,
-          },
-        })
+        navigate(`${pathname}${search}`)
       }
     }
 
@@ -1072,13 +1047,7 @@ const ViewProject = ({
     }
 
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
     sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
 
@@ -1145,13 +1114,7 @@ const ViewProject = ({
 
     url.searchParams.append('tab', activeTab)
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
@@ -1395,13 +1358,7 @@ const ViewProject = ({
           url.searchParams.delete('timeBucket')
           url.searchParams.append('timeBucket', eventEmitTimeBucket)
           const { pathname, search } = url
-          history.push({
-            pathname,
-            search,
-            state: {
-              scrollToTopDisable: true,
-            },
-          })
+          navigate(`${pathname}${search}`)
           setTimebucket(eventEmitTimeBucket)
         }
 
@@ -1413,13 +1370,7 @@ const ViewProject = ({
         url.searchParams.append('to', dates[1].toISOString())
 
         const { pathname, search } = url
-        history.push({
-          pathname,
-          search,
-          state: {
-            scrollToTopDisable: true,
-          },
-        })
+        navigate(`${pathname}${search}`)
 
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates))
         setPeriod('custom')
@@ -1489,7 +1440,7 @@ const ViewProject = ({
         .then(projectRes => {
           if (!_isEmpty(projectRes)) {
             if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
-              history.push(_replace(routes.project_protected_password, ':id', id))
+              navigate(_replace(routes.project_protected_password, ':id', id))
               return
             }
 
@@ -1564,13 +1515,7 @@ const ViewProject = ({
       setDateRange(null)
     }
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
     sdkInstance?._emitEvent('timeupdate', {
       period: newPeriod.period,
       timeBucket: tb,
@@ -1586,13 +1531,7 @@ const ViewProject = ({
     url.searchParams.delete('timeBucket')
     url.searchParams.append('timeBucket', newTimebucket)
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
     setTimebucket(newTimebucket)
     setProjectViewPrefs(id, period, newTimebucket, dateRange as Date[])
     sdkInstance?._emitEvent('timeupdate', {
@@ -1604,7 +1543,7 @@ const ViewProject = ({
   }
 
   const openSettingsHandler = () => {
-    history.push(_replace(routes.project_settings, ':id', id))
+    navigate(_replace(routes.project_settings, ':id', id))
   }
 
   // exportAsImageHandler using for export dashboard as image
@@ -1685,13 +1624,7 @@ const ViewProject = ({
       searchParams.delete(key)
     })
     const { pathname, search } = url
-    history.push({
-      pathname,
-      search,
-      state: {
-        scrollToTopDisable: true,
-      },
-    })
+    navigate(`${pathname}${search}`)
     setFilters([])
     setFiltersPerf([])
     if (activeTab === PROJECT_TABS.performance) {
@@ -1739,7 +1672,7 @@ const ViewProject = ({
 
   if (!isLoading) {
     return (
-      <Title title={pageTitle}>
+      <>
         <EventsRunningOutBanner />
         <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
           <div
@@ -2452,16 +2385,14 @@ const ViewProject = ({
           activeTB={t(`project.${timeBucket}`)}
           tb={timeBucket}
         />
-      </Title>
+      </>
     )
   }
 
   return (
-    <Title title={name}>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-        <Loader />
-      </div>
-    </Title>
+    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+      <Loader />
+    </div>
   )
 }
 
