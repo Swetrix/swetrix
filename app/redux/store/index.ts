@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import createSagaMiddleware from 'redux-saga'
 import { useDispatch } from 'react-redux'
+import { isDevelopment } from 'redux/constants'
 import rootSaga from '../sagas'
 import authSlice from '../reducers/auth'
 import errorsSlice from '../reducers/errors'
@@ -10,8 +11,6 @@ import projectsSlice from '../reducers/ui/projects'
 import alertsProjectsSlice from '../reducers/ui/alerts'
 import themeSlice from '../reducers/ui/theme'
 import cacheSlice from '../reducers/ui/cache'
-
-import { isDevelopment } from 'redux/constants'
 
 const rootReducer = combineReducers({
   auth: authSlice,
