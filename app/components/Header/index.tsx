@@ -28,7 +28,7 @@ import sagaActions from 'redux/sagas/actions'
 import UIActions from 'redux/reducers/ui'
 import {
   whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
-  DOCS_URL, SUPPORTED_THEMES,
+  DOCS_URL, SUPPORTED_THEMES, isBrowser,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 import { IUser } from 'redux/models/IUser'
@@ -571,7 +571,11 @@ const NotAuthedHeader = ({
   </header>
 )
 
-const Header = (): JSX.Element => {
+interface IHeader {
+  ssrTheme: 'dark' | 'light'
+}
+
+const Header: React.FC<IHeader> = ({ ssrTheme }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null
@@ -581,7 +585,7 @@ const Header = (): JSX.Element => {
   const dispatch = useAppDispatch()
   const _dispatch = useDispatch()
   const { authenticated, user } = useSelector((state: StateType) => state.auth)
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const theme = isBrowser ? useSelector((state: StateType) => state.ui.theme.theme) : ssrTheme
   const { pathname } = useLocation()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()

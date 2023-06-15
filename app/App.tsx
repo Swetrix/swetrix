@@ -5,7 +5,6 @@ import { useLocation, Outlet } from '@remix-run/react'
 import { useSelector } from 'react-redux'
 // @ts-ignore
 import { useAlert } from '@blaumaus/react-alert'
-// import Snowfall from 'react-snowfall'
 import cx from 'clsx'
 import _some from 'lodash/some'
 import _includes from 'lodash/includes'
@@ -19,7 +18,7 @@ import Loader from 'ui/Loader'
 import ScrollToTop from 'hoc/ScrollToTop'
 import Selfhosted from 'hoc/Selfhosted'
 import {
-  isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, // THEME_TYPE,
+  isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID,
 } from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
 import { loadScript } from 'utils/generic'
@@ -68,7 +67,11 @@ const Fallback = ({ isMinimalFooter }: FallbackProps): JSX.Element => {
   )
 }
 
-const App = () => {
+interface IApp {
+  ssrTheme: 'dark' | 'light'
+}
+
+const App: React.FC<IApp> = ({ ssrTheme }) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
   const alert = useAlert()
@@ -78,7 +81,6 @@ const App = () => {
   const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
-  // const themeType = useSelector(state => state.ui.theme.type)
   const accessToken = getAccessToken()
   const refreshToken = getRefreshToken()
 
@@ -131,7 +133,6 @@ const App = () => {
       if ((accessToken && refreshToken) && !authenticated) {
         try {
           const me = await authMe()
-          // dispatch(UIActions.setThemeType(me.theme))
           dispatch(authActions.loginSuccessful(me))
           dispatch(authActions.finishLoading())
         } catch (e) {
@@ -171,14 +172,8 @@ const App = () => {
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
         {pathname !== routesPath.main && (
-          <Header />
+          <Header ssrTheme={ssrTheme} />
         )}
-        {/* {location.pathname === routes.main && (
-          <Snowfall />
-        )} */}
-        {/* {location.pathname !== routes.main && themeType === THEME_TYPE.christmas && (
-          <Snowfall snowflakeCount={10} />
-        )} */}
         {/* @ts-ignore */}
         <ScrollToTop>
           <Selfhosted>
@@ -190,7 +185,6 @@ const App = () => {
         <Footer minimal={isMinimalFooter} authenticated={authenticated} />
       </Suspense>
       )}
-      <div className='hidden' />
     </>
   )
 }

@@ -16,7 +16,7 @@ import _isEmpty from 'lodash/isEmpty'
 
 import routesPath from 'routesPath'
 import { nFormatterSeparated } from 'utils/generic'
-import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL } from 'redux/constants'
+import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser } from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
@@ -34,6 +34,7 @@ import Gatsby from 'ui/icons/Gatsby'
 import Wix from 'ui/icons/Wix'
 
 import Header from 'components/Header'
+import { detectTheme } from 'utils/server'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
 
@@ -135,7 +136,11 @@ const M_FEATURES_ICONS = [
   <ShareIcon className='w-5 h-5' key='ShareIcon' />,
 ]
 
-const Main = (): JSX.Element => {
+interface IMain {
+  ssrTheme: 'dark' | 'light'
+}
+
+const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: any
@@ -144,7 +149,7 @@ const Main = (): JSX.Element => {
       language: string
     },
   } = useTranslation('common')
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const theme = isBrowser ? useSelector((state: StateType) => state.ui.theme.theme) : ssrTheme
   const { authenticated } = useSelector((state: StateType) => state.auth)
   const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
 
@@ -193,7 +198,7 @@ const Main = (): JSX.Element => {
               }}
             />
           </div>
-          <Header />
+          <Header ssrTheme={ssrTheme} />
           <div className='flex justify-center items-center py-2 px-2'>
             <a
               href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi'

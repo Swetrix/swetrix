@@ -23,6 +23,7 @@ import { useChangeLanguage } from 'remix-i18next'
 import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
 import { detectLanguage } from 'i18n'
+import { detectTheme } from 'utils/server'
 
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
@@ -72,17 +73,6 @@ export const links: LinksFunction = () => [
 // }
 
 // removeObsoleteAuthTokens()
-
-export function detectTheme(request: Request): string {
-  const cookie = request.headers.get('Cookie')
-  const theme = cookie?.match(/(?<=colour-theme=)[^;]*/)?.[0]
-
-  if (theme === 'dark') {
-    return 'dark'
-  }
-
-  return 'light'
-}
 
 export async function loader({ request }: LoaderArgs) {
   const { url } = request
@@ -134,7 +124,7 @@ export default function App() {
         </div>
         <Provider store={store}>
           <AlertProvider template={AlertTemplate} {...options}>
-            <AppWrapper />
+            <AppWrapper ssrTheme={theme} />
             <ScrollRestoration />
             <Scripts />
             {isDevelopment && <LiveReload />}
