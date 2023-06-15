@@ -21,16 +21,16 @@ const Socialised = (): JSX.Element => {
   const [loading, setLoading] = useState<boolean>(true)
   const [isError, setIsError] = useState<boolean>(false)
 
-  // For some reason, Google redirects to a hash URL, let's fix it
-  const _location = _replace(window.location.href, `${routes.socialised}#`, `${routes.socialised}?`)
-
-  const { searchParams } = new URL(_location)
-  const hash = searchParams.get('state')
-  const accessToken = searchParams.get('access_token')
-  const code = searchParams.get('code')
-  const provider = _split(hash, ':')[0]
-
   useEffect(() => {
+    // For some reason, Google redirects to a hash URL, let's fix it
+    const _location = _replace(window.location.href, `${routes.socialised}#`, `${routes.socialised}?`)
+
+    const { searchParams } = new URL(_location)
+    const hash = searchParams.get('state')
+    const accessToken = searchParams.get('access_token')
+    const code = searchParams.get('code')
+    const provider = _split(hash, ':')[0]
+
     const processCode = async () => {
       if (!hash || !provider) {
         setIsError(true)

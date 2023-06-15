@@ -1,7 +1,7 @@
 import React from 'react'
 import _toString from 'lodash/toString'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
-import { CONTACT_EMAIL, PAGE_FORCE_REFRESHED } from 'redux/constants'
+import { CONTACT_EMAIL, PAGE_FORCE_REFRESHED, isBrowser } from 'redux/constants'
 
 interface CrashHandlerProps {
   children: JSX.Element
@@ -15,6 +15,10 @@ interface CrashHandlerState {
 }
 
 const retryPageLoading = () => {
+  if (!isBrowser) {
+    return null
+  }
+
   const wasPageForceRefreshed = sessionStorage.getItem(PAGE_FORCE_REFRESHED) === 'true'
 
   if (!wasPageForceRefreshed) {

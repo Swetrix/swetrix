@@ -9,7 +9,7 @@ import {
   ScrollRestoration,
 } from '@remix-run/react'
 import { store } from 'redux/store'
-import { isDevelopment, whitelist } from 'redux/constants'
+import { isDevelopment, whitelist, isBrowser } from 'redux/constants'
 import { Provider } from 'react-redux'
 import _map from 'lodash/map'
 // @ts-ignore
@@ -39,8 +39,8 @@ const options = {
   transition: transitions.SCALE,
 }
 
-if (process.env.NODE_ENV !== 'production') {
-  // localStorage.debug = 'swetrix:*'
+if (isBrowser && process.env.NODE_ENV !== 'production') {
+  localStorage.debug = 'swetrix:*'
 }
 
 const FONTS_PROVIDER = 'https://fonts.bunny.net'

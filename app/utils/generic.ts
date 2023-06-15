@@ -4,6 +4,8 @@ import _round from 'lodash/round'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 
+import { isBrowser } from 'redux/constants'
+
 const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
 
 const formatterLookup = [
@@ -80,6 +82,10 @@ export const openBrowserWindow = (url: string, width: number, height: number) =>
 }
 
 export const loadScript = (url: string) => {
+  if (!isBrowser) {
+    return
+  }
+
   const script = document.createElement('script')
   script.src = url
   script.async = true

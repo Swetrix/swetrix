@@ -3,18 +3,21 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import { getItem, removeItem, setItem } from 'utils/localstorage'
 import {
-  getProjectCacheKey, LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, getProjectCaptchaCacheKey, getUserFlowCacheKey,
+  getProjectCacheKey, LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, getProjectCaptchaCacheKey,
+  getUserFlowCacheKey, isBrowser,
 } from 'redux/constants'
 import { IUserFlow } from 'redux/models/IUserFlow'
 
 export const getInitialViewPrefs = (LS_VIEW: string) => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const storedPrefs = getItem(LS_VIEW)
-    try {
-      return storedPrefs
-    } catch (e) {
-      removeItem(LS_VIEW)
-    }
+  if (!isBrowser) {
+    return {}
+  }
+
+  const storedPrefs = getItem(LS_VIEW)
+  try {
+    return storedPrefs
+  } catch (e) {
+    removeItem(LS_VIEW)
   }
 
   return {}
