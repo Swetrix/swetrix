@@ -213,6 +213,8 @@ export const SWETRIX_VS_SIMPLE_ANALYTICS: string = 'https://blog.swetrix.com/pos
 
 export const isDevelopment: boolean = !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
 
+export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
+
 export const SUPPORTED_THEMES: string[] = ['light', 'dark']
 
 export const CONTACT_EMAIL: string = 'contact@swetrix.com'
