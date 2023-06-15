@@ -36,9 +36,9 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
       }
     }, [selector])
 
-    if (!selector) {
-      return null
-    }
+    // if (!selector) {
+    //   return null
+    // }
 
     return <WrappedComponent {...props} />
   }
