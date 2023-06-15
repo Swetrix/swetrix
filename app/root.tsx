@@ -9,7 +9,7 @@ import {
   ScrollRestoration,
 } from '@remix-run/react'
 import { store } from 'redux/store'
-import { MAIN_URL, whitelist } from 'redux/constants'
+import { isDevelopment, whitelist } from 'redux/constants'
 import { Provider } from 'react-redux'
 import _map from 'lodash/map'
 // @ts-ignore
@@ -106,7 +106,7 @@ export default function App() {
             <AppWrapper />
             <ScrollRestoration />
             <Scripts />
-            {process.env.NODE_ENV === 'development' && <LiveReload />}
+            {isDevelopment && <LiveReload />}
           </AlertProvider>
         </Provider>
       </body>
