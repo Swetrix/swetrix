@@ -6,7 +6,7 @@ import _isEmpty from 'lodash/isEmpty'
 const debug = Debug('swetrix:ai')
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_AIAPI_URL,
+  baseURL: 'https://aiapi.swetrix.com/', // process.env.REACT_APP_AIAPI_URL,
 })
 
 /**

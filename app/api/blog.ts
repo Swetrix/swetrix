@@ -6,7 +6,7 @@ import _isEmpty from 'lodash/isEmpty'
 const debug = Debug('swetrix:blog')
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_BLOG_URL,
+  baseURL: 'https://blog.swetrix.com/', // process.env.REACT_APP_BLOG_URL,
 })
 
 export const getLastPost = () =>
