@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from '@remix-run/react'
 
@@ -30,8 +30,13 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
     const selector = useSelector(authParam.selector)
     const navigate = useNavigate()
 
+    useEffect(() => {
+      if (!selector) {
+        navigate(authParam.redirectPath)
+      }
+    }, [selector])
+
     if (!selector) {
-      navigate(authParam.redirectPath)
       return null
     }
 
