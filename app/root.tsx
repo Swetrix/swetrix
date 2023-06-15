@@ -119,7 +119,7 @@ export default function App() {
             <div className='second' />
           </div>
           <div className='logo-frame'>
-            <img className='logo-frame-img' width='361' height='80' src='assets/logo_blue.png' alt='Swetrix' />
+            <img className='logo-frame-img' width='361' height='80' src='/assets/logo_blue.png' alt='Swetrix' />
           </div>
         </div>
         <Provider store={store}>
