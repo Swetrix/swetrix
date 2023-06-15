@@ -60,6 +60,7 @@
     "redux": "^4.2.1",
     "redux-saga": "^1.2.3",
     "remix-i18next": "^5.1.1",
+    "remix-sitemap": "^2.1.0",
     "spacetime": "^7.4.3",
     "swetrix": "^2.2.1",
     "timezone-soft": "^1.4.1"

@@ -8,11 +8,19 @@ import { Response } from '@remix-run/node'
 import { RemixServer } from '@remix-run/react'
 import isbot from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
+import { createSitemapGenerator } from 'remix-sitemap'
 
 import i18next from './i18next.server'
 import i18n, { detectLanguage } from './i18n'
 
 const ABORT_DELAY = 5_000
+
+// TODO: Exclude /project/* endpoints from sitemap
+const { isSitemapUrl, sitemap } = createSitemapGenerator({
+  siteUrl: 'https://swetrix.com',
+  autoLastmod: false,
+  priority: 0.8
+})
 
 export default async function handleRequest(
   request: Request,
@@ -20,6 +28,10 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
+  if (isSitemapUrl(request)) {
+    return await sitemap(request, remixContext)
+  }
+
   const instance = createInstance()
   const lng = detectLanguage(request)
   const ns = i18next.getRouteNamespaces(remixContext)
