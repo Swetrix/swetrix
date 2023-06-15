@@ -5,8 +5,6 @@ import {
   GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon,
   ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon,
 } from '@heroicons/react/24/outline'
-// @ts-ignore
-// import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import {
   area, bar,
@@ -25,6 +23,8 @@ import {
   TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h,
 } from 'redux/constants'
 import countries from 'utils/isoCountries'
+// @ts-ignore
+import * as d3 from 'd3'
 
 const getExportFilename = (prefix: string) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
@@ -171,7 +171,7 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          // format: timeFormat === TimeFormat['24-hour'] ? (x: any) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: any) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -179,7 +179,7 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
     },
     tooltip: {
       format: {
-        // title: (x: any) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+        title: (x: any) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
       },
       contents: {
         template: `
