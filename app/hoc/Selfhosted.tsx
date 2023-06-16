@@ -27,6 +27,8 @@ const Selfhosted: React.FC<ISelfhosted> = ({ children }): JSX.Element => {
         navigate(DEFAULT_PAGE)
       }
     }
+  // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location])
 
   return children

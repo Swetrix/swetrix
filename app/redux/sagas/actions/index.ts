@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
 import types from 'redux/sagas/actions/types'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
-// import { logoutApi } from 'api'
 import { removeAccessToken } from 'utils/accessToken'
 import { removeItem } from 'utils/localstorage'
 import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING } from 'redux/constants'
 import { IUser } from '../../models/IUser'
+const { logoutApi } = require('api')
 
 const loadProjects = (take?: number, skip?: number) => ({
   type: types.LOAD_PROJECTS,
@@ -98,7 +98,7 @@ const updateUserProfileAsync = (data: Partial<IUser>, callback = (item: any) => 
 
 const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?: (str?: string) => void, t?: (str: string) => {}) => {
   const refreshToken = getRefreshToken()
-  // logoutApi(refreshToken)
+  logoutApi(refreshToken)
 
   return {
     type: types.DELETE_ACCOUNT_ASYNC,
@@ -118,7 +118,7 @@ const shareVerifyAsync = (data: {
 
 const logout = (basedOn401Error: boolean) => {
   const refreshToken = getRefreshToken()
-  // logoutApi(refreshToken)
+  logoutApi(refreshToken)
   removeAccessToken()
   removeRefreshToken()
   removeItem(LS_VIEW_PREFS_SETTING)

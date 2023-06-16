@@ -16,7 +16,9 @@ import _isEmpty from 'lodash/isEmpty'
 
 import routesPath from 'routesPath'
 import { nFormatterSeparated } from 'utils/generic'
-import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser } from 'redux/constants'
+import {
+  GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser,
+} from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
@@ -34,7 +36,6 @@ import Gatsby from 'ui/icons/Gatsby'
 import Wix from 'ui/icons/Wix'
 
 import Header from 'components/Header'
-import { detectTheme } from 'utils/server'
 import SignUp from '../Auth/Signup/BasicSignup'
 import Pricing from './Pricing'
 
@@ -149,9 +150,10 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
       language: string
     },
   } = useTranslation('common')
-  const theme = isBrowser ? useSelector((state: StateType) => state.ui.theme.theme) : ssrTheme
+  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated } = useSelector((state: StateType) => state.auth)
   const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
+  const theme = isBrowser ? reduxTheme : ssrTheme
 
   const events = nFormatterSeparated(Number(stats.events))
   const users = nFormatterSeparated(Number(stats.users))

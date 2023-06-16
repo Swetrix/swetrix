@@ -1,6 +1,6 @@
 import type { EntryContext } from '@remix-run/node'
 import { PassThrough } from 'node:stream'
-import { resolve } from 'node:path'
+import { resolve as feResolve } from 'node:path'
 import { createInstance } from 'i18next'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
 import FSBackend from 'i18next-fs-backend'
@@ -45,7 +45,7 @@ export default async function handleRequest(
       lng,
       ns,
       backend: {
-        loadPath: resolve('./public/locales/{{lng}}.json'),
+        loadPath: feResolve('./public/locales/{{lng}}.json'),
       },
     })
 

@@ -166,9 +166,8 @@ const App: React.FC<IApp> = ({ ssrTheme }) => {
 
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
-  return (
-    <>
-      {(!accessToken || !loading) && (
+  if (!accessToken || !loading) {
+    return (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
         {pathname !== routesPath.main && (
@@ -184,9 +183,10 @@ const App: React.FC<IApp> = ({ ssrTheme }) => {
         </ScrollToTop>
         <Footer minimal={isMinimalFooter} authenticated={authenticated} />
       </Suspense>
-      )}
-    </>
-  )
+    )
+  }
+
+  return null
 }
 
 export default App

@@ -20,7 +20,7 @@ export const getCookie = (key: string) => {
 
 export const setCookie = (key: string, value: string | number | boolean, maxAge = 3600, sameSite = 'strict') => {
   if (!isBrowser) {
-    return
+    return null
   }
 
   document.cookie = `${key}=${value}; max-age=${maxAge}; path=/; SameSite=${sameSite}${COOKIE_SUFFIX}`
@@ -28,7 +28,7 @@ export const setCookie = (key: string, value: string | number | boolean, maxAge 
 
 export const deleteCookie = (key: string) => {
   if (!isBrowser) {
-    return
+    return null
   }
 
   document.cookie = `${key}=; max-age=0; path=/; SameSite=strict`

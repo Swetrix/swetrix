@@ -105,6 +105,7 @@
       "lodash/prefer-lodash-method": "warn",
       "import/newline-after-import": "off",
       "@typescript-eslint/consistent-type-imports": "off",
+      "consistent-return": "off",
       "max-len": "off",
       "no-console": "off",
       "no-bitwise": "off",

@@ -585,10 +585,11 @@ const Header: React.FC<IHeader> = ({ ssrTheme }): JSX.Element => {
   const dispatch = useAppDispatch()
   const _dispatch = useDispatch()
   const { authenticated, user } = useSelector((state: StateType) => state.auth)
-  const theme = isBrowser ? useSelector((state: StateType) => state.ui.theme.theme) : ssrTheme
+  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { pathname } = useLocation()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
+  const theme = isBrowser ? reduxTheme : ssrTheme
 
   const [rawStatus, status] = useMemo(() => {
     const { trialEndDate } = (user || {})

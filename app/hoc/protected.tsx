@@ -34,6 +34,8 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
       if (!selector) {
         navigate(authParam.redirectPath)
       }
+    // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selector])
 
     // if (!selector) {

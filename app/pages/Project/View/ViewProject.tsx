@@ -384,7 +384,8 @@ const ViewProject = ({
   // { name } is a project name from project
   const { name } = project
 
-  const pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveStats[id]} - ${name}` : name
+  // TODO: DISPLAY PAGE TITLE IN TABS LATER
+  // const pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveStats[id]} - ${name}` : name
 
   // sharedRoles is a role for shared project
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])

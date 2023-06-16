@@ -8,7 +8,7 @@ const STORE_REFRESH_TOKEN_FOR = 8467200
 
 export const getRefreshToken = () => {
   if (!isBrowser) {
-    return
+    return null
   }
 
   let refreshToken = getCookie(REFRESH_TOKEN)
@@ -22,7 +22,7 @@ export const getRefreshToken = () => {
 
 export const setRefreshToken = (token: string, temporary: boolean = false) => {
   if (!isBrowser) {
-    return
+    return null
   }
 
   if (temporary) {
@@ -35,7 +35,7 @@ export const setRefreshToken = (token: string, temporary: boolean = false) => {
 
 export const removeRefreshToken = () => {
   if (!isBrowser) {
-    return
+    return null
   }
 
   deleteCookie(REFRESH_TOKEN)

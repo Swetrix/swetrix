@@ -8,7 +8,7 @@ const STORE_AUTH_TOKEN_FOR = 8467200
 // It's important to first check in cookie, then in session storage, not vice versa.
 export const getAccessToken = () => {
   if (!isBrowser) {
-    return
+    return null
   }
 
   let accessToken = getCookie(TOKEN)
@@ -22,12 +22,12 @@ export const getAccessToken = () => {
 
 export const setAccessToken = (token: string, temporary: boolean = false) => {
   if (!isBrowser) {
-    return
+    return null
   }
 
   if (temporary) {
     sessionStorage.setItem(TOKEN, token)
-    return
+    return null
   }
 
   setCookie(TOKEN, token, STORE_AUTH_TOKEN_FOR)
@@ -35,7 +35,7 @@ export const setAccessToken = (token: string, temporary: boolean = false) => {
 
 export const removeAccessToken = () => {
   if (!isBrowser) {
-    return
+    return null
   }
 
   deleteCookie(TOKEN)

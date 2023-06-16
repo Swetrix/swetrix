@@ -4,7 +4,7 @@ import { json } from '@remix-run/node'
 import NotFound from 'pages/NotFound'
 
 export const sitemap: SitemapFunction = () => ({
-  exclude: true
+  exclude: true,
 })
 
 export const loader: LoaderFunction = () => {
