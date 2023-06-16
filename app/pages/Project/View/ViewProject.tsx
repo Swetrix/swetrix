@@ -34,7 +34,6 @@ import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
 import _isString from 'lodash/isString'
 import PropTypes from 'prop-types'
-// import * as SwetrixSDK from '@swetrix/sdk'
 
 import { withProjectProtected } from 'hoc/projectProtected'
 
@@ -78,6 +77,7 @@ import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import ProjectAlertsView from '../Alerts/View'
+const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
@@ -1172,60 +1172,60 @@ const ViewProject = ({
   }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
 
   // Initialising Swetrix SDK instance. Using for marketplace and extensions
-  // useEffect(() => {
-  //   let sdk: any | null = null
+  useEffect(() => {
+    let sdk: any | null = null
 
-  //   const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
+    const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
 
-  //   if (!_isEmpty(filteredExtensions)) {
-  //     const processedExtensions = _map(filteredExtensions, (ext) => {
-  //       const { id: extId, fileURL } = ext
-  //       return {
-  //         id: extId,
-  //         cdnURL: `${CDN_URL}file/${fileURL}`,
-  //       }
-  //     })
+    if (!_isEmpty(filteredExtensions)) {
+      const processedExtensions = _map(filteredExtensions, (ext) => {
+        const { id: extId, fileURL } = ext
+        return {
+          id: extId,
+          cdnURL: `${CDN_URL}file/${fileURL}`,
+        }
+      })
 
-  //     // @ts-ignore
-  //     sdk = new SwetrixSDK(processedExtensions, {
-  //       debug: isDevelopment,
-  //     }, {
-  //       onAddExportDataRow: (label: any, onClick: (e: any) => void) => {
-  //         setCustomExportTypes((prev) => [
-  //           ...prev,
-  //           {
-  //             label,
-  //             onClick,
-  //           },
-  //         ])
-  //       },
-  //       onRemoveExportDataRow: (label: any) => {
-  //         setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
-  //       },
-  //       onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
-  //         setCustomPanelTabs((prev) => [
-  //           ...prev,
-  //           {
-  //             extensionID,
-  //             panelID,
-  //             tabContent,
-  //             onOpen,
-  //           },
-  //         ])
-  //       },
-  //       onRemovePanelTab: (extensionID: string, panelID: string) => {
-  //         setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
-  //       },
-  //     })
-  //     setSdkInstance(sdk)
-  //   }
+      // @ts-ignore
+      sdk = new SwetrixSDK(processedExtensions, {
+        debug: isDevelopment,
+      }, {
+        onAddExportDataRow: (label: any, onClick: (e: any) => void) => {
+          setCustomExportTypes((prev) => [
+            ...prev,
+            {
+              label,
+              onClick,
+            },
+          ])
+        },
+        onRemoveExportDataRow: (label: any) => {
+          setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
+        },
+        onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
+          setCustomPanelTabs((prev) => [
+            ...prev,
+            {
+              extensionID,
+              panelID,
+              tabContent,
+              onOpen,
+            },
+          ])
+        },
+        onRemovePanelTab: (extensionID: string, panelID: string) => {
+          setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
+        },
+      })
+      setSdkInstance(sdk)
+    }
 
-  //   return () => {
-  //     if (sdk) {
-  //       sdk._destroy()
-  //     }
-  //   }
-  // }, [extensions])
+    return () => {
+      if (sdk) {
+        sdk._destroy()
+      }
+    }
+  }, [extensions])
 
   // Supplying 'timeupdate' event to the SDK after loading. Using for marketplace and extensions
   useEffect(() => {

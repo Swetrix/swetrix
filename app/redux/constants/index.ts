@@ -205,7 +205,7 @@ export const MARKETPLACE_URL: string = 'https://marketplace.swetrix.com'
 export const DOCS_URL: string = 'https://docs.swetrix.com'
 export const CAPTCHA_URL: string = 'https://captcha.swetrix.com'
 export const DOCS_CAPTCHA_URL: string = `${DOCS_URL}/captcha/introduction`
-export const CDN_URL: string | undefined = process.env.REACT_APP_CDN_URL
+export const CDN_URL: string | undefined = process.env.REACT_APP_CDN_URL || 'https://cdn.swetrix.com/'
 
 // Swetrix vs ...
 export const SWETRIX_VS_GOOGLE: string = 'https://blog.swetrix.com/post/vs-google-analytics/'
