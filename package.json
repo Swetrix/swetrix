@@ -66,8 +66,8 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest",
+      "@remix-run/eslint-config",
+      "@remix-run/eslint-config/jest-testing-library",
       "airbnb",
       "eslint:recommended",
       "plugin:react/recommended"
@@ -103,6 +103,8 @@
       "linebreak-style": "off",
       "lines-between-class-members": "off",
       "lodash/prefer-lodash-method": "warn",
+      "import/newline-after-import": "off",
+      "@typescript-eslint/consistent-type-imports": "off",
       "max-len": "off",
       "no-console": "off",
       "no-bitwise": "off",
@@ -173,7 +175,7 @@
   },
   "devDependencies": {
     "@remix-run/dev": "^1.16.1",
-    "@remix-run/eslint-config": "^1.16.1",
+    "@remix-run/eslint-config": "^1.17.0",
     "@tailwindcss/typography": "^0.5.9",
     "@types/debug": "^4.1.7",
     "@types/jest": "^29.5.1",
@@ -191,7 +193,6 @@
     "cross-env": "^7.0.3",
     "eslint": "^8.42.0",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-lodash": "^7.4.0",
     "eslint-plugin-react": "^7.32.2",
