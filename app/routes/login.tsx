@@ -1,5 +1,11 @@
 import Signin from 'pages/Auth/Signin'
-import type { V2_MetaFunction } from '@remix-run/node'
+import type { V2_MetaFunction, HeadersFunction } from '@remix-run/node'
+
+export const headers: HeadersFunction = () => {
+  return {
+    'X-Frame-Options': 'DENY',
+  }
+}
 
 export const meta: V2_MetaFunction = () => {
   return [

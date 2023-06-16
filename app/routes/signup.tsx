@@ -1,6 +1,12 @@
 import Singup from 'pages/Auth/Signup'
-import type { V2_MetaFunction } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
+import type { V2_MetaFunction, HeadersFunction } from '@remix-run/node'
+
+export const headers: HeadersFunction = () => {
+  return {
+    'X-Frame-Options': 'DENY',
+  }
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,
