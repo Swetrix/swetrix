@@ -37,7 +37,9 @@ import FlatpickerLibaryCss from 'flatpickr/dist/themes/dark.css'
 
 trackViews()
 
-console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests are welcome to be sent to security@swetrix.com', 'color: #818cf8background: #1f2937font-size: 20pxtext-shadow: 2px 2px black')
+if (isBrowser) {
+  console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests are welcome to be sent to security@swetrix.com', 'color: #818cf8background: #1f2937font-size: 20pxtext-shadow: 2px 2px black')
+}
 
 const options = {
   position: positions.BOTTOM_RIGHT,
