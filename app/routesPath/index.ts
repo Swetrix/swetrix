@@ -8,7 +8,7 @@ const routes = Object.freeze({
   main: '/',
   dashboard: '/dashboard',
   user_settings: '/user-settings',
-  verify: '/verify-email/:id',
+  verify: '/verify/:id',
   change_email: '/change-email/:id',
   new_project: '/projects/new',
   new_captcha: '/captchas/new',
