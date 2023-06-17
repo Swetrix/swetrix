@@ -23,7 +23,7 @@ import { useChangeLanguage } from 'remix-i18next'
 import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
 import { detectLanguage } from 'i18n'
-import { detectTheme } from 'utils/server'
+import { detectTheme, getPageMeta } from 'utils/server'
 
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
@@ -92,7 +92,8 @@ export default function App() {
   const {
     locale, url, theme,
   } = useLoaderData<typeof loader>()
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation('common')
+  const { title } = getPageMeta(t, url)
 
   const alternateLinks = _map(whitelist, (lc) => ({
     rel: 'alternate',
@@ -106,6 +107,7 @@ export default function App() {
     <html className={theme} lang={locale} dir={i18n.dir()}>
       <head>
         <meta charSet='utf-8' />
+        <title>{title}</title>
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Meta />
         <Links />
