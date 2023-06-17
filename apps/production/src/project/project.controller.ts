@@ -29,10 +29,10 @@ import * as _head from 'lodash/head'
 import * as _filter from 'lodash/filter'
 import * as dayjs from 'dayjs'
 
+import { hash } from 'bcrypt'
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
-import { hash } from 'bcrypt'
 import {
   ProjectService,
   processProjectUser,
@@ -335,6 +335,7 @@ export class ProjectController {
 
     let pid = generateProjectId()
 
+    // eslint-disable-next-line no-await-in-loop
     while (!(await this.projectService.isPIDUnique(pid))) {
       pid = generateProjectId()
     }

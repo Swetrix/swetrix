@@ -52,13 +52,18 @@ import {
 import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber } from './entity'
 import { AddSubscriberType } from './types'
-import { CreateProjectDTO, GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
+import {
+  CreateProjectDTO,
+  GetSubscribersQueriesDto,
+  UpdateSubscriberBodyDto,
+} from './dto'
 import { ReportFrequency } from './enums'
 
 dayjs.extend(utc)
 
 // A list of characters that can be used in a Project ID
-const LEGAL_PID_CHARACTERS = '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
+const LEGAL_PID_CHARACTERS =
+  '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
 export const generateProjectId = customAlphabet(LEGAL_PID_CHARACTERS, 12)
 
 // const updateProjectRedis = async (id: string, project: Project) => {
