@@ -12,6 +12,8 @@ const mapStateToProps = (state: StateType) => ({
   projects: state.ui.projects.projects,
   sharedProjects: state.ui.projects.sharedProjects,
   isLoading: state.ui.projects.isLoading,
+  dashboardPaginationPage: state.ui.projects.dashboardPaginationPage,
+  dashboardPaginationPageShared: state.ui.projects.dashboardPaginationPageShared,
   user: state.auth.user,
   isSharedProject: state.ui.projects.dashboardTabs === tabForSharedProject,
 })
@@ -44,11 +46,15 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       message,
     }))
   },
-  loadProjects: (shared: boolean) => {
+  loadProjects: (shared: boolean, skip: number) => {
     if (shared) {
-      dispatch(sagaActions.loadSharedProjects())
+      dispatch(sagaActions.loadSharedProjects(
+        skip,
+      ))
     } else {
-      dispatch(sagaActions.loadProjects())
+      dispatch(sagaActions.loadProjects(
+        skip,
+      ))
     }
   },
   removeProject: (pid: string, shared: boolean) => {

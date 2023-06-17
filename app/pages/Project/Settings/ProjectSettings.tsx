@@ -19,7 +19,7 @@ import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
@@ -121,14 +121,14 @@ const DEFAULT_PROJECT_NAME = 'Untitled Project'
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
-  deleteProjectCache, setProjectProtectedPassword,
+  deleteProjectCache, setProjectProtectedPassword, dashboardPaginationPage, dashboardPaginationPageShared,
 }: {
   updateProjectFailed: (message: string) => void,
   createNewProjectFailed: (message: string) => void,
   generateAlerts: (message: string) => void,
   projectDeleted: (message: string) => void,
   deleteProjectFailed: (message: string) => void,
-  loadProjects: (shared: boolean) => void,
+  loadProjects: (shared: boolean, skip: number) => void,
   isLoading: boolean,
   projects: IProject[],
   showError: (message: string) => void,
@@ -138,6 +138,8 @@ const ProjectSettings = ({
   sharedProjects: ISharedProject[],
   deleteProjectCache: (pid: string) => void,
   setProjectProtectedPassword: (pid: string, password: string) => void,
+  dashboardPaginationPage: number,
+  dashboardPaginationPageShared: number,
 }) => {
   const { t }: {
     t: (key: string, options?: {
@@ -178,6 +180,8 @@ const ProjectSettings = ({
   const [dateRange, setDateRange] = useState<Date[]>([])
   const [tab, setTab] = useState<string>(tabDeleteDataModal[0].name)
   const [showProtected, setShowProtected] = useState<boolean>(false)
+
+  const paginationSkip: number = isSharedProject ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
 
   useEffect(() => {
     if (!user.isActive && !isSelfhosted) {
@@ -228,7 +232,7 @@ const ProjectSettings = ({
           generateAlerts(t('project.settings.created'))
         }
 
-        loadProjects(isSharedProject)
+        loadProjects(isSharedProject, paginationSkip)
       } catch (e) {
         if (isSettings) {
           updateProjectFailed(e as string)
