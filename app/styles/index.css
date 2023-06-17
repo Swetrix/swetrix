@@ -349,7 +349,7 @@ code {
 
 /* adaptive panels buttons next and prev */
 .w-card-toggle-sm {
-  width: calc(100% - 2rem) !important;
+  width: calc(100% - 2rem);
 }
 
 /* custom scrollbar */
