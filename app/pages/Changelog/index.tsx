@@ -15,6 +15,15 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-06-17',
+    changes: [
+      'Fully migrated our frontend to Remix Framework (Server-side rendering), thus improving the performance of Swetrix. Also in the future you can expect A LOT of cool improvements like link image previews and so on.',
+      'Now when you create a new Project - it\'s ID is generated on the server side.',
+      'Hidden the \'New password\' input fields under the \'Change password\' spoiler on the Account settings page.',
+      'Redesigned Header, Footer and the white theme - removed unnecessary blue colors and made it more consistent (there will be more UI improvements soon!).',
+    ],
+  },
+  {
     date: '2023-05-29',
     changes: [
       'Added password protected Projects functionality: now you can set a password on your Dashboard and share it with other people, only those who know the password will be able to access it.',
