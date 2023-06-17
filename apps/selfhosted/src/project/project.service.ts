@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
+import { customAlphabet } from 'nanoid'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isString from 'lodash/isString'
 import * as _size from 'lodash/size'
@@ -30,6 +31,11 @@ import {
   redisProjectCacheTimeout,
 } from '../common/constants'
 import { getProjectsClickhouse } from '../common/utils'
+import { CreateProjectDTO } from './dto'
+
+// A list of characters that can be used in a Project ID
+const LEGAL_PID_CHARACTERS = '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
+export const generateProjectId = customAlphabet(LEGAL_PID_CHARACTERS, 12)
 
 export const deleteProjectRedis = async (id: string) => {
   const key = getRedisProjectKey(id)
@@ -83,8 +89,14 @@ export class ProjectService {
     )
   }
 
-  checkIfIDUniqueClickhouse(projects: Array<object>, projectID: string): void {
-    if (_find(projects, ({ id }) => id === projectID)) {
+  isPIDUnique(projects: Array<object>, pid: string): boolean {
+    return !_find(projects, ({ id }) => id === pid)
+  }
+
+  checkIfIDUnique(projects: Array<object>, pid: string): void {
+    const isUnique = this.isPIDUnique(projects, pid)
+
+    if (!isUnique) {
       throw new BadRequestException('Selected project ID is already in use')
     }
   }
@@ -151,13 +163,18 @@ export class ProjectService {
     return updProject
   }
 
-  validateProject(projectDTO: ProjectDTO) {
+  validateProject(projectDTO: ProjectDTO | CreateProjectDTO) {
+    if (_size(projectDTO.name) > 50)
+      throw new UnprocessableEntityException('The project name is too long')
+
+    if (projectDTO instanceof CreateProjectDTO) {
+      return
+    }
+
     if (!isValidPID(projectDTO.id))
       throw new UnprocessableEntityException(
         'The provided Project ID (pid) is incorrect',
       )
-    if (_size(projectDTO.name) > 50)
-      throw new UnprocessableEntityException('The project name is too long')
     if (_size(_join(projectDTO.origins, ',')) > 300)
       throw new UnprocessableEntityException(
         'The list of allowed origins has to be smaller than 300 symbols',

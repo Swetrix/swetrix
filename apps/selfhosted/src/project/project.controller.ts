@@ -21,17 +21,21 @@ import * as _split from 'lodash/split'
 import * as _head from 'lodash/head'
 import * as dayjs from 'dayjs'
 
-import { JwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth } from 'src/auth/decorators'
-import { isValidDate } from 'src/analytics/analytics.service'
-import { ProjectService, deleteProjectRedis } from './project.service'
+import { JwtAccessTokenGuard } from '../auth/guards'
+import { Auth } from '../auth/decorators'
+import { isValidDate } from '../analytics/analytics.service'
+import {
+  ProjectService, deleteProjectRedis, generateProjectId,
+} from './project.service'
 import { UserType } from '../user/entities/user.entity'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
-import { ProjectDTO } from './dto/project.dto'
+import {
+  ProjectDTO, CreateProjectDTO,
+} from './dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { isValidPID, clickhouse } from '../common/constants'
 import {
@@ -89,7 +93,7 @@ export class ProjectController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(
-    @Body() projectDTO: ProjectDTO,
+    @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
   ): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
@@ -97,13 +101,16 @@ export class ProjectController {
     const projects = await getProjectsClickhouse()
 
     this.projectService.validateProject(projectDTO)
-    this.projectService.checkIfIDUniqueClickhouse(projects, projectDTO.id)
+
+    let pid = generateProjectId()
+
+    while (!(this.projectService.isPIDUnique(projects, pid))) {
+      pid = generateProjectId()
+    }
 
     const project = new Project()
-    Object.assign(project, projectDTO)
-    project.origins = _map(projectDTO.origins, _trim)
-    project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
-    project.active = true
+    project.id = pid
+    projectDTO.name = _trim(projectDTO.name)
 
     await createProjectClickhouse(project)
 

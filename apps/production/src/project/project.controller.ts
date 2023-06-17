@@ -29,14 +29,15 @@ import * as _head from 'lodash/head'
 import * as _filter from 'lodash/filter'
 import * as dayjs from 'dayjs'
 
-import { JwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth, Public } from 'src/auth/decorators'
-import { isValidDate } from 'src/analytics/analytics.service'
+import { JwtAccessTokenGuard } from '../auth/guards'
+import { Auth, Public } from '../auth/decorators'
+import { isValidDate } from '../analytics/analytics.service'
 import { hash } from 'bcrypt'
 import {
   ProjectService,
   processProjectUser,
   deleteProjectRedis,
+  generateProjectId,
 } from './project.service'
 import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
@@ -50,9 +51,6 @@ import { Project } from './entity/project.entity'
 import { ProjectShare, roles } from './entity/project-share.entity'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { UserService } from '../user/user.service'
-import { ProjectDTO } from './dto/project.dto'
-import { ShareDTO } from './dto/share.dto'
-import { ShareUpdateDTO } from './dto/share-update.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isValidPID,
@@ -77,6 +75,10 @@ import {
   ConfirmTransferProjectQueriesDto,
   CancelTransferProjectQueriesDto,
   UpdateProjectDto,
+  CreateProjectDTO,
+  ProjectDTO,
+  ShareDTO,
+  ShareUpdateDTO,
 } from './dto'
 
 const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
@@ -283,7 +285,7 @@ export class ProjectController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async create(
-    @Body() projectDTO: ProjectDTO,
+    @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
   ): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
@@ -331,12 +333,16 @@ export class ProjectController {
 
     this.projectService.validateProject(projectDTO)
 
-    await this.projectService.checkIfIDUnique(projectDTO.id)
+    let pid = generateProjectId()
+
+    while (!(await this.projectService.isPIDUnique(pid))) {
+      pid = generateProjectId()
+    }
 
     try {
       const project = new Project()
-      Object.assign(project, projectDTO)
-      project.origins = _map(projectDTO.origins, _trim)
+      project.id = pid
+      project.name = _trim(projectDTO.name)
 
       if (projectDTO.isCaptcha) {
         project.isCaptchaProject = true
@@ -353,16 +359,8 @@ export class ProjectController {
       await this.userService.create(user)
 
       return newProject
-    } catch (e) {
-      if (e.code === 'ER_DUP_ENTRY') {
-        if (e.sqlMessage.includes(projectDTO.id)) {
-          throw new BadRequestException(
-            'Project with selected ID already exists',
-          )
-        }
-      }
-
-      throw new BadRequestException(e)
+    } catch (reason) {
+      throw new BadRequestException(reason)
     }
   }
 
@@ -1241,7 +1239,7 @@ export class ProjectController {
     project.active = projectDTO.active
     project.origins = _map(projectDTO.origins, _trim)
     project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
-    project.name = projectDTO.name
+    project.name = _trim(projectDTO.name)
     project.public = projectDTO.public
 
     if (projectDTO.isPasswordProtected) {
