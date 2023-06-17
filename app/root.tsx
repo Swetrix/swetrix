@@ -83,7 +83,6 @@ export const meta: V2_MetaFunction = () => [
   // { name: 'application-name', content: 'Swetrix' },
 ]
 
-
 // const removeObsoleteAuthTokens = () => {
 //   const accessToken = getAccessToken()
 //   const refreshToken = getRefreshToken()
