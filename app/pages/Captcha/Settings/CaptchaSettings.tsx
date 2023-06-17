@@ -20,7 +20,7 @@ import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
 import {
   createProject, updateProject, deleteCaptchaProject, resetCaptchaProject, reGenerateCaptchaSecretKey, getProjectsNames, createCaptchaInherited,
 } from 'api'
@@ -83,6 +83,7 @@ const CaptchaSettings = ({
     }) => string,
   } = useTranslation('common')
   const { pathname } = useLocation()
+  // @ts-ignore
   const { id }: {
     id: string,
   } = useParams()
@@ -290,6 +291,13 @@ const CaptchaSettings = ({
   }
 
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
+
+  useEffect(() => {
+    let pageTitle = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
+    pageTitle += ` ${TITLE_SUFFIX}`
+
+    document.title = pageTitle
+  }, [form, t])
 
   const onRegenerateSecretKey = async () => {
     try {

@@ -32,7 +32,7 @@ import { getItem, setItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
-  MAX_MONTHS_IN_PAST, TimeFormat, chartTypes,
+  MAX_MONTHS_IN_PAST, TimeFormat, chartTypes, TITLE_SUFFIX,
 } from 'redux/constants'
 import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
@@ -85,6 +85,7 @@ const ViewProject = ({
   } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
   const dashboardRef = useRef(null)
+  // @ts-ignore
   const { id }: {
     id: string,
   } = useParams()
@@ -131,6 +132,10 @@ const ViewProject = ({
   const [chartType, setChartType] = useState<string>(getItem('chartType') as string || chartTypes.line)
 
   const { name } = project as IProject
+
+  useEffect(() => {
+    document.title = `${name} ${TITLE_SUFFIX}`
+  }, [project])
 
   // @ts-ignore
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])

@@ -3,6 +3,7 @@ import React, {
 } from 'react'
 import { useLocation, Outlet } from '@remix-run/react'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 // @ts-ignore
 import { useAlert } from '@blaumaus/react-alert'
 import cx from 'clsx'
@@ -29,6 +30,7 @@ import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
 import routesPath from 'routesPath'
+import { getPageMeta } from 'utils/server'
 
 import { getRefreshToken } from 'utils/refreshToken'
 import { authMe } from './api'
@@ -71,9 +73,14 @@ interface IApp {
   ssrTheme: 'dark' | 'light'
 }
 
+const TITLE_BLACKLIST = [
+  '/projects/', '/captchas/',
+]
+
 const App: React.FC<IApp> = ({ ssrTheme }) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
+  const { t } = useTranslation('common')
   const alert = useAlert()
   const {
     loading, authenticated,
@@ -163,6 +170,15 @@ const App: React.FC<IApp> = ({ ssrTheme }) => {
       })
     }
   }, [message, type]) // eslint-disable-line
+
+  useEffect(() => {
+    if (_some(TITLE_BLACKLIST, (page) => _includes(pathname, page))) {
+      return
+    }
+
+    const { title } = getPageMeta(t, undefined, pathname)
+    document.title = title
+  }, [t, pathname])
 
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 

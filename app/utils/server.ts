@@ -26,13 +26,20 @@ interface IPageMeta {
 
 export const getPageMeta = (
   t: (key: string) => string,
-  url: string,
+  url?: string,
+  _pathname?: string,
 ): IPageMeta => {
-  const { pathname } = new URL(url)
-  // TODO: Use t()
-  let result = {
+  const DEFAULT_RESULT = {
     title: t('titles.main'),
   }
+
+  if (!url && !_pathname) {
+    return DEFAULT_RESULT
+  }
+
+  const pathname = _pathname || new URL(url as string).pathname
+
+  let result = DEFAULT_RESULT
 
   switch (pathname) {
     case routes.signin:

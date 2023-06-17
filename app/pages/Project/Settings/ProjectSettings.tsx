@@ -19,7 +19,7 @@ import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
@@ -145,6 +145,7 @@ const ProjectSettings = ({
     }) => string,
   } = useTranslation('common')
   const { pathname } = useLocation()
+  // @ts-ignore
   const { id }: {
     id: string,
   } = useParams()
@@ -377,6 +378,13 @@ const ProjectSettings = ({
   }
 
   const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
+
+  useEffect(() => {
+    let pageTitle = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
+    pageTitle += ` ${TITLE_SUFFIX}`
+
+    document.title = pageTitle
+  }, [form, t])
 
   return (
     <div
