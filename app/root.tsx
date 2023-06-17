@@ -136,7 +136,7 @@ export default function App() {
         <script
           dangerouslySetInnerHTML={{
             __html: `window.REMIX_ENV = ${JSON.stringify(
-              REMIX_ENV
+              REMIX_ENV,
             )}`,
           }}
         />

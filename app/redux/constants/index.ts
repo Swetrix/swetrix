@@ -217,7 +217,6 @@ export const SUPPORTED_THEMES: string[] = ['light', 'dark']
 export const CONTACT_EMAIL: string = 'contact@swetrix.com'
 export const SECURITY_EMAIL: string = 'security@swetrix.com'
 
-
 export const LIVE_VISITORS_UPDATE_INTERVAL: number = 40000
 
 // Environment variables
@@ -233,7 +232,7 @@ export const NODE_ENV = isBrowser ? window.REMIX_ENV.NODE_ENV : process.env.NODE
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
 export const isSelfhosted = Boolean(
-  isBrowser ? window.REMIX_ENV.SELFHOSTED : process.env.SELFHOSTED
+  isBrowser ? window.REMIX_ENV.SELFHOSTED : process.env.SELFHOSTED,
 )
 
 // Functions
