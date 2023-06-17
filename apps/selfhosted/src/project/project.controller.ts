@@ -25,7 +25,9 @@ import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
 import {
-  ProjectService, deleteProjectRedis, generateProjectId,
+  ProjectService,
+  deleteProjectRedis,
+  generateProjectId,
 } from './project.service'
 import { UserType } from '../user/entities/user.entity'
 import { Roles } from '../auth/decorators/roles.decorator'
@@ -33,9 +35,7 @@ import { RolesGuard } from '../auth/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
-import {
-  ProjectDTO, CreateProjectDTO,
-} from './dto'
+import { ProjectDTO, CreateProjectDTO } from './dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { isValidPID, clickhouse } from '../common/constants'
 import {
@@ -104,7 +104,7 @@ export class ProjectController {
 
     let pid = generateProjectId()
 
-    while (!(this.projectService.isPIDUnique(projects, pid))) {
+    while (!this.projectService.isPIDUnique(projects, pid)) {
       pid = generateProjectId()
     }
 

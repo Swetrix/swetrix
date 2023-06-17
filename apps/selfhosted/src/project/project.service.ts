@@ -34,7 +34,8 @@ import { getProjectsClickhouse } from '../common/utils'
 import { CreateProjectDTO } from './dto'
 
 // A list of characters that can be used in a Project ID
-const LEGAL_PID_CHARACTERS = '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
+const LEGAL_PID_CHARACTERS =
+  '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
 export const generateProjectId = customAlphabet(LEGAL_PID_CHARACTERS, 12)
 
 export const deleteProjectRedis = async (id: string) => {
