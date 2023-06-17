@@ -220,19 +220,20 @@ export const SECURITY_EMAIL: string = 'security@swetrix.com'
 export const LIVE_VISITORS_UPDATE_INTERVAL: number = 40000
 
 // Environment variables
-const isStaging = isBrowser ? window.REMIX_ENV.STAGING : process.env.STAGING
-const STAGING_API_URL = isBrowser ? window.REMIX_ENV.API_STAGING_URL : process.env.API_STAGING_URL
-const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV.API_URL : process.env.API_URL
+// Using optional chaining for REMIX_ENV?. to avoid errors when running some unit tests
+const isStaging = isBrowser ? window.REMIX_ENV?.STAGING : process.env.STAGING
+const STAGING_API_URL = isBrowser ? window.REMIX_ENV?.API_STAGING_URL : process.env.API_STAGING_URL
+const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV?.API_URL : process.env.API_URL
 
 export const API_URL = isStaging ? STAGING_API_URL : PRODUCTION_API_URL
-export const BLOG_URL = isBrowser ? window.REMIX_ENV.BLOG_URL : process.env.BLOG_URL
-export const AIAPI_URL = isBrowser ? window.REMIX_ENV.AIAPI_URL : process.env.AIAPI_URL
-export const CDN_URL = isBrowser ? window.REMIX_ENV.CDN_URL : process.env.CDN_URL
-export const NODE_ENV = isBrowser ? window.REMIX_ENV.NODE_ENV : process.env.NODE_ENV
+export const BLOG_URL = isBrowser ? window.REMIX_ENV?.BLOG_URL : process.env.BLOG_URL
+export const AIAPI_URL = isBrowser ? window.REMIX_ENV?.AIAPI_URL : process.env.AIAPI_URL
+export const CDN_URL = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
+export const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
 export const isSelfhosted = Boolean(
-  isBrowser ? window.REMIX_ENV.SELFHOSTED : process.env.SELFHOSTED,
+  isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.SELFHOSTED,
 )
 
 // Functions

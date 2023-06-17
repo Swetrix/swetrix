@@ -26,13 +26,13 @@ describe('Button component', () => {
   it('renders a primary button', () => {
     const { getByText } = render(<Button text='Click me' primary />)
     const button = getByText('Click me')
-    expect(button).toHaveClass('bg-indigo-600')
+    expect(button).toHaveClass('bg-slate-900')
   })
 
   it('renders a secondary button', () => {
     const { getByText } = render(<Button text='Click me' secondary />)
     const button = getByText('Click me')
-    expect(button).toHaveClass('bg-indigo-100')
+    expect(button).toHaveClass('bg-slate-300')
   })
 
   it('renders a white button', () => {
