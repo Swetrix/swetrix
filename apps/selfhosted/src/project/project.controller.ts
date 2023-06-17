@@ -100,7 +100,7 @@ export class ProjectController {
 
     const projects = await getProjectsClickhouse()
 
-    this.projectService.validateProject(projectDTO)
+    this.projectService.validateProject(projectDTO as ProjectDTO, true)
 
     let pid = generateProjectId()
 

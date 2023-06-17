@@ -331,7 +331,7 @@ export class ProjectController {
       )
     }
 
-    this.projectService.validateProject(projectDTO)
+    this.projectService.validateProject(projectDTO as ProjectDTO, true)
 
     let pid = generateProjectId()
 
@@ -344,6 +344,7 @@ export class ProjectController {
       const project = new Project()
       project.id = pid
       project.name = _trim(projectDTO.name)
+      project.origins = []
 
       if (projectDTO.isCaptcha) {
         project.isCaptchaProject = true
