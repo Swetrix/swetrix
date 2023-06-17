@@ -164,11 +164,11 @@ export class ProjectService {
     return updProject
   }
 
-  validateProject(projectDTO: ProjectDTO | CreateProjectDTO) {
+  validateProject(projectDTO: ProjectDTO, creatingProject = false) {
     if (_size(projectDTO.name) > 50)
       throw new UnprocessableEntityException('The project name is too long')
 
-    if (projectDTO instanceof CreateProjectDTO) {
+    if (creatingProject) {
       return
     }
 
