@@ -362,7 +362,9 @@ export class ProjectController {
 
       return newProject
     } catch (reason) {
-      throw new BadRequestException(reason)
+      console.error('[ERROR] Failed to create a new project:')
+      console.error(reason)
+      throw new BadRequestException('Failed to create a new project')
     }
   }
 
