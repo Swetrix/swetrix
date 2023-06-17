@@ -53,7 +53,6 @@ import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber } from './entity'
 import { AddSubscriberType } from './types'
 import {
-  CreateProjectDTO,
   GetSubscribersQueriesDto,
   UpdateSubscriberBodyDto,
 } from './dto'
