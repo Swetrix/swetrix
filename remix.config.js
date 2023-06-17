@@ -21,5 +21,9 @@ module.exports = {
     'nivo',
     /^nivo-*/,
     /^@nivo*/,
+    'delaunator',
+    'internmap',
+    'robust-predicates',
   ],
+  serverMinify: process.env.NODE_ENV === 'production',
 }
