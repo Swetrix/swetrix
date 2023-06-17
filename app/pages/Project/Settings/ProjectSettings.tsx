@@ -229,6 +229,7 @@ const ProjectSettings = ({
             name: data.name || DEFAULT_PROJECT_NAME,
           })
           trackCustom('PROJECT_CREATED')
+          navigate(routes.dashboard)
           generateAlerts(t('project.settings.created'))
         }
 
