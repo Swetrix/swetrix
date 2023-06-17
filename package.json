@@ -4,8 +4,9 @@
   "scripts": {
     "build": "remix build",
     "dev": "remix dev",
-    "dev:dev": "cross-env REACT_APP_RUNNING_DEV_SCRIPT=true remix dev",
+    "dev:staging": "cross-env STAGING=true remix dev",
     "start": "remix-serve build",
+    "start:staging": "cross-env STAGING=true remix-serve build",
     "test": "jest --transformIgnorePatterns \"node_modules/(?!axios)/\"",
     "test:ci": "CI=true npm run test",
     "typecheck": "tsc",
