@@ -31,7 +31,6 @@ import {
   redisProjectCacheTimeout,
 } from '../common/constants'
 import { getProjectsClickhouse } from '../common/utils'
-import { CreateProjectDTO } from './dto'
 
 // A list of characters that can be used in a Project ID
 const LEGAL_PID_CHARACTERS =
