@@ -28,12 +28,8 @@ import { detectTheme, getPageMeta } from 'utils/server'
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
 import FlatpickerCss from 'styles/Flatpicker.css'
-import FlatpickerLibaryCss from 'flatpickr/dist/themes/dark.css'
-
-// if (getCookie('colour-theme') === 'light') {
-//   // @ts-ignore
-//   FlatpickerLibaryCss = import('flatpickr/dist/themes/light.css')
-// }
+import FlatpickrLightCss from 'flatpickr/dist/themes/light.css'
+import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css'
 
 trackViews()
 
@@ -68,7 +64,6 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: mainCss },
   { rel: 'stylesheet', href: BillboardCss },
   { rel: 'stylesheet', href: FlatpickerCss },
-  { rel: 'stylesheet', href: FlatpickerLibaryCss },
   { rel: 'preconnect', href: FONTS_PROVIDER },
   { rel: 'stylesheet', href: FONTS_URL },
 ]
@@ -132,6 +127,8 @@ export default function App() {
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Meta />
         <Links />
+        {theme === 'dark' && <link rel='stylesheet' href={FlatpickrDarkCss} />}
+        {theme === 'light' && <link rel='stylesheet' href={FlatpickrLightCss} />}
         {_map(alternateLinks, (link) => (
           <link key={link.hrefLang} {...link} />
         ))}
