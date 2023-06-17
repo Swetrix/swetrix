@@ -17,7 +17,7 @@ import _isEmpty from 'lodash/isEmpty'
 import routesPath from 'routesPath'
 import { nFormatterSeparated } from 'utils/generic'
 import {
-  GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser,
+  GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser, BLOG_URL,
 } from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
@@ -236,7 +236,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                   ) : (
                     <a
                       className='inline-flex ml-1 items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 hover:underline'
-                      href={`${process.env.REACT_APP_BLOG_URL}post/${lastBlogPost.url_path}`}
+                      href={`${BLOG_URL}post/${lastBlogPost.url_path}`}
                       target='_blank'
                       rel='noopener noreferrer'
                     >

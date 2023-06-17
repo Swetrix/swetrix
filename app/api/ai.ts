@@ -2,11 +2,12 @@
 import axios from 'axios'
 import Debug from 'debug'
 import _isEmpty from 'lodash/isEmpty'
+import { AIAPI_URL } from 'redux/constants'
 
 const debug = Debug('swetrix:ai')
 
 const api = axios.create({
-  baseURL: 'https://aiapi.swetrix.com/', // process.env.REACT_APP_AIAPI_URL,
+  baseURL: AIAPI_URL,
 })
 
 /**

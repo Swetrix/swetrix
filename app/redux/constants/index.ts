@@ -197,7 +197,6 @@ export const TWITTER_URL: string = 'https://twitter.com/intent/user?screen_name=
 export const TWITTER_USERNAME: string = '@swetrix'
 export const DISCORD_URL: string = 'https://discord.gg/tVxGxU3s4B'
 export const STATUSPAGE_URL: string = 'https://stats.uptimerobot.com/33rvmiXXEz'
-export const BLOG_URL: string = 'https://blog.swetrix.com'
 export const MAIN_URL: string = 'https://swetrix.com'
 export const UTM_GENERATOR_URL: string = 'https://url.swetrix.com'
 export const LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV'
@@ -205,14 +204,11 @@ export const MARKETPLACE_URL: string = 'https://marketplace.swetrix.com'
 export const DOCS_URL: string = 'https://docs.swetrix.com'
 export const CAPTCHA_URL: string = 'https://captcha.swetrix.com'
 export const DOCS_CAPTCHA_URL: string = `${DOCS_URL}/captcha/introduction`
-export const CDN_URL: string | undefined = process.env.REACT_APP_CDN_URL || 'https://cdn.swetrix.com/'
 
 // Swetrix vs ...
 export const SWETRIX_VS_GOOGLE: string = 'https://blog.swetrix.com/post/vs-google-analytics/'
 export const SWETRIX_VS_CLOUDFLARE: string = 'https://blog.swetrix.com/post/vs-cloudflare-analytics/'
 export const SWETRIX_VS_SIMPLE_ANALYTICS: string = 'https://blog.swetrix.com/post/vs-simple-analytics/'
-
-export const isDevelopment: boolean = !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
 
 export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
@@ -221,9 +217,24 @@ export const SUPPORTED_THEMES: string[] = ['light', 'dark']
 export const CONTACT_EMAIL: string = 'contact@swetrix.com'
 export const SECURITY_EMAIL: string = 'security@swetrix.com'
 
-export const isSelfhosted: boolean = Boolean(process.env.REACT_APP_SELFHOSTED)
 
 export const LIVE_VISITORS_UPDATE_INTERVAL: number = 40000
+
+// Environment variables
+const isStaging = isBrowser ? window.REMIX_ENV.STAGING : process.env.STAGING
+const STAGING_API_URL = isBrowser ? window.REMIX_ENV.API_STAGING_URL : process.env.API_STAGING_URL
+const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV.API_URL : process.env.API_URL
+
+export const API_URL = isStaging ? STAGING_API_URL : PRODUCTION_API_URL
+export const BLOG_URL = isBrowser ? window.REMIX_ENV.BLOG_URL : process.env.BLOG_URL
+export const AIAPI_URL = isBrowser ? window.REMIX_ENV.AIAPI_URL : process.env.AIAPI_URL
+export const CDN_URL = isBrowser ? window.REMIX_ENV.CDN_URL : process.env.CDN_URL
+export const NODE_ENV = isBrowser ? window.REMIX_ENV.NODE_ENV : process.env.NODE_ENV
+
+export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
+export const isSelfhosted = Boolean(
+  isBrowser ? window.REMIX_ENV.SELFHOSTED : process.env.SELFHOSTED
+)
 
 // Functions
 export const getProjectCacheKey = (period: string, timeBucket: string, filters?: any): string => `${period}${timeBucket}${filters ? JSON.stringify(filters) : ''}}`

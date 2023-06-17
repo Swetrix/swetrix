@@ -37,6 +37,14 @@ import FlatpickerLibaryCss from 'flatpickr/dist/themes/dark.css'
 
 trackViews()
 
+declare global {
+  interface Window {
+    REMIX_ENV: any
+    // Set by Docker for self-hosted
+    env: any
+  }
+}
+
 if (isBrowser) {
   console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests are welcome to be sent to security@swetrix.com', 'color: #818cf8background: #1f2937font-size: 20pxtext-shadow: 2px 2px black')
 }
@@ -81,7 +89,20 @@ export async function loader({ request }: LoaderArgs) {
   const locale = detectLanguage(request)
   const theme = detectTheme(request)
 
-  return json({ locale, url, theme })
+  const REMIX_ENV = {
+    NODE_ENV: process.env.NODE_ENV,
+    AIAPI_URL: process.env.AIAPI_URL,
+    API_URL: process.env.API_URL,
+    API_STAGING_URL: process.env.API_STAGING_URL,
+    CDN_URL: process.env.CDN_URL,
+    BLOG_URL: process.env.BLOG_URL,
+    SELFHOSTED: process.env.REACT_APP_SELFHOSTED,
+    STAGING: process.env.STAGING,
+  }
+
+  return json({
+    locale, url, theme, REMIX_ENV,
+  })
 }
 
 export const handle = {
@@ -90,7 +111,7 @@ export const handle = {
 
 export default function App() {
   const {
-    locale, url, theme,
+    locale, url, theme, REMIX_ENV,
   } = useLoaderData<typeof loader>()
   const { i18n, t } = useTranslation('common')
   const { title } = getPageMeta(t, url)
@@ -115,6 +136,13 @@ export default function App() {
           <link key={link.hrefLang} {...link} />
         ))}
         <link rel='preload' href={`/locales/${locale}.json`} as='fetch' type='application/json' crossOrigin='anonymous' />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.REMIX_ENV = ${JSON.stringify(
+              REMIX_ENV
+            )}`,
+          }}
+        />
       </head>
       <body>
         <div className='loader' id='loader'>

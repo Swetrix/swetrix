@@ -11,7 +11,7 @@ import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
-import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
+import { DEFAULT_ALERTS_TAKE, isSelfhosted, API_URL } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IAuth } from 'redux/models/IAuth'
 import { IProject, IOverall, IProjectNames } from 'redux/models/IProject'
@@ -21,15 +21,10 @@ import { ISubscribers } from 'redux/models/ISubscribers'
 
 const debug = Debug('swetrix:api')
 
-const envApiURL = process.env.REACT_APP_RUNNING_DEV_SCRIPT === 'true'
-  ? process.env.REACT_APP_API_STAGING_URL
-  : process.env.REACT_APP_API_URL
-
-// @ts-ignore
-const baseURL: string = isSelfhosted ? window.env.API_URL : envApiURL
+const baseURL: string = isSelfhosted ? window.env.API_URL : API_URL
 
 const api = axios.create({
-  baseURL: 'https://api.swetrix.com/',
+  baseURL,
 })
 
 // Function that will be called to refresh authorization

@@ -2,11 +2,12 @@
 import axios from 'axios'
 import Debug from 'debug'
 import _isEmpty from 'lodash/isEmpty'
+import { BLOG_URL } from 'redux/constants'
 
 const debug = Debug('swetrix:blog')
 
 const api = axios.create({
-  baseURL: 'https://blog.swetrix.com/', // process.env.REACT_APP_BLOG_URL,
+  baseURL: BLOG_URL,
 })
 
 export const getLastPost = () =>
