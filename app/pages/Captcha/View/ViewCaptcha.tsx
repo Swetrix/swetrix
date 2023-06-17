@@ -31,7 +31,7 @@ import PropTypes from 'prop-types'
 import { getItem, setItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleViewer,
+  tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleAdmin,
   MAX_MONTHS_IN_PAST, TimeFormat, chartTypes, TITLE_SUFFIX,
 } from 'redux/constants'
 import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
@@ -57,14 +57,10 @@ import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 
-interface IProjectView extends ICaptchaProject {
-  isPublicVisitors?: boolean,
-}
-
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, setProjects, liveStats,
 }: {
-  projects: IProjectView[],
+  projects: ICaptchaProject[],
   isLoading: boolean,
   showError: (message: string) => void,
   cache: any,
@@ -90,7 +86,7 @@ const ViewProject = ({
     id: string,
   } = useParams()
   const navigate = useNavigate()
-  const project: IProjectView = useMemo(() => _find(projects, p => p.id === id) || {} as IProjectView, [projects, id])
+  const project: ICaptchaProject = useMemo(() => _find(projects, p => p.id === id) || {} as ICaptchaProject, [projects, id])
   const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
   const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
@@ -709,17 +705,17 @@ const ViewProject = ({
                   onSelect={item => item.onClick(panelsData, t)}
                   className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
                 />
-                {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
-                <Button
-                  onClick={openSettingsHandler}
-                  className='relative flex justify-center items-center !pr-3 pl-2 py-2 md:pr-4 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
-                  secondary
-                >
-                  <>
-                    <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                    {t('common.settings')}
-                  </>
-                </Button>
+                {(project?.isOwner || sharedRoles === roleAdmin.role) && (
+                  <Button
+                    onClick={openSettingsHandler}
+                    className='relative flex justify-center items-center !pr-3 pl-2 py-2 md:pr-4 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
+                    secondary
+                  >
+                    <>
+                      <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                      {t('common.settings')}
+                    </>
+                  </Button>
                 )}
               </div>
             </div>

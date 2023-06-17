@@ -51,7 +51,6 @@ export interface IProject {
     isOwner: boolean
     overall: IOvervallObject
     uiHidden: boolean
-    isPublicVisitors?: boolean
     isPublic?: boolean
     isTransferring?: boolean
     isPasswordProtected?: boolean

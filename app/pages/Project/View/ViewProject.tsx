@@ -44,14 +44,13 @@ import { getItem, setItem, removeItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
-  timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
-  TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX,
+  timeBucketToDays, getProjectCacheCustomKey, MAX_MONTHS_IN_PAST, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin,
+  TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE,
+  PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
-import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -81,12 +80,8 @@ const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
-interface IProjectView extends IProject {
-  isPublicVisitors?: boolean,
-}
-
 interface IViewProject {
-  projects: IProjectView[],
+  projects: IProject[],
   extensions: any,
   isLoading: boolean,
   showError: (message: string) => void,
@@ -345,47 +340,11 @@ const ViewProject = ({
   // similar for sessionDurationAVG but using in overview when compare enabled
   const [sessionDurationAVGCompare, setSessionDurationAVGCompare] = useState<any>(null)
 
-  // tabs is a tabs for project
-  const tabs: {
-    id: string
-    label: string
-    icon: any
-  }[] = useMemo(() => {
-    const selfhostedOnly = [
-      {
-        id: PROJECT_TABS.traffic,
-        label: t('dashboard.traffic'),
-        icon: ChartBarIcon,
-      },
-      {
-        id: PROJECT_TABS.performance,
-        label: t('dashboard.performance'),
-        icon: BoltIcon,
-      },
-    ]
-
-    if (isSelfhosted) {
-      return selfhostedOnly
-    }
-
-    return [
-      ...selfhostedOnly,
-      {
-        id: PROJECT_TABS.alerts,
-        label: t('dashboard.alerts'),
-        icon: BellIcon,
-      },
-    ]
-  }, [t])
-
   // pgPanelNameMapping is a mapping for panel names. Using for change name of panels pg if userFlow active
   const pgPanelNameMapping = [
     tnMapping.pg, // when fragment 0 is selected
     tnMapping.userFlow, // when fragment 1 is selected
   ]
-
-  // activeTabLabel is a label for active tab. Using for title in dropdown
-  const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
 
   // { name } is a project name from project
   const { name } = project
@@ -529,6 +488,54 @@ const ViewProject = ({
       ttfb: t('dashboard.ttfb'),
     }
   }, [t])
+
+  // tabs is a tabs for project
+  const tabs: {
+    id: string
+    label: string
+    icon: any
+  }[] = useMemo(() => {
+    const selfhostedOnly = [
+      {
+        id: PROJECT_TABS.traffic,
+        label: t('dashboard.traffic'),
+        icon: ChartBarIcon,
+      },
+      {
+        id: PROJECT_TABS.performance,
+        label: t('dashboard.performance'),
+        icon: BoltIcon,
+      },
+    ]
+
+    const adminTabs = (project?.isOwner || sharedRoles === roleAdmin.role) ? [
+      {
+        id: 'settings',
+        label: t('common.settings'),
+        icon: Cog8ToothIcon,
+      },
+    ] : []
+
+    if (isSelfhosted) {
+      return [
+        ...selfhostedOnly,
+        ...adminTabs,
+      ]
+    }
+
+    return [
+      ...selfhostedOnly,
+      {
+        id: PROJECT_TABS.alerts,
+        label: t('dashboard.alerts'),
+        icon: BellIcon,
+      },
+      ...adminTabs,
+    ]
+  }, [t, sharedRoles, project])
+
+  // activeTabLabel is a label for active tab. Using for title in dropdown
+  const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
 
   // switchActiveChartMetric is a function for change activeChartMetrics
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1467,7 +1474,6 @@ const ViewProject = ({
                   setPublicProject({
                     ...projectRes,
                     overall: res[id],
-                    isPublicVisitors: true,
                   })
                 })
                 .catch(e => {
@@ -1712,6 +1718,11 @@ const ViewProject = ({
                   onSelect={(label) => {
                     const selected = _find(tabs, (tab) => tab.label === label)
                     if (selected) {
+                      if (selected.id === 'settings') {
+                        openSettingsHandler()
+                        return
+                      }
+
                       setProjectTab(selected?.id)
                       setActiveTab(selected?.id)
                     }
@@ -1724,20 +1735,23 @@ const ViewProject = ({
                   <nav className='-mb-px flex space-x-4' aria-label='Tabs'>
                     {_map(tabs, tab => {
                       const isCurrent = tab.id === activeTab
+                      const isSettings = tab.id === 'settings'
+
+                      const onClick = isSettings
+                        ? openSettingsHandler
+                        : () => {
+                          setProjectTab(tab.id)
+                          setActiveTab(tab.id)
+                        }
 
                       return (
                         <div
                           key={tab.id}
-                          onClick={() => {
-                            setProjectTab(tab.id)
-                            setActiveTab(tab.id)
-                          }}
-                          className={cx(
-                            isCurrent
-                              ? 'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300',
-                            'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
-                          )}
+                          onClick={onClick}
+                          className={cx('group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer', {
+                            'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50': isCurrent,
+                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300': !isCurrent,
+                          })}
                           aria-current={isCurrent ? 'page' : undefined}
                         >
                           <tab.icon
@@ -2026,18 +2040,6 @@ const ViewProject = ({
                       onSelect={item => item.onClick(panelsData, t)}
                       className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
                     />
-                    {(!project?.isPublicVisitors && !(sharedRoles === roleViewer.role)) && (
-                      <Button
-                        onClick={openSettingsHandler}
-                        className='relative flex justify-center items-center !pr-3 pl-2 py-2 md:pr-4 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
-                        secondary
-                      >
-                        <>
-                          <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                          {t('common.settings')}
-                        </>
-                      </Button>
-                    )}
                   </div>
                 </div>
                 <div
@@ -2085,7 +2087,7 @@ const ViewProject = ({
                 </div>
               </>
             )}
-            {(activeTab === PROJECT_TABS.alerts && (isSharedProject || project?.isPublicVisitors || !authenticated)) && (
+            {(activeTab === PROJECT_TABS.alerts && (isSharedProject || !project?.isOwner || !authenticated)) && (
               <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
                 <div className='flex items-center text-gray-50'>
                   <BellIcon className='w-8 h-8 mr-2' />
@@ -2101,7 +2103,7 @@ const ViewProject = ({
                 </Link>
               </div>
             )}
-            {(activeTab === PROJECT_TABS.alerts && !isSharedProject && !project?.isPublicVisitors && authenticated) && (
+            {(activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated) && (
               <ProjectAlertsView projectId={id} />
             )}
             {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
