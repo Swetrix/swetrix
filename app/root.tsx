@@ -41,10 +41,6 @@ declare global {
   }
 }
 
-if (isBrowser) {
-  console.log('%cWelcome, hacker, glad you opened your console, you seem serious about your craft and will go a long way!\nP.S. All the bugs, feature requests are welcome to be sent to security@swetrix.com', 'color: #818cf8background: #1f2937font-size: 20pxtext-shadow: 2px 2px black')
-}
-
 const options = {
   position: positions.BOTTOM_RIGHT,
   timeout: 8000,
@@ -134,6 +130,7 @@ export default function App() {
         ))}
         <link rel='preload' href={`/locales/${locale}.json`} as='fetch' type='application/json' crossOrigin='anonymous' />
         <script
+          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: `window.REMIX_ENV = ${JSON.stringify(
               REMIX_ENV,

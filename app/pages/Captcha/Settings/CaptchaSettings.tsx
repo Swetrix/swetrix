@@ -297,7 +297,7 @@ const CaptchaSettings = ({
     pageTitle += ` ${TITLE_SUFFIX}`
 
     document.title = pageTitle
-  }, [form, t])
+  }, [form, t, isSettings])
 
   const onRegenerateSecretKey = async () => {
     try {

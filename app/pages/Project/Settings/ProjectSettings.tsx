@@ -384,7 +384,7 @@ const ProjectSettings = ({
     pageTitle += ` ${TITLE_SUFFIX}`
 
     document.title = pageTitle
-  }, [form, t])
+  }, [form, t, isSettings])
 
   return (
     <div

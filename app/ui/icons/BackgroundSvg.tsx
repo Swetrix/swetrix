@@ -9,7 +9,9 @@ interface IBackgroundSvg {
   theme: 'dark' | 'light'
 }
 
-const BackgroundSvg: React.FC<IBackgroundSvg> = ({ className, type, children, theme }): JSX.Element => {
+const BackgroundSvg: React.FC<IBackgroundSvg> = ({
+  className, type, children, theme,
+}): JSX.Element => {
   if (type === 'shapes') {
     return (
       <svg className={className} width='112' height='112' viewBox='0 0 112 112' fill='none' xmlns='http://www.w3.org/2000/svg'>
@@ -112,7 +114,7 @@ BackgroundSvg.propTypes = {
 
 BackgroundSvg.defaultProps = {
   className: '',
-  type: 'shapes',
+  children: undefined,
 }
 
 export default BackgroundSvg

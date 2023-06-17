@@ -2,8 +2,8 @@ import { call, put } from 'redux-saga/effects'
 import Debug from 'debug'
 
 import UIActions from 'redux/reducers/ui'
-import { IStats } from '../../../models/IStats'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
+import { IStats } from '../../../models/IStats'
 const { getGeneralStats, logoutApi } = require('api')
 
 const debug = Debug('swetrix:rx:s:logout')

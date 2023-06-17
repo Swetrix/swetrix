@@ -134,8 +134,16 @@ const ViewProject = ({
   const { name } = project as IProject
 
   useEffect(() => {
-    document.title = `${name} ${TITLE_SUFFIX}`
-  }, [project])
+    let pageTitle = name
+
+    if (!name) {
+      pageTitle = t('titles.main')
+    }
+
+    pageTitle += ` ${TITLE_SUFFIX}`
+
+    document.title = pageTitle
+  }, [name, t])
 
   // @ts-ignore
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])

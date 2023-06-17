@@ -392,10 +392,15 @@ const ViewProject = ({
 
   useEffect(() => {
     let pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveStats[id]} - ${name}` : name
+
+    if (!pageTitle) {
+      pageTitle = t('titles.main')
+    }
+
     pageTitle += ` ${TITLE_SUFFIX}`
 
     document.title = pageTitle
-  }, [project, user])
+  }, [name, user, liveStats, id, t])
 
   // sharedRoles is a role for shared project
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
