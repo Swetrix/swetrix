@@ -55,8 +55,8 @@ body {
   position: relative
 }
 
-.loader .first,
-.loader .second {
+.loader-head .first,
+.loader-head .second {
   background-color: #4f46e5;
   bottom: 0;
   left: 0;
@@ -71,13 +71,13 @@ body {
   transform: scaleX(0)
 }
 
-.loader .first {
+.loader-head .first {
   -webkit-animation: first 2s linear infinite;
   -moz-animation: first 2s linear infinite;
   animation: first 2s linear infinite
 }
 
-.loader .second {
+.loader-head .second {
   -webkit-animation: second 2s linear infinite;
   -moz-animation: second 2s linear infinite;
   animation: second 2s linear infinite
