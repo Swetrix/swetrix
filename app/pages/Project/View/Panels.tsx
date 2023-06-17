@@ -132,7 +132,7 @@ const PanelContainer = ({
               onClick={() => setActiveFragment(1)}
             />
             <ArrowsPointingOutIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer text-gray-900 dark:text-gray-50', {
+              className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
                 hidden: activeFragment === 0,
               })}
               onClick={openModal}
