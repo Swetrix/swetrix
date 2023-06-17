@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import { customAlphabet } from 'nanoid'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _join from 'lodash/join'
@@ -51,10 +52,14 @@ import {
 import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber } from './entity'
 import { AddSubscriberType } from './types'
-import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
+import { CreateProjectDTO, GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
 import { ReportFrequency } from './enums'
 
 dayjs.extend(utc)
+
+// A list of characters that can be used in a Project ID
+const LEGAL_PID_CHARACTERS = '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
+export const generateProjectId = customAlphabet(LEGAL_PID_CHARACTERS, 12)
 
 // const updateProjectRedis = async (id: string, project: Project) => {
 //   const key = getRedisProjectKey(id)
@@ -358,10 +363,16 @@ export class ProjectService {
     throw new ForbiddenException(message)
   }
 
-  async checkIfIDUnique(projectID: string): Promise<void> {
-    const project = await this.findOne(projectID)
+  async isPIDUnique(pid: string): Promise<boolean> {
+    const project = await this.findOne(pid)
 
-    if (project) {
+    return !project
+  }
+
+  async checkIfIDUnique(pid: string): Promise<void> {
+    const isUnique = this.isPIDUnique(pid)
+
+    if (!isUnique) {
       throw new BadRequestException('Selected project ID is already in use')
     }
   }
@@ -392,13 +403,18 @@ export class ProjectService {
     ])
   }
 
-  validateProject(projectDTO: ProjectDTO) {
+  validateProject(projectDTO: ProjectDTO | CreateProjectDTO) {
+    if (_size(projectDTO.name) > 50)
+      throw new UnprocessableEntityException('The project name is too long')
+
+    if (projectDTO instanceof CreateProjectDTO) {
+      return
+    }
+
     if (!isValidPID(projectDTO.id))
       throw new UnprocessableEntityException(
         'The provided Project ID (pid) is incorrect',
       )
-    if (_size(projectDTO.name) > 50)
-      throw new UnprocessableEntityException('The project name is too long')
     if (_size(_join(projectDTO.origins, ',')) > 300)
       throw new UnprocessableEntityException(
         'The list of allowed origins has to be smaller than 300 symbols',
