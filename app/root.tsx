@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderArgs } from '@remix-run/node'
+import type { LinksFunction, LoaderArgs, V2_MetaFunction } from '@remix-run/node'
 import { json } from '@remix-run/node'
 import {
   Links,
@@ -64,6 +64,26 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: FONTS_URL },
 ]
 
+export const meta: V2_MetaFunction = () => [
+  { charSet: 'utf-8' },
+  { name: 'theme-color', content: '#818cf8' },
+  { name: 'description', content: 'Ultimate open-source analytics to satisfy all your needs' },
+  { name: 'twitter:title', content: 'Swetrix | Ultimate open-source analytics to satisfy all your needs' },
+  { name: 'twitter:site', content: '@swetrix' },
+  { name: 'twitter:description', content: 'Swetrix is a cookie-less, fully opensource and privacy-first web analytics service which provides a huge variety of services' },
+  { name: 'twitter:card', content: 'summary_large_image' },
+  { property: 'og:title', content: 'Swetrix' },
+  { property: 'og:description', content: 'Ultimate open-source analytics to satisfy all your needs' },
+  { property: 'og:image', content: 'https://swetrix.com/assets/og_image.png' },
+  { property: 'og:site_name', content: 'Swetrix' },
+  { property: 'og:url', content: 'https://swetrix.com' },
+  { property: 'og:type', content: 'website' },
+  { name: 'google', content: 'notranslate' },
+  // { name: 'apple-mobile-web-app-title', content: 'Swetrix' },
+  // { name: 'application-name', content: 'Swetrix' },
+]
+
+
 // const removeObsoleteAuthTokens = () => {
 //   const accessToken = getAccessToken()
 //   const refreshToken = getRefreshToken()
@@ -118,10 +138,9 @@ export default function App() {
   return (
     <html className={theme} lang={locale} dir={i18n.dir()}>
       <head>
-        <meta charSet='utf-8' />
+        <Meta />
         <title>{title}</title>
         <meta name='viewport' content='width=device-width,initial-scale=1' />
-        <Meta />
         <Links />
         {theme === 'dark' && <link rel='stylesheet' href={FlatpickrDarkCss} />}
         {theme === 'light' && <link rel='stylesheet' href={FlatpickrLightCss} />}
