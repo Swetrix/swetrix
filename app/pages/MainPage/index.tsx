@@ -410,7 +410,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                     {t('main.signup')}
                   </p>
                   <div className='mt-6'>
-                    <SignUp />
+                    <SignUp ssrTheme={ssrTheme} />
                   </div>
                 </div>
                 <div className='px-4 sm:px-10'>
@@ -446,12 +446,12 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
         {/* end block singup */}
         {/* Core features section */}
         <section className='bg-white dark:bg-slate-900 pt-14 relative pb-14'>
-          <BackgroundSvg className='absolute -left-8' type='shapes' />
+          <BackgroundSvg theme={theme} className='absolute -left-8' type='shapes' />
           <div className='mx-auto text-slate-900 font-extrabold text-3xl sm:text-5xl w-fit relative'>
             <h2 className='relative z-20 dark:text-white'>
               {t('main.coreFeaturesBlock')}
             </h2>
-            <BackgroundSvg className='absolute right-0 sm:-right-16 top-9 z-10 opacity-30' type='semicircle' />
+            <BackgroundSvg theme={theme} className='absolute right-0 sm:-right-16 top-9 z-10 opacity-30' type='semicircle' />
           </div>
           <div className='mt-[60px] flex items-center max-w-7xl w-full mx-auto flex-wrap justify-center xl:justify-between'>
             {_map(t('main.features', { returnObjects: true }), (item: {
@@ -467,7 +467,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                 </div>
             ))}
           </div>
-          <BackgroundSvg className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
+          <BackgroundSvg theme={theme} className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
         </section>
         {/* end Core features section */}
         {/* section supports */}
@@ -655,10 +655,10 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
         {/* section Testimonials */}
         <section className='bg-white dark:bg-slate-900 pt-20 pb-20 relative'>
           <div className='absolute right-0 top-0'>
-            <BackgroundSvg type='twolinecircle2' />
+            <BackgroundSvg theme={theme} type='twolinecircle2' />
           </div>
           <div className='absolute rotate-[135deg] left-0 z-0'>
-            <BackgroundSvg type='shapes' />
+            <BackgroundSvg theme={theme} type='shapes' />
           </div>
           <div className='max-w-[1000px] w-full mx-auto'>
             <h2 className='text-slate-900 text-center font-extrabold text-5xl relative z-20 dark:text-white'>
@@ -788,10 +788,10 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
         {/* Become a developer */}
         <section className='bg-white dark:bg-slate-900 pt-20 pb-44 relative'>
           <div className='absolute right-0 top-16 z-0'>
-            <BackgroundSvg type='threecircle' />
+            <BackgroundSvg theme={theme} type='threecircle' />
           </div>
           <div className='absolute -left-9 top-52 rotate-90'>
-            <BackgroundSvg type='shapes' />
+            <BackgroundSvg theme={theme} type='shapes' />
           </div>
           <div className='max-w-5xl w-full mx-auto px-3'>
             <div className='max-w-sm w-full mx-auto'>

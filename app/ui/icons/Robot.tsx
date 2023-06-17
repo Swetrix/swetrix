@@ -1,16 +1,16 @@
 import React from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
-import { StateType } from 'redux/store'
 
-const Robot = ({
-  className, containerClassName,
-}: {
+interface IRobot {
   className?: string,
   containerClassName?: string,
+  theme: 'dark' | 'light'
+}
+
+const Robot: React.FC<IRobot> = ({
+  className, containerClassName, theme,
 }): JSX.Element => {
-  const theme = useSelector((state: StateType) => state.ui.theme.theme)
   const cn = cx(className, {
     'fill-text-gray-700': theme === 'dark',
     'fill-white': theme === 'light',

@@ -38,10 +38,11 @@ interface ISignin {
   loginSuccess: (user: IUser) => void,
   loginFailed: (error: string) => void,
   authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  ssrTheme: string,
 }
 
 const Signin = ({
-  login, loginSuccess, loginFailed, authSSO,
+  login, loginSuccess, loginFailed, authSSO, ssrTheme,
 }: ISignin): JSX.Element => {
   const { t }: {
     t: (key: string, optinions?: {
@@ -268,6 +269,7 @@ const Signin = ({
             authSSO={authSSO}
             callback={loginCallback}
             dontRemember={form.dontRemember}
+            ssrTheme={ssrTheme}
           />
         </div>
         )}
@@ -281,6 +283,7 @@ Signin.propTypes = {
   loginSuccess: PropTypes.func.isRequired,
   loginFailed: PropTypes.func.isRequired,
   authSSO: PropTypes.func.isRequired,
+  ssrTheme: PropTypes.string.isRequired,
 }
 
 export default memo(withAuthentication(Signin, auth.notAuthenticated))

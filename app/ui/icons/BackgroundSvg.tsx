@@ -1,15 +1,15 @@
 import React from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
-import { getCookie } from 'utils/cookie'
 
-const BackgroundSvg = ({ className, type, children }: {
-  className?: string,
-  type: 'shapes' | 'circle' | 'semicircle' | 'twolinecircle' | 'threecircle' | 'twolinecircle2',
-  children?: JSX.Element,
-}): JSX.Element => {
-  const theme = getCookie('colour-theme') || 'light'
+interface IBackgroundSvg {
+  className?: string
+  type: 'shapes' | 'circle' | 'semicircle' | 'twolinecircle' | 'threecircle' | 'twolinecircle2'
+  children?: JSX.Element
+  theme: 'dark' | 'light'
+}
 
+const BackgroundSvg: React.FC<IBackgroundSvg> = ({ className, type, children, theme }): JSX.Element => {
   if (type === 'shapes') {
     return (
       <svg className={className} width='112' height='112' viewBox='0 0 112 112' fill='none' xmlns='http://www.w3.org/2000/svg'>
@@ -101,21 +101,18 @@ const BackgroundSvg = ({ className, type, children }: {
 
   return (
     <svg width='112' height='112' viewBox='0 0 112 112' fill='none' xmlns='http://www.w3.org/2000/svg'>
-      { children }
+      {children}
     </svg>
   )
 }
 
 BackgroundSvg.propTypes = {
   className: PropTypes.string,
-  type: PropTypes.oneOf(['shapes', 'circle', 'semicircle', 'twolinecircle', 'threecircle', 'twolinecircle2']),
-  children: PropTypes.node,
 }
 
 BackgroundSvg.defaultProps = {
   className: '',
   type: 'shapes',
-  children: null,
 }
 
 export default BackgroundSvg

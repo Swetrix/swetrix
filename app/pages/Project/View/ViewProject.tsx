@@ -46,7 +46,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, roleViewer, MAX_MONTHS_IN_PAST, PROJECT_TABS,
   TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin, TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf,
+  PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE, PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -120,12 +120,15 @@ interface IViewProject {
   password: {
     [key: string]: string,
   },
+  theme: 'dark' | 'light',
+  ssrTheme: 'dark' | 'light',
 }
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
-  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password,
+  projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password, theme,
+  ssrTheme,
 }: IViewProject) => {
   // t is used for translation
   const { t, i18n: { language } }: {
@@ -136,6 +139,8 @@ const ViewProject = ({
       language: string,
     },
   } = useTranslation('common')
+
+  const _theme = isBrowser ? theme : ssrTheme
 
   // periodPairs is used for dropdown and updated when t changes
   const [periodPairs, setPeriodPairs] = useState<{
@@ -161,6 +166,7 @@ const ViewProject = ({
   const dashboardRef = useRef<HTMLDivElement>(null)
 
   // { id } is a project id from url
+  // @ts-ignore
   const { id }: {
     id: string
   } = useParams()
@@ -1777,7 +1783,7 @@ const ViewProject = ({
                             '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300': !_isEmpty(forecasedChartData),
                           })}
                         >
-                          <Robot containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
+                          <Robot theme={_theme} containerClassName='w-5 h-5' className='text-gray-700 dark:text-gray-50' />
                         </button>
                       </div>
                     )}

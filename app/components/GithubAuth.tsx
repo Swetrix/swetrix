@@ -7,11 +7,12 @@ import Button from 'ui/Button'
 import { StateType } from 'redux/store/index'
 import GithubDarkSVG from 'ui/icons/GithubDark'
 import GithubLightSVG from 'ui/icons/GithubLight'
-import { SSO_PROVIDERS } from 'redux/constants'
+import { SSO_PROVIDERS, isBrowser } from 'redux/constants'
 
 interface IGoogleAuth {
   setIsLoading: (isLoading: boolean) => void,
   authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  ssrTheme: string,
   callback?: any,
   dontRemember?: boolean,
   isMiniButton?: boolean,
@@ -19,10 +20,11 @@ interface IGoogleAuth {
 }
 
 const GithubAuth: React.FC<IGoogleAuth> = ({
-  setIsLoading, authSSO, dontRemember, callback, isMiniButton, className,
+  setIsLoading, authSSO, dontRemember, callback, isMiniButton, className, ssrTheme,
 }) => {
   const { t } = useTranslation()
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
+  const theme = isBrowser ? reduxTheme : ssrTheme
 
   const googleLogin = async () => {
     setIsLoading(true)

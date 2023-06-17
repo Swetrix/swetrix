@@ -42,9 +42,10 @@ interface ISignup {
       [key: string]: string | number,
     }) => string, callback: (res: any) => void) => void,
   authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  ssrTheme: string,
 }
 
-const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
+const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
   const { t }: {
     t: (key: string, options?: {
       [key: string]: string | number,
@@ -265,6 +266,7 @@ const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
               authSSO={authSSO}
               callback={signUpCallback}
               dontRemember={form.dontRemember}
+              ssrTheme={ssrTheme}
             />
           </div>
         </form>
@@ -276,6 +278,7 @@ const Signup = ({ signup, authSSO }: ISignup): JSX.Element => {
 Signup.propTypes = {
   signup: PropTypes.func.isRequired,
   authSSO: PropTypes.func.isRequired,
+  ssrTheme: PropTypes.string.isRequired,
 }
 
 export default memo(withAuthentication(Signup, auth.notAuthenticated))

@@ -30,7 +30,11 @@ interface ISignUpForm {
   checkIfLeaked: boolean,
 }
 
-const BasicSignup = (): JSX.Element => {
+interface IBasicSignup {
+  ssrTheme: string,
+}
+
+const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
   const { t }: {
     t: (key: string, optinions?: {
       [key: string]: string | number,
@@ -206,6 +210,7 @@ const BasicSignup = (): JSX.Element => {
             className='w-full flex justify-center'
             setIsLoading={setIsLoading}
             authSSO={authSSO}
+            ssrTheme={ssrTheme}
             isMiniButton
           />
         </div>

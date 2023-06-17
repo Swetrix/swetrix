@@ -26,6 +26,7 @@ const mapStateToProps = (state: StateType) => {
       customEventsPrefs: state.ui.cache.customEventsPrefs,
       liveStats: state.ui.projects.liveStats,
       password: state.ui.projects.password,
+      theme: state.ui.theme.theme,
     }
   }
 
@@ -44,6 +45,7 @@ const mapStateToProps = (state: StateType) => {
     customEventsPrefs: state.ui.cache.customEventsPrefs,
     liveStats: state.ui.projects.liveStats,
     password: state.ui.projects.password,
+    theme: state.ui.theme.theme,
   }
 }
 
