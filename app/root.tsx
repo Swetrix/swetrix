@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderArgs, V2_MetaFunction } from '@remix-run/node'
+import type { LinksFunction, LoaderArgs, V2_MetaFunction, HeadersFunction } from '@remix-run/node'
 import { json } from '@remix-run/node'
 import {
   Links,
@@ -82,6 +82,17 @@ export const meta: V2_MetaFunction = () => [
   // { name: 'apple-mobile-web-app-title', content: 'Swetrix' },
   // { name: 'application-name', content: 'Swetrix' },
 ]
+
+export const headers: HeadersFunction = () => ({
+  'access-control-allow-origin': '*',
+  'Cross-Origin-Embedder-Policy': 'require-corp; report-to="default";',
+  'Cross-Origin-Opener-Policy': 'same-site; report-to="default";',
+  'Cross-Origin-Resource-Policy': 'cross-origin',
+  'Permissions-Policy': 'interest-cohort=()',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'X-Powered-By': 'Mountain Dew',
+  'X-XSS-Protection': '1; mode=block',
+})
 
 // const removeObsoleteAuthTokens = () => {
 //   const accessToken = getAccessToken()
