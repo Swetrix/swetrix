@@ -51,10 +51,7 @@ import {
 import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber } from './entity'
 import { AddSubscriberType } from './types'
-import {
-  GetSubscribersQueriesDto,
-  UpdateSubscriberBodyDto,
-} from './dto'
+import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
 import { ReportFrequency } from './enums'
 
 dayjs.extend(utc)
