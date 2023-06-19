@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
+import net from 'net'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
@@ -20,8 +21,6 @@ import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { compareSync } from 'bcrypt'
-// @ts-ignore
-import * as validateIP from 'validate-ip-node'
 
 import { UserService } from '../user/user.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -435,7 +434,7 @@ export class ProjectService {
     })
 
     _map(projectDTO.ipBlacklist, ip => {
-      if (!validateIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
         throw new ConflictException(`IP address ${ip} is not correct`)
       }
     })
