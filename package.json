@@ -81,7 +81,6 @@
     "typeorm": "^0.2.45",
     "ua-parser-js": "^1.0.35",
     "uuid": "^9.0.0",
-    "validate-ip-node": "^1.0.8",
     "validator": "^13.9.0"
   },
   "devDependencies": {
