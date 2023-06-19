@@ -1,4 +1,6 @@
-import type { LinksFunction, LoaderArgs, V2_MetaFunction, HeadersFunction } from '@remix-run/node'
+import type {
+  LinksFunction, LoaderArgs, V2_MetaFunction, HeadersFunction,
+} from '@remix-run/node'
 import { json } from '@remix-run/node'
 import {
   Links,
