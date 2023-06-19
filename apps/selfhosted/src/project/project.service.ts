@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
+import net from 'net'
 import { customAlphabet } from 'nanoid'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isString from 'lodash/isString'
@@ -16,8 +17,6 @@ import * as _map from 'lodash/map'
 import * as _isNull from 'lodash/isNull'
 import * as _split from 'lodash/split'
 import * as _trim from 'lodash/trim'
-// @ts-ignore
-import * as validateIP from 'validate-ip-node'
 
 import { Project } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
@@ -191,7 +190,7 @@ export class ProjectService {
     })
 
     _map(projectDTO.ipBlacklist, ip => {
-      if (!validateIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
         throw new ConflictException(`IP address ${ip} is not correct`)
       }
     })
