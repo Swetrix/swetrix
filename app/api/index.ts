@@ -99,7 +99,7 @@ export const logoutApi = (refreshToken: string | null) =>
 
 export const logoutAllApi = (refreshToken: string | null) =>
   axios
-    .post(`${baseURL}v1/auth/logout`, null, {
+    .post(`${baseURL}v1/auth/logout-all`, null, {
       headers: {
         Authorization: `Bearer ${refreshToken}`,
       },
