@@ -227,8 +227,9 @@ main {
   font-weight: bold;
 }
 .description {
-  margin-top: 4rem;
-  font-size: 2rem;
+  margin-top: 3rem;
+  font-size: 2.5rem;
+  letter-spacing: 0.05em;
 }
 `
 
