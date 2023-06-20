@@ -372,6 +372,7 @@
     ]
   },
   "profileSettings": {
+    "logoutAll": "Log out from all devices",
     "general": "General settings",
     "update": "Update profile",
     "email": "Email reports",
