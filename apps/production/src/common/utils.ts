@@ -3,6 +3,8 @@ import { hash } from 'blake3'
 import * as randomstring from 'randomstring'
 import * as _sample from 'lodash/sample'
 import * as _toNumber from 'lodash/toNumber'
+import * as _replace from 'lodash/replace'
+import * as _find from 'lodash/find'
 import * as _round from 'lodash/round'
 
 import { redis, isDevelopment } from './constants'
@@ -37,6 +39,21 @@ const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
 
 const getRandomTip = (language = 'en'): string => {
   return _sample(marketingTips[language])
+}
+
+const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
+
+const formatterLookup = [
+  { value: 1, symbol: '' },
+  { value: 1e3, symbol: 'k' },
+  { value: 1e6, symbol: 'M' },
+  { value: 1e9, symbol: 'B' },
+]
+
+const nFormatter = (num: any, digits = 1) => {
+  const item = _find(formatterLookup.slice().reverse(), ({ value }) => Math.abs(num) >= value)
+
+  return item ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol : '0'
 }
 
 // 'action' is used as a salt to differ rate limiting routes
@@ -115,4 +132,5 @@ export {
   calculateRelativePercentage,
   millisecondsToSeconds,
   generateRandomString,
+  nFormatter,
 }

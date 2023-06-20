@@ -55,6 +55,7 @@ import { ProjectSubscriber } from './entity'
 import { AddSubscriberType } from './types'
 import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
 import { ReportFrequency } from './enums'
+import { nFormatter } from '../common/utils'
 
 dayjs.extend(utc)
 
@@ -249,11 +250,9 @@ const getCompiledStyles = (name: string): string => {
   })
 }
 
-const getCompiledHTML = (name: string, compiledStyles: string) => {
+const getCompiledHTML = (title: string, desc: string, styles: string) => {
   return handlebars.compile(previewHTML)({
-    title: name,
-    desc: '8k visitors in the last month',
-    styles: compiledStyles,
+    title, desc, styles,
   })
 }
 
@@ -925,15 +924,32 @@ export class ProjectService {
     })
   }
 
-  getOgHTML(name: string) {
+  getOgHTML(name: string, desc = '8k visitors in the last month') {
     const styles = getCompiledStyles(name)
-    const html = getCompiledHTML(name, styles)
+    const html = getCompiledHTML(name, desc, styles)
 
     return html
   }
 
-  async getOgImage(name: string) {
-    const html = this.getOgHTML(name)
+  async getOgImage(pid: string, name: string) {
+    const from = dayjs
+      .utc()
+      .subtract(1, 'month')
+      .startOf('month')
+      .format('YYYY-MM-DD 00:00:00')
+    const to = dayjs
+      .utc()
+      .subtract(1, 'month')
+      .endOf('month')
+      .format('YYYY-MM-DD 23:59:59')
+
+    const formatted = nFormatter(
+      await this.countVisitorsFromTo(pid, from, to),
+      0,
+    )
+    const desc = `${formatted} visitors in the last month`
+
+    const html = this.getOgHTML(name, desc)
 
     const browser = await puppeteer.launch({
       headless: 'new',
@@ -975,5 +991,24 @@ export class ProjectService {
     await browser.close();
 
     return image
+  }
+
+  async countVisitorsFromTo(
+    pid: string,
+    from: string,
+    to: string,
+  ): Promise<number> {
+    const query = 'SELECT count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String} AND unique=\'1\''
+    const params = { pid, from, to }
+    let count = 0
+
+    try {
+      const result = await clickhouse.query(query, { params }).toPromise()
+      count = result[0]['count()']
+    } catch (reason) {
+      console.error('[ERROR](project service -> countVisitorsFromTo) Error while counting visitors', reason)
+    }
+
+    return count
   }
 }

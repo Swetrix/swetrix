@@ -1221,12 +1221,13 @@ export class ProjectController {
   @HttpCode(200)
   @Header('Content-Type', 'image/png')
   // 1 day cache
-  // @Header('Cache-Control', 'immutable, no-transform, s-max-age=86400, max-age=86400')
+  @Header('Cache-Control', 'immutable, no-transform, s-max-age=86400, max-age=86400')
   @ApiResponse({ status: 200 })
   async getOgImage(
     @Param('id') id: string,
     @Res() res: Response,
   ): Promise<any> {
+    // TODO: Cache the generated image in the filesystem (or CDN) for 1 day and return it instead of generating it again
     this.logger.log({ id }, 'GET /project/ogimage/:id')
 
     if (!isValidPID(id)) {
@@ -1238,27 +1239,22 @@ export class ProjectController {
     const project = await this.projectService.findOne(id)
 
     if (_isEmpty(project)) {
-      throw new NotFoundException()
+      // TODO: Return default image
+      throw new NotFoundException('Project not found.')
     }
 
-    console.log(project)
+    if (!project.public) {
+      // TODO: Return default image
+      throw new ForbiddenException()
+    }
 
-    // if (!project.public) {
-    //   throw new ForbiddenException()
-    // }
-
-    // project.name
-    const image = await this.projectService.getOgImage('My Awesome Project')
+    const image = await this.projectService.getOgImage(project.id, project.name)
 
     res.end(image)
-    // return image
   }
 
   @Get('/ogimage/:id/html')
   @HttpCode(200)
-  // @Header('Content-Type', 'image/png')
-  // 1 day cache
-  // @Header('Cache-Control', 'immutable, no-transform, s-max-age=86400, max-age=86400')
   @ApiResponse({ status: 200 })
   async getOgHTML(
     @Param('id') id: string,
@@ -1266,6 +1262,10 @@ export class ProjectController {
   ): Promise<any> {
     this.logger.log({ id }, 'GET /project/ogimage/:id')
 
+    if (!isDevelopment) {
+      throw new ForbiddenException('This route is only available in dev mode')
+    }
+
     if (!isValidPID(id)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
@@ -1275,10 +1275,8 @@ export class ProjectController {
     const project = await this.projectService.findOne(id)
 
     if (_isEmpty(project)) {
-      throw new NotFoundException()
+      throw new NotFoundException('Project not found')
     }
-
-    console.log(project)
 
     const html = this.projectService.getOgHTML('My Awesome Project')
 
