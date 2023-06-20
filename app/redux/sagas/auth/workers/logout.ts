@@ -8,11 +8,11 @@ const { getGeneralStats, logoutApi, logoutAllApi } = require('api')
 
 const debug = Debug('swetrix:rx:s:logout')
 
-export default function* logoutWorker({ payload: { basedOn401Error, logoutAll } }: { payload: { basedOn401Error: boolean, logoutAll: boolean } }) {
+export default function* logoutWorker({ payload: { basedOn401Error, isLogoutAll } }: { payload: { basedOn401Error: boolean, isLogoutAll: boolean } }) {
   try {
     const refreshToken = getRefreshToken()
 
-    if (logoutAll) {
+    if (isLogoutAll) {
       yield call(logoutAllApi, refreshToken, true)
     } else {
       yield call(logoutApi, refreshToken)
