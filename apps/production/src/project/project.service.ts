@@ -133,6 +133,9 @@ const previewHTML = `
   </head>
   <body id='body'>
     <main>
+      <div class='gradient'>
+        <div class='gradient__inner'></div>
+      </div>
       <div>
         <div class='title'>{{title}}</div>
         <p class='description'>{{desc}}</p>
@@ -173,6 +176,28 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+  isolation: isolate;
+}
+.gradient {
+  position: absolute;
+  filter: blur(64px);
+  padding-left: 9rem;
+  padding-right: 9rem;
+  overflow: hidden;
+  z-index: -10;
+  left: 0;
+  right: 0;
+  top: -20px;
+}
+.gradient__inner {
+  margin-left: auto;
+  margin-right: auto;
+  aspect-ratio: 1155/678;
+  width: 72.1875rem;
+  background-image: linear-gradient(to top right, #ff80b5, #9089fc);
+  opacity: .3;
+  clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%);
 }
 .footer {
   position: relative;
