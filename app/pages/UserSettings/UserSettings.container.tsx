@@ -145,6 +145,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(sagaActions.updateShowLiveVisitorsInTitle(show, callback))
   },
   logoutAll: () => {
+    dispatch(authActions.logout())
     dispatch(sagaActions.logout(false, true))
   },
 })
