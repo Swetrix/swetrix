@@ -1041,3 +1041,12 @@ export const getUsageInfo = () =>
         ? error.response.data
         : error.response.data.message
     })
+
+export const logoutAllApi = () =>
+  api
+    .get('v1/auth/logout-all')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw new Error(error.respon)
+    })
