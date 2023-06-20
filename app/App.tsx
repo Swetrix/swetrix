@@ -144,7 +144,7 @@ const App: React.FC<IApp> = ({ ssrTheme }) => {
           dispatch(authActions.finishLoading())
         } catch (e) {
           dispatch(authActions.logout())
-          dispatch(sagaActions.logout(false))
+          dispatch(sagaActions.logout(false, false))
         }
       }
     })()

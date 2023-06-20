@@ -44,7 +44,7 @@ const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
     })
     .catch((error) => {
       store.dispatch(authActions.logout())
-      store.dispatch(sagaActions.logout(true))
+      store.dispatch(sagaActions.logout(true, false))
       return Promise.reject(error)
     })
 
@@ -95,6 +95,19 @@ export const logoutApi = (refreshToken: string | null) =>
       throw _isEmpty(error.response.data?.message)
         ? error.response.data
         : error.response.data.message
+    })
+
+export const logoutAllApi = (refreshToken: string | null) =>
+  axios
+    .post(`${baseURL}v1/auth/logout`, null, {
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+      },
+    })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw new Error(error.respon)
     })
 
 export const refreshToken = () =>
@@ -1040,13 +1053,4 @@ export const getUsageInfo = () =>
       throw _isEmpty(error.response.data?.message)
         ? error.response.data
         : error.response.data.message
-    })
-
-export const logoutAllApi = () =>
-  api
-    .get('v1/auth/logout-all')
-    .then((response) => response.data)
-    .catch((error) => {
-      debug('%s', error)
-      throw new Error(error.respon)
     })

@@ -627,7 +627,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme }): JSX.Element => {
 
   const logoutHandler = () => {
     dispatch(authActions.logout())
-    _dispatch(sagaActions.logout(false))
+    _dispatch(sagaActions.logout(false, false))
   }
 
   const switchTheme = (_theme?: string) => {
