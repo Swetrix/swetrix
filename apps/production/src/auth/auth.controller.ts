@@ -421,6 +421,37 @@ export class AuthController {
     await this.authService.logout(user.id, refreshToken)
   }
 
+  @ApiOperation({ summary: 'Logout from all devices' })
+  @ApiOkResponse({
+    description: 'Logged out from all devices',
+  })
+  @Public()
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post('logout-all')
+  @HttpCode(200)
+  public async logoutAll(
+    @CurrentUserId() userId: string,
+    @CurrentUser('refreshToken') refreshToken: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isRefreshTokenValid = await this.authService.checkRefreshToken(
+      user.id,
+      refreshToken,
+    )
+
+    if (!isRefreshTokenValid) {
+      throw new ConflictException(i18n.t('auth.invalidRefreshToken'))
+    }
+
+    await this.authService.logoutAll(user.id)
+  }
+
   // SSO section
   @ApiOperation({ summary: 'Generate SSO authentication URL' })
   @Post('sso/generate')

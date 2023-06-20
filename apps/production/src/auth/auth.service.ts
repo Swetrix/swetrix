@@ -463,6 +463,10 @@ export class AuthService {
     await this.userService.deleteRefreshToken(userId, refreshToken)
   }
 
+  async logoutAll(userId: string) {
+    await this.userService.deleteAllRefreshTokens(userId)
+  }
+
   async validateApiKey(apiKey: string): Promise<User | null> {
     return this.userService.findUserByApiKey(apiKey)
   }
