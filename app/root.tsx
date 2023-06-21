@@ -67,22 +67,8 @@ export const links: LinksFunction = () => [
 ]
 
 export const meta: V2_MetaFunction = () => [
-  { charSet: 'utf-8' },
-  { name: 'theme-color', content: '#818cf8' },
-  { name: 'description', content: 'Ultimate open-source analytics to satisfy all your needs' },
-  { name: 'twitter:title', content: 'Swetrix | Ultimate open-source analytics to satisfy all your needs' },
-  { name: 'twitter:site', content: '@swetrix' },
-  { name: 'twitter:description', content: 'Swetrix is a cookie-less, fully opensource and privacy-first web analytics service which provides a huge variety of services' },
-  { name: 'twitter:card', content: 'summary_large_image' },
-  { property: 'og:title', content: 'Swetrix' },
-  { property: 'og:description', content: 'Ultimate open-source analytics to satisfy all your needs' },
+  { property: 'twitter:image', content: 'https://swetrix.com/assets/og_image.png' },
   { property: 'og:image', content: 'https://swetrix.com/assets/og_image.png' },
-  { property: 'og:site_name', content: 'Swetrix' },
-  { property: 'og:url', content: 'https://swetrix.com' },
-  { property: 'og:type', content: 'website' },
-  { name: 'google', content: 'notranslate' },
-  // { name: 'apple-mobile-web-app-title', content: 'Swetrix' },
-  // { name: 'application-name', content: 'Swetrix' },
 ]
 
 export const headers: HeadersFunction = () => ({
@@ -150,8 +136,23 @@ export default function App() {
   return (
     <html className={theme} lang={locale} dir={i18n.dir()}>
       <head>
-        <Meta />
+        <meta charSet='utf-8' />
         <title>{title}</title>
+        <meta name='theme-color' content='#818cf8' />
+        <meta name='description' content='Ultimate open-source analytics to satisfy all your needs' />
+        <meta name='twitter:title' content='Swetrix | Ultimate open-source analytics to satisfy all your needs' />
+        <meta name='twitter:site' content='@swetrix' />
+        <meta name='twitter:description' content='Swetrix is a cookie-less, fully opensource and privacy-first web analytics service which provides a huge variety of services' />
+        <meta name='twitter:card' content='summary_large_image' />
+        <meta property='og:title' content='Swetrix' />
+        <meta property='og:description' content='Ultimate open-source analytics to satisfy all your needs' />
+        <meta property='og:site_name' content='Swetrix' />
+        <meta property='og:url' content='https://swetrix.com' />
+        <meta property='og:type' content='website' />
+        <meta name='google' content='notranslate' />
+        {/* <meta name='apple-mobile-web-app-title' content='Swetrix' /> */}
+        {/* <meta name='application-name' content='Swetrix' /> */}
+        <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Links />
         {theme === 'dark' && <link rel='stylesheet' href={FlatpickrDarkCss} />}
