@@ -35,11 +35,11 @@ const getInitialTheme = (): 'light' | 'dark' => {
     return lsTheme
   }
 
-  const userMedia = window.matchMedia('(prefers-color-scheme: dark)')
-  if (userMedia.matches) {
-    setTheme('dark')
-    return 'dark'
-  }
+  // const userMedia = window.matchMedia('(prefers-color-scheme: dark)')
+  // if (userMedia.matches) {
+  //   setTheme('dark')
+  //   return 'dark'
+  // }
 
   setTheme('light')
   return 'light' // light theme as the default
