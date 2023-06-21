@@ -277,7 +277,7 @@ export class User {
 
   @Column({
     type: 'boolean',
-    default: false,
+    default: true,
   })
   receiveLoginNotifications: boolean
 
