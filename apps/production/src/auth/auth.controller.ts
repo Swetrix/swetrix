@@ -151,7 +151,9 @@ export class AuthController {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
-    await this.authService.sendTelegramNotification(user.id, headers, ip)
+    if (user.isReceiveLoginAlerts) {
+      await this.authService.sendTelegramNotification(user.id, headers, ip)
+    }
 
     if (user.isTwoFactorAuthenticationEnabled) {
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
