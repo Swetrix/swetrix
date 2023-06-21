@@ -13,7 +13,7 @@ export default function* logoutWorker({ payload: { basedOn401Error, isLogoutAll 
     const refreshToken = getRefreshToken()
 
     if (isLogoutAll) {
-      yield call(logoutAllApi, refreshToken)
+      yield call(logoutAllApi)
     } else {
       yield call(logoutApi, refreshToken)
     }

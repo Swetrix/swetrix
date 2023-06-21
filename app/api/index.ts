@@ -97,13 +97,9 @@ export const logoutApi = (refreshToken: string | null) =>
         : error.response.data.message
     })
 
-export const logoutAllApi = (refreshToken: string | null) =>
-  axios
-    .post(`${baseURL}v1/auth/logout-all`, null, {
-      headers: {
-        Authorization: `Bearer ${refreshToken}`,
-      },
-    })
+export const logoutAllApi = () =>
+  api
+    .post(`${baseURL}v1/auth/logout-all`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
