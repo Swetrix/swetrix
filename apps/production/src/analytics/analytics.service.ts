@@ -236,7 +236,16 @@ export class AnalyticsService {
         }
       } else {
         const { hostname } = new URL(origin)
-        if (!_includes(origins, hostname)) {
+        if (
+          !_some(
+            origins,
+            (item: string) =>
+              item === hostname ||
+              item === '*' ||
+              _includes(hostname, item.replace('*', '')),
+          ) ||
+          !_includes(origins, hostname)
+        ) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
           )
