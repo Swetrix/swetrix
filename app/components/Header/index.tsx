@@ -589,7 +589,6 @@ const Header: React.FC<IHeader> = ({ ssrTheme }): JSX.Element => {
   const { pathname } = useLocation()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
-  console.log(reduxTheme, ssrTheme)
   const theme = isBrowser ? reduxTheme : ssrTheme
 
   const [rawStatus, status] = useMemo(() => {
