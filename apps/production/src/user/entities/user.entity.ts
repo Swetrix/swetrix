@@ -279,7 +279,7 @@ export class User {
     type: 'boolean',
     default: false,
   })
-  isReceiveLoginAlerts: boolean
+  receiveLoginNotifications: boolean
 
   @Column({
     type: 'enum',

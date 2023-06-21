@@ -223,7 +223,7 @@ export class AuthService {
   ) {
     const user = await this.userService.findUserById(userId)
 
-    if (!user.telegramChatId || !user.isReceiveLoginAlerts) {
+    if (!user.telegramChatId || !user.receiveLoginNotifications) {
       return
     }
 
