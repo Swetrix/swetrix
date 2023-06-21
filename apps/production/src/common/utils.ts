@@ -51,9 +51,14 @@ const formatterLookup = [
 ]
 
 const nFormatter = (num: any, digits = 1) => {
-  const item = _find(formatterLookup.slice().reverse(), ({ value }) => Math.abs(num) >= value)
+  const item = _find(
+    formatterLookup.slice().reverse(),
+    ({ value }) => Math.abs(num) >= value,
+  )
 
-  return item ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol : '0'
+  return item
+    ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol
+    : '0'
 }
 
 // 'action' is used as a salt to differ rate limiting routes

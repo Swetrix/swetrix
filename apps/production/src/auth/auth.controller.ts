@@ -428,9 +428,7 @@ export class AuthController {
   @UseGuards(JwtRefreshTokenGuard)
   @Post('logout-all')
   @HttpCode(200)
-  public async logoutAll(
-    @CurrentUserId() userId: string,
-  ): Promise<void> {
+  public async logoutAll(@CurrentUserId() userId: string): Promise<void> {
     const user = await this.userService.findUserById(userId)
 
     if (!user) {
