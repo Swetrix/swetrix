@@ -176,19 +176,19 @@ export class UserController {
     return null
   }
 
-  @Post('/recieve-login-notification')
+  @Post('/recieve-login-notifications')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async recieveLoginNotification(
+  async receiveLoginNotifications(
     @CurrentUserId() userId: string,
-    @Body('recieveLoginNotification') recieveLoginNotification: boolean,
+    @Body('receiveLoginNotifications') receiveLoginNotifications: boolean,
   ): Promise<User> {
     this.logger.log(
-      { userId, recieveLoginNotification },
-      'POST /user/recieve-login-notification',
+      { userId, receiveLoginNotifications },
+      'POST /user/recieve-login-notifications',
     )
 
-    return this.userService.update(userId, { recieveLoginNotification })
+    return this.userService.update(userId, { receiveLoginNotifications })
   }
 
   @Post('/api-key')
