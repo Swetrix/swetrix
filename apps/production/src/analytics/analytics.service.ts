@@ -13,7 +13,6 @@ import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
 import * as _every from 'lodash/every'
-import * as _tail from 'lodash/tail'
 import * as _trim from 'lodash/trim'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -212,6 +211,30 @@ export enum DataType {
   CAPTCHA = 'captcha',
 }
 
+const isValidOrigin = (origins: string[], origin: string) => {
+  for (let i = 0; i < _size(origins); ++i) {
+    const allowedOrigin = origins[i]
+
+    // Check if the allowedOrigin is an exact match
+    if (allowedOrigin === origin) {
+      return true
+    }
+
+    // Check if the allowedOrigin contains a wildcard
+    if (_includes(allowedOrigin, '*')) {
+      // Escape the wildcard character for use in a regular expression
+      const wildcardRegex = new RegExp(allowedOrigin.replace(/\*/g, '.*'))
+
+      // Check if the origin matches the wildcard pattern
+      if (wildcardRegex.test(origin)) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
 @Injectable()
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
@@ -239,30 +262,7 @@ export class AnalyticsService {
         }
       } else {
         const { hostname } = new URL(origin)
-        if (!_includes(origins, hostname)) {
-          throw new BadRequestException(
-            "This origin is prohibited by the project's origins policy",
-          )
-        }
-
-        if (
-          _some(origins, (item: string) => {
-            const originParts = _map(_split(item, '.'), part => _trim(part))
-            const hostnameParts = _map(_split(hostname, '.'), part =>
-              _trim(part),
-            )
-
-            if (originParts.length === hostnameParts.length) {
-              return _every(
-                originParts,
-                (part: string, index: number) =>
-                  part === '*' || part === hostnameParts[index],
-              )
-            }
-
-            return false
-          })
-        ) {
+        if (!isValidOrigin(origins, hostname)) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
           )
