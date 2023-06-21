@@ -26,9 +26,9 @@ import {
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import * as _pick from 'lodash/pick'
 
-import { checkRateLimit } from 'src/common/utils'
-import { UserType, User } from 'src/user/entities/user.entity'
-import { UserService } from 'src/user/user.service'
+import { checkRateLimit } from '../common/utils'
+import { UserType, User } from '../user/entities/user.entity'
+import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
 import {
@@ -419,6 +419,25 @@ export class AuthController {
     }
 
     await this.authService.logout(user.id, refreshToken)
+  }
+
+  @ApiOperation({ summary: 'Log out from all devices' })
+  @ApiOkResponse({
+    description: 'Logged out from all devices',
+  })
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post('logout-all')
+  @HttpCode(200)
+  public async logoutAll(
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    await this.authService.logoutAll(user.id)
   }
 
   // SSO section
