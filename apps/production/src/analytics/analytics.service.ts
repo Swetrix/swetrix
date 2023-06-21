@@ -12,6 +12,9 @@ import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
+import * as _every from 'lodash/every'
+import * as _tail from 'lodash/tail'
+import * as _trim from 'lodash/trim'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -237,6 +240,29 @@ export class AnalyticsService {
       } else {
         const { hostname } = new URL(origin)
         if (!_includes(origins, hostname)) {
+          throw new BadRequestException(
+            "This origin is prohibited by the project's origins policy",
+          )
+        }
+
+        if (
+          _some(origins, (item: string) => {
+            const originParts = _map(_split(item, '.'), part => _trim(part))
+            const hostnameParts = _map(_split(hostname, '.'), part =>
+              _trim(part),
+            )
+
+            if (originParts.length === hostnameParts.length) {
+              return _every(
+                originParts,
+                (part: string, index: number) =>
+                  part === '*' || part === hostnameParts[index],
+              )
+            }
+
+            return false
+          })
+        ) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
           )
