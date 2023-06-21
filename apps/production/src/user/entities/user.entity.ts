@@ -276,6 +276,12 @@ export class User {
   isTelegramChatIdConfirmed: boolean
 
   @Column({
+    type: 'boolean',
+    default: true,
+  })
+  receiveLoginNotifications: boolean
+
+  @Column({
     type: 'enum',
     enum: TimeFormat,
     default: TimeFormat['12-hour'],
