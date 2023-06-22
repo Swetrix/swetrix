@@ -1042,13 +1042,9 @@ export const getUsageInfo = () =>
         : error.response.data.message
     })
 
-export const getFilters = (pid: string, type: string, password?: string) =>
+export const getFilters = (pid: string, type: string) =>
   api
-    .get(`log/filters?pid=${pid}&type=${type}`, {
-      headers: {
-        'x-password': password,
-      },
-    })
+    .get(`log/filters?pid=${pid}&type=${type}`)
     .then((response): string[] => response.data)
     .catch((error) => {
       debug('%s', error)

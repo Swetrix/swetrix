@@ -83,6 +83,11 @@ const ModalMessage = ({
     }
   }
 
+  useEffect(() => {
+    getFiltersList()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterType])
+
   return (
     <>
       <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
