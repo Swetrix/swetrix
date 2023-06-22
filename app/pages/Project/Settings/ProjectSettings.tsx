@@ -80,7 +80,6 @@ const ModalMessage = ({
   const getFiltersList = async () => {
     if (!_isEmpty(filterType)) {
       const res = await getFilters(pid, filterType)
-      console.log(res)
       setFilterList(res)
     }
   }
@@ -148,14 +147,20 @@ const ModalMessage = ({
               keyExtractor={(item) => item}
               onSelect={(item) => setFilterType(item)}
             />
-            <MultiSelect
-              items={_map(filterList, (item) => ({
-                label: item,
-                value: item,
-              }))}
-              selected={activeFilter}
-              onSelect={(item) => setActiveFilter(item)}
-            />
+            {(filterType && _isEmpty(filterList)) ? (
+              <MultiSelect
+                items={_map(filterList, (item) => ({
+                  label: item,
+                  value: item,
+                }))}
+                selected={activeFilter}
+                onSelect={(item) => setActiveFilter(item)}
+              />
+            ) : (
+              <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+                {t('project.settings.reseted.noFilters')}
+              </p>
+            )}
           </div>
         </div>
       )}
