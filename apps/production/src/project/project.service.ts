@@ -520,9 +520,10 @@ export class ProjectService {
   async resetFilters(
     pid: string,
     type: string,
-    filters: string
+    filters: string,
   ): Promise<void> {
-    const query = `DELETE FROM analytics WHERE pid = '${pid}' AND ${type}=${filters};`
+    console.log('resetFilters', pid, type, filters)
+    const query = `DELETE FROM analytics WHERE pid='${pid}' AND ${type}='${filters}';`
 
     await clickhouse.query(query, { params: { pid } }).toPromise()
   }
