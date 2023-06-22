@@ -635,8 +635,8 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid)
 
     await Promise.all([
-      ..._map(filters, async (f: string) => {
-        this.projectService.resetFilters(pid, type, f)
+      ..._map(filters, async (filter: string) => {
+        this.projectService.deleteByFilter(pid, type, filter)
       }),
     ])
   }
