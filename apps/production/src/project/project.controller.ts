@@ -630,9 +630,9 @@ export class ProjectController {
       throw new NotFoundException('Project not found')
     }
 
-    const filters = JSON.parse(rawFilters)
-
     this.projectService.allowedToManage(project, uid)
+
+    const filters = JSON.parse(rawFilters)
 
     await Promise.all([
       ..._map(filters, async (filter: string) => {

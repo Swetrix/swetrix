@@ -789,9 +789,9 @@ export class AnalyticsService {
   }
 
   async getFilters(pid: string, type: string): Promise<Array<string>> {
-    const query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+    const query = `SELECT {type:String} FROM analytics WHERE pid={pid:FixedString(12)} AND {type:String} IS NOT NULL GROUP BY {type:String}`
     const results = await clickhouse
-      .query(query, { params: { pid } })
+      .query(query, { params: { pid, type } })
       .toPromise()
 
     return _map(results, type)
