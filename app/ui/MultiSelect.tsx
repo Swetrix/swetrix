@@ -3,8 +3,9 @@ import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 
 const MultiSelect = ({
-  onRemove, onSelect, items, labelExtractor, keyExtractor, label, hint, placholder,
+  onRemove, onSelect, items, labelExtractor, keyExtractor, label, hint, placholder, className,
 }: {
+  className?: string
   onRemove: (item: any) => void
   onSelect: (item: any) => void
   items: any[]
@@ -16,7 +17,7 @@ const MultiSelect = ({
 }) => {
   const [selected, setSelected] = useState(false)
   return (
-    <div className='w-full flex flex-col items-center mx-auto'>
+    <div className={`w-full flex flex-col items-center ${className}`}>
       <div className='w-full'>
         <div className='flex flex-col items-center relative'>
           <div
@@ -78,6 +79,7 @@ const MultiSelect = ({
 }
 
 MultiSelect.defaultProps = {
+  className: '',
   labelExtractor: (item: any) => item,
   keyExtractor: (item: any) => item,
   hint: '',
