@@ -653,11 +653,16 @@
       "transferHint": "You can transfer '{{name}}' project to another user.\nThis user will become the project's owner and will be able to manage the project's settings, add/remove members, and invite new users.\nYou will be assigned to the project as an administrator. However, the new owner will be able to remove you from the project.",
       "transfereeEmail": "Transferee email",
       "reseted": {
+        "selectFilters": "Select filters",
         "all": "Reset all",
         "allHint": "All of the project's related analytics data will be permanently removed from our servers, but the project itself, it's settings and the ID will still be available.",
         "partially": "Reset partially",
         "partiallyDesc": "The 'Reset partially' function allows you to reset the data of a specific project within a given date range.",
-        "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered."
+        "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered.",
+        "viaFilters": "Reset via filters",
+        "viaFiltersHint": "The 'Reset via filters' function allows you to reset the data of a specific project within a given date range and with specific filters.",
+        "filtersPlaceholder": "Select filters",
+        "noFilters": "No filters selected or no data for the selected filter  type"
       },
       "protected": "Password protected Dashboard",
       "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
