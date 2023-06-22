@@ -522,7 +522,6 @@ export class ProjectService {
     type: string,
     filters: string,
   ): Promise<void> {
-    console.log('resetFilters', pid, type, filters)
     const query = `DELETE FROM analytics WHERE pid='${pid}' AND ${type}='${filters}';`
 
     await clickhouse.query(query, { params: { pid } }).toPromise()

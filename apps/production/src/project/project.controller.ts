@@ -631,7 +631,6 @@ export class ProjectController {
     }
 
     const filters = JSON.parse(filter)
-    console.log(filter, filters)
 
     this.projectService.allowedToManage(project, uid)
 
