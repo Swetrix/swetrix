@@ -26,7 +26,7 @@ import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import {
-  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially, getFilters
+  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially, getFilters,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -36,6 +36,7 @@ import FlatPicker from 'ui/Flatpicker'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routesPath'
 import Dropdown from 'ui/Dropdown'
+import MultiSelect from 'ui/MultiSelect'
 import { getFormatDate } from '../View/ViewProject.helpers'
 
 import People from './People'
@@ -140,12 +141,22 @@ const ModalMessage = ({
           </p>
           <div className='flex flex-wrap items-center'>
             <Dropdown
-              className='w-full sm:w-1/2'
               title={t('project.settings.reseted.filterType')}
               items={FILTERS_PANELS_ORDER}
               labelExtractor={(item) => t(`project.mapping.${item}`)}
               keyExtractor={(item) => item}
               onSelect={(item) => setFilterType(item)}
+            />
+            <MultiSelect
+              items={_map(filterList, (item) => ({
+                label: item,
+                value: item,
+              }))}
+              selected={_map(activeFilter, (item) => ({
+                label: item,
+                value: item,
+              }))}
+              onSelect={(item) => setActiveFilter(item)}
             />
           </div>
         </div>
