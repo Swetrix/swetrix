@@ -1050,3 +1050,12 @@ export const getFilters = (pid: string, type: string) =>
       debug('%s', error)
       throw error
     })
+
+export const resetFilters = (pid: string, type: string, filters: string[]) =>
+  api
+    .delete(`log/reset-filters/${pid}?type=${type}&filters=${JSON.stringify(filters)}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
