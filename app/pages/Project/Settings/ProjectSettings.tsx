@@ -13,6 +13,7 @@ import _join from 'lodash/join'
 import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
+import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
@@ -72,14 +73,8 @@ const ModalMessage = ({
   }) => string,
   tab: string,
   pid: string,
-  activeFilter: {
-    label: string,
-    value: string,
-  }[],
-  setActiveFilter: (a: {
-    label: string,
-    value: string,
-  }[]) => void,
+  activeFilter: string[]
+  setActiveFilter: any,
   filterType: string,
   setFilterType: (a: string) => void,
 }): JSX.Element => {
@@ -158,12 +153,12 @@ const ModalMessage = ({
             <div className='h-2' />
             {(filterType && !_isEmpty(filterList)) ? (
               <MultiSelect
-                items={_map(filterList, (item) => ({
-                  label: item,
-                  value: item,
-                }))}
-                selected={activeFilter}
-                onSelect={(item) => setActiveFilter(item)}
+                items={filterList}
+                labelExtractor={(item) => item}
+                keyExtractor={(item) => item}
+                label={activeFilter}
+                onSelect={(item: string) => setActiveFilter((oldItems: string[]) => [...oldItems, item])}
+                onRemove={(item: string) => setActiveFilter((oldItems: string[]) => _filter(oldItems, (i) => i !== item))}
               />
             ) : (
               <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
@@ -248,7 +243,7 @@ const ProjectSettings = ({
   const [showProtected, setShowProtected] = useState<boolean>(false)
 
   // for reset data via filters
-  const [activeFilter, setActiveFilter] = useState<{ label: string, value: string }[]>([])
+  const [activeFilter, setActiveFilter] = useState<string[]>([])
   const [filterType, setFilterType] = useState<string>('')
 
   const paginationSkip: number = isSharedProject ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
@@ -354,8 +349,8 @@ const ProjectSettings = ({
             setProjectResetting(false)
             return
           }
-          const formattedFilters = _map(activeFilter, (item) => item.value)
-          await resetFilters(id, filterType, formattedFilters)
+
+          await resetFilters(id, filterType, activeFilter)
         } else {
           await resetProject(id)
         }

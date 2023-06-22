@@ -4,7 +4,7 @@ import ProjectSettingsStyle from 'styles/ProjectSettings.css'
 
 export const links: LinksFunction = () => {
   return [
-    { rel: 'stylesheet', href: ProjectSettingsStyle },
+    // { rel: 'stylesheet', href: ProjectSettingsStyle },
   ]
 }
 
