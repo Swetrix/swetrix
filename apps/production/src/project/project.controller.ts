@@ -630,7 +630,7 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid)
 
-    await this.projectService.resetFilters(pid)
+    // await this.projectService.resetFilters(pid)
   }
 
   @Post('/:pid/share')
