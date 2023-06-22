@@ -204,6 +204,30 @@ export enum DataType {
   CAPTCHA = 'captcha',
 }
 
+const isValidOrigin = (origins: string[], origin: string) => {
+  for (let i = 0; i < _size(origins); ++i) {
+    const allowedOrigin = origins[i]
+
+    // Check if the allowedOrigin is an exact match
+    if (allowedOrigin === origin) {
+      return true
+    }
+
+    // Check if the allowedOrigin contains a wildcard
+    if (_includes(allowedOrigin, '*')) {
+      // Escape the wildcard character for use in a regular expression
+      const wildcardRegex = new RegExp(allowedOrigin.replace(/\*/g, '.*'))
+
+      // Check if the origin matches the wildcard pattern
+      if (wildcardRegex.test(origin)) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
 @Injectable()
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
@@ -227,7 +251,7 @@ export class AnalyticsService {
         }
       } else {
         const { hostname } = new URL(origin)
-        if (!_includes(origins, hostname)) {
+        if (!isValidOrigin(origins, hostname)) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
           )
