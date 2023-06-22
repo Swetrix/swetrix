@@ -147,7 +147,7 @@ const ModalMessage = ({
           </p>
           <div>
             <Dropdown
-              className='w-full max-w-[400px]'
+              className='min-w-[70px]'
               title={!_isEmpty(filterType) ? t(`project.mapping.${filterType}`) : t('project.settings.reseted.selectFilters')}
               items={FILTERS_PANELS_ORDER}
               labelExtractor={(item) => t(`project.mapping.${item}`)}
