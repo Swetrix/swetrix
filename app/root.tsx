@@ -13,6 +13,7 @@ import {
 import { store } from 'redux/store'
 import { isDevelopment, whitelist, isBrowser } from 'redux/constants'
 import { Provider } from 'react-redux'
+import clsx from 'clsx'
 import _map from 'lodash/map'
 // @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
@@ -170,22 +171,12 @@ export default function App() {
           }}
         />
       </head>
-      <body>
-        <div className='hidden loader' id='loader'>
-          <div className='loader-head'>
-            <div className='first' />
-            <div className='second' />
-          </div>
-          <div className='logo-frame'>
-            <img className='logo-frame-img' width='361' height='80' src='/assets/logo_blue.png' alt='Swetrix' />
-          </div>
-        </div>
-        <script
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{
-            __html: "document.getElementById('loader').classList.remove('hidden')",
-          }}
-        />
+      <body
+        className={clsx({
+          'bg-white': theme === 'light',
+          'bg-slate-900': theme === 'dark',
+        })}
+      >
         <Provider store={store}>
           <AlertProvider template={AlertTemplate} {...options}>
             <AppWrapper ssrTheme={theme} />
