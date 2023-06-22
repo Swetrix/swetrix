@@ -531,7 +531,7 @@ const ProjectSettings = ({
               </div>
               )}
             </div>
-            {!isSelfhosted && (
+            {!isSelfhosted && !project?.shared && (
             <>
               <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
               <Emails projectId={id} projectName={project.name} />
