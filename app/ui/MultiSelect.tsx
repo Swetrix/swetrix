@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import _map from 'lodash/map'
+import _isEmpty from 'lodash/isEmpty'
 
 const MultiSelect = ({
-  onRemove, onSelect, items, labelExtractor, keyExtractor, label, hint,
+  onRemove, onSelect, items, labelExtractor, keyExtractor, label, hint, placholder,
 }: {
   onRemove: (item: any) => void
   onSelect: (item: any) => void
@@ -11,6 +12,7 @@ const MultiSelect = ({
   keyExtractor?: (item: any) => string
   label: any[]
   hint?: string
+  placholder?: string
 }) => {
   const [selected, setSelected] = useState(false)
   return (
@@ -26,7 +28,7 @@ const MultiSelect = ({
           >
             <div className='my-2 p-1 flex border rounded w-ful shadow-sm bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 '>
               <div className='flex flex-auto flex-wrap'>
-                {_map(label, (item) => (
+                {!_isEmpty(label) ? _map(label, (item) => (
                   <div key={keyExtractor ? keyExtractor(item) : item} className='flex justify-center items-center m-1 font-medium py-1 px-2 rounded-full text-indigo-700 dark:text-gray-50 bg-indigo-100 dark:bg-slate-800 border border-indigo-300 dark:border-slate-500'>
                     <div className='text-xs font-normal leading-none max-w-full flex-initial'>{labelExtractor ? labelExtractor(item) : item}</div>
                     <div className='flex flex-auto flex-row-reverse'>
@@ -38,7 +40,9 @@ const MultiSelect = ({
                       </div>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <p className='text-gray-300 dark:text-gray-50 flex justify-center items-center'>{placholder}</p>
+                )}
               </div>
               <div className='text-gray-300 w-8 py-1 pl-2 pr-1 border-l flex items-center border-gray-200'>
                 <button type='button' onClick={() => setSelected(!selected)} className='cursor-pointer w-6 h-6 text-gray-600 dark:text-gray-300 outline-none focus:outline-none'>
@@ -77,6 +81,7 @@ MultiSelect.defaultProps = {
   labelExtractor: (item: any) => item,
   keyExtractor: (item: any) => item,
   hint: '',
+  placholder: 'Select...',
 }
 
 export default MultiSelect
