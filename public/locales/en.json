@@ -607,7 +607,7 @@
       "name": "Project name",
       "pid": "Project ID",
       "origins": "Allowed origins",
-      "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, ssu.gov.ua",
+      "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Project enabled",
       "public": "Dashboard is public",
       "enabledHint": "Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project's analytics in dashboard.",

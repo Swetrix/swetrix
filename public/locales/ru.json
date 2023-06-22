@@ -30,7 +30,9 @@
     "socialisationUnlinkGenericError": "Произошла ошибка при отсоединении аккаунта Swetrix от стороннего сервиса",
     "socialisationAuthGenericError": "Произошла ошибка при аутентификации в стороннем сервисе",
     "socialAccountLinked": "Аккаунт Swetrix был привязан к выбранному провайдеру",
-    "socialAccountUninked": "Аккаунт Swetrix был отвязан от выбранного провайдера"
+    "socialAccountUninked": "Аккаунт Swetrix был отвязан от выбранного провайдера",
+    "enterPassword": "Please enter the password",
+    "incorrectPassword": "Incorrect password, please try again."
   },
   "common": {
     "features": "Функционал",
@@ -295,6 +297,7 @@
       "password": "Пароль",
       "noRemember": "Чужой компьютер.",
       "repeat": "Повторите пароль",
+      "changePassword": "Change password",
       "hint": "Длиннее {{amount}} символов",
       "xCharsError": "Пароль должен состоять, как минимум, из {{amount}} символов.",
       "noMatchError": "Пароли должны совпадать.",
@@ -449,7 +452,9 @@
     "regenerateSecretKey": "Пересоздать секретный ключ",
     "regenerateSecretKeyTitle": "Пересоздать секретный ключ?",
     "regenerateSecretKeyMessage": "Вы уверены, что хотите сгенерировать новый секретный ключ?\nВсе существующие виджеты CAPTCHA перестанут работать, и вам нужно будет обновить их новым секретным ключом.",
-    "captchaSecretKeyHint": "Это ваш секретный ключ, он используется для проверки ответа CAPTCHA на вашем сервере. Храните его в секрете и не делитесь им ни с кем."
+    "captchaSecretKeyHint": "Это ваш секретный ключ, он используется для проверки ответа CAPTCHA на вашем сервере. Храните его в секрете и не делитесь им ни с кем.",
+    "showVisitorsInTitle": "Show live visitors in the page title",
+    "uiSettings": "UI Settings"
   },
   "dashboard": {
     "newProject": "Новый проект",
@@ -587,6 +592,9 @@
     "exportImgError": "Не удалось экспортировать данные как изображение",
     "codeExample": "Или вставьте следующий код в ваш сайт, чтобы отслеживать ваши события:",
     "metricVis": "Визуализация метрик",
+    "refreshStats": "Refresh stats",
+    "barChart": "Bar chart",
+    "lineChart": "Line chart",
     "settings": {
       "verify": "Пожалуйста, сначала подтвердите адрес эл. почты",
       "updated": "Настройки проекта были обновлены",
@@ -599,7 +607,7 @@
       "name": "Название проекта",
       "pid": "Идентификатор",
       "origins": "Разрешенные источники",
-      "originsHint": "Разделенный запятыми список разрешенных источников (доменов), которым разрешено использовать идентификатор вашего проекта.\nОставьте пустым, чтобы разрешить все источники (настройка по умолчанию).\nНапример: cornell.edu, app.example.com, ssu.gov.ua",
+      "originsHint": "Разделенный запятыми список разрешенных источников (доменов), которым разрешено использовать идентификатор вашего проекта.\nОставьте пустым, чтобы разрешить все источники (настройка по умолчанию).\nНапример: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Проект активен",
       "public": "Проект является публичным",
       "enabledHint": "Новые входящие события или просмотры страниц не учитываются для деактивированных проектов.\nВы по-прежнему сможете получить доступ к аналитике проекта в панели.",
@@ -650,7 +658,10 @@
         "partially": "Сбросить частично",
         "partiallyDesc": "Функция \"Сбросить частично\" позволяет вам сбросить данные конкретного проекта в пределах заданного временного диапазона.",
         "partiallyHint": "Чтобы сбросить данные конкретного проекта в пределах временного диапазона, выберите даты начала и окончания диапазона и проект, который вы хотите сбросить.\nДважды проверьте, что вы выбрали правильный проект и временной диапазон, прежде чем сбросить его.\nКак только вы нажмете 'Сбросить', все данные, связанные с выбранным проектом в пределах выбранного временного диапазона, будут навсегда удалены и не могут быть восстановлены."
-      }
+      },
+      "protected": "Password protected Dashboard",
+      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
+      "password": "Dashboard password"
     },
     "captcha": {
       "settings": {
@@ -811,7 +822,8 @@
     "main": "Лучший сервис аналитики для удовлетворения всех ваших нужд",
     "press": "Медиа и пресса",
     "socialisation": "Социализация",
-    "open": "Open startup"
+    "open": "Open startup",
+    "passwordProtected": "This project is password protected"
   },
   "header": {
     "switchTheme": "Переключить тему",
@@ -828,7 +840,7 @@
     "eu": "Европейском Союзе",
     "support": "Поддержка",
     "company": "Компания",
-    "legal": "Правовая информация",
+    "legal": "Support & Legal",
     "copy": "Swetrix Analytics. Все права защищены.",
     "contact": "Обратная связь",
     "pp": "Политика конфиденциальности",
@@ -849,6 +861,6 @@
     "press": "Медиа и пресса",
     "open": "Open startup",
     "about": "О нас",
-    "comparisons": "Сравнения"
+    "features": "Features"
   }
 }

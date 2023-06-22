@@ -30,7 +30,9 @@
     "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
     "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
     "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
-    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider",
+    "enterPassword": "Please enter the password",
+    "incorrectPassword": "Incorrect password, please try again."
   },
   "common": {
     "features": "功能",
@@ -295,6 +297,7 @@
       "password": "密码",
       "noRemember": "不记得我了。",
       "repeat": "重复密码",
+      "changePassword": "Change password",
       "hint": "长于 {{amount}} 个字符",
       "xCharsError": "密码必须至少包含 {{amount}} 个字符。",
       "noMatchError": "密码必须匹配。",
@@ -449,7 +452,9 @@
     "regenerateSecretKey": "Regenerate secret key",
     "regenerateSecretKeyTitle": "Regenerate secret key?",
     "regenerateSecretKeyMessage": "Are you sure you want to regenerate your secret key?\nAll the existing CAPTCHA widgets will stop working and you will need to update them with the new secret key.",
-    "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone."
+    "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone.",
+    "showVisitorsInTitle": "Show live visitors in the page title",
+    "uiSettings": "UI Settings"
   },
   "dashboard": {
     "newProject": "新项目",
@@ -587,6 +592,9 @@
     "exportImgError": "Exporting data as image failed",
     "codeExample": "Or insert the following code into your website to track your events:",
     "metricVis": "Metrics visualisation",
+    "refreshStats": "Refresh stats",
+    "barChart": "Bar chart",
+    "lineChart": "Line chart",
     "settings": {
       "verify": "请先验证您的电子邮件地址",
       "updated": "项目的设置已更新",
@@ -599,7 +607,7 @@
       "name": "项目名称",
       "pid": "项目 ID ",
       "origins": "允许起源",
-      "originsHint": "允许将脚本与您的 ProjectID 一起使用的来源（域）列表，以逗号分隔。\n将其留空以允许所有来源（默认设置）。\n例如：cornell.edu, app.example。 com, ssu.gov.ua ",
+      "originsHint": "允许将脚本与您的 ProjectID 一起使用的来源（域）列表，以逗号分隔。\n将其留空以允许所有来源（默认设置）。\n例如：cornell.edu, app.example.com, *.gov.ua ",
       "enabled": "项目已启用",
       "public": "管理面板是公开的",
       "enabledHint": "禁用的项目不会计算任何新传入的活动或浏览量。\n您仍然可以在管理面板中访问项目的分析。",
@@ -650,7 +658,10 @@
         "partially": "Reset partially",
         "partiallyDesc": "The 'Reset partially' function allows you to reset the data of a specific project within a given date range.",
         "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered."
-      }
+      },
+      "protected": "Password protected Dashboard",
+      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
+      "password": "Dashboard password"
     },
     "captcha": {
       "settings": {
@@ -811,7 +822,8 @@
     "main": "Ultimate open-source analytics to satisfy all your needs",
     "press": "Media & Press",
     "socialisation": "Socialisation",
-    "open": "Open startup"
+    "open": "Open startup",
+    "passwordProtected": "This project is password protected"
   },
   "header": {
     "switchTheme": "Switch theme",
@@ -828,7 +840,7 @@
     "eu": "欧盟",
     "support": "支持",
     "company": "公司",
-    "legal": "法律",
+    "legal": "Support & Legal",
     "copy": " Swetrix Analytics。保留所有权利。",
     "contact": "联系人",
     "pp": "隐私政策",
@@ -849,6 +861,6 @@
     "press": "Media & Press",
     "open": "Open startup",
     "about": "About us",
-    "comparisons": "Comparisons"
+    "features": "Features"
   }
 }

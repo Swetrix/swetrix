@@ -30,7 +30,9 @@
     "socialisationUnlinkGenericError": "Error occurred while unlinking Swetrix account with the 3rd party service",
     "socialisationAuthGenericError": "Error occurred while authenticating with a 3rd party service",
     "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
-    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider"
+    "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider",
+    "enterPassword": "Please enter the password",
+    "incorrectPassword": "Incorrect password, please try again."
   },
   "common": {
     "features": "Χαρακτηριστικά",
@@ -295,6 +297,7 @@
       "password": "Κωδικός πρόσβασης",
       "noRemember": "Να μη με θυμάσαι.",
       "repeat": "Επανάληψη κωδικού πρόσβασης",
+      "changePassword": "Change password",
       "hint": "Μεγαλύτερο από {{amount}} χαρακτήρες",
       "xCharsError": "Ο κωδικός πρόσβασης πρέπει να αποτελείται από τουλάχιστον {{amount}} χαρακτήρες.",
       "noMatchError": "Οι κωδικοί πρόσβασης πρέπει να ταιριάζουν.",
@@ -449,7 +452,9 @@
     "regenerateSecretKey": "Regenerate secret key",
     "regenerateSecretKeyTitle": "Regenerate secret key?",
     "regenerateSecretKeyMessage": "Are you sure you want to regenerate your secret key?\nAll the existing CAPTCHA widgets will stop working and you will need to update them with the new secret key.",
-    "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone."
+    "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone.",
+    "showVisitorsInTitle": "Show live visitors in the page title",
+    "uiSettings": "UI Settings"
   },
   "dashboard": {
     "newProject": "Νέο έργο",
@@ -587,6 +592,9 @@
     "exportImgError": "Exporting data as image failed",
     "codeExample": "Or insert the following code into your website to track your events:",
     "metricVis": "Metrics visualisation",
+    "refreshStats": "Refresh stats",
+    "barChart": "Bar chart",
+    "lineChart": "Line chart",
     "settings": {
       "verify": "Παρακαλώ, επαληθεύστε πρώτα τη διεύθυνση email σας",
       "updated": "Οι ρυθμίσεις του έργου ενημερώθηκαν",
@@ -599,7 +607,7 @@
       "name": "Όνομα έργου",
       "pid": "ID έργου",
       "origins": "Επιτρεπόμενη προέλευση",
-      "originsHint": "Ένας κατάλογος των προελεύσεων (τομέων) που επιτρέπεται να χρησιμοποιούν δέσμη ενεργειών με το ProjectID σας, χωρισμένος με κόμμα.\nΑφήστε το κενό για να επιτρέψετε όλες τις προελεύσεις (προεπιλεγμένη ρύθμιση).\nΠαράδειγμα: cornell.edu, app.example.com, ssu.gov.ua",
+      "originsHint": "Ένας κατάλογος των προελεύσεων (τομέων) που επιτρέπεται να χρησιμοποιούν δέσμη ενεργειών με το ProjectID σας, χωρισμένος με κόμμα.\nΑφήστε το κενό για να επιτρέψετε όλες τις προελεύσεις (προεπιλεγμένη ρύθμιση).\nΠαράδειγμα: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Έργο ενεργοποιημένο",
       "public": "Ο πίνακας ελέγχου είναι δημόσιος",
       "enabledHint": "Τα απενεργοποιημένα έργα δεν θα υπολογίζουν νέα εισερχόμενα συμβάντα ή προβολές σελίδων.\nΘα εξακολουθείτε να έχετε πρόσβαση στα αναλυτικά στοιχεία του έργου στο ταμπλό.",
@@ -650,7 +658,10 @@
         "partially": "Reset partially",
         "partiallyDesc": "The 'Reset partially' function allows you to reset the data of a specific project within a given date range.",
         "partiallyHint": "To reset the data of a specific project within a date range, select the start and end dates of the range and the project you wish to reset.\nDouble-check that you have selected the correct project and date range before clicking 'Reset'.\nOnce you click 'Reset', all the data associated with the selected project within the selected date range will be permanently deleted and cannot be recovered."
-      }
+      },
+      "protected": "Password protected Dashboard",
+      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
+      "password": "Dashboard password"
     },
     "captcha": {
       "settings": {
@@ -811,7 +822,8 @@
     "main": "Απόλυτα analytics ανοιχτού κώδικα για να ικανοποιήσετε όλες τις ανάγκες σας",
     "press": "Media & Press",
     "socialisation": "Socialisation",
-    "open": "Open startup"
+    "open": "Open startup",
+    "passwordProtected": "This project is password protected"
   },
   "header": {
     "switchTheme": "Switch theme",
@@ -828,7 +840,7 @@
     "eu": "Ευρωπαϊκή Ένωση",
     "support": "Υποστήριξη",
     "company": "Εταιρεία",
-    "legal": "Νομικό περιεχόμενο",
+    "legal": "Support & Legal",
     "copy": "Swetrix Analytics. Όλα τα δικαιώματα διατηρούνται.",
     "contact": "Επικοινωνία",
     "pp": "Πολιτική απορρήτου",
@@ -849,6 +861,6 @@
     "press": "Media & Press",
     "open": "Open startup",
     "about": "Σχετικά με εμάς",
-    "comparisons": "Comparisons"
+    "features": "Features"
   }
 }
