@@ -155,6 +155,7 @@ const ModalMessage = ({
               keyExtractor={(item) => item}
               onSelect={(item) => setFilterType(item)}
             />
+            <div className='h-2' />
             {(filterType && !_isEmpty(filterList)) ? (
               <MultiSelect
                 items={_map(filterList, (item) => ({
