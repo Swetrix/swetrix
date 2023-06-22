@@ -119,23 +119,6 @@ const App: React.FC<IApp> = ({ ssrTheme }) => {
   }, [paddleLoaded, authenticated]) // eslint-disable-line
 
   useEffect(() => {
-    let loaderEl: HTMLElement | null = null
-
-    if (document) {
-      loaderEl = document.getElementById('loader')
-    }
-
-    if (loaderEl) {
-      loaderEl.classList.add('available')
-      setTimeout(() => {
-        if (loaderEl) {
-          loaderEl.outerHTML = ''
-        }
-      }, 1000)
-    }
-  }, [])
-
-  useEffect(() => {
     (async () => {
       if ((accessToken && refreshToken) && !authenticated) {
         try {
