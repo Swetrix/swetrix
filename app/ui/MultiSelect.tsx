@@ -18,8 +18,6 @@ const Multiselect = ({ items, selected, onSelect }: {
   }[]) => void,
 }) => (
   <div>
-    <h1>Select Fruits</h1>
-    <pre>{JSON.stringify(selected)}</pre>
     <MultiSelect
       options={items}
       value={selected}
