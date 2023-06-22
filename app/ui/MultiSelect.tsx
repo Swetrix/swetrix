@@ -18,8 +18,9 @@ const MultiSelect = ({
   placholder?: string
 }) => {
   const [selected, setSelected] = useState(false)
+
   return (
-    <div className={`w-full flex flex-col items-center ${className}`}>
+    <div className={`w-full flex flex-col items-center keypress-multiselect ${className}`}>
       <div className='w-full'>
         <div className='flex flex-col items-center relative'>
           <div
