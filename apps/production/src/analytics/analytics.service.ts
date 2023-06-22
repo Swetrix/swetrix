@@ -788,6 +788,15 @@ export class AnalyticsService {
     return result
   }
 
+  async getFilters(pid: string, type: string): Promise<Array<string>> {
+    const query = `SELECT {type:String} FROM analytics WHERE pid={pid:FixedString(12)} AND {type:String} IS NOT NULL GROUP BY {type:String}`
+    const results = await clickhouse
+      .query(query, { params: { pid, type } })
+      .toPromise()
+
+    return _map(results, type)
+  }
+
   async generateParams(
     parsedFilters: Array<{ [key: string]: string }>,
     subQuery: string,

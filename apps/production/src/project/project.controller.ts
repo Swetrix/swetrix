@@ -604,6 +604,43 @@ export class ProjectController {
     await this.projectService.removeDataFromClickhouse(pid, from, to)
   }
 
+  @Delete('/reset-filters/:pid')
+  @ApiResponse({ status: 200 })
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async resetFilters(
+    @Param('pid') pid: string,
+    @Query('type') type: string,
+    @Query('filters') rawFilters: string,
+    @CurrentUserId() uid: string,
+  ): Promise<void> {
+    this.logger.log({ pid }, 'DELETE /reset-filters/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const project = await this.projectService.findOne(pid, {
+      relations: ['admin', 'share'],
+    })
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    const filters = JSON.parse(rawFilters)
+
+    await Promise.all([
+      ..._map(filters, async (filter: string) => {
+        this.projectService.deleteByFilter(pid, type, filter)
+      }),
+    ])
+  }
+
   @Post('/:pid/share')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)

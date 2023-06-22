@@ -61,6 +61,7 @@ import {
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
+import { GetFiltersDto } from './dto/get-filters.dto'
 import { IUserFlow } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -368,6 +369,25 @@ export class AnalyticsController {
       customs,
       appliedFilters: parsedFilters,
     }
+  }
+
+  @Get('filters')
+  @Auth([], true, true)
+  async getFilters(
+    @Query() data: GetFiltersDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const { pid, type } = data
+    this.analyticsService.validatePID(pid)
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    return this.analyticsService.getFilters(pid, type)
   }
 
   @Get('chart')
