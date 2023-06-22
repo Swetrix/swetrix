@@ -84,6 +84,9 @@ const ModalMessage = ({
     if (!_isEmpty(filterType)) {
       const res = await getFilters(pid, filterType)
       setFilterList(res)
+      if (!_isEmpty(activeFilter)) {
+        setActiveFilter([])
+      }
     }
   }
 
@@ -157,6 +160,7 @@ const ModalMessage = ({
                 labelExtractor={(item) => item}
                 keyExtractor={(item) => item}
                 label={activeFilter}
+                placholder={t('project.settings.reseted.filterPlaceholder')}
                 onSelect={(item: string) => setActiveFilter((oldItems: string[]) => [...oldItems, item])}
                 onRemove={(item: string) => setActiveFilter((oldItems: string[]) => _filter(oldItems, (i) => i !== item))}
               />
