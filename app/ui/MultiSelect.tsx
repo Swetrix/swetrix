@@ -17,15 +17,13 @@ const Multiselect = ({ items, selected, onSelect }: {
     value: string,
   }[]) => void,
 }) => (
-  <div>
-    <MultiSelect
-      options={items}
-      value={selected}
-      onChange={onSelect}
-      labelledBy='Select'
-      isCreatable
-    />
-  </div>
+  <MultiSelect
+    options={items}
+    value={selected}
+    onChange={onSelect}
+    labelledBy='Select'
+    isCreatable
+  />
 )
 
 export default Multiselect
