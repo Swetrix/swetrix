@@ -134,7 +134,7 @@ const ModalMessage = ({
         </p>
       )}
       {tab === tabDeleteDataModal[2].name && (
-        <>
+        <div className='min-h-[410px]'>
           <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
             {t('project.settings.reseted.viaFiltersHint')}
           </p>
@@ -148,7 +148,7 @@ const ModalMessage = ({
               onSelect={(item) => setFilterType(item)}
             />
           </div>
-        </>
+        </div>
       )}
     </>
   )
@@ -618,6 +618,7 @@ const ProjectSettings = ({
       <Modal
         onClose={() => setShowReset(false)}
         onSubmit={onReset}
+        size='large'
         submitText={t('project.settings.reset')}
         closeText={t('common.close')}
         title={t('project.settings.qReset')}
