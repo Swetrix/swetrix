@@ -17,7 +17,13 @@ const MultiSelect = ({
     <div className='w-full flex flex-col items-center mx-auto'>
       <div className='w-full'>
         <div className='flex flex-col items-center relative'>
-          <div className='w-full  '>
+          <div
+            className='w-full cursor-pointer'
+            onClick={(e) => {
+              e.preventDefault()
+              setSelected(!selected)
+            }}
+          >
             <div className='my-2 p-1 flex border border-gray-200 bg-white rounded '>
               <div className='flex flex-auto flex-wrap'>
                 {_map(label, (item) => (
@@ -34,9 +40,9 @@ const MultiSelect = ({
                   </div>
                 ))}
               </div>
-              <div className='text-gray-300 w-8 py-1 pl-2 pr-1 border-l flex items-center border-gray-200 '>
+              <div className='text-gray-300 w-8 py-1 pl-2 pr-1 border-l flex items-center border-gray-200'>
                 <button type='button' onClick={() => setSelected(!selected)} className='cursor-pointer w-6 h-6 text-gray-600 outline-none focus:outline-none'>
-                  <svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='feather feather-chevron-up w-4 h-4'>
+                  <svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className=' rotate-180 w-4 h-4'>
                     <polyline points='18 15 12 9 6 15' />
                   </svg>
                 </button>
@@ -44,7 +50,7 @@ const MultiSelect = ({
             </div>
           </div>
           {selected && (
-            <div className=' shadow top-100 bg-white z-40 w-full lef-0 rounded max-h-select overflow-y-auto '>
+            <div className=' shadow top-100 bg-white z-40 w-full lef-0 rounded max-h-select overflow-y-auto max-h-[200px]'>
               <div className='flex flex-col w-full'>
                 {_map(items, (item) => (
                   <div key={keyExtractor ? `${keyExtractor(item)}select` : `${item}select`} onClick={() => onSelect(item)} className='cursor-pointer w-full border-gray-100 rounded-t border-b hover:bg-indigo-100'>
