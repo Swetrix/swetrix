@@ -46,6 +46,10 @@ const insertData = async (pid, rowCount, processedRecords, table) => {
   }
 
   try {
+    // save to file insertQueries
+    const fs = require('fs')
+    fs.writeFileSync(`./${table}.txt`, insertQueries.join('\n'))
+
     const result = await queriesRunner(insertQueries, false)
 
     if (!result) {
