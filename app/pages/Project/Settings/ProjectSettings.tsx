@@ -26,7 +26,7 @@ import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import {
-  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially, getFilters,
+  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially, getFilters, resetFilters,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -62,7 +62,7 @@ const tabDeleteDataModal = [
 ]
 
 const ModalMessage = ({
-  dateRange, setDateRange, setTab, t, tab, pid,
+  dateRange, setDateRange, setTab, t, tab, pid, activeFilter, setActiveFilter, filterType, setFilterType,
 }: {
   dateRange: Date[],
   setDateRange: (a: Date[]) => void,
@@ -72,10 +72,18 @@ const ModalMessage = ({
   }) => string,
   tab: string,
   pid: string,
+  activeFilter: {
+    label: string,
+    value: string,
+  }[],
+  setActiveFilter: (a: {
+    label: string,
+    value: string,
+  }[]) => void,
+  filterType: string,
+  setFilterType: (a: string) => void,
 }): JSX.Element => {
-  const [filterType, setFilterType] = useState<string>('')
   const [filterList, setFilterList] = useState<string[]>([])
-  const [activeFilter, setActiveFilter] = useState<{ label: string, value: string }[]>([])
 
   const getFiltersList = async () => {
     if (!_isEmpty(filterType)) {
@@ -238,6 +246,10 @@ const ProjectSettings = ({
   const [tab, setTab] = useState<string>(tabDeleteDataModal[0].name)
   const [showProtected, setShowProtected] = useState<boolean>(false)
 
+  // for reset data via filters
+  const [activeFilter, setActiveFilter] = useState<{ label: string, value: string }[]>([])
+  const [filterType, setFilterType] = useState<string>('')
+
   const paginationSkip: number = isSharedProject ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
 
   useEffect(() => {
@@ -335,6 +347,14 @@ const ProjectSettings = ({
             from: getFormatDate(dateRange[0]),
             to: getFormatDate(dateRange[1]),
           })
+        } else if (tab === tabDeleteDataModal[2].name) {
+          if (_isEmpty(activeFilter)) {
+            deleteProjectFailed(t('project.settings.noFilters'))
+            setProjectResetting(false)
+            return
+          }
+          const formattedFilters = _map(activeFilter, (item) => item.value)
+          await resetFilters(id, filterType, formattedFilters)
         } else {
           await resetProject(id)
         }
@@ -636,7 +656,7 @@ const ProjectSettings = ({
         submitText={t('project.settings.reset')}
         closeText={t('common.close')}
         title={t('project.settings.qReset')}
-        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} pid={id} />}
+        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} pid={id} activeFilter={activeFilter} setActiveFilter={setActiveFilter} filterType={filterType} setFilterType={setFilterType} />}
         submitType='danger'
         type='error'
         isOpened={showReset}
