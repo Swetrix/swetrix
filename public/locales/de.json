@@ -30,7 +30,9 @@
     "socialisationUnlinkGenericError": "Fehler beim Entfernen der Verknüpfung des Swetrix-Kontos mit dem Drittanbieter Dienst",
     "socialisationAuthGenericError": "Fehler bei der Authentifizierung mit einem Drittanbieter Dienst",
     "socialAccountLinked": "Das Swetrix-Konto wurde mit dem ausgewählten Anbieter verknüpft",
-    "socialAccountUninked": "Das Swetrix-Konto wurde vom gewählten Anbieter getrennt"
+    "socialAccountUninked": "Das Swetrix-Konto wurde vom gewählten Anbieter getrennt",
+    "enterPassword": "Please enter the password",
+    "incorrectPassword": "Incorrect password, please try again."
   },
   "common": {
     "features": "Funktionen",
@@ -295,6 +297,7 @@
       "password": "Passwort",
       "noRemember": "Nicht erinnern",
       "repeat": "Passwort wiederholen",
+      "changePassword": "Change password",
       "hint": "Länger als {{amount}} Zeichen",
       "xCharsError": "Das Passwort muss aus mindestens {{amount}} Zeichen bestehen.",
       "noMatchError": "Die Passwörter stimmen nicht überein.",
@@ -449,7 +452,9 @@
     "regenerateSecretKey": "Geheimschlüssel neu generieren",
     "regenerateSecretKeyTitle": "Geheimschlüssel neu generieren?",
     "regenerateSecretKeyMessage": "Sind Sie sicher, dass Sie Ihren geheimen Schlüssel neu generieren möchten?\nAlle existierenden CAPTCHA Widgets funktionieren nicht mehr und Sie müssen sie mit dem neuen geheimen Schlüssel aktualisieren.",
-    "captchaSecretKeyHint": "Dies ist Ihr geheimer Schlüssel, der verwendet wird, um die CAPTCHA-Antwort auf Ihrem Server zu überprüfen. Halten Sie ihn geheim und teilen Sie ihn mit niemandem."
+    "captchaSecretKeyHint": "Dies ist Ihr geheimer Schlüssel, der verwendet wird, um die CAPTCHA-Antwort auf Ihrem Server zu überprüfen. Halten Sie ihn geheim und teilen Sie ihn mit niemandem.",
+    "showVisitorsInTitle": "Show live visitors in the page title",
+    "uiSettings": "UI Settings"
   },
   "dashboard": {
     "newProject": "Neues Projekt",
@@ -587,6 +592,9 @@
     "exportImgError": "Exportieren der Daten als Bild fehlgeschlagen",
     "codeExample": "Oder fügen Sie den folgenden Code in Ihre Website ein, um Ihre Events zu tracken:",
     "metricVis": "Visualisierung von Metriken",
+    "refreshStats": "Refresh stats",
+    "barChart": "Bar chart",
+    "lineChart": "Line chart",
     "settings": {
       "verify": "Bitte bestätigen Sie zunächst Ihre E-Mail-Adresse",
       "updated": "Die Projekteinstellungen wurden aktualisiert",
@@ -599,7 +607,7 @@
       "name": "Projektname",
       "pid": "Projekt-ID",
       "origins": "Allowed-Origins",
-      "originsHint": "Eine kommaseparierte Liste von Allowed-Origins (Herkunftsdomänen), die Ihre Project-ID in ihrem Tracking-Script verwenden dürfen.\nLassen Sie das Feld leer, um alle Herkünfte zuzulassen (Standardeinstellung).\nBeispiel: cornell.edu, app.example.com, ssu.gov.ua",
+      "originsHint": "Eine kommaseparierte Liste von Allowed-Origins (Herkunftsdomänen), die Ihre Project-ID in ihrem Tracking-Script verwenden dürfen.\nLassen Sie das Feld leer, um alle Herkünfte zuzulassen (Standardeinstellung).\nBeispiel: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Projekt aktiviert",
       "public": "Das Dashboard ist öffentlich",
       "enabledHint": "Deaktivierte Projekte zählen keine neuen Tracking-Events oder Seitenaufrufe.\nSie können weiterhin auf die bisherigen Analysen des Projekts im Dashboard zugreifen.",
@@ -650,7 +658,10 @@
         "partially": "Teilweise zurücksetzen",
         "partiallyDesc": "Mit der Funktion 'Teilweise zurücksetzen' können Sie die Daten eines bestimmten Projekts innerhalb eines bestimmten Zeitraums zurücksetzen.",
         "partiallyHint": "Um die Daten eines bestimmten Projekts innerhalb eines Datumsbereichs zurückzusetzen, wählen Sie die Start- und Enddaten des Bereichs und das Projekt, das Sie zurücksetzen möchten.\nÜberprüfen Sie, ob Sie den richtigen Projekt- und Datumsbereich ausgewählt haben, bevor Sie auf „Zurücksetzen“ klicken.\nSobald Sie auf „Zurücksetzen“ klicken, werden alle Daten, die mit dem ausgewählten Projekt im ausgewählten Zeitraum verknüpft sind, dauerhaft gelöscht und können nicht wiederhergestellt werden."
-      }
+      },
+      "protected": "Password protected Dashboard",
+      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
+      "password": "Dashboard password"
     },
     "captcha": {
       "settings": {
@@ -811,7 +822,8 @@
     "main": "Ultimative Open-Source-Analytics um alle Ihre Wünsche zu befriedigen",
     "press": "Medien & Presse",
     "socialisation": "Social-Login",
-    "open": "Open startup"
+    "open": "Open startup",
+    "passwordProtected": "This project is password protected"
   },
   "header": {
     "switchTheme": "Design wechseln",
@@ -828,7 +840,7 @@
     "eu": "Europäischen Union",
     "support": "Kundendienst",
     "company": "Unternehmen",
-    "legal": "Rechtliches",
+    "legal": "Support & Legal",
     "copy": "Swetrix Analytics. Alle Rechte vorbehalten.",
     "contact": "Kontakt",
     "pp": "Datenschutzerklärung",
@@ -849,6 +861,6 @@
     "press": "Medien & Presse",
     "open": "Open startup",
     "about": "Über uns",
-    "comparisons": "Vergleiche"
+    "features": "Features"
   }
 }

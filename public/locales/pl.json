@@ -30,7 +30,9 @@
     "socialisationUnlinkGenericError": "Wystąpił błąd podczas rozłączania konta Swetrix z usługą strony trzeciej",
     "socialisationAuthGenericError": "Wystąpił błąd podczas uwierzytelniania za pomocą usługi strony trzeciej",
     "socialAccountLinked": "Konto Swetrix zostało połączone z wybranym dostawcą",
-    "socialAccountUninked": "Konto Swetrix zostało odłączone od wybranego dostawcy"
+    "socialAccountUninked": "Konto Swetrix zostało odłączone od wybranego dostawcy",
+    "enterPassword": "Please enter the password",
+    "incorrectPassword": "Incorrect password, please try again."
   },
   "common": {
     "features": "Funkcje",
@@ -295,6 +297,7 @@
       "password": "Hasło",
       "noRemember": "Nie pamiętaj mnie.",
       "repeat": "Powtórz hasło",
+      "changePassword": "Change password",
       "hint": "Dłuższe niż {{amount}} znaków",
       "xCharsError": "Hasło musi składać się z co najmniej {{amount}} znaków.",
       "noMatchError": "Hasła muszą się zgadzać.",
@@ -449,7 +452,9 @@
     "regenerateSecretKey": "Regeneruj tajny klucz",
     "regenerateSecretKeyTitle": "Regenerować tajny klucz?",
     "regenerateSecretKeyMessage": "Czy na pewno chcesz zregenerować swój tajny klucz?\nWszystkie istniejące widżety CAPTCHA przestaną działać i będziesz musiał je zaktualizować za pomocą nowego tajnego klucza.",
-    "captchaSecretKeyHint": "To jest twój tajny klucz, jest używany do weryfikacji odpowiedzi CAPTCHA na twoim serwerze. Zachowaj go w tajemnicy i nie dziel się nim z nikim."
+    "captchaSecretKeyHint": "To jest twój tajny klucz, jest używany do weryfikacji odpowiedzi CAPTCHA na twoim serwerze. Zachowaj go w tajemnicy i nie dziel się nim z nikim.",
+    "showVisitorsInTitle": "Show live visitors in the page title",
+    "uiSettings": "UI Settings"
   },
   "dashboard": {
     "newProject": "Nowy projekt",
@@ -587,6 +592,9 @@
     "exportImgError": "Nie udało się wyeksportować danych jako obraz",
     "codeExample": "Lub wstaw poniższy kod do swojej strony internetowej, aby śledzić zdarzenia:",
     "metricVis": "Wizualizacja metryczna",
+    "refreshStats": "Refresh stats",
+    "barChart": "Bar chart",
+    "lineChart": "Line chart",
     "settings": {
       "verify": "Zweryfikuj najpierw swój adres e-mail",
       "updated": "Ustawienia projektu zostały zaktualizowane",
@@ -599,7 +607,7 @@
       "name": "Nazwa projektu",
       "pid": "ID projektu",
       "origins": "Dozwolone źródła",
-      "originsHint": "Lista źródeł (domen), które mogą używać skryptu z twoim identyfikatorem projektu, oddzielonych przecinkami.\nPozostaw puste, aby zezwolić na wszystkie źródła (ustawienie domyślne).\nPrzykład: cornell.edu, app.example.com, ssu.gov.ua",
+      "originsHint": "Lista źródeł (domen), które mogą używać skryptu z twoim identyfikatorem projektu, oddzielonych przecinkami.\nPozostaw puste, aby zezwolić na wszystkie źródła (ustawienie domyślne).\nPrzykład: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Aktywny projekt",
       "public": "Publiczny Panel",
       "enabledHint": "Wyłączone projekty nie będą zliczać żadnych nowo przychodzących zdarzeń ani odsłon.\nNadal będziesz miał dostęp do analityki projektu w panelu.",
@@ -650,7 +658,10 @@
         "partially": "Resetować częściowo",
         "partiallyDesc": "Funkcja \"Resetuj częściowo\" pozwala na zresetowanie danych konkretnego projektu w określonym zakresie dat.",
         "partiallyHint": "Aby zresetować dane określonego projektu w ramach zakresu dat, wybierz datę początkową i końcową zakresu oraz projekt, który chcesz zresetować.\nPrzed kliknięciem \"Resetuj\" sprawdź dwukrotnie, czy wybrałeś właściwy projekt i zakres dat.\nPo kliknięciu przycisku \"Resetuj\" wszystkie dane związane z wybranym projektem w wybranym zakresie dat zostaną trwale usunięte i nie będzie można ich odzyskać."
-      }
+      },
+      "protected": "Password protected Dashboard",
+      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
+      "password": "Dashboard password"
     },
     "captcha": {
       "settings": {
@@ -811,7 +822,8 @@
     "main": "Najlepszy serwis analityczny, który spełni wszystkie Twoje potrzeby",
     "press": "Media i prasa",
     "socialisation": "Socjalizacja",
-    "open": "Open startup"
+    "open": "Open startup",
+    "passwordProtected": "This project is password protected"
   },
   "header": {
     "switchTheme": "Motyw przełącznika",
@@ -828,7 +840,7 @@
     "eu": "Unii Europejskiej",
     "support": "Wsparcie",
     "company": "Firma",
-    "legal": "Informacje prawne",
+    "legal": "Support & Legal",
     "copy": "Swetrix Analytics. Wszelkie prawa zastrzeżone.",
     "contact": "Kontakt",
     "pp": "Polityka prywatności",
@@ -849,6 +861,6 @@
     "press": "Media i prasa",
     "open": "Open startup",
     "about": "O nas",
-    "comparisons": "Porównania"
+    "features": "Features"
   }
 }
