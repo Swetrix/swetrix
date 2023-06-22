@@ -517,16 +517,18 @@ export class ProjectService {
     }
   }
 
-  async resetFilters(
+  async deleteByFilter(
     pid: string,
     type: string,
-    filters: string,
+    filter: string,
   ): Promise<void> {
-    const query = `DELETE FROM analytics WHERE pid='${pid}' AND ${type}='${filters}';`
+    const query = `DELETE FROM analytics WHERE pid={pid:FixedString(12)}  AND {type:String}={filter:String};`
+    const params = {
+      pid, type, filter,
+    }
 
-    await clickhouse.query(query, { params: { pid } }).toPromise()
+    await clickhouse.query(query, { params }).toPromise()
   }
-
   async removeDataFromClickhouse(
     pid: string,
     from: string,
