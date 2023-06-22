@@ -20,7 +20,7 @@ import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons
 
 import { withAuthentication, auth } from 'hoc/protected'
 import {
-  isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD, TRAFFIC_PANELS_ORDER,
+  isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD, FILTERS_PANELS_ORDER,
 } from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
@@ -142,8 +142,8 @@ const ModalMessage = ({
             <Dropdown
               className='w-full sm:w-1/2'
               title={t('project.settings.reseted.filterType')}
-              items={TRAFFIC_PANELS_ORDER}
-              labelExtractor={(item) => t(`project.settings.reseted.filterType.${item}`)}
+              items={FILTERS_PANELS_ORDER}
+              labelExtractor={(item) => t(`project.mapping.${item}`)}
               keyExtractor={(item) => item}
               onSelect={(item) => setFilterType(item)}
             />

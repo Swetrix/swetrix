@@ -111,6 +111,7 @@ interface IStringObject {
 
 // the order of panels in the project view
 export const TRAFFIC_PANELS_ORDER: string[] = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
+export const FILTERS_PANELS_ORDER: string[] = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref']
 export const PERFORMANCE_PANELS_ORDER: string[] = ['cc', 'pg', 'br', 'dv']
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
