@@ -19,7 +19,9 @@ import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
+import {
+  isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD, TRAFFIC_PANELS_ORDER,
+} from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
@@ -33,6 +35,7 @@ import Modal from 'ui/Modal'
 import FlatPicker from 'ui/Flatpicker'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routesPath'
+import Dropdown from 'ui/Dropdown'
 import { getFormatDate } from '../View/ViewProject.helpers'
 
 import People from './People'
@@ -51,6 +54,10 @@ const tabDeleteDataModal = [
     name: 'partially',
     title: 'project.settings.reseted.partially',
   },
+  {
+    name: 'viaFilters',
+    title: 'project.settings.reseted.viaFilters',
+  },
 ]
 
 const ModalMessage = ({
@@ -63,29 +70,33 @@ const ModalMessage = ({
     [key: string]: string | number | null
   }) => string,
   tab: string,
-}): JSX.Element => (
-  <>
-    <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
-      {t('project.settings.resetHint')}
-    </p>
-    <div className='mt-6'>
-      <nav className='-mb-px flex space-x-6'>
-        {_map(tabDeleteDataModal, (tabDelete) => (
-          <button
-            key={tabDelete.name}
-            type='button'
-            onClick={() => setTab(tabDelete.name)}
-            className={cx('whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-md', {
-              'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabDelete.name === tab,
-              'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabDelete.name,
-            })}
-          >
-            {t(tabDelete.title)}
-          </button>
-        ))}
-      </nav>
-    </div>
-    {tab === tabDeleteDataModal[1].name && (
+}): JSX.Element => {
+  const filterType = useState<string>('')
+  const activeFilter = useState<string[]>([])
+
+  return (
+    <>
+      <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
+        {t('project.settings.resetHint')}
+      </p>
+      <div className='mt-6'>
+        <nav className='-mb-px flex space-x-6'>
+          {_map(tabDeleteDataModal, (tabDelete) => (
+            <button
+              key={tabDelete.name}
+              type='button'
+              onClick={() => setTab(tabDelete.name)}
+              className={cx('whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-md', {
+                'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabDelete.name === tab,
+                'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabDelete.name,
+              })}
+            >
+              {t(tabDelete.title)}
+            </button>
+          ))}
+        </nav>
+      </div>
+      {tab === tabDeleteDataModal[1].name && (
       <>
         <p className='text-gray-500 dark:text-gray-300 mt-4 mb-2 text-sm'>
           {t('project.settings.reseted.partiallyDesc')}
@@ -102,14 +113,30 @@ const ModalMessage = ({
           value={dateRange}
         />
       </>
-    )}
-    {tab === tabDeleteDataModal[0].name && (
-      <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
-        {t('project.settings.reseted.allHint')}
-      </p>
-    )}
-  </>
-)
+      )}
+      {tab === tabDeleteDataModal[0].name && (
+        <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+          {t('project.settings.reseted.allHint')}
+        </p>
+      )}
+      {tab === tabDeleteDataModal[2].name && (
+        <>
+          <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+            {t('project.settings.reseted.viaFiltersHint')}
+          </p>
+          <div className='flex flex-wrap items-center'>
+            <Dropdown
+              className='w-full sm:w-1/2'
+              title={t('project.settings.reseted.filterType')}
+              items={TRAFFIC_PANELS_ORDER}
+              value={filterType}
+            />
+          </div>
+        </>
+      )}
+    </>
+  )
+}
 
 interface IForm extends Partial<IProject> {
   origins: string | null,
