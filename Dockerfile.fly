@@ -11,7 +11,7 @@ RUN mkdir /app
 WORKDIR /app
 
 ADD package.json ./
-RUN npm install --production=false
+RUN npm install -g yarn && yarn install
 
 # Setup production node_modules
 FROM base as production-deps
