@@ -381,11 +381,11 @@ export class AnalyticsController {
     const { pid, type } = data
     this.analyticsService.validatePID(pid)
 
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
+    // await this.analyticsService.checkProjectAccess(
+    //   pid,
+    //   uid,
+    //   headers['x-password'],
+    // )
 
     return this.analyticsService.getFilters(pid, type)
   }
