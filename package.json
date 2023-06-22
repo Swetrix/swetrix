@@ -4,7 +4,7 @@
   "scripts": {
     "build": "remix build",
     "dev": "remix dev",
-    "deploy": "node fly_deploy_with_env.js --env-file .env --remote-only",
+    "deploy": "flyctl deploy --remote-only",
     "import-env": "node fly_import_env.js --env-file .env",
     "dev:staging": "cross-env STAGING=true remix dev",
     "start": "remix-serve build",
