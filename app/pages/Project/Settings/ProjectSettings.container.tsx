@@ -16,6 +16,7 @@ const mapStateToProps = (state: StateType) => ({
   dashboardPaginationPageShared: state.ui.projects.dashboardPaginationPageShared,
   user: state.auth.user,
   isSharedProject: state.ui.projects.dashboardTabs === tabForSharedProject,
+  projectProtectedPassword: state.ui.projects.password,
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({

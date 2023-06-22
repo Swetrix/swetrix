@@ -26,7 +26,7 @@ import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import {
-  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially,
+  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially, getFilters
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -61,7 +61,7 @@ const tabDeleteDataModal = [
 ]
 
 const ModalMessage = ({
-  dateRange, setDateRange, setTab, t, tab,
+  dateRange, setDateRange, setTab, t, tab, pid,
 }: {
   dateRange: Date[],
   setDateRange: (a: Date[]) => void,
@@ -70,9 +70,18 @@ const ModalMessage = ({
     [key: string]: string | number | null
   }) => string,
   tab: string,
+  pid: string,
 }): JSX.Element => {
-  const filterType = useState<string>('')
-  const activeFilter = useState<string[]>([])
+  const [filterType, setFilterType] = useState<string>('')
+  const [filterList, setFilterList] = useState<string[]>([])
+  const [activeFilter, setActiveFilter] = useState<string[]>([])
+
+  const getFiltersList = async () => {
+    if (!_isEmpty(filterType)) {
+      const res = await getFilters(pid, filterType)
+      setFilterList(res)
+    }
+  }
 
   return (
     <>
@@ -129,7 +138,9 @@ const ModalMessage = ({
               className='w-full sm:w-1/2'
               title={t('project.settings.reseted.filterType')}
               items={TRAFFIC_PANELS_ORDER}
-              value={filterType}
+              labelExtractor={(item) => t(`project.settings.reseted.filterType.${item}`)}
+              keyExtractor={(item) => item}
+              onSelect={(item) => setFilterType(item)}
             />
           </div>
         </>
@@ -605,7 +616,7 @@ const ProjectSettings = ({
         submitText={t('project.settings.reset')}
         closeText={t('common.close')}
         title={t('project.settings.qReset')}
-        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} />}
+        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} pid={id} />}
         submitType='danger'
         type='error'
         isOpened={showReset}
