@@ -4,14 +4,20 @@ import Debug from 'debug'
 import UIActions from 'redux/reducers/ui'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { IStats } from '../../../models/IStats'
-const { getGeneralStats, logoutApi } = require('api')
+const { getGeneralStats, logoutApi, logoutAllApi } = require('api')
 
 const debug = Debug('swetrix:rx:s:logout')
 
-export default function* logoutWorker({ payload: { basedOn401Error } }: { payload: { basedOn401Error: boolean } }) {
+export default function* logoutWorker({ payload: { basedOn401Error, isLogoutAll } }: { payload: { basedOn401Error: boolean, isLogoutAll: boolean } }) {
   try {
     const refreshToken = getRefreshToken()
-    yield call(logoutApi, refreshToken)
+
+    if (isLogoutAll) {
+      yield call(logoutAllApi)
+    } else {
+      yield call(logoutApi, refreshToken)
+    }
+
     removeRefreshToken()
 
     if (!basedOn401Error) {

@@ -111,14 +111,14 @@ const shareVerifyAsync = (data: {
   payload: { data, successfulCallback, errorCallback },
 })
 
-const logout = (basedOn401Error: boolean) => {
+const logout = (basedOn401Error: boolean, isLogoutAll: boolean) => {
   removeAccessToken()
   removeItem(LS_VIEW_PREFS_SETTING)
   removeItem(LS_CAPTCHA_VIEW_PREFS_SETTING)
 
   return {
     type: types.LOGOUT,
-    payload: { basedOn401Error },
+    payload: { basedOn401Error, isLogoutAll },
   }
 }
 

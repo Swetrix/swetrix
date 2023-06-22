@@ -144,6 +144,10 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => {
     dispatch(sagaActions.updateShowLiveVisitorsInTitle(show, callback))
   },
+  logoutAll: () => {
+    dispatch(authActions.logout())
+    dispatch(sagaActions.logout(false, true))
+  },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserSettings)
