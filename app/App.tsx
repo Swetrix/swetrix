@@ -18,17 +18,12 @@ import Loader from 'ui/Loader'
 
 import ScrollToTop from 'hoc/ScrollToTop'
 import Selfhosted from 'hoc/Selfhosted'
-import {
-  isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID,
-} from 'redux/constants'
 import { getAccessToken } from 'utils/accessToken'
-import { loadScript } from 'utils/generic'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
-import UIActions from 'redux/reducers/ui'
 import routesPath from 'routesPath'
 import { getPageMeta } from 'utils/server'
 
@@ -71,13 +66,14 @@ const Fallback = ({ isMinimalFooter }: FallbackProps): JSX.Element => {
 
 interface IApp {
   ssrTheme: 'dark' | 'light'
+  ssrAuthenticated: boolean
 }
 
 const TITLE_BLACKLIST = [
   '/projects/', '/captchas/',
 ]
 
-const App: React.FC<IApp> = ({ ssrTheme }) => {
+const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
@@ -85,38 +81,10 @@ const App: React.FC<IApp> = ({ ssrTheme }) => {
   const {
     loading, authenticated,
   } = useSelector((state: StateType) => state.auth)
-  const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
   const accessToken = getAccessToken()
   const refreshToken = getRefreshToken()
-
-  // Paddle (payment processor) set-up
-  useEffect(() => {
-    if (paddleLoaded || !authenticated) {
-      return
-    }
-
-    loadScript(PADDLE_JS_URL)
-
-    const eventCallback = (data: any) => {
-      dispatch(UIActions.setPaddleLastEvent(data))
-    }
-    // eslint-disable-next-line no-use-before-define
-    const interval = setInterval(paddleSetup, 200)
-
-    function paddleSetup() {
-      if (isSelfhosted) {
-        clearInterval(interval)
-      } else if ((window as any)?.Paddle) {
-        (window as any).Paddle.Setup({
-          vendor: PADDLE_VENDOR_ID,
-          eventCallback,
-        })
-        clearInterval(interval)
-      }
-    }
-  }, [paddleLoaded, authenticated]) // eslint-disable-line
 
   useEffect(() => {
     (async () => {
@@ -170,7 +138,7 @@ const App: React.FC<IApp> = ({ ssrTheme }) => {
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
         {pathname !== routesPath.main && (
-          <Header ssrTheme={ssrTheme} />
+          <Header ssrTheme={ssrTheme} ssrAuthenticated={ssrAuthenticated} />
         )}
         {/* @ts-ignore */}
         <ScrollToTop>

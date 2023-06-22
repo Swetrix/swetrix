@@ -20,6 +20,13 @@ export function detectTheme(request: Request): 'dark' | 'light' {
   return 'light'
 }
 
+export function isAuthenticated(request: Request): boolean {
+  const cookie = request.headers.get('Cookie')
+  const accessToken = cookie?.match(/(?<=access_token=)[^;]*/)?.[0]
+
+  return !!accessToken
+}
+
 interface IPageMeta {
   title: string
 }

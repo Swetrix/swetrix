@@ -11,13 +11,17 @@ import duration from 'dayjs/plugin/duration'
 import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import _round from 'lodash/round'
 
-import { CONTACT_EMAIL, paddleLanguageMapping } from 'redux/constants'
+import {
+  isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping,
+} from 'redux/constants'
+import { loadScript } from 'utils/generic'
+import { useAppDispatch, StateType } from 'redux/store'
 import routes from 'routesPath'
 import sagaActions from 'redux/sagas/actions'
 import { withAuthentication, auth } from 'hoc/protected'
 import Modal from 'ui/Modal'
 import { IUser } from 'redux/models/IUser'
-import { StateType } from 'redux/store/index'
+import UIActions from 'redux/reducers/ui'
 import Pricing from '../MainPage/Pricing'
 
 dayjs.extend(utc)
@@ -30,7 +34,9 @@ const Billing = (): JSX.Element => {
     user: IUser
   } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
   const dispatch = useDispatch()
+  const _dispatch = useAppDispatch()
   const { t, i18n: { language } }: {
     t: (key: string, optinions?: {
       [key: string]: string | number,
@@ -46,6 +52,33 @@ const Billing = (): JSX.Element => {
   const isTrial: boolean = planCode === 'trial'
   const isNoSub: boolean = planCode === 'none'
   const totalUsage = _round((usageinfo.total / maxEventsCount) * 100, 2)
+
+  // Paddle (payment processor) set-up
+  useEffect(() => {
+    if (paddleLoaded) {
+      return
+    }
+
+    loadScript(PADDLE_JS_URL)
+
+    const eventCallback = (data: any) => {
+      _dispatch(UIActions.setPaddleLastEvent(data))
+    }
+    // eslint-disable-next-line no-use-before-define
+    const interval = setInterval(paddleSetup, 200)
+
+    function paddleSetup() {
+      if (isSelfhosted) {
+        clearInterval(interval)
+      } else if ((window as any)?.Paddle) {
+        (window as any).Paddle.Setup({
+          vendor: PADDLE_VENDOR_ID,
+          eventCallback,
+        })
+        clearInterval(interval)
+      }
+    }
+  }, [paddleLoaded]) // eslint-disable-line
 
   useEffect(() => {
     dispatch(sagaActions.loadUsageinfo())
@@ -148,14 +181,14 @@ const Billing = (): JSX.Element => {
           </h1>
           <div>
             {subUpdateURL && (
-            <span onClick={onUpdatePaymentDetails} className='inline-flex select-none cursor-pointer mr-2 items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
-              {t('billing.update')}
-            </span>
+              <span onClick={onUpdatePaymentDetails} className='inline-flex select-none cursor-pointer mr-2 items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
+                {t('billing.update')}
+              </span>
             )}
             {subCancelURL && (
-            <span onClick={() => setIsCancelSubModalOpened(true)} className='inline-flex select-none cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-4 py-2 text-sm'>
-              {t('billing.cancelSub')}
-            </span>
+              <span onClick={() => setIsCancelSubModalOpened(true)} className='inline-flex select-none cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-4 py-2 text-sm'>
+                {t('billing.cancelSub')}
+              </span>
             )}
           </div>
         </div>
@@ -168,53 +201,53 @@ const Billing = (): JSX.Element => {
         </p>
         <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
         {cancellationEffectiveDate && (
-        <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          <InformationCircleIcon className='h-10 w-10 mr-2 text-blue-600' aria-hidden='true' />
-          <span className='font-bold max-w-prose'>
-            {t('billing.cancelledSubMessage', {
-              date: language === 'en'
-                ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
-                : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
-            })}
-          </span>
-        </div>
+          <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            <InformationCircleIcon className='h-10 w-10 mr-2 text-blue-600' aria-hidden='true' />
+            <span className='font-bold max-w-prose'>
+              {t('billing.cancelledSubMessage', {
+                date: language === 'en'
+                  ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
+                  : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
+              })}
+            </span>
+          </div>
         )}
         {nextBillDate && (
-        <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          <span className='font-bold'>
-            {t('billing.nextBillDate')}
-          </span>
-              &nbsp;
-          <span>
-            {language === 'en'
-              ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
-              : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY')}
-          </span>
-        </div>
+          <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            <span className='font-bold'>
+              {t('billing.nextBillDate')}
+            </span>
+            &nbsp;
+            <span>
+              {language === 'en'
+                ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
+                : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY')}
+            </span>
+          </div>
         )}
         {isTrial && trialMessage && (
-        <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          <span className='font-bold'>
-            {trialMessage}
-          </span>
-        </div>
+          <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            <span className='font-bold'>
+              {trialMessage}
+            </span>
+          </div>
         )}
         {isNoSub && (
-        <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          <ExclamationTriangleIcon className='h-10 w-10 mr-2 text-red-600' aria-hidden='true' />
-          <span className='font-bold max-w-prose'>
-            {t('billing.noSubWarning')}
-          </span>
-        </div>
+          <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+            <ExclamationTriangleIcon className='h-10 w-10 mr-2 text-red-600' aria-hidden='true' />
+            <span className='font-bold max-w-prose'>
+              {t('billing.noSubWarning')}
+            </span>
+          </div>
         )}
         <Pricing t={t} language={language} />
         <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
           <Trans
-              // @ts-ignore
+            // @ts-ignore
             t={t}
             i18nKey='billing.contact'
             values={{ email: CONTACT_EMAIL }}
-              // @ts-ignore
+            // @ts-ignore
             components={{
               mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
               amount: 5,
@@ -270,14 +303,14 @@ const Billing = (): JSX.Element => {
         type='error'
         message={(
           <Trans
-              // @ts-ignore
+            // @ts-ignore
             t={t}
             i18nKey='pricing.cancelDesc'
             values={{
               email: CONTACT_EMAIL,
             }}
           />
-          )}
+        )}
         isOpened={isCancelSubModalOpened}
       />
     </div>

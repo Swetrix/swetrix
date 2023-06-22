@@ -3,6 +3,7 @@ import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
+import { ClientOnly } from 'remix-utils'
 import {
   ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon, CheckIcon, XMarkIcon, ChevronRightIcon,
 } from '@heroicons/react/24/solid'
@@ -139,9 +140,10 @@ const M_FEATURES_ICONS = [
 
 interface IMain {
   ssrTheme: 'dark' | 'light'
+  ssrAuthenticated: boolean
 }
 
-const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
+const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: any
@@ -151,9 +153,10 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
     },
   } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const { authenticated } = useSelector((state: StateType) => state.auth)
+  const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
   const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
   const theme = isBrowser ? reduxTheme : ssrTheme
+  const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
 
   const events = nFormatterSeparated(Number(stats.events))
   const users = nFormatterSeparated(Number(stats.users))
@@ -196,11 +199,11 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
               className='aspect-[1108/632] w-[69.25rem] bg-gradient-to-r from-[#80caff] to-[#4f46e5] opacity-20'
               style={{
                 clipPath:
-                    'polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)',
+                  'polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)',
               }}
             />
           </div>
-          <Header ssrTheme={ssrTheme} />
+          <Header ssrTheme={ssrTheme} ssrAuthenticated={ssrAuthenticated} />
           <div className='flex justify-center items-center py-2 px-2'>
             <a
               href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi'
@@ -219,7 +222,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
               <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
                 <h1 className='max-w-2xl text-3xl sm:text-5xl md:text-5xl font-extrabold text-slate-900 dark:text-white sm:leading-none lg:text-5xl xl:text-6xl xl:leading-[110%]'>
                   <Trans
-                      // @ts-ignore
+                    // @ts-ignore
                     t={t}
                     i18nKey='main.slogan'
                     components={{
@@ -234,17 +237,21 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                   {_isEmpty(lastBlogPost) ? (
                     <div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-80 rounded-md animate-pulse' />
                   ) : (
-                    <a
-                      className='inline-flex ml-1 items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 hover:underline'
-                      href={`${BLOG_URL}post/${lastBlogPost.url_path}`}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                    >
-                      <span>
-                        {lastBlogPost.title}
-                      </span>
-                      <ChevronRightIcon className='h-4 w-4 text-slate-500' aria-hidden='true' />
-                    </a>
+                    <ClientOnly fallback={<div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-80 rounded-md animate-pulse' />}>
+                      {() => (
+                        <a
+                          className='inline-flex ml-1 items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 hover:underline'
+                          href={`${BLOG_URL}post/${lastBlogPost.url_path}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          <span>
+                            {lastBlogPost.title}
+                          </span>
+                          <ChevronRightIcon className='h-4 w-4 text-slate-500' aria-hidden='true' />
+                        </a>
+                      )}
+                    </ClientOnly>
                   )}
                 </div>
                 <p className='text-base text-slate-700 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
@@ -364,19 +371,19 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                 {t('main.privacy.title')}
               </h2>
               {_map(t('main.privacy.list', { returnObjects: true }), (item: {
-                  label: string
-                  desc: string
-                }) => (
-                  <div key={item.label} className='mb-4 flex items-center'>
-                    <div className='mr-3'>
-                      <CheckCircleIcon className='fill-indigo-500 w-[24px] h-[24px]' />
-                    </div>
-                    <p>
-                      <span className='dark:text-white'>{item.label}</span>
-                      <span className='mr-1 ml-1 dark:text-white'>-</span>
-                      <span className='text-gray-600 dark:text-gray-400'>{item.desc}</span>
-                    </p>
+                label: string
+                desc: string
+              }) => (
+                <div key={item.label} className='mb-4 flex items-center'>
+                  <div className='mr-3'>
+                    <CheckCircleIcon className='fill-indigo-500 w-[24px] h-[24px]' />
                   </div>
+                  <p>
+                    <span className='dark:text-white'>{item.label}</span>
+                    <span className='mr-1 ml-1 dark:text-white'>-</span>
+                    <span className='text-gray-600 dark:text-gray-400'>{item.desc}</span>
+                  </p>
+                </div>
               ))}
               {/* mt-7 because mb-4 in upper component + mt-7 = 11. mb-11 is used for spacing the links in other sections. */}
               <Link to={routesPath.privacy} className='mt-7 dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center' aria-label={t('footer.pp')}>
@@ -389,59 +396,59 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
         </div>
         {/*  block singup */}
         {!authenticated && (
-        <div className='overflow-x-clip'>
-          <div className='py-20 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5 relative isolate'>
-            <div
-              className='absolute inset-x-0 -top-3 -z-10 transform-gpu overflow-hidden px-36 blur-3xl'
-              aria-hidden='true'
-            >
+          <div className='overflow-x-clip'>
+            <div className='py-20 max-w-7xl w-full flex justify-center md:justify-between items-center mx-auto px-5 relative isolate'>
               <div
-                className='mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30'
-                style={{
-                  clipPath:
-                        'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-                }}
-              />
-            </div>
-            <div className='relative z-50 lg:col-span-6 rounded-xl'>
-              <div className='bg-white dark:bg-slate-800/20 ring-1 ring-slate-200 dark:ring-slate-800 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
-                <div className='px-4 py-8 sm:px-10'>
-                  <p className='text-lg text-gray-900 dark:text-white text-center md:text-xl font-semibold'>
-                    {t('main.signup')}
-                  </p>
-                  <div className='mt-6'>
-                    <SignUp ssrTheme={ssrTheme} />
-                  </div>
-                </div>
-                <div className='px-4 sm:px-10'>
-                  <div className='py-6 bg-transparent border-t border-gray-200 dark:border-slate-700'>
-                    <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
-                      <Trans
-                            // @ts-ignore
-                        t={t}
-                        i18nKey='main.signupTerms'
-                        components={{
-                          tos: <Link to={routesPath.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
-                          pp: <Link to={routesPath.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
-                        }}
-                      />
+                className='absolute inset-x-0 -top-3 -z-10 transform-gpu overflow-hidden px-36 blur-3xl'
+                aria-hidden='true'
+              >
+                <div
+                  className='mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30'
+                  style={{
+                    clipPath:
+                      'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+                  }}
+                />
+              </div>
+              <div className='relative z-50 lg:col-span-6 rounded-xl'>
+                <div className='bg-white dark:bg-slate-800/20 ring-1 ring-slate-200 dark:ring-slate-800 sm:max-w-md sm:w-full sm:mx-auto sm:rounded-lg sm:overflow-hidden'>
+                  <div className='px-4 py-8 sm:px-10'>
+                    <p className='text-lg text-gray-900 dark:text-white text-center md:text-xl font-semibold'>
+                      {t('main.signup')}
                     </p>
+                    <div className='mt-6'>
+                      <SignUp ssrTheme={ssrTheme} />
+                    </div>
+                  </div>
+                  <div className='px-4 sm:px-10'>
+                    <div className='py-6 bg-transparent border-t border-gray-200 dark:border-slate-700'>
+                      <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
+                        <Trans
+                          // @ts-ignore
+                          t={t}
+                          i18nKey='main.signupTerms'
+                          components={{
+                            tos: <Link to={routesPath.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
+                            pp: <Link to={routesPath.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
+                          }}
+                        />
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className='relative'>
-              <picture>
-                <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
-                <img
-                  src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
-                  className='relative z-50 hidden md:block'
-                  alt='Swetrix Dashboard overview'
-                />
-              </picture>
+              <div className='relative'>
+                <picture>
+                  <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
+                  <img
+                    src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
+                    className='relative z-50 hidden md:block'
+                    alt='Swetrix Dashboard overview'
+                  />
+                </picture>
+              </div>
             </div>
           </div>
-        </div>
         )}
         {/* end block singup */}
         {/* Core features section */}
@@ -455,16 +462,16 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
           </div>
           <div className='mt-[60px] flex items-center max-w-7xl w-full mx-auto flex-wrap justify-center xl:justify-between'>
             {_map(t('main.features', { returnObjects: true }), (item: {
-                name: string
-                desc: string
-              }, index: number) => (
-                <div key={item.name} className='w-[416px] h-64 px-7 py-11 text-center'>
-                  <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
-                  <div className='mt-2'>
-                    <h2 className='text-slate-900 dark:text-white text-xl font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
-                    <p className='text-gray-500 max-w-xs mx-auto dark:text-gray-400'>{item.desc}</p>
-                  </div>
+              name: string
+              desc: string
+            }, index: number) => (
+              <div key={item.name} className='w-[416px] h-64 px-7 py-11 text-center'>
+                <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
+                <div className='mt-2'>
+                  <h2 className='text-slate-900 dark:text-white text-xl font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
+                  <p className='text-gray-500 max-w-xs mx-auto dark:text-gray-400'>{item.desc}</p>
                 </div>
+              </div>
             ))}
           </div>
           <BackgroundSvg theme={theme} className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
@@ -524,20 +531,20 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
               </h2>
               <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-10 sm:gap-y-24 justify-between justify-items-center text-slate-900 dark:text-white pt-20 pb-36'>
                 {_map(t('main.mFeatures', { returnObjects: true }), (item: {
-                    name: string
-                    desc: string
-                  }, index: number) => (
-                    <div key={item.name} className='max-w-[310px] w-full'>
-                      <div className='flex items-center'>
-                        <span className='text-slate-900 dark:text-gray-200 text-xl mr-4'>
-                          {M_FEATURES_ICONS[index]}
-                        </span>
-                        <h2 className='font-semibold text-xl'>
-                          {item.name}
-                        </h2>
-                      </div>
-                      <p className='pl-9 text-slate-700 dark:text-gray-300'>{item.desc}</p>
+                  name: string
+                  desc: string
+                }, index: number) => (
+                  <div key={item.name} className='max-w-[310px] w-full'>
+                    <div className='flex items-center'>
+                      <span className='text-slate-900 dark:text-gray-200 text-xl mr-4'>
+                        {M_FEATURES_ICONS[index]}
+                      </span>
+                      <h2 className='font-semibold text-xl'>
+                        {item.name}
+                      </h2>
                     </div>
+                    <p className='pl-9 text-slate-700 dark:text-gray-300'>{item.desc}</p>
+                  </div>
                 ))}
               </div>
             </section>
@@ -557,7 +564,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                 className='ml-[max(50%,38rem)] aspect-[1313/771] w-[82.0625rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc]'
                 style={{
                   clipPath:
-                      'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+                    'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
                 }}
               />
             </div>
@@ -569,14 +576,14 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                 className='ml-[-22rem] aspect-[1313/771] w-[82.0625rem] flex-none origin-top-right rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] xl:ml-0 xl:mr-[calc(50%-12rem)]'
                 style={{
                   clipPath:
-                      'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+                    'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
                 }}
               />
             </div>
             <section className='relative z-20 px-3'>
               <h1 className='mt-20 text-center h-8 mb-5 text-3xl sm:text-5xl text-slate-900 dark:text-white font-extrabold max-w-prose w-full mx-auto'>
                 <Trans
-                    // @ts-ignore
+                  // @ts-ignore
                   t={t}
                   i18nKey='main.whyUseSwetrix'
                   components={{
@@ -627,15 +634,15 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                                     className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'
                                   >
                                     {COMPETITOR_FEATURE_TABLE[service][key] && (
-                                    <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-600 dark:text-green-500' aria-label={t('common.yes')} />
+                                      <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-600 dark:text-green-500' aria-label={t('common.yes')} />
                                     )}
                                     {COMPETITOR_FEATURE_TABLE[service][key] === false && (
-                                    <XMarkIcon className='flex-shrink-0 h-5 w-5 text-red-600 dark:text-red-500' aria-label={t('common.no')} />
+                                      <XMarkIcon className='flex-shrink-0 h-5 w-5 text-red-600 dark:text-red-500' aria-label={t('common.no')} />
                                     )}
                                     {COMPETITOR_FEATURE_TABLE[service][key] === null && (
-                                    <p className='text-slate-700 dark:text-gray-50 h-5 w-5 text-center'>
-                                      -
-                                    </p>
+                                      <p className='text-slate-700 dark:text-gray-50 h-5 w-5 text-center'>
+                                        -
+                                      </p>
                                     )}
                                   </td>
                                 ))}
@@ -666,32 +673,32 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
             </h2>
             <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
               {_map(t('main.lTestimonials', { returnObjects: true }), (item: {
-                  name: string;
-                  role: string;
-                  desc: string;
-                }, index: number) => (
-                  <div
-                    key={item.name}
-                    className={cx('max-w-xs w-full dark:bg-slate-900', {
-                      'mt-5 md:mt-0': index > 0,
-                    })}
-                    style={{
-                      boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
-                      borderRadius: '100px 30px 30px 30px',
-                    }}
-                  >
-                    <Quote theme={theme} color={index === 1 ? 'indigo' : 'black'} className='mx-auto relative -top-4' />
-                    <div className='px-10 mb-10 max-h-80 overflow-auto'>
-                      <p className='text-gray-500 text-sm mt-8 dark:text-gray-400'>
-                        {item.name}
-                        <br />
-                        {item.role}
-                      </p>
-                      <p className='text-slate-900 dark:text-white text-md text mt-2 leading-9 whitespace-pre-line'>
-                        {item.desc}
-                      </p>
-                    </div>
+                name: string;
+                role: string;
+                desc: string;
+              }, index: number) => (
+                <div
+                  key={item.name}
+                  className={cx('max-w-xs w-full dark:bg-slate-900', {
+                    'mt-5 md:mt-0': index > 0,
+                  })}
+                  style={{
+                    boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
+                    borderRadius: '100px 30px 30px 30px',
+                  }}
+                >
+                  <Quote theme={theme} color={index === 1 ? 'indigo' : 'black'} className='mx-auto relative -top-4' />
+                  <div className='px-10 mb-10 max-h-80 overflow-auto'>
+                    <p className='text-gray-500 text-sm mt-8 dark:text-gray-400'>
+                      {item.name}
+                      <br />
+                      {item.role}
+                    </p>
+                    <p className='text-slate-900 dark:text-white text-md text mt-2 leading-9 whitespace-pre-line'>
+                      {item.desc}
+                    </p>
                   </div>
+                </div>
               ))}
             </div>
           </div>
@@ -706,7 +713,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
                   className='aspect-[1097/1023] w-[68.5625rem] bg-gradient-to-r from-[#ff4694] to-[#776fff] opacity-25 dark:opacity-10'
                   style={{
                     clipPath:
-                        'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+                      'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
                   }}
                 />
               </div>
@@ -715,7 +722,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
               <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
                 <h2 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px] text-white mb-3'>
                   <Trans
-                      // @ts-ignore
+                    // @ts-ignore
                     t={t}
                     i18nKey='main.os'
                     components={{
@@ -760,7 +767,7 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
           <div className='max-w-lg w-full lg:ml-5'>
             <h2 className='text-3xl md:text-4xl text-slate-900 dark:text-white font-extrabold'>
               <Trans
-                  // @ts-ignore
+                // @ts-ignore
                 t={t}
                 i18nKey='main.opensourceAdv'
                 components={{
@@ -772,14 +779,14 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
             <hr className='border-slate-300 dark:border-slate-700 border-1 max-w-[346px] my-6' />
             <div className='max-w-md w-full lg:mb-0 mb-9'>
               {_map(t('main.opensource', { returnObjects: true }), (item: {
-                  desc: string
-                }) => (
-                  <p key={item.desc} className='text-slate-700 dark:text-gray-300 text-sm leading-6 flex items-center mb-3'>
-                    <span>
-                      <CheckCircleIcon className='w-6 h-6 text-indigo-500 mr-4' />
-                    </span>
-                    {item.desc}
-                  </p>
+                desc: string
+              }) => (
+                <p key={item.desc} className='text-slate-700 dark:text-gray-300 text-sm leading-6 flex items-center mb-3'>
+                  <span>
+                    <CheckCircleIcon className='w-6 h-6 text-indigo-500 mr-4' />
+                  </span>
+                  {item.desc}
+                </p>
               ))}
             </div>
           </div>
@@ -804,45 +811,57 @@ const Main: React.FC<IMain> = ({ ssrTheme }): JSX.Element => {
             </div>
             <div className='flex items-center justify-between mt-20 md:mt-32 md:flex-row flex-col'>
               <div className='text-center'>
-                <p className='text-indigo-700 text-5xl font-extrabold text-center'>
-                  {users[0]}
-                  {users[1] && (
-                  <span className='text-gray-900 dark:text-indigo-200'>
-                    {users[1]}
-                    +
-                  </span>
+                <ClientOnly fallback={<p className='text-indigo-700 text-5xl font-extrabold text-center'>0</p>}>
+                  {() => (
+                    <p className='text-indigo-700 text-5xl font-extrabold text-center'>
+                      {users[0]}
+                      {users[1] && (
+                        <span className='text-gray-900 dark:text-indigo-200'>
+                          {users[1]}
+                          +
+                        </span>
+                      )}
+                    </p>
                   )}
-                </p>
+                </ClientOnly>
                 <p className='text-gray-600 text-lg dark:text-gray-200'>
                   {t('main.users')}
                 </p>
               </div>
               <div className='bg-gray-800 dark:bg-gray-200 w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
               <div className='text-center'>
-                <p className='text-indigo-700 text-5xl font-extrabold text-center'>
-                  {websites[0]}
-                  {websites[1] && (
-                  <span className='text-gray-900 dark:text-indigo-200'>
-                    {websites[1]}
-                    +
-                  </span>
+                <ClientOnly fallback={<p className='text-indigo-700 text-5xl font-extrabold text-center'>0</p>}>
+                  {() => (
+                    <p className='text-indigo-700 text-5xl font-extrabold text-center'>
+                      {websites[0]}
+                      {websites[1] && (
+                        <span className='text-gray-900 dark:text-indigo-200'>
+                          {websites[1]}
+                          +
+                        </span>
+                      )}
+                    </p>
                   )}
-                </p>
+                </ClientOnly>
                 <p className='text-gray-600 text-lg dark:text-gray-200'>
                   {t('main.websites')}
                 </p>
               </div>
               <div className='bg-gray-800 dark:bg-gray-200 w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
               <div className='text-center'>
-                <p className='text-indigo-700 text-5xl font-extrabold text-center'>
-                  {events[0]}
-                  {events[1] && (
-                  <span className='text-gray-900 dark:text-indigo-200'>
-                    {events[1]}
-                    +
-                  </span>
+                <ClientOnly fallback={<p className='text-indigo-700 text-5xl font-extrabold text-center'>0</p>}>
+                  {() => (
+                    <p className='text-indigo-700 text-5xl font-extrabold text-center'>
+                      {events[0]}
+                      {events[1] && (
+                        <span className='text-gray-900 dark:text-indigo-200'>
+                          {events[1]}
+                          +
+                        </span>
+                      )}
+                    </p>
                   )}
-                </p>
+                </ClientOnly>
                 <p className='text-gray-600 text-lg dark:text-gray-200'>
                   {t('main.pageviews')}
                 </p>

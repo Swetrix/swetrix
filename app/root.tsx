@@ -10,8 +10,9 @@ import {
   useLoaderData,
   ScrollRestoration,
 } from '@remix-run/react'
+import { ClientOnly } from 'remix-utils'
 import { store } from 'redux/store'
-import { isDevelopment, whitelist, isBrowser } from 'redux/constants'
+import { whitelist, isBrowser } from 'redux/constants'
 import { Provider } from 'react-redux'
 import clsx from 'clsx'
 import _map from 'lodash/map'
@@ -26,7 +27,7 @@ import { useChangeLanguage } from 'remix-i18next'
 import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
 import { detectLanguage } from 'i18n'
-import { detectTheme, getPageMeta } from 'utils/server'
+import { detectTheme, getPageMeta, isAuthenticated } from 'utils/server'
 
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
@@ -98,6 +99,7 @@ export async function loader({ request }: LoaderArgs) {
   const { url } = request
   const locale = detectLanguage(request)
   const theme = detectTheme(request)
+  const isAuthed = isAuthenticated(request)
 
   const REMIX_ENV = {
     NODE_ENV: process.env.NODE_ENV,
@@ -111,7 +113,7 @@ export async function loader({ request }: LoaderArgs) {
   }
 
   return json({
-    locale, url, theme, REMIX_ENV,
+    locale, url, theme, REMIX_ENV, isAuthed,
   })
 }
 
@@ -121,7 +123,7 @@ export const handle = {
 
 export default function App() {
   const {
-    locale, url, theme, REMIX_ENV,
+    locale, url, theme, REMIX_ENV, isAuthed,
   } = useLoaderData<typeof loader>()
   const { i18n, t } = useTranslation('common')
   const { title } = getPageMeta(t, url)
@@ -179,12 +181,25 @@ export default function App() {
       >
         <Provider store={store}>
           <AlertProvider template={AlertTemplate} {...options}>
-            <AppWrapper ssrTheme={theme} />
-            <ScrollRestoration />
-            <Scripts />
-            {isDevelopment && <LiveReload />}
+            <AppWrapper
+              ssrTheme={theme}
+              ssrAuthenticated={isAuthed}
+            />
           </AlertProvider>
         </Provider>
+        <ClientOnly>
+          {() => (
+            <ScrollRestoration />
+          )}
+        </ClientOnly>
+        {/* <ScrollRestoration /> */}
+        <Scripts />
+        {/* <ClientOnly>
+            {() => (
+              <Scripts />
+            )}
+          </ClientOnly> */}
+        <LiveReload />
       </body>
     </html>
   )
