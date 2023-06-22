@@ -171,7 +171,7 @@ export default function App() {
         />
       </head>
       <body>
-        <div className='loader' id='loader'>
+        <div className='hidden loader' id='loader'>
           <div className='loader-head'>
             <div className='first' />
             <div className='second' />
@@ -180,6 +180,12 @@ export default function App() {
             <img className='logo-frame-img' width='361' height='80' src='/assets/logo_blue.png' alt='Swetrix' />
           </div>
         </div>
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: "document.getElementById('loader').classList.remove('hidden')",
+          }}
+        />
         <Provider store={store}>
           <AlertProvider template={AlertTemplate} {...options}>
             <AppWrapper ssrTheme={theme} />
