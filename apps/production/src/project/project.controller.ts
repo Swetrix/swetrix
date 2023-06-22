@@ -611,7 +611,7 @@ export class ProjectController {
   async resetFilters(
     @Param('pid') pid: string,
     @Query('type') type: string,
-    @Query('filters') filter: string,
+    @Query('filters') rawFilters: string,
     @CurrentUserId() uid: string,
   ): Promise<void> {
     this.logger.log({ pid }, 'DELETE /reset-filters/:pid')
@@ -630,7 +630,7 @@ export class ProjectController {
       throw new NotFoundException('Project not found')
     }
 
-    const filters = JSON.parse(filter)
+    const filters = JSON.parse(rawFilters)
 
     this.projectService.allowedToManage(project, uid)
 
