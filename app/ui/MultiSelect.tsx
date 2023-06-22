@@ -12,7 +12,10 @@ const Multiselect = ({ items, selected, onSelect }: {
     label: string,
     value: string,
   }[],
-  onSelect: (i: string[]) => void,
+  onSelect: (i: {
+    label: string,
+    value: string,
+  }[]) => void,
 }) => (
   <div>
     <h1>Select Fruits</h1>

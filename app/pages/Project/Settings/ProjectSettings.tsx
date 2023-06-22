@@ -75,11 +75,12 @@ const ModalMessage = ({
 }): JSX.Element => {
   const [filterType, setFilterType] = useState<string>('')
   const [filterList, setFilterList] = useState<string[]>([])
-  const [activeFilter, setActiveFilter] = useState<string[]>([])
+  const [activeFilter, setActiveFilter] = useState<{ label: string, value: string }[]>([])
 
   const getFiltersList = async () => {
     if (!_isEmpty(filterType)) {
       const res = await getFilters(pid, filterType)
+      console.log(res)
       setFilterList(res)
     }
   }
@@ -139,7 +140,7 @@ const ModalMessage = ({
           <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
             {t('project.settings.reseted.viaFiltersHint')}
           </p>
-          <div className='flex flex-wrap items-center'>
+          <div>
             <Dropdown
               title={t('project.settings.reseted.filterType')}
               items={FILTERS_PANELS_ORDER}
@@ -152,10 +153,7 @@ const ModalMessage = ({
                 label: item,
                 value: item,
               }))}
-              selected={_map(activeFilter, (item) => ({
-                label: item,
-                value: item,
-              }))}
+              selected={activeFilter}
               onSelect={(item) => setActiveFilter(item)}
             />
           </div>
