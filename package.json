@@ -35,6 +35,7 @@
     "billboard.js": "^3.8.2",
     "clsx": "^1.2.1",
     "d3": "^7.8.5",
+    "dangerously-set-html-content": "^1.0.13",
     "dayjs": "^1.11.8",
     "debug": "^4.3.4",
     "dom-to-image": "^2.6.0",
