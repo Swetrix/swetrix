@@ -162,7 +162,7 @@ const ModalMessage = ({
                 labelExtractor={(item) => item}
                 keyExtractor={(item) => item}
                 label={activeFilter}
-                placholder={t('project.settings.reseted.filterPlaceholder')}
+                placholder={t('project.settings.reseted.filtersPlaceholder')}
                 onSelect={(item: string) => setActiveFilter((oldItems: string[]) => [...oldItems, item])}
                 onRemove={(item: string) => setActiveFilter((oldItems: string[]) => _filter(oldItems, (i) => i !== item))}
               />
