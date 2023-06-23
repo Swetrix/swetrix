@@ -577,8 +577,8 @@ const ProjectSettings = ({
             />
             )}
             <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-8'>
-              <div className='flex flex-wrap items-center'>
-                <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+              <div className='flex flex-wrap items-center gap-2'>
+                <Button className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
                   {t('common.cancel')}
                 </Button>
                 <Button type='submit' loading={projectSaving} primary regular>
