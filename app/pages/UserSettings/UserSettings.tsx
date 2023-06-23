@@ -701,22 +701,22 @@ const UserSettings = ({
                 {t('profileSettings.noLink')}
               </div>
             )}
-            <div className='flex justify-between mt-4'>
+            <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-4'>
               <Button onClick={() => setShowExportModal(true)} semiSmall primary>
                 <>
                   <ArrowDownTrayIcon className='w-5 h-5 mr-1' />
                   {t('profileSettings.requestExport')}
                 </>
               </Button>
-              <div>
-                <Button className='ml-3' onClick={logoutAll} semiSmall semiDanger>
+              <div className='flex justify-center flex-wrap gap-2'>
+                <Button onClick={logoutAll} semiSmall semiDanger>
                   <>
                     {/* We need this div for the button to match the height of the button after it */}
                     <div className='h-5' />
                     {t('profileSettings.logoutAll')}
                   </>
                 </Button>
-                <Button className='ml-3' onClick={() => setShowModal(true)} semiSmall danger>
+                <Button onClick={() => setShowModal(true)} semiSmall danger>
                   <>
                     <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
                     {t('profileSettings.delete')}
