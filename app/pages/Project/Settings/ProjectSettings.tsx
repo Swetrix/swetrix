@@ -163,7 +163,12 @@ const ModalMessage = ({
                 keyExtractor={(item) => item}
                 label={activeFilter}
                 placholder={t('project.settings.reseted.filtersPlaceholder')}
-                onSelect={(item: string) => setActiveFilter((oldItems: string[]) => [...oldItems, item])}
+                onSelect={(item: string) => setActiveFilter((oldItems: string[]) => {
+                  if (_includes(oldItems, item)) {
+                    return _filter(oldItems, (i) => i !== item)
+                  }
+                  return [...oldItems, item]
+                })}
                 onRemove={(item: string) => setActiveFilter((oldItems: string[]) => _filter(oldItems, (i) => i !== item))}
               />
             ) : (
