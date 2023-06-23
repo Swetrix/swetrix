@@ -576,7 +576,7 @@ const ProjectSettings = ({
               hint={t('project.settings.protectedHint')}
             />
             )}
-            <div className='flex justify-between mt-8 h-20 sm:h-min'>
+            <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-8'>
               <div className='flex flex-wrap items-center'>
                 <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
                   {t('common.cancel')}
@@ -586,9 +586,9 @@ const ProjectSettings = ({
                 </Button>
               </div>
               {!project?.shared && (
-              <div className='flex flex-wrap items-center justify-end'>
+              <div className='flex flex-wrap justify-center gap-2'>
                 {!isSelfhosted && (
-                <Button className='mr-2' onClick={() => setShowTransfer(true)} semiDanger semiSmall>
+                <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
                   <>
                     <RocketLaunchIcon className='w-5 h-5 mr-1' />
                     {t('project.settings.transfer')}
@@ -601,7 +601,7 @@ const ProjectSettings = ({
                     {t('project.settings.reset')}
                   </>
                 </Button>
-                <Button className='ml-2' onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
                   <>
                     <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
                     {t('project.settings.delete')}
