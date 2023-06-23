@@ -789,9 +789,15 @@ export class AnalyticsService {
   }
 
   async getFilters(pid: string, type: string): Promise<Array<string>> {
-    const query = `SELECT {type:String} FROM analytics WHERE pid={pid:FixedString(12)} AND {type:String} IS NOT NULL GROUP BY {type:String}`
+    if (!_includes(cols, type)) {
+      throw new UnprocessableEntityException(
+        `The provided type (${type}) is incorrect`,
+      )
+    }
+
+    const query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
     const results = await clickhouse
-      .query(query, { params: { pid, type } })
+      .query(query, { params: { pid } })
       .toPromise()
 
     return _map(results, type)
