@@ -13,18 +13,21 @@ import _join from 'lodash/join'
 import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
+import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
+import {
+  isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD, FILTERS_PANELS_ORDER,
+} from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import {
-  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially,
+  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially, getFilters, resetFilters,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -33,6 +36,8 @@ import Modal from 'ui/Modal'
 import FlatPicker from 'ui/Flatpicker'
 import { trackCustom } from 'utils/analytics'
 import routes from 'routesPath'
+import Dropdown from 'ui/Dropdown'
+import MultiSelect from 'ui/MultiSelect'
 import { getFormatDate } from '../View/ViewProject.helpers'
 
 import People from './People'
@@ -51,10 +56,14 @@ const tabDeleteDataModal = [
     name: 'partially',
     title: 'project.settings.reseted.partially',
   },
+  {
+    name: 'viaFilters',
+    title: 'project.settings.reseted.viaFilters',
+  },
 ]
 
 const ModalMessage = ({
-  dateRange, setDateRange, setTab, t, tab,
+  dateRange, setDateRange, setTab, t, tab, pid, activeFilter, setActiveFilter, filterType, setFilterType,
 }: {
   dateRange: Date[],
   setDateRange: (a: Date[]) => void,
@@ -63,29 +72,52 @@ const ModalMessage = ({
     [key: string]: string | number | null
   }) => string,
   tab: string,
-}): JSX.Element => (
-  <>
-    <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
-      {t('project.settings.resetHint')}
-    </p>
-    <div className='mt-6'>
-      <nav className='-mb-px flex space-x-6'>
-        {_map(tabDeleteDataModal, (tabDelete) => (
-          <button
-            key={tabDelete.name}
-            type='button'
-            onClick={() => setTab(tabDelete.name)}
-            className={cx('whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-md', {
-              'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabDelete.name === tab,
-              'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabDelete.name,
-            })}
-          >
-            {t(tabDelete.title)}
-          </button>
-        ))}
-      </nav>
-    </div>
-    {tab === tabDeleteDataModal[1].name && (
+  pid: string,
+  activeFilter: string[]
+  setActiveFilter: any,
+  filterType: string,
+  setFilterType: (a: string) => void,
+}): JSX.Element => {
+  const [filterList, setFilterList] = useState<string[]>([])
+
+  const getFiltersList = async () => {
+    if (!_isEmpty(filterType)) {
+      const res = await getFilters(pid, filterType)
+      setFilterList(res)
+      if (!_isEmpty(activeFilter)) {
+        setActiveFilter([])
+      }
+    }
+  }
+
+  useEffect(() => {
+    getFiltersList()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterType])
+
+  return (
+    <>
+      <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
+        {t('project.settings.resetHint')}
+      </p>
+      <div className='mt-6'>
+        <nav className='-mb-px flex space-x-6'>
+          {_map(tabDeleteDataModal, (tabDelete) => (
+            <button
+              key={tabDelete.name}
+              type='button'
+              onClick={() => setTab(tabDelete.name)}
+              className={cx('whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-md', {
+                'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabDelete.name === tab,
+                'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabDelete.name,
+              })}
+            >
+              {t(tabDelete.title)}
+            </button>
+          ))}
+        </nav>
+      </div>
+      {tab === tabDeleteDataModal[1].name && (
       <>
         <p className='text-gray-500 dark:text-gray-300 mt-4 mb-2 text-sm'>
           {t('project.settings.reseted.partiallyDesc')}
@@ -102,14 +134,49 @@ const ModalMessage = ({
           value={dateRange}
         />
       </>
-    )}
-    {tab === tabDeleteDataModal[0].name && (
-      <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
-        {t('project.settings.reseted.allHint')}
-      </p>
-    )}
-  </>
-)
+      )}
+      {tab === tabDeleteDataModal[0].name && (
+        <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+          {t('project.settings.reseted.allHint')}
+        </p>
+      )}
+      {tab === tabDeleteDataModal[2].name && (
+        <div className='min-h-[410px]'>
+          <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+            {t('project.settings.reseted.viaFiltersHint')}
+          </p>
+          <div>
+            <Dropdown
+              className='min-w-[160px]'
+              title={!_isEmpty(filterType) ? t(`project.mapping.${filterType}`) : t('project.settings.reseted.selectFilters')}
+              items={FILTERS_PANELS_ORDER}
+              labelExtractor={(item) => t(`project.mapping.${item}`)}
+              keyExtractor={(item) => item}
+              onSelect={(item) => setFilterType(item)}
+            />
+            <div className='h-2' />
+            {(filterType && !_isEmpty(filterList)) ? (
+              <MultiSelect
+                className='w-full max-w-[400px]'
+                items={filterList}
+                labelExtractor={(item) => item}
+                keyExtractor={(item) => item}
+                label={activeFilter}
+                placholder={t('project.settings.reseted.filterPlaceholder')}
+                onSelect={(item: string) => setActiveFilter((oldItems: string[]) => [...oldItems, item])}
+                onRemove={(item: string) => setActiveFilter((oldItems: string[]) => _filter(oldItems, (i) => i !== item))}
+              />
+            ) : (
+              <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+                {t('project.settings.reseted.noFilters')}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
 
 interface IForm extends Partial<IProject> {
   origins: string | null,
@@ -180,6 +247,10 @@ const ProjectSettings = ({
   const [dateRange, setDateRange] = useState<Date[]>([])
   const [tab, setTab] = useState<string>(tabDeleteDataModal[0].name)
   const [showProtected, setShowProtected] = useState<boolean>(false)
+
+  // for reset data via filters
+  const [activeFilter, setActiveFilter] = useState<string[]>([])
+  const [filterType, setFilterType] = useState<string>('')
 
   const paginationSkip: number = isSharedProject ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
 
@@ -278,6 +349,14 @@ const ProjectSettings = ({
             from: getFormatDate(dateRange[0]),
             to: getFormatDate(dateRange[1]),
           })
+        } else if (tab === tabDeleteDataModal[2].name) {
+          if (_isEmpty(activeFilter)) {
+            deleteProjectFailed(t('project.settings.noFilters'))
+            setProjectResetting(false)
+            return
+          }
+
+          await resetFilters(id, filterType, activeFilter)
         } else {
           await resetProject(id)
         }
@@ -575,10 +654,11 @@ const ProjectSettings = ({
       <Modal
         onClose={() => setShowReset(false)}
         onSubmit={onReset}
+        size='large'
         submitText={t('project.settings.reset')}
         closeText={t('common.close')}
         title={t('project.settings.qReset')}
-        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} />}
+        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} pid={id} activeFilter={activeFilter} setActiveFilter={setActiveFilter} filterType={filterType} setFilterType={setFilterType} />}
         submitType='danger'
         type='error'
         isOpened={showReset}
