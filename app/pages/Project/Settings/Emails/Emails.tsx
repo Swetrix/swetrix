@@ -413,7 +413,7 @@ const Emails = ({
 
   return (
     <div className='mt-6 mb-6'>
-      <div className='flex justify-between items-center mb-3'>
+      <div className='flex flex-col sm:flex-row gap-y-2 justify-between items-start sm:items-center mb-3'>
         <div>
           <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('project.emails.title')}
@@ -426,7 +426,7 @@ const Emails = ({
           </p>
         </div>
         <Button
-          className='h-8 pl-2'
+          className='h-8 pl-2 whitespace-nowrap'
           primary
           regular
           type='button'
