@@ -709,11 +709,8 @@ const UserSettings = ({
                 </>
               </Button>
               <div>
-                <Button className='ml-3' onClick={() => logoutAll()} semiSmall danger>
-                  <>
-                    <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-                    {t('profileSettings.logoutAll')}
-                  </>
+                <Button className='ml-3' onClick={logoutAll} semiSmall semiDanger>
+                  {t('profileSettings.logoutAll')}
                 </Button>
                 <Button className='ml-3' onClick={() => setShowModal(true)} semiSmall danger>
                   <>
