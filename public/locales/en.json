@@ -662,7 +662,7 @@
         "viaFilters": "Reset via filters",
         "viaFiltersHint": "The 'Reset via filters' function allows you to reset the data of a specific project within a given date range and with specific filters.",
         "filtersPlaceholder": "Select filters",
-        "noFilters": "No filters selected or no data for the selected filter  type"
+        "noFilters": "No filters selected or no data for the selected filter type"
       },
       "protected": "Password protected Dashboard",
       "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
