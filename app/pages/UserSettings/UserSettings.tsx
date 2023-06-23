@@ -710,7 +710,11 @@ const UserSettings = ({
               </Button>
               <div>
                 <Button className='ml-3' onClick={logoutAll} semiSmall semiDanger>
-                  {t('profileSettings.logoutAll')}
+                  <>
+                    {/* We need this div for the button to match the height of the button after it */}
+                    <div className='h-5' />
+                    {t('profileSettings.logoutAll')}
+                  </>
                 </Button>
                 <Button className='ml-3' onClick={() => setShowModal(true)} semiSmall danger>
                   <>
