@@ -1,6 +1,7 @@
 import React, {
   memo, useState, useEffect, useMemo, Fragment,
 } from 'react'
+import InnerHTML from 'dangerously-set-html-content'
 import {
   ArrowLongRightIcon, ArrowLongLeftIcon,
 } from '@heroicons/react/24/solid'
@@ -15,6 +16,8 @@ import _keys from 'lodash/keys'
 import _values from 'lodash/values'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
+import _isString from 'lodash/isString'
+import _uniqBy from 'lodash/uniqBy'
 import _isFunction from 'lodash/isFunction'
 import _reduce from 'lodash/reduce'
 import _round from 'lodash/round'
@@ -61,9 +64,41 @@ const checkIfBarsNeeded = (panelID: string) => {
   return _includes(panelsWithBars, panelID)
 }
 
+const removeDuplicates = (arr: any[], keys: string[]) => {
+  const uniqueObjects: any[] = []
+
+  const isDuplicate = (obj: any) => {
+    // eslint-disable-next-line
+    for (const uniqueObj of uniqueObjects) {
+      let isMatch = true
+
+      // eslint-disable-next-line
+      for (const key of keys) {
+        if (uniqueObj[key] !== obj[key]) {
+          isMatch = false
+          break
+        }
+      }
+      if (isMatch) {
+        return true
+      }
+    }
+    return false
+  }
+
+  // eslint-disable-next-line
+  for (const obj of arr) {
+    if (!isDuplicate(obj)) {
+      uniqueObjects.push(obj)
+    }
+  }
+
+  return uniqueObjects
+}
+
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab,
+  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab, isCustomContent,
 }: {
   name: string,
   children?: React.ReactNode,
@@ -75,6 +110,7 @@ const PanelContainer = ({
   setActiveFragment: (arg: number) => void,
   customTabs?: any,
   activeTab?: string,
+  isCustomContent?: boolean
 }): JSX.Element => (
   <div
     className={cx('relative bg-white dark:bg-slate-800/25 dark:border dark:border-slate-800/50 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
@@ -97,7 +133,7 @@ const PanelContainer = ({
           <Bars4Icon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-slate-900 dark:text-gray-50': activeFragment === 0,
-              'text-slate-400 dark:text-slate-500': activeFragment === 1,
+              'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
             })}
             onClick={() => setActiveFragment(0)}
           />
@@ -109,7 +145,7 @@ const PanelContainer = ({
             <MapIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
                 'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': activeFragment === 0,
+                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
               })}
               onClick={() => setActiveFragment(1)}
             />
@@ -127,7 +163,7 @@ const PanelContainer = ({
             <RectangleGroupIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
                 'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': activeFragment === 0,
+                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
               })}
               onClick={() => setActiveFragment(1)}
             />
@@ -145,23 +181,29 @@ const PanelContainer = ({
           <ChartPieIcon
             className={cx(iconClassName, 'ml-2 cursor-pointer', {
               'text-slate-900 dark:text-gray-50': activeFragment === 1,
-              'text-slate-400 dark:text-slate-500': activeFragment === 0,
+              'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
             })}
             onClick={() => setActiveFragment(1)}
           />
         )}
         {checkCustomTabs(type, customTabs) && (
           <>
-            {_map(customTabs, ({ extensionID, panelID }) => (
-              <PuzzlePieceIcon
-                key={`${extensionID}-${panelID}`}
-                className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                  'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
-                  'text-slate-400 dark:text-slate-500': activeFragment === 0,
-                })}
-                onClick={() => setActiveFragment(extensionID)}
-              />
-            ))}
+            {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
+            {/* TODO: Investigate the issue and fix it */}
+            {_map(removeDuplicates(customTabs, ['extensionID', 'panelID']), ({ extensionID, panelID }) => {
+              if (panelID !== type) return null
+
+              return (
+                <PuzzlePieceIcon
+                  key={`${extensionID}-${panelID}`}
+                  className={cx(iconClassName, 'ml-2 cursor-pointer', {
+                    'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
+                    'text-slate-400 dark:text-slate-500': activeFragment === 0,
+                  })}
+                  onClick={() => setActiveFragment(extensionID)}
+                />
+              )
+            })}
           </>
         )}
       </div>
@@ -169,6 +211,7 @@ const PanelContainer = ({
     {/* for other tabs */}
     <div className={cx('flex flex-col h-full scroll-auto', {
       'overflow-auto': !(type === 'pg' && activeTab !== PROJECT_TABS.performance && activeFragment === 1),
+      relative: isCustomContent,
     })}
     >
       {children}
@@ -193,6 +236,7 @@ PanelContainer.defaultProps = {
   openModal: () => { },
   customTabs: [],
   activeTab: '',
+  isCustomContent: false,
 }
 
 // First tab with stats
@@ -465,6 +509,7 @@ interface ICustomEvents {
   chartData: any
   onFilter: any
   t: (arg0: string) => string
+  customTabs: any
 }
 
 interface ISortRows {
@@ -475,7 +520,7 @@ interface ISortRows {
 
 // Tabs with custom events like submit form, press button, go to the link rate etc.
 const CustomEvents = ({
-  customs, chartData, onFilter, t,
+  customs, chartData, onFilter, t, customTabs,
 }: ICustomEvents) => {
   const [page, setPage] = useState(0)
   const [customsEventsData, setCustomsEventsData] = useState<any>(customs)
@@ -614,8 +659,30 @@ const CustomEvents = ({
     )
   }
 
+  // Showing custom tabs (Extensions Marketplace)
+  // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
+  if (!_isEmpty(customTabs) && typeof activeFragment === 'string') {
+    const {
+      tabContent,
+    } = _find(customTabs, (tab) => tab.extensionID === activeFragment)
+
+    return (
+      <PanelContainer
+        name={t('project.customEv')}
+        type='ce'
+        activeFragment={activeFragment}
+        setActiveFragment={setActiveFragment}
+        customTabs={customTabs}
+        isCustomContent
+      >
+        {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
+        <InnerHTML className='absolute overflow-auto' html={tabContent} />
+      </PanelContainer>
+    )
+  }
+
   return (
-    <PanelContainer name={t('project.customEv')} type='ce' setActiveFragment={setActiveFragment} activeFragment={activeFragment}>
+    <PanelContainer customTabs={customTabs} name={t('project.customEv')} type='ce' setActiveFragment={setActiveFragment} activeFragment={activeFragment}>
       <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
@@ -738,6 +805,12 @@ CustomEvents.propTypes = {
   t: PropTypes.func.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   chartData: PropTypes.objectOf(PropTypes.any).isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
+  customTabs: PropTypes.array,
+}
+
+CustomEvents.defaultProps = {
+  customTabs: [],
 }
 
 interface IPanel {
@@ -974,7 +1047,9 @@ const Panel = ({
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
   if (!_isEmpty(customTabs) && typeof activeFragment === 'string' && !_isEmpty(data)) {
-    const content = _find(customTabs, (tab) => tab.extensionID === activeFragment).tabContent
+    const {
+      tabContent,
+    } = _find(customTabs, (tab) => tab.extensionID === activeFragment)
 
     return (
       <PanelContainer
@@ -986,9 +1061,10 @@ const Panel = ({
         openModal={() => setModal(true)}
         customTabs={customTabs}
         activeTab={activeTab}
+        isCustomContent
       >
-        {/* eslint-disable-next-line react/no-danger */}
-        <div dangerouslySetInnerHTML={{ __html: content }} />
+        {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
+        <InnerHTML className='absolute overflow-auto' html={tabContent} />
       </PanelContainer>
     )
   }

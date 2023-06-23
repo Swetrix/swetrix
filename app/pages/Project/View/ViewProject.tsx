@@ -76,7 +76,7 @@ import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import ProjectAlertsView from '../Alerts/View'
-const SwetrixSDK = require('@swetrix/sdk')
+const SwetrixSDK = require('@swetrix/sdk-local')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
@@ -1198,16 +1198,23 @@ const ViewProject = ({
   useEffect(() => {
     let sdk: any | null = null
 
+    console.log('---------- SDK USEEFFECT')
+
     const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
 
     if (!_isEmpty(filteredExtensions)) {
-      const processedExtensions = _map(filteredExtensions, (ext) => {
+      let processedExtensions = _map(filteredExtensions, (ext) => {
         const { id: extId, fileURL } = ext
         return {
           id: extId,
           cdnURL: `${CDN_URL}file/${fileURL}`,
         }
       })
+
+      processedExtensions = [...processedExtensions, {
+        id: 'custom-events',
+        cdnURL: 'http://127.0.0.1:5500/custom-events.js',
+      }]
 
       // @ts-ignore
       sdk = new SwetrixSDK(processedExtensions, {
@@ -1225,7 +1232,9 @@ const ViewProject = ({
         onRemoveExportDataRow: (label: any) => {
           setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
         },
+        // TODO: onOpen does not work
         onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
+          console.log('onAdd', extensionID, panelID, tabContent)
           setCustomPanelTabs((prev) => [
             ...prev,
             {
@@ -1235,6 +1244,18 @@ const ViewProject = ({
               onOpen,
             },
           ])
+        },
+        onUpdatePanelTab: (extensionID: string, panelID: string, tabContent: any) => {
+          setCustomPanelTabs((prev) => _map(prev, (row) => {
+            if (row.extensionID === extensionID && row.panelID === panelID) {
+              return {
+                ...row,
+                tabContent,
+              }
+            }
+
+            return row
+          }))
         },
         onRemovePanelTab: (extensionID: string, panelID: string) => {
           setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
@@ -2277,6 +2298,7 @@ const ViewProject = ({
                       customs={panelsData.customs}
                       onFilter={filterHandler}
                       chartData={chartData}
+                      customTabs={_filter(customPanelTabs, tab => tab.panelID === 'ce')}
                     />
                   )}
                 </div>
