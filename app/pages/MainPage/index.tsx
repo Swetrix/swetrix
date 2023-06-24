@@ -551,7 +551,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
           </div>
         </div>
         {/* end Marketplace and extension features */}
-        <Pricing t={t} language={language} />
+        <Pricing authenticated={authenticated} t={t} language={language} />
 
         {/* section: Why use Swetrix when there is .... */}
         <div className='overflow-hidden'>

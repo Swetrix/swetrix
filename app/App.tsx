@@ -24,6 +24,7 @@ import sagaActions from 'redux/sagas/actions'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
+import { isBrowser } from 'redux/constants'
 import routesPath from 'routesPath'
 import { getPageMeta } from 'utils/server'
 
@@ -79,12 +80,14 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const { t } = useTranslation('common')
   const alert = useAlert()
   const {
-    loading, authenticated,
+    loading,
   } = useSelector((state: StateType) => state.auth)
+  const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
   const accessToken = getAccessToken()
   const refreshToken = getRefreshToken()
+  const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
 
   useEffect(() => {
     (async () => {
@@ -137,9 +140,9 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
     return (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
-        {pathname !== routesPath.main && (
+        {/* {pathname !== routesPath.main && (
           <Header ssrTheme={ssrTheme} ssrAuthenticated={ssrAuthenticated} />
-        )}
+        )} */}
         {/* @ts-ignore */}
         <ScrollToTop>
           <Selfhosted>
@@ -148,7 +151,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
             </Suspense>
           </Selfhosted>
         </ScrollToTop>
-        <Footer minimal={isMinimalFooter} authenticated={authenticated} />
+        {/* <Footer minimal={isMinimalFooter} authenticated={authenticated} /> */}
       </Suspense>
     )
   }

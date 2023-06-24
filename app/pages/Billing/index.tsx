@@ -12,7 +12,7 @@ import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react
 import _round from 'lodash/round'
 
 import {
-  isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping,
+  isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping, isBrowser,
 } from 'redux/constants'
 import { loadScript } from 'utils/generic'
 import { useAppDispatch, StateType } from 'redux/store'
@@ -27,7 +27,11 @@ import Pricing from '../MainPage/Pricing'
 dayjs.extend(utc)
 dayjs.extend(duration)
 
-const Billing = (): JSX.Element => {
+interface IBilling {
+  ssrAuthenticated: boolean,
+}
+
+const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
   const { metainfo, usageinfo } = useSelector((state: StateType) => state.ui.misc)
   const { user }: {
@@ -35,6 +39,7 @@ const Billing = (): JSX.Element => {
   } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
   const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
+  const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
   const dispatch = useDispatch()
   const _dispatch = useAppDispatch()
   const { t, i18n: { language } }: {
@@ -45,6 +50,7 @@ const Billing = (): JSX.Element => {
       language: string,
     },
   } = useTranslation('common')
+  const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
   const {
     nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat, cancellationEffectiveDate, subCancelURL, maxEventsCount,
   } = user
@@ -240,7 +246,7 @@ const Billing = (): JSX.Element => {
             </span>
           </div>
         )}
-        <Pricing t={t} language={language} />
+        <Pricing authenticated={authenticated} t={t} language={language} />
         <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
           <Trans
             // @ts-ignore

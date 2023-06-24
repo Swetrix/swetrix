@@ -10,7 +10,6 @@ import {
   useLoaderData,
   ScrollRestoration,
 } from '@remix-run/react'
-import { ClientOnly } from 'remix-utils'
 import { store } from 'redux/store'
 import { whitelist, isBrowser } from 'redux/constants'
 import { Provider } from 'react-redux'
@@ -187,19 +186,12 @@ export default function App() {
             />
           </AlertProvider>
         </Provider>
-        <ClientOnly>
-          {() => (
-            <ScrollRestoration />
-          )}
-        </ClientOnly>
-        {/* <ScrollRestoration /> */}
+        <ScrollRestoration />
         <Scripts />
-        {/* <ClientOnly>
-            {() => (
-              <Scripts />
-            )}
-          </ClientOnly> */}
         <LiveReload />
+        {!isBrowser && (
+          <div id='__react-alert__' />
+        )}
       </body>
     </html>
   )

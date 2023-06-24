@@ -270,11 +270,12 @@ const PricingItem = ({
 interface IPricing {
   t: (key: string) => string,
   language: string,
+  authenticated: boolean,
 }
 
-const Pricing = ({ t, language }: IPricing) => {
+const Pricing = ({ t, language, authenticated }: IPricing) => {
   const dispatch: AppDispatch = useDispatch()
-  const { authenticated, user } = useSelector((state: StateType) => state.auth)
+  const { user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
   const { paddle, metainfo } = useSelector((state: StateType) => state.ui.misc)
   const { lastEvent } = paddle
