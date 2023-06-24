@@ -19,18 +19,16 @@ We've tested self-hosting Swetrix using [Hetzner Cloud](https://hetzner.cloud/?r
 
 ## Installation
 
-### 1. Install package from the Docker Hub
-To install Swetrix from the Docker Hub, run the following command:
+### 1. Install the self-hosting repository
+To self-host Swetrix, download the [self-hosting repository](https://github.com/swetrix/selfhosting) from GitHub.
 ```bash
-docker pull swetrix/swetrix-api
+git clone https://github.com/swetrix/selfhosting
+cd selfhosting
 ```
 
-Alternatively you can clone our Github repository and build the image yourself:
-```bash
-git clone https://github.com/swetrix/swetrix-api
-cd swetrix-api
-docker build -t swetrix-api .
-```
+That repository contains a `docker-compose.yml` file with all the necessary configuration to run Swetrix, you'll need to configure it later.
+
+The repository also contains various configuration files to ease the setup process (for example, `nginx` config files).
 
 ### 2. Configure the environment variables
 Swetrix uses environment variables to configure itself. You can find the list of all available environment variables in the [configuration section](/selfhosting/configuring).
@@ -71,5 +69,3 @@ docker-compose restart
 Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.
 
 The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too. The Swetrix Cloud API is covered by the Cloudflare proxying.
-
-You can also find some `nginx` configuration examples [here](https://github.com/Swetrix/swetrix-api/blob/main/meta/nginx/swetrix).
