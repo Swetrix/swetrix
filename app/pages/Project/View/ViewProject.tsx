@@ -1232,7 +1232,6 @@ const ViewProject = ({
         onRemoveExportDataRow: (label: any) => {
           setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
         },
-        // TODO: onOpen does not work
         onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
           console.log('onAdd', extensionID, panelID, tabContent)
           setCustomPanelTabs((prev) => [

@@ -190,8 +190,15 @@ const PanelContainer = ({
           <>
             {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
             {/* TODO: Investigate the issue and fix it */}
-            {_map(removeDuplicates(customTabs, ['extensionID', 'panelID']), ({ extensionID, panelID }) => {
+            {_map(removeDuplicates(customTabs, ['extensionID', 'panelID']), ({ extensionID, panelID, onOpen }) => {
               if (panelID !== type) return null
+
+              const onClick = () => {
+                if (onOpen) {
+                  onOpen()
+                }
+                setActiveFragment(extensionID)
+              }
 
               return (
                 <PuzzlePieceIcon
@@ -200,7 +207,7 @@ const PanelContainer = ({
                     'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
                     'text-slate-400 dark:text-slate-500': activeFragment === 0,
                   })}
-                  onClick={() => setActiveFragment(extensionID)}
+                  onClick={onClick}
                 />
               )
             })}
