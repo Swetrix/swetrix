@@ -3,6 +3,7 @@ import React, {
   memo, useState, useEffect, useMemo,
 } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
+import { ClientOnly } from 'remix-utils'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
@@ -496,139 +497,149 @@ const Dashboard = ({
                 <Loader />
               </div>
             ) : (
-              <>
-                {tabProjects === tabForOwnedProject && (
-                  <div>
-                    {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
-                      <NoProjects t={t} onClick={onNewProject} />
-                    ) : (
-                      <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
-                        {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, active, overall, public: isPublic, isTransferring,
-                        }) => (
-                          <ProjectCard
-                            key={id}
-                            id={id}
-                            type='analytics'
-                            t={t}
-                            name={name}
-                            active={active}
-                            isPublic={isPublic}
-                            overall={overall}
-                            live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
-                            setUserShareData={() => { }}
-                            deleteProjectFailed={() => { }}
-                            userSharedUpdate={() => { }}
-                            sharedProjects={[]}
-                            setProjectsShareData={() => { }}
-                            sharedProjectError={() => { }}
-                            isTransferring={isTransferring}
-                            confirmed
-                          />
-                        ))}
-                        <AddProject t={t} onClick={onNewProject} />
-                      </ul>
-                    )}
+              <ClientOnly
+                fallback={(
+                  <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+                    <Loader />
                   </div>
                 )}
-
-                {tabProjects === tabForCaptchaProject && (
-                  <div>
-                    {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
-                      <NoProjects t={t} onClick={onNewProject} />
-                    ) : (
-                      <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
-                        {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
-                          name, id, active, overall, public: isPublic,
-                        }) => (
-                          <ProjectCard
-                            t={t}
-                            key={id}
-                            id={id}
-                            type='captcha'
-                            name={name}
-                            captcha
-                            active={active}
-                            isPublic={isPublic}
-                            overall={overall}
-                            live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
-                            deleteProjectFailed={() => { }}
-                            sharedProjects={[]}
-                            setProjectsShareData={() => { }}
-                            setUserShareData={() => { }}
-                            userSharedUpdate={() => { }}
-                            sharedProjectError={() => { }}
-                            confirmed
-                          />
-                        ))}
-                        <AddProject t={t} onClick={onNewProject} />
-                      </ul>
+              >
+                {() => (
+                  <>
+                    {tabProjects === tabForOwnedProject && (
+                      <div>
+                        {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
+                          <NoProjects t={t} onClick={onNewProject} />
+                        ) : (
+                          <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
+                            {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
+                              name, id, active, overall, public: isPublic, isTransferring,
+                            }) => (
+                              <ProjectCard
+                                key={id}
+                                id={id}
+                                type='analytics'
+                                t={t}
+                                name={name}
+                                active={active}
+                                isPublic={isPublic}
+                                overall={overall}
+                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
+                                setUserShareData={() => { }}
+                                deleteProjectFailed={() => { }}
+                                userSharedUpdate={() => { }}
+                                sharedProjects={[]}
+                                setProjectsShareData={() => { }}
+                                sharedProjectError={() => { }}
+                                isTransferring={isTransferring}
+                                confirmed
+                              />
+                            ))}
+                            <AddProject t={t} onClick={onNewProject} />
+                          </ul>
+                        )}
+                      </div>
                     )}
-                  </div>
-                )}
 
-                {tabProjects === tabForSharedProject && (
-                  <div>
-                    {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
-                      <NoProjects t={t} onClick={onNewProject} />
-                    ) : (
-                      <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
-                        {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
-                          project, confirmed,
-                        }) => {
-                          if (_isUndefined(confirmed) || confirmed) {
-                            return (
+                    {tabProjects === tabForCaptchaProject && (
+                      <div>
+                        {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
+                          <NoProjects t={t} onClick={onNewProject} />
+                        ) : (
+                          <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
+                            {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
+                              name, id, active, overall, public: isPublic,
+                            }) => (
                               <ProjectCard
                                 t={t}
-                                key={confirmed ? `${project?.id}-confirmed` : project?.id}
-                                type='analytics'
-                                id={project?.id}
-                                name={project?.name}
-                                shared
-                                getRole={getRole}
-                                active={project?.active}
-                                isPublic={project?.public}
-                                confirmed={confirmed}
-                                overall={project?.overall}
-                                live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                                setUserShareData={() => { }}
+                                key={id}
+                                id={id}
+                                type='captcha'
+                                name={name}
+                                captcha
+                                active={active}
+                                isPublic={isPublic}
+                                overall={overall}
+                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                                 deleteProjectFailed={() => { }}
                                 sharedProjects={[]}
                                 setProjectsShareData={() => { }}
+                                setUserShareData={() => { }}
                                 userSharedUpdate={() => { }}
                                 sharedProjectError={() => { }}
+                                confirmed
                               />
-                            )
-                          }
-
-                          return (
-                            <ProjectCard
-                              t={t}
-                              key={confirmed ? `${project?.id}-confirmed` : project?.id}
-                              id={project?.id}
-                              type='analytics'
-                              name={project?.name}
-                              shared
-                              getRole={getRole}
-                              active={project?.active}
-                              isPublic={project?.public}
-                              overall={project?.overall}
-                              confirmed={confirmed}
-                              sharedProjects={user.sharedProjects}
-                              setProjectsShareData={setProjectsShareData}
-                              setUserShareData={setUserShareData}
-                              live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                              userSharedUpdate={userSharedUpdate}
-                              sharedProjectError={sharedProjectError}
-                              deleteProjectFailed={deleteProjectFailed}
-                            />
-                          )
-                        })}
-                      </ul>
+                            ))}
+                            <AddProject t={t} onClick={onNewProject} />
+                          </ul>
+                        )}
+                      </div>
                     )}
-                  </div>
+
+                    {tabProjects === tabForSharedProject && (
+                      <div>
+                        {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
+                          <NoProjects t={t} onClick={onNewProject} />
+                        ) : (
+                          <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
+                            {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
+                              project, confirmed,
+                            }) => {
+                              if (_isUndefined(confirmed) || confirmed) {
+                                return (
+                                  <ProjectCard
+                                    t={t}
+                                    key={confirmed ? `${project?.id}-confirmed` : project?.id}
+                                    type='analytics'
+                                    id={project?.id}
+                                    name={project?.name}
+                                    shared
+                                    getRole={getRole}
+                                    active={project?.active}
+                                    isPublic={project?.public}
+                                    confirmed={confirmed}
+                                    overall={project?.overall}
+                                    live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
+                                    setUserShareData={() => { }}
+                                    deleteProjectFailed={() => { }}
+                                    sharedProjects={[]}
+                                    setProjectsShareData={() => { }}
+                                    userSharedUpdate={() => { }}
+                                    sharedProjectError={() => { }}
+                                  />
+                                )
+                              }
+
+                              return (
+                                <ProjectCard
+                                  t={t}
+                                  key={confirmed ? `${project?.id}-confirmed` : project?.id}
+                                  id={project?.id}
+                                  type='analytics'
+                                  name={project?.name}
+                                  shared
+                                  getRole={getRole}
+                                  active={project?.active}
+                                  isPublic={project?.public}
+                                  overall={project?.overall}
+                                  confirmed={confirmed}
+                                  sharedProjects={user.sharedProjects}
+                                  setProjectsShareData={setProjectsShareData}
+                                  setUserShareData={setUserShareData}
+                                  live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
+                                  userSharedUpdate={userSharedUpdate}
+                                  sharedProjectError={sharedProjectError}
+                                  deleteProjectFailed={deleteProjectFailed}
+                                />
+                              )
+                            })}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
-              </>
+              </ClientOnly>
             )}
             {(tabProjects === tabForOwnedProject && pageAmount > 1) && (
               <Pagination className='mt-2' page={dashboardPaginationPage} pageAmount={pageAmount} setPage={setDashboardPaginationPage} total={total} />

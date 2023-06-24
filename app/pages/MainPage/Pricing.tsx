@@ -1,6 +1,7 @@
 /* eslint-disable no-confusing-arrow */
 import React, { memo, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { ClientOnly } from 'remix-utils'
 import { Link } from '@remix-run/react'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
@@ -23,6 +24,7 @@ import { authMe } from 'api'
 import routes from 'routesPath'
 import { IUser } from 'redux/models/IUser'
 import { AppDispatch, StateType } from 'redux/store'
+import Loader from 'ui/Loader'
 
 type CurrencyCode = 'USD' | 'EUR' | 'GBP'
 
@@ -207,17 +209,21 @@ const PricingItem = ({
             {t('pricing.legacy')}
           </p>
         )}
-        <p className='mt-4 text-center'>
-          <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
-            {currency.symbol}
-            {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
-          </span>
-          &nbsp;
-          <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
-            /
-            {t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
-          </span>
-        </p>
+        <ClientOnly fallback={<Loader />}>
+          {() => (
+            <p className='mt-4 text-center'>
+              <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
+                {currency.symbol}
+                {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
+              </span>
+              &nbsp;
+              <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
+                /
+                {t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
+              </span>
+            </p>
+          )}
+        </ClientOnly>
         {authenticated ? (
           <span
             onClick={() => downgrade ? downgradeHandler(tier) : onPlanChange(tier)}
@@ -264,11 +270,12 @@ const PricingItem = ({
 interface IPricing {
   t: (key: string) => string,
   language: string,
+  authenticated: boolean,
 }
 
-const Pricing = ({ t, language }: IPricing) => {
+const Pricing = ({ t, language, authenticated }: IPricing) => {
   const dispatch: AppDispatch = useDispatch()
-  const { authenticated, user } = useSelector((state: StateType) => state.auth)
+  const { user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
   const { paddle, metainfo } = useSelector((state: StateType) => state.ui.misc)
   const { lastEvent } = paddle
