@@ -1280,6 +1280,14 @@ const ViewProject = ({
     })
   }, [sdkInstance]) // eslint-disable-line
 
+  // Supplying the 'clientinfo' event to the SDK that contains info about current language, theme, etc.
+  useEffect(() => {
+    sdkInstance?._emitEvent('clientinfo', {
+      language,
+      theme,
+    })
+  }, [sdkInstance, language, theme])
+
   // Supplying 'projectinfo' event to the SDK after loading. Using for marketplace and extensions
   useEffect(() => {
     if (_isEmpty(project)) {
