@@ -683,7 +683,9 @@ const CustomEvents = ({
         isCustomContent
       >
         {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
-        <InnerHTML className='absolute overflow-auto' html={tabContent} />
+        {tabContent && (
+          <InnerHTML className='absolute overflow-auto' html={tabContent} />
+        )}
       </PanelContainer>
     )
   }
