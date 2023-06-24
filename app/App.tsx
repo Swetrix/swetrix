@@ -140,9 +140,9 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
     return (
       // eslint-disable-next-line react/jsx-no-useless-fragment
       <Suspense fallback={<></>}>
-        {/* {pathname !== routesPath.main && (
+        {pathname !== routesPath.main && (
           <Header ssrTheme={ssrTheme} ssrAuthenticated={ssrAuthenticated} />
-        )} */}
+        )}
         {/* @ts-ignore */}
         <ScrollToTop>
           <Selfhosted>
@@ -151,7 +151,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
             </Suspense>
           </Selfhosted>
         </ScrollToTop>
-        {/* <Footer minimal={isMinimalFooter} authenticated={authenticated} /> */}
+        <Footer minimal={isMinimalFooter} authenticated={authenticated} />
       </Suspense>
     )
   }

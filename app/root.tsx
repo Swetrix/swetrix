@@ -189,9 +189,6 @@ export default function App() {
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
-        {!isBrowser && (
-          <div id='__react-alert__' />
-        )}
       </body>
     </html>
   )

@@ -1,8 +1,6 @@
 import { RemixBrowser } from '@remix-run/react'
 import { startTransition, StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
-import _forEach from 'lodash/forEach'
-import _includes from 'lodash/includes'
 
 import i18next from 'i18next'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
@@ -10,23 +8,6 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import HTTPBackend from 'i18next-http-backend'
 import { getInitialNamespaces } from 'remix-i18next'
 import i18n from './i18n'
-
-const clearBrowserExtensionInjectionsBeforeHydration = () => {
-  _forEach(
-    document
-      .querySelectorAll(
-        [
-          'html > *:not(body, head)',
-          'script[src*="extension://"]',
-          'link[href*="extension://"]',
-          'body > link[rel="modulepreload"]',
-        ].join(', '),
-      ),
-    (s) => {
-      s.parentNode?.removeChild(s)
-    },
-  )
-}
 
 async function hydrate() {
   await i18next
@@ -42,8 +23,6 @@ async function hydrate() {
         caches: ['cookie'],
       },
     })
-
-  clearBrowserExtensionInjectionsBeforeHydration()
 
   startTransition(() => {
     hydrateRoot(
