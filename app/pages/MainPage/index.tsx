@@ -551,7 +551,11 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
           </div>
         </div>
         {/* end Marketplace and extension features */}
-        <Pricing authenticated={authenticated} t={t} language={language} />
+
+        {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
+        {!authenticated && (
+          <Pricing authenticated={false} t={t} language={language} />
+        )}
 
         {/* section: Why use Swetrix when there is .... */}
         <div className='overflow-hidden'>
