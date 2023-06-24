@@ -76,7 +76,7 @@ import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 import ProjectAlertsView from '../Alerts/View'
-const SwetrixSDK = require('@swetrix/sdk-local')
+const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
@@ -1198,23 +1198,16 @@ const ViewProject = ({
   useEffect(() => {
     let sdk: any | null = null
 
-    console.log('---------- SDK USEEFFECT')
-
     const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
 
     if (!_isEmpty(filteredExtensions)) {
-      let processedExtensions = _map(filteredExtensions, (ext) => {
+      const processedExtensions = _map(filteredExtensions, (ext) => {
         const { id: extId, fileURL } = ext
         return {
           id: extId,
           cdnURL: `${CDN_URL}file/${fileURL}`,
         }
       })
-
-      processedExtensions = [...processedExtensions, {
-        id: 'custom-events',
-        cdnURL: 'http://127.0.0.1:5500/custom-events.js',
-      }]
 
       // @ts-ignore
       sdk = new SwetrixSDK(processedExtensions, {
@@ -1233,7 +1226,6 @@ const ViewProject = ({
           setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
         },
         onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
-          console.log('onAdd', extensionID, panelID, tabContent)
           setCustomPanelTabs((prev) => [
             ...prev,
             {
