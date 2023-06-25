@@ -5,6 +5,7 @@ import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
+import * as _isArray from 'lodash/isArray'
 import * as _last from 'lodash/last'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
@@ -636,6 +637,7 @@ export class AnalyticsService {
     for (let i = 0; i < _size(parsed); ++i) {
       const { column, filter, isExclusive } = parsed[i]
 
+      // Currently Custom events do not support multiple filters at once
       if (column === 'ev') {
         params = {
           ...params,
@@ -651,6 +653,32 @@ export class AnalyticsService {
           `The provided filter (${column}) is not supported`,
         )
       }
+
+      // TODO: Currently for multiple filters, NOT will be applied to all of them instead of each one individually
+      // Implement filtering with an ability to apply exclusivity to each filter (some might be exclusive, some not)
+      const selector = isExclusive ? 'AND NOT' : 'AND'
+
+      if (_isArray(filter)) {
+        query += ` ${selector} (`
+
+        // TODO: Should we limit the number of filters?
+        for (let filterIndex = 0; filterIndex < _size(filter); ++filterIndex) {
+          if (filterIndex > 0) {
+            query += ' OR '
+          }
+
+          const key = `cf_${column}_${filterIndex}`
+          query += `${column}={${key}:String}`
+          params = {
+            ...params,
+            [key]: filter[filterIndex],
+          }
+        }
+
+        query += ')'
+        continue
+      }
+
       // working only on 1 filter per 1 column
       const colFilter = `cf_${column}`
 
@@ -658,9 +686,7 @@ export class AnalyticsService {
         ...params,
         [colFilter]: filter,
       }
-      query += ` ${
-        isExclusive ? 'AND NOT' : 'AND'
-      } ${column}={${colFilter}:String}`
+      query += ` ${selector} ${column}={${colFilter}:String}`
     }
 
     return [query, params, parsed]
