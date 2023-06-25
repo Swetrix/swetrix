@@ -39,6 +39,7 @@ import {
   UNIQUE_SESSION_LIFE_TIME,
   clickhouse,
   REDIS_SESSION_SALT_KEY,
+  TRAFFIC_COLUMNS,
 } from '../common/constants'
 import {
   calculateRelativePercentage,
@@ -83,8 +84,6 @@ const GMT_0_TIMEZONES = [
   'Etc/GMT',
   // 'Africa/Casablanca',
 ]
-
-const cols = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
 
 const captchaColumns = ['cc', 'br', 'os', 'dv']
 const perfColumns = ['cc', 'pg', 'dv', 'br']
@@ -372,7 +371,7 @@ export class AnalyticsService {
 
   getDataTypeColumns(dataType: DataType): string[] {
     if (dataType === DataType.ANALYTICS) {
-      return cols
+      return TRAFFIC_COLUMNS
     }
 
     if (dataType === DataType.PERFORMANCE) {
@@ -789,7 +788,7 @@ export class AnalyticsService {
   }
 
   async getFilters(pid: string, type: string): Promise<Array<string>> {
-    if (!_includes(cols, type)) {
+    if (!_includes(TRAFFIC_COLUMNS, type)) {
       throw new UnprocessableEntityException(
         `The provided type (${type}) is incorrect`,
       )
@@ -824,7 +823,7 @@ export class AnalyticsService {
             ),
           )
 
-    let columns = cols
+    let columns = TRAFFIC_COLUMNS
 
     if (isCaptcha) {
       columns = captchaColumns

@@ -49,6 +49,7 @@ import {
   PRODUCTION_ORIGIN,
   getRedisUserUsageInfoKey,
   redisUserUsageinfoCacheTimeout,
+  TRAFFIC_COLUMNS,
 } from '../common/constants'
 import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber } from './entity'
@@ -517,17 +518,38 @@ export class ProjectService {
     }
   }
 
-  async deleteByFilter(
+  async deleteByFilters(
     pid: string,
     type: string,
-    filter: string,
+    filters: string,
   ): Promise<void> {
-    const query = `DELETE FROM analytics WHERE pid={pid:FixedString(12)} AND {type:String}={filter:String};`
+    if (!type || _isEmpty(filters)) {
+      return
+    }
+
+    if (!_includes(TRAFFIC_COLUMNS, type)) {
+      throw new UnprocessableEntityException(
+        `The provided type (${type}) is incorrect`,
+      )
+    }
+
+    let query = `ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)} AND (`
+
     const params = {
       pid,
-      type,
-      filter,
     }
+
+    for (let i = 0; i < _size(filters); ++i) {
+      if (i > 0) {
+        query += ' OR '
+      }
+
+      const key = `filter_${i}`
+      query += `${type}={${key}:String}`
+      params[key] = filters[i]
+    }
+
+    query += ')'
 
     await clickhouse.query(query, { params }).toPromise()
   }

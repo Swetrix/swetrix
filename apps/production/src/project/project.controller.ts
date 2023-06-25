@@ -634,11 +634,7 @@ export class ProjectController {
 
     const filters = JSON.parse(rawFilters)
 
-    await Promise.all([
-      ..._map(filters, async (filter: string) => {
-        this.projectService.deleteByFilter(pid, type, filter)
-      }),
-    ])
+    await this.projectService.deleteByFilters(pid, type, filters)
   }
 
   @Post('/:pid/share')

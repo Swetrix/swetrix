@@ -103,6 +103,19 @@ const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 const CAPTCHA_SECRET_KEY_LENGTH = 50
 
+const TRAFFIC_COLUMNS = [
+  'cc',
+  'pg',
+  'lc',
+  'br',
+  'os',
+  'dv',
+  'ref',
+  'so',
+  'me',
+  'ca',
+]
+
 export {
   clickhouse,
   redis,
@@ -140,4 +153,5 @@ export {
   JWT_ACCESS_TOKEN_SECRET,
   getRedisUserUsageInfoKey,
   redisUserUsageinfoCacheTimeout,
+  TRAFFIC_COLUMNS,
 }
