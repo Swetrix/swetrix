@@ -24,6 +24,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
+import _uniqBy from 'lodash/uniqBy'
 import _findIndex from 'lodash/findIndex'
 import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
@@ -1214,13 +1215,17 @@ const ViewProject = ({
         debug: isDevelopment,
       }, {
         onAddExportDataRow: (label: any, onClick: (e: any) => void) => {
-          setCustomExportTypes((prev) => [
-            ...prev,
-            {
-              label,
-              onClick,
-            },
-          ])
+          setCustomExportTypes((prev) => {
+            // TODO: Fix this
+            // A temporary measure to prevent duplicate items stored here (for some reason, SDK is initialised two times)
+            return _uniqBy([
+              {
+                label,
+                onClick,
+              },
+              ...prev,
+            ], 'label')
+          })
         },
         onRemoveExportDataRow: (label: any) => {
           setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
