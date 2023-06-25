@@ -1236,6 +1236,18 @@ const ViewProject = ({
             },
           ])
         },
+        onUpdatePanelTab: (extensionID: string, panelID: string, tabContent: any) => {
+          setCustomPanelTabs((prev) => _map(prev, (row) => {
+            if (row.extensionID === extensionID && row.panelID === panelID) {
+              return {
+                ...row,
+                tabContent,
+              }
+            }
+
+            return row
+          }))
+        },
         onRemovePanelTab: (extensionID: string, panelID: string) => {
           setCustomPanelTabs((prev) => _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID))
         },
@@ -1258,6 +1270,14 @@ const ViewProject = ({
       dateRange: period === 'custom' ? dateRange : null,
     })
   }, [sdkInstance]) // eslint-disable-line
+
+  // Supplying the 'clientinfo' event to the SDK that contains info about current language, theme, etc.
+  useEffect(() => {
+    sdkInstance?._emitEvent('clientinfo', {
+      language,
+      theme,
+    })
+  }, [sdkInstance, language, theme])
 
   // Supplying 'projectinfo' event to the SDK after loading. Using for marketplace and extensions
   useEffect(() => {
@@ -2277,6 +2297,7 @@ const ViewProject = ({
                       customs={panelsData.customs}
                       onFilter={filterHandler}
                       chartData={chartData}
+                      customTabs={_filter(customPanelTabs, tab => tab.panelID === 'ce')}
                     />
                   )}
                 </div>
