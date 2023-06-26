@@ -37,3 +37,5 @@ package-lock.json
 .env
 pnpm-lock.yaml
 yarn.lock
+*.mmdb
+*.mmdb.gz
