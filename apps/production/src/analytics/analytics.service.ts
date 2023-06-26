@@ -825,7 +825,8 @@ export class AnalyticsService {
     // Stage 1: Using IP address based geo lookup
     const data = lookup.get(ip)
 
-    const country = data?.country?.names?.en
+    const country = data?.country?.iso_code
+    // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
     const city = data?.city?.names?.en
     const region = data?.subdivisions?.[0]?.names?.en
 
