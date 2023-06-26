@@ -822,6 +822,7 @@ export class AnalyticsService {
   }
 
   getGeoDetails(ip: string, tz?: string): IPGeoDetails {
+    // Stage 1: Using IP address based geo lookup
     const data = lookup.get(ip)
 
     const country = data?.country?.names?.en
@@ -836,6 +837,7 @@ export class AnalyticsService {
       }
     }
 
+    // Stage 2: Using timezone based geo lookup as a fallback
     const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
 
     return {
