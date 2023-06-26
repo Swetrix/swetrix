@@ -1,3 +1,4 @@
+/* eslint-disable */
 const { faker } = require('@faker-js/faker')
 const _ = require('lodash')
 const chalk = require('chalk')
@@ -20,6 +21,20 @@ const URLS = Array.from({ length: 36 }, () => faker.internet.url())
 const DEVICES = ['desktop', 'mobile', 'tablet', 'wearable']
 const BROWSERS = ['Chrome', 'Firefox', 'Safari', 'Opera', 'Edge', 'IE']
 const CUSTOM_EVENTS = ['click', 'hover', 'scroll', 'submit', 'error', 'signup', 'oauth', 'test', 'hello', '235535123433']
+const REGIONS = [
+  'England', 'Scotland', 'Wales', 'Northern Ireland', // UK
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', // USA
+  'Kyiv Oblast', 'Kharkiv Oblast', 'Vinnytsia Oblast', 'Donetsk Oblast', 'Odessa Oblast', 'Zaporizhia Oblast', 'Lviv Oblast', 'Kiev', // Ukraine
+  'Ontario', 'Quebec', 'Nova Scotia', 'New Brunswick', 'Manitoba', 'British Columbia', 'Prince Edward Island', 'Saskatchewan', // Canada
+  'Tokyo', 'Osaka', 'Aichi', 'Hokkaido', 'Fukuoka', 'Kanagawa', 'Ibaraki', 'Saitama', // Japan
+]
+const CITIES = [
+  'London', 'Birmingham', 'Dundee', 'Liverpool', 'Bristol', 'Manchester', 'Sheffield', 'Leeds', // UK
+  'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', // USA
+  'Kyiv', 'Kharkiv', 'Vinnytsia', 'Donetsk', 'Odessa', 'Zaporizhia', 'Lviv', 'Dnipro', // Ukraine
+  'Toronto', 'Montreal', 'Vancouver', 'Ottawa', 'Calgary', 'Edmonton', 'Winnipeg', 'Quebec City', // Canada
+  'Tokyo', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka', 'Yokohama', 'Sendai', 'Kobe', // Japan
+]
 
 const chunkArray = (arr, chunkSize = 1000) => {
   const result = []
@@ -80,8 +95,8 @@ const generateAnalyticsData = async (pid, rowCount, from, to) => {
       faker.helpers.arrayElement(UTM_MEDIUMS), // me
       faker.helpers.arrayElement(UTM_CAMPAIGNS), // ca
       faker.location.countryCode(), // cc
-      faker.location.state(), // rg
-      faker.location.city(), // ct
+      faker.helpers.arrayElement(REGIONS), // rg
+      faker.helpers.arrayElement(CITIES), // ct
       faker.number.int({ min: 0, max: 10000 }), // sdur
       faker.number.int({ min: 0, max: 9 }) === 0 ? 1 : 0, // unique; 10% chance of unique record
       _.split(faker.date.between({ from, to }).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
@@ -138,8 +153,8 @@ const generateCustomEventsData = async (pid, rowCount, from, to) => {
       faker.helpers.arrayElement(UTM_MEDIUMS), // me
       faker.helpers.arrayElement(UTM_CAMPAIGNS), // ca
       faker.location.countryCode(), // cc
-      faker.location.state(), // rg
-      faker.location.city(), // ct
+      faker.helpers.arrayElement(REGIONS), // rg
+      faker.helpers.arrayElement(CITIES), // ct
       _.split(faker.date.between({ from, to }).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
     ]
     records.push(record)
@@ -163,8 +178,8 @@ const generatePerformanceData = async (pid, rowCount, from, to) => {
       faker.helpers.arrayElement(DEVICES), // dv
       faker.helpers.arrayElement(BROWSERS), // br
       faker.location.countryCode(), // cc
-      faker.location.state(), // rg
-      faker.location.city(), // ct
+      faker.helpers.arrayElement(REGIONS), // rg
+      faker.helpers.arrayElement(CITIES), // ct
       faker.number.int({ min: 0, max: 500 }), // dns
       faker.number.int({ min: 0, max: 1000 }), // tls
       faker.number.int({ min: 0, max: 100 }), // conn
