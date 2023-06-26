@@ -76,6 +76,7 @@ import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
+import CountryDropdown from './components/CountryDropdown'
 import ProjectAlertsView from '../Alerts/View'
 const SwetrixSDK = require('@swetrix/sdk')
 
@@ -276,6 +277,9 @@ const ViewProject = ({
   // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
   // forecastData is a data for forecast chart
   const [forecasedChartData, setForecasedChartData] = useState<any>({})
+
+  // Is used to switch between Country, Region and City tabs
+  const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
 
   // chartDataPerf is a data for performance chart
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
@@ -2187,6 +2191,8 @@ const ViewProject = ({
                     const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 
                     if (type === 'cc') {
+                      const ccPanelName = tnMapping[countryActiveTab]
+
                       return (
                         <Panel
                           t={t}
@@ -2195,8 +2201,13 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           activeTab={activeTab}
-                          name={panelName}
-                          data={panelsData.data[type]}
+                          name={(
+                            <CountryDropdown
+                              onSelect={setCountryActiveTab}
+                              title={ccPanelName}
+                            />
+                          )}
+                          data={panelsData.data[countryActiveTab]}
                           customTabs={customTabs}
                           rowMapper={(rowName) => (
                             <CCRow rowName={rowName} language={language} />

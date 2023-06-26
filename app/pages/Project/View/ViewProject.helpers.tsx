@@ -907,10 +907,12 @@ const getSettingsPerf = (
 
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
-const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt', 'ev']
+const validFilters = ['cc', 'rg', 'ct', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'ev']
 
 const typeNameMapping = (t: (str: string) => string) => ({
   cc: t('project.mapping.cc'),
+  rg: t('project.mapping.rg'),
+  ct: t('project.mapping.ct'),
   pg: t('project.mapping.pg'),
   lc: t('project.mapping.lc'),
   ref: t('project.mapping.ref'),
@@ -920,7 +922,6 @@ const typeNameMapping = (t: (str: string) => string) => ({
   so: 'utm_source',
   me: 'utm_medium',
   ca: 'utm_campaign',
-  lt: t('project.mapping.lt'),
   ev: t('project.event'),
   userFlow: t('main.competitiveFeatures.usfl'),
 })

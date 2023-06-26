@@ -95,11 +95,8 @@ const removeDuplicates = (arr: any[], keys: string[]) => {
   return uniqueObjects
 }
 
-// noSwitch - 'previous' and 'next' buttons
-const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab, isCustomContent,
-}: {
-  name: string,
+interface IPanelContainer {
+  name: string | JSX.Element,
   children?: React.ReactNode,
   noSwitch?: boolean,
   icon?: React.ReactNode,
@@ -110,7 +107,12 @@ const PanelContainer = ({
   customTabs?: any,
   activeTab?: string,
   isCustomContent?: boolean
-}): JSX.Element => (
+}
+
+// noSwitch - 'previous' and 'next' buttons
+const PanelContainer = ({
+  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab, isCustomContent,
+}: IPanelContainer): JSX.Element => (
   <div
     className={cx('relative bg-white dark:bg-slate-800/25 dark:border dark:border-slate-800/50 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
       'pb-12': !noSwitch,
@@ -226,7 +228,9 @@ const PanelContainer = ({
 )
 
 PanelContainer.propTypes = {
-  name: PropTypes.string.isRequired,
+  name: PropTypes.oneOf([
+    PropTypes.string, PropTypes.node,
+  ]).isRequired,
   children: PropTypes.node.isRequired,
   noSwitch: PropTypes.bool,
   activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -822,7 +826,7 @@ CustomEvents.defaultProps = {
 }
 
 interface IPanel {
-  name: string
+  name: string | JSX.Element
   data: IEntry[]
   rowMapper: any
   valueMapper: any
@@ -1191,7 +1195,9 @@ const Panel = ({
 }
 
 Panel.propTypes = {
-  name: PropTypes.string.isRequired,
+  name: PropTypes.oneOf([
+    PropTypes.string.isRequired, PropTypes.node,
+  ]).isRequired,
   data: PropTypes.objectOf(PropTypes.number).isRequired,
   id: PropTypes.string,
   rowMapper: PropTypes.func,

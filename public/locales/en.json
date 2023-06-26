@@ -544,6 +544,7 @@
   "project": {
     "ad": "Want these stats for your website?",
     "noExist": "The selected project does not exist",
+    "geo": "Geolocation",
     "exportData": "Export data",
     "asImage": "As image",
     "asCSV": "As CSV",
@@ -555,13 +556,14 @@
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {
       "cc": "Country",
+      "rg": "Region",
+      "ct": "City",
       "pg": "Page",
       "lc": "Locale",
       "ref": "Referrer",
       "dv": "Device type",
       "br": "Browser",
-      "os": "OS name",
-      "lt": "Load time"
+      "os": "OS name"
     },
     "overview": "Overview",
     "weeklyStats": "Weekly stats",
