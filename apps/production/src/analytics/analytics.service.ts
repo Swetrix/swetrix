@@ -42,6 +42,8 @@ import {
   clickhouse,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
+  CAPTCHA_COLUMNS,
+  PERFORMANCE_COLUMNS,
 } from '../common/constants'
 import {
   calculateRelativePercentage,
@@ -87,9 +89,6 @@ const GMT_0_TIMEZONES = [
   'Etc/GMT',
   // 'Africa/Casablanca',
 ]
-
-const captchaColumns = ['cc', 'br', 'os', 'dv']
-const perfColumns = ['cc', 'pg', 'dv', 'br']
 
 const validPeriods = [
   'today',
@@ -186,8 +185,16 @@ const generateParamsQuery = (
   isCaptcha?: boolean,
   isPerformance?: boolean,
 ): string => {
+  let columns = [col]
+
+  if (col === 'rg' || col === 'ct') {
+    columns = [...columns, 'cc']
+  }
+
+  const columnsQuery = columns.join(', ')
+
   if (isPerformance) {
-    return `SELECT ${col}, avg(pageLoad) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, avg(pageLoad) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (isCaptcha) {
@@ -195,14 +202,14 @@ const generateParamsQuery = (
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (col === 'pg' || isPageInclusiveFilterSet) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${col}`
+  return `SELECT ${columnsQuery}, count(*) ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${columnsQuery}`
 }
 
 export enum DataType {
@@ -384,10 +391,10 @@ export class AnalyticsService {
     }
 
     if (dataType === DataType.PERFORMANCE) {
-      return perfColumns
+      return PERFORMANCE_COLUMNS
     }
 
-    return captchaColumns
+    return CAPTCHA_COLUMNS
   }
 
   getGroupFromTo(
@@ -887,11 +894,11 @@ export class AnalyticsService {
     let columns = TRAFFIC_COLUMNS
 
     if (isCaptcha) {
-      columns = captchaColumns
+      columns = CAPTCHA_COLUMNS
     }
 
     if (isPerformance) {
-      columns = perfColumns
+      columns = PERFORMANCE_COLUMNS
     }
 
     const paramsPromises = _map(columns, async col => {
@@ -903,11 +910,28 @@ export class AnalyticsService {
         isCaptcha,
         isPerformance,
       )
-      const res = await clickhouse.query(query, paramsData).toPromise()
+      const res: any[] = await clickhouse.query(query, paramsData).toPromise()
 
       params[col] = {}
 
       const size = _size(res)
+
+      // For regions and cities we'll return an array of objects, that will also include the country code
+      // We need the conutry code to display the flag next to the region/city name
+      if (col === 'rg' || col === 'ct') {
+        const row = []
+
+        for (let j = 0; j < size; ++j) {
+          const key = res[j][col]
+          row.push({
+            name: key,
+            cc: res[j].cc,
+            count: res[j]['count()'],
+          })
+        }
+        params[col] = row
+        return
+      }
 
       if (isPerformance) {
         for (let j = 0; j < size; ++j) {
