@@ -45,6 +45,7 @@ import {
 import {
   calculateRelativePercentage,
   millisecondsToSeconds,
+  lookup,
 } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -231,6 +232,12 @@ const isValidOrigin = (origins: string[], origin: string) => {
   }
 
   return false
+}
+
+interface IPGeoDetails {
+  country?: string
+  region?: string
+  city?: string
 }
 
 @Injectable()
@@ -811,6 +818,20 @@ export class AnalyticsService {
     await Promise.all(promises)
 
     return result
+  }
+
+  getIPDetails(ip: string): IPGeoDetails {
+    const data = lookup.get(ip)
+
+    const country = data?.country?.names?.en
+    const city = data?.city?.names?.en
+    const region = data?.subdivisions?.[0]?.names?.en
+
+    return {
+      country,
+      city,
+      region,
+    }
   }
 
   async getFilters(pid: string, type: string): Promise<Array<string>> {

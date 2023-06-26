@@ -9,7 +9,7 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
 import { hash } from 'blake3'
-import ct from 'countries-and-timezones'
+import timezones from 'countries-and-timezones'
 import {
   Controller,
   Body,
@@ -92,6 +92,8 @@ const analyticsDTO = (
   me: string,
   ca: string,
   cc: string,
+  rg: string,
+  ct: string,
   sdur: number | string,
   unique: number,
 ): Array<string | number> => {
@@ -109,6 +111,8 @@ const analyticsDTO = (
     me,
     ca,
     cc,
+    rg,
+    ct,
     sdur,
     unique,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
@@ -121,6 +125,8 @@ const performanceDTO = (
   dv: string,
   br: string,
   cc: string,
+  rg: string,
+  ct: string,
   dns: number,
   tls: number,
   conn: number,
@@ -136,6 +142,8 @@ const performanceDTO = (
     dv,
     br,
     cc,
+    rg,
+    ct,
     _round(dns),
     _round(tls),
     _round(conn),
@@ -161,6 +169,8 @@ const customLogDTO = (
   me: string,
   ca: string,
   cc: string,
+  rg: string,
+  ct: string,
 ): Array<string | number> => {
   return [
     pid,
@@ -175,6 +185,8 @@ const customLogDTO = (
     me,
     ca,
     cc,
+    rg,
+    ct,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
@@ -835,13 +847,16 @@ export class AnalyticsController {
       }
     }
 
+    const { city = 'NULL', region = 'NULL' } =
+      this.analyticsService.getIPDetails(ip)
+
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
     // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
     const cc =
-      ct.getCountryForTimezone(eventsDTO.tz)?.id ||
+      timezones.getCountryForTimezone(eventsDTO.tz)?.id ||
       (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const dto = customLogDTO(
@@ -857,6 +872,8 @@ export class AnalyticsController {
       eventsDTO.me,
       eventsDTO.ca,
       cc,
+      region,
+      city,
     )
 
     try {
@@ -930,9 +947,11 @@ export class AnalyticsController {
 
     // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
     const cc =
-      ct.getCountryForTimezone(logDTO.tz)?.id ||
+      timezones.getCountryForTimezone(logDTO.tz)?.id ||
       (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
+    const { city = 'NULL', region = 'NULL' } =
+      this.analyticsService.getIPDetails(ip)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
@@ -952,6 +971,8 @@ export class AnalyticsController {
       logDTO.me,
       logDTO.ca,
       cc,
+      region,
+      city,
       0,
       Number(unique),
     )
@@ -976,6 +997,8 @@ export class AnalyticsController {
         dv,
         br,
         cc,
+        region,
+        city,
         dns,
         tls,
         conn,
@@ -1036,6 +1059,8 @@ export class AnalyticsController {
 
     await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
+    const { city = 'NULL', region = 'NULL' } =
+      this.analyticsService.getIPDetails(ip)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
@@ -1058,6 +1083,8 @@ export class AnalyticsController {
       'NULL',
       'NULL',
       cc,
+      region,
+      city,
       0,
       Number(unique),
     )

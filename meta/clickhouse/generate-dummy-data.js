@@ -80,6 +80,8 @@ const generateAnalyticsData = async (pid, rowCount, from, to) => {
       faker.helpers.arrayElement(UTM_MEDIUMS), // me
       faker.helpers.arrayElement(UTM_CAMPAIGNS), // ca
       faker.location.countryCode(), // cc
+      faker.location.state(), // rg
+      faker.location.city(), // ct
       faker.number.int({ min: 0, max: 10000 }), // sdur
       faker.number.int({ min: 0, max: 9 }) === 0 ? 1 : 0, // unique; 10% chance of unique record
       _.split(faker.date.between({ from, to }).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
@@ -136,6 +138,8 @@ const generateCustomEventsData = async (pid, rowCount, from, to) => {
       faker.helpers.arrayElement(UTM_MEDIUMS), // me
       faker.helpers.arrayElement(UTM_CAMPAIGNS), // ca
       faker.location.countryCode(), // cc
+      faker.location.state(), // rg
+      faker.location.city(), // ct
       _.split(faker.date.between({ from, to }).toISOString().replace('T', ' ').replace('Z', ''), '.')[0], // created; format the date string
     ]
     records.push(record)
@@ -159,6 +163,8 @@ const generatePerformanceData = async (pid, rowCount, from, to) => {
       faker.helpers.arrayElement(DEVICES), // dv
       faker.helpers.arrayElement(BROWSERS), // br
       faker.location.countryCode(), // cc
+      faker.location.state(), // rg
+      faker.location.city(), // ct
       faker.number.int({ min: 0, max: 500 }), // dns
       faker.number.int({ min: 0, max: 1000 }), // tls
       faker.number.int({ min: 0, max: 100 }), // conn

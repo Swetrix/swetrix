@@ -1,13 +1,9 @@
-// This script initialises the Swetrix cloud edition database and tables if they're absent
-const { queriesRunner, dbName, databaselessQueriesRunner } = require('./setup')
+const { queriesRunner, dbName } = require('./setup')
 
-const CLICKHOUSE_DB_INIT_QUERIES = [
-  `CREATE DATABASE IF NOT EXISTS ${dbName}`,
-]
-
-const CLICKHOUSE_INIT_QUERIES = [
-  // The traffic data table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.analytics
+const queries = [
+  // Analytics table: added 'rg' and 'ct' columns
+  `DROP TABLE IF EXISTS ${dbName}.analytics_temp`,
+  `CREATE TABLE IF NOT EXISTS ${dbName}.analytics_temp
   (
     sid Nullable(String),
     pid FixedString(12),
@@ -32,7 +28,14 @@ const CLICKHOUSE_INIT_QUERIES = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
-  // Custom events table
+  `INSERT INTO ${dbName}.analytics_temp (sid, pid, pg, prev, dv, br, os, lc, ref, so, me, ca, cc, rg, ct, sdur, unique, created)
+  SELECT sid, pid, pg, prev, dv, br, os, lc, ref, so, me, ca, cc, NULL, NULL, sdur, unique, created FROM ${dbName}.analytics`,
+
+  `DROP TABLE ${dbName}.analytics`,
+  `RENAME TABLE ${dbName}.analytics_temp TO ${dbName}.analytics`,
+
+  // Custom events table: added 'rg' and 'ct' columns
+  `DROP TABLE IF EXISTS ${dbName}.customEV_temp`,
   `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
   (
     pid FixedString(12),
@@ -55,7 +58,14 @@ const CLICKHOUSE_INIT_QUERIES = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
-  // The performance data table
+  `INSERT INTO ${dbName}.customEV_temp (pid, ev, pg, dv, br, os, lc, ref, so, me, ca, cc, rg, ct, created)
+  SELECT pid, ev, pg, dv, br, os, lc, ref, so, me, ca, cc, NULL, NULL, created FROM ${dbName}.customEV`,
+
+  `DROP TABLE ${dbName}.customEV`,
+  `RENAME TABLE ${dbName}.customEV_temp TO ${dbName}.customEV`,
+
+  // Performance table: added 'rg' and 'ct' columns
+  `DROP TABLE IF EXISTS ${dbName}.performance_temp`,
   `CREATE TABLE IF NOT EXISTS ${dbName}.performance
   (
     pid FixedString(12),
@@ -79,33 +89,11 @@ const CLICKHOUSE_INIT_QUERIES = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
-  // The CAPTCHA data table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.captcha
-  (
-    pid FixedString(12),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    os Nullable(String),
-    cc Nullable(FixedString(2)),
-    manuallyPassed UInt8,
-    created DateTime('UTC')
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`
+  `INSERT INTO ${dbName}.performance_temp (pid, pg, dv, br, cc, rg, ct, dns, tls, conn, response, render, domLoad, pageLoad, ttfb, created)
+  SELECT pid, pg, dv, br, cc, NULL, NULL, dns, tls, conn, response, render, domLoad, pageLoad, ttfb, created FROM ${dbName}.performance`,
+
+  `DROP TABLE ${dbName}.performance`,
+  `RENAME TABLE ${dbName}.performance_temp TO ${dbName}.performance`,
 ]
 
-const initialiseDatabase = async () => {
-  try {
-    await databaselessQueriesRunner(CLICKHOUSE_DB_INIT_QUERIES)
-    await queriesRunner(CLICKHOUSE_INIT_QUERIES)
-  } catch (reason) {
-    console.error(`[ERROR] Error occured whilst initialising the database: ${reason}`)
-  }
-}
-
-initialiseDatabase()
-
-module.exports = {
-  initialiseDatabase,
-}
+queriesRunner(queries)
