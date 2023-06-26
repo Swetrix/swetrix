@@ -159,7 +159,6 @@ const GEOIP_DB_PATH = path.join(__dirname, '../../../..', 'dbip-city-lite.mmdb')
 // eslint-disable-next-line
 let lookup: Reader<CityResponse> = dummyLookup
 
-// TODO: CHECK IF GEO-IP DB EXISTS
 if (fs.existsSync(GEOIP_DB_PATH)) {
   const buffer = fs.readFileSync(GEOIP_DB_PATH)
   lookup = new Reader<CityResponse>(buffer)
