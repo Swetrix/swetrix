@@ -13,6 +13,7 @@ import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
+import timezones from 'countries-and-timezones'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -820,17 +821,27 @@ export class AnalyticsService {
     return result
   }
 
-  getIPDetails(ip: string): IPGeoDetails {
+  getGeoDetails(ip: string, tz?: string): IPGeoDetails {
     const data = lookup.get(ip)
 
     const country = data?.country?.names?.en
     const city = data?.city?.names?.en
     const region = data?.subdivisions?.[0]?.names?.en
 
+    if (country) {
+      return {
+        country,
+        city,
+        region,
+      }
+    }
+
+    const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
+
     return {
-      country,
-      city,
-      region,
+      country: tzCountry,
+      city: null,
+      region: null,
     }
   }
 

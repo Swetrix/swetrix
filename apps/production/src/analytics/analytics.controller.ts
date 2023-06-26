@@ -9,7 +9,6 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
 import { hash } from 'blake3'
-import timezones from 'countries-and-timezones'
 import {
   Controller,
   Body,
@@ -847,16 +846,20 @@ export class AnalyticsController {
       }
     }
 
-    const { city = 'NULL', region = 'NULL' } =
-      this.analyticsService.getIPDetails(ip)
+    const {
+      city = 'NULL',
+      region = 'NULL',
+      country = 'NULL',
+    } = this.analyticsService.getGeoDetails(ip, eventsDTO.tz)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
-    // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
+
+    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
     const cc =
-      timezones.getCountryForTimezone(eventsDTO.tz)?.id ||
+      country ||
       (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const dto = customLogDTO(
@@ -945,17 +948,19 @@ export class AnalyticsController {
       )
     }
 
-    // trying to get country from timezome, otherwise using CloudFlare's IP based country code as a fallback
-    const cc =
-      timezones.getCountryForTimezone(logDTO.tz)?.id ||
-      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
-
-    const { city = 'NULL', region = 'NULL' } =
-      this.analyticsService.getIPDetails(ip)
+    const {
+      city = 'NULL',
+      region = 'NULL',
+      country = 'NULL',
+    } = this.analyticsService.getGeoDetails(ip, logDTO.tz)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
+    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
+    const cc =
+      country ||
+      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const dto = analyticsDTO(
       sessionHash,
@@ -1059,16 +1064,21 @@ export class AnalyticsController {
 
     await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
-    const { city = 'NULL', region = 'NULL' } =
-      this.analyticsService.getIPDetails(ip)
+    const {
+      city = 'NULL',
+      region = 'NULL',
+      country = 'NULL',
+    } = this.analyticsService.getGeoDetails(ip)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
 
-    // using CloudFlare's IP based country code
+    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
     const cc =
-      headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
+      country ||
+      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+
     const dto = analyticsDTO(
       sessionHash,
       logDTO.pid,
