@@ -33,7 +33,7 @@ const queries = [
 
   // Custom events table
   `DROP TABLE IF EXISTS ${dbName}.customEV_temp`,
-  `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
+  `CREATE TABLE IF NOT EXISTS ${dbName}.customEV_temp
   (
     pid FixedString(12),
     ev String,
@@ -60,7 +60,7 @@ const queries = [
 
   // Performance table
   `DROP TABLE IF EXISTS ${dbName}.performance_temp`,
-  `CREATE TABLE IF NOT EXISTS ${dbName}.performance
+  `CREATE TABLE IF NOT EXISTS ${dbName}.performance_temp
   (
     pid FixedString(12),
     pg Nullable(String),
@@ -88,7 +88,7 @@ const queries = [
 
   // Captcha table
   `DROP TABLE IF EXISTS ${dbName}.captcha_temp`,
-  `CREATE TABLE IF NOT EXISTS ${dbName}.captcha
+  `CREATE TABLE IF NOT EXISTS ${dbName}.captcha_temp
   (
     pid FixedString(12),
     dv LowCardinality(Nullable(String)),

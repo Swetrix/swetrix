@@ -36,7 +36,7 @@ const queries = [
 
   // Custom events table: added 'rg' and 'ct' columns
   `DROP TABLE IF EXISTS ${dbName}.customEV_temp`,
-  `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
+  `CREATE TABLE IF NOT EXISTS ${dbName}.customEV_temp
   (
     pid FixedString(12),
     ev String,
@@ -66,7 +66,7 @@ const queries = [
 
   // Performance table: added 'rg' and 'ct' columns
   `DROP TABLE IF EXISTS ${dbName}.performance_temp`,
-  `CREATE TABLE IF NOT EXISTS ${dbName}.performance
+  `CREATE TABLE IF NOT EXISTS ${dbName}.performance_temp
   (
     pid FixedString(12),
     pg Nullable(String),
