@@ -185,8 +185,10 @@ const generateParamsQuery = (
   isCaptcha?: boolean,
   isPerformance?: boolean,
 ): string => {
-  let columns = [col]
+  let columns = [`${col} as name`]
 
+  // For regions and cities we'll return an array of objects, that will also include the country code
+  // We need the conutry code to display the flag next to the region/city name
   if (col === 'rg' || col === 'ct') {
     columns = [...columns, 'cc']
   }
@@ -194,22 +196,22 @@ const generateParamsQuery = (
   const columnsQuery = columns.join(', ')
 
   if (isPerformance) {
-    return `SELECT ${columnsQuery}, avg(pageLoad) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (isCaptcha) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${col}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${columnsQuery}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (col === 'pg' || isPageInclusiveFilterSet) {
-    return `SELECT ${columnsQuery}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  return `SELECT ${columnsQuery}, count(*) ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${columnsQuery}`
+  return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${columnsQuery}`
 }
 
 export enum DataType {
@@ -910,43 +912,9 @@ export class AnalyticsService {
         isCaptcha,
         isPerformance,
       )
-      const res: any[] = await clickhouse.query(query, paramsData).toPromise()
+      const res = await clickhouse.query(query, paramsData).toPromise()
 
-      params[col] = {}
-
-      const size = _size(res)
-
-      // For regions and cities we'll return an array of objects, that will also include the country code
-      // We need the conutry code to display the flag next to the region/city name
-      if (col === 'rg' || col === 'ct') {
-        const row = []
-
-        for (let j = 0; j < size; ++j) {
-          const key = res[j][col]
-          row.push({
-            name: key,
-            cc: res[j].cc,
-            count: res[j]['count()'],
-          })
-        }
-        params[col] = row
-        return
-      }
-
-      if (isPerformance) {
-        for (let j = 0; j < size; ++j) {
-          const key = res[j][col]
-          params[col][key] = _round(
-            millisecondsToSeconds(res[j]['avg(pageLoad)']),
-            2,
-          )
-        }
-      } else {
-        for (let j = 0; j < size; ++j) {
-          const key = res[j][col]
-          params[col][key] = res[j]['count()']
-        }
-      }
+      params[col] = res
     })
 
     await Promise.all(paramsPromises)
