@@ -52,6 +52,7 @@ import {
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
+import { IEntry } from 'redux/models/IEntry'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -2193,12 +2194,26 @@ const ViewProject = ({
                     if (type === 'cc') {
                       const ccPanelName = tnMapping[countryActiveTab]
 
+                      const rowMapper = (entry: IEntry) => {
+                        const { name: entryName, cc } = entry
+
+                        if (cc) {
+                          return (
+                            <CCRow rowName={cc} language={language} />
+                          )
+                        }
+
+                        return (
+                          <CCRow rowName={entryName} language={language} />
+                        )
+                      }
+
                       return (
                         <Panel
                           t={t}
-                          key={type}
+                          key={countryActiveTab}
                           icon={panelIcon}
-                          id={type}
+                          id={countryActiveTab}
                           onFilter={filterHandler}
                           activeTab={activeTab}
                           name={(
@@ -2209,9 +2224,7 @@ const ViewProject = ({
                           )}
                           data={panelsData.data[countryActiveTab]}
                           customTabs={customTabs}
-                          rowMapper={(rowName) => (
-                            <CCRow rowName={rowName} language={language} />
-                          )}
+                          rowMapper={rowMapper}
                         />
                       )
                     }
@@ -2245,8 +2258,8 @@ const ViewProject = ({
                           activeTab={activeTab}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
-                          rowMapper={(rowName) => (
-                            <RefRow rowName={rowName} showIcons={showIcons} />
+                          rowMapper={({ name: entryName }) => (
+                            <RefRow rowName={entryName} showIcons={showIcons} />
                           )}
                         />
                       )
@@ -2264,7 +2277,7 @@ const ViewProject = ({
                           name={panelName}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
-                          rowMapper={(row) => decodeURIComponent(row)}
+                          rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
                         />
                       )
                     }
@@ -2350,20 +2363,39 @@ const ViewProject = ({
                     const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 
                     if (type === 'cc') {
+                      const ccPanelName = tnMapping[countryActiveTab]
+
+                      const rowMapper = (entry: IEntry) => {
+                        const { name: entryName, cc } = entry
+
+                        if (cc) {
+                          return (
+                            <CCRow rowName={cc} language={language} />
+                          )
+                        }
+
+                        return (
+                          <CCRow rowName={entryName} language={language} />
+                        )
+                      }
+
                       return (
                         <Panel
                           t={t}
-                          key={type}
+                          key={countryActiveTab}
                           icon={panelIcon}
-                          id={type}
+                          id={countryActiveTab}
                           onFilter={filterHandler}
-                          name={panelName}
-                          activeTab={activeTab}
-                          data={panelsDataPerf.data[type]}
-                          customTabs={customTabs}
-                          rowMapper={(rowName) => (
-                            <CCRow rowName={rowName} language={language} />
+                          name={(
+                            <CountryDropdown
+                              onSelect={setCountryActiveTab}
+                              title={ccPanelName}
+                            />
                           )}
+                          activeTab={activeTab}
+                          data={panelsDataPerf.data[countryActiveTab]}
+                          customTabs={customTabs}
+                          rowMapper={rowMapper}
                           valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                         />
                       )

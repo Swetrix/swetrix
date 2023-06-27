@@ -1093,7 +1093,7 @@ const Panel = ({
           count, name: entryName,
         } = entry
         const perc = _round((count / total) * 100, 2)
-        const rowData = rowMapper(entryName)
+        const rowData = rowMapper(entry)
         const valueData = valueMapper(count)
 
         return (
@@ -1212,7 +1212,7 @@ Panel.propTypes = {
 
 Panel.defaultProps = {
   id: null,
-  rowMapper: (value: any): any => value,
+  rowMapper: (row: IEntry): string => row.name,
   valueMapper: (value: number): number => value,
   capitalize: false,
   linkContent: false,
