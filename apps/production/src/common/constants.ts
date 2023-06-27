@@ -118,8 +118,8 @@ const TRAFFIC_COLUMNS = [
   'ca',
 ]
 
-const CAPTCHA_COLUMNS = ['cc', 'rg', 'ct', 'br', 'os', 'dv']
-const PERFORMANCE_COLUMNS = ['cc', 'pg', 'dv', 'br']
+const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
+const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
 
 export {
   clickhouse,
