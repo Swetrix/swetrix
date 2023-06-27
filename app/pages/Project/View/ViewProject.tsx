@@ -11,7 +11,7 @@ import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
   ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, ChartBarIcon, BoltIcon, BellIcon,
-  PresentationChartBarIcon, PresentationChartLineIcon, NoSymbolIcon,
+  PresentationChartBarIcon, PresentationChartLineIcon, NoSymbolIcon, MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -28,6 +28,7 @@ import _uniqBy from 'lodash/uniqBy'
 import _findIndex from 'lodash/findIndex'
 import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
+import _forEach from 'lodash/forEach'
 import _some from 'lodash/some'
 import _pickBy from 'lodash/pickBy'
 import _every from 'lodash/every'
@@ -47,7 +48,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, MAX_MONTHS_IN_PAST, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin,
   TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE,
-  PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX,
+  PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX, FILTERS_PANELS_ORDER,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -76,6 +77,7 @@ import {
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
+import SearchFilters from './components/SearchFilters'
 import Filters from './components/Filters'
 import CountryDropdown from './components/CountryDropdown'
 import ProjectAlertsView from '../Alerts/View'
@@ -369,6 +371,9 @@ const ViewProject = ({
 
   // sharedRoles is a role for shared project
   const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
+
+  // for search filters
+  const [showFiltersSearch, setShowFiltersSearch] = useState(false)
 
   // chartMetrics is a list of metrics for dropdown
   const chartMetrics = useMemo(() => {
@@ -968,8 +973,8 @@ const ViewProject = ({
     const columnPerf = `${column}_perf`
 
     if (activeTab === PROJECT_TABS.performance) {
-      if (_find(filtersPerf, (f) => f.column === column)) {
-        newFiltersPerf = _filter(filtersPerf, (f) => f.column !== column)
+      if (_find(filtersPerf, (f) => f.filter === filter)) {
+        newFiltersPerf = _filter(filtersPerf, (f) => f.filter !== filter)
 
         // @ts-ignore
         const url = new URL(window.location)
@@ -992,10 +997,10 @@ const ViewProject = ({
       }
     } else {
       // eslint-disable-next-line no-lonely-if
-      if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
+      if (_find(filters, (f) => f.filter === filter) /* && f.filter === filter) */) {
         // selected filter is already included into the filters array -> removing it
         // removing filter from the state
-        newFilters = _filter(filters, (f) => f.column !== column)
+        newFilters = _filter(filters, (f) => f.filter !== filter)
         setFilters(newFilters)
 
         // removing filter from the page URL
@@ -1028,6 +1033,82 @@ const ViewProject = ({
     if (activeTab === PROJECT_TABS.performance) {
       loadAnalyticsPerf(true, newFiltersPerf)
     } else {
+      loadAnalytics(true, newFilters)
+    }
+  }
+
+  const onFilterSearch = (items: {
+    column: string
+    filter: string[]
+  }[], override: boolean) => {
+    const newFilters = _filter(items, (item) => {
+      return !_isEmpty(item.filter)
+    })
+    if (activeTab === PROJECT_TABS.performance) {
+      // @ts-ignore
+      const url = new URL(window.location)
+
+      if (override) {
+        _forEach(FILTERS_PANELS_ORDER, (value) => {
+          if (url.searchParams.has(`${value}_perf`)) {
+            url.searchParams.delete(`${value}_perf`)
+          }
+        })
+      }
+
+      _forEach(items, (item) => {
+        if (url.searchParams.has(`${item.column}_perf`)) {
+          url.searchParams.delete(`${item.column}_perf`)
+        }
+        _forEach(item.filter, (filter) => {
+          url.searchParams.append(`${item.column}_perf`, filter)
+        })
+      })
+
+      const { pathname, search } = url
+      navigate(`${pathname}${search}`)
+
+      if (!override) {
+        loadAnalyticsPerf(true, [
+          ...filtersPerf,
+          ...newFilters,
+        ])
+        return
+      }
+
+      loadAnalyticsPerf(true, newFilters)
+    } else {
+      // @ts-ignore
+      const url = new URL(window.location)
+
+      if (override) {
+        _forEach(FILTERS_PANELS_ORDER, (value) => {
+          if (url.searchParams.has(value)) {
+            url.searchParams.delete(value)
+          }
+        })
+      }
+
+      _forEach(items, (item) => {
+        if (url.searchParams.has(item.column)) {
+          url.searchParams.delete(item.column)
+        }
+        _forEach(item.filter, (filter) => {
+          url.searchParams.append(item.column, filter)
+        })
+      })
+
+      const { pathname, search } = url
+      navigate(`${pathname}${search}`)
+
+      if (!override) {
+        loadAnalytics(true, [
+          ...filters,
+          ...newFilters,
+        ])
+        return
+      }
+
       loadAnalytics(true, newFilters)
     }
   }
@@ -1841,6 +1922,18 @@ const ViewProject = ({
                       </div>
                     )}
                     <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
+                      <button
+                        type='button'
+                        title={t('project.search')}
+                        onClick={() => setShowFiltersSearch(true)}
+                        className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                          'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                        })}
+                      >
+                        <MagnifyingGlassIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                      </button>
+                    </div>
+                    <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
                       <span className='relative z-0 inline-flex shadow-sm rounded-md'>
                         {_map(activePeriod?.tbs, (tb, index, { length }) => (
                           <button
@@ -2472,6 +2565,14 @@ const ViewProject = ({
           onSubmit={onForecastSubmit}
           activeTB={t(`project.${timeBucket}`)}
           tb={timeBucket}
+        />
+        <SearchFilters
+          t={t}
+          showModal={showFiltersSearch}
+          setShowModal={setShowFiltersSearch}
+          setProjectFilter={onFilterSearch}
+          pid={id}
+          language={language}
         />
       </>
     )

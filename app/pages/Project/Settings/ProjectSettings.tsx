@@ -15,6 +15,7 @@ import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
+import _toUpper from 'lodash/toUpper'
 import _includes from 'lodash/includes'
 import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
@@ -35,9 +36,11 @@ import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import FlatPicker from 'ui/Flatpicker'
 import { trackCustom } from 'utils/analytics'
+import countries from 'utils/isoCountries'
 import routes from 'routesPath'
 import Dropdown from 'ui/Dropdown'
 import MultiSelect from 'ui/MultiSelect'
+import CCRow from '../View/components/CCRow'
 import { getFormatDate } from '../View/ViewProject.helpers'
 
 import People from './People'
@@ -63,7 +66,7 @@ const tabDeleteDataModal = [
 ]
 
 const ModalMessage = ({
-  dateRange, setDateRange, setTab, t, tab, pid, activeFilter, setActiveFilter, filterType, setFilterType,
+  dateRange, setDateRange, setTab, t, tab, pid, activeFilter, setActiveFilter, filterType, setFilterType, language,
 }: {
   dateRange: Date[],
   setDateRange: (a: Date[]) => void,
@@ -77,13 +80,16 @@ const ModalMessage = ({
   setActiveFilter: any,
   filterType: string,
   setFilterType: (a: string) => void,
+  language: string,
 }): JSX.Element => {
   const [filterList, setFilterList] = useState<string[]>([])
+  const [searchList, setSearchList] = useState<string[]>([])
 
   const getFiltersList = async () => {
     if (!_isEmpty(filterType)) {
       const res = await getFilters(pid, filterType)
       setFilterList(res)
+      setSearchList(res)
       if (!_isEmpty(activeFilter)) {
         setActiveFilter([])
       }
@@ -157,11 +163,39 @@ const ModalMessage = ({
             <div className='h-2' />
             {(filterType && !_isEmpty(filterList)) ? (
               <MultiSelect
-                className='w-full max-w-[400px]'
-                items={filterList}
-                labelExtractor={(item) => item}
+                className='max-w-max'
+                items={searchList}
+                // eslint-disable-next-line react/no-unstable-nested-components
+                labelExtractor={(item) => {
+                  if (filterType === 'cc') {
+                    return <CCRow cc={item} language={language} />
+                  }
+
+                  return item
+                }}
+                // eslint-disable-next-line react/no-unstable-nested-components
+                itemExtractor={(item) => {
+                  if (filterType === 'cc') {
+                    return <CCRow cc={item} language={language} />
+                  }
+
+                  return item
+                }}
                 keyExtractor={(item) => item}
                 label={activeFilter}
+                searchPlaseholder={t('project.search')}
+                onSearch={(search: string) => {
+                  if (search.length > 0) {
+                    if (filterType === 'cc') {
+                      setSearchList(_filter(filterList, (item) => _includes(_toUpper(countries.getName(item, language)), _toUpper(search))))
+                      return
+                    }
+
+                    setSearchList(_filter(filterList, (item) => _includes(_toUpper(item), _toUpper(search))))
+                  } else {
+                    setSearchList(filterList)
+                  }
+                }}
                 placholder={t('project.settings.reseted.filtersPlaceholder')}
                 onSelect={(item: string) => setActiveFilter((oldItems: string[]) => {
                   if (_includes(oldItems, item)) {
@@ -213,10 +247,13 @@ const ProjectSettings = ({
   dashboardPaginationPage: number,
   dashboardPaginationPageShared: number,
 }) => {
-  const { t }: {
+  const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null
     }) => string,
+    i18n: {
+      language: string,
+    },
   } = useTranslation('common')
   const { pathname } = useLocation()
   // @ts-ignore
@@ -545,7 +582,7 @@ const ProjectSettings = ({
             />
             <Checkbox
               checked={Boolean(form.public)}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 if (!form.isPasswordProtected) {
                   handleInput(e)
                 }
@@ -663,7 +700,7 @@ const ProjectSettings = ({
         submitText={t('project.settings.reset')}
         closeText={t('common.close')}
         title={t('project.settings.qReset')}
-        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} pid={id} activeFilter={activeFilter} setActiveFilter={setActiveFilter} filterType={filterType} setFilterType={setFilterType} />}
+        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} pid={id} activeFilter={activeFilter} setActiveFilter={setActiveFilter} filterType={filterType} setFilterType={setFilterType} language={language} />}
         submitType='danger'
         type='error'
         isOpened={showReset}

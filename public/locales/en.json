@@ -543,6 +543,10 @@
     "support": "Contact support"
   },
   "project": {
+    "search": "Search",
+    "advancedFilters": "Advanced filters",
+    "applyFilters": "Apply filters",
+    "overrideCurrentlyFilters": "Override currently applied filters",
     "ad": "Want these stats for your website?",
     "noExist": "The selected project does not exist",
     "geo": "Geolocation",
