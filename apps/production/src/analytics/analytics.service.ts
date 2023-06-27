@@ -13,6 +13,7 @@ import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
+import timezones from 'countries-and-timezones'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -41,10 +42,13 @@ import {
   clickhouse,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
+  CAPTCHA_COLUMNS,
+  PERFORMANCE_COLUMNS,
 } from '../common/constants'
 import {
   calculateRelativePercentage,
   millisecondsToSeconds,
+  lookup,
 } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -85,9 +89,6 @@ const GMT_0_TIMEZONES = [
   'Etc/GMT',
   // 'Africa/Casablanca',
 ]
-
-const captchaColumns = ['cc', 'br', 'os', 'dv']
-const perfColumns = ['cc', 'pg', 'dv', 'br']
 
 const validPeriods = [
   'today',
@@ -184,23 +185,33 @@ const generateParamsQuery = (
   isCaptcha?: boolean,
   isPerformance?: boolean,
 ): string => {
+  let columns = [`${col} as name`]
+
+  // For regions and cities we'll return an array of objects, that will also include the country code
+  // We need the conutry code to display the flag next to the region/city name
+  if (col === 'rg' || col === 'ct') {
+    columns = [...columns, 'cc']
+  }
+
+  const columnsQuery = columns.join(', ')
+
   if (isPerformance) {
-    return `SELECT ${col}, avg(pageLoad) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (isCaptcha) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${col}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (col === 'pg' || isPageInclusiveFilterSet) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${col}`
+  return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${columnsQuery}`
 }
 
 export enum DataType {
@@ -231,6 +242,12 @@ const isValidOrigin = (origins: string[], origin: string) => {
   }
 
   return false
+}
+
+interface IPGeoDetails {
+  country?: string
+  region?: string
+  city?: string
 }
 
 @Injectable()
@@ -376,10 +393,10 @@ export class AnalyticsService {
     }
 
     if (dataType === DataType.PERFORMANCE) {
-      return perfColumns
+      return PERFORMANCE_COLUMNS
     }
 
-    return captchaColumns
+    return CAPTCHA_COLUMNS
   }
 
   getGroupFromTo(
@@ -813,6 +830,33 @@ export class AnalyticsService {
     return result
   }
 
+  getGeoDetails(ip: string, tz?: string): IPGeoDetails {
+    // Stage 1: Using IP address based geo lookup
+    const data = lookup.get(ip)
+
+    const country = data?.country?.iso_code
+    // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
+    const city = data?.city?.names?.en
+    const region = data?.subdivisions?.[0]?.names?.en
+
+    if (country) {
+      return {
+        country,
+        city,
+        region,
+      }
+    }
+
+    // Stage 2: Using timezone based geo lookup as a fallback
+    const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
+
+    return {
+      country: tzCountry,
+      city: null,
+      region: null,
+    }
+  }
+
   async getFilters(pid: string, type: string): Promise<Array<string>> {
     if (!_includes(TRAFFIC_COLUMNS, type)) {
       throw new UnprocessableEntityException(
@@ -852,11 +896,11 @@ export class AnalyticsService {
     let columns = TRAFFIC_COLUMNS
 
     if (isCaptcha) {
-      columns = captchaColumns
+      columns = CAPTCHA_COLUMNS
     }
 
     if (isPerformance) {
-      columns = perfColumns
+      columns = PERFORMANCE_COLUMNS
     }
 
     const paramsPromises = _map(columns, async col => {
@@ -870,24 +914,7 @@ export class AnalyticsService {
       )
       const res = await clickhouse.query(query, paramsData).toPromise()
 
-      params[col] = {}
-
-      const size = _size(res)
-
-      if (isPerformance) {
-        for (let j = 0; j < size; ++j) {
-          const key = res[j][col]
-          params[col][key] = _round(
-            millisecondsToSeconds(res[j]['avg(pageLoad)']),
-            2,
-          )
-        }
-      } else {
-        for (let j = 0; j < size; ++j) {
-          const key = res[j][col]
-          params[col][key] = res[j]['count()']
-        }
-      }
+      params[col] = res
     })
 
     await Promise.all(paramsPromises)

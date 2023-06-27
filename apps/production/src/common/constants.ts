@@ -105,6 +105,8 @@ const CAPTCHA_SECRET_KEY_LENGTH = 50
 
 const TRAFFIC_COLUMNS = [
   'cc',
+  'rg',
+  'ct',
   'pg',
   'lc',
   'br',
@@ -115,6 +117,9 @@ const TRAFFIC_COLUMNS = [
   'me',
   'ca',
 ]
+
+const CAPTCHA_COLUMNS = ['cc', 'rg', 'ct', 'br', 'os', 'dv']
+const PERFORMANCE_COLUMNS = ['cc', 'pg', 'dv', 'br']
 
 export {
   clickhouse,
@@ -154,4 +159,6 @@ export {
   getRedisUserUsageInfoKey,
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
+  CAPTCHA_COLUMNS,
+  PERFORMANCE_COLUMNS,
 }

@@ -22,6 +22,8 @@ const CLICKHOUSE_INIT_QUERIES = [
     me Nullable(String),
     ca Nullable(String),
     cc Nullable(FixedString(2)),
+    rg LowCardinality(Nullable(String)),
+    ct Nullable(String),
     sdur Nullable(UInt32), 
     unique UInt8,
     created DateTime('UTC')
@@ -45,6 +47,8 @@ const CLICKHOUSE_INIT_QUERIES = [
     me Nullable(String),
     ca Nullable(String),
     cc Nullable(FixedString(2)),
+    rg LowCardinality(Nullable(String)),
+    ct Nullable(String),
     created DateTime('UTC')
   )
   ENGINE = MergeTree()
@@ -59,6 +63,8 @@ const CLICKHOUSE_INIT_QUERIES = [
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
     cc Nullable(FixedString(2)),
+    rg LowCardinality(Nullable(String)),
+    ct Nullable(String),
     dns Nullable(UInt32),
     tls Nullable(UInt32),
     conn Nullable(UInt32),

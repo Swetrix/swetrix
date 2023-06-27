@@ -1,7 +1,7 @@
 const { queriesRunner, dbName } = require('./setup')
 
 const queries = [
-  // Analytics table
+  // Analytics table: added 'rg' and 'ct' columns
   `DROP TABLE IF EXISTS ${dbName}.analytics_temp`,
   `CREATE TABLE IF NOT EXISTS ${dbName}.analytics_temp
   (
@@ -18,6 +18,8 @@ const queries = [
     me Nullable(String),
     ca Nullable(String),
     cc Nullable(FixedString(2)),
+    rg LowCardinality(Nullable(String)),
+    ct Nullable(String),
     sdur Nullable(UInt32), 
     unique UInt8,
     created DateTime('UTC')
@@ -26,12 +28,13 @@ const queries = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
-  `INSERT INTO ${dbName}.analytics_temp (*) SELECT * FROM ${dbName}.analytics`,
+  `INSERT INTO ${dbName}.analytics_temp (sid, pid, pg, prev, dv, br, os, lc, ref, so, me, ca, cc, rg, ct, sdur, unique, created)
+  SELECT sid, pid, pg, prev, dv, br, os, lc, ref, so, me, ca, cc, NULL, NULL, sdur, unique, created FROM ${dbName}.analytics`,
 
   `DROP TABLE ${dbName}.analytics`,
   `RENAME TABLE ${dbName}.analytics_temp TO ${dbName}.analytics`,
 
-  // Custom events table
+  // Custom events table: added 'rg' and 'ct' columns
   `DROP TABLE IF EXISTS ${dbName}.customEV_temp`,
   `CREATE TABLE IF NOT EXISTS ${dbName}.customEV_temp
   (
@@ -47,18 +50,21 @@ const queries = [
     me Nullable(String),
     ca Nullable(String),
     cc Nullable(FixedString(2)),
+    rg LowCardinality(Nullable(String)),
+    ct Nullable(String),
     created DateTime('UTC')
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
-  `INSERT INTO ${dbName}.customEV_temp (*) SELECT * FROM ${dbName}.customEV`,
+  `INSERT INTO ${dbName}.customEV_temp (pid, ev, pg, dv, br, os, lc, ref, so, me, ca, cc, rg, ct, created)
+  SELECT pid, ev, pg, dv, br, os, lc, ref, so, me, ca, cc, NULL, NULL, created FROM ${dbName}.customEV`,
 
   `DROP TABLE ${dbName}.customEV`,
   `RENAME TABLE ${dbName}.customEV_temp TO ${dbName}.customEV`,
 
-  // Performance table
+  // Performance table: added 'rg' and 'ct' columns
   `DROP TABLE IF EXISTS ${dbName}.performance_temp`,
   `CREATE TABLE IF NOT EXISTS ${dbName}.performance_temp
   (
@@ -67,6 +73,8 @@ const queries = [
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
     cc Nullable(FixedString(2)),
+    rg LowCardinality(Nullable(String)),
+    ct Nullable(String),
     dns Nullable(UInt32),
     tls Nullable(UInt32),
     conn Nullable(UInt32),
@@ -81,31 +89,11 @@ const queries = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
-  `INSERT INTO ${dbName}.performance_temp (*) SELECT * FROM ${dbName}.performance`,
+  `INSERT INTO ${dbName}.performance_temp (pid, pg, dv, br, cc, rg, ct, dns, tls, conn, response, render, domLoad, pageLoad, ttfb, created)
+  SELECT pid, pg, dv, br, cc, NULL, NULL, dns, tls, conn, response, render, domLoad, pageLoad, ttfb, created FROM ${dbName}.performance`,
 
   `DROP TABLE ${dbName}.performance`,
   `RENAME TABLE ${dbName}.performance_temp TO ${dbName}.performance`,
-
-  // Captcha table
-  `DROP TABLE IF EXISTS ${dbName}.captcha_temp`,
-  `CREATE TABLE IF NOT EXISTS ${dbName}.captcha_temp
-  (
-    pid FixedString(12),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    os Nullable(String),
-    cc Nullable(FixedString(2)),
-    manuallyPassed UInt8,
-    created DateTime('UTC')
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`
-
-  `INSERT INTO ${dbName}.captcha_temp (*) SELECT * FROM ${dbName}.captcha`,
-
-  `DROP TABLE ${dbName}.captcha`,
-  `RENAME TABLE ${dbName}.captcha_temp TO ${dbName}.captcha`,
 ]
 
 queriesRunner(queries)
