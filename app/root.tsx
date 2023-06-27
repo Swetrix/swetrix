@@ -2,6 +2,7 @@ import type {
   LinksFunction, LoaderArgs, V2_MetaFunction, HeadersFunction,
 } from '@remix-run/node'
 import { json } from '@remix-run/node'
+import { useState } from 'react'
 import {
   Links,
   LiveReload,
@@ -9,9 +10,17 @@ import {
   Scripts,
   useLoaderData,
   ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
 } from '@remix-run/react'
 import { store } from 'redux/store'
-import { whitelist, isBrowser } from 'redux/constants'
+import {
+  whitelist, isBrowser, CONTACT_EMAIL, LS_THEME_SETTING,
+} from 'redux/constants'
+import {
+  getCookie,
+} from 'utils/cookie'
+import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Provider } from 'react-redux'
 import clsx from 'clsx'
 import _map from 'lodash/map'
@@ -93,6 +102,87 @@ export const headers: HeadersFunction = () => ({
 // }
 
 // removeObsoleteAuthTokens()
+
+export function ErrorBoundary() {
+  const error = useRouteError()
+  const [crashStackShown, setCrashStackShown] = useState(false)
+
+  return (
+    <html lang='en' className={getCookie(LS_THEME_SETTING) || 'light'}>
+      <head>
+        <meta charSet='utf-8' />
+        <title>The app has crashed..</title>
+        <Links />
+      </head>
+      <body>
+        {/* Using style because for some reason min-h-screen doesn't work */}
+        <div style={{ minHeight: '100vh' }} className='pt-16 pb-12 flex flex-col bg-gray-50 dark:bg-slate-900'>
+          <div className='flex-grow flex flex-col justify-center max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8'>
+            <div className='flex-shrink-0 flex justify-center'>
+              <ExclamationTriangleIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
+            </div>
+            <div className='py-8'>
+              <div className='text-center'>
+                <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>Uh-oh..</h1>
+                <p className='mt-2 text-base font-medium text-gray-800 dark:text-gray-300'>
+                  The app has crashed. We are sorry about that :(
+                  <br />
+                  Please, tell us about it at
+                  {' '}
+                  {CONTACT_EMAIL}
+                </p>
+                <p className='mt-6 text-base font-medium text-gray-800 dark:text-gray-300'>
+                  {isRouteErrorResponse(error) ? (
+                    <>
+                      <span>
+                        {error.status}
+                        {' '}
+                        {error.statusText}
+                      </span>
+                      <span>
+                        {error.data}
+                      </span>
+                    </>
+                  ) : error instanceof Error ? (
+                    <>
+                      {error.message}
+                      <br />
+                      <span onClick={() => setCrashStackShown(prev => !prev)} className='flex justify-center items-center text-base text-gray-800 dark:text-gray-300 cursor-pointer hover:underline'>
+                        {crashStackShown ? (
+                          <>
+                            Hide crash stack
+                            <ChevronUpIcon className='w-4 h-4 ml-2' />
+                          </>
+                        ) : (
+                          <>
+                            Show crash stack
+                            <ChevronDownIcon className='w-4 h-4 ml-2' />
+                          </>
+                        )}
+                      </span>
+                      {crashStackShown && (
+                        <span className='text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line'>
+                          {error.stack}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      Unknown error
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  )
+}
 
 export async function loader({ request }: LoaderArgs) {
   const { url } = request
