@@ -50,7 +50,7 @@ import { iconClassName } from './ViewProject.helpers'
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
 
-const panelsWithBars = ['cc', 'ce', 'os', 'br', 'dv', 'pg']
+const PANELS_WITH_BARS = ['cc', 'rg', 'ct', 'ce', 'os', 'br', 'dv', 'pg']
 
 // function that checks if there are custom tabs for a specific type
 const checkCustomTabs = (panelID: string, customTabs: any) => {
@@ -60,7 +60,7 @@ const checkCustomTabs = (panelID: string, customTabs: any) => {
 }
 
 const checkIfBarsNeeded = (panelID: string) => {
-  return _includes(panelsWithBars, panelID)
+  return _includes(PANELS_WITH_BARS, panelID)
 }
 
 const removeDuplicates = (arr: any[], keys: string[]) => {
