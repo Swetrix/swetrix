@@ -17,8 +17,7 @@ import _values from 'lodash/values'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
-import _uniqBy from 'lodash/uniqBy'
-import _isFunction from 'lodash/isFunction'
+import _orderBy from 'lodash/orderBy'
 import _reduce from 'lodash/reduce'
 import _round from 'lodash/round'
 import _find from 'lodash/find'
@@ -42,7 +41,7 @@ import Button from 'ui/Button'
 import Chart from 'ui/Chart'
 
 import { PROJECT_TABS } from 'redux/constants'
-
+import { IEntry } from 'redux/models/IEntry'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
 import UserFlow from './components/UserFlow'
@@ -96,11 +95,8 @@ const removeDuplicates = (arr: any[], keys: string[]) => {
   return uniqueObjects
 }
 
-// noSwitch - 'previous' and 'next' buttons
-const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab, isCustomContent,
-}: {
-  name: string,
+interface IPanelContainer {
+  name: string | JSX.Element,
   children?: React.ReactNode,
   noSwitch?: boolean,
   icon?: React.ReactNode,
@@ -111,7 +107,12 @@ const PanelContainer = ({
   customTabs?: any,
   activeTab?: string,
   isCustomContent?: boolean
-}): JSX.Element => (
+}
+
+// noSwitch - 'previous' and 'next' buttons
+const PanelContainer = ({
+  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab, isCustomContent,
+}: IPanelContainer): JSX.Element => (
   <div
     className={cx('relative bg-white dark:bg-slate-800/25 dark:border dark:border-slate-800/50 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
       'pb-12': !noSwitch,
@@ -140,7 +141,7 @@ const PanelContainer = ({
         )}
 
         {/* if it is a Country tab  */}
-        {type === 'cc' && (
+        {(type === 'cc' || type === 'rg' || type === 'ct') && (
           <>
             <MapIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
@@ -227,7 +228,9 @@ const PanelContainer = ({
 )
 
 PanelContainer.propTypes = {
-  name: PropTypes.string.isRequired,
+  name: PropTypes.oneOf([
+    PropTypes.string, PropTypes.node,
+  ]).isRequired,
   children: PropTypes.node.isRequired,
   noSwitch: PropTypes.bool,
   activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -823,8 +826,8 @@ CustomEvents.defaultProps = {
 }
 
 interface IPanel {
-  name: string
-  data: any
+  name: string | JSX.Element
+  data: IEntry[]
   rowMapper: any
   valueMapper: any
   capitalize: boolean
@@ -852,25 +855,25 @@ const Panel = ({
 }: IPanel): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
-  const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])
-  const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_PANEL), [keys, currentIndex])
-  const total = useMemo(() => _reduce(keys, (prev, curr) => prev + data[curr], 0), [keys]) // eslint-disable-line
-  const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_PANEL), [keys])
+  const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
+  const totalPages = _ceil(total / ENTRIES_PER_PANEL)
+  const entries = useMemo(() => _orderBy(data, 'count', 'desc'), [data])
+  const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
   const [activeFragment, setActiveFragment] = useState(0)
   const [modal, setModal] = useState(false)
   const [isReversedUserFlow, setIsReversedUserFlow] = useState<boolean>(false)
   const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_PANEL)
+  const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
 
   const _onFilter = hideFilters ? () => { } : onFilter
 
   useEffect(() => {
-    const sizeKeys = _size(keys)
+    const sizeKeys = _size(entries)
 
     if (currentIndex > sizeKeys) {
       setPage(_floor(sizeKeys / ENTRIES_PER_PANEL))
     }
-  }, [currentIndex, keys])
+  }, [currentIndex, entries])
 
   useEffect(() => {
     setPage(0)
@@ -897,7 +900,7 @@ const Panel = ({
   }
 
   // Showing map of stats a data
-  if (id === 'cc' && activeFragment === 1 && !_isEmpty(data)) {
+  if ((id === 'cc' || id === 'rg' || id === 'ct') && activeFragment === 1 && !_isEmpty(data)) {
     return (
       <PanelContainer
         name={name}
@@ -930,6 +933,7 @@ const Panel = ({
     )
   }
 
+  // User flow tab for the Page panel
   if (id === 'pg' && activeFragment === 1) {
     return (
       <PanelContainer
@@ -990,21 +994,22 @@ const Panel = ({
     )
   }
 
-  // Showing chart of stats a data (start if)
+  // Showing chart of stats a data
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')
     const tRatio = t('project.ratio')
-    const mappedData = _map(data, valueMapper)
+    const columns = _map(data, (el) => [el.name, valueMapper(el.count)])
+    const values = _map(data, (el) => valueMapper(el.count))
 
     const options = {
       data: {
-        columns: _map(data, (e, index) => [index, e]),
+        columns,
         type: pie(),
       },
       tooltip: {
         contents: {
           text: {
-            QUANTITY: _values(mappedData),
+            QUANTITY: values,
           },
           template: `
             <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
@@ -1051,7 +1056,6 @@ const Panel = ({
       </PanelContainer>
     )
   }
-  // Showing chart of stats a data (end if)
 
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
@@ -1084,18 +1088,21 @@ const Panel = ({
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}
         </p>
-      ) : _map(keysToDisplay, key => {
-        const perc = _round((data[key] / total) * 100, 2)
-        const rowData = _isFunction(rowMapper) ? rowMapper(key) : key
-        const valueData = _isFunction(valueMapper) ? valueMapper(data[key]) : data[key]
+      ) : _map(entriesToDisplay, entry => {
+        const {
+          count, name: entryName, cc,
+        } = entry
+        const perc = _round((count / total) * 100, 2)
+        const rowData = rowMapper(entry)
+        const valueData = valueMapper(count)
 
         return (
-          <Fragment key={key}>
+          <Fragment key={`${id}-${entryName}-${cc}`}>
             <div
               className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
                 'group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer': !hideFilters,
               })}
-              onClick={() => _onFilter(id, key)}
+              onClick={() => _onFilter(id, entryName)}
             >
               {linkContent ? (
                 <a
@@ -1133,12 +1140,12 @@ const Panel = ({
         )
       })}
       {/* for pagination in tabs */}
-      {_size(keys) > ENTRIES_PER_PANEL && (
+      {_size(entries) > ENTRIES_PER_PANEL && (
         <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <div>
               <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
-                {_size(keys)}
+                {_size(entries)}
                 {' '}
                 {t('project.results')}
               </span>
@@ -1188,7 +1195,9 @@ const Panel = ({
 }
 
 Panel.propTypes = {
-  name: PropTypes.string.isRequired,
+  name: PropTypes.oneOf([
+    PropTypes.string.isRequired, PropTypes.node,
+  ]).isRequired,
   data: PropTypes.objectOf(PropTypes.number).isRequired,
   id: PropTypes.string,
   rowMapper: PropTypes.func,
@@ -1203,8 +1212,8 @@ Panel.propTypes = {
 
 Panel.defaultProps = {
   id: null,
-  rowMapper: null,
-  valueMapper: null,
+  rowMapper: (row: IEntry): string => row.name,
+  valueMapper: (value: number): number => value,
   capitalize: false,
   linkContent: false,
   onFilter: () => { },

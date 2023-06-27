@@ -52,6 +52,7 @@ import {
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
+import { ICountryEntry } from 'redux/models/IEntry'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -76,6 +77,7 @@ import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
+import CountryDropdown from './components/CountryDropdown'
 import ProjectAlertsView from '../Alerts/View'
 const SwetrixSDK = require('@swetrix/sdk')
 
@@ -276,6 +278,9 @@ const ViewProject = ({
   // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
   // forecastData is a data for forecast chart
   const [forecasedChartData, setForecasedChartData] = useState<any>({})
+
+  // Is used to switch between Country, Region and City tabs
+  const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
 
   // chartDataPerf is a data for performance chart
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
@@ -2187,20 +2192,39 @@ const ViewProject = ({
                     const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 
                     if (type === 'cc') {
+                      const ccPanelName = tnMapping[countryActiveTab]
+
+                      const rowMapper = (entry: ICountryEntry) => {
+                        const { name: entryName, cc } = entry
+
+                        if (cc) {
+                          return (
+                            <CCRow cc={cc} name={entryName} language={language} />
+                          )
+                        }
+
+                        return (
+                          <CCRow cc={entryName} language={language} />
+                        )
+                      }
+
                       return (
                         <Panel
                           t={t}
-                          key={type}
+                          key={countryActiveTab}
                           icon={panelIcon}
-                          id={type}
+                          id={countryActiveTab}
                           onFilter={filterHandler}
                           activeTab={activeTab}
-                          name={panelName}
-                          data={panelsData.data[type]}
-                          customTabs={customTabs}
-                          rowMapper={(rowName) => (
-                            <CCRow rowName={rowName} language={language} />
+                          name={(
+                            <CountryDropdown
+                              onSelect={setCountryActiveTab}
+                              title={ccPanelName}
+                            />
                           )}
+                          data={panelsData.data[countryActiveTab]}
+                          customTabs={customTabs}
+                          rowMapper={rowMapper}
                         />
                       )
                     }
@@ -2234,8 +2258,8 @@ const ViewProject = ({
                           activeTab={activeTab}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
-                          rowMapper={(rowName) => (
-                            <RefRow rowName={rowName} showIcons={showIcons} />
+                          rowMapper={({ name: entryName }) => (
+                            <RefRow rowName={entryName} showIcons={showIcons} />
                           )}
                         />
                       )
@@ -2253,7 +2277,7 @@ const ViewProject = ({
                           name={panelName}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
-                          rowMapper={(row) => decodeURIComponent(row)}
+                          rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
                         />
                       )
                     }
@@ -2339,20 +2363,39 @@ const ViewProject = ({
                     const customTabs = _filter(customPanelTabs, tab => tab.panelID === type)
 
                     if (type === 'cc') {
+                      const ccPanelName = tnMapping[countryActiveTab]
+
+                      const rowMapper = (entry: ICountryEntry) => {
+                        const { name: entryName, cc } = entry
+
+                        if (cc) {
+                          return (
+                            <CCRow cc={cc} name={entryName} language={language} />
+                          )
+                        }
+
+                        return (
+                          <CCRow cc={entryName} language={language} />
+                        )
+                      }
+
                       return (
                         <Panel
                           t={t}
-                          key={type}
+                          key={countryActiveTab}
                           icon={panelIcon}
-                          id={type}
+                          id={countryActiveTab}
                           onFilter={filterHandler}
-                          name={panelName}
-                          activeTab={activeTab}
-                          data={panelsDataPerf.data[type]}
-                          customTabs={customTabs}
-                          rowMapper={(rowName) => (
-                            <CCRow rowName={rowName} language={language} />
+                          name={(
+                            <CountryDropdown
+                              onSelect={setCountryActiveTab}
+                              title={ccPanelName}
+                            />
                           )}
+                          activeTab={activeTab}
+                          data={panelsDataPerf.data[countryActiveTab]}
+                          customTabs={customTabs}
+                          rowMapper={rowMapper}
                           valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                         />
                       )
