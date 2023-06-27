@@ -136,18 +136,18 @@ const generateRandomString = (length: number): string =>
 const dummyLookup = () => ({
   country: {
     names: {
-      en: 'NULL',
+      en: null,
     },
   },
   city: {
     names: {
-      en: 'NULL',
+      en: null,
     },
   },
   subdivisions: [
     {
       names: {
-        en: 'NULL',
+        en: null,
       },
     },
   ],
@@ -160,9 +160,11 @@ const PRODUCTION_GEOIP_DB_PATH = path.join(
   'dbip-city-lite.mmdb',
 )
 
-// @ts-ignore
 // eslint-disable-next-line
-let lookup: Reader<CityResponse> = dummyLookup
+let lookup: Reader<CityResponse> = {
+  // @ts-ignore
+  get: dummyLookup,
+}
 
 if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
   const buffer = fs.readFileSync(PRODUCTION_GEOIP_DB_PATH)
