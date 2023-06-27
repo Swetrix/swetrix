@@ -1071,7 +1071,7 @@ export const resetFilters = (pid: string, type: string, filters: string[]) =>
 
 export const reciveLoginNotification = (recive: boolean) =>
   api
-    .post('user/login-notification', { recive })
+    .post('user/recieve-login-notifications', { recive })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
