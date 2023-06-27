@@ -11,7 +11,12 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import {
-  EnvelopeIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, CurrencyDollarIcon, ClipboardDocumentIcon, ChevronDownIcon,
+  EnvelopeIcon,
+  ExclamationTriangleIcon,
+  ArrowDownTrayIcon,
+  CurrencyDollarIcon,
+  ClipboardDocumentIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline'
 import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
@@ -19,8 +24,14 @@ import utc from 'dayjs/plugin/utc'
 import cx from 'clsx'
 
 import {
-  reportFrequencies, DEFAULT_TIMEZONE, WEEKLY_REPORT_FREQUENCY, CONFIRMATION_TIMEOUT,
-  GDPR_REQUEST, GDPR_EXPORT_TIMEFRAME, TimeFormat, isSelfhosted,
+  reportFrequencies,
+  DEFAULT_TIMEZONE,
+  WEEKLY_REPORT_FREQUENCY,
+  CONFIRMATION_TIMEOUT,
+  GDPR_REQUEST,
+  GDPR_EXPORT_TIMEFRAME,
+  TimeFormat,
+  isSelfhosted,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { ISharedProject } from 'redux/models/ISharedProject'
@@ -33,12 +44,20 @@ import Select from 'ui/Select'
 import Checkbox from 'ui/Checkbox'
 import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
+import {
+  isValidEmail,
+  isValidPassword,
+  MIN_PASSWORD_CHARS,
+} from 'utils/validator'
 import routes from 'routesPath'
 import { trackCustom } from 'utils/analytics'
 import { getCookie, setCookie } from 'utils/cookie'
 import {
-  confirmEmail, exportUserData, generateApiKey, deleteApiKey, // setTheme,
+  confirmEmail,
+  exportUserData,
+  generateApiKey,
+  deleteApiKey, // setTheme,
+  reciveLoginNotification,
 } from 'api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
@@ -77,9 +96,9 @@ interface IProps {
 }
 
 interface IForm extends Partial<IUser> {
-  repeat: string,
-  password: string,
-  email: string
+  repeat: string;
+  password: string;
+  email: string;
 }
 
 const UserSettings = ({
@@ -90,10 +109,15 @@ const UserSettings = ({
   linkSSO, unlinkSSO, theme, updateShowLiveVisitorsInTitle, logoutAll,
 }: IProps): JSX.Element => {
   const navigate = useNavigate()
-  const { t }: {
-    t: (key: string, options?: {
-      [key: string]: string | number | null,
-    }) => string,
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number | null;
+      }
+    ) => string;
   } = useTranslation('common')
 
   const [form, setForm] = useState<IForm>({
@@ -103,13 +127,17 @@ const UserSettings = ({
     timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
   const [showPasswordFields, setShowPasswordFields] = useState<boolean>(false)
-  const [timezone, setTimezone] = useState<string>(user.timezone || DEFAULT_TIMEZONE)
+  const [timezone, setTimezone] = useState<string>(
+    user.timezone || DEFAULT_TIMEZONE,
+  )
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const [timezoneChanged, setTimezoneChanged] = useState<boolean>(false)
-  const [reportFrequency, setReportFrequency] = useState<string>(user.reportFrequency)
+  const [reportFrequency, setReportFrequency] = useState<string>(
+    user.reportFrequency,
+  )
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    [key: string]: string,
+    [key: string]: string;
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [showModal, setShowModal] = useState<boolean>(false)
@@ -125,7 +153,7 @@ const UserSettings = ({
 
   const validate = () => {
     const allErrors = {} as {
-      [key: string]: string,
+      [key: string]: string;
     }
 
     if (!isValidEmail(form.email)) {
@@ -133,7 +161,9 @@ const UserSettings = ({
     }
 
     if (_size(form.password) > 0 && !isValidPassword(form.password)) {
-      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
+      allErrors.password = t('auth.common.xCharsError', {
+        amount: MIN_PASSWORD_CHARS,
+      })
     }
 
     if (form.password !== form.repeat) {
@@ -160,7 +190,7 @@ const UserSettings = ({
 
   useEffect(() => {
     validate()
-  }, [form]) // eslint-disable-line
+  }, [form]); // eslint-disable-line
 
   useEffect(() => {
     return () => {
@@ -178,7 +208,7 @@ const UserSettings = ({
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(prevForm => ({
+    setForm((prevForm) => ({
       ...prevForm,
       [target.name]: value,
     }))
@@ -210,7 +240,9 @@ const UserSettings = ({
     }
   }
 
-  const handleShowLiveVisitorsSave = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleShowLiveVisitorsSave = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     if (settingUpdating) {
       return
     }
@@ -230,14 +262,39 @@ const UserSettings = ({
     })
   }
 
+  const handleReceiveLoginNotifications = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (settingUpdating) {
+      return
+    }
+
+    const { checked } = e.target
+
+    setSettingUpdating(true)
+
+    try {
+      await reciveLoginNotification(checked)
+      updateUserData({
+        receiveLoginNotifications: checked,
+      })
+      accountUpdated(t('profileSettings.updated'))
+    } catch {
+      genericError(t('apiNotifications.somethingWentWrong'))
+    }
+  }
+
   const handleIntegrationSave = (data: any, callback = () => { }) => {
     setBeenSubmitted(true)
 
     if (validated) {
-      onSubmit({
-        ...form,
-        ...data,
-      }, callback)
+      onSubmit(
+        {
+          ...form,
+          ...data,
+        },
+        callback,
+      )
     }
   }
 
@@ -262,10 +319,11 @@ const UserSettings = ({
   }
 
   const reportIconExtractor = (_: any, index: number) => {
-    if (!isPaidTierUsed && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY) {
-      return (
-        <CurrencyDollarIcon className='w-5 h-5 mr-1' />
-      )
+    if (
+      !isPaidTierUsed
+      && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY
+    ) {
+      return <CurrencyDollarIcon className='w-5 h-5 mr-1' />
     }
 
     return null
@@ -290,8 +348,19 @@ const UserSettings = ({
 
   const onExport = async (exportedAt: string) => {
     try {
-      if (getCookie(GDPR_REQUEST) || (!_isNull(exportedAt) && !dayjs().isAfter(dayjs.utc(exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'), 'day'))) {
-        onGDPRExportFailed(t('profileSettings.tryAgainInXDays', { amount: GDPR_EXPORT_TIMEFRAME }))
+      if (
+        getCookie(GDPR_REQUEST)
+        || (!_isNull(exportedAt)
+          && !dayjs().isAfter(
+            dayjs.utc(exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'),
+            'day',
+          ))
+      ) {
+        onGDPRExportFailed(
+          t('profileSettings.tryAgainInXDays', {
+            amount: GDPR_EXPORT_TIMEFRAME,
+          }),
+        )
         return
       }
       await exportUserData()
@@ -480,7 +549,13 @@ const UserSettings = ({
               label={t('profileSettings.selectTimeFormat')}
               className='w-full'
               items={translatedTimeFormat}
-              onSelect={(f) => setForm((prev) => ({ ...prev, timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)] }))}
+              onSelect={(f) => setForm((prev) => ({
+                ...prev,
+                timeFormat:
+                  timeFormatArray[
+                    _findIndex(translatedTimeFormat, (freq) => freq === f)
+                  ],
+              }))}
             />
           </div>
         </div>
@@ -542,6 +617,15 @@ const UserSettings = ({
               updateUserData={updateUserData}
               handleIntegrationSave={handleIntegrationSave}
               genericError={genericError}
+            />
+            <Checkbox
+              checked={user.receiveLoginNotifications}
+              onChange={handleReceiveLoginNotifications}
+              disabled={settingUpdating}
+              name='active'
+              id='active'
+              className='mt-4'
+              label={t('profileSettings.receiveLoginNotifications')}
             />
             <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
@@ -708,6 +792,17 @@ const UserSettings = ({
                   {t('profileSettings.requestExport')}
                 </>
               </Button>
+              <Button
+                className='ml-3'
+                onClick={() => setShowModal(true)}
+                semiSmall
+                danger
+              >
+                <>
+                  <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                  {t('profileSettings.delete')}
+                </>
+              </Button>
               <div className='flex justify-center flex-wrap gap-2'>
                 <Button onClick={logoutAll} semiSmall semiDanger>
                   <>
@@ -728,7 +823,10 @@ const UserSettings = ({
         )}
       </form>
 
-      <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
+      <PaidFeature
+        isOpened={isPaidFeatureOpened}
+        onClose={() => setIsPaidFeatureOpened(false)}
+      />
       <Modal
         onClose={() => setShowExportModal(false)}
         onSubmit={() => {

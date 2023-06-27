@@ -36,4 +36,5 @@ export interface IUser {
   maxEventsCount: number
   tierCurrency: 'USD' | 'EUR' | 'GBP' | null
   showLiveVisitorsInTitle: boolean
+  receiveLoginNotifications: boolean
 }

@@ -22,13 +22,18 @@ const mapStateToProps = (state: StateType) => {
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   onGDPRExportFailed: (message: string) => {
-    dispatch(errorsActions.genericError({
-      message,
-    }))
+    dispatch(
+      errorsActions.genericError({
+        message,
+      }),
+    )
   },
-  onDelete: (t: (key: string) => string, onSuccess: {
-    (): void,
-  }) => {
+  onDelete: (
+    t: (key: string) => string,
+    onSuccess: {
+      (): void;
+    },
+  ) => {
     dispatch(
       sagaActions.deleteAccountAsync(
         (error: string) => dispatch(
@@ -51,70 +56,87 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(UIActions.deleteProjectCache({}))
   },
   userSharedUpdate: (message: string) => {
-    dispatch(alertsActions.userSharedUpdate({
-      message,
-      type: 'success',
-    }))
+    dispatch(
+      alertsActions.userSharedUpdate({
+        message,
+        type: 'success',
+      }),
+    )
   },
   sharedProjectError: (message: string) => {
-    dispatch(errorsActions.sharedProjectFailed({
-      message,
-    }))
+    dispatch(
+      errorsActions.sharedProjectFailed({
+        message,
+      }),
+    )
   },
   genericError: (message: string) => {
-    dispatch(errorsActions.genericError({
-      message,
-    }))
+    dispatch(
+      errorsActions.genericError({
+        message,
+      }),
+    )
   },
   removeProject: (projectId: string) => {
-    dispatch(UIActions.removeProject({
-      pid: projectId,
-      shared: true,
-    }))
+    dispatch(
+      UIActions.removeProject({
+        pid: projectId,
+        shared: true,
+      }),
+    )
   },
   removeShareProject: (id: string) => {
     dispatch(authActions.deleteShareProject(id))
   },
   setProjectsShareData: (data: Partial<ISharedProject>, id: string) => {
-    dispatch(UIActions.setProjectsShareData({
-      data,
-      id,
-      shared: true,
-    }))
+    dispatch(
+      UIActions.setProjectsShareData({
+        data,
+        id,
+        shared: true,
+      }),
+    )
   },
   setUserShareData: (data: Partial<ISharedProject>, id: string) => {
-    dispatch(authActions.setUserShareData({
-      data,
-      id,
-    }))
+    dispatch(
+      authActions.setUserShareData({
+        data,
+        id,
+      }),
+    )
   },
   updateProfileFailed: (message: string) => {
-    dispatch(errorsActions.updateUserProfileFailed({
-      message,
-    }))
+    dispatch(
+      errorsActions.updateUserProfileFailed({
+        message,
+      }),
+    )
   },
   accountUpdated: (message: string) => {
-    dispatch(alertsActions.accountUpdated({
-      message,
-      type: 'success',
-    }))
-  },
-  updateUserProfileAsync: (data: Partial<IUser>, successMessage: string, callback = (e: any) => {}) => {
     dispatch(
-      sagaActions.updateUserProfileAsync(
-        data,
-        (res: any) => {
-          if (res) {
-            dispatch(
-              alertsActions.accountUpdated({
-                message: successMessage,
-                type: 'success',
-              }),
-            )
-          }
-          callback(res)
-        },
-      ),
+      alertsActions.accountUpdated({
+        message,
+        type: 'success',
+      }),
+    )
+  },
+  updateUserProfileAsync: (
+    data: Partial<IUser>,
+    successMessage: string,
+    callback = (e: any) => { },
+  ) => {
+    dispatch(
+      sagaActions.updateUserProfileAsync(data, (res: any) => {
+        if (res) {
+          dispatch(
+            alertsActions.accountUpdated({
+              message: successMessage,
+              type: 'success',
+            }),
+          )
+        }
+        callback(res)
+      }),
     )
   },
   setAPIKey: (apiKey: string) => {
@@ -123,25 +145,24 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   // setThemeType: (theme) => {
   //   dispatch(UIActions.setThemeType(theme))
   // },
-  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
-    dispatch(
-      sagaActions.linkSSO(
-        t,
-        callback,
-        provider,
-      ),
-    )
+  linkSSO: (
+    t: (key: string) => string,
+    callback: (e: any) => void,
+    provider: string,
+  ) => {
+    dispatch(sagaActions.linkSSO(t, callback, provider))
   },
-  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
-    dispatch(
-      sagaActions.unlinkSSO(
-        t,
-        callback,
-        provider,
-      ),
-    )
+  unlinkSSO: (
+    t: (key: string) => string,
+    callback: (e: any) => void,
+    provider: string,
+  ) => {
+    dispatch(sagaActions.unlinkSSO(t, callback, provider))
   },
-  updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => {
+  updateShowLiveVisitorsInTitle: (
+    show: boolean,
+    callback: (isSuccess: boolean) => void,
+  ) => {
     dispatch(sagaActions.updateShowLiveVisitorsInTitle(show, callback))
   },
   logoutAll: () => {

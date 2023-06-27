@@ -92,7 +92,7 @@ const ModalMessage = ({
 
   useEffect(() => {
     getFiltersList()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterType])
 
   return (
@@ -118,22 +118,22 @@ const ModalMessage = ({
         </nav>
       </div>
       {tab === tabDeleteDataModal[1].name && (
-      <>
-        <p className='text-gray-500 dark:text-gray-300 mt-4 mb-2 text-sm'>
-          {t('project.settings.reseted.partiallyDesc')}
-        </p>
-        <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-2 text-sm'>
-          {t('project.settings.reseted.partiallyHint')}
-        </p>
-        <input type='text' className='h-0 w-0 border-0 p-0 m-0 focus:text-transparent focus:border-transparent focus:shadow-none focus:ring-transparent' />
-        <FlatPicker
-          onChange={(date) => setDateRange(date)}
-          options={{
-            altInputClass: 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-800 rounded-md',
-          }}
-          value={dateRange}
-        />
-      </>
+        <>
+          <p className='text-gray-500 dark:text-gray-300 mt-4 mb-2 text-sm'>
+            {t('project.settings.reseted.partiallyDesc')}
+          </p>
+          <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-2 text-sm'>
+            {t('project.settings.reseted.partiallyHint')}
+          </p>
+          <input type='text' className='h-0 w-0 border-0 p-0 m-0 focus:text-transparent focus:border-transparent focus:shadow-none focus:ring-transparent' />
+          <FlatPicker
+            onChange={(date) => setDateRange(date)}
+            options={{
+              altInputClass: 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-800 rounded-md',
+            }}
+            value={dateRange}
+          />
+        </>
       )}
       {tab === tabDeleteDataModal[0].name && (
         <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
@@ -558,28 +558,28 @@ const ProjectSettings = ({
               hint={t('project.settings.publicHint')}
             />
             {!isSelfhosted && (
-            <Checkbox
-              checked={Boolean(form.isPasswordProtected)}
-              onChange={() => {
-                if (!form.public && form.isPasswordProtected) {
-                  setForm({
-                    ...form,
-                    isPasswordProtected: false,
-                  })
-                  return
-                }
+              <Checkbox
+                checked={Boolean(form.isPasswordProtected)}
+                onChange={() => {
+                  if (!form.public && form.isPasswordProtected) {
+                    setForm({
+                      ...form,
+                      isPasswordProtected: false,
+                    })
+                    return
+                  }
 
-                if (!form.public) {
-                  setShowProtected(true)
-                }
-              }}
-              disabled={form?.public}
-              name='isPasswordProtected'
-              id='isPasswordProtected'
-              className='mt-4'
-              label={t('project.settings.protected')}
-              hint={t('project.settings.protectedHint')}
-            />
+                  if (!form.public) {
+                    setShowProtected(true)
+                  }
+                }}
+                disabled={form?.public}
+                name='isPasswordProtected'
+                id='isPasswordProtected'
+                className='mt-4'
+                label={t('project.settings.protected')}
+                hint={t('project.settings.protectedHint')}
+              />
             )}
             <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-8'>
               <div className='flex flex-wrap items-center gap-2'>
@@ -591,41 +591,41 @@ const ProjectSettings = ({
                 </Button>
               </div>
               {!project?.shared && (
-              <div className='flex flex-wrap justify-center gap-2'>
-                {!isSelfhosted && (
-                <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
-                  <>
-                    <RocketLaunchIcon className='w-5 h-5 mr-1' />
-                    {t('project.settings.transfer')}
-                  </>
-                </Button>
-                )}
-                <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
-                  <>
-                    <TrashIcon className='w-5 h-5 mr-1' />
-                    {t('project.settings.reset')}
-                  </>
-                </Button>
-                <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
-                  <>
-                    <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-                    {t('project.settings.delete')}
-                  </>
-                </Button>
-              </div>
+                <div className='flex flex-wrap justify-center gap-2'>
+                  {!isSelfhosted && (
+                    <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
+                      <>
+                        <RocketLaunchIcon className='w-5 h-5 mr-1' />
+                        {t('project.settings.transfer')}
+                      </>
+                    </Button>
+                  )}
+                  <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
+                    <>
+                      <TrashIcon className='w-5 h-5 mr-1' />
+                      {t('project.settings.reset')}
+                    </>
+                  </Button>
+                  <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                    <>
+                      <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                      {t('project.settings.delete')}
+                    </>
+                  </Button>
+                </div>
               )}
             </div>
             {!isSelfhosted && !project?.shared && (
-            <>
-              <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
-              <Emails projectId={id} projectName={project.name} />
-            </>
+              <>
+                <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+                <Emails projectId={id} projectName={project.name} />
+              </>
             )}
             {!isSelfhosted && !project?.shared && (
-            <>
-              <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
-              <People project={project} />
-            </>
+              <>
+                <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+                <People project={project} />
+              </>
             )}
           </>
         ) : (
@@ -635,14 +635,14 @@ const ProjectSettings = ({
         )}
 
         {!isSettings && (
-        <div>
-          <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
-            {t('common.cancel')}
-          </Button>
-          <Button type='submit' loading={projectSaving} primary regular>
-            {t('common.save')}
-          </Button>
-        </div>
+          <div>
+            <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+              {t('common.cancel')}
+            </Button>
+            <Button type='submit' loading={projectSaving} primary regular>
+              {t('common.save')}
+            </Button>
+          </div>
         )}
       </form>
       <Modal
@@ -691,7 +691,7 @@ const ProjectSettings = ({
               error={beenSubmitted ? errors.password : null}
             />
           </div>
-          )}
+        )}
         isOpened={showProtected}
       />
       <Modal
@@ -721,7 +721,7 @@ const ProjectSettings = ({
               onChange={(e) => setTransferEmail(e.target.value)}
             />
           </div>
-          )}
+        )}
         isOpened={showTransfer}
         onSubmit={onTransfer}
       />

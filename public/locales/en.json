@@ -400,6 +400,7 @@
     "quitProject": "Are you sure you want to quit this project?",
     "quitProjectTitle": "Quit {{project}}?",
     "shared": "Shared projects",
+    "receiveLoginNotifications": "Receive login notifications",
     "owned": "Owned projects",
     "sharedTable": {
       "project": "Project",
