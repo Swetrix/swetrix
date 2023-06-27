@@ -38,7 +38,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
   const [hoverShow, setHoverShow] = useState<boolean>(false)
   const [dataHover, setDataHover] = useState<IDataHover>({} as IDataHover)
   const [cursorPosition, setCursorPosition] = useState<ICursorPosition>({} as ICursorPosition)
-  const countryMap: ICountryMap = useMemo(() => _reduce(data, (prev, curr) => ({ ...prev, [curr.name]: curr.count }), {}), [data])
+  const countryMap: ICountryMap = useMemo(() => _reduce(data, (prev, curr) => ({ ...prev, [curr.cc || curr.name]: curr.count }), {}), [data])
 
   const projectTab = useSelector((state: StateType) => state.ui.projects.projectTab)
   const isTrafficTab = projectTab === PROJECT_TABS.traffic
