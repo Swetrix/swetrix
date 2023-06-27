@@ -290,7 +290,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(
         filters,
         isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
@@ -359,14 +359,14 @@ export class AnalyticsController {
         paramsData,
         safeTimezone,
         customEVFilterApplied,
-        parsedFilters,
+        appliedFilters,
       )
     }
 
     if (isCaptcha) {
       return {
         ...result,
-        appliedFilters: parsedFilters,
+        appliedFilters,
       }
     }
 
@@ -378,7 +378,7 @@ export class AnalyticsController {
     return {
       ...result,
       customs,
-      appliedFilters: parsedFilters,
+      appliedFilters,
     }
   }
 
@@ -424,7 +424,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -473,7 +473,7 @@ export class AnalyticsController {
 
     return {
       ...result,
-      appliedFilters: parsedFilters,
+      appliedFilters,
     }
   }
 
@@ -500,7 +500,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -540,7 +540,7 @@ export class AnalyticsController {
 
     return {
       ...result,
-      appliedFilters: parsedFilters,
+      appliedFilters,
     }
   }
 
@@ -567,7 +567,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -604,7 +604,7 @@ export class AnalyticsController {
 
     return {
       chart,
-      appliedFilters: parsedFilters,
+      appliedFilters,
     }
   }
 
@@ -646,7 +646,7 @@ export class AnalyticsController {
       safeTimezone,
     )
 
-    const [filtersQuery, filtersParams, parsedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const params = {
@@ -660,7 +660,7 @@ export class AnalyticsController {
 
     return {
       ...flow,
-      appliedFilters: parsedFilters,
+      appliedFilters,
     }
   }
 
@@ -1134,7 +1134,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1190,7 +1190,7 @@ export class AnalyticsController {
 
     return {
       ...result,
-      appliedFilters: parsedFilters,
+      appliedFilters,
     }
   }
 }
