@@ -141,7 +141,7 @@ const PanelContainer = ({
         )}
 
         {/* if it is a Country tab  */}
-        {type === 'cc' && (
+        {(type === 'cc' || type === 'rg' || type === 'ct') && (
           <>
             <MapIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
@@ -900,7 +900,7 @@ const Panel = ({
   }
 
   // Showing map of stats a data
-  if (id === 'cc' && activeFragment === 1 && !_isEmpty(data)) {
+  if ((id === 'cc' || id === 'rg' || id === 'ct') && activeFragment === 1 && !_isEmpty(data)) {
     return (
       <PanelContainer
         name={name}

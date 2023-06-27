@@ -3,3 +3,7 @@ export interface IEntry {
   count: number
   cc?: string
 }
+
+export interface ICountryEntry extends IEntry {
+  cc: string
+}

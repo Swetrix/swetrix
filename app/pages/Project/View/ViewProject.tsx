@@ -52,7 +52,7 @@ import {
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
-import { IEntry } from 'redux/models/IEntry'
+import { ICountryEntry } from 'redux/models/IEntry'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -2194,17 +2194,17 @@ const ViewProject = ({
                     if (type === 'cc') {
                       const ccPanelName = tnMapping[countryActiveTab]
 
-                      const rowMapper = (entry: IEntry) => {
+                      const rowMapper = (entry: ICountryEntry) => {
                         const { name: entryName, cc } = entry
 
                         if (cc) {
                           return (
-                            <CCRow rowName={cc} language={language} />
+                            <CCRow cc={cc} name={entryName} language={language} />
                           )
                         }
 
                         return (
-                          <CCRow rowName={entryName} language={language} />
+                          <CCRow cc={entryName} language={language} />
                         )
                       }
 
@@ -2365,17 +2365,17 @@ const ViewProject = ({
                     if (type === 'cc') {
                       const ccPanelName = tnMapping[countryActiveTab]
 
-                      const rowMapper = (entry: IEntry) => {
+                      const rowMapper = (entry: ICountryEntry) => {
                         const { name: entryName, cc } = entry
 
                         if (cc) {
                           return (
-                            <CCRow rowName={cc} language={language} />
+                            <CCRow cc={cc} name={entryName} language={language} />
                           )
                         }
 
                         return (
-                          <CCRow rowName={entryName} language={language} />
+                          <CCRow cc={entryName} language={language} />
                         )
                       }
 

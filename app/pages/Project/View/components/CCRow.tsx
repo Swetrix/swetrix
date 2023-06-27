@@ -1,35 +1,37 @@
 import React, { memo } from 'react'
 import Flag from 'react-flagkit'
 import countries from 'utils/isoCountries'
-import PropTypes from 'prop-types'
+
+interface ICCRow {
+  cc: string
+  name?: string
+  language: string
+}
 
 /**
  * Component to render country flag in the 'Countries' panel.
  *
- * @param {string} rowName - The country code.
+ * @param {string} cc - The country code.
+ * @param {string} name - Row name to override country name with.
  * @param {string} language - Language to use for country name.
  * @returns {JSX.Element}
  */
-const CCRow = ({ rowName, language }: {
-  rowName: string
-  language: string
-}): JSX.Element => (
+const CCRow = ({ cc, name, language }: ICCRow): JSX.Element => (
   <>
     <Flag
       className='rounded-sm'
-      country={rowName}
+      country={cc}
       size={21}
       alt=''
       aria-hidden='true'
     />
     &nbsp;&nbsp;
-    {countries.getName(rowName, language)}
+    {name || countries.getName(cc, language)}
   </>
 )
 
-CCRow.propTypes = {
-  rowName: PropTypes.string.isRequired,
-  language: PropTypes.string.isRequired,
+CCRow.defaultProps = {
+  name: null,
 }
 
 export default memo(CCRow)
