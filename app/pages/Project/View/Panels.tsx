@@ -1090,14 +1090,14 @@ const Panel = ({
         </p>
       ) : _map(entriesToDisplay, entry => {
         const {
-          count, name: entryName,
+          count, name: entryName, cc,
         } = entry
         const perc = _round((count / total) * 100, 2)
         const rowData = rowMapper(entry)
         const valueData = valueMapper(count)
 
         return (
-          <Fragment key={entryName}>
+          <Fragment key={`${id}-${entryName}-${cc}`}>
             <div
               className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
                 'group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer': !hideFilters,
