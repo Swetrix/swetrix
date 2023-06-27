@@ -8,6 +8,9 @@ import * as _join from 'lodash/join'
 import * as _last from 'lodash/last'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
+import * as _isArray from 'lodash/isArray'
+import * as _reduce from 'lodash/reduce'
+import * as _keys from 'lodash/keys'
 import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
@@ -586,11 +589,32 @@ export class AnalyticsService {
     }
   }
 
+  postProcessParsedFilters(parsedFilters: any[]): any[] {
+    return _reduce(
+      parsedFilters,
+      (prev, curr) => {
+        const { column, filter, isExclusive } = curr
+
+        if (_isArray(filter)) {
+          const filterArray = _map(filter, f => ({
+            column,
+            filter: f,
+            isExclusive,
+          }))
+          return [...prev, ...filterArray]
+        }
+
+        return [...prev, curr]
+      },
+      [],
+    )
+  }
+
   // returns SQL filters query in a format like 'AND col=value AND ...'
   getFiltersQuery(filters: string, dataType: DataType): GetFiltersQuery {
+    const params = {}
     let parsed = []
     let query = ''
-    let params = {}
 
     if (_isEmpty(filters)) {
       return [query, params, parsed]
@@ -607,39 +631,73 @@ export class AnalyticsService {
       return [query, params, parsed]
     }
 
-    const columns = this.getDataTypeColumns(dataType)
-
-    for (let i = 0; i < _size(parsed); ++i) {
-      const { column, filter, isExclusive } = parsed[i]
-
-      if (column === 'ev') {
-        params = {
-          ...params,
-          [column]: filter,
-          [`${column}_exclusive`]: isExclusive,
-        }
-
-        continue
-      }
-
-      if (!_includes(columns, column)) {
-        throw new UnprocessableEntityException(
-          `The provided filter (${column}) is not supported`,
-        )
-      }
-      // working only on 1 filter per 1 column
-      const colFilter = `cf_${column}`
-
-      params = {
-        ...params,
-        [colFilter]: filter,
-      }
-      query += ` ${
-        isExclusive ? 'AND NOT' : 'AND'
-      } ${column}={${colFilter}:String}`
+    if (!_isArray(parsed)) {
+      throw new UnprocessableEntityException(
+        'The provided filters are not in a valid format',
+      )
     }
 
-    return [query, params, parsed]
+    const SUPPORTED_COLUMNS = this.getDataTypeColumns(dataType)
+
+    // Converting something like [{"column":"cc","filter":"BG", "isExclusive":false},{"column":"cc","filter":"PL", "isExclusive":false},{"column":"pg","filter":"/hello", "isExclusive":false}]
+    // to
+    // {cc: [{filter: 'BG', isExclusive: false}, {filter: 'PL', isExclusive: false}], pg: [{filter: '/hello', isExclusive: false}]}
+    const converted = _reduce(
+      parsed,
+      (prev, curr) => {
+        const { column, filter, isExclusive = false } = curr
+
+        if (!_includes(SUPPORTED_COLUMNS, column)) {
+          throw new UnprocessableEntityException(
+            `The provided filter (${column}) is not supported`,
+          )
+        }
+
+        const res = []
+
+        if (_isArray(filter)) {
+          for (const f of filter) {
+            res.push({ filter: f, isExclusive })
+          }
+        } else {
+          res.push({ filter, isExclusive })
+        }
+
+        if (prev[column]) {
+          prev[column].push(...res)
+        } else {
+          prev[column] = res
+        }
+
+        return prev
+      },
+      {},
+    )
+
+    const columns = _keys(converted)
+
+    for (let col = 0; col < _size(columns); ++col) {
+      const column = columns[col]
+      query += ' AND ('
+
+      for (let f = 0; f < _size(converted[column]); ++f) {
+        if (f > 0) {
+          query += ' OR '
+        }
+
+        const { filter, isExclusive } = converted[column][f]
+
+        const param = `qf_${col}_${f}`
+
+        query += `${isExclusive ? 'NOT ' : ''}${column} = {${param}:String}`
+
+        params[param] = filter
+      }
+
+      query += ')'
+    }
+
+    return [query, params, this.postProcessParsedFilters(parsed)]
   }
 
   validateTimebucket(tb: TimeBucketType): void {
