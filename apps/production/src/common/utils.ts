@@ -154,12 +154,20 @@ const dummyLookup = () => ({
 })
 
 const GEOIP_DB_PATH = path.join(__dirname, '../../../..', 'dbip-city-lite.mmdb')
+const PRODUCTION_GEOIP_DB_PATH = path.join(
+  __dirname,
+  '../..',
+  'dbip-city-lite.mmdb',
+)
 
 // @ts-ignore
 // eslint-disable-next-line
 let lookup: Reader<CityResponse> = dummyLookup
 
-if (fs.existsSync(GEOIP_DB_PATH)) {
+if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
+  const buffer = fs.readFileSync(PRODUCTION_GEOIP_DB_PATH)
+  lookup = new Reader<CityResponse>(buffer)
+} else if (fs.existsSync(GEOIP_DB_PATH)) {
   const buffer = fs.readFileSync(GEOIP_DB_PATH)
   lookup = new Reader<CityResponse>(buffer)
 }
