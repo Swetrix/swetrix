@@ -50,8 +50,8 @@ const ProjectAlertsSettings = ({
 }): JSX.Element => {
   const navigate = useNavigate()
   const { id, pid }: {
-    id: string
-    pid: string
+    id?: string
+    pid?: string
   } = useParams()
   const { pathname }: {
     pathname: string
@@ -61,7 +61,7 @@ const ProjectAlertsSettings = ({
       [key: string]: string | number | null | undefined
     }) => string
   } = useTranslation('common')
-  const isSettings: boolean = !_isEmpty(id) && (_replace(_replace(routes.alert_settings, ':id', id), ':pid', pid) === pathname)
+  const isSettings: boolean = !_isEmpty(id) && (_replace(_replace(routes.alert_settings, ':id', id as string), ':pid', pid as string) === pathname)
   const alert = useMemo(() => _find(alerts, { id }), [alerts, id])
   const [form, setForm] = useState<Partial<IAlerts>>({
     pid,
@@ -144,11 +144,11 @@ const ProjectAlertsSettings = ({
     } = {}
 
     if (_isEmpty(form.name) || _size(form.name) < 3) {
-      allErrors.name = t('profileSettings.nameError')
+      allErrors.name = t('alert.noNameError')
     }
 
     if (Number.isNaN(_toNumber(form.queryValue))) {
-      allErrors.queryValue = t('alertsSettings.queryValueError')
+      allErrors.queryValue = t('alert.queryValueError')
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -159,7 +159,7 @@ const ProjectAlertsSettings = ({
 
   const onSubmit = (data: Partial<IAlerts>) => {
     if (isSettings) {
-      updateAlert(id, data)
+      updateAlert(id as string, data)
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setProjectAlerts([..._filter(alerts, (a) => a.id !== id), res])
@@ -183,6 +183,11 @@ const ProjectAlertsSettings = ({
   }
 
   const onDelete = () => {
+    if (!id) {
+      showError('Something went wrong')
+      return
+    }
+
     deleteAlert(id)
       .then(() => {
         setProjectAlerts(_filter(alerts, (a) => a.id !== id))

@@ -507,6 +507,8 @@
     "create": "Create an alert",
     "add": "Add Alert",
     "delete": "Delete alert",
+		"noNameError": "Please enter a name for the alert.",
+		"queryValueError": "Please fill threshold and the query value has to be a number.",
     "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
     "noNotification": "No notification channels set",
     "lastTriggered": "Last Triggered",
