@@ -297,9 +297,9 @@ export class ProjectService {
         ],
       })
       if (_isEmpty(project))
-        throw new BadRequestException(
-          'The provided Project ID (pid) is incorrect',
-        )
+        throw new BadRequestException({
+          i18nMessage: 'providedPIDIncorrect',
+        })
 
       const share = await this.findShare({
         where: {
@@ -319,7 +319,9 @@ export class ProjectService {
       try {
         project = JSON.parse(project)
       } catch {
-        throw new InternalServerErrorException('Error while processing project')
+        throw new InternalServerErrorException({
+          i18nMessage: 'errorWhileProcessingProject',
+        })
       }
     }
 
@@ -464,11 +466,15 @@ export class ProjectService {
         return null
       }
 
-      throw new ConflictException('Incorrect password')
+      throw new ConflictException({
+        i18nMessage: 'incorrectPassword',
+      })
     }
 
     if (project.isPasswordProtected && uid !== project.admin?.id) {
-      throw new ForbiddenException('This project is password protected')
+      throw new ForbiddenException({
+        i18nMessage: 'titles.passwordProtected'
+      })
     }
 
     if (
@@ -479,9 +485,12 @@ export class ProjectService {
       return null
     }
 
-    throw new ForbiddenException(
-      `You are not allowed to view '${project?.name}' project`,
-    )
+    throw new ForbiddenException({
+      i18nMessage: 'notAllowedToViewProject',
+      params: {
+        name: project?.name,
+      }
+    })
   }
 
   allowedToManage(
