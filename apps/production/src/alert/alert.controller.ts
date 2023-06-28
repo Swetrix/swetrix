@@ -94,11 +94,11 @@ export class AlertController {
 
     const maxAlerts = ACCOUNT_PLANS[user.planCode]?.maxAlerts
 
-    if (!user.isActive) {
+    // if (!user.isActive) {
       throw new ForbiddenException({
         i18nMessage: 'verifyEmail',
       })
-    }
+    // }
 
     const project = await this.projectService.findOneWhere(
       {
