@@ -501,7 +501,9 @@ export class ProjectService {
       return null
     }
 
-    throw new ForbiddenException(message)
+    throw new ForbiddenException({
+      i18nMessage: message,
+    })
   }
 
   async isPIDUnique(pid: string): Promise<boolean> {
