@@ -165,17 +165,17 @@ const checkIfTBAllowed = (
   const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
 
   if (_isEmpty(tbMap)) {
-    throw new PreconditionFailedException({
-      i18nMessage: 'betweenFromToIsGreater',
-    })
+    throw new PreconditionFailedException(
+      "The difference between 'from' and 'to' is greater than allowed",
+    )
   }
 
   const { tb } = tbMap
 
   if (!_includes(tb, timeBucket)) {
-    throw new PreconditionFailedException({
-      i18nMessage: 'specifiedTimeBucketNotAllowed',
-    })
+    throw new PreconditionFailedException(
+      "The specified 'timeBucket' parameter cannot be applied to the date range",
+    )
   }
 }
 
@@ -273,16 +273,16 @@ export class AnalyticsService {
     if (!_isEmpty(origins) && !_isEmpty(origin)) {
       if (origin === 'null') {
         if (!_includes(origins, 'null')) {
-          throw new BadRequestException({
-            i18nMessage: 'originNullNotAllowed',
-          })
+          throw new BadRequestException(
+            "'null' origin is not added to your project's whitelist. To send requests from this origin either add it to your origins policy or leave it empty.",
+          )
         }
       } else {
         const { hostname } = new URL(origin)
         if (!isValidOrigin(origins, hostname)) {
-          throw new BadRequestException({
-            i18nMessage: 'originNotAllowed',
-          })
+          throw new BadRequestException(
+            "This origin is prohibited by the project's origins policy",
+          )
         }
       }
     }
