@@ -1073,9 +1073,14 @@ const ViewProject = ({
           ...filtersPerf,
           ...newFilters,
         ])
+        setFiltersPerf([
+          ...filtersPerf,
+          ...newFilters,
+        ])
         return
       }
 
+      setFiltersPerf(newFilters)
       loadAnalyticsPerf(true, newFilters)
     } else {
       // @ts-ignore
@@ -1106,9 +1111,14 @@ const ViewProject = ({
           ...filters,
           ...newFilters,
         ])
+        setFilters([
+          ...filters,
+          ...newFilters,
+        ])
         return
       }
 
+      setFilters(newFilters)
       loadAnalytics(true, newFilters)
     }
   }
