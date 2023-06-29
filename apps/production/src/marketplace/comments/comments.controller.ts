@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  ConflictException,
+  ForbiddenException,
   Delete,
   Get,
   NotFoundException,
@@ -11,8 +13,10 @@ import {
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { UserService } from '../../user/user.service'
 import { ExtensionsService } from '../extensions/extensions.service'
+import { Auth, CurrentUserId } from '../../auth/decorators'
+import { UserType } from '../../user/entities/user.entity'
 import { CommentsService } from './comments.service'
-import { CreateCommentBodyDto } from './dtos/bodies/create-comment.dto'
+import { CreateCommentBodyDto, ReplyCommentBodyDto } from './dtos/bodies/create-comment.dto'
 import { DeleteCommentParamDto } from './dtos/params/delete-comment.dto'
 import { GetCommentParamDto } from './dtos/params/get-comment.dto'
 import { CreateCommentQueryDto } from './dtos/queries/create-comment.dto'
@@ -63,28 +67,29 @@ export class CommentsController {
     return comment
   }
 
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
   @Post()
   @ApiQuery({ name: 'userId', required: true, type: String })
   async createComment(
     @Query() queries: CreateCommentQueryDto,
     @Body() body: CreateCommentBodyDto,
+    @CurrentUserId() userId: string,
   ): Promise<Comment> {
     const extension = await this.extensionsService.findOne({
       where: { id: body.extensionId },
+      relations: ['owner'],
     })
 
     if (!extension) {
       throw new NotFoundException('Extension not found.')
     }
 
-    const user = await this.userService.findOne(queries.userId)
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
+    if (extension.owner.id === userId) {
+      throw new ConflictException('You cannot comment on your own extension.')
     }
 
     const comment = await this.commentsService.findOne({
-      where: { extensionId: body.extensionId, userId: queries.userId },
+      where: { extensionId: body.extensionId, userId },
     })
 
     if (comment) {
@@ -93,22 +98,65 @@ export class CommentsController {
 
     return this.commentsService.save({
       ...body,
-      extensionId: Number(body.extensionId),
-      userId: Number(queries.userId),
+      extensionId: extension.id,
+      userId,
     })
   }
 
+  @Auth([UserType.CUSTOMER, UserType.ADMIN])
   @Delete(':commentId')
   @ApiParam({ name: 'commentId', required: true, type: String })
-  async deleteComment(@Param() params: DeleteCommentParamDto): Promise<void> {
+  async deleteComment(
+    @Param() params: DeleteCommentParamDto,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
     const comment = await this.commentsService.findOne({
       where: { id: params.commentId },
+      relations: ['user', 'extension', 'extension.owner'],
     })
 
     if (!comment) {
       throw new NotFoundException('Comment not found.')
     }
 
+    const user = await this.userService.findOne(userId)
+
+    if (!user.roles.includes(UserType.ADMIN)) {
+      if (comment.user.id !== userId) {
+        throw new ForbiddenException('You are not allowed to do this.')
+      }
+    }
+
     await this.commentsService.delete(params.commentId)
+  }
+
+  @Auth([UserType.CUSTOMER])
+  @Post(':commentId/reply')
+  @ApiParam({ name: 'commentId', required: true, type: String })
+  async replyToComment(
+    @Param() params: GetCommentParamDto,
+    @Body() body: ReplyCommentBodyDto,
+    @CurrentUserId() userId: string,
+  ): Promise<Comment> {
+    const comment = await this.commentsService.findOne({
+      where: { id: params.commentId },
+      relations: ['extension', 'extension.owner'],
+    })
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found.')
+    }
+
+    if (comment.extension.owner.id !== userId) {
+      throw new ForbiddenException('You are not allowed to do this.')
+    }
+
+    if (comment.reply) {
+      throw new ConflictException('Comment already has a reply.')
+    }
+
+    return await this.commentsService.update(comment.id, {
+      reply: body.reply,
+    })
   }
 }
