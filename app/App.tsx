@@ -27,8 +27,6 @@ import { StateType, useAppDispatch } from 'redux/store'
 import { isBrowser } from 'redux/constants'
 import routesPath from 'routesPath'
 import { getPageMeta } from 'utils/server'
-
-import { getRefreshToken } from 'utils/refreshToken'
 import { authMe } from './api'
 
 const minimalFooterPages = [
@@ -86,12 +84,11 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
   const accessToken = getAccessToken()
-  const refreshToken = getRefreshToken()
   const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
 
   useEffect(() => {
     (async () => {
-      if ((accessToken && refreshToken) && !authenticated) {
+      if (accessToken && !authenticated) {
         try {
           const me = await authMe()
           dispatch(authActions.loginSuccessful(me))
