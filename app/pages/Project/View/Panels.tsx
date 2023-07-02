@@ -855,8 +855,8 @@ const Panel = ({
 }: IPanel): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
-  const total = _size(data)
-  const totalPages = _ceil(total / ENTRIES_PER_PANEL)
+  const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
+  const totalPages = _ceil(_size(data) / ENTRIES_PER_PANEL)
   const entries = useMemo(() => _orderBy(data, 'count', 'desc'), [data])
   const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
   const [activeFragment, setActiveFragment] = useState(0)
