@@ -290,7 +290,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, appliedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(
         filters,
         isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
@@ -315,17 +315,11 @@ export class AnalyticsController {
     let subQuery = `FROM ${
       isCaptcha ? 'captcha' : 'analytics'
     } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    let customEVFilterApplied = false
 
-    if (filtersParams?.ev && !isCaptcha) {
-      customEVFilterApplied = true
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
+    if (customEVFilterApplied && !isCaptcha) {
+      queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
 
-      subQuery = `FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
     const paramsData = {
@@ -424,7 +418,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, appliedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -442,13 +436,9 @@ export class AnalyticsController {
     )
 
     let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    let customEVFilterApplied = false
 
-    if (filtersParams?.ev) {
-      customEVFilterApplied = true
-      subQuery = `FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    if (customEVFilterApplied) {
+      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
     const paramsData = {
