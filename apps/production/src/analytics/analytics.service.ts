@@ -202,7 +202,7 @@ const generateParamsQuery = (
   }
 
   if (isCaptcha) {
-    return `SELECT ${col}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
   if (customEVFilterApplied) {
