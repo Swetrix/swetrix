@@ -1,37 +1,44 @@
-import React, { memo, useState } from 'react'
+import React, { memo, useState, useMemo } from 'react'
 import cx from 'clsx'
 import _map from 'lodash/map'
+import _reduce from 'lodash/reduce'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
 import { PROJECT_TABS } from 'redux/constants'
 import { StateType } from 'redux/store'
-import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, nFormatter } from 'utils/generic'
 
+import { IEntry } from 'redux/models/IEntry'
 import countriesList from 'utils/countries'
 import { useSelector } from 'react-redux'
 
-const InteractiveMap = ({ data, onClickCountry, total }: {
-  data: Record<string, number>
+interface IInteractiveMap {
+  data: IEntry[],
   onClickCountry: (country: string) => void
   total: number
-}) => {
+}
+
+interface ICursorPosition {
+  pageX: number
+  pageY: number
+}
+
+interface IDataHover {
+  countries: string
+  data: number
+}
+
+interface ICountryMap {
+  [key: string]: number
+}
+
+const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [hoverShow, setHoverShow] = useState<boolean>(false)
-  const [dataHover, setDataHover] = useState<{
-    countries: string
-    data: number
-  }>({} as {
-    countries: string
-    data: number
-  })
-  const [cursorPosition, setCursorPosition] = useState<{
-    pageX: number
-    pageY: number
-  }>({} as {
-    pageX: number
-    pageY: number
-  })
+  const [dataHover, setDataHover] = useState<IDataHover>({} as IDataHover)
+  const [cursorPosition, setCursorPosition] = useState<ICursorPosition>({} as ICursorPosition)
+  const countryMap: ICountryMap = useMemo(() => _reduce(data, (prev, curr) => ({ ...prev, [curr.cc || curr.name]: curr.count }), {}), [data])
 
   const projectTab = useSelector((state: StateType) => state.ui.projects.projectTab)
   const isTrafficTab = projectTab === PROJECT_TABS.traffic
@@ -47,14 +54,14 @@ const InteractiveMap = ({ data, onClickCountry, total }: {
     <div className='relative'>
       <svg id='map' viewBox='0 0 1050 650' className='w-full h-full' onMouseMove={onMouseMove}>
         <g>
-          {_map(countriesList, (item, index) => {
-            const ccData = data[index] || 0
+          {_map(countriesList, (key, value) => {
+            const ccData = countryMap[value] || 0
             const perc = ((ccData / total) * 100) || 0
 
             return (
               <path
-                key={index}
-                id={index}
+                key={value}
+                id={value}
                 className={isTrafficTab
                   ? cx({
                     'hover:opacity-90': perc > 0,
@@ -76,13 +83,13 @@ const InteractiveMap = ({ data, onClickCountry, total }: {
                     'fill-[#f74b4b]': ccData >= 10,
                     'cursor-pointer': Boolean(ccData),
                   })}
-                d={item.d}
-                onClick={() => perc !== 0 && onClickCountry(index)}
+                d={key.d}
+                onClick={() => perc !== 0 && onClickCountry(value)}
                 onMouseEnter={() => {
                   if (ccData) {
                     setHoverShow(true)
                     setDataHover({
-                      countries: countries.getName(index, language),
+                      countries: countries.getName(value, language),
                       data: ccData,
                     })
                   }
@@ -115,7 +122,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: {
                 'dark:text-red-400': !isTrafficTab && dataHover.data >= 5,
               })}
             >
-              {isTrafficTab ? dataHover.data : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
+              {isTrafficTab ? nFormatter(dataHover.data, 1) : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
             </strong>
           </div>
         )}
@@ -126,13 +133,16 @@ const InteractiveMap = ({ data, onClickCountry, total }: {
 
 InteractiveMap.propTypes = {
   onClickCountry: PropTypes.func,
-  data: PropTypes.objectOf(PropTypes.number),
+  data: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string,
+    count: PropTypes.number,
+  })),
   total: PropTypes.number,
 }
 
 InteractiveMap.defaultProps = {
-  data: {},
   onClickCountry: () => { },
+  data: [],
   total: 0,
 }
 

@@ -3,7 +3,7 @@ import React, {
 } from 'react'
 import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
 import {
-  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon,
+  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, ArrowLongRightIcon, ArrowLongLeftIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -12,9 +12,10 @@ import _keys from 'lodash/keys'
 import _values from 'lodash/values'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
-import _isFunction from 'lodash/isFunction'
 import _reduce from 'lodash/reduce'
 import _round from 'lodash/round'
+import _ceil from 'lodash/ceil'
+import _orderBy from 'lodash/orderBy'
 import _includes from 'lodash/includes'
 import _floor from 'lodash/floor'
 import _size from 'lodash/size'
@@ -25,6 +26,10 @@ import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
 import Chart from 'ui/Chart'
+import Button from 'ui/Button'
+
+import { IEntry } from 'redux/models/IEntry'
+
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
 import { iconClassName } from './ViewCaptcha.helpers'
@@ -434,12 +439,11 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
+  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
 }: {
   name: string
-  data: any
+  data: IEntry[]
   rowMapper: any
-  valueMapper: any
   capitalize: boolean
   linkContent: boolean
   t: (arg0: string) => string
@@ -450,23 +454,24 @@ const Panel = ({
 }): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
-  const keys = useMemo(() => _keys(data).sort((a, b) => data[b] - data[a]), [data])
-  const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + 5), [keys, currentIndex])
-  const total = useMemo(() => _reduce(keys, (prev, curr) => prev + data[curr], 0), [keys]) // eslint-disable-line
+  const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
+  const totalPages = _ceil(total / ENTRIES_PER_PANEL)
+  const entries = useMemo(() => _orderBy(data, 'count', 'desc'), [data])
+  const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
   const [activeFragment, setActiveFragment] = useState(0)
   const [modal, setModal] = useState(false)
   const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_PANEL)
+  const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
 
   const _onFilter = hideFilters ? () => { } : onFilter
 
   useEffect(() => {
-    const sizeKeys = _size(keys)
+    const sizeKeys = _size(entries)
 
     if (currentIndex > sizeKeys) {
       setPage(_floor(sizeKeys / ENTRIES_PER_PANEL))
     }
-  }, [currentIndex, keys])
+  }, [currentIndex, entries])
 
   useEffect(() => {
     setPage(0)
@@ -520,17 +525,18 @@ const Panel = ({
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')
     const tRatio = t('project.ratio')
-    const mappedData = _map(data, valueMapper)
+    const columns = _map(data, (el) => [el.name, el.count])
+    const values = _map(data, (el) => el.count)
 
     const options = {
       data: {
-        columns: _map(data, (e, index) => [index, e]),
+        columns,
         type: pie(),
       },
       tooltip: {
         contents: {
           text: {
-            QUANTITY: _values(mappedData),
+            QUANTITY: values,
           },
           template: `
             <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
@@ -582,18 +588,21 @@ const Panel = ({
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
           {t('project.noParamData')}
         </p>
-      ) : _map(keysToDisplay, key => {
-        const perc = _round((data[key] / total) * 100, 2)
-        const rowData = _isFunction(rowMapper) ? rowMapper(key) : key
-        const valueData = _isFunction(valueMapper) ? valueMapper(data[key]) : data[key]
+      ) : _map(entriesToDisplay, entry => {
+        const {
+          count, name: entryName,
+        } = entry
+        const perc = _round((count / total) * 100, 2)
+        const rowData = rowMapper(entry)
+        const valueData = count
 
         return (
-          <Fragment key={key}>
+          <Fragment key={entryName}>
             <div
               className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
                 'group hover:bg-gray-100 hover:dark:bg-slate-800 cursor-pointer': !hideFilters,
               })}
-              onClick={() => _onFilter(id, key)}
+              onClick={() => _onFilter(id, entryName)}
             >
               {linkContent ? (
                 <a
@@ -631,35 +640,53 @@ const Panel = ({
         )
       })}
       {/* for pagination in tabs */}
-      {_size(keys) > 5 && (
-        <div className='absolute bottom-0 w-card-toggle-sm sm:w-card-toggle'>
+      {_size(entries) > ENTRIES_PER_PANEL && (
+        <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
-            <span
-              className={cx('text-gray-500 dark:text-gray-200 font-light', {
-                hoverable: canGoPrev(),
-                disabled: !canGoPrev(),
-              })}
-              role='button'
-              onClick={onPrevious}
-              tabIndex={0}
-            >
-              &lt;
-              &nbsp;
-              {t('project.prev')}
-            </span>
-            <span
-              className={cx('text-gray-500 dark:text-gray-200 font-light', {
-                hoverable: canGoNext(),
-                disabled: !canGoNext(),
-              })}
-              role='button'
-              onClick={onNext}
-              tabIndex={0}
-            >
-              {t('project.next')}
-              &nbsp;
-              &gt;
-            </span>
+            <div>
+              <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
+                {_size(entries)}
+                {' '}
+                {t('project.results')}
+              </span>
+              <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
+                .
+                {' '}
+                {t('project.page')}
+                {' '}
+                {page + 1}
+                {' '}
+                /
+                {' '}
+                {totalPages}
+              </span>
+            </div>
+            <div className='flex justify-between w-[4.5rem]'>
+              <Button
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
+                  'opacity-50 cursor-not-allowed': !canGoPrev(),
+                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                })}
+                type='button'
+                onClick={onPrevious}
+                disabled={!canGoPrev()}
+                focus={false}
+              >
+                <ArrowLongLeftIcon className='w-5 h-5' />
+              </Button>
+              <Button
+                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
+                  'opacity-50 cursor-not-allowed': !canGoNext(),
+                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                })}
+                onClick={onNext}
+                disabled={!canGoNext()}
+                type='button'
+                focus={false}
+              >
+                <ArrowLongRightIcon className='w-5 h-5' />
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -672,7 +699,6 @@ Panel.propTypes = {
   data: PropTypes.objectOf(PropTypes.number).isRequired,
   id: PropTypes.string,
   rowMapper: PropTypes.func,
-  valueMapper: PropTypes.func,
   onFilter: PropTypes.func,
   capitalize: PropTypes.bool,
   linkContent: PropTypes.bool,
@@ -682,8 +708,7 @@ Panel.propTypes = {
 
 Panel.defaultProps = {
   id: null,
-  rowMapper: null,
-  valueMapper: null,
+  rowMapper: (row: IEntry): string => row.name,
   capitalize: false,
   linkContent: false,
   onFilter: () => { },

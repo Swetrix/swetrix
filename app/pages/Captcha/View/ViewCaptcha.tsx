@@ -801,14 +801,14 @@ const ViewProject = ({
                     return (
                       <Panel
                         t={t}
-                        key={type}
                         icon={panelIcon}
                         id={type}
+                        key={type}
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
-                        rowMapper={(rowName) => (
-                          <CCRow rowName={rowName} language={language} />
+                        rowMapper={({ name: entryName, cc }) => (
+                          <CCRow cc={cc} name={entryName} language={language} />
                         )}
                       />
                     )
@@ -839,8 +839,8 @@ const ViewProject = ({
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
-                        rowMapper={(rowName) => (
-                          <RefRow rowName={rowName} showIcons={showIcons} />
+                        rowMapper={({ name: entryName }) => (
+                          <RefRow rowName={entryName} showIcons={showIcons} />
                         )}
                       />
                     )
