@@ -615,20 +615,21 @@ export class AnalyticsService {
     const params = {}
     let parsed = []
     let query = ''
+    let customEVFilterApplied = false
 
     if (_isEmpty(filters)) {
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     try {
       parsed = JSON.parse(filters)
     } catch (e) {
       console.error(`Cannot parse the filters array: ${filters}`)
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     if (_isEmpty(parsed)) {
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     if (!_isArray(parsed)) {
@@ -647,7 +648,9 @@ export class AnalyticsService {
       (prev, curr) => {
         const { column, filter, isExclusive = false } = curr
 
-        if (!_includes(SUPPORTED_COLUMNS, column)) {
+        if (column === 'ev') {
+          customEVFilterApplied = true
+        } else if (!_includes(SUPPORTED_COLUMNS, column)) {
           throw new UnprocessableEntityException(
             `The provided filter (${column}) is not supported`,
           )
@@ -697,7 +700,12 @@ export class AnalyticsService {
       query += ')'
     }
 
-    return [query, params, this.postProcessParsedFilters(parsed)]
+    return [
+      query,
+      params,
+      this.postProcessParsedFilters(parsed),
+      customEVFilterApplied,
+    ]
   }
 
   validateTimebucket(tb: TimeBucketType): void {
@@ -1096,7 +1104,6 @@ export class AnalyticsService {
   generateCustomEventsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    paramsData: any,
     safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
@@ -1112,8 +1119,7 @@ export class AnalyticsService {
         SELECT *,
         ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM customEV
-        WHERE ${paramsData.params.ev_exclusive ? 'NOT' : ''} ev = {ev:String}
-          AND pid = {pid:FixedString(12)}
+        WHERE pid = {pid:FixedString(12)}
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
@@ -1282,7 +1288,6 @@ export class AnalyticsService {
       const query = this.generateCustomEventsAggregationQuery(
         timeBucket,
         filtersQuery,
-        paramsData,
         safeTimezone,
       )
 
