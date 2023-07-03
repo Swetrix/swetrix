@@ -25,6 +25,7 @@ import {
   createProject, updateProject, deleteCaptchaProject, resetCaptchaProject, reGenerateCaptchaSecretKey, getProjectsNames, createCaptchaInherited,
 } from 'api'
 import Input from 'ui/Input'
+import Loader from 'ui/Loader'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
@@ -58,11 +59,7 @@ interface IForm extends Partial<ICaptchaProject> {
   ipBlacklist?: string | null | string[]
 }
 
-const CaptchaSettings = ({
-  updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
-  loadProjects, isLoading, projects, showError, removeProject, user,
-  deleteProjectCache, analyticsProjects,
-}: {
+interface ICaptchaSettings {
   updateProjectFailed: (error: string) => void,
   createNewProjectFailed: (error: string) => void,
   newProject: (message: string) => void,
@@ -76,7 +73,14 @@ const CaptchaSettings = ({
   user: IUser,
   deleteProjectCache: (pid: string) => void,
   analyticsProjects: IProject[],
-}): JSX.Element => {
+  loading: boolean,
+}
+
+const CaptchaSettings = ({
+  updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
+  loadProjects, isLoading, projects, showError, removeProject, user,
+  deleteProjectCache, analyticsProjects, loading,
+}: ICaptchaSettings): JSX.Element => {
   const { t }: {
     t: (key: string, options?: {
       [key: string]: string | number | boolean | undefined
@@ -118,6 +122,10 @@ const CaptchaSettings = ({
   const copyTimerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (loading) {
+      return
+    }
+
     if (!user.isActive && !isSelfhosted) {
       showError(t('project.captcha.settings.verify'))
       navigate(routes.dashboard)
@@ -135,7 +143,7 @@ const CaptchaSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t])
+  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t, loading])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
@@ -334,6 +342,10 @@ const CaptchaSettings = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab])
+
+  if (loading) {
+    return <Loader />
+  }
 
   return (
     <div

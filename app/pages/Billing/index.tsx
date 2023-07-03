@@ -15,6 +15,7 @@ import {
   isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping, isBrowser,
 } from 'redux/constants'
 import { loadScript } from 'utils/generic'
+import Loader from 'ui/Loader'
 import { useAppDispatch, StateType } from 'redux/store'
 import routes from 'routesPath'
 import sagaActions from 'redux/sagas/actions'
@@ -34,8 +35,8 @@ interface IBilling {
 const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
   const { metainfo, usageinfo } = useSelector((state: StateType) => state.ui.misc)
-  const { user }: {
-    user: IUser
+  const { user, loading }: {
+    user: IUser, loading: boolean,
   } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
   const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
@@ -179,7 +180,7 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
   }
 
   return (
-    <div className='bg-gray-50 dark:bg-slate-900'>
+    <div className='bg-gray-50 dark:bg-slate-900 min-h-page'>
       <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
         <div className='flex justify-between flex-wrap gap-y-2 mb-4'>
           <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
@@ -246,53 +247,59 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
             </span>
           </div>
         )}
-        <Pricing authenticated={authenticated} t={t} language={language} />
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
-          <Trans
-            // @ts-ignore
-            t={t}
-            i18nKey='billing.contact'
-            values={{ email: CONTACT_EMAIL }}
-            // @ts-ignore
-            components={{
-              mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
-              amount: 5,
-            }}
-          />
-        </p>
-        <h2 id='usage' className='mt-5 text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
-          {t('billing.planUsage')}
-        </h2>
-        <p className='mt-1 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          {t('billing.usageOverview', {
-            tracked: usageinfo.total,
-            trackedPerc: totalUsage,
-            maxEvents: maxEventsCount,
-          })}
-        </p>
-        <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          {t('billing.breakdown')}
-          <ul className='list-disc list-inside'>
-            <li>
-              {t('billing.pageviews', {
-                quantity: usageinfo.traffic,
-                percentage: usageinfo.trafficPerc,
+        {loading ? (
+          <Loader />
+        ) : (
+          <>
+            <Pricing authenticated={authenticated} t={t} language={language} />
+            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
+              <Trans
+                // @ts-ignore
+                t={t}
+                i18nKey='billing.contact'
+                values={{ email: CONTACT_EMAIL }}
+                // @ts-ignore
+                components={{
+                  mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
+                  amount: 5,
+                }}
+              />
+            </p>
+            <h2 id='usage' className='mt-5 text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
+              {t('billing.planUsage')}
+            </h2>
+            <p className='mt-1 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+              {t('billing.usageOverview', {
+                tracked: usageinfo.total,
+                trackedPerc: totalUsage,
+                maxEvents: maxEventsCount,
               })}
-            </li>
-            <li>
-              {t('billing.customEvents', {
-                quantity: usageinfo.customEvents,
-                percentage: usageinfo.customEventsPerc,
-              })}
-            </li>
-            <li>
-              {t('billing.captcha', {
-                quantity: usageinfo.captcha,
-                percentage: usageinfo.captchaPerc,
-              })}
-            </li>
-          </ul>
-        </div>
+            </p>
+            <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+              {t('billing.breakdown')}
+              <ul className='list-disc list-inside'>
+                <li>
+                  {t('billing.pageviews', {
+                    quantity: usageinfo.traffic,
+                    percentage: usageinfo.trafficPerc,
+                  })}
+                </li>
+                <li>
+                  {t('billing.customEvents', {
+                    quantity: usageinfo.customEvents,
+                    percentage: usageinfo.customEventsPerc,
+                  })}
+                </li>
+                <li>
+                  {t('billing.captcha', {
+                    quantity: usageinfo.captcha,
+                    percentage: usageinfo.captchaPerc,
+                  })}
+                </li>
+              </ul>
+            </div>
+          </>
+        )}
       </div>
       <Modal
         onClose={() => {

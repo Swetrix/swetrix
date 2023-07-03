@@ -573,10 +573,10 @@ const NotAuthedHeader = ({
 
 interface IHeader {
   ssrTheme: 'dark' | 'light'
-  ssrAuthenticated: boolean
+  authenticated: boolean
 }
 
-const Header: React.FC<IHeader> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
+const Header: React.FC<IHeader> = ({ ssrTheme, authenticated }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null
@@ -585,13 +585,12 @@ const Header: React.FC<IHeader> = ({ ssrTheme, ssrAuthenticated }): JSX.Element 
   } = useTranslation('common')
   const dispatch = useAppDispatch()
   const _dispatch = useDispatch()
-  const { authenticated: reduxAuthenticated, user } = useSelector((state: StateType) => state.auth)
+  const { user } = useSelector((state: StateType) => state.auth)
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { pathname } = useLocation()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
   const theme = isBrowser ? reduxTheme : ssrTheme
-  const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
 
   const [rawStatus, status] = useMemo(() => {
     const { trialEndDate } = (user || {})

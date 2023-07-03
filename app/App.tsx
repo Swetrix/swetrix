@@ -84,22 +84,25 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
   const accessToken = getAccessToken()
-  const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
+  const authenticated = isBrowser
+    ? (loading ? !!accessToken : reduxAuthenticated)
+    : ssrAuthenticated
 
   useEffect(() => {
     (async () => {
-      if (accessToken && !authenticated) {
+      if (accessToken && !reduxAuthenticated) {
         try {
           const me = await authMe()
           dispatch(authActions.loginSuccessful(me))
-          dispatch(authActions.finishLoading())
         } catch (e) {
           dispatch(authActions.logout())
           dispatch(sagaActions.logout(false, false))
         }
       }
+
+      dispatch(authActions.finishLoading())
     })()
-  }, [authenticated]) // eslint-disable-line
+  }, [reduxAuthenticated]) // eslint-disable-line
 
   useEffect(() => {
     if (error) {
@@ -133,27 +136,23 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
 
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
-  if (!accessToken || !loading) {
-    return (
-      // eslint-disable-next-line react/jsx-no-useless-fragment
-      <Suspense fallback={<></>}>
-        {pathname !== routesPath.main && (
-          <Header ssrTheme={ssrTheme} ssrAuthenticated={ssrAuthenticated} />
-        )}
-        {/* @ts-ignore */}
-        <ScrollToTop>
-          <Selfhosted>
-            <Suspense fallback={<Fallback isMinimalFooter={isMinimalFooter} />}>
-              <Outlet />
-            </Suspense>
-          </Selfhosted>
-        </ScrollToTop>
-        <Footer minimal={isMinimalFooter} authenticated={authenticated} />
-      </Suspense>
-    )
-  }
-
-  return null
+  return (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    <Suspense fallback={<></>}>
+      {pathname !== routesPath.main && (
+        <Header ssrTheme={ssrTheme} authenticated={authenticated} />
+      )}
+      {/* @ts-ignore */}
+      <ScrollToTop>
+        <Selfhosted>
+          <Suspense fallback={<Fallback isMinimalFooter={isMinimalFooter} />}>
+            <Outlet />
+          </Suspense>
+        </Selfhosted>
+      </ScrollToTop>
+      <Footer minimal={isMinimalFooter} authenticated={authenticated} />
+    </Suspense>
+  )
 }
 
 export default App

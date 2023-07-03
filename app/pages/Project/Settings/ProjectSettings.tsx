@@ -32,6 +32,7 @@ import {
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
+import Loader from 'ui/Loader'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import FlatPicker from 'ui/Flatpicker'
@@ -224,11 +225,7 @@ interface IForm extends Partial<IProject> {
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
-const ProjectSettings = ({
-  updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
-  loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
-  deleteProjectCache, setProjectProtectedPassword, dashboardPaginationPage, dashboardPaginationPageShared,
-}: {
+interface IProjectSettings {
   updateProjectFailed: (message: string) => void,
   createNewProjectFailed: (message: string) => void,
   generateAlerts: (message: string) => void,
@@ -246,7 +243,14 @@ const ProjectSettings = ({
   setProjectProtectedPassword: (pid: string, password: string) => void,
   dashboardPaginationPage: number,
   dashboardPaginationPageShared: number,
-}) => {
+  loading: boolean,
+}
+
+const ProjectSettings = ({
+  updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
+  loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
+  deleteProjectCache, setProjectProtectedPassword, dashboardPaginationPage, dashboardPaginationPageShared, loading,
+}: IProjectSettings) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null
@@ -297,6 +301,10 @@ const ProjectSettings = ({
   const paginationSkip: number = isSharedProject ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
 
   useEffect(() => {
+    if (loading) {
+      return
+    }
+
     if (!user.isActive && !isSelfhosted) {
       showError(t('project.settings.verify'))
       navigate(routes.dashboard)
@@ -314,7 +322,7 @@ const ProjectSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t])
+  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t, loading])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
@@ -511,6 +519,10 @@ const ProjectSettings = ({
 
     document.title = pageTitle
   }, [form, t, isSettings])
+
+  if (loading) {
+    return <Loader />
+  }
 
   return (
     <div

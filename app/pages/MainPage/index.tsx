@@ -16,6 +16,7 @@ import _reduce from 'lodash/reduce'
 import _isEmpty from 'lodash/isEmpty'
 
 import routesPath from 'routesPath'
+import { getAccessToken } from 'utils/accessToken'
 import { nFormatterSeparated } from 'utils/generic'
 import {
   GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser, BLOG_URL,
@@ -153,10 +154,16 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
     },
   } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
+  const {
+    authenticated: reduxAuthenticated,
+    loading,
+  } = useSelector((state: StateType) => state.auth)
   const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
   const theme = isBrowser ? reduxTheme : ssrTheme
-  const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
+  const accessToken = getAccessToken()
+  const authenticated = isBrowser
+    ? (loading ? !!accessToken : reduxAuthenticated)
+    : ssrAuthenticated
 
   const events = nFormatterSeparated(Number(stats.events))
   const users = nFormatterSeparated(Number(stats.users))
@@ -203,7 +210,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               }}
             />
           </div>
-          <Header ssrTheme={ssrTheme} ssrAuthenticated={ssrAuthenticated} />
+          <Header ssrTheme={ssrTheme} authenticated={authenticated} />
           <div className='flex justify-center items-center py-2 px-2'>
             <a
               href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi'

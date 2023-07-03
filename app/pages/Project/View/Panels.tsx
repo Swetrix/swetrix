@@ -228,7 +228,7 @@ const PanelContainer = ({
 )
 
 PanelContainer.propTypes = {
-  name: PropTypes.oneOf([
+  name: PropTypes.oneOfType([
     PropTypes.string, PropTypes.node,
   ]).isRequired,
   children: PropTypes.node.isRequired,
@@ -1195,10 +1195,13 @@ const Panel = ({
 }
 
 Panel.propTypes = {
-  name: PropTypes.oneOf([
+  name: PropTypes.oneOfType([
     PropTypes.string.isRequired, PropTypes.node,
   ]).isRequired,
-  data: PropTypes.objectOf(PropTypes.number).isRequired,
+  data: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string,
+    count: PropTypes.number,
+  })).isRequired,
   id: PropTypes.string,
   rowMapper: PropTypes.func,
   valueMapper: PropTypes.func,

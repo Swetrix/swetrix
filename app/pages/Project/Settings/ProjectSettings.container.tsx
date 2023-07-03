@@ -12,6 +12,7 @@ const mapStateToProps = (state: StateType) => ({
   projects: state.ui.projects.projects,
   sharedProjects: state.ui.projects.sharedProjects,
   isLoading: state.ui.projects.isLoading,
+  loading: state.auth.loading,
   dashboardPaginationPage: state.ui.projects.dashboardPaginationPage,
   dashboardPaginationPageShared: state.ui.projects.dashboardPaginationPageShared,
   user: state.auth.user,

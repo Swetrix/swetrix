@@ -2,11 +2,12 @@ import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from '@remix-run/react'
 
+import { getAccessToken } from 'utils/accessToken'
 import { StateType } from 'redux/store'
 import routes from 'routesPath'
 
 type AuthParamType = {
-  selector: (state: StateType) => boolean,
+  shouldBeAuthenticated: boolean
   redirectPath: string
 }
 
@@ -16,27 +17,36 @@ type PropsType = {
 
 export const auth = {
   authenticated: {
-    selector: (state: StateType) => state.auth.authenticated,
+    shouldBeAuthenticated: true,
     redirectPath: routes.signin,
   },
   notAuthenticated: {
-    selector: (state: StateType) => !state.auth.authenticated,
+    shouldBeAuthenticated: false,
     redirectPath: routes.dashboard,
   },
 }
 
 export const withAuthentication = <P extends PropsType>(WrappedComponent: any, authParam: AuthParamType) => {
+  const accessToken = getAccessToken()
+
   const WithAuthentication = (props: P) => {
-    const selector = useSelector(authParam.selector)
+    const {
+      shouldBeAuthenticated, redirectPath,
+    } = authParam
+    const {
+      authenticated: reduxAuthenticated,
+      loading,
+    } = useSelector((state: StateType) => state.auth)
     const navigate = useNavigate()
+    const authenticated = loading ? !!accessToken : reduxAuthenticated
 
     useEffect(() => {
-      if (!selector) {
-        navigate(authParam.redirectPath)
+      if (shouldBeAuthenticated !== authenticated) {
+        navigate(redirectPath)
       }
     // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selector])
+    }, [authenticated, shouldBeAuthenticated])
 
     // if (!selector) {
     //   return null

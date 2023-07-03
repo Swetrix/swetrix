@@ -10,6 +10,7 @@ const mapStateToProps = (state: StateType) => ({
   projects: state.ui.projects.captchaProjects,
   analyticsProjects: state.ui.projects.projects,
   isLoading: state.ui.projects.isLoadingCaptcha,
+  loading: state.auth.loading,
   user: state.auth.user,
 })
 

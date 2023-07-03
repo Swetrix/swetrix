@@ -35,7 +35,9 @@ import { useChangeLanguage } from 'remix-i18next'
 import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
 import { detectLanguage } from 'i18n'
-import { detectTheme, getPageMeta, isAuthenticated } from 'utils/server'
+import {
+  detectTheme, getPageMeta, isAuthenticated,
+} from 'utils/server'
 
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
@@ -91,17 +93,6 @@ export const headers: HeadersFunction = () => ({
   'X-Powered-By': 'Mountain Dew',
   'X-XSS-Protection': '1; mode=block',
 })
-
-// const removeObsoleteAuthTokens = () => {
-//   const accessToken = getAccessToken()
-//   const refreshToken = getRefreshToken()
-
-//   if (accessToken && !refreshToken) {
-//     removeAccessToken()
-//   }
-// }
-
-// removeObsoleteAuthTokens()
 
 export function ErrorBoundary() {
   const error = useRouteError()
