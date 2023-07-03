@@ -255,7 +255,6 @@ export class AnalyticsController {
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
-    isCaptcha = false,
   ): Promise<any> {
     const {
       pid,
@@ -273,11 +272,8 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] =
-      this.analyticsService.getFiltersQuery(
-        filters,
-        isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
-      )
+    const [filtersQuery, filtersParams, parsedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
@@ -291,20 +287,12 @@ export class AnalyticsController {
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-    let subQuery = `FROM ${
-      isCaptcha ? 'captcha' : 'analytics'
-    } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    let customEVFilterApplied = false
+    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
-    if (filtersParams?.ev && !isCaptcha) {
-      customEVFilterApplied = true
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
+    if (customEVFilterApplied) {
+      queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
 
-      subQuery = `FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
     const paramsData = {
@@ -316,38 +304,17 @@ export class AnalyticsController {
       },
     }
 
-    let result: object | void
-
-    if (isCaptcha) {
-      result = await this.analyticsService.groupCaptchaByTimeBucket(
-        timeBucket,
-        groupFrom,
-        groupTo,
-        subQuery,
-        filtersQuery,
-        paramsData,
-        safeTimezone,
-      )
-    } else {
-      result = await this.analyticsService.groupByTimeBucket(
-        timeBucket,
-        groupFrom,
-        groupTo,
-        subQuery,
-        filtersQuery,
-        paramsData,
-        safeTimezone,
-        customEVFilterApplied,
-        parsedFilters,
-      )
-    }
-
-    if (isCaptcha) {
-      return {
-        ...result,
-        appliedFilters: parsedFilters,
-      }
-    }
+    const result = await this.analyticsService.groupByTimeBucket(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      subQuery,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      customEVFilterApplied,
+      parsedFilters,
+    )
 
     const customs = await this.analyticsService.processCustomEV(
       queryCustoms,
@@ -383,7 +350,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, parsedFilters] =
+    const [filtersQuery, filtersParams, parsedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -397,13 +364,9 @@ export class AnalyticsController {
     await this.analyticsService.checkProjectAccess(pid, uid)
 
     let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    let customEVFilterApplied = false
 
-    if (filtersParams?.ev) {
-      customEVFilterApplied = true
-      subQuery = `FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    if (customEVFilterApplied) {
+      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
     const paramsData = {
@@ -553,15 +516,6 @@ export class AnalyticsController {
     }
   }
 
-  @Get('captcha')
-  @Auth([], true, true)
-  async getCaptchaData(
-    @Query() data: AnalyticsGET_DTO,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    return this.getData(data, uid, true)
-  }
-
   @Get('user-flow')
   @Auth([], true, true)
   async getUserFlow(
@@ -622,26 +576,6 @@ export class AnalyticsController {
     await Promise.all(validationPromises)
 
     return this.analyticsService.getSummary(pidsArray, 'w')
-  }
-
-  @Get('captcha/birdseye')
-  @Auth([], true, true)
-  // returns overall short statistics per CAPTCHA project
-  async getCaptchaOverallStats(
-    @Query() data,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    const { pids, pid } = data
-    const pidsArray = getPIDsArray(pids, pid)
-
-    const validationPromises = _map(pidsArray, async currentPID => {
-      this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
-    })
-
-    await Promise.all(validationPromises)
-
-    return this.analyticsService.getCaptchaSummary(pidsArray, 'w')
   }
 
   @Get('hb')

@@ -84,7 +84,6 @@ const GMT_0_TIMEZONES = [
 
 const cols = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
 
-const captchaColumns = ['cc', 'br', 'os', 'dv']
 const perfColumns = ['cc', 'pg', 'dv', 'br']
 
 const validPeriods = [
@@ -179,32 +178,36 @@ const generateParamsQuery = (
   subQuery: string,
   customEVFilterApplied: boolean,
   isPageInclusiveFilterSet: boolean,
-  isCaptcha?: boolean,
   isPerformance?: boolean,
 ): string => {
-  if (isPerformance) {
-    return `SELECT ${col}, avg(pageLoad) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  let columns = [`${col} as name`]
+
+  // For regions and cities we'll return an array of objects, that will also include the country code
+  // We need the conutry code to display the flag next to the region/city name
+  if (col === 'rg' || col === 'ct') {
+    columns = [...columns, 'cc']
   }
 
-  if (isCaptcha) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  const columnsQuery = columns.join(', ')
+
+  if (isPerformance) {
+    return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (col === 'pg' || isPageInclusiveFilterSet) {
-    return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  return `SELECT ${col}, count(*) ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${col}`
+  return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${columnsQuery}`
 }
 
 export enum DataType {
   ANALYTICS = 'analytics',
   PERFORMANCE = 'performance',
-  CAPTCHA = 'captcha',
 }
 
 const isValidOrigin = (origins: string[], origin: string) => {
@@ -353,11 +356,7 @@ export class AnalyticsService {
       return cols
     }
 
-    if (dataType === DataType.PERFORMANCE) {
-      return perfColumns
-    }
-
-    return captchaColumns
+    return perfColumns
   }
 
   getGroupFromTo(
@@ -615,20 +614,21 @@ export class AnalyticsService {
     const params = {}
     let parsed = []
     let query = ''
+    let customEVFilterApplied = false
 
     if (_isEmpty(filters)) {
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     try {
       parsed = JSON.parse(filters)
     } catch (e) {
       console.error(`Cannot parse the filters array: ${filters}`)
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     if (_isEmpty(parsed)) {
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     if (!_isArray(parsed)) {
@@ -647,7 +647,9 @@ export class AnalyticsService {
       (prev, curr) => {
         const { column, filter, isExclusive = false } = curr
 
-        if (!_includes(SUPPORTED_COLUMNS, column)) {
+        if (column === 'ev') {
+          customEVFilterApplied = true
+        } else if (!_includes(SUPPORTED_COLUMNS, column)) {
           throw new UnprocessableEntityException(
             `The provided filter (${column}) is not supported`,
           )
@@ -697,7 +699,12 @@ export class AnalyticsService {
       query += ')'
     }
 
-    return [query, params, this.postProcessParsedFilters(parsed)]
+    return [
+      query,
+      params,
+      this.postProcessParsedFilters(parsed),
+      customEVFilterApplied,
+    ]
   }
 
   validateTimebucket(tb: TimeBucketType): void {
@@ -722,13 +729,9 @@ export class AnalyticsService {
     return this.getSummaryStats(pids, 'analytics', period, amountToSubtract)
   }
 
-  async getCaptchaSummary(pids: string[], period: 'w' | 'M' = 'w') {
-    return this.getSummaryStats(pids, 'captcha', period)
-  }
-
   async getSummaryStats(
     pids: string[],
-    tableName: 'analytics' | 'captcha',
+    tableName: 'analytics',
     period: 'w' | 'M' = 'w',
     amountToSubtract = 1,
   ) {
@@ -826,27 +829,21 @@ export class AnalyticsService {
     subQuery: string,
     customEVFilterApplied: boolean,
     paramsData: any,
-    isCaptcha: boolean,
     isPerformance: boolean,
   ): Promise<any> {
     const params = {}
 
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet =
-      isCaptcha || isPerformance
-        ? false
-        : !_isEmpty(
-            _find(
-              parsedFilters,
-              filter => filter.column === 'pg' && !filter.isExclusive,
-            ),
-          )
+    const isPageInclusiveFilterSet = isPerformance
+      ? false
+      : !_isEmpty(
+          _find(
+            parsedFilters,
+            filter => filter.column === 'pg' && !filter.isExclusive,
+          ),
+        )
 
     let columns = cols
-
-    if (isCaptcha) {
-      columns = captchaColumns
-    }
 
     if (isPerformance) {
       columns = perfColumns
@@ -858,7 +855,6 @@ export class AnalyticsService {
         subQuery,
         customEVFilterApplied,
         isPageInclusiveFilterSet,
-        isCaptcha,
         isPerformance,
       )
       const res = await clickhouse.query(query, paramsData).toPromise()
@@ -1096,7 +1092,6 @@ export class AnalyticsService {
   generateCustomEventsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    paramsData: any,
     safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
@@ -1112,8 +1107,7 @@ export class AnalyticsService {
         SELECT *,
         ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM customEV
-        WHERE ${paramsData.params.ev_exclusive ? 'NOT' : ''} ev = {ev:String}
-          AND pid = {pid:FixedString(12)}
+        WHERE pid = {pid:FixedString(12)}
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
@@ -1146,34 +1140,6 @@ export class AnalyticsService {
         SELECT *,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM performance
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
-          ${filtersQuery}
-      ) as subquery
-      GROUP BY ${groupBy}
-      ORDER BY ${groupBy}
-      `
-  }
-
-  generateCaptchaAggregationQuery(
-    timeBucket: TimeBucketType,
-    filtersQuery: string,
-    safeTimezone: string,
-  ): string {
-    const timeBucketFunc = timeBucketConversion[timeBucket]
-    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
-
-    return `
-      SELECT
-        ${selector},
-        count() as count
-      FROM (
-        SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
-        FROM captcha
         WHERE
           pid = {pid:FixedString(12)}
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
@@ -1258,7 +1224,6 @@ export class AnalyticsService {
       customEVFilterApplied,
       paramsData,
       false,
-      false,
     )
   }
 
@@ -1282,7 +1247,6 @@ export class AnalyticsService {
       const query = this.generateCustomEventsAggregationQuery(
         timeBucket,
         filtersQuery,
-        paramsData,
         safeTimezone,
       )
 
@@ -1326,90 +1290,6 @@ export class AnalyticsService {
         sdur,
       },
       avgSdur,
-    })
-  }
-
-  extractCaptchaChartData(result, x: string[]): any {
-    const count = Array(x.length).fill(0)
-
-    for (let row = 0; row < _size(result); ++row) {
-      const dateString = this.generateDateString(result[row])
-
-      const index = x.indexOf(dateString)
-
-      if (index !== -1) {
-        count[index] = result[row].count
-      }
-    }
-
-    return {
-      count,
-    }
-  }
-
-  async groupCaptchaByTimeBucket(
-    timeBucket: TimeBucketType,
-    from: string,
-    to: string,
-    subQuery: string,
-    filtersQuery: string,
-    paramsData: object,
-    safeTimezone: string,
-  ): Promise<object | void> {
-    let params: unknown = {}
-    let chart: unknown = {}
-
-    const promises = [
-      // Getting params
-      (async () => {
-        params = await this.generateParams(
-          null,
-          subQuery,
-          false,
-          paramsData,
-          true,
-          false,
-        )
-
-        if (!_some(_values(params), val => !_isEmpty(val))) {
-          throw new BadRequestException(
-            'The are no parameters for the specified time frames',
-          )
-        }
-      })(),
-
-      // Getting CAPTCHA chart data
-      (async () => {
-        const { xShifted } = this.generateXAxis(
-          timeBucket,
-          from,
-          to,
-          safeTimezone,
-        )
-
-        const query = this.generateCaptchaAggregationQuery(
-          timeBucket,
-          filtersQuery,
-          safeTimezone,
-        )
-
-        const result = <Array<TrafficCEFilterCHResponse>>(
-          await clickhouse.query(query, paramsData).toPromise()
-        )
-        const { count } = this.extractCaptchaChartData(result, xShifted)
-
-        chart = {
-          x: xShifted,
-          results: count,
-        }
-      })(),
-    ]
-
-    await Promise.all(promises)
-
-    return Promise.resolve({
-      params,
-      chart,
     })
   }
 
@@ -1495,7 +1375,6 @@ export class AnalyticsService {
           subQuery,
           false,
           paramsData,
-          false,
           true,
         )
 
