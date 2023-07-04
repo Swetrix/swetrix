@@ -10,3 +10,10 @@ services:
       CLICKHOUSE_DB: 'analytics'
     ports:
       - 8123:8123
+  mysql:
+    image: mysql:8.0.33
+    environment:
+      MYSQL_DATABASE: 'analytics'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - 3306:3306
