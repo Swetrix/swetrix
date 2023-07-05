@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { PaddleSDK } from 'paddle-sdk'
 import { Repository } from 'typeorm'
 import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -8,7 +9,12 @@ import * as _omit from 'lodash/omit'
 import * as _isNull from 'lodash/isNull'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { User, ACCOUNT_PLANS, TRIAL_DURATION } from './entities/user.entity'
+import {
+  User,
+  ACCOUNT_PLANS,
+  TRIAL_DURATION,
+  BillingFrequency,
+} from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
@@ -54,6 +60,11 @@ const CURRENCY_BY_COUNTRY = {
   SK: EUR, // Slovakia
   US: USD, // United States
 }
+
+const paddleSDK = new PaddleSDK(
+  process.env.PADDLE_VENDOR_ID,
+  process.env.PADDLE_API_KEY,
+)
 
 @Injectable()
 export class UserService {
@@ -286,5 +297,64 @@ export class UserService {
 
   getCurrencyByCountry(country: string) {
     return CURRENCY_BY_COUNTRY[country] || USD
+  }
+
+  getPlanById(planId: number) {
+    if (!planId) {
+      return null
+    }
+
+    const stringifiedPlanId = String(planId)
+
+    const plan = Object.values(ACCOUNT_PLANS).find(
+      tier =>
+        // @ts-ignore
+        tier.pid === stringifiedPlanId ||
+        // @ts-ignore
+        tier.ypid === stringifiedPlanId,
+    )
+
+    if (plan) {
+      const planCode = plan.id
+      // @ts-ignore
+      const billingFrequency =
+        plan?.pid === planId
+          ? BillingFrequency.Monthly
+          : BillingFrequency.Yearly
+
+      return {
+        planCode,
+        billingFrequency,
+      }
+    }
+
+    return null
+  }
+
+  async updateSubscription(id: string, planID: number) {
+    const user = await this.findOneWhere({ id })
+    const plan = this.getPlanById(planID)
+
+    if (!plan) {
+      throw new BadRequestException('Plan not found')
+    }
+
+    const { planCode, billingFrequency } = plan
+
+    if (
+      user.planCode === planCode &&
+      user.billingFrequency === billingFrequency
+    ) {
+      throw new BadRequestException('You are already subscribed to this plan')
+    }
+
+    await paddleSDK.updateSubscription(Number(user.subID), {
+      planID,
+      prorate: true,
+      currency: user.tierCurrency,
+      passthrough: JSON.stringify({
+        uid: user.id,
+      }),
+    })
   }
 }
