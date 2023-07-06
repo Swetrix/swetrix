@@ -186,8 +186,8 @@ export class AuthService {
     }
 
     if (user && user.isTelegramChatIdConfirmed) {
-      await this.telegramService.sendMessage(
-        Number(user.telegramChatId),
+      await this.telegramService.addMessage(
+        user.telegramChatId,
         '⚠️ *Someone has tried to login to their account with an incorrect password.*',
         { parse_mode: 'Markdown' },
       )
@@ -239,13 +239,9 @@ export class AuthService {
       `*Date:* ${loginDate} (UTC)\n\n` +
       'If it was not you, please change your password immediately.'
     if (user && user.isTelegramChatIdConfirmed) {
-      await this.telegramService.sendMessage(
-        Number(user.telegramChatId),
-        message,
-        {
-          parse_mode: 'Markdown',
-        },
-      )
+      await this.telegramService.addMessage(user.telegramChatId, message, {
+        parse_mode: 'Markdown',
+      })
     }
   }
 
