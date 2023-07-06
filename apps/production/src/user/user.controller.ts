@@ -687,4 +687,17 @@ export class UserController {
 
     await this.userService.updateSubscription(id, planId)
   }
+
+  @Post('preview-plan')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async previewPlan(
+    @CurrentUserId() id: string,
+    @Body() body: IChangePlanDTO,
+  ): Promise<void> {
+    this.logger.log({ body, id }, 'POST /preview-plan')
+    const { planId } = body
+
+    await this.userService.previewSubscription(id, planId)
+  }
 }

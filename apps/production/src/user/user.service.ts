@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { PaddleSDK } from 'paddle-sdk'
 import { Repository } from 'typeorm'
+import axios from 'axios'
 import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
@@ -61,10 +62,9 @@ const CURRENCY_BY_COUNTRY = {
   US: USD, // United States
 }
 
-const paddleSDK = new PaddleSDK(
-  process.env.PADDLE_VENDOR_ID,
-  process.env.PADDLE_API_KEY,
-)
+const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
+
+const paddleSDK = new PaddleSDK(PADDLE_VENDOR_ID, PADDLE_API_KEY)
 
 @Injectable()
 export class UserService {
@@ -329,6 +329,46 @@ export class UserService {
     }
 
     return null
+  }
+
+  async previewSubscription(id: string, planID: number) {
+    const user = await this.findOneWhere({ id })
+    const plan = this.getPlanById(planID)
+
+    if (!plan) {
+      throw new BadRequestException('Plan not found')
+    }
+
+    const { planCode, billingFrequency } = plan
+
+    if (
+      user.planCode === planCode &&
+      user.billingFrequency === billingFrequency
+    ) {
+      throw new BadRequestException('You are already subscribed to this plan')
+    }
+
+    const url = 'https://vendors.paddle.com/api/2.0/subscription/preview_update'
+
+    try {
+      const response = await axios.post(url, {
+        vendor_id: Number(PADDLE_VENDOR_ID),
+        vendor_auth_code: PADDLE_API_KEY,
+        subscription_id: Number(user.subID),
+        plan_id: planID,
+        prorate: true,
+        currency: user.tierCurrency,
+        keep_modifiers: false,
+      })
+
+      return response.data.response
+    } catch (error) {
+      console.error(
+        '[ERROR] (previewSubscription):',
+        error?.response?.data?.error?.message || error,
+      )
+      throw new BadRequestException('Something went wrong')
+    }
   }
 
   async updateSubscription(id: string, planID: number) {
