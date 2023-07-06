@@ -5,6 +5,7 @@ import { session } from 'telegraf'
 import { UserModule } from 'src/user/user.module'
 import { ProjectModule } from 'src/project/project.module'
 import { AnalyticsModule } from 'src/analytics/analytics.module'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { TelegramController } from './telegram.controller'
 import { TelegramUpdate } from './telegram.update'
 import { StartScene } from './scene/start.scene'
@@ -12,6 +13,7 @@ import { ProjectsScene } from './scene/projects.scene'
 import { SettingsScene } from './scene/settings.scene'
 import { UnlinkAccountScene } from './scene/unlink-account.scene'
 import { TelegramService } from './telegram.service'
+import { Message } from './entities/message.entity'
 
 @Module({
   imports: [
@@ -38,6 +40,7 @@ import { TelegramService } from './telegram.service'
         middlewares: [session()],
       }),
     }),
+    TypeOrmModule.forFeature([Message]),
     UserModule,
     ProjectModule,
     AnalyticsModule,
