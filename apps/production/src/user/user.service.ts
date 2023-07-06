@@ -314,10 +314,11 @@ export class UserService {
         tier.ypid === stringifiedPlanId,
     )
 
-    if (plan) {
+    // @ts-ignore
+    if (plan && plan.pid) {
       const planCode = plan.id
-      // @ts-ignore
       const billingFrequency =
+        // @ts-ignore
         plan?.pid === planId
           ? BillingFrequency.Monthly
           : BillingFrequency.Yearly
