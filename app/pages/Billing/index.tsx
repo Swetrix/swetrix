@@ -58,7 +58,7 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
 
   const isTrial: boolean = planCode === 'trial'
   const isNoSub: boolean = planCode === 'none'
-  const totalUsage = _round((usageinfo.total / maxEventsCount) * 100, 2)
+  const totalUsage = _round((usageinfo.total / maxEventsCount) * 100, 2) || 0
 
   // Paddle (payment processor) set-up
   useEffect(() => {
@@ -270,9 +270,9 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
             </h2>
             <p className='mt-1 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('billing.usageOverview', {
-                tracked: usageinfo.total,
-                trackedPerc: totalUsage,
-                maxEvents: maxEventsCount,
+                tracked: usageinfo.total || 0,
+                trackedPerc: totalUsage || 0,
+                maxEvents: maxEventsCount || 0,
               })}
             </p>
             <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
@@ -280,20 +280,20 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
               <ul className='list-disc list-inside'>
                 <li>
                   {t('billing.pageviews', {
-                    quantity: usageinfo.traffic,
-                    percentage: usageinfo.trafficPerc,
+                    quantity: usageinfo.traffic || 0,
+                    percentage: usageinfo.trafficPerc || 0,
                   })}
                 </li>
                 <li>
                   {t('billing.customEvents', {
-                    quantity: usageinfo.customEvents,
-                    percentage: usageinfo.customEventsPerc,
+                    quantity: usageinfo.customEvents || 0,
+                    percentage: usageinfo.customEventsPerc || 0,
                   })}
                 </li>
                 <li>
                   {t('billing.captcha', {
-                    quantity: usageinfo.captcha,
-                    percentage: usageinfo.captchaPerc,
+                    quantity: usageinfo.captcha || 0,
+                    percentage: usageinfo.captchaPerc || 0,
                   })}
                 </li>
               </ul>
