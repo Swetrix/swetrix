@@ -298,6 +298,8 @@ const UserSettings = ({
       accountUpdated(t('profileSettings.updated'))
     } catch {
       genericError(t('apiNotifications.somethingWentWrong'))
+    } finally {
+      setSettingUpdating(false)
     }
   }
 
