@@ -77,7 +77,7 @@ module.exports = {
             },
             {
               label: 'Discord',
-              href: 'https://discord.gg/tVxGxU3s4B',
+              href: 'https://discord.gg/ZVK8Tw2E8j',
             },
           ],
         },
