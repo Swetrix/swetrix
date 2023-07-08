@@ -4,7 +4,6 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { PaddleSDK } from 'paddle-sdk'
 import { Repository } from 'typeorm'
 import axios from 'axios'
 import * as dayjs from 'dayjs'
@@ -20,6 +19,7 @@ import {
   TRIAL_DURATION,
   BillingFrequency,
 } from './entities/user.entity'
+import { ProjectService } from '../project/project.service'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
@@ -81,8 +81,6 @@ const CURRENCY_BY_COUNTRY = {
 
 const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
 
-const paddleSDK = new PaddleSDK(PADDLE_VENDOR_ID, PADDLE_API_KEY)
-
 @Injectable()
 export class UserService {
   constructor(
@@ -90,6 +88,7 @@ export class UserService {
     private usersRepository: Repository<User>,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
+    private readonly projectService: ProjectService,
   ) {}
 
   async create(
@@ -392,6 +391,7 @@ export class UserService {
     const { data } = preview
 
     if (!data.success) {
+      console.error('[ERROR] (previewSubscription) success -> false:', preview)
       throw new InternalServerErrorException('Something went wrong')
     }
 
@@ -426,13 +426,53 @@ export class UserService {
       throw new BadRequestException('You are already subscribed to this plan')
     }
 
-    await paddleSDK.updateSubscription(Number(user.subID), {
-      planID,
-      prorate: true,
-      currency: user.tierCurrency,
-      passthrough: JSON.stringify({
-        uid: user.id,
-      }),
-    })
+    const url = 'https://vendors.paddle.com/api/2.0/subscription/users/update'
+
+    let result: any = {}
+
+    try {
+      result = await axios.post(url, {
+        vendor_id: Number(PADDLE_VENDOR_ID),
+        vendor_auth_code: PADDLE_API_KEY,
+        subscription_id: Number(user.subID),
+        plan_id: planID,
+        prorate: true,
+        bill_immediately: true,
+        currency: user.tierCurrency,
+        keep_modifiers: false,
+        passthrough: JSON.stringify({
+          uid: id,
+        }),
+      })
+    } catch (error) {
+      console.error(
+        '[ERROR] (updateSubscription):',
+        error?.response?.data?.error?.message || error,
+      )
+      throw new BadRequestException('Something went wrong')
+    }
+
+    const { data, response } = result
+
+    if (!data.success) {
+      console.error('[ERROR] (updateSubscription) success -> false:', result)
+      throw new InternalServerErrorException('Something went wrong')
+    }
+
+    const {
+      subscription_id: subID,
+      next_payment: { currency, date },
+    } = response
+
+    const updateParams = {
+      planCode,
+      subID,
+      nextBillDate: date,
+      billingFrequency,
+      tierCurrency: currency,
+    }
+
+    await this.update(id, updateParams)
+    await this.projectService.clearProjectsRedisCache(id)
   }
 }

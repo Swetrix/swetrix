@@ -68,7 +68,6 @@
     "nestjs-telegraf": "^2.6.3",
     "newrelic": "^10.3.0",
     "otplib": "^12.0.1",
-    "paddle-sdk": "^4.6.1",
     "passport": "^0.6.0",
     "passport-headerapikey": "^1.2.2",
     "passport-jwt": "^4.0.1",
