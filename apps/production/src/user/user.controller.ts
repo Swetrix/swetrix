@@ -203,8 +203,7 @@ export class UserController {
   }> {
     this.logger.log({ userId }, 'POST /user/api-key')
 
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
 
     await checkRateLimit(ip, 'generate-api-key', 5, 3600)
 

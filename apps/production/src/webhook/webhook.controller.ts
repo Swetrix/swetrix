@@ -40,8 +40,7 @@ export class WebhookController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
 
     this.webhookService.verifyIP(ip)
     this.webhookService.validateWebhook(body)

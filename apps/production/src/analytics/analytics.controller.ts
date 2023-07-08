@@ -814,8 +814,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
 
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
@@ -887,8 +886,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent } = headers
     const { pid } = logDTO
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
 
     const sessionID = await this.analyticsService.getSessionHash(
       pid,
@@ -917,8 +915,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
 
     await this.analyticsService.validate(logDTO, origin, 'log', ip)
 
@@ -1038,8 +1035,7 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(logDTO, origin)
 
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)

@@ -85,8 +85,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() requestIp: string,
   ): Promise<RegisterResponseDto> {
-    const ip =
-      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
+    const ip = headers['x-forwarded-for'] || requestIp || ''
 
     await checkRateLimit(ip, 'register', 5)
 
@@ -135,8 +134,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() requestIp: string,
   ): Promise<LoginResponseDto> {
-    const ip =
-      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
+    const ip = headers['x-forwarded-for'] || requestIp || ''
 
     await checkRateLimit(ip, 'login', 10, 1800)
 
@@ -198,8 +196,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() requestIp: string,
   ): Promise<void> {
-    const ip =
-      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
+    const ip = headers['x-forwarded-for'] || requestIp || ''
 
     await checkRateLimit(ip, 'reset-password')
     await checkRateLimit(body.email, 'reset-password')
@@ -447,8 +444,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() reqIP: string,
   ): Promise<any> {
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
 
     await checkRateLimit(ip, 'sso-generate', OAUTH_RATE_LIMIT, 1800)
 
@@ -473,8 +469,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() reqIP: string,
   ): Promise<any> {
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
 
     await checkRateLimit(ip, 'sso-process', OAUTH_RATE_LIMIT, 1800)
 
@@ -492,8 +487,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() reqIP: string,
   ): Promise<any> {
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = headers['x-forwarded-for'] || reqIP || ''
 
     const { hash, provider } = body
 
