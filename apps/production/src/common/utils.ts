@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { HttpException } from '@nestjs/common'
 import { hash } from 'blake3'
+import timezones from 'countries-and-timezones'
 import * as randomstring from 'randomstring'
 import * as _sample from 'lodash/sample'
 import * as _toNumber from 'lodash/toNumber'
@@ -174,6 +175,39 @@ if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
   lookup = new Reader<CityResponse>(buffer)
 }
 
+interface IPGeoDetails {
+  country?: string
+  region?: string
+  city?: string
+}
+
+const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
+  // Stage 1: Using IP address based geo lookup
+  const data = lookup.get(ip)
+
+  const country = data?.country?.iso_code
+  // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
+  const city = data?.city?.names?.en
+  const region = data?.subdivisions?.[0]?.names?.en
+
+  if (country) {
+    return {
+      country,
+      city,
+      region,
+    }
+  }
+
+  // Stage 2: Using timezone based geo lookup as a fallback
+  const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
+
+  return {
+    country: tzCountry,
+    city: null,
+    region: null,
+  }
+}
+
 export {
   getRandomTip,
   checkRateLimit,
@@ -183,4 +217,5 @@ export {
   generateRandomString,
   nFormatter,
   lookup,
+  getGeoDetails,
 }

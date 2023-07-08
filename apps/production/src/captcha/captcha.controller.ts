@@ -10,6 +10,7 @@ import {
   Req,
   Response,
   Res,
+  Ip,
   HttpCode,
 } from '@nestjs/common'
 import * as dayjs from 'dayjs'
@@ -60,6 +61,7 @@ export class CaptchaController {
     @Req() request: Request,
     @Headers() headers,
     @Res({ passthrough: true }) response: Response,
+    @Ip() reqIP,
   ): Promise<any> {
     this.logger.log({ manualDTO }, 'POST /captcha/verify-manual')
 
@@ -120,12 +122,14 @@ export class CaptchaController {
     )
     this.captchaService.setTokenCookie(response, newTokenCookie)
 
+    const ip = headers['x-forwarded-for'] || reqIP || ''
+
     await this.captchaService.logCaptchaPass(
       pid,
       userAgent,
-      headers,
       timestamp,
       true,
+      ip,
     )
 
     return {
@@ -146,6 +150,7 @@ export class CaptchaController {
     @Req() request: Request,
     @Headers() headers,
     @Res({ passthrough: true }) response: Response,
+    @Ip() reqIP,
   ): Promise<any> {
     this.logger.log(automaticDTO, 'POST /captcha/verify')
 
@@ -228,12 +233,14 @@ export class CaptchaController {
 
     this.captchaService.setTokenCookie(response, newTokenCookie)
 
+    const ip = headers['x-forwarded-for'] || reqIP || ''
+
     await this.captchaService.logCaptchaPass(
       pid,
       userAgent,
-      headers,
       timestamp,
       false,
+      ip,
     )
 
     return {

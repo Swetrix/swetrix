@@ -57,6 +57,7 @@ import {
   REDIS_SESSION_SALT_KEY,
   clickhouse,
 } from '../common/constants'
+import { getGeoDetails } from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
@@ -840,17 +841,12 @@ export class AnalyticsController {
       city = 'NULL',
       region = 'NULL',
       country = 'NULL',
-    } = this.analyticsService.getGeoDetails(ip, eventsDTO.tz)
+    } = getGeoDetails(ip, eventsDTO.tz)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
-
-    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
-    const cc =
-      country ||
-      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const dto = customLogDTO(
       eventsDTO.pid,
@@ -864,7 +860,7 @@ export class AnalyticsController {
       eventsDTO.so,
       eventsDTO.me,
       eventsDTO.ca,
-      cc,
+      country,
       region,
       city,
     )
@@ -942,15 +938,11 @@ export class AnalyticsController {
       city = 'NULL',
       region = 'NULL',
       country = 'NULL',
-    } = this.analyticsService.getGeoDetails(ip, logDTO.tz)
+    } = getGeoDetails(ip, logDTO.tz)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
-    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
-    const cc =
-      country ||
-      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const dto = analyticsDTO(
       sessionHash,
@@ -965,7 +957,7 @@ export class AnalyticsController {
       logDTO.so,
       logDTO.me,
       logDTO.ca,
-      cc,
+      country,
       region,
       city,
       0,
@@ -991,7 +983,7 @@ export class AnalyticsController {
         logDTO.pg,
         dv,
         br,
-        cc,
+        country,
         region,
         city,
         dns,
@@ -1058,16 +1050,11 @@ export class AnalyticsController {
       city = 'NULL',
       region = 'NULL',
       country = 'NULL',
-    } = this.analyticsService.getGeoDetails(ip)
+    } = getGeoDetails(ip)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
-
-    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
-    const cc =
-      country ||
-      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const dto = analyticsDTO(
       sessionHash,
@@ -1082,7 +1069,7 @@ export class AnalyticsController {
       'NULL',
       'NULL',
       'NULL',
-      cc,
+      country,
       region,
       city,
       0,
