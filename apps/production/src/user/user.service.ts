@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { PaddleSDK } from 'paddle-sdk'
 import { Repository } from 'typeorm'
@@ -34,6 +38,19 @@ const USD = {
 const GBP = {
   symbol: '£',
   code: 'GBP',
+}
+
+const getSymbolByCode = (code: string) => {
+  switch (code) {
+    case EUR.code:
+      return EUR.symbol
+    case USD.code:
+      return USD.symbol
+    case GBP.code:
+      return GBP.symbol
+    default:
+      return null
+  }
 }
 
 const CURRENCY_BY_COUNTRY = {
@@ -351,24 +368,44 @@ export class UserService {
 
     const url = 'https://vendors.paddle.com/api/2.0/subscription/preview_update'
 
+    let preview: any = {}
+
     try {
-      const response = await axios.post(url, {
+      preview = await axios.post(url, {
         vendor_id: Number(PADDLE_VENDOR_ID),
         vendor_auth_code: PADDLE_API_KEY,
         subscription_id: Number(user.subID),
         plan_id: planID,
         prorate: true,
+        bill_immediately: true,
         currency: user.tierCurrency,
         keep_modifiers: false,
       })
-
-      return response.data.response
     } catch (error) {
       console.error(
         '[ERROR] (previewSubscription):',
         error?.response?.data?.error?.message || error,
       )
       throw new BadRequestException('Something went wrong')
+    }
+
+    const { data } = preview
+
+    if (!data.success) {
+      throw new InternalServerErrorException('Something went wrong')
+    }
+
+    const symbol = getSymbolByCode(data.response.next_payment.currency)
+
+    return {
+      immediatePayment: {
+        ...data.response.immediate_payment,
+        symbol,
+      },
+      nextPayment: {
+        ...data.response.next_payment,
+        symbol,
+      },
     }
   }
 

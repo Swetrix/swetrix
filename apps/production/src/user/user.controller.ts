@@ -694,10 +694,10 @@ export class UserController {
   async previewPlan(
     @CurrentUserId() id: string,
     @Body() body: IChangePlanDTO,
-  ): Promise<void> {
+  ): Promise<any> {
     this.logger.log({ body, id }, 'POST /preview-plan')
     const { planId } = body
 
-    await this.userService.previewSubscription(id, planId)
+    return this.userService.previewSubscription(id, planId)
   }
 }
