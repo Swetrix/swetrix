@@ -450,12 +450,14 @@ export class UserService {
       throw new BadRequestException('Something went wrong')
     }
 
-    const { data, response } = result
+    const { data } = result
 
     if (!data.success) {
       console.error('[ERROR] (updateSubscription) success -> false:', result)
       throw new InternalServerErrorException('Something went wrong')
     }
+
+    const { response } = data
 
     const {
       subscription_id: subID,
