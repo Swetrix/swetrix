@@ -333,7 +333,7 @@ export class UserService {
       const planCode = plan.id
       const billingFrequency =
         // @ts-ignore
-        plan?.pid === planId
+        Number(plan?.pid) === planId
           ? BillingFrequency.Monthly
           : BillingFrequency.Yearly
 
