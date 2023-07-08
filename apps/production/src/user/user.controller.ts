@@ -686,6 +686,7 @@ export class UserController {
     const { planId } = body
 
     await this.userService.updateSubscription(id, planId)
+    await this.projectService.clearProjectsRedisCache(id)
   }
 
   @Post('preview-plan')

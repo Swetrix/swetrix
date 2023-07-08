@@ -19,7 +19,6 @@ import {
   TRIAL_DURATION,
   BillingFrequency,
 } from './entities/user.entity'
-import { ProjectService } from '../project/project.service'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
@@ -88,7 +87,6 @@ export class UserService {
     private usersRepository: Repository<User>,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
-    private readonly projectService: ProjectService,
   ) {}
 
   async create(
@@ -473,6 +471,5 @@ export class UserService {
     }
 
     await this.update(id, updateParams)
-    await this.projectService.clearProjectsRedisCache(id)
   }
 }
