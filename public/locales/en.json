@@ -48,6 +48,9 @@
     "logout": "Logout",
     "save": "Save",
     "continue": "Continue",
+    "confirm": "Confirm",
+    "amount": "Amount",
+    "date": "Date",
     "error": "Error",
     "close": "Close",
     "cancel": "Cancel",
@@ -722,7 +725,13 @@
     "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
     "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
     "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
-    "gotoUsage": "Go to plan usage"
+    "gotoUsage": "Go to plan usage",
+    "confirmNewPlan": "Confirm your new subscription plan",
+    "previewLoadingError": "An error occured while loading the pricing preview, please try again later.\nIf the problem persists, please contact us at <mail>{{email}}</mail>.\nYou can still change your plan, but you won't be able to see the pricing preview at the moment, sorry for that.",
+    "dueNow": "Due now",
+    "dueNowDescription": "You will be charged pro-rated amount for the remaining days of the current billing period.",
+    "negativePayment": "Negative 'Amount' means that you will have a credit balance of {{currency}}{{dueNowAmount}}. You will be billed {{currency}}0.00 on {{dueNowDate}}. Once the credit balance is used up, your recurring billing amount will be {{currency}}{{nextPaymentAmount}} every billing cycle of your subscription plan.",
+    "nextPayment": "Next payment"
   },
   "modals": {
     "paidFeature": {

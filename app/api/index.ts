@@ -1069,9 +1069,27 @@ export const resetFilters = (pid: string, type: string, filters: string[]) =>
       throw error
     })
 
-export const reciveLoginNotification = (recive: boolean) =>
+export const receiveLoginNotification = (receiveLoginNotifications: boolean) =>
   api
-    .post('user/recieve-login-notifications', { receiveLoginNotifications: recive })
+    .post('user/recieve-login-notifications', { receiveLoginNotifications })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
+
+export const previewSubscriptionUpdate = (planId: number) =>
+  api
+    .post('user/preview-plan', { planId })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
+
+export const changeSubscriptionPlan = (planId: number) =>
+  api
+    .post('user/change-plan', { planId })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

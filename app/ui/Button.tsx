@@ -60,7 +60,7 @@ const Button = ({
     }, className)}
   >
     {loading && (
-      <Spin />
+      <Spin alwaysLight />
     )}
     {text || children}
   </button>

@@ -6,6 +6,7 @@ import {
   CheckIcon, ExclamationTriangleIcon, InformationCircleIcon, UserGroupIcon,
 } from '@heroicons/react/24/outline'
 import Beta from 'ui/Beta'
+import Spin from './icons/Spin'
 
 interface IModal {
   className?: string,
@@ -21,10 +22,11 @@ interface IModal {
   size?: 'regular' | 'large',
   customButtons?: JSX.Element,
   isBeta?: boolean,
+  isLoading?: boolean,
 }
 
 const Modal = ({
-  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons, isBeta,
+  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons, isBeta, isLoading,
 }: IModal): JSX.Element => (
   <Transition.Root show={isOpened} as={Fragment}>
     <Dialog
@@ -117,6 +119,9 @@ const Modal = ({
                   })}
                   onClick={onSubmit}
                 >
+                  {isLoading && (
+                    <Spin alwaysLight />
+                  )}
                   {submitText}
                 </button>
               )}
@@ -153,6 +158,7 @@ Modal.propTypes = {
   size: PropTypes.oneOf(['regular', 'large']),
   customButtons: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]),
   isBeta: PropTypes.bool,
+  isLoading: PropTypes.bool,
 }
 
 Modal.defaultProps = {
@@ -168,6 +174,7 @@ Modal.defaultProps = {
   title: null,
   customButtons: null,
   isBeta: false,
+  isLoading: false,
 }
 
 export default memo(Modal)

@@ -59,7 +59,7 @@ import {
   exportUserData,
   generateApiKey,
   deleteApiKey, // setTheme,
-  reciveLoginNotification,
+  receiveLoginNotification,
 } from 'api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
@@ -291,7 +291,7 @@ const UserSettings = ({
     setSettingUpdating(true)
 
     try {
-      await reciveLoginNotification(checked)
+      await receiveLoginNotification(checked)
       updateUserData({
         receiveLoginNotifications: checked,
       })

@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ClientOnly } from 'remix-utils'
 import { Link } from '@remix-run/react'
 import { CheckIcon } from '@heroicons/react/24/solid'
+import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import _isNil from 'lodash/isNil'
 import _findIndex from 'lodash/findIndex'
@@ -20,7 +21,9 @@ import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
-import { authMe } from 'api'
+import {
+  authMe, previewSubscriptionUpdate, changeSubscriptionPlan,
+} from 'api'
 import routes from 'routesPath'
 import { IUser } from 'redux/models/IUser'
 import { AppDispatch, StateType } from 'redux/store'
@@ -268,7 +271,9 @@ const PricingItem = ({
 }
 
 interface IPricing {
-  t: (key: string) => string,
+  t: (key: string, options?: {
+    [key: string]: string | number,
+  }) => string,
   language: string,
   authenticated: boolean,
 }
@@ -282,6 +287,10 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
   const currencyCode = user?.tierCurrency || metainfo.code
 
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
+  const [isNewPlanConfirmationModalOpened, setIsNewPlanConfirmationModalOpened] = useState<boolean>(false)
+  const [subUpdatePreview, setSubUpdatePreview] = useState<any>(null) // object - preview itself, null - loading, false - error
+  const [newPlanId, setNewPlanId] = useState<number | null>(null)
+  const [isSubUpdating, setIsSubUpdating] = useState<boolean>(false)
   const [downgradeTo, setDowngradeTo] = useState<{
     planCode: string,
     name: string,
@@ -334,13 +343,34 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
     lastEventHandler(lastEvent)
   }, [lastEvent, dispatch, t])
 
-  const onPlanChange = (tier: {
+  const loadSubUpdatePreview = async (planId: number) => {
+    setIsNewPlanConfirmationModalOpened(true)
+    try {
+      const preview = await previewSubscriptionUpdate(planId)
+      setSubUpdatePreview(preview)
+    } catch (reason) {
+      console.error('[ERROR] An error occured while loading subscription update pricing preview:', reason)
+      dispatch(errorsActions.genericError({
+        message: 'An error occured while loading subscription update pricing preview',
+      }))
+      setSubUpdatePreview(false)
+    }
+  }
+
+  const onPlanChange = async (tier: {
     planCode: string,
     name: string,
     pid: string,
     ypid: string,
   }) => {
     if (planCodeLoading === null && (user.planCode !== tier.planCode || (user.billingFrequency !== billingFrequency && user.planCode !== 'free' && user.planCode !== 'trial'))) {
+      if (user.subID) {
+        const planId = Number(billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid)
+        setNewPlanId(planId)
+        await loadSubUpdatePreview(planId)
+        return
+      }
+
       setPlanCodeLoading(tier.planCode)
 
       // @ts-ignore
@@ -364,6 +394,46 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
         displayModeTheme: theme,
         country: metainfo.country,
       })
+    }
+  }
+
+  const closeUpdateModal = (force?: boolean) => {
+    if (isSubUpdating && !force) {
+      return
+    }
+
+    setIsNewPlanConfirmationModalOpened(false)
+    setSubUpdatePreview(null)
+    setNewPlanId(null)
+    setIsSubUpdating(false)
+  }
+
+  const updateSubscription = async () => {
+    setIsSubUpdating(true)
+
+    try {
+      await changeSubscriptionPlan(newPlanId as number)
+
+      try {
+        const me = await authMe()
+
+        dispatch(authActions.loginSuccessful(me))
+        dispatch(authActions.finishLoading())
+      } catch (e) {
+        dispatch(authActions.logout())
+        dispatch(sagaActions.logout(false, false))
+      }
+
+      dispatch(alertsActions.accountUpdated({
+        message: t('apiNotifications.subscriptionUpdated'),
+      }))
+      closeUpdateModal(true)
+    } catch (reason) {
+      console.error('[ERROR] An error occured while updating subscription:', reason)
+      dispatch(errorsActions.genericError({
+        message: 'An error occured while updating subscription',
+      }))
+      closeUpdateModal(true)
     }
   }
 
@@ -489,6 +559,102 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
           />
         )}
         isOpened={showDowngradeModal}
+      />
+      <Modal
+        onClose={closeUpdateModal}
+        onSubmit={updateSubscription}
+        submitText={t('common.confirm')}
+        closeText={t('common.goBack')}
+        title={t('billing.confirmNewPlan')}
+        submitType='regular'
+        type='info'
+        isLoading={isSubUpdating}
+        message={(
+          <>
+            {subUpdatePreview === null && (
+              <Loader />
+            )}
+            {subUpdatePreview === false && (
+              <p className='whitespace-pre-line'>{t('billing.previewLoadingError')}</p>
+            )}
+            {subUpdatePreview && (
+              <div>
+                <h2 className='text-base font-bold'>
+                  {t('billing.dueNow')}
+                </h2>
+                <p className='text-sm'>
+                  {t('billing.dueNowDescription')}
+                </p>
+                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg mt-2'>
+                  <table className='min-w-full divide-y divide-gray-300 200 dark:divide-gray-500'>
+                    <thead className='bg-gray-50 dark:bg-slate-800'>
+                      <tr>
+                        <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'>
+                          {t('common.amount')}
+                        </th>
+                        <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                          {t('common.date')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-slate-800'>
+                      <tr>
+                        <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
+                          {`${subUpdatePreview.immediatePayment.symbol}${subUpdatePreview.immediatePayment.amount}`}
+                        </td>
+                        <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                          {language === 'en'
+                            ? dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('MMMM D, YYYY')
+                            : dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('D MMMM, YYYY')}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                {subUpdatePreview.immediatePayment.amount < 0 && (
+                  <p className='mt-2 italic'>
+                    {t('billing.negativePayment', {
+                      currency: subUpdatePreview.immediatePayment.symbol,
+                      dueNowAmount: -subUpdatePreview.immediatePayment.amount,
+                      dueNowDate: language === 'en' ? dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('MMMM D, YYYY') : dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('D MMMM, YYYY'),
+                      nextPaymentAmount: subUpdatePreview.nextPayment.amount,
+                    })}
+                  </p>
+                )}
+                <h2 className='text-base font-bold mt-5'>
+                  {t('billing.nextPayment')}
+                </h2>
+                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg mt-2'>
+                  <table className='min-w-full divide-y divide-gray-300 200 dark:divide-gray-500'>
+                    <thead className='bg-gray-50 dark:bg-slate-800'>
+                      <tr>
+                        <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'>
+                          {t('common.amount')}
+                        </th>
+                        <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                          {t('common.date')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-slate-800'>
+                      <tr>
+                        <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
+                          {`${subUpdatePreview.nextPayment.symbol}${subUpdatePreview.nextPayment.amount}`}
+                        </td>
+                        <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                          {language === 'en'
+                            ? dayjs(subUpdatePreview.nextPayment.date).locale(language).format('MMMM D, YYYY')
+                            : dayjs(subUpdatePreview.nextPayment.date).locale(language).format('D MMMM, YYYY')}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        isOpened={isNewPlanConfirmationModalOpened}
       />
     </>
   )
