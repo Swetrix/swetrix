@@ -51,6 +51,8 @@ services:
       - TELEGRAM_WEBHOOK_PATH='/v1/telegram/webhook'
       - TELEGRAM_WEBHOOK_IP_ADDRESS=
       - TELEGRAM_WEBHOOK_SECRET_TOKEN=
+      - SENTRY_ENABLED=true
+      - SENTRY_DSN=
     links:
       - 'redis'
       - 'mariadb'
@@ -77,7 +79,7 @@ services:
       - MYSQL_USER=swetrix
       - MYSQL_PASSWORD=password
     volumes:
-     - swetrix-users-data:/var/lib/mysql
+      - swetrix-users-data:/var/lib/mysql
   clickhouse:
     image: clickhouse/clickhouse-server:23.4.2.11-alpine
     container_name: clickhouse
@@ -98,4 +100,3 @@ volumes:
     driver: local
   swetrix-users-data:
     driver: local
-

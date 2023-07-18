@@ -36,6 +36,7 @@
     "@nestjs/schedule": "^3.0.1",
     "@nestjs/swagger": "^7.0.1",
     "@nestjs/typeorm": "^10.0.0",
+    "@sentry/node": "^7.59.2",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "blake3": "^2.1.7",

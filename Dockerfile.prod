@@ -47,7 +47,9 @@ ENV TZ=UTC \
     TELEGRAM_WEBHOOK_DOMAIN= \
     TELEGRAM_WEBHOOK_PATH='/v1/telegram/webhook' \
     TELEGRAM_WEBHOOK_IP_ADDRESS= \
-    TELEGRAM_WEBHOOK_SECRET_TOKEN=
+    TELEGRAM_WEBHOOK_SECRET_TOKEN= \
+    SENTRY_ENABLED=true \
+    SENTRY_DSN=
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 WORKDIR /app
 COPY --from=build /build/package*.json ./

@@ -5,12 +5,32 @@ import * as bodyParser from 'body-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { getBotToken } from 'nestjs-telegraf'
 
+import { ConfigService } from '@nestjs/config'
+import * as Sentry from '@sentry/node'
 import { isNewRelicEnabled, isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
 import { NewrelicInterceptor } from './common/interceptors/newrelic.interceptor'
+import { SentryInterceptor } from './common/interceptors/sentry.interceptor'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+
+  const configService = app.get(ConfigService)
+
+  const isSentryEnabled = configService.getOrThrow<boolean>('SENTRY_ENABLED')
+
+  if (isSentryEnabled) {
+    const isProduction =
+      configService.getOrThrow<string>('NODE_ENV') === 'production'
+
+    Sentry.init({
+      dsn: configService.get<string>('SENTRY_DSN'),
+      tracesSampleRate: isProduction ? 0.1 : 1.0,
+    })
+
+    app.useGlobalInterceptors(new SentryInterceptor())
+  }
+
   app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe())
 
