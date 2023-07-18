@@ -109,6 +109,7 @@ const validTimebuckets = [
   TimeBucketType.HOUR,
   TimeBucketType.DAY,
   TimeBucketType.MONTH,
+  TimeBucketType.YEAR,
 ]
 
 // mapping of allowed timebuckets per difference between days
@@ -124,7 +125,8 @@ const timeBucketToDays = [
   }, // 4 weeks
   { lt: 366, tb: [TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
-  { lt: 999999, tb: [TimeBucketType.MONTH] }, // more than 24 months
+  { lt: 1464, tb: [TimeBucketType.MONTH, TimeBucketType.YEAR] }, // 48 months
+  { lt: 99999, tb: [TimeBucketType.YEAR] },
 ]
 
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)

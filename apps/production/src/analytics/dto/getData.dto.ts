@@ -6,6 +6,7 @@ export enum TimeBucketType {
   HOUR = 'hour',
   DAY = 'day',
   MONTH = 'month',
+  YEAR = 'year',
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
