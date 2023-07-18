@@ -647,7 +647,7 @@ export class AnalyticsService {
     period: string,
     timeBucket: TimeBucketType,
   ): Promise<{
-    timeBucket: TimeBucketType
+    timeBucket: TimeBucketType[]
     diff: number
   }> {
     if (period !== validPeriods[validPeriods.length - 1]) {
@@ -666,7 +666,7 @@ export class AnalyticsService {
         { params: { pid } },
       )
       .toPromise()
-    let newTimeBucket = TimeBucketType.MONTH
+    let newTimeBucket = [TimeBucketType.MONTH]
     let diff = null
 
     if (from && to) {
@@ -680,8 +680,7 @@ export class AnalyticsService {
         )
       }
 
-      // eslint-disable-next-line prefer-destructuring
-      newTimeBucket = _includes(tbMap.tb, timeBucket) ? timeBucket : tbMap.tb[0]
+      newTimeBucket = _includes(tbMap.tb, timeBucket) ? [timeBucket] : tbMap.tb
     }
 
     return {

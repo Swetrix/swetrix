@@ -291,6 +291,8 @@ export class AnalyticsController {
     }
 
     let newTimebucket = timeBucket
+    let allowedTumebucketForPeriodAll
+
     let diff
 
     if (period === validPeriods[validPeriods.length - 1]) {
@@ -301,7 +303,9 @@ export class AnalyticsController {
       )
 
       diff = res.diff
-      newTimebucket = res.timeBucket
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = res.timeBucket[0]
+      allowedTumebucketForPeriodAll = res.timeBucket
     }
 
     this.analyticsService.validateTimebucket(newTimebucket)
@@ -377,6 +381,7 @@ export class AnalyticsController {
       return {
         ...result,
         appliedFilters,
+        timeBucket: allowedTumebucketForPeriodAll,
       }
     }
 
@@ -389,6 +394,7 @@ export class AnalyticsController {
       ...result,
       customs,
       appliedFilters,
+      timeBucket: allowedTumebucketForPeriodAll,
     }
   }
 
