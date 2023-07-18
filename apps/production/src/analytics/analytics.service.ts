@@ -92,7 +92,8 @@ const GMT_0_TIMEZONES = [
   // 'Africa/Casablanca',
 ]
 
-const validPeriods = [
+export const validPeriods = [
+  'thishour',
   'today',
   'yesterday',
   '1d',
@@ -101,6 +102,7 @@ const validPeriods = [
   '3M',
   '12M',
   '24M',
+  'all',
 ]
 
 const validTimebuckets = [
@@ -122,6 +124,7 @@ const timeBucketToDays = [
   }, // 4 weeks
   { lt: 366, tb: [TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
+  { lt: 999999, tb: [TimeBucketType.MONTH] }, // more than 24 months
 ]
 
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
@@ -407,6 +410,7 @@ export class AnalyticsService {
     timeBucket: TimeBucketType | null,
     period: string,
     safeTimezone: string,
+    diff?: number,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
@@ -473,9 +477,15 @@ export class AnalyticsService {
       if (period === 'today') {
         groupFrom = djsNow.startOf('d')
         groupTo = djsNow
+      } else if (period === 'thishour') {
+        groupFrom = djsNow.startOf('h')
+        groupTo = djsNow
       } else if (period === 'yesterday') {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow.subtract(1, 'day').endOf('d')
+      } else if (period === 'all' && diff === 0) {
+        groupFrom = djsNow.subtract(1, 'day').startOf('d')
+        groupTo = djsNow
       } else {
         if (period === '1d') {
           groupFrom = djsNow.subtract(parseInt(period, 10), _last(period))
@@ -487,6 +497,11 @@ export class AnalyticsService {
         groupTo = djsNow
       }
 
+      console.log(
+        'groupFrom',
+        groupFrom.format(formatFrom),
+        groupTo.format(formatTo),
+      )
       if (!_isEmpty(timeBucket)) {
         checkIfTBAllowed(
           timeBucket,
@@ -627,6 +642,54 @@ export class AnalyticsService {
   validatePeriod(period: string): void {
     if (!_includes(validPeriods, period)) {
       throw new UnprocessableEntityException('The provided period is incorrect')
+    }
+  }
+
+  async getTimeBucketForAllTime(
+    pid: string,
+    period: string,
+    timeBucket: TimeBucketType,
+  ): Promise<{
+    timeBucket: TimeBucketType
+    diff: number
+  }> {
+    if (period !== validPeriods[validPeriods.length - 1]) {
+      return null
+    }
+
+    const from: any = await clickhouse
+      .query(
+        'SELECT created as from FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
+        { params: { pid } },
+      )
+      .toPromise()
+    const to: any = await clickhouse
+      .query(
+        'SELECT created as to FROM analytics where pid = {pid:FixedString(12)} ORDER BY created DESC LIMIT 1',
+        { params: { pid } },
+      )
+      .toPromise()
+    let newTimeBucket = TimeBucketType.MONTH
+    let diff = null
+
+    if (from && to) {
+      diff = dayjs(to[0].to).diff(dayjs(from[0].from), 'days')
+
+      const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
+
+      if (_isEmpty(tbMap)) {
+        throw new PreconditionFailedException(
+          "The difference between 'from' and 'to' is greater than allowed",
+        )
+      }
+
+      // eslint-disable-next-line prefer-destructuring
+      newTimeBucket = _includes(tbMap.tb, timeBucket) ? timeBucket : tbMap.tb[0]
+    }
+
+    return {
+      timeBucket: newTimeBucket,
+      diff,
     }
   }
 

@@ -35,6 +35,7 @@ import {
   getSessionKey,
   getHeartbeatKey,
   DataType,
+  validPeriods,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -289,7 +290,21 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
+    let newTimebucket = timeBucket
+    let diff
+
+    if (period === validPeriods[validPeriods.length - 1]) {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timeBucket,
+      )
+
+      diff = res.diff
+      newTimebucket = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimebucket)
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(
         filters,
@@ -304,6 +319,7 @@ export class AnalyticsController {
         timeBucket,
         period,
         safeTimezone,
+        diff,
       )
     await this.analyticsService.checkProjectAccess(
       pid,
