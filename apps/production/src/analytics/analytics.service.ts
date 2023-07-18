@@ -499,11 +499,6 @@ export class AnalyticsService {
         groupTo = djsNow
       }
 
-      console.log(
-        timeBucket,
-        groupFrom.format(formatFrom),
-        groupTo.format(formatTo))
-
       if (!_isEmpty(timeBucket)) {
         checkIfTBAllowed(
           timeBucket,
