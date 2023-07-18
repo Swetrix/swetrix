@@ -823,17 +823,6 @@ const UserSettings = ({
                           {t('profileSettings.requestExport')}
                         </>
                       </Button>
-                      <Button
-                        className='ml-3'
-                        onClick={() => setShowModal(true)}
-                        semiSmall
-                        danger
-                      >
-                        <>
-                          <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-                          {t('profileSettings.delete')}
-                        </>
-                      </Button>
                       <div className='flex justify-center flex-wrap gap-2'>
                         <Button onClick={logoutAll} semiSmall semiDanger>
                           <>
