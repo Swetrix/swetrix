@@ -321,10 +321,10 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         <div className='dark:bg-slate-900 bg-white px-4 pb-24'>
           <section className='flex pt-16 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
             <picture>
-              <source srcSet='/assets/CoreFeaturesLight.webp' type='image/webp' />
-              <img src='/assets/CoreFeaturesLight.png' className='md:max-w-md md:mr-3 mt-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />
+              <source srcSet={theme === 'dark' ? '/assets/CoreFeaturesDark.webp' : '/assets/CoreFeaturesLight.webp'} type='image/webp' />
+              <img src={theme === 'dark' ? '/assets/CoreFeaturesDark.png' : '/assets/CoreFeaturesLight.png'} className='md:max-w-md md:mr-3 mt-3 mb-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />
             </picture>
-            <div className='max-w-lg'>
+            <div className='max-w-lg md:ml-5'>
               <h2 className='font-extrabold text-4xl dark:text-white text-slate-900'>
                 {t('main.coreFeatures.title')}
               </h2>
@@ -449,7 +449,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
                   <img
                     src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
-                    className='relative z-50 hidden md:block'
+                    className='relative z-50 hidden md:block max-w-[680px]'
                     alt='Swetrix Dashboard overview'
                   />
                 </picture>
