@@ -478,7 +478,7 @@ export class AnalyticsService {
         groupFrom = djsNow.startOf('d')
         groupTo = djsNow
       } else if (period === 'thishour') {
-        groupFrom = djsNow.startOf('h')
+        groupFrom = djsNow.subtract(1, 'hour').startOf('h')
         groupTo = djsNow
       } else if (period === 'yesterday') {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
