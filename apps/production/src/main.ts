@@ -7,9 +7,8 @@ import { getBotToken } from 'nestjs-telegraf'
 
 import { ConfigService } from '@nestjs/config'
 import * as Sentry from '@sentry/node'
-import { isNewRelicEnabled, isDevelopment } from './common/constants'
+import { isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
-import { NewrelicInterceptor } from './common/interceptors/newrelic.interceptor'
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor'
 
 async function bootstrap() {
@@ -46,10 +45,6 @@ async function bootstrap() {
       .build()
     const document = SwaggerModule.createDocument(app, config)
     SwaggerModule.setup('api', app, document)
-  }
-
-  if (isNewRelicEnabled && process.env.NODE_ENV !== 'development') {
-    app.useGlobalInterceptors(new NewrelicInterceptor())
   }
 
   // eslint-disable-next-line consistent-return
