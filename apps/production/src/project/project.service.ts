@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
-import net from 'net'
+import * as net from 'net'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
