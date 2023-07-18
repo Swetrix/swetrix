@@ -483,7 +483,7 @@ export class AnalyticsService {
       } else if (period === 'yesterday') {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow.subtract(1, 'day').endOf('d')
-      } else if (period === 'all' && diff === 0) {
+      } else if (period === 'all' && (diff === 0 || diff === 1)) {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow
       } else {
@@ -501,6 +501,7 @@ export class AnalyticsService {
         'groupFrom',
         groupFrom.format(formatFrom),
         groupTo.format(formatTo),
+        diff,
       )
       if (!_isEmpty(timeBucket)) {
         checkIfTBAllowed(
