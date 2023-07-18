@@ -19,8 +19,7 @@ async function bootstrap() {
   const isSentryEnabled = configService.getOrThrow<boolean>('SENTRY_ENABLED')
 
   if (isSentryEnabled) {
-    const isProduction =
-      configService.getOrThrow<string>('NODE_ENV') === 'production'
+    const isProduction = configService.get<string>('NODE_ENV') === 'production'
 
     Sentry.init({
       dsn: configService.get<string>('SENTRY_DSN'),
