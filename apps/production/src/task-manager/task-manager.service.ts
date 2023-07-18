@@ -763,8 +763,8 @@ export class TaskManagerService {
           lastTriggered: new Date(),
         })
         if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-          this.telegramService.sendMessage(
-            Number(project.admin.telegramChatId),
+          this.telegramService.addMessage(
+            project.admin.telegramChatId,
             `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`,
             {
               parse_mode: 'Markdown',
@@ -842,13 +842,9 @@ export class TaskManagerService {
         )}!`
 
         if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-          this.telegramService.sendMessage(
-            Number(project.admin.telegramChatId),
-            text,
-            {
-              parse_mode: 'Markdown',
-            },
-          )
+          this.telegramService.addMessage(project.admin.telegramChatId, text, {
+            parse_mode: 'Markdown',
+          })
         }
       }
     })
@@ -982,5 +978,25 @@ export class TaskManagerService {
     })
 
     return totalInstalls / extensions.length
+  }
+
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  async sendTelegramMessages() {
+    try {
+      const messages = await this.telegramService.getMessages()
+
+      messages.forEach(async message => {
+        await this.telegramService.sendMessage(
+          message.id,
+          message.chatId,
+          message.text,
+          message.extra,
+        )
+      })
+    } catch (error) {
+      this.logger.error(
+        `[CRON WORKER](sendTelegramMessages) Error occured: ${error}`,
+      )
+    }
   }
 }

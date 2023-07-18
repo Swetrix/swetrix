@@ -6,6 +6,7 @@ import { MailerModule } from 'src/mailer/mailer.module'
 import { UserModule } from 'src/user/user.module'
 import { ProjectModule } from 'src/project/project.module'
 import { TelegramService } from 'src/integrations/telegram/telegram.service'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import {
@@ -13,6 +14,7 @@ import {
   JwtAccessTokenStrategy,
   JwtRefreshTokenStrategy,
 } from './strategies'
+import { Message } from '../integrations/telegram/entities/message.entity'
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import {
     MailerModule,
     ActionTokensModule,
     ProjectModule,
+    TypeOrmModule.forFeature([Message]),
   ],
   controllers: [AuthController],
   providers: [

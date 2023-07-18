@@ -531,8 +531,8 @@ export class UserController {
           isTelegramChatIdConfirmed: false,
         })
 
-        this.telegramService.sendMessage(
-          Number(userDTO.telegramChatId),
+        this.telegramService.addMessage(
+          userDTO.telegramChatId,
           'Please confirm your Telegram chat ID',
           Markup.inlineKeyboard([
             [
