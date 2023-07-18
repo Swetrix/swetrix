@@ -117,7 +117,7 @@ const validTimebuckets = [
 const timeBucketToDays = [
   {
     lt: 7,
-    tb: [TimeBucketType.HOUR, TimeBucketType.DAY],
+    tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.MONTH],
   }, // 7 days
   {
     lt: 28,
