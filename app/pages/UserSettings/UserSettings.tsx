@@ -649,15 +649,17 @@ const UserSettings = ({
                       handleIntegrationSave={handleIntegrationSave}
                       genericError={genericError}
                     />
-                    <Checkbox
-                      checked={user.receiveLoginNotifications}
-                      onChange={handleReceiveLoginNotifications}
-                      disabled={settingUpdating}
-                      name='active'
-                      id='active'
-                      className='mt-4'
-                      label={t('profileSettings.receiveLoginNotifications')}
-                    />
+                    {user.isTelegramChatIdConfirmed && (
+                      <Checkbox
+                        checked={user.receiveLoginNotifications}
+                        onChange={handleReceiveLoginNotifications}
+                        disabled={settingUpdating}
+                        name='receiveLoginNotifications'
+                        id='receiveLoginNotifications'
+                        className='mt-4'
+                        label={t('profileSettings.receiveLoginNotifications')}
+                      />
+                    )}
                     <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
                     {/* API access setup */}
