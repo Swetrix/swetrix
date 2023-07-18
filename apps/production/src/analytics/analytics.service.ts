@@ -117,7 +117,7 @@ const validTimebuckets = [
 const timeBucketToDays = [
   {
     lt: 7,
-    tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.MONTH],
+    tb: [TimeBucketType.HOUR, TimeBucketType.DAY],
   }, // 7 days
   {
     lt: 28,
@@ -498,6 +498,11 @@ export class AnalyticsService {
         groupFrom = groupFrom.startOf(timeBucket)
         groupTo = djsNow
       }
+
+      console.log(
+        timeBucket,
+        groupFrom.format(formatFrom),
+        groupTo.format(formatTo))
 
       if (!_isEmpty(timeBucket)) {
         checkIfTBAllowed(

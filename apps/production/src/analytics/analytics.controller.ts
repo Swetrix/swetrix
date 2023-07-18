@@ -316,7 +316,7 @@ export class AnalyticsController {
       this.analyticsService.getGroupFromTo(
         from,
         to,
-        timeBucket,
+        newTimebucket,
         period,
         safeTimezone,
         diff,
@@ -351,7 +351,7 @@ export class AnalyticsController {
 
     if (isCaptcha) {
       result = await this.analyticsService.groupCaptchaByTimeBucket(
-        timeBucket,
+        newTimebucket,
         groupFrom,
         groupTo,
         subQuery,
@@ -361,7 +361,7 @@ export class AnalyticsController {
       )
     } else {
       result = await this.analyticsService.groupByTimeBucket(
-        timeBucket,
+        newTimebucket,
         groupFrom,
         groupTo,
         subQuery,
