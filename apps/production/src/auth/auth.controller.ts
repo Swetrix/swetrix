@@ -428,12 +428,24 @@ export class AuthController {
   @UseGuards(JwtRefreshTokenGuard)
   @Post('logout-all')
   @HttpCode(200)
-  public async logoutAll(@CurrentUserId() userId: string): Promise<void> {
+  public async logoutAll(
+    @CurrentUserId() userId: string,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
+  ): Promise<void> {
     const user = await this.userService.findUserById(userId)
+    const ip =
+      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
 
     if (!user) {
       throw new UnauthorizedException()
     }
+
+    await this.authService.sendTelegramNotificationForLogoutAllDevices(
+      user.id,
+      headers,
+      ip,
+    )
 
     await this.authService.logoutAll(user.id)
   }

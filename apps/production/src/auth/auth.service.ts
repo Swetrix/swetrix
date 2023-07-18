@@ -249,6 +249,39 @@ export class AuthService {
     }
   }
 
+  public async sendTelegramNotificationForLogoutAllDevices(
+    userId: string,
+    headers: unknown,
+    ip: string,
+  ) {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user.telegramChatId || !user.receiveLoginNotifications) {
+      return
+    }
+
+    const headersInfo = await this.getHeadersInfo(headers)
+    const logoutDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
+    const message =
+      '🚨 *Someone has logged out of all devices!*\n\n' +
+      `*Browser:* ${headersInfo.browser}\n` +
+      `*Device:* ${headersInfo.device}\n` +
+      `*OS:* ${headersInfo.os}\n` +
+      `*Country:* ${headersInfo.country}\n` +
+      `*IP:* ${ip}\n` +
+      `*Date:* ${logoutDate} (UTC)\n\n` +
+      'If it was not you, please change your password immediately.'
+    if (user && user.isTelegramChatIdConfirmed) {
+      await this.telegramService.sendMessage(
+        Number(user.telegramChatId),
+        message,
+        {
+          parse_mode: 'Markdown',
+        },
+      )
+    }
+  }
+
   private async getHeadersInfo(headers: unknown) {
     const ua = UAParser(headers['user-agent'])
     const browser = ua.browser.name || 'Unknown'
