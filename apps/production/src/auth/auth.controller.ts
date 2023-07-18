@@ -210,6 +210,12 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.accountNotExists'))
     }
 
+    await this.authService.sendTelegramNotificationForPasswordReset(
+      user.id,
+      headers,
+      ip,
+    )
+
     await this.authService.sendResetPasswordEmail(user.id, user.email)
   }
 

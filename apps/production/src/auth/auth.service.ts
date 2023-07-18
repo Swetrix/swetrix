@@ -282,6 +282,39 @@ export class AuthService {
     }
   }
 
+  public async sendTelegramNotificationForPasswordReset(
+    userId: string,
+    headers: unknown,
+    ip: string,
+  ) {
+    const user = await this.userService.findUserById(userId)
+
+    if (!user.telegramChatId || !user.receiveLoginNotifications) {
+      return
+    }
+
+    const headersInfo = await this.getHeadersInfo(headers)
+    const resetDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
+    const message =
+      '🚨 *Someone has reset your password!*\n\n' +
+      `*Browser:* ${headersInfo.browser}\n` +
+      `*Device:* ${headersInfo.device}\n` +
+      `*OS:* ${headersInfo.os}\n` +
+      `*Country:* ${headersInfo.country}\n` +
+      `*IP:* ${ip}\n` +
+      `*Date:* ${resetDate} (UTC)\n\n` +
+      'If it was not you, please change your password immediately.'
+    if (user && user.isTelegramChatIdConfirmed) {
+      await this.telegramService.sendMessage(
+        Number(user.telegramChatId),
+        message,
+        {
+          parse_mode: 'Markdown',
+        },
+      )
+    }
+  }
+
   private async getHeadersInfo(headers: unknown) {
     const ua = UAParser(headers['user-agent'])
     const browser = ua.browser.name || 'Unknown'
