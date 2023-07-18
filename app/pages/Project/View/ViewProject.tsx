@@ -1899,6 +1899,19 @@ const ViewProject = ({
                     {name}
                   </h2>
                   <div className='flex items-center mt-3 md:mt-0 max-w-[420px] flex-wrap sm:flex-nowrap sm:max-w-none justify-center sm:justify-between w-full sm:w-auto mx-auto sm:mx-0 space-x-2 gap-y-1'>
+                    <Dropdown
+                      items={[...exportTypes, ...customExportTypes]}
+                      title={[
+                        <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                        <Fragment key='export-data'>
+                          {t('project.exportData')}
+                        </Fragment>,
+                      ]}
+                      labelExtractor={item => item.label}
+                      keyExtractor={item => item.label}
+                      onSelect={item => item.onClick(panelsData, t)}
+                      className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                    />
                     {activeTab === PROJECT_TABS.traffic ? (
                       !isPanelsDataEmpty && (
                         <Dropdown
@@ -2005,19 +2018,6 @@ const ViewProject = ({
                         />
                       )
                     )}
-                    <Dropdown
-                      items={[...exportTypes, ...customExportTypes]}
-                      title={[
-                        <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                        <Fragment key='export-data'>
-                          {t('project.exportData')}
-                        </Fragment>,
-                      ]}
-                      labelExtractor={item => item.label}
-                      keyExtractor={item => item.label}
-                      onSelect={item => item.onClick(panelsData, t)}
-                      className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                    />
                     <Dropdown
                       items={isActiveCompare ? _filter(periodPairs, (el) => {
                         return _includes(filtersPeriodPairs, el.period)
