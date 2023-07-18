@@ -259,8 +259,12 @@ export class AuthController {
     @Body() body: ChangePasswordDto,
     @CurrentUserId() userId: string,
     @I18n() i18n: I18nContext,
+    @Headers() headers: unknown,
+    @Ip() requestIp: string,
   ): Promise<void> {
     const user = await this.userService.findUserById(userId)
+    const ip =
+      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
 
     if (!user) {
       throw new UnauthorizedException()
@@ -274,6 +278,13 @@ export class AuthController {
     if (!isPasswordValid) {
       throw new ConflictException(i18n.t('auth.invalidPassword'))
     }
+
+    await this.authService.sendTelegramNotification(
+      'Someone has changed their password!',
+      user.id,
+      headers,
+      ip,
+    )
 
     await this.authService.changePassword(user.id, body.newPassword)
   }
