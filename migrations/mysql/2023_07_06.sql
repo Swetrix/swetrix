@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS `message` (
   `extra` json DEFAULT NULL,
   `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`id`)
-)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
