@@ -34,8 +34,6 @@ services:
       - SMTP_USER=smtp_user_name
       - SMTP_PASSWORD=smtp_password
       - FROM_EMAIL=mailer@smtp.example.com
-      - USE_NEW_RELIC=
-      - NEW_RELIC_LICENSE_KEY=
       - CDN_URL=http://localhost:5006
       - CDN_ACCESS_TOKEN=SOME_SECRET_TOKEN
       - CAPTCHA_SALT=
@@ -51,6 +49,8 @@ services:
       - TELEGRAM_WEBHOOK_PATH='/v1/telegram/webhook'
       - TELEGRAM_WEBHOOK_IP_ADDRESS=
       - TELEGRAM_WEBHOOK_SECRET_TOKEN=
+      - SENTRY_ENABLED=true
+      - SENTRY_DSN=
     links:
       - 'redis'
       - 'mariadb'
@@ -77,7 +77,7 @@ services:
       - MYSQL_USER=swetrix
       - MYSQL_PASSWORD=password
     volumes:
-     - swetrix-users-data:/var/lib/mysql
+      - swetrix-users-data:/var/lib/mysql
   clickhouse:
     image: clickhouse/clickhouse-server:23.4.2.11-alpine
     container_name: clickhouse
@@ -98,4 +98,3 @@ volumes:
     driver: local
   swetrix-users-data:
     driver: local
-

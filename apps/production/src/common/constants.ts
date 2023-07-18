@@ -43,7 +43,6 @@ const clickhouse = new ClickHouse({
 })
 
 const { JWT_ACCESS_TOKEN_SECRET } = process.env
-const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 const isDevelopment = process.env.NODE_ENV === 'development'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
@@ -143,7 +142,6 @@ export {
   PROJECT_INVITE_EXPIRE,
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
   IP_REGEX,
-  isNewRelicEnabled,
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
   CAPTCHA_SALT,
