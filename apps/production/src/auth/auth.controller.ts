@@ -151,7 +151,12 @@ export class AuthController {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
-    await this.authService.sendTelegramNotification(user.id, headers, ip)
+    await this.authService.sendTelegramNotification(
+      'Someone has logged into your account!',
+      user.id,
+      headers,
+      ip,
+    )
 
     if (user.isTwoFactorAuthenticationEnabled) {
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
@@ -210,7 +215,8 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.accountNotExists'))
     }
 
-    await this.authService.sendTelegramNotificationForPasswordReset(
+    await this.authService.sendTelegramNotification(
+      'Someone has requested a password reset!',
       user.id,
       headers,
       ip,
@@ -447,7 +453,8 @@ export class AuthController {
       throw new UnauthorizedException()
     }
 
-    await this.authService.sendTelegramNotificationForLogoutAllDevices(
+    await this.authService.sendTelegramNotification(
+      'Someone has logged out of all devices!',
       user.id,
       headers,
       ip,

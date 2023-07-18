@@ -217,6 +217,7 @@ export class AuthService {
   }
 
   public async sendTelegramNotification(
+    messageTitle: string,
     userId: string,
     headers: unknown,
     ip: string,
@@ -230,79 +231,13 @@ export class AuthService {
     const headersInfo = await this.getHeadersInfo(headers)
     const loginDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
     const message =
-      '🚨 *Someone has logged into your account!*\n\n' +
+      `🚨 *${messageTitle}*\n\n` +
       `*Browser:* ${headersInfo.browser}\n` +
       `*Device:* ${headersInfo.device}\n` +
       `*OS:* ${headersInfo.os}\n` +
       `*Country:* ${headersInfo.country}\n` +
       `*IP:* ${ip}\n` +
       `*Date:* ${loginDate} (UTC)\n\n` +
-      'If it was not you, please change your password immediately.'
-    if (user && user.isTelegramChatIdConfirmed) {
-      await this.telegramService.sendMessage(
-        Number(user.telegramChatId),
-        message,
-        {
-          parse_mode: 'Markdown',
-        },
-      )
-    }
-  }
-
-  public async sendTelegramNotificationForLogoutAllDevices(
-    userId: string,
-    headers: unknown,
-    ip: string,
-  ) {
-    const user = await this.userService.findUserById(userId)
-
-    if (!user.telegramChatId || !user.receiveLoginNotifications) {
-      return
-    }
-
-    const headersInfo = await this.getHeadersInfo(headers)
-    const logoutDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
-    const message =
-      '🚨 *Someone has logged out of all devices!*\n\n' +
-      `*Browser:* ${headersInfo.browser}\n` +
-      `*Device:* ${headersInfo.device}\n` +
-      `*OS:* ${headersInfo.os}\n` +
-      `*Country:* ${headersInfo.country}\n` +
-      `*IP:* ${ip}\n` +
-      `*Date:* ${logoutDate} (UTC)\n\n` +
-      'If it was not you, please change your password immediately.'
-    if (user && user.isTelegramChatIdConfirmed) {
-      await this.telegramService.sendMessage(
-        Number(user.telegramChatId),
-        message,
-        {
-          parse_mode: 'Markdown',
-        },
-      )
-    }
-  }
-
-  public async sendTelegramNotificationForPasswordReset(
-    userId: string,
-    headers: unknown,
-    ip: string,
-  ) {
-    const user = await this.userService.findUserById(userId)
-
-    if (!user.telegramChatId || !user.receiveLoginNotifications) {
-      return
-    }
-
-    const headersInfo = await this.getHeadersInfo(headers)
-    const resetDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
-    const message =
-      '🚨 *Someone has reset your password!*\n\n' +
-      `*Browser:* ${headersInfo.browser}\n` +
-      `*Device:* ${headersInfo.device}\n` +
-      `*OS:* ${headersInfo.os}\n` +
-      `*Country:* ${headersInfo.country}\n` +
-      `*IP:* ${ip}\n` +
-      `*Date:* ${resetDate} (UTC)\n\n` +
       'If it was not you, please change your password immediately.'
     if (user && user.isTelegramChatIdConfirmed) {
       await this.telegramService.sendMessage(
@@ -547,7 +482,12 @@ export class AuthService {
       throw new BadRequestException()
     }
 
-    await this.sendTelegramNotification(user.id, headers, ip)
+    await this.sendTelegramNotification(
+      'Someone has logged in to their account with Google',
+      user.id,
+      headers,
+      ip,
+    )
 
     const jwtTokens = await this.generateJwtTokens(
       user.id,
@@ -958,7 +898,12 @@ export class AuthService {
       throw new BadRequestException()
     }
 
-    await this.sendTelegramNotification(user.id, headers, ip)
+    await this.sendTelegramNotification(
+      'Someone has logged in to their account with Github',
+      user.id,
+      headers,
+      ip,
+    )
 
     const jwtTokens = await this.generateJwtTokens(
       user.id,
