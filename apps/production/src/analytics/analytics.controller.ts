@@ -513,7 +513,25 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
+    let newTimeBucket = timeBucket
+    let allowedTumebucketForPeriodAll
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+      )
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimeBucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      allowedTumebucketForPeriodAll = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimeBucket)
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
 
@@ -521,9 +539,10 @@ export class AnalyticsController {
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      timeBucket,
+      newTimeBucket,
       period,
       safeTimezone,
+      diff,
     )
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -543,7 +562,7 @@ export class AnalyticsController {
     }
 
     const result = await this.analyticsService.groupPerfByTimeBucket(
-      timeBucket,
+      newTimeBucket,
       groupFrom,
       groupTo,
       subQuery,
@@ -555,6 +574,7 @@ export class AnalyticsController {
     return {
       ...result,
       appliedFilters,
+      timeBucket: allowedTumebucketForPeriodAll,
     }
   }
 
