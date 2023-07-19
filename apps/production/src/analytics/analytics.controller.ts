@@ -295,7 +295,7 @@ export class AnalyticsController {
 
     let diff
 
-    if (period === validPeriods[validPeriods.length - 1]) {
+    if (period === 'all') {
       const res = await this.analyticsService.getTimeBucketForAllTime(
         pid,
         period,
