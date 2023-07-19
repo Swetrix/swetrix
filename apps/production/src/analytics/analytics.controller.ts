@@ -645,6 +645,17 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+      )
+
+      diff = res.diff
+    }
+
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
@@ -658,6 +669,7 @@ export class AnalyticsController {
       null,
       period,
       safeTimezone,
+      diff,
     )
 
     const [filtersQuery, filtersParams, appliedFilters] =
