@@ -137,6 +137,7 @@ const timeBucketConversion = {
   hour: 'toStartOfHour',
   day: 'toStartOfDay',
   month: 'toStartOfMonth',
+  year: 'toStartOfYear',
 }
 
 const isValidTimezone = (timezone: string): boolean => {
@@ -1061,6 +1062,10 @@ export class AnalyticsService {
         format = 'YYYY-MM'
         break
 
+      case TimeBucketType.YEAR:
+        format = 'YYYY'
+        break
+
       default:
         throw new BadRequestException(
           `The provided time bucket (${timeBucket}) is incorrect`,
@@ -1186,6 +1191,10 @@ export class AnalyticsService {
         toMonth(tz_created) as month`,
         'year, month',
       ]
+    }
+
+    if (timeBucket === TimeBucketType.YEAR) {
+      return [`toYear(tz_created) as year`, 'year']
     }
 
     return [
