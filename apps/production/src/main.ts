@@ -7,7 +7,7 @@ import { getBotToken } from 'nestjs-telegraf'
 
 import { ConfigService } from '@nestjs/config'
 import * as Sentry from '@sentry/node'
-import { isDevelopment } from './common/constants'
+import { isDevelopment, sentryIgnoreErrors } from './common/constants'
 import { AppModule } from './app.module'
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor'
 
@@ -24,6 +24,7 @@ async function bootstrap() {
     Sentry.init({
       dsn: configService.get<string>('SENTRY_DSN'),
       tracesSampleRate: isProduction ? 0.1 : 1.0,
+      ignoreErrors: sentryIgnoreErrors,
     })
 
     app.useGlobalInterceptors(new SentryInterceptor())

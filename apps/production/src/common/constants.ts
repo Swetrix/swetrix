@@ -120,6 +120,39 @@ const TRAFFIC_COLUMNS = [
 const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
 
+const sentryIgnoreErrors: (string | RegExp)[] = [
+  'BadRequestException',
+  'UnauthorizedException',
+  'PaymentRequiredException',
+  'ForbiddenException',
+  'NotFoundException',
+  'MethodNotAllowedException',
+  'NotAcceptableException',
+  'ProxyAuthenticationRequiredException',
+  'RequestTimeoutException',
+  'ConflictException',
+  'GoneException',
+  'LengthRequiredException',
+  'PreconditionFailedException',
+  'PayloadTooLargeException',
+  'URITooLongException',
+  'UnsupportedMediaTypeException',
+  'RangeNotSatisfiableException',
+  'ExpectationFailedException',
+  'ImATeapotException',
+  'MisdirectedRequestException',
+  'UnprocessableEntityException',
+  'LockedException',
+  'FailedDependencyException',
+  'TooEarlyException',
+  'UpgradeRequiredException',
+  'PreconditionRequiredException',
+  'TooManyRequestsException',
+  'RequestHeaderFieldsTooLargeException',
+  'UnavailableForLegalReasonsException',
+  'ClientClosedRequestException',
+]
+
 export {
   clickhouse,
   redis,
@@ -159,4 +192,5 @@ export {
   TRAFFIC_COLUMNS,
   CAPTCHA_COLUMNS,
   PERFORMANCE_COLUMNS,
+  sentryIgnoreErrors,
 }
