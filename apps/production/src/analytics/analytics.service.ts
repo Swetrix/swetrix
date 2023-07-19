@@ -645,12 +645,11 @@ export class AnalyticsService {
   async getTimeBucketForAllTime(
     pid: string,
     period: string,
-    timeBucket: TimeBucketType,
   ): Promise<{
     timeBucket: TimeBucketType[]
     diff: number
   }> {
-    if (period !== validPeriods[validPeriods.length - 1]) {
+    if (period !== 'all') {
       return null
     }
 
@@ -666,6 +665,7 @@ export class AnalyticsService {
         { params: { pid } },
       )
       .toPromise()
+
     let newTimeBucket = [TimeBucketType.MONTH]
     let diff = null
 
@@ -680,7 +680,7 @@ export class AnalyticsService {
         )
       }
 
-      newTimeBucket = _includes(tbMap.tb, timeBucket) ? [timeBucket] : tbMap.tb
+      newTimeBucket = tbMap.tb
     }
 
     return {

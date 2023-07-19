@@ -2,6 +2,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
+import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
@@ -299,12 +300,13 @@ export class AnalyticsController {
       const res = await this.analyticsService.getTimeBucketForAllTime(
         pid,
         period,
-        timeBucket,
       )
 
       diff = res.diff
       // eslint-disable-next-line prefer-destructuring
-      newTimebucket = res.timeBucket[0]
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
       allowedTumebucketForPeriodAll = res.timeBucket
     }
 
@@ -1153,11 +1155,12 @@ export class AnalyticsController {
       const res = await this.analyticsService.getTimeBucketForAllTime(
         pid,
         period,
-        timeBucket,
       )
 
       // eslint-disable-next-line prefer-destructuring
-      newTimeBucket = res.timeBucket[0]
+      newTimeBucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
       diff = res.diff
       timeBucketForAllTime = res.timeBucket
     }
