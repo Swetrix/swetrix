@@ -322,9 +322,9 @@ export class User {
   @JoinTable()
   comments: Comment[]
 
-  // @OneToMany(() => CommentReply, comment => comment.user)
-  // @JoinTable()
-  // commentReplies: CommentReply[]
+  @OneToMany(() => CommentReply, comment => comment.user)
+  @JoinTable()
+  commentReplies: CommentReply[]
 
   @OneToMany(() => Complaint, complaint => complaint.user)
   @JoinTable()

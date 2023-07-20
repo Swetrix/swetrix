@@ -26,7 +26,7 @@ export class CommentReply {
   @CreateDateColumn()
   addedAt: Date
 
-  // @ManyToOne(() => User, user => user.commentReplies)
-  // @JoinColumn()
-  // user: User
+  @ManyToOne(() => User, user => user.commentReplies)
+  @JoinColumn()
+  user: User
 }
