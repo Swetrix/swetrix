@@ -48,7 +48,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, MAX_MONTHS_IN_PAST, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin,
   TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE,
-  PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX, FILTERS_PANELS_ORDER,
+  PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX, FILTERS_PANELS_ORDER, KEY_FOR_ALL_TIME,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -660,7 +660,7 @@ const ViewProject = ({
 
     setDataLoading(true)
     try {
-      let data
+      let data: { timeBucket?: any; chart?: any; params?: any; customs?: any; appliedFilters?: any; avgSdur?: any }
       let dataCompare
       let key = ''
       let keyCompare = ''
@@ -776,8 +776,28 @@ const ViewProject = ({
       const {
         chart, params, customs, appliedFilters, avgSdur,
       } = data
+      let newTimebucket = timeBucket
       sdkInstance?._emitEvent('load', sdkData)
       const processedSdur = getTimeFromSeconds(avgSdur)
+
+      if (period === KEY_FOR_ALL_TIME && !_isEmpty(data.timeBucket)) {
+        // eslint-disable-next-line prefer-destructuring
+        newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : data.timeBucket[0]
+        setPeriodPairs((prev) => {
+          // find in prev state period === KEY_FOR_ALL_TIME and change tbs
+          const newPeriodPairs = _map(prev, (item) => {
+            if (item.period === KEY_FOR_ALL_TIME) {
+              return {
+                ...item,
+                tbs: data.timeBucket.length > 2 ? [data.timeBucket[0], data.timeBucket[1]] : data.timeBucket,
+              }
+            }
+            return item
+          })
+          return newPeriodPairs
+        })
+        setTimebucket(newTimebucket)
+      }
 
       setSessionDurationAVG(getStringFromTime(processedSdur))
 
@@ -793,7 +813,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        const bbSettings = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChart, dataCompare?.chart)
+        const bbSettings = getSettings(chart, newTimebucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChart, dataCompare?.chart)
         setChartData(chart)
 
         setPanelsData({
@@ -833,7 +853,7 @@ const ViewProject = ({
 
     setDataLoading(true)
     try {
-      let dataPerf
+      let dataPerf: { timeBucket?: any; params?: any; appliedFilters?: any; chart?: any }
       let key
       let from
       let to
@@ -925,6 +945,27 @@ const ViewProject = ({
         setDataLoading(false)
         setAnalyticsLoading(false)
         return
+      }
+
+      let newTimebucket = timeBucket
+
+      if (period === KEY_FOR_ALL_TIME && !_isEmpty(dataPerf.timeBucket)) {
+        // eslint-disable-next-line prefer-destructuring
+        newTimebucket = _includes(dataPerf.timeBucket, timeBucket) ? timeBucket : dataPerf.timeBucket[0]
+        setPeriodPairs((prev) => {
+          // find in prev state period === KEY_FOR_ALL_TIME and change tbs
+          const newPeriodPairs = _map(prev, (item) => {
+            if (item.period === KEY_FOR_ALL_TIME) {
+              return {
+                ...item,
+                tbs: dataPerf.timeBucket.length > 2 ? [dataPerf.timeBucket[0], dataPerf.timeBucket[1]] : dataPerf.timeBucket,
+              }
+            }
+            return item
+          })
+          return newPeriodPairs
+        })
+        setTimebucket(newTimebucket)
       }
 
       if (!_isEmpty(dataCompare) && !_isEmpty(dataCompare?.chart)) {
@@ -1534,6 +1575,10 @@ const ViewProject = ({
 
   // useEffect using for call loadAnalytics or loadAnalyticsPerf when smth dependencies changed
   useEffect(() => {
+    if (period === KEY_FOR_ALL_TIME) {
+      return
+    }
+
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
       if (activeTab === PROJECT_TABS.traffic) {
         loadAnalytics()
@@ -1545,6 +1590,24 @@ const ViewProject = ({
       }
     }
   }, [project, period, chartType, filters, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
+
+  useEffect(() => {
+    if (period !== KEY_FOR_ALL_TIME) {
+      return
+    }
+
+    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
+      if (activeTab === PROJECT_TABS.traffic) {
+        loadAnalytics()
+      }
+    }
+    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed) {
+      if (activeTab === PROJECT_TABS.performance) {
+        loadAnalyticsPerf()
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project, period, chartType, filters, forecasedChartData, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, activeTab, areFiltersPerfParsed])
 
   // using this for fix some bugs with update custom events data for chart
   useEffect(() => {

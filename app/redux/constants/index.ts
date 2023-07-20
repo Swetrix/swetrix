@@ -21,6 +21,8 @@ export const FORECAST_MAX_MAPPING: {
   month: 12,
 }
 
+export const KEY_FOR_ALL_TIME = 'all'
+
 export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]): {
   label: string
   period: string
@@ -29,6 +31,10 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   dropdownLabel?: string
   isCustomDate?: boolean
 }[] => [{
+  label: t('project.thishour'),
+  period: 'thishour',
+  tbs: ['hour'],
+}, {
   label: t('project.today'),
   period: 'today',
   tbs: ['hour'],
@@ -66,6 +72,10 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   period: '24M',
   tbs: ['month'],
 }, {
+  label: t('project.all'),
+  period: KEY_FOR_ALL_TIME,
+  tbs: ['month', 'year'],
+}, {
   label: dates ? getCustomLabel(dates, t) : t('project.custom'),
   dropdownLabel: t('project.custom'),
   isCustomDate: true,
@@ -77,7 +87,7 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   tbs: tbs || ['custom'],
 }]
 
-export const filtersPeriodPairs = ['1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
+export const filtersPeriodPairs = ['thishour', '1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
 
 export const tbPeriodPairsCompare = (t: Function, dates?: Date[]): {
   label: string
@@ -132,24 +142,28 @@ export const tbsFormatMapper: IStringObject = {
   hour: '%I %p',
   day: '%d %b',
   month: '%b %Y',
+  year: '%Y',
 }
 
 export const tbsFormatMapperTooltip: IStringObject = {
   hour: '%d %b %I %p',
   day: '%d %b',
   month: '%b %Y',
+  year: '%Y',
 }
 
 export const tbsFormatMapperTooltip24h: IStringObject = {
   hour: '%d %b %H:%M',
   day: '%d %b',
   month: '%b %Y',
+  year: '%Y',
 }
 
 export const tbsFormatMapper24h: IStringObject = {
   hour: '%H:%M',
   day: '%d %b',
   month: '%b %Y',
+  year: '%Y',
 }
 
 export const TimeFormat: IStringObject = {

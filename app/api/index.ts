@@ -370,7 +370,7 @@ export const resetCaptchaProject = (id: string) =>
 export const getProjectData = (
   pid: string,
   tb: string = 'hour',
-  period: string = '3d',
+  period: string = '1d',
   filters: string[] = [],
   from: string = '',
   to: string = '',

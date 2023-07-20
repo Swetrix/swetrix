@@ -32,7 +32,7 @@ import { getItem, setItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleAdmin,
-  MAX_MONTHS_IN_PAST, TimeFormat, chartTypes, TITLE_SUFFIX,
+  MAX_MONTHS_IN_PAST, TimeFormat, chartTypes, TITLE_SUFFIX, KEY_FOR_ALL_TIME,
 } from 'redux/constants'
 import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
@@ -211,18 +211,39 @@ const ViewProject = ({
       }
 
       const {
-        chart, params, customs, appliedFilters,
+        chart, params, customs, appliedFilters, timeBucket: timeBucketFromResponse,
       } = data
+
+      let newTimebucket = timeBucket
 
       if (!_isEmpty(appliedFilters)) {
         setFilters(appliedFilters)
+      }
+
+      if (period === KEY_FOR_ALL_TIME && !_isEmpty(timeBucketFromResponse)) {
+        // eslint-disable-next-line prefer-destructuring
+        newTimebucket = _includes(timeBucketFromResponse, timeBucket) ? timeBucket : timeBucketFromResponse[0]
+        setPeriodPairs((prev) => {
+          // find in prev state period === KEY_FOR_ALL_TIME and change tbs
+          const newPeriodPairs = _map(prev, (item) => {
+            if (item.period === KEY_FOR_ALL_TIME) {
+              return {
+                ...item,
+                tbs: timeBucketFromResponse.length > 2 ? [timeBucketFromResponse[0], timeBucketFromResponse[1]] : timeBucketFromResponse,
+              }
+            }
+            return item
+          })
+          return newPeriodPairs
+        })
+        setTimebucket(newTimebucket)
       }
 
       if (_isEmpty(params)) {
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings: any = getSettings(chart, timeBucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
+        const bbSettings: any = getSettings(chart, newTimebucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
         setChartData(chart)
 
         setPanelsData({
@@ -247,11 +268,6 @@ const ViewProject = ({
       console.error(e)
     }
   }
-
-  useEffect(() => {
-    loadAnalytics()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartType])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column: any, filter: any, isExclusive: boolean = false) => {
@@ -417,10 +433,25 @@ const ViewProject = ({
   }
 
   useEffect(() => {
+    if (period !== KEY_FOR_ALL_TIME) {
+      return
+    }
+
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
       loadAnalytics()
     }
-  }, [project, period, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project, period, chartType, filters, arePeriodParsed])
+
+  useEffect(() => {
+    if (period === KEY_FOR_ALL_TIME) {
+      return
+    }
+
+    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
+      loadAnalytics()
+    }
+  }, [project, period, chartType, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
 
   useEffect(() => {
     if (dateRange && arePeriodParsed) {
