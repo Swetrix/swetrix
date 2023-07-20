@@ -16,6 +16,7 @@ import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _includes from 'lodash/includes'
+import * as _omit from 'lodash/omit'
 import { UserService } from '../../user/user.service'
 import { ExtensionsService } from '../extensions/extensions.service'
 import { Auth, CurrentUserId } from '../../auth/decorators'
@@ -72,14 +73,20 @@ export class CommentsController {
     if (!_isEmpty(user)) {
       return {
         comments: _map(comments, comment => ({
-          ...comment,
+          ..._omit(comment, ['userId']),
           isOwner: comment.userId === userId,
         })),
         count,
       }
     }
 
-    return { comments, count }
+    return {
+      comments: _map(comments, comment => ({
+        ..._omit(comment, ['userId']),
+        isOwner: false,
+      })),
+      count,
+    }
   }
 
   @Get(':commentId')
@@ -93,7 +100,7 @@ export class CommentsController {
       throw new NotFoundException('Comment not found.')
     }
 
-    return comment
+    return _omit(comment, ['userId'])
   }
 
   @Auth([UserType.CUSTOMER, UserType.ADMIN])
@@ -165,8 +172,17 @@ export class CommentsController {
   async createCommentReply(
     @Body() commentReplyDto: CreateReplyCommentBodyDto,
     @CurrentUserId() userId: string,
-  ): Promise<CommentReply> {
-    return this.commentsService.createCommentReply(commentReplyDto, userId)
+  ): Promise<CommentReply & { isOwner?: boolean }> {
+    const replyComment = await this.commentsService.createCommentReply(
+      commentReplyDto,
+      userId,
+    )
+
+    return {
+      ...replyComment,
+      parentComment: _omit(replyComment.parentComment, ['userId']),
+      isOwner: replyComment.userId === userId,
+    }
   }
 
   @Auth([], true, true)
@@ -174,7 +190,7 @@ export class CommentsController {
   async findAllCommentReplies(
     @Param('id') commetId: string,
     @CurrentUserId() userId: string,
-  ): Promise<(CommentReply & { isOwner?: boolean })[]> {
+  ): Promise<(CommentReply & { isOwner: boolean })[]> {
     let user
 
     try {
@@ -190,11 +206,16 @@ export class CommentsController {
     if (!_isEmpty(user)) {
       return _map(commentReplies, commentReply => ({
         ...commentReply,
+        parentComment: _omit(commentReply.parentComment, ['userId']),
         isOwner: commentReply.userId === userId,
       }))
     }
 
-    return commentReplies
+    return _map(commentReplies, commentReply => ({
+      ...commentReply,
+      parentComment: _omit(commentReply.parentComment, ['userId']),
+      isOwner: false,
+    }))
   }
 
   @Auth([], true, true)
@@ -202,7 +223,7 @@ export class CommentsController {
   async findCommentReplyById(
     @Param('id') id: string,
     @CurrentUserId() userId: string,
-  ): Promise<CommentReply & { isOwner?: boolean }> {
+  ): Promise<CommentReply & { isOwner: boolean }> {
     let user
 
     try {
@@ -220,11 +241,16 @@ export class CommentsController {
     if (!_isEmpty(user)) {
       return {
         ...commentReply,
+        parentComment: _omit(commentReply.parentComment, ['userId']),
         isOwner: commentReply.userId === userId,
       }
     }
 
-    return commentReply
+    return {
+      ...commentReply,
+      parentComment: _omit(commentReply.parentComment, ['userId']),
+      isOwner: false,
+    }
   }
 
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
@@ -233,8 +259,18 @@ export class CommentsController {
     @Param('id') id: string,
     @Body() commentReplyDto: UpdateCommentReplyBodyDto,
     @CurrentUserId() userId: string,
-  ): Promise<CommentReply | undefined> {
-    return this.commentsService.updateCommentReply(id, commentReplyDto, userId)
+  ): Promise<CommentReply & { isOwner: boolean }> {
+    const updatedReplyComment = await this.commentsService.updateCommentReply(
+      id,
+      commentReplyDto,
+      userId,
+    )
+
+    return {
+      ...updatedReplyComment,
+      parentComment: _omit(updatedReplyComment.parentComment, ['userId']),
+      isOwner: updatedReplyComment.userId === userId,
+    }
   }
 
   @Auth([UserType.ADMIN, UserType.CUSTOMER])

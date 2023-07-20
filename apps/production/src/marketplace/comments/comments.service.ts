@@ -73,6 +73,7 @@ export class CommentsService {
   async findAllCommentReplies(commetId: string): Promise<CommentReply[]> {
     return this.commentReplyRepository.find({
       where: { parentComment: { id: commetId } },
+      relations: ['parentComment', 'user'],
     })
   }
 
