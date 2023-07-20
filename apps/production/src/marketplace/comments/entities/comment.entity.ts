@@ -4,10 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Extension } from '../../extensions/entities/extension.entity'
 import { User } from '../../../user/entities/user.entity'
+import { CommentReply } from '../comment-reply/entities/comment-reply.entity'
 
 @Entity()
 export class Comment {
@@ -39,6 +41,6 @@ export class Comment {
   @JoinColumn()
   user: User
 
-  @Column({ type: 'text', nullable: true, default: null })
-  reply: string | null
+  @OneToMany(() => CommentReply, reply => reply.parentComment)
+  replies: CommentReply[]
 }

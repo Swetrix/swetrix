@@ -16,7 +16,10 @@ import { ExtensionsService } from '../extensions/extensions.service'
 import { Auth, CurrentUserId } from '../../auth/decorators'
 import { UserType } from '../../user/entities/user.entity'
 import { CommentsService } from './comments.service'
-import { CreateCommentBodyDto, ReplyCommentBodyDto } from './dtos/bodies/create-comment.dto'
+import {
+  CreateCommentBodyDto,
+  ReplyCommentBodyDto,
+} from './dtos/bodies/create-comment.dto'
 import { DeleteCommentParamDto } from './dtos/params/delete-comment.dto'
 import { GetCommentParamDto } from './dtos/params/get-comment.dto'
 import { CreateCommentQueryDto } from './dtos/queries/create-comment.dto'
@@ -71,7 +74,6 @@ export class CommentsController {
   @Post()
   @ApiQuery({ name: 'userId', required: true, type: String })
   async createComment(
-    @Query() queries: CreateCommentQueryDto,
     @Body() body: CreateCommentBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<Comment> {
@@ -93,7 +95,9 @@ export class CommentsController {
     })
 
     if (comment) {
-      throw new NotFoundException('Comment already exists.')
+      throw new NotFoundException(
+        'You have already commented on this extension.',
+      )
     }
 
     return this.commentsService.save({
@@ -128,35 +132,5 @@ export class CommentsController {
     }
 
     await this.commentsService.delete(params.commentId)
-  }
-
-  @Auth([UserType.CUSTOMER])
-  @Post(':commentId/reply')
-  @ApiParam({ name: 'commentId', required: true, type: String })
-  async replyToComment(
-    @Param() params: GetCommentParamDto,
-    @Body() body: ReplyCommentBodyDto,
-    @CurrentUserId() userId: string,
-  ): Promise<Comment> {
-    const comment = await this.commentsService.findOne({
-      where: { id: params.commentId },
-      relations: ['extension', 'extension.owner'],
-    })
-
-    if (!comment) {
-      throw new NotFoundException('Comment not found.')
-    }
-
-    if (comment.extension.owner.id !== userId) {
-      throw new ForbiddenException('You are not allowed to do this.')
-    }
-
-    if (comment.reply) {
-      throw new ConflictException('Comment already has a reply.')
-    }
-
-    return await this.commentsService.update(comment.id, {
-      reply: body.reply,
-    })
   }
 }
