@@ -300,6 +300,7 @@ export class AnalyticsController {
       const res = await this.analyticsService.getTimeBucketForAllTime(
         pid,
         period,
+        timezone,
       )
 
       diff = res.diff
@@ -521,6 +522,7 @@ export class AnalyticsController {
       const res = await this.analyticsService.getTimeBucketForAllTime(
         pid,
         period,
+        timezone,
       )
 
       diff = res.diff
@@ -671,6 +673,7 @@ export class AnalyticsController {
       const res = await this.analyticsService.getTimeBucketForAllTime(
         pid,
         period,
+        timezone,
       )
 
       diff = res.diff
@@ -1187,6 +1190,7 @@ export class AnalyticsController {
       const res = await this.analyticsService.getTimeBucketForAllTime(
         pid,
         period,
+        timezone,
       )
 
       // eslint-disable-next-line prefer-destructuring
