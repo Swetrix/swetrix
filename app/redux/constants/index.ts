@@ -30,11 +30,12 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   countDays?: number
   dropdownLabel?: string
   isCustomDate?: boolean
+// }[] => [{
+//   label: t('project.thishour'),
+//   period: 'thishour',
+//   tbs: ['hour'],
+// }, {
 }[] => [{
-  label: t('project.thishour'),
-  period: 'thishour',
-  tbs: ['hour'],
-}, {
   label: t('project.today'),
   period: 'today',
   tbs: ['hour'],
