@@ -489,6 +489,9 @@ export class AnalyticsService {
       } else if (period === 'all' && (diff === 0 || diff === 1)) {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow
+      } else if (period === 'all') {
+        groupFrom = djsNow.subtract(diff - 1, 'day').startOf(timeBucket)
+        groupTo = djsNow
       } else {
         if (period === '1d') {
           groupFrom = djsNow.subtract(parseInt(period, 10), _last(period))
@@ -646,6 +649,7 @@ export class AnalyticsService {
   async getTimeBucketForAllTime(
     pid: string,
     period: string,
+    safeTimezone: string,
   ): Promise<{
     timeBucket: TimeBucketType[]
     diff: number
@@ -660,18 +664,15 @@ export class AnalyticsService {
         { params: { pid } },
       )
       .toPromise()
-    const to: any = await clickhouse
-      .query(
-        'SELECT created as to FROM analytics where pid = {pid:FixedString(12)} ORDER BY created DESC LIMIT 1',
-        { params: { pid } },
-      )
-      .toPromise()
+    const to = _includes(GMT_0_TIMEZONES, safeTimezone)
+      ? dayjs.utc()
+      : dayjs().tz(safeTimezone)
 
     let newTimeBucket = [TimeBucketType.MONTH]
     let diff = null
 
     if (from && to) {
-      diff = dayjs(to[0].to).diff(dayjs(from[0].from), 'days')
+      diff = dayjs(to).diff(dayjs(from[0].from), 'days')
 
       const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
 
