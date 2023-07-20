@@ -93,7 +93,7 @@ const GMT_0_TIMEZONES = [
 ]
 
 export const validPeriods = [
-  'thishour',
+  '1h',
   'today',
   'yesterday',
   '1d',
@@ -486,9 +486,6 @@ export class AnalyticsService {
       if (period === 'today') {
         groupFrom = djsNow.startOf('d')
         groupTo = djsNow
-      } else if (period === 'thishour') {
-        groupFrom = djsNow.subtract(1, 'hour').startOf('h')
-        groupTo = djsNow
       } else if (period === 'yesterday') {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow.subtract(1, 'day').endOf('d')
@@ -499,7 +496,7 @@ export class AnalyticsService {
         groupFrom = djsNow.subtract(diff - 1, 'day').startOf(timeBucket)
         groupTo = djsNow
       } else {
-        if (period === '1d') {
+        if (period === '1d' || period === '1h') {
           groupFrom = djsNow.subtract(parseInt(period, 10), _last(period))
         } else {
           groupFrom = djsNow.subtract(parseInt(period, 10) - 1, _last(period))
@@ -1106,7 +1103,7 @@ export class AnalyticsService {
   }
 
   generateDateString(row: { [key: string]: number }): string {
-    const { year, month, day, hour } = row
+    const { year, month, day, hour, minute } = row
 
     let dateString = `${year}-${month < 10 ? `0${month}` : month}`
 
@@ -1119,10 +1116,17 @@ export class AnalyticsService {
     }
 
     if (typeof hour === 'number') {
+      const strMinute =
+        typeof minute === 'number'
+          ? minute < 10
+            ? `0${minute}`
+            : minute
+          : '00'
+
       if (hour < 10) {
-        dateString += ` 0${hour}:00:00`
+        dateString += ` 0${hour}:${strMinute}:00`
       } else {
-        dateString += ` ${hour}:00:00`
+        dateString += ` ${hour}:${strMinute}:00`
       }
     }
 
