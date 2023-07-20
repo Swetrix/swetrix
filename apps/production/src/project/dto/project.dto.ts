@@ -38,6 +38,7 @@ export class ProjectDTO {
     description:
       "The project's state. If enabled - all the incoming analytics data will be saved.",
   })
+  @IsNotEmpty()
   active: boolean
 
   @ApiProperty({
