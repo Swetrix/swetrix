@@ -77,7 +77,9 @@ export class CommentsService {
   }
 
   async findCommentReplyById(id: string): Promise<CommentReply | undefined> {
-    return this.commentReplyRepository.findOne(id)
+    return this.commentReplyRepository.findOne(id, {
+      relations: ['parentComment', 'user'],
+    })
   }
 
   async updateCommentReply(
