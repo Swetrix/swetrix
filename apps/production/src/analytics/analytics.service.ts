@@ -106,6 +106,7 @@ export const validPeriods = [
 ]
 
 const validTimebuckets = [
+  TimeBucketType.MINUTE,
   TimeBucketType.HOUR,
   TimeBucketType.DAY,
   TimeBucketType.MONTH,
@@ -115,6 +116,10 @@ const validTimebuckets = [
 // mapping of allowed timebuckets per difference between days
 // (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
 const timeBucketToDays = [
+  {
+    lt: 0,
+    tb: [TimeBucketType.MINUTE, TimeBucketType.HOUR],
+  }, // < 1 day
   {
     lt: 7,
     tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.MONTH],
@@ -134,6 +139,7 @@ const timeBucketToDays = [
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 const timeBucketConversion = {
+  minute: 'toStartOfMinute',
   hour: 'toStartOfHour',
   day: 'toStartOfDay',
   month: 'toStartOfMonth',
@@ -1051,6 +1057,7 @@ export class AnalyticsService {
     let format
 
     switch (timeBucket) {
+      case TimeBucketType.MINUTE:
       case TimeBucketType.HOUR:
         format = 'YYYY-MM-DD HH:mm:ss'
         break
@@ -1176,6 +1183,17 @@ export class AnalyticsService {
   }
 
   getGroupSubquery(timeBucket: TimeBucketType): [string, string] {
+    if (timeBucket === TimeBucketType.MINUTE) {
+      return [
+        `toYear(tz_created) as year,
+        toMonth(tz_created) as month,
+        toDayOfMonth(tz_created) as day,
+        toHour(tz_created) as hour,
+        toMinute(tz_created) as minute`,
+        'year, month, day, hour, minute',
+      ]
+    }
+
     if (timeBucket === TimeBucketType.HOUR) {
       return [
         `toYear(tz_created) as year,

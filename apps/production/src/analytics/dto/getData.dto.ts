@@ -3,6 +3,7 @@ import { IsNotEmpty } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 
 export enum TimeBucketType {
+  MINUTE = 'minute',
   HOUR = 'hour',
   DAY = 'day',
   MONTH = 'month',
