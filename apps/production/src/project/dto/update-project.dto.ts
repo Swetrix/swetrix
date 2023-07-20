@@ -10,16 +10,23 @@ export class UpdateProjectDto extends IntersectionType(
     'name',
     'origins',
     'ipBlacklist',
-    'public',
     'isCaptcha',
   ] as const),
   ProjectPasswordDto,
 ) {
   @ApiProperty({
-    required: false,
+    required: true,
     description:
       "The project's state. If enabled - all the incoming analytics data will be saved.",
   })
   @IsNotEmpty()
   active: boolean
+
+  @ApiProperty({
+    required: true,
+    description:
+      "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
+  })
+  @IsNotEmpty()
+  public: boolean
 }
