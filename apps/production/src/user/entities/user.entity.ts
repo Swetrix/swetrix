@@ -12,6 +12,7 @@ import { ProjectShare } from '../../project/entity/project-share.entity'
 import { Extension } from '../../marketplace/extensions/entities/extension.entity'
 import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
+import { CommentReply } from '../../marketplace/comments/entities/comment-reply.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
 
@@ -320,6 +321,10 @@ export class User {
   @OneToMany(() => Comment, comment => comment.user)
   @JoinTable()
   comments: Comment[]
+
+  // @OneToMany(() => CommentReply, comment => comment.user)
+  // @JoinTable()
+  // commentReplies: CommentReply[]
 
   @OneToMany(() => Complaint, complaint => complaint.user)
   @JoinTable()

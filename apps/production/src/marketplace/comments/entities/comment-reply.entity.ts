@@ -4,8 +4,10 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  JoinColumn,
 } from 'typeorm'
 import { Comment } from './comment.entity'
+import { User } from '../../../user/entities/user.entity'
 
 @Entity()
 export class CommentReply {
@@ -23,4 +25,8 @@ export class CommentReply {
 
   @CreateDateColumn()
   addedAt: Date
+
+  // @ManyToOne(() => User, user => user.commentReplies)
+  // @JoinColumn()
+  // user: User
 }

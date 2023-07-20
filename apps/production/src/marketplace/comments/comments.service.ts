@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
+import * as _includes from 'lodash/includes'
+import * as _map from 'lodash/map'
 import { Comment } from './entities/comment.entity'
 import { CreateReplyCommentBodyDto } from './dtos/bodies/create-reply.dto'
 import { UpdateCommentReplyBodyDto } from './dtos/bodies/update-reply.dto'
@@ -47,7 +53,13 @@ export class CommentsService {
     })
 
     if (!comment) {
-      throw new Error('Comment not found')
+      throw new NotFoundException('Comment not found')
+    }
+
+    const commentsReplies = await this.findAllCommentReplies(comment.id)
+
+    if (_includes(_map(commentsReplies, 'userId'), userId)) {
+      throw new BadRequestException('You have already replied to this comment')
     }
 
     const commentReply = this.commentReplyRepository.create({
@@ -71,9 +83,23 @@ export class CommentsService {
   async updateCommentReply(
     id: string,
     commentReplyDto: UpdateCommentReplyBodyDto,
+    userId: string,
   ): Promise<CommentReply | undefined> {
+    const commentReply = await this.findCommentReplyById(id)
+
+    if (!commentReply) {
+      throw new NotFoundException('Comment reply not found')
+    }
+
+    if (commentReply.userId !== userId) {
+      throw new BadRequestException(
+        'You are not the owner of this comment reply',
+      )
+    }
+
     await this.commentReplyRepository.update(id, commentReplyDto)
-    return this.commentReplyRepository.findOne(id)
+
+    return this.findCommentReplyById(id)
   }
 
   async deleteCommentReply(id: string): Promise<void> {

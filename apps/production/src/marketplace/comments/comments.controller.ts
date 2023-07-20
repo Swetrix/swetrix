@@ -10,10 +10,12 @@ import {
   Post,
   Query,
   Put,
+  BadRequestException,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
+import * as _includes from 'lodash/includes'
 import { UserService } from '../../user/user.service'
 import { ExtensionsService } from '../extensions/extensions.service'
 import { Auth, CurrentUserId } from '../../auth/decorators'
@@ -37,15 +39,27 @@ export class CommentsController {
     private readonly userService: UserService,
   ) {}
 
+  @Auth([UserType.CUSTOMER, UserType.ADMIN], false, true)
   @Get()
   @ApiQuery({ name: 'offset', required: false, type: String })
   @ApiQuery({ name: 'limit', required: false, type: String })
   @ApiQuery({ name: 'extensionId', required: false, type: String })
   @ApiQuery({ name: 'userId', required: false, type: String })
-  async getComments(@Query() queries: GetCommentsQueryDto): Promise<{
-    comments: Comment[]
+  async getComments(
+    @Query() queries: GetCommentsQueryDto,
+    @CurrentUserId() userId: string,
+  ): Promise<{
+    comments: Comment[] & { isOwner?: boolean }
     count: number
   }> {
+    let user
+
+    try {
+      user = await this.userService.findOne(userId)
+    } catch (error) {
+      user = undefined
+    }
+
     const [comments, count] = await this.commentsService.findAndCount({
       where: {
         ...(queries.extensionId && { extensionId: queries.extensionId }),
@@ -53,7 +67,18 @@ export class CommentsController {
       },
       skip: queries.offset || 0,
       take: queries.limit || 25,
+      relations: ['replies'],
     })
+
+    if (!_isEmpty(user)) {
+      return {
+        comments: _map(comments, comment => ({
+          ...comment,
+          isOwner: comment.userId === userId,
+        })),
+        count,
+      }
+    }
 
     return { comments, count }
   }
@@ -97,7 +122,7 @@ export class CommentsController {
     })
 
     if (comment) {
-      throw new NotFoundException(
+      throw new BadRequestException(
         'You have already commented on this extension.',
       )
     }
@@ -150,7 +175,7 @@ export class CommentsController {
   async findAllCommentReplies(
     @Param('id') commetId: string,
     @CurrentUserId() userId: string,
-  ): Promise<(CommentReply & { isOwner: boolean })[]> {
+  ): Promise<(CommentReply & { isOwner?: boolean })[]> {
     let user
 
     try {
@@ -170,10 +195,7 @@ export class CommentsController {
       }))
     }
 
-    return _map(commentReplies, commentReply => ({
-      ...commentReply,
-      isOwner: false,
-    }))
+    return commentReplies
   }
 
   @Auth([UserType.ADMIN, UserType.CUSTOMER], false, true)
@@ -181,7 +203,7 @@ export class CommentsController {
   async findCommentReplyById(
     @Param('id') id: string,
     @CurrentUserId() userId: string,
-  ): Promise<CommentReply & { isOwner: boolean }> {
+  ): Promise<CommentReply & { isOwner?: boolean }> {
     let user
 
     try {
@@ -193,7 +215,7 @@ export class CommentsController {
     const commentReply = await this.commentsService.findCommentReplyById(id)
 
     if (!commentReply) {
-      throw new Error('Comment reply not found')
+      throw new NotFoundException('Comment reply not found.')
     }
 
     if (!_isEmpty(user)) {
@@ -203,22 +225,39 @@ export class CommentsController {
       }
     }
 
-    return {
-      ...commentReply,
-      isOwner: false,
-    }
+    return commentReply
   }
 
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
   @Put('reply/:id')
   async updateCommentReply(
     @Param('id') id: string,
     @Body() commentReplyDto: UpdateCommentReplyBodyDto,
+    @CurrentUserId() userId: string,
   ): Promise<CommentReply | undefined> {
-    return this.commentsService.updateCommentReply(id, commentReplyDto)
+    return this.commentsService.updateCommentReply(id, commentReplyDto, userId)
   }
 
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
   @Delete('reply/:id')
-  async deleteCommentReply(@Param('id') id: string): Promise<void> {
-    return this.commentsService.deleteCommentReply(id)
+  async deleteCommentReply(
+    @Param('id') id: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    const commentReply = await this.commentsService.findCommentReplyById(id)
+
+    if (!commentReply) {
+      throw new NotFoundException('Comment reply not found.')
+    }
+
+    const user = await this.userService.findOne(userId)
+
+    if (
+      !(commentReply.userId === userId || _includes(user.roles, UserType.ADMIN))
+    ) {
+      throw new ForbiddenException('You are not allowed to do this.')
+    }
+
+    await this.commentsService.deleteCommentReply(id)
   }
 }
