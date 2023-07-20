@@ -9,22 +9,24 @@ import {
   Param,
   Post,
   Query,
+  Put,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import * as _isEmpty from 'lodash/isEmpty'
+import * as _map from 'lodash/map'
 import { UserService } from '../../user/user.service'
 import { ExtensionsService } from '../extensions/extensions.service'
 import { Auth, CurrentUserId } from '../../auth/decorators'
 import { UserType } from '../../user/entities/user.entity'
 import { CommentsService } from './comments.service'
-import {
-  CreateCommentBodyDto,
-  ReplyCommentBodyDto,
-} from './dtos/bodies/create-comment.dto'
+import { CreateCommentBodyDto } from './dtos/bodies/create-comment.dto'
 import { DeleteCommentParamDto } from './dtos/params/delete-comment.dto'
 import { GetCommentParamDto } from './dtos/params/get-comment.dto'
-import { CreateCommentQueryDto } from './dtos/queries/create-comment.dto'
 import { GetCommentsQueryDto } from './dtos/queries/get-comments.dto'
 import { Comment } from './entities/comment.entity'
+import { CommentReply } from './entities/comment-reply.entity'
+import { CreateReplyCommentBodyDto } from './dtos/bodies/create-reply.dto'
+import { UpdateCommentReplyBodyDto } from './dtos/bodies/update-reply.dto'
 
 @ApiTags('comments')
 @Controller('comments')
@@ -132,5 +134,91 @@ export class CommentsController {
     }
 
     await this.commentsService.delete(params.commentId)
+  }
+
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Post('reply')
+  async createCommentReply(
+    @Body() commentReplyDto: CreateReplyCommentBodyDto,
+    @CurrentUserId() userId: string,
+  ): Promise<CommentReply> {
+    return this.commentsService.createCommentReply(commentReplyDto, userId)
+  }
+
+  @Auth([UserType.ADMIN, UserType.CUSTOMER], false, true)
+  @Get('reply')
+  async findAllCommentReplies(
+    @Param('id') commetId: string,
+    @CurrentUserId() userId: string,
+  ): Promise<(CommentReply & { isOwner: boolean })[]> {
+    let user
+
+    try {
+      user = await this.userService.findOne(userId)
+    } catch (error) {
+      user = undefined
+    }
+
+    const commentReplies = await this.commentsService.findAllCommentReplies(
+      commetId,
+    )
+
+    if (!_isEmpty(user)) {
+      return _map(commentReplies, commentReply => ({
+        ...commentReply,
+        isOwner: commentReply.userId === userId,
+      }))
+    }
+
+    return _map(commentReplies, commentReply => ({
+      ...commentReply,
+      isOwner: false,
+    }))
+  }
+
+  @Auth([UserType.ADMIN, UserType.CUSTOMER], false, true)
+  @Get('reply/:id')
+  async findCommentReplyById(
+    @Param('id') id: string,
+    @CurrentUserId() userId: string,
+  ): Promise<CommentReply & { isOwner: boolean }> {
+    let user
+
+    try {
+      user = await this.userService.findOne(userId)
+    } catch (error) {
+      user = undefined
+    }
+
+    const commentReply = await this.commentsService.findCommentReplyById(id)
+
+    if (!commentReply) {
+      throw new Error('Comment reply not found')
+    }
+
+    if (!_isEmpty(user)) {
+      return {
+        ...commentReply,
+        isOwner: commentReply.userId === userId,
+      }
+    }
+
+    return {
+      ...commentReply,
+      isOwner: false,
+    }
+  }
+
+  @Put('reply/:id')
+  async updateCommentReply(
+    @Param('id') id: string,
+    @Body() commentReplyDto: UpdateCommentReplyBodyDto,
+  ): Promise<CommentReply | undefined> {
+    return this.commentsService.updateCommentReply(id, commentReplyDto)
+  }
+
+  @Delete('reply/:id')
+  async deleteCommentReply(@Param('id') id: string): Promise<void> {
+    return this.commentsService.deleteCommentReply(id)
   }
 }

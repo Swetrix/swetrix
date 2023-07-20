@@ -5,9 +5,7 @@ import { ExtensionsModule } from '../extensions/extensions.module'
 import { CommentsController } from './comments.controller'
 import { CommentsService } from './comments.service'
 import { Comment } from './entities/comment.entity'
-import { CommentReply } from './comment-reply/entities/comment-reply.entity'
-import { CommentReplyService } from './comment-reply/comment-reply.service'
-import { CommentReplyController } from './comment-reply/comment-reply.controller'
+import { CommentReply } from './entities/comment-reply.entity'
 
 @Module({
   imports: [
@@ -15,7 +13,7 @@ import { CommentReplyController } from './comment-reply/comment-reply.controller
     ExtensionsModule,
     UserModule,
   ],
-  controllers: [CommentsController, CommentReplyController],
-  providers: [CommentsService, CommentReplyService],
+  controllers: [CommentsController],
+  providers: [CommentsService],
 })
 export class CommentsModule {}

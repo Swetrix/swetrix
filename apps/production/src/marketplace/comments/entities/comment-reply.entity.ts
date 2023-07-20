@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Comment } from '../../entities/comment.entity'
+import { Comment } from './comment.entity'
 
 @Entity()
 export class CommentReply {
@@ -18,8 +18,8 @@ export class CommentReply {
   @Column()
   userId: string
 
-  @Column('text', { nullable: true, default: null })
-  text: string | null
+  @Column('text')
+  text: string
 
   @CreateDateColumn()
   addedAt: Date

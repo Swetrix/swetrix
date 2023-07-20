@@ -9,7 +9,7 @@ import {
 } from 'typeorm'
 import { Extension } from '../../extensions/entities/extension.entity'
 import { User } from '../../../user/entities/user.entity'
-import { CommentReply } from '../comment-reply/entities/comment-reply.entity'
+import { CommentReply } from './comment-reply.entity'
 
 @Entity()
 export class Comment {
