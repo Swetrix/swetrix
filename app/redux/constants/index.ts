@@ -30,11 +30,6 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   countDays?: number
   dropdownLabel?: string
   isCustomDate?: boolean
-// }[] => [{
-//   label: t('project.thishour'),
-//   period: 'thishour',
-//   tbs: ['hour'],
-// }, {
 }[] => [{
   label: t('project.today'),
   period: 'today',
@@ -88,7 +83,7 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   tbs: tbs || ['custom'],
 }]
 
-export const filtersPeriodPairs = ['thishour', '1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
+export const filtersPeriodPairs = ['1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
 
 export const tbPeriodPairsCompare = (t: Function, dates?: Date[]): {
   label: string

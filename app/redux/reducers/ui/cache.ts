@@ -7,6 +7,7 @@ import {
   getUserFlowCacheKey, isBrowser,
 } from 'redux/constants'
 import { IUserFlow } from 'redux/models/IUserFlow'
+import { filterInvalidViewPrefs } from 'pages/Project/View/ViewProject.helpers'
 
 export const getInitialViewPrefs = (LS_VIEW: string) => {
   if (!isBrowser) {
@@ -15,7 +16,7 @@ export const getInitialViewPrefs = (LS_VIEW: string) => {
 
   const storedPrefs = getItem(LS_VIEW)
   try {
-    return storedPrefs
+    return filterInvalidViewPrefs(storedPrefs)
   } catch (e) {
     removeItem(LS_VIEW)
   }

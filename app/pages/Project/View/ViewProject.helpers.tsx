@@ -21,7 +21,12 @@ import _round from 'lodash/round'
 import _fill from 'lodash/fill'
 import _reduce from 'lodash/reduce'
 import _last from 'lodash/last'
+import _toNumber from 'lodash/toNumber'
+import _toString from 'lodash/toString'
+import _includes from 'lodash/includes'
 import JSZip from 'jszip'
+// @ts-ignore
+import * as d3 from 'd3'
 
 import {
   TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h, tbsFormatMapperTooltip, tbsFormatMapperTooltip24h,
@@ -30,11 +35,6 @@ import {
   getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter,
 } from 'utils/generic'
 import countries from 'utils/isoCountries'
-import _toNumber from 'lodash/toNumber'
-import _toString from 'lodash/toString'
-import _includes from 'lodash/includes'
-// @ts-ignore
-import * as d3 from 'd3'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -908,6 +908,26 @@ const getSettingsPerf = (
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const validFilters = ['cc', 'rg', 'ct', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'ev']
+
+export const filterInvalidViewPrefs = (prefs: any): any => {
+  const pids = _keys(prefs)
+  const filtered = _reduce(pids, (prev: string[], curr: string) => {
+    const { period, timeBucket } = prefs[curr]
+
+    if (!_includes(validPeriods, period) || !_includes(validTimeBacket, timeBucket)) {
+      return prev
+    }
+
+    return [...prev, curr]
+  }, [])
+
+  return _reduce(filtered, (prev: any, curr: string) => {
+    return {
+      ...prev,
+      [curr]: prefs[curr],
+    }
+  })
+}
 
 const typeNameMapping = (t: (str: string) => string) => ({
   cc: t('project.mapping.cc'),
