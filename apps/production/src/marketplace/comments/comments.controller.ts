@@ -39,12 +39,11 @@ export class CommentsController {
     private readonly userService: UserService,
   ) {}
 
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], false, true)
+  @Auth([], true, true)
   @Get()
   @ApiQuery({ name: 'offset', required: false, type: String })
   @ApiQuery({ name: 'limit', required: false, type: String })
   @ApiQuery({ name: 'extensionId', required: false, type: String })
-  @ApiQuery({ name: 'userId', required: false, type: String })
   async getComments(
     @Query() queries: GetCommentsQueryDto,
     @CurrentUserId() userId: string,
@@ -63,7 +62,7 @@ export class CommentsController {
     const [comments, count] = await this.commentsService.findAndCount({
       where: {
         ...(queries.extensionId && { extensionId: queries.extensionId }),
-        ...(queries.userId && { userId: queries.userId }),
+        ...(userId && { userId }),
       },
       skip: queries.offset || 0,
       take: queries.limit || 25,
@@ -170,7 +169,7 @@ export class CommentsController {
     return this.commentsService.createCommentReply(commentReplyDto, userId)
   }
 
-  @Auth([UserType.ADMIN, UserType.CUSTOMER], false, true)
+  @Auth([], true, true)
   @Get('reply')
   async findAllCommentReplies(
     @Param('id') commetId: string,
@@ -198,7 +197,7 @@ export class CommentsController {
     return commentReplies
   }
 
-  @Auth([UserType.ADMIN, UserType.CUSTOMER], false, true)
+  @Auth([], true, true)
   @Get('reply/:id')
   async findCommentReplyById(
     @Param('id') id: string,

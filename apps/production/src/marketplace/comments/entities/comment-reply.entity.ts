@@ -14,7 +14,7 @@ export class CommentReply {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToOne(() => Comment, comment => comment.replies)
+  @ManyToOne(() => Comment, comment => comment.replies, { onDelete: 'CASCADE' })
   parentComment: Comment
 
   @Column()
@@ -26,7 +26,7 @@ export class CommentReply {
   @CreateDateColumn()
   addedAt: Date
 
-  @ManyToOne(() => User, user => user.commentReplies)
-  @JoinColumn()
-  user: User
+  // @ManyToOne(() => User, user => user.commentReplies, { onDelete: 'CASCADE' })
+  // @JoinColumn()
+  // user: User
 }
