@@ -1,12 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
-import * as _includes from 'lodash/includes'
-import * as _map from 'lodash/map'
 import { Comment } from './entities/comment.entity'
 import { CreateReplyCommentBodyDto } from './dtos/bodies/create-reply.dto'
 import { UpdateCommentReplyBodyDto } from './dtos/bodies/update-reply.dto'
@@ -46,22 +40,9 @@ export class CommentsService {
 
   async createCommentReply(
     commentReplyDto: CreateReplyCommentBodyDto,
+    comment: Comment,
     userId: string,
   ): Promise<CommentReply> {
-    const comment = await this.findOne({
-      where: { id: commentReplyDto.commentId },
-    })
-
-    if (!comment) {
-      throw new NotFoundException('Comment not found')
-    }
-
-    const commentsReplies = await this.findAllCommentReplies(comment.id)
-
-    if (_includes(_map(commentsReplies, 'userId'), userId)) {
-      throw new BadRequestException('You have already replied to this comment')
-    }
-
     const commentReply = this.commentReplyRepository.create({
       text: commentReplyDto.text,
       parentComment: comment,
@@ -74,6 +55,7 @@ export class CommentsService {
     return this.commentReplyRepository.find({
       where: { parentComment: { id: commetId } },
       relations: ['parentComment', 'user'],
+      select: ['id', 'text', 'addedAt', 'parentComment', 'user'],
     })
   }
 
@@ -86,20 +68,7 @@ export class CommentsService {
   async updateCommentReply(
     id: string,
     commentReplyDto: UpdateCommentReplyBodyDto,
-    userId: string,
   ): Promise<CommentReply | undefined> {
-    const commentReply = await this.findCommentReplyById(id)
-
-    if (!commentReply) {
-      throw new NotFoundException('Comment reply not found')
-    }
-
-    if (commentReply.userId !== userId) {
-      throw new BadRequestException(
-        'You are not the owner of this comment reply',
-      )
-    }
-
     await this.commentReplyRepository.update(id, commentReplyDto)
 
     return this.findCommentReplyById(id)

@@ -67,14 +67,25 @@ export class CommentsController {
       },
       skip: queries.offset || 0,
       take: queries.limit || 25,
-      relations: ['replies'],
+      relations: ['replies', 'user', 'replies.user'],
+      select: ['id', 'text', 'addedAt', 'extensionId', 'rating', 'user'],
     })
 
     if (!_isEmpty(user)) {
       return {
         comments: _map(comments, comment => ({
-          ..._omit(comment, ['userId']),
+          ...comment,
           isOwner: comment.userId === userId,
+          replies: _map(comment.replies, commentReply => ({
+            ..._omit(commentReply, ['userId']),
+            user: {
+              nickname: commentReply.user.nickname,
+            },
+            isOwner: commentReply.userId === userId,
+          })),
+          user: {
+            nickname: comment.user.nickname,
+          },
         })),
         count,
       }
@@ -82,25 +93,14 @@ export class CommentsController {
 
     return {
       comments: _map(comments, comment => ({
-        ..._omit(comment, ['userId']),
+        ...comment,
         isOwner: false,
+        user: {
+          nickname: comment.user.nickname,
+        },
       })),
       count,
     }
-  }
-
-  @Get(':commentId')
-  @ApiParam({ name: 'commentId', required: true, type: String })
-  async getComment(@Param() params: GetCommentParamDto): Promise<Comment> {
-    const comment = await this.commentsService.findOne({
-      where: { id: params.commentId },
-    })
-
-    if (!comment) {
-      throw new NotFoundException('Comment not found.')
-    }
-
-    return _omit(comment, ['userId'])
   }
 
   @Auth([UserType.CUSTOMER, UserType.ADMIN])
@@ -125,6 +125,7 @@ export class CommentsController {
 
     const comment = await this.commentsService.findOne({
       where: { extensionId: body.extensionId, userId },
+      relations: ['replies'],
     })
 
     if (comment) {
@@ -173,8 +174,25 @@ export class CommentsController {
     @Body() commentReplyDto: CreateReplyCommentBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<CommentReply & { isOwner?: boolean }> {
+    const comment = await this.commentsService.findOne({
+      where: { id: commentReplyDto.commentId },
+    })
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found')
+    }
+
+    const commentsReplies = await this.commentsService.findAllCommentReplies(
+      comment.id,
+    )
+
+    if (_includes(_map(commentsReplies, 'userId'), userId)) {
+      throw new BadRequestException('You have already replied to this comment')
+    }
+
     const replyComment = await this.commentsService.createCommentReply(
       commentReplyDto,
+      comment,
       userId,
     )
 
@@ -207,6 +225,9 @@ export class CommentsController {
       return _map(commentReplies, commentReply => ({
         ...commentReply,
         parentComment: _omit(commentReply.parentComment, ['userId']),
+        user: {
+          nickname: commentReply.user.nickname,
+        },
         isOwner: commentReply.userId === userId,
       }))
     }
@@ -214,43 +235,11 @@ export class CommentsController {
     return _map(commentReplies, commentReply => ({
       ...commentReply,
       parentComment: _omit(commentReply.parentComment, ['userId']),
+      user: {
+        nickname: commentReply.user.nickname,
+      },
       isOwner: false,
     }))
-  }
-
-  @Auth([], true, true)
-  @Get('reply/:id')
-  async findCommentReplyById(
-    @Param('id') id: string,
-    @CurrentUserId() userId: string,
-  ): Promise<CommentReply & { isOwner: boolean }> {
-    let user
-
-    try {
-      user = await this.userService.findOne(userId)
-    } catch (error) {
-      user = undefined
-    }
-
-    const commentReply = await this.commentsService.findCommentReplyById(id)
-
-    if (!commentReply) {
-      throw new NotFoundException('Comment reply not found.')
-    }
-
-    if (!_isEmpty(user)) {
-      return {
-        ...commentReply,
-        parentComment: _omit(commentReply.parentComment, ['userId']),
-        isOwner: commentReply.userId === userId,
-      }
-    }
-
-    return {
-      ...commentReply,
-      parentComment: _omit(commentReply.parentComment, ['userId']),
-      isOwner: false,
-    }
   }
 
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
@@ -260,10 +249,21 @@ export class CommentsController {
     @Body() commentReplyDto: UpdateCommentReplyBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<CommentReply & { isOwner: boolean }> {
+    const commentReply = await this.commentsService.findCommentReplyById(id)
+
+    if (!commentReply) {
+      throw new NotFoundException('Comment reply not found')
+    }
+
+    if (commentReply.userId !== userId) {
+      throw new BadRequestException(
+        'You are not the owner of this comment reply',
+      )
+    }
+
     const updatedReplyComment = await this.commentsService.updateCommentReply(
       id,
       commentReplyDto,
-      userId,
     )
 
     return {
