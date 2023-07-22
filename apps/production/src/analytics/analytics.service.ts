@@ -90,7 +90,8 @@ const GMT_0_TIMEZONES = [
   // 'Africa/Casablanca',
 ]
 
-const validPeriods = [
+export const validPeriods = [
+  '1h',
   'today',
   'yesterday',
   '1d',
@@ -99,17 +100,24 @@ const validPeriods = [
   '3M',
   '12M',
   '24M',
+  'all',
 ]
 
 const validTimebuckets = [
+  TimeBucketType.MINUTE,
   TimeBucketType.HOUR,
   TimeBucketType.DAY,
   TimeBucketType.MONTH,
+  TimeBucketType.YEAR,
 ]
 
 // mapping of allowed timebuckets per difference between days
 // (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
 const timeBucketToDays = [
+  {
+    lt: 0,
+    tb: [TimeBucketType.MINUTE, TimeBucketType.HOUR],
+  }, // < 1 day
   {
     lt: 7,
     tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.MONTH],
@@ -120,6 +128,8 @@ const timeBucketToDays = [
   }, // 4 weeks
   { lt: 366, tb: [TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
+  { lt: 1464, tb: [TimeBucketType.MONTH, TimeBucketType.YEAR] }, // 48 months
+  { lt: 99999, tb: [TimeBucketType.YEAR] },
 ]
 
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
@@ -127,9 +137,11 @@ const timeBucketToDays = [
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 const timeBucketConversion = {
+  minute: 'toStartOfMinute',
   hour: 'toStartOfHour',
   day: 'toStartOfDay',
   month: 'toStartOfMonth',
+  year: 'toStartOfYear',
 }
 
 const isValidTimezone = (timezone: string): boolean => {
@@ -399,6 +411,7 @@ export class AnalyticsService {
     timeBucket: TimeBucketType | null,
     period: string,
     safeTimezone: string,
+    diff?: number,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
@@ -468,8 +481,14 @@ export class AnalyticsService {
       } else if (period === 'yesterday') {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow.subtract(1, 'day').endOf('d')
+      } else if (period === 'all' && (diff === 0 || diff === 1)) {
+        groupFrom = djsNow.subtract(1, 'day').startOf('d')
+        groupTo = djsNow
+      } else if (period === 'all') {
+        groupFrom = djsNow.subtract(diff - 1, 'day').startOf(timeBucket)
+        groupTo = djsNow
       } else {
-        if (period === '1d') {
+        if (period === '1d' || period === '1h') {
           groupFrom = djsNow.subtract(parseInt(period, 10), _last(period))
         } else {
           groupFrom = djsNow.subtract(parseInt(period, 10) - 1, _last(period))
@@ -619,6 +638,51 @@ export class AnalyticsService {
   validatePeriod(period: string): void {
     if (!_includes(validPeriods, period)) {
       throw new UnprocessableEntityException('The provided period is incorrect')
+    }
+  }
+
+  async getTimeBucketForAllTime(
+    pid: string,
+    period: string,
+    safeTimezone: string,
+  ): Promise<{
+    timeBucket: TimeBucketType[]
+    diff: number
+  }> {
+    if (period !== 'all') {
+      return null
+    }
+
+    const from: any = await clickhouse
+      .query(
+        'SELECT created as from FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
+        { params: { pid } },
+      )
+      .toPromise()
+    const to = _includes(GMT_0_TIMEZONES, safeTimezone)
+      ? dayjs.utc()
+      : dayjs().tz(safeTimezone)
+
+    let newTimeBucket = [TimeBucketType.MONTH]
+    let diff = null
+
+    if (from && to) {
+      diff = dayjs(to).diff(dayjs(from[0].from), 'days')
+
+      const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
+
+      if (_isEmpty(tbMap)) {
+        throw new PreconditionFailedException(
+          "The difference between 'from' and 'to' is greater than allowed",
+        )
+      }
+
+      newTimeBucket = tbMap.tb
+    }
+
+    return {
+      timeBucket: newTimeBucket,
+      diff,
     }
   }
 
@@ -955,6 +1019,7 @@ export class AnalyticsService {
     let format
 
     switch (timeBucket) {
+      case TimeBucketType.MINUTE:
       case TimeBucketType.HOUR:
         format = 'YYYY-MM-DD HH:mm:ss'
         break
@@ -965,6 +1030,10 @@ export class AnalyticsService {
 
       case TimeBucketType.MONTH:
         format = 'YYYY-MM'
+        break
+
+      case TimeBucketType.YEAR:
+        format = 'YYYY'
         break
 
       default:
@@ -999,7 +1068,7 @@ export class AnalyticsService {
   }
 
   generateDateString(row: { [key: string]: number }): string {
-    const { year, month, day, hour } = row
+    const { year, month, day, hour, minute } = row
 
     let dateString = `${year}-${month < 10 ? `0${month}` : month}`
 
@@ -1012,10 +1081,17 @@ export class AnalyticsService {
     }
 
     if (typeof hour === 'number') {
+      const strMinute =
+        typeof minute === 'number'
+          ? minute < 10
+            ? `0${minute}`
+            : minute
+          : '00'
+
       if (hour < 10) {
-        dateString += ` 0${hour}:00:00`
+        dateString += ` 0${hour}:${strMinute}:00`
       } else {
-        dateString += ` ${hour}:00:00`
+        dateString += ` ${hour}:${strMinute}:00`
       }
     }
 
@@ -1076,6 +1152,17 @@ export class AnalyticsService {
   }
 
   getGroupSubquery(timeBucket: TimeBucketType): [string, string] {
+    if (timeBucket === TimeBucketType.MINUTE) {
+      return [
+        `toYear(tz_created) as year,
+        toMonth(tz_created) as month,
+        toDayOfMonth(tz_created) as day,
+        toHour(tz_created) as hour,
+        toMinute(tz_created) as minute`,
+        'year, month, day, hour, minute',
+      ]
+    }
+
     if (timeBucket === TimeBucketType.HOUR) {
       return [
         `toYear(tz_created) as year,
@@ -1092,6 +1179,10 @@ export class AnalyticsService {
         toMonth(tz_created) as month`,
         'year, month',
       ]
+    }
+
+    if (timeBucket === TimeBucketType.YEAR) {
+      return [`toYear(tz_created) as year`, 'year']
     }
 
     return [

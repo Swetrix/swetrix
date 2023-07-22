@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
-import net from 'net'
+import * as net from 'net'
 import { customAlphabet } from 'nanoid'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isString from 'lodash/isString'

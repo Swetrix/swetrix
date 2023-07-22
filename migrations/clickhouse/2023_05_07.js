@@ -14,7 +14,7 @@ const queries = [
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created)`
+  ORDER BY (pid, created)`,
 
   `INSERT INTO ${dbName}.captcha_temp (pid, dv, br, os, cc, manuallyPassed, created)
   SELECT pid, dv, br, os, cc, manuallyPassed, created FROM ${dbName}.captcha`,

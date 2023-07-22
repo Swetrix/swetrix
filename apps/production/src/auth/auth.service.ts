@@ -187,8 +187,8 @@ export class AuthService {
     }
 
     if (user && user.isTelegramChatIdConfirmed) {
-      await this.telegramService.sendMessage(
-        Number(user.telegramChatId),
+      await this.telegramService.addMessage(
+        user.telegramChatId,
         '⚠️ *Someone has tried to login to their account with an incorrect password.*',
         { parse_mode: 'Markdown' },
       )
@@ -240,13 +240,9 @@ export class AuthService {
       `*Date:* ${loginDate} (UTC)\n\n` +
       'If it was not you, please change your password immediately.'
     if (user && user.isTelegramChatIdConfirmed) {
-      await this.telegramService.sendMessage(
-        Number(user.telegramChatId),
-        message,
-        {
-          parse_mode: 'Markdown',
-        },
-      )
+      await this.telegramService.addMessage(user.telegramChatId, message, {
+        parse_mode: 'Markdown',
+      })
     }
   }
 
@@ -606,6 +602,11 @@ export class AuthService {
       return await this.handleExistingUserGoogle(user, headers, ip)
     } catch (error) {
       console.error(`[ERROR][AuthService -> authenticateGoogle]: ${error}`)
+
+      if (error === 'invalid_token') {
+        throw new BadRequestException('Google token is expired')
+      }
+
       throw new InternalServerErrorException(
         'Something went wrong while authenticating user with Google',
       )

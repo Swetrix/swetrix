@@ -53,6 +53,7 @@ import {
 } from '../common/constants'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
+import { IChangePlanDTO } from './dto/change-plan.dto'
 import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
 import { SetShowLiveVisitorsDTO } from './dto/set-show-live-visitors.dto'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -529,8 +530,8 @@ export class UserController {
           isTelegramChatIdConfirmed: false,
         })
 
-        this.telegramService.sendMessage(
-          Number(userDTO.telegramChatId),
+        this.telegramService.addMessage(
+          userDTO.telegramChatId,
           'Please confirm your Telegram chat ID',
           Markup.inlineKeyboard([
             [
@@ -675,5 +676,32 @@ export class UserController {
     }
 
     return info
+  }
+
+  @Post('change-plan')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async changePlan(
+    @CurrentUserId() id: string,
+    @Body() body: IChangePlanDTO,
+  ): Promise<void> {
+    this.logger.log({ body, id }, 'POST /change-plan')
+    const { planId } = body
+
+    await this.userService.updateSubscription(id, planId)
+    await this.projectService.clearProjectsRedisCache(id)
+  }
+
+  @Post('preview-plan')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async previewPlan(
+    @CurrentUserId() id: string,
+    @Body() body: IChangePlanDTO,
+  ): Promise<any> {
+    this.logger.log({ body, id }, 'POST /preview-plan')
+    const { planId } = body
+
+    return this.userService.previewSubscription(id, planId)
   }
 }

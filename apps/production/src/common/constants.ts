@@ -43,7 +43,6 @@ const clickhouse = new ClickHouse({
 })
 
 const { JWT_ACCESS_TOKEN_SECRET } = process.env
-const isNewRelicEnabled = Boolean(process.env.USE_NEW_RELIC)
 const isDevelopment = process.env.NODE_ENV === 'development'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
@@ -121,6 +120,39 @@ const TRAFFIC_COLUMNS = [
 const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
 
+const sentryIgnoreErrors: (string | RegExp)[] = [
+  'BadRequestException',
+  'UnauthorizedException',
+  'PaymentRequiredException',
+  'ForbiddenException',
+  'NotFoundException',
+  'MethodNotAllowedException',
+  'NotAcceptableException',
+  'ProxyAuthenticationRequiredException',
+  'RequestTimeoutException',
+  'ConflictException',
+  'GoneException',
+  'LengthRequiredException',
+  'PreconditionFailedException',
+  'PayloadTooLargeException',
+  'URITooLongException',
+  'UnsupportedMediaTypeException',
+  'RangeNotSatisfiableException',
+  'ExpectationFailedException',
+  'ImATeapotException',
+  'MisdirectedRequestException',
+  'UnprocessableEntityException',
+  'LockedException',
+  'FailedDependencyException',
+  'TooEarlyException',
+  'UpgradeRequiredException',
+  'PreconditionRequiredException',
+  'TooManyRequestsException',
+  'RequestHeaderFieldsTooLargeException',
+  'UnavailableForLegalReasonsException',
+  'ClientClosedRequestException',
+]
+
 export {
   clickhouse,
   redis,
@@ -143,7 +175,6 @@ export {
   PROJECT_INVITE_EXPIRE,
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
   IP_REGEX,
-  isNewRelicEnabled,
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
   CAPTCHA_SALT,
@@ -161,4 +192,5 @@ export {
   TRAFFIC_COLUMNS,
   CAPTCHA_COLUMNS,
   PERFORMANCE_COLUMNS,
+  sentryIgnoreErrors,
 }

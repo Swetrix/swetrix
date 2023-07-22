@@ -5,12 +5,31 @@ import * as bodyParser from 'body-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { getBotToken } from 'nestjs-telegraf'
 
-import { isNewRelicEnabled, isDevelopment } from './common/constants'
+import { ConfigService } from '@nestjs/config'
+import * as Sentry from '@sentry/node'
+import { isDevelopment, sentryIgnoreErrors } from './common/constants'
 import { AppModule } from './app.module'
-import { NewrelicInterceptor } from './common/interceptors/newrelic.interceptor'
+import { SentryInterceptor } from './common/interceptors/sentry.interceptor'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+
+  const configService = app.get(ConfigService)
+
+  const isSentryEnabled = configService.getOrThrow<boolean>('SENTRY_ENABLED')
+
+  if (isSentryEnabled) {
+    const isProduction = configService.get<string>('NODE_ENV') === 'production'
+
+    Sentry.init({
+      dsn: configService.get<string>('SENTRY_DSN'),
+      tracesSampleRate: isProduction ? 0.1 : 1.0,
+      ignoreErrors: sentryIgnoreErrors,
+    })
+
+    app.useGlobalInterceptors(new SentryInterceptor())
+  }
+
   app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe())
 
@@ -26,10 +45,6 @@ async function bootstrap() {
       .build()
     const document = SwaggerModule.createDocument(app, config)
     SwaggerModule.setup('api', app, document)
-  }
-
-  if (isNewRelicEnabled && process.env.NODE_ENV !== 'development') {
-    app.useGlobalInterceptors(new NewrelicInterceptor())
   }
 
   // eslint-disable-next-line consistent-return

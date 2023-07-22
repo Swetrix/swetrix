@@ -1,6 +1,11 @@
-import { Injectable, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import axios from 'axios'
 import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
@@ -8,7 +13,12 @@ import * as _omit from 'lodash/omit'
 import * as _isNull from 'lodash/isNull'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { User, ACCOUNT_PLANS, TRIAL_DURATION } from './entities/user.entity'
+import {
+  User,
+  ACCOUNT_PLANS,
+  TRIAL_DURATION,
+  BillingFrequency,
+} from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
@@ -27,6 +37,19 @@ const USD = {
 const GBP = {
   symbol: '£',
   code: 'GBP',
+}
+
+const getSymbolByCode = (code: string) => {
+  switch (code) {
+    case EUR.code:
+      return EUR.symbol
+    case USD.code:
+      return USD.symbol
+    case GBP.code:
+      return GBP.symbol
+    default:
+      return null
+  }
 }
 
 const CURRENCY_BY_COUNTRY = {
@@ -54,6 +77,8 @@ const CURRENCY_BY_COUNTRY = {
   SK: EUR, // Slovakia
   US: USD, // United States
 }
+
+const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
 
 @Injectable()
 export class UserService {
@@ -286,5 +311,167 @@ export class UserService {
 
   getCurrencyByCountry(country: string) {
     return CURRENCY_BY_COUNTRY[country] || USD
+  }
+
+  getPlanById(planId: number) {
+    if (!planId) {
+      return null
+    }
+
+    const stringifiedPlanId = String(planId)
+
+    const plan = Object.values(ACCOUNT_PLANS).find(
+      tier =>
+        // @ts-ignore
+        tier.pid === stringifiedPlanId ||
+        // @ts-ignore
+        tier.ypid === stringifiedPlanId,
+    )
+
+    // @ts-ignore
+    if (plan && plan.pid) {
+      const planCode = plan.id
+      const billingFrequency =
+        // @ts-ignore
+        Number(plan?.pid) === planId
+          ? BillingFrequency.Monthly
+          : BillingFrequency.Yearly
+
+      return {
+        planCode,
+        billingFrequency,
+      }
+    }
+
+    return null
+  }
+
+  async previewSubscription(id: string, planID: number) {
+    const user = await this.findOneWhere({ id })
+    const plan = this.getPlanById(planID)
+
+    if (!plan) {
+      throw new BadRequestException('Plan not found')
+    }
+
+    const { planCode, billingFrequency } = plan
+
+    if (
+      user.planCode === planCode &&
+      user.billingFrequency === billingFrequency
+    ) {
+      throw new BadRequestException('You are already subscribed to this plan')
+    }
+
+    const url = 'https://vendors.paddle.com/api/2.0/subscription/preview_update'
+
+    let preview: any = {}
+
+    try {
+      preview = await axios.post(url, {
+        vendor_id: Number(PADDLE_VENDOR_ID),
+        vendor_auth_code: PADDLE_API_KEY,
+        subscription_id: Number(user.subID),
+        plan_id: planID,
+        prorate: true,
+        bill_immediately: true,
+        currency: user.tierCurrency,
+        keep_modifiers: false,
+      })
+    } catch (error) {
+      console.error(
+        '[ERROR] (previewSubscription):',
+        error?.response?.data?.error?.message || error,
+      )
+      throw new BadRequestException('Something went wrong')
+    }
+
+    const { data } = preview
+
+    if (!data.success) {
+      console.error('[ERROR] (previewSubscription) success -> false:', preview)
+      throw new InternalServerErrorException('Something went wrong')
+    }
+
+    const symbol = getSymbolByCode(data.response.next_payment.currency)
+
+    return {
+      immediatePayment: {
+        ...data.response.immediate_payment,
+        symbol,
+      },
+      nextPayment: {
+        ...data.response.next_payment,
+        symbol,
+      },
+    }
+  }
+
+  async updateSubscription(id: string, planID: number) {
+    const user = await this.findOneWhere({ id })
+    const plan = this.getPlanById(planID)
+
+    if (!plan) {
+      throw new BadRequestException('Plan not found')
+    }
+
+    const { planCode, billingFrequency } = plan
+
+    if (
+      user.planCode === planCode &&
+      user.billingFrequency === billingFrequency
+    ) {
+      throw new BadRequestException('You are already subscribed to this plan')
+    }
+
+    const url = 'https://vendors.paddle.com/api/2.0/subscription/users/update'
+
+    let result: any = {}
+
+    try {
+      result = await axios.post(url, {
+        vendor_id: Number(PADDLE_VENDOR_ID),
+        vendor_auth_code: PADDLE_API_KEY,
+        subscription_id: Number(user.subID),
+        plan_id: planID,
+        prorate: true,
+        bill_immediately: true,
+        currency: user.tierCurrency,
+        keep_modifiers: false,
+        passthrough: JSON.stringify({
+          uid: id,
+        }),
+      })
+    } catch (error) {
+      console.error(
+        '[ERROR] (updateSubscription):',
+        error?.response?.data?.error?.message || error,
+      )
+      throw new BadRequestException('Something went wrong')
+    }
+
+    const { data } = result
+
+    if (!data.success) {
+      console.error('[ERROR] (updateSubscription) success -> false:', result)
+      throw new InternalServerErrorException('Something went wrong')
+    }
+
+    const { response } = data
+
+    const {
+      subscription_id: subID,
+      next_payment: { currency, date },
+    } = response
+
+    const updateParams = {
+      planCode,
+      subID,
+      nextBillDate: date,
+      billingFrequency,
+      tierCurrency: currency,
+    }
+
+    await this.update(id, updateParams)
   }
 }

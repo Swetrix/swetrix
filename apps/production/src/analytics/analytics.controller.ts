@@ -2,6 +2,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
+import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
@@ -35,6 +36,7 @@ import {
   getSessionKey,
   getHeartbeatKey,
   DataType,
+  validPeriods,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -290,7 +292,27 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
+    let newTimebucket = timeBucket
+    let allowedTumebucketForPeriodAll
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      allowedTumebucketForPeriodAll = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimebucket)
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(
         filters,
@@ -302,9 +324,10 @@ export class AnalyticsController {
       this.analyticsService.getGroupFromTo(
         from,
         to,
-        timeBucket,
+        newTimebucket,
         period,
         safeTimezone,
+        diff,
       )
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -336,7 +359,7 @@ export class AnalyticsController {
 
     if (isCaptcha) {
       result = await this.analyticsService.groupCaptchaByTimeBucket(
-        timeBucket,
+        newTimebucket,
         groupFrom,
         groupTo,
         subQuery,
@@ -346,7 +369,7 @@ export class AnalyticsController {
       )
     } else {
       result = await this.analyticsService.groupByTimeBucket(
-        timeBucket,
+        newTimebucket,
         groupFrom,
         groupTo,
         subQuery,
@@ -362,6 +385,7 @@ export class AnalyticsController {
       return {
         ...result,
         appliedFilters,
+        timeBucket: allowedTumebucketForPeriodAll,
       }
     }
 
@@ -374,6 +398,7 @@ export class AnalyticsController {
       ...result,
       customs,
       appliedFilters,
+      timeBucket: allowedTumebucketForPeriodAll,
     }
   }
 
@@ -490,7 +515,26 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
+    let newTimeBucket = timeBucket
+    let allowedTumebucketForPeriodAll
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimeBucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      allowedTumebucketForPeriodAll = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimeBucket)
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
 
@@ -498,9 +542,10 @@ export class AnalyticsController {
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      timeBucket,
+      newTimeBucket,
       period,
       safeTimezone,
+      diff,
     )
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -520,7 +565,7 @@ export class AnalyticsController {
     }
 
     const result = await this.analyticsService.groupPerfByTimeBucket(
-      timeBucket,
+      newTimeBucket,
       groupFrom,
       groupTo,
       subQuery,
@@ -532,6 +577,7 @@ export class AnalyticsController {
     return {
       ...result,
       appliedFilters,
+      timeBucket: allowedTumebucketForPeriodAll,
     }
   }
 
@@ -622,6 +668,18 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      diff = res.diff
+    }
+
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
@@ -635,6 +693,7 @@ export class AnalyticsController {
       null,
       period,
       safeTimezone,
+      diff,
     )
 
     const [filtersQuery, filtersParams, appliedFilters] =
@@ -1106,7 +1165,26 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
+    let newTimeBucket = timeBucket
+    let diff
+    let timeBucketForAllTime
+
+    if (period === validPeriods[validPeriods.length - 1]) {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      // eslint-disable-next-line prefer-destructuring
+      newTimeBucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      diff = res.diff
+      timeBucketForAllTime = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimeBucket)
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
     await this.analyticsService.checkProjectAccess(
@@ -1119,9 +1197,10 @@ export class AnalyticsController {
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      timeBucket,
+      newTimeBucket,
       period,
       safeTimezone,
+      diff,
     )
 
     const paramsData = {
@@ -1134,7 +1213,7 @@ export class AnalyticsController {
     }
 
     const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
-      timeBucket,
+      newTimeBucket,
       groupFrom,
       groupTo,
       filtersQuery,
@@ -1164,6 +1243,7 @@ export class AnalyticsController {
     return {
       ...result,
       appliedFilters,
+      timeBucket: timeBucketForAllTime,
     }
   }
 }

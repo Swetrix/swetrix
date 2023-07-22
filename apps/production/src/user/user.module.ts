@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
-import { TelegramService } from 'src/integrations/telegram/telegram.service'
+import { TelegramService } from '../integrations/telegram/telegram.service'
 import { UserController } from './user.controller'
 import { UserService } from './user.service'
 import { User } from './entities/user.entity'
@@ -11,10 +11,11 @@ import { AuthModule } from '../auth/auth.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 import { RefreshToken } from './entities/refresh-token.entity'
+import { Message } from '../integrations/telegram/entities/message.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, RefreshToken]),
+    TypeOrmModule.forFeature([User, RefreshToken, Message]),
     ActionTokensModule,
     MailerModule,
     forwardRef(() => AuthModule),

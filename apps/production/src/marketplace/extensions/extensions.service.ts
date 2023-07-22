@@ -196,9 +196,7 @@ export class ExtensionsService {
             ...(await Promise.all(
               extension.additionalImages.map(
                 async image =>
-                  (
-                    await this.cdnService.uploadFile(image)
-                  ).filename,
+                  (await this.cdnService.uploadFile(image)).filename,
               ),
             )),
           ]
@@ -279,15 +277,12 @@ export class ExtensionsService {
         category: { id: extension.categoryId && Number(extension.categoryId) },
         companyLink: extension.companyLink,
         mainImage: extension.mainImage
-          ? (
-              await this.cdnService.uploadFile(extension.mainImage)
-            ).filename
+          ? (await this.cdnService.uploadFile(extension.mainImage)).filename
           : oldExtension.mainImage,
         additionalImages,
         fileURL: extension.extensionScript
-          ? (
-              await this.cdnService.uploadFile(extension.extensionScript)
-            ).filename
+          ? (await this.cdnService.uploadFile(extension.extensionScript))
+              .filename
           : oldExtension.fileURL,
       },
     )
