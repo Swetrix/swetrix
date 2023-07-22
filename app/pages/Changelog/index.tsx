@@ -15,6 +15,17 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-07-22',
+    changes: [
+      'Added 2 new periods: \'All time\' and \'This hour\'. The \'All time\' period will show you the statistics for the whole period since you\'ve created the project, and the \'This hour\' period will show you the statistics for the last 60 minutes (with the \'minute\' time bucket).',
+      'Added the ability to track which region (or state) and city your users come from.',
+      'Minor UX improvements by reordering the action buttons on the Project Dashboard page..',
+      'Improved billing: When you upgrade or downgrade your plan, we now apply pro-rated charges. This means you\'ll only be charged for the time you use your plan, saving you money in the process.',
+      'Added the ability to apply multiple filters to a column. For example, you can now narrow the statistics to show only the data for users from Germany, the UK and Ukraine.',
+      'Lots of other general performance improvements, marketplace extensions (we\'ve added a lot of new extensions recently, check them out. They are free.) and bug fixes.',
+    ],
+  },
+  {
     date: '2023-06-17',
     changes: [
       'Fully migrated our frontend to Remix Framework (Server-side rendering), thus improving the performance of Swetrix. Also in the future you can expect A LOT of cool improvements like link image previews and so on.',
