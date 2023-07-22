@@ -75,9 +75,7 @@
     "extends": [
       "@remix-run/eslint-config",
       "@remix-run/eslint-config/jest-testing-library",
-      "airbnb",
-      "eslint:recommended",
-      "plugin:react/recommended"
+      "eslint:recommended"
     ],
     "globals": {
       "JSX": "readonly"
@@ -203,10 +201,8 @@
     "autoprefixer": "^10.4.14",
     "cross-env": "^7.0.3",
     "eslint": "^8.45.0",
-    "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-lodash": "^7.4.0",
-    "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "jest": "^29.6.1",
     "jest-environment-jsdom": "^29.6.1",
