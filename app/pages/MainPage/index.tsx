@@ -435,7 +435,9 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                           t={t}
                           i18nKey='main.signupTerms'
                           components={{
+                            // eslint-disable-next-line jsx-a11y/anchor-has-content
                             tos: <Link to={routesPath.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
+                            // eslint-disable-next-line jsx-a11y/anchor-has-content
                             pp: <Link to={routesPath.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
                           }}
                         />

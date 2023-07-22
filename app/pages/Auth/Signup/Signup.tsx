@@ -201,7 +201,9 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
                   t={t}
                   i18nKey='auth.signup.tos'
                   components={{
+                    // eslint-disable-next-line jsx-a11y/anchor-has-content
                     tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
+                    // eslint-disable-next-line jsx-a11y/anchor-has-content
                     pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
                   }}
                 />

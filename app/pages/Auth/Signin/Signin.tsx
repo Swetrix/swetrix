@@ -181,10 +181,11 @@ const Signin = ({
             <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
               {!isSelfhosted && (
               <Trans
-                    // @ts-ignore
+                // @ts-ignore
                 t={t}
                 i18nKey='auth.signin.2faUnavailable'
                 components={{
+                  // eslint-disable-next-line jsx-a11y/anchor-has-content
                   ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />,
                 }}
               />
