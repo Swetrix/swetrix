@@ -1,20 +1,4 @@
 server {
-  server_name swetrix.com
-
-  root /var/www/html;  
-
-  location / {
-    try_files $uri $uri/ =404;
-  }
-
-  listen 443 ssl; # managed by Certbot
-  ssl_certificate /etc/letsencrypt/live/swetrix.com/fullchain.pem; # managed by Certbot
-  ssl_certificate_key /etc/letsencrypt/live/swetrix.com/privkey.pem; # managed by Certbot
-  include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-}
-
-server {
   server_name api.swetrix.com;
 
   location / {
@@ -36,8 +20,8 @@ server {
   }
 
   listen 443 ssl; # managed by Certbot
-  ssl_certificate /etc/letsencrypt/live/swetrix.com/fullchain.pem; # managed $
-  ssl_certificate_key /etc/letsencrypt/live/swetrix.com/privkey.pem; # manage$
+  ssl_certificate /etc/letsencrypt/live/swetrix.com/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/swetrix.com/privkey.pem; # managed by Certbot
   include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
   ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
