@@ -8,7 +8,7 @@ import Input from 'ui/Input'
 import { FORECAST_MAX_MAPPING } from 'redux/constants'
 import _toString from 'lodash/toString'
 
-const DEFAULT_PERIOD = 3
+const DEFAULT_PERIOD = '3'
 
 const Forecast = ({
   onClose, onSubmit, isOpened, activeTB, tb,
@@ -22,7 +22,7 @@ const Forecast = ({
   const { t }: {
     t: (key: string, options?: { [key: string]: string | number }) => string,
   } = useTranslation('common')
-  const [period, setPeriod] = useState<string | number>(DEFAULT_PERIOD)
+  const [period, setPeriod] = useState<string>(DEFAULT_PERIOD)
   const [error, setError] = useState<string | null>(null)
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +79,7 @@ const Forecast = ({
               frequency: activeTB,
             })}
             value={period}
-            placeholder={`${DEFAULT_PERIOD}`}
+            placeholder={DEFAULT_PERIOD}
             className='mt-4'
             onChange={handleInput}
             error={error}
