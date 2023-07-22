@@ -1,7 +1,6 @@
 import React, { memo } from 'react'
-import { Link } from '@remix-run/react'
+import { Link, useLocation } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from '@remix-run/react'
 import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
 import Flag from 'react-flagkit'
