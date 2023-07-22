@@ -15,6 +15,7 @@ export const getInitialViewPrefs = (LS_VIEW: string) => {
   }
 
   const storedPrefs = getItem(LS_VIEW)
+
   try {
     return filterInvalidViewPrefs(storedPrefs)
   } catch (e) {

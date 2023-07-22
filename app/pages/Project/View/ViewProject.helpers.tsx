@@ -926,7 +926,7 @@ export const filterInvalidViewPrefs = (prefs: any): any => {
       ...prev,
       [curr]: prefs[curr],
     }
-  })
+  }, {})
 }
 
 const typeNameMapping = (t: (str: string) => string) => ({
