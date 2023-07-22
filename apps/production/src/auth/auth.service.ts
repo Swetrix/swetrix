@@ -604,6 +604,11 @@ export class AuthService {
       return await this.handleExistingUserGoogle(user, headers, ip)
     } catch (error) {
       console.error(`[ERROR][AuthService -> authenticateGoogle]: ${error}`)
+
+      if (error === 'invalid_token') {
+        throw new BadRequestException('Google token is expired')
+      }
+
       throw new InternalServerErrorException(
         'Something went wrong while authenticating user with Google',
       )
