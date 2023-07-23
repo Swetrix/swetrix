@@ -6,10 +6,9 @@ import { json } from '@remix-run/node'
 
 import { detectTheme } from 'utils/server'
 
-export const headers: HeadersFunction = () => {
-  return {
-    'X-Frame-Options': 'DENY',
-  }
+export const headers: HeadersFunction = ({ parentHeaders }) => {
+  parentHeaders.set('X-Frame-Options', 'DENY')
+  return parentHeaders
 }
 
 export async function loader({ request }: LoaderArgs) {
