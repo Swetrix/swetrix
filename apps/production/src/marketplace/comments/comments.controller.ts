@@ -24,7 +24,6 @@ import { UserType } from '../../user/entities/user.entity'
 import { CommentsService } from './comments.service'
 import { CreateCommentBodyDto } from './dtos/bodies/create-comment.dto'
 import { DeleteCommentParamDto } from './dtos/params/delete-comment.dto'
-import { GetCommentParamDto } from './dtos/params/get-comment.dto'
 import { GetCommentsQueryDto } from './dtos/queries/get-comments.dto'
 import { Comment } from './entities/comment.entity'
 import { CommentReply } from './entities/comment-reply.entity'
@@ -63,7 +62,6 @@ export class CommentsController {
     const [comments, count] = await this.commentsService.findAndCount({
       where: {
         ...(queries.extensionId && { extensionId: queries.extensionId }),
-        ...(userId && { userId }),
       },
       skip: queries.offset || 0,
       take: queries.limit || 25,
@@ -110,6 +108,16 @@ export class CommentsController {
     @Body() body: CreateCommentBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<Comment> {
+    const user = await this.userService.findOne(userId)
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    if (!user.nickname) {
+      throw new BadRequestException('You must have a nickname to comment.')
+    }
+
     const extension = await this.extensionsService.findOne({
       where: { id: body.extensionId },
       relations: ['owner'],
@@ -174,6 +182,16 @@ export class CommentsController {
     @Body() commentReplyDto: CreateReplyCommentBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<CommentReply & { isOwner?: boolean }> {
+    const user = await this.userService.findOne(userId)
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    if (!user.nickname) {
+      throw new BadRequestException('You must have a nickname to reply.')
+    }
+
     const comment = await this.commentsService.findOne({
       where: { id: commentReplyDto.commentId },
     })
