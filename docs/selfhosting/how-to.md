@@ -76,7 +76,8 @@ docker-compose restart
 ```
 
 ## Reverse proxy
-It's best to make sure to set up your reverse proxy to pass the request IP address as an `x-real-ip` or `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.
+<!-- TODO: In the next versions of Swetrix x-real-ip is a preferred way to pass IPs. -->
+It's best to make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.
 
-<!-- TODO: On the next versions of Swetrix Cloudflare becomes optional and may be set up via .env variables. Mention that. -->
+<!-- TODO: In the next versions of Swetrix Cloudflare becomes optional and may be set up via .env variables. Mention that. -->
 Currently, the API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.
