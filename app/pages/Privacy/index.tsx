@@ -25,20 +25,26 @@ const serviceProviders: {
     location: 'Australia',
   },
   {
-    company: 'Cloudflare, Inc.',
-    purpose: 'Cloud services',
-    dataSubjects: 'Website Visitors, Customers, End Users',
-    location: 'United States',
-  },
-  {
     company: 'Wildbit, LLC (Postmark)',
     purpose: 'Transactional and marketing emails',
     dataSubjects: 'Customers',
     location: 'United States',
   },
   {
-    company: 'New Relic, Inc.',
+    company: 'Functional Software Inc. (Sentry)',
     purpose: 'Error tracking',
+    dataSubjects: 'Website Visitors, Customers, End Users',
+    location: 'United States',
+  },
+  {
+    company: 'Hetzner Online GmbH',
+    purpose: 'Hosting',
+    dataSubjects: 'Website Visitors, Customers, End Users',
+    location: 'Germany',
+  },
+  {
+    company: 'Fly.io, Inc.',
+    purpose: 'Hosting',
     dataSubjects: 'Website Visitors, Customers, End Users',
     location: 'United States',
   },
@@ -333,7 +339,7 @@ const Features = (): JSX.Element => {
 
         <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
         <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          <i>Last updated: August 14, 2022.</i>
+          <i>Last updated: July 23, 2023.</i>
         </p>
       </div>
     </div>
