@@ -1421,7 +1421,7 @@ export class ProjectController {
     }
 
     const project = await this.projectService.findOne(id, {
-      relations: ['admin'],
+      relations: ['admin', 'share', 'share.user'],
     })
 
     if (_isEmpty(project)) {
