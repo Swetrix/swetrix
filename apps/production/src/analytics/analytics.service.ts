@@ -15,7 +15,6 @@ import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
-import timezones from 'countries-and-timezones'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -50,7 +49,6 @@ import {
 import {
   calculateRelativePercentage,
   millisecondsToSeconds,
-  lookup,
 } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -256,12 +254,6 @@ const isValidOrigin = (origins: string[], origin: string) => {
   }
 
   return false
-}
-
-interface IPGeoDetails {
-  country?: string
-  region?: string
-  city?: string
 }
 
 @Injectable()
@@ -932,33 +924,6 @@ export class AnalyticsService {
     await Promise.all(promises)
 
     return result
-  }
-
-  getGeoDetails(ip: string, tz?: string): IPGeoDetails {
-    // Stage 1: Using IP address based geo lookup
-    const data = lookup.get(ip)
-
-    const country = data?.country?.iso_code
-    // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
-    const city = data?.city?.names?.en
-    const region = data?.subdivisions?.[0]?.names?.en
-
-    if (country) {
-      return {
-        country,
-        city,
-        region,
-      }
-    }
-
-    // Stage 2: Using timezone based geo lookup as a fallback
-    const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
-
-    return {
-      country: tzCountry,
-      city: null,
-      region: null,
-    }
   }
 
   async getFilters(pid: string, type: string): Promise<Array<string>> {

@@ -40,6 +40,7 @@ import {
   isDevelopment,
   JWT_ACCESS_TOKEN_SECRET,
 } from '../common/constants'
+import { getGeoDetails } from '../common/utils'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
@@ -227,7 +228,7 @@ export class AuthService {
       return
     }
 
-    const headersInfo = await this.getHeadersInfo(headers)
+    const headersInfo = await this.getHeadersInfo(headers, ip)
     const loginDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
     const message =
       '🚨 *Someone has logged into your account!*\n\n' +
@@ -245,20 +246,17 @@ export class AuthService {
     }
   }
 
-  private async getHeadersInfo(headers: unknown) {
+  private async getHeadersInfo(headers: unknown, ip: string) {
     const ua = UAParser(headers['user-agent'])
     const browser = ua.browser.name || 'Unknown'
     const device = ua.device.type || 'Desktop'
     const os = ua.os.name || 'Unknown'
-    let country = 'Unknown'
-    const cfCountry = headers['cf-ipcountry']
+    let { country } = getGeoDetails(ip)
 
-    if (cfCountry === 'T1') {
-      country = 'Unknown (Tor)'
-    }
-
-    if (cfCountry) {
-      country = getCountry(cfCountry)?.name
+    if (country) {
+      country = getCountry(country)?.name
+    } else {
+      country = 'Unknown'
     }
 
     return {
