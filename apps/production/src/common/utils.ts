@@ -10,6 +10,7 @@ import * as _toNumber from 'lodash/toNumber'
 import * as _replace from 'lodash/replace'
 import * as _find from 'lodash/find'
 import * as _round from 'lodash/round'
+import * as _split from 'lodash/split'
 
 import { redis, isDevelopment } from './constants'
 
@@ -208,6 +209,29 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
+const CLOUDFLARE_ENABLED = false
+
+const getIPFromHeaders = (headers: any) => {
+  if (CLOUDFLARE_ENABLED) {
+    return headers['cf-connecting-ip'] || null
+  }
+
+  // Get IP based on the NGINX configuration
+  let ip = headers['x-real-ip']
+
+  if (ip) {
+    return ip
+  }
+
+  ip = headers['x-forwarded-for'] || null
+
+  if (!ip) {
+    return null
+  }
+
+  return _split(ip, ',')[0]
+}
+
 export {
   getRandomTip,
   checkRateLimit,
@@ -218,4 +242,5 @@ export {
   nFormatter,
   lookup,
   getGeoDetails,
+  getIPFromHeaders,
 }

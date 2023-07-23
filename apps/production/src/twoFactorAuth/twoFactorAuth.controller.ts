@@ -21,7 +21,11 @@ import { LetterTemplate } from '../mailer/letter'
 import { TwoFaNotRequired, Roles, CurrentUserId } from '../auth/decorators'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { TwoFactorAuthDTO } from './dto/2fa-auth.dto'
-import { generateRecoveryCode, checkRateLimit } from '../common/utils'
+import {
+  generateRecoveryCode,
+  checkRateLimit,
+  getIPFromHeaders,
+} from '../common/utils'
 
 @ApiTags('2fa')
 @Controller('2fa')
@@ -56,7 +60,7 @@ export class TwoFactorAuthController {
   ) {
     this.logger.log({ body }, 'POST /2fa/enable')
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-enable', 10, 1800)
 
     const user = await this.userService.findOneWhere({ id })
@@ -103,7 +107,7 @@ export class TwoFactorAuthController {
   ) {
     this.logger.log({ body }, 'POST /2fa/disable')
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-disable', 10, 1800)
 
     const user = await this.userService.findOneWhere({ id })
@@ -142,7 +146,7 @@ export class TwoFactorAuthController {
   ) {
     this.logger.log({ body }, 'POST /2fa/authenticate')
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-auth', 10, 1800)
 
     const user = await this.userService.findOneWhere({ id })

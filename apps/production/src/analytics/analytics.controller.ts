@@ -59,7 +59,7 @@ import {
   REDIS_SESSION_SALT_KEY,
   clickhouse,
 } from '../common/constants'
-import { getGeoDetails } from '../common/utils'
+import { getGeoDetails, getIPFromHeaders } from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
@@ -873,7 +873,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
@@ -945,7 +945,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent } = headers
     const { pid } = logDTO
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const sessionID = await this.analyticsService.getSessionHash(
       pid,
@@ -974,7 +974,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await this.analyticsService.validate(logDTO, origin, 'log', ip)
 
@@ -1094,7 +1094,7 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(logDTO, origin)
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
     const unique = await this.analyticsService.isUnique(sessionHash)

@@ -63,7 +63,11 @@ import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
-import { checkRateLimit, getGeoDetails } from '../common/utils'
+import {
+  checkRateLimit,
+  getGeoDetails,
+  getIPFromHeaders,
+} from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 
 dayjs.extend(utc)
@@ -204,7 +208,7 @@ export class UserController {
   }> {
     this.logger.log({ userId }, 'POST /user/api-key')
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(ip, 'generate-api-key', 5, 3600)
 
@@ -655,7 +659,7 @@ export class UserController {
     @Headers() headers,
     @Ip() reqIP: string,
   ): Promise<IMetaInfo> {
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
     const { country } = getGeoDetails(ip)
 
     return {

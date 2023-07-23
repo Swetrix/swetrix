@@ -26,7 +26,7 @@ import {
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import * as _pick from 'lodash/pick'
 
-import { checkRateLimit } from '../common/utils'
+import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 import { UserType, User } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
@@ -85,7 +85,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() requestIp: string,
   ): Promise<RegisterResponseDto> {
-    const ip = headers['x-forwarded-for'] || requestIp || ''
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     await checkRateLimit(ip, 'register', 5)
 
@@ -134,7 +134,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() requestIp: string,
   ): Promise<LoginResponseDto> {
-    const ip = headers['x-forwarded-for'] || requestIp || ''
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     await checkRateLimit(ip, 'login', 10, 1800)
 
@@ -196,7 +196,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() requestIp: string,
   ): Promise<void> {
-    const ip = headers['x-forwarded-for'] || requestIp || ''
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     await checkRateLimit(ip, 'reset-password')
     await checkRateLimit(body.email, 'reset-password')
@@ -444,7 +444,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() reqIP: string,
   ): Promise<any> {
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(ip, 'sso-generate', OAUTH_RATE_LIMIT, 1800)
 
@@ -469,7 +469,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() reqIP: string,
   ): Promise<any> {
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(ip, 'sso-process', OAUTH_RATE_LIMIT, 1800)
 
@@ -487,7 +487,7 @@ export class AuthController {
     @Headers() headers: unknown,
     @Ip() reqIP: string,
   ): Promise<any> {
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const { hash, provider } = body
 

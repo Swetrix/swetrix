@@ -12,6 +12,7 @@ import { ApiTags } from '@nestjs/swagger'
 import * as _find from 'lodash/find'
 
 import { ProjectService } from '../project/project.service'
+import { getIPFromHeaders } from '../common/utils'
 import {
   PlanCode,
   ACCOUNT_PLANS,
@@ -40,7 +41,7 @@ export class WebhookController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     this.webhookService.verifyIP(ip)
     this.webhookService.validateWebhook(body)

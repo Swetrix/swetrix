@@ -18,6 +18,7 @@ import * as utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
 import { CAPTCHA_COOKIE_KEY } from '../common/constants'
+import { getIPFromHeaders } from '../common/utils'
 import { CaptchaService, DUMMY_PIDS, isDummyPID } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
@@ -122,7 +123,7 @@ export class CaptchaController {
     )
     this.captchaService.setTokenCookie(response, newTokenCookie)
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await this.captchaService.logCaptchaPass(
       pid,
@@ -233,7 +234,7 @@ export class CaptchaController {
 
     this.captchaService.setTokenCookie(response, newTokenCookie)
 
-    const ip = headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await this.captchaService.logCaptchaPass(
       pid,
