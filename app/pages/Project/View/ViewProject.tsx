@@ -206,9 +206,9 @@ const ViewProject = ({
   // analyticsLoading is a boolean for show loader on chart
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
   // period using for logic with update data on chart. Set when user change period in dropdown and when we parse query params from url
-  const [period, setPeriod] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period)
+  const [period, setPeriod] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period)
   // timeBucket using for logic with update data on chart. Set when user change timeBucket in dropdown and when we parse query params from url
-  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1] : periodPairs[3].tbs[1])
+  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1] : periodPairs[4].tbs[1])
   // activeTab using for change tabs and display other data on chart. Like performance, traffic, custom events
   const activePeriod = useMemo(() => _find(periodPairs, p => p.period === period), [period, periodPairs])
   // chartData is a data for chart. It is a main data for chart
