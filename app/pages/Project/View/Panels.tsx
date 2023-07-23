@@ -998,7 +998,7 @@ const Panel = ({
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')
     const tRatio = t('project.ratio')
-    const columns = _map(data, (el) => [el.name, valueMapper(el.count)])
+    const columns = _map(data, (el) => [el.name, el.count])
     const values = _map(data, (el) => valueMapper(el.count))
 
     const options = {
