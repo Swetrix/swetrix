@@ -38,8 +38,11 @@ Most of the environment variables are already set by default, but you need to se
 - `PASSWORD` - password user will use to log in to the dashboard
 - `JWT_ACCESS_TOKEN_SECRET` - secret for JWT access tokens, basically a random string of 60 characters.
 - `JWT_REFRESH_TOKEN_SECRET` - secret for JWT refresh tokens, also a random 60 chars string, but this one should be different from the access token secret.
+- `API_URL` - URL (or an IP address) of the machine you're hosting Swetrix on.
 
 ### 3. Run the container
+Before running the following command, make sure that you have Docker installed on your server. You may refer to the [Digital Ocean docker installation guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04) for more information.
+
 Once you've set up the server, you're ready to start up the server:
 
 ```bash
@@ -47,25 +50,33 @@ docker-compose up -d
 ```
 
 After you run this command, the following containers will be started:
-- `swetrix-api` - the main API server running on port 5005 by default
+- `swetrix-api` - the main API server running on port 8080 by default
 - `swetrix-fe` - the frontend server running on port 80 by default
 - Redis server for caching
 - Clickhouse server for analytics data and transactional stuff
 
-After starting the main container you can access the dashboard at `http://{host}:80`.
+After starting the container you can access the dashboard at `http://{host}:80`.
 
 ## Updating
-To update Swetrix to the latest version, run the following command:
+To update Swetrix to the latest version you have to pull Swetrix images from the Docker Hub and restart the container.
+
+First, pull the Swetrix API image:
 ```bash
 docker pull swetrix/swetrix-api
 ```
 
-Then restart the container:
+Next, pull the Swetrix frontend image:
+```bash
+docker pull swetrix/swetrix-fe
+```
+
+And then restart the container:
 ```bash
 docker-compose restart
 ```
 
 ## Reverse proxy
-Make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.
+It's best to make sure to set up your reverse proxy to pass the request IP address as an `x-real-ip` or `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.
 
-The API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too. The Swetrix Cloud API is covered by the Cloudflare proxying.
+<!-- TODO: On the next versions of Swetrix Cloudflare becomes optional and may be set up via .env variables. Mention that. -->
+Currently, the API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.
