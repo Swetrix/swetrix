@@ -44,6 +44,7 @@ const clickhouse = new ClickHouse({
 })
 
 const { JWT_ACCESS_TOKEN_SECRET } = process.env
+const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const isDevelopment = process.env.NODE_ENV === 'development'
 
 const SELFHOSTED_EMAIL = process.env.EMAIL
@@ -123,4 +124,5 @@ export {
   JWT_ACCESS_TOKEN_SECRET,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
+  isProxiedByCloudflare,
 }

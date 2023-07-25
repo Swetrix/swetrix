@@ -23,6 +23,7 @@ import {
   SELFHOSTED_EMAIL,
   UUIDV5_NAMESPACE,
   isDevelopment,
+  isProxiedByCloudflare,
 } from './constants'
 import { Project } from '../project/entity/project.entity'
 
@@ -289,8 +290,6 @@ interface IPGeoDetails {
   city?: string
 }
 
-const CLOUDFLARE_ENABLED = false
-
 const getGeoDetails = (
   ip: string,
   tz?: string,
@@ -315,7 +314,7 @@ const getGeoDetails = (
   // }
 
   // Stage 2: If Cloudflare is enabled, use their headers
-  if (CLOUDFLARE_ENABLED && headers?.['cf-ipcountry'] !== 'XX') {
+  if (isProxiedByCloudflare && headers?.['cf-ipcountry'] !== 'XX') {
     return headers['cf-ipcountry']
   }
 
@@ -330,8 +329,8 @@ const getGeoDetails = (
 }
 
 const getIPFromHeaders = (headers: any) => {
-  if (CLOUDFLARE_ENABLED) {
-    return headers['cf-connecting-ip'] || null
+  if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
+    return headers['cf-connecting-ip']
   }
 
   // Get IP based on the NGINX configuration
