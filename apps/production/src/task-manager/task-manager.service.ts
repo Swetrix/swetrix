@@ -818,9 +818,14 @@ export class TaskManagerService {
       const isUnique = Number(
         alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS,
       )
+      const isCustomEventsMetrics = Number(
+        alert.queryMetric === QueryMetric.CUSTOM_EVENTS,
+      )
       const time = getQueryTime(alert.queryTime)
       const createdCondition = getQueryCondition(alert.queryCondition)
-      const query = `SELECT count() FROM analytics WHERE pid = '${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
+      const query = isCustomEventsMetrics
+        ? `SELECT count() FROM customEV WHERE pid = '${project.id}' AND ev = ${alert.queryCustomEvent} AND created ${createdCondition} now() - ${time}`
+        : `SELECT count() FROM analytics WHERE pid = '${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
       const queryResult = await clickhouse.query(query).toPromise()
 
       const count = Number(queryResult[0]['count()'])
@@ -832,7 +837,9 @@ export class TaskManagerService {
         })
 
         const queryMetric =
-          alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          alert.queryMetric === isCustomEventsMetrics
+            ? 'custom events'
+            : QueryMetric.UNIQUE_PAGE_VIEWS
             ? 'unique page views'
             : 'page views'
         const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${

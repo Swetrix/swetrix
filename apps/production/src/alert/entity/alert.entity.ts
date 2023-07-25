@@ -67,4 +67,12 @@ export class Alert {
     default: null,
   })
   queryTime: QueryTime
+
+  @ApiProperty()
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    default: null,
+  })
+  queryCustomEvent: string | null
 }

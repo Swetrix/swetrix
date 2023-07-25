@@ -5,6 +5,7 @@ export enum QueryMetric {
   PAGE_VIEWS = 'page_views',
   UNIQUE_PAGE_VIEWS = 'unique_page_views',
   ONLINE_USERS = 'online_users',
+  CUSTOM_EVENTS = 'custom_events',
 }
 
 export enum QueryCondition {
@@ -48,6 +49,10 @@ export class AlertDTO {
   @ApiProperty()
   @IsOptional()
   active?: boolean
+
+  @ApiProperty()
+  @IsOptional()
+  queryCustomEvent?: string
 }
 
 export class CreateAlertDTO {
