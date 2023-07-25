@@ -292,6 +292,12 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
 
@@ -329,11 +335,6 @@ export class AnalyticsController {
         safeTimezone,
         diff,
       )
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM ${
@@ -515,6 +516,12 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
     let newTimeBucket = timeBucket
     let allowedTumebucketForPeriodAll
     let diff
@@ -546,11 +553,6 @@ export class AnalyticsController {
       period,
       safeTimezone,
       diff,
-    )
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
     )
 
     const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
@@ -668,6 +670,12 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
     let diff
 
     if (period === 'all') {
@@ -679,12 +687,6 @@ export class AnalyticsController {
 
       diff = res.diff
     }
-
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
@@ -1165,6 +1167,12 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
     let newTimeBucket = timeBucket
     let diff
     let timeBucketForAllTime
@@ -1187,11 +1195,6 @@ export class AnalyticsController {
     this.analyticsService.validateTimebucket(newTimeBucket)
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
