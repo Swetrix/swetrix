@@ -84,4 +84,8 @@ export class CreateAlertDTO {
   @ApiProperty()
   @IsNotEmpty()
   active: boolean
+
+  @ApiProperty()
+  @IsOptional()
+  queryCustomEvent?: string
 }

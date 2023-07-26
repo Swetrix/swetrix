@@ -74,5 +74,5 @@ export class Alert {
     nullable: true,
     default: null,
   })
-  queryCustomEvent: string | null
+  queryCustomEvent: string
 }
