@@ -6,7 +6,6 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -17,13 +16,14 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { FormDataRequest } from 'nestjs-form-data'
 import { Like } from 'typeorm'
 import * as _map from 'lodash/map'
 import * as _size from 'lodash/size'
-import { CurrentUserId } from 'src/auth/decorators/current-user-id.decorator'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
-import { Auth } from 'src/auth/decorators'
-import { FormDataRequest } from 'nestjs-form-data'
+import { CurrentUserId } from '../../auth/decorators/current-user-id.decorator'
+import { JwtAccessTokenGuard } from '../../auth/guards'
+import { Auth } from '../../auth/decorators'
+import { AppLoggerService } from '../../logger/logger.service'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
 import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
@@ -32,7 +32,6 @@ import { UserService } from '../../user/user.service'
 import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { CategoriesService } from '../categories/categories.service'
-import { CdnService } from '../cdn/cdn.service'
 import { Extension } from './entities/extension.entity'
 import { GetInstalledExtensionsQueriesDto } from './dtos/queries/get-installed-extensions.dto'
 import { InstallExtensionParamsDto } from './dtos/params/install-extension.dto'
@@ -61,13 +60,11 @@ import {
 )
 @Controller('extensions')
 export class ExtensionsController {
-  private readonly logger = new Logger(ExtensionsController.name)
-
   constructor(
     private readonly extensionsService: ExtensionsService,
     private readonly categoriesService: CategoriesService,
     private readonly userService: UserService,
-    private readonly cdnService: CdnService,
+    private readonly logger: AppLoggerService,
     private readonly projectService: ProjectService,
   ) {}
 
@@ -80,7 +77,7 @@ export class ExtensionsController {
     extensions: Extension[]
     count: number
   }> {
-    this.logger.debug({ queries })
+    this.logger.log({ queries }, 'GET /extensions/installed')
 
     if (!userId) {
       throw new ForbiddenException(
@@ -545,7 +542,8 @@ export class ExtensionsController {
     @Body() body: InstallExtensionBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<any> {
-    this.logger.debug({ params, body })
+    this.logger.log({ params, body }, 'POST /extensions/:extensionId/install')
+
     if (!userId) {
       throw new ForbiddenException(
         'You must be logged in to access this route.',
@@ -613,7 +611,11 @@ export class ExtensionsController {
     @Body() body: UninstallExtensionBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    this.logger.debug({ params, body })
+    this.logger.log(
+      { params, body },
+      'DELETE /extensions/:extensionId/uninstall',
+    )
+
     if (!userId) {
       throw new ForbiddenException(
         'You must be logged in to access this route.',
