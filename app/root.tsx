@@ -188,7 +188,7 @@ export async function loader({ request }: LoaderArgs) {
     API_STAGING_URL: process.env.API_STAGING_URL,
     CDN_URL: process.env.CDN_URL,
     BLOG_URL: process.env.BLOG_URL,
-    SELFHOSTED: process.env.REACT_APP_SELFHOSTED,
+    SELFHOSTED: process.env.SELFHOSTED,
     STAGING: process.env.STAGING,
   }
 
@@ -252,6 +252,7 @@ export default function App() {
             )}`,
           }}
         />
+        <script src='/env.js' />
       </head>
       <body
         className={clsx({
