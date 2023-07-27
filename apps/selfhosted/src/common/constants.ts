@@ -44,6 +44,7 @@ const clickhouse = new ClickHouse({
 })
 
 const { JWT_ACCESS_TOKEN_SECRET } = process.env
+const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const isDevelopment = process.env.NODE_ENV === 'development'
 
 const SELFHOSTED_EMAIL = process.env.EMAIL
@@ -80,6 +81,23 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 // 35 seconds
 const HEARTBEAT_SID_LIFE_TIME = 35
 
+const TRAFFIC_COLUMNS = [
+  'cc',
+  'rg',
+  'ct',
+  'pg',
+  'lc',
+  'br',
+  'os',
+  'dv',
+  'ref',
+  'so',
+  'me',
+  'ca',
+]
+
+const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
+
 export {
   clickhouse,
   redis,
@@ -104,4 +122,7 @@ export {
   isDevelopment,
   DEFAULT_SELFHOSTED_UUID,
   JWT_ACCESS_TOKEN_SECRET,
+  TRAFFIC_COLUMNS,
+  PERFORMANCE_COLUMNS,
+  isProxiedByCloudflare,
 }

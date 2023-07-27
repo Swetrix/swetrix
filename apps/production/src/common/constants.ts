@@ -44,6 +44,7 @@ const clickhouse = new ClickHouse({
 
 const { JWT_ACCESS_TOKEN_SECRET } = process.env
 const isDevelopment = process.env.NODE_ENV === 'development'
+const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
 const { TWO_FACTOR_AUTHENTICATION_APP_NAME } = process.env
@@ -193,4 +194,5 @@ export {
   CAPTCHA_COLUMNS,
   PERFORMANCE_COLUMNS,
   sentryIgnoreErrors,
+  isProxiedByCloudflare,
 }

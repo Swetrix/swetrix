@@ -12,7 +12,7 @@ import * as _find from 'lodash/find'
 import * as _round from 'lodash/round'
 import * as _split from 'lodash/split'
 
-import { redis, isDevelopment } from './constants'
+import { redis, isDevelopment, isProxiedByCloudflare } from './constants'
 
 const marketingTips = {
   en: [
@@ -209,11 +209,9 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
-const CLOUDFLARE_ENABLED = false
-
 const getIPFromHeaders = (headers: any) => {
-  if (CLOUDFLARE_ENABLED) {
-    return headers['cf-connecting-ip'] || null
+  if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
+    return headers['cf-connecting-ip']
   }
 
   // Get IP based on the NGINX configuration

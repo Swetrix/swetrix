@@ -1,4 +1,5 @@
 import { NotFoundException, HttpException } from '@nestjs/common'
+import timezones from 'countries-and-timezones'
 import { hash } from 'blake3'
 import { v5 as uuidv5 } from 'uuid'
 import * as _join from 'lodash/join'
@@ -7,6 +8,7 @@ import * as _values from 'lodash/values'
 import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
 import * as _toNumber from 'lodash/toNumber'
+import * as _split from 'lodash/split'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _head from 'lodash/head'
 import * as _round from 'lodash/round'
@@ -21,6 +23,7 @@ import {
   SELFHOSTED_EMAIL,
   UUIDV5_NAMESPACE,
   isDevelopment,
+  isProxiedByCloudflare,
 } from './constants'
 import { Project } from '../project/entity/project.entity'
 
@@ -129,7 +132,7 @@ const deleteProjectClickhouse = async id => {
   return clickhouse.query(query).toPromise()
 }
 
-const createProjectClickhouse = async (project: Project) => {
+const createProjectClickhouse = async (project: Partial<Project>) => {
   const paramsData = {
     params: {
       ...project,
@@ -281,6 +284,71 @@ const getSelfhostedUUID = (): string => {
   }
 }
 
+interface IPGeoDetails {
+  country?: string
+  region?: string
+  city?: string
+}
+
+const getGeoDetails = (
+  ip: string,
+  tz?: string,
+  headers?: unknown,
+): IPGeoDetails => {
+  // TODO: Add support for DBIP for self-hosted
+
+  // Stage 1: Using IP address based geo lookup
+  // const data = lookup.get(ip)
+
+  // const country = data?.country?.iso_code
+  // // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
+  // const city = data?.city?.names?.en
+  // const region = data?.subdivisions?.[0]?.names?.en
+
+  // if (country) {
+  //   return {
+  //     country,
+  //     city,
+  //     region,
+  //   }
+  // }
+
+  // Stage 2: If Cloudflare is enabled, use their headers
+  if (isProxiedByCloudflare && headers?.['cf-ipcountry'] !== 'XX') {
+    return headers['cf-ipcountry']
+  }
+
+  // Stage 3: Using timezone based geo lookup as a fallback
+  const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
+
+  return {
+    country: tzCountry,
+    city: null,
+    region: null,
+  }
+}
+
+const getIPFromHeaders = (headers: any) => {
+  if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
+    return headers['cf-connecting-ip']
+  }
+
+  // Get IP based on the NGINX configuration
+  let ip = headers['x-real-ip']
+
+  if (ip) {
+    return ip
+  }
+
+  ip = headers['x-forwarded-for'] || null
+
+  if (!ip) {
+    return null
+  }
+
+  return _split(ip, ',')[0]
+}
+
 export {
   checkRateLimit,
   createProjectClickhouse,
@@ -296,4 +364,6 @@ export {
   updateUserClickhouse,
   getUserClickhouse,
   createUserClickhouse,
+  getGeoDetails,
+  getIPFromHeaders,
 }

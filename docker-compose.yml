@@ -11,7 +11,7 @@ services:
     environment:
       - API_URL=http://localhost:8080/
       - REACT_APP_AIAPI_URL=https://aiapi.swetrix.com/
-      - REACT_APP_SELFHOSTED=true
+      - SELFHOSTED=true
 
   # This is the analytics API
   swetrix-api:
@@ -28,6 +28,7 @@ services:
       - API_ORIGINS=
       - EMAIL=test@test.com
       - PASSWORD=12345678
+      - CLOUDFLARE_PROXY_ENABLED=false
     links:
       - 'redis'
       - 'clickhouse'
