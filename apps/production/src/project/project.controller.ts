@@ -1421,7 +1421,7 @@ export class ProjectController {
     }
 
     const project = await this.projectService.findOne(id, {
-      relations: ['admin'],
+      relations: ['admin', 'share', 'share.user'],
     })
 
     if (_isEmpty(project)) {
@@ -1438,7 +1438,7 @@ export class ProjectController {
     this.projectService.allowedToView(project, uid, headers['x-password'])
 
     return {
-      ..._omit(project, ['admin', 'passwordHash']),
+      ..._omit(project, ['admin', 'passwordHash', 'share']),
       isOwner: uid === project.admin?.id,
     }
   }
