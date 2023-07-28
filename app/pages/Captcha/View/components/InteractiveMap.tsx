@@ -5,13 +5,10 @@ import _reduce from 'lodash/reduce'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
-import { PROJECT_TABS } from 'redux/constants'
-import { StateType } from 'redux/store'
-import { getTimeFromSeconds, getStringFromTime, nFormatter } from 'utils/generic'
+import { nFormatter } from 'utils/generic'
 
 import { IEntry } from 'redux/models/IEntry'
 import countriesList from 'utils/countries'
-import { useSelector } from 'react-redux'
 
 interface IInteractiveMap {
   data: IEntry[],
@@ -40,9 +37,6 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
   const [cursorPosition, setCursorPosition] = useState<ICursorPosition>({} as ICursorPosition)
   const countryMap: ICountryMap = useMemo(() => _reduce(data, (prev, curr) => ({ ...prev, [curr.cc || curr.name]: curr.count }), {}), [data])
 
-  const projectTab = useSelector((state: StateType) => state.ui.projects.projectTab)
-  const isTrafficTab = projectTab === PROJECT_TABS.traffic
-
   const onMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const pageX = e.clientX - rect.left
@@ -62,25 +56,13 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
               <path
                 key={value}
                 id={value}
-                className={isTrafficTab
-                  ? cx({
+                className={cx({
                     'hover:opacity-90': perc > 0,
                     'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
                     'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
                     'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
                     'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
                     'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
-                    'cursor-pointer': Boolean(ccData),
-                  }) : cx({
-                    'hover:opacity-90': ccData > 0,
-                    'fill-[#cfd1d4] dark:fill-[#465d7e46]': ccData === 0,
-                    'fill-[#92b2e7] dark:fill-[#292d77]': ccData > 0 && ccData < 1,
-                    'fill-[#6f9be3] dark:fill-[#363391]': ccData >= 1 && ccData < 2,
-                    'fill-[#5689db] dark:fill-[#4842be]': ccData >= 2 && ccData < 3,
-                    'fill-[#3b82f6] dark:fill-[#6357ff]': ccData >= 3 && ccData < 5,
-                    'fill-[#f78a8a]': ccData >= 5 && ccData < 7,
-                    'fill-[#f76b6b]': ccData >= 7 && ccData < 10,
-                    'fill-[#f74b4b]': ccData >= 10,
                     'cursor-pointer': Boolean(ccData),
                   })}
                 d={key.d}
@@ -113,16 +95,15 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
           >
             <strong>{dataHover.countries}</strong>
             <br />
-            {isTrafficTab ? t('project.unique') : t('dashboard.pageLoad')}
+            {t('project.unique')}
             :
             &nbsp;
             <strong
               className={cx({
-                'dark:text-indigo-400': isTrafficTab || dataHover.data < 5,
-                'dark:text-red-400': !isTrafficTab && dataHover.data >= 5,
+                'dark:text-indigo-400': dataHover.data < 5,
               })}
             >
-              {isTrafficTab ? nFormatter(dataHover.data, 1) : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
+              {nFormatter(dataHover.data, 1)}
             </strong>
           </div>
         )}

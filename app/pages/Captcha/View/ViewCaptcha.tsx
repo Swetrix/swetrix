@@ -50,7 +50,7 @@ import {
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, noRegionPeriods, getSettings, CHART_METRICS_MAPPING,
+  validTimeBacket, noRegionPeriods, getSettings, CHART_METRICS_MAPPING, getColumns
 } from './ViewCaptcha.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
@@ -126,6 +126,7 @@ const ViewProject = ({
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
   const [chartType, setChartType] = useState<string>(getItem('chartType') as string || chartTypes.line)
+  const [mainChart, setMainChart] = useState<any>(null)
 
   const { name } = project as IProject
 
@@ -252,10 +253,12 @@ const ViewProject = ({
           customs,
         })
 
-        const generete = bb.generate(bbSettings)
-        generete.data.names(dataNames)
-
         setIsPanelsDataEmpty(false)
+        setMainChart(() => {
+          const generete = bb.generate(bbSettings)
+          generete.data.names(dataNames)
+          return generete
+        })
       }
 
       setAnalyticsLoading(false)
@@ -268,6 +271,14 @@ const ViewProject = ({
       console.error(e)
     }
   }
+
+  useEffect(() => {
+    if (mainChart) {
+      mainChart.load({
+        columns: getColumns({ ...chartData }, activeChartMetrics),
+      })
+    }
+  }, [chartData])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column: any, filter: any, isExclusive: boolean = false) => {
@@ -672,7 +683,7 @@ const ViewProject = ({
                   </span>
                 </div>
                 <Dropdown
-                  items={periodPairs}
+                  items={_filter(periodPairs, (item) => !_includes(['all', '1h'], item.period))}
                   title={activePeriod.label}
                   labelExtractor={(pair) => pair.dropdownLabel || pair.label}
                   keyExtractor={(pair) => pair.label}
@@ -804,12 +815,12 @@ const ViewProject = ({
                 tnMapping={tnMapping}
               />
               {dataLoading && (
-              <div className='loader bg-transparent static mt-4' id='loader'>
-                <div className='loader-head dark:bg-slate-800'>
-                  <div className='first dark:bg-slate-600' />
-                  <div className='second dark:bg-slate-600' />
+                <div className='!bg-transparent static mt-4' id='loader'>
+                  <div className='loader-head dark:!bg-slate-800'>
+                    <div className='first dark:!bg-slate-600' />
+                    <div className='second dark:!bg-slate-600' />
+                  </div>
                 </div>
-              </div>
               )}
               <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
                 {/* {!_isEmpty(project.overall) && (
@@ -829,18 +840,30 @@ const ViewProject = ({
                   const panelIcon = panelIconMapping[type]
 
                   if (type === 'cc') {
+                    const rowMapper = (entry: any) => {
+                      const { name: entryName, cc } = entry
+
+                      if (cc) {
+                        return (
+                          <CCRow cc={cc} name={entryName} language={language} />
+                        )
+                      }
+
+                      return (
+                        <CCRow cc={entryName} language={language} />
+                      )
+                    }
+
                     return (
                       <Panel
                         t={t}
+                        key={type}
                         icon={panelIcon}
                         id={type}
-                        key={type}
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
-                        rowMapper={({ name: entryName, cc }) => (
-                          <CCRow cc={cc} name={entryName} language={language} />
-                        )}
+                        rowMapper={rowMapper}
                       />
                     )
                   }

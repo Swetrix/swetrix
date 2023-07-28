@@ -20,11 +20,12 @@ import _round from 'lodash/round'
 import JSZip from 'jszip'
 
 import {
-  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h,
+  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h, tbsFormatMapperTooltip, tbsFormatMapperTooltip24h,
 } from 'redux/constants'
 import countries from 'utils/isoCountries'
 // @ts-ignore
 import * as d3 from 'd3'
+import { nFormatter } from 'utils/generic'
 
 const getExportFilename = (prefix: string) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
@@ -123,8 +124,6 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
   [key: string]: boolean,
 }, applyRegions: boolean, timeFormat: string, rotateXAxias: boolean, chartType: string) => {
   const xAxisSize = _size(chart.x)
-  const lines: any[] = []
-  const modifiedChart = { ...chart }
   let regions
 
   if (applyRegions) {
@@ -151,19 +150,23 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
   return {
     data: {
       x: 'x',
-      columns: getColumns(modifiedChart, activeChartMetrics),
+      columns: getColumns({
+        ...chart,
+      }, activeChartMetrics),
       types: {
-        results: chartType === chartTypes.line ? area() : bar(),
+        results: chartType === chartTypes.line ? area() : bar()
       },
       colors: {
         results: '#2563EB',
       },
       regions,
     },
-    grid: {
-      x: {
-        lines,
-      },
+    transition: {
+      duration: 500,
+    },
+    resize: {
+      auto: true,
+      timer: false,
     },
     axis: {
       x: {
@@ -171,31 +174,40 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: any) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : null,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
       },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+        },
+      },
     },
     tooltip: {
-      format: {
-        title: (x: any) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
-      },
-      contents: {
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-            <li class='font-semibold'>{=TITLE}</li>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            {{
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
-                </div>
-                <span class='pl-4'>{=VALUE}</span>
-              </li>
-            }}
-          </ul>`,
+      contents: (item: any, _: any, __: any, color: any) => {
+        return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(item, (el: {
+          id: string,
+          index: number,
+          name: string,
+          value: string,
+          x: Date,
+        }) => {
+
+          return `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${el.value}</span>
+            </li>
+            `
+        }).join('')}`
       },
     },
     point: {
@@ -220,7 +232,6 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
     },
     padding: {
       right: rotateXAxias && 35,
-      left: 40,
     },
     bindto: '#dataChart',
   }
