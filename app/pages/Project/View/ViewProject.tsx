@@ -937,7 +937,7 @@ const ViewProject = ({
       } = dataPerf
 
       if (!_isEmpty(appliedFilters)) {
-        setFilters(appliedFilters)
+        setFiltersPerf(appliedFilters)
       }
 
       if (_isEmpty(dataPerf)) {
@@ -2295,7 +2295,7 @@ const ViewProject = ({
               <NoEvents filters={filters} resetFilters={resetFilters} />
             )}
             {(isPanelsDataEmptyPerf && activeTab === PROJECT_TABS.performance) && (
-              <NoEvents filters={filters} resetFilters={resetFilters} />
+              <NoEvents filters={filtersPerf} resetFilters={resetFilters} />
             )}
             {activeTab === PROJECT_TABS.traffic && (
               <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
