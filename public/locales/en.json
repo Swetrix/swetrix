@@ -7,6 +7,8 @@
     "cancelSubFirst": "Please cancel your paid subscription first",
     "accountDeleted": "Your account has been deleted",
     "accountDeleteError": "Error while deleting your account",
+    "updatedPeriodEmailReports": "User's email reports period has been updated",
+    "updatedPeriodEmailReportsError": "Error occurred while updating user's email reports period",
     "roleUpdated": "User's role has been changed",
     "roleUpdateError": "Error occurred while changing user's role",
     "userInvited": "The user has been invited to your project",

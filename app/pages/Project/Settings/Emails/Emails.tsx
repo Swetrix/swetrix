@@ -151,10 +151,10 @@ const EmailList = ({
         })
         return newEmails
       })
-      reportTypeNotifiction(t('apiNotifications.roleUpdated'))
+      reportTypeNotifiction(t('apiNotifications.updatedPeriodEmailReports'))
     } catch (e) {
       console.error(`[ERROR] Error while updating user's role: ${e}`)
-      emailFailed(t('apiNotifications.roleUpdateError'))
+      emailFailed(t('apiNotifications.updatedPeriodEmailReportsError'))
     }
 
     setOpen(false)
