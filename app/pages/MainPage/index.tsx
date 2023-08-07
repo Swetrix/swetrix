@@ -328,7 +328,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               <h2 className='font-extrabold text-4xl dark:text-white text-slate-900'>
                 {t('main.coreFeatures.title')}
               </h2>
-              <p className='mt-6 dark:text-gray-400 text-gray-600 mb-11'>
+              <p className='mt-6 dark:text-gray-400 text-gray-600 mb-6'>
                 {t('main.coreFeatures.desc')}
               </p>
               <a
@@ -353,7 +353,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               <p className='mt-6 text-gray-600 dark:text-gray-400 mb-3'>
                 {t('main.marketplace.desc1')}
               </p>
-              <p className='text-gray-600 dark:text-gray-400 mb-11'>
+              <p className='text-gray-600 dark:text-gray-400 mb-6'>
                 {t('main.marketplace.desc2')}
               </p>
               <a
