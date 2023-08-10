@@ -15,7 +15,7 @@ git clone git@github.com:[YOUR_USERNAME]/swetrix-api.git
 ### 2. Install dependencies
 To install the dependencies you need to run the following command in the root of the repository:
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
 ### 3. Set up environment variables

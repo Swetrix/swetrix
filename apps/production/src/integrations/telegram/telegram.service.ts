@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectBot } from 'nestjs-telegraf'
 import { Markup, Telegraf } from 'telegraf'
@@ -11,7 +11,7 @@ import { Message } from './entities/message.entity'
 @Injectable()
 export class TelegramService {
   constructor(
-    @InjectBot() private readonly bot: Telegraf<Context>,
+    @Optional() @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     @InjectRepository(Message)
