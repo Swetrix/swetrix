@@ -22,6 +22,8 @@ export const links: LinksFunction = () => {
 }
 
 // This should be generated on the API side, will be done later.
+// MRR taken from Profitwell dashboard
+// Revenue taken from Paddle dashboard
 const financeData = {
   '2021-08-01': {
     'Technical Expences': -32,
@@ -160,6 +162,12 @@ const financeData = {
     'Business Expences': -300,
     'MRR': 38,
     'Revenue': 22,
+  },
+  '2023-07-01': {
+    'Technical Expences': -23,
+    'Business Expences': -300,
+    'MRR': 63,
+    'Revenue': 63,
   },
 }
 
