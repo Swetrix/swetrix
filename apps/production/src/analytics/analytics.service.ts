@@ -798,7 +798,7 @@ export class AnalyticsService {
         const param = `qf_${col}_${f}`
 
         if (filter === null) {
-          query += `${column} ${isExclusive ? 'NOT ' : 'IS'} NULL`
+          query += `${column} IS ${isExclusive ? 'NOT' : ''} NULL`
           params[param] = filter
           continue
         }
