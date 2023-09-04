@@ -1,3 +1,4 @@
+import * as net from 'net'
 import {
   ForbiddenException,
   Injectable,
@@ -6,7 +7,6 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
-import * as net from 'net'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
@@ -718,9 +718,8 @@ export class ProjectService {
         clickhouse.query(countCaptchaQuery).toPromise(),
       ]
 
-      const [rawTraffic, rawCustomEvents, rawCaptcha] = await Promise.all(
-        promises,
-      )
+      const [rawTraffic, rawCustomEvents, rawCaptcha] =
+        await Promise.all(promises)
 
       const traffic = rawTraffic[0]['count()']
       const customEvents = rawCustomEvents[0]['count()']

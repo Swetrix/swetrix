@@ -1,8 +1,8 @@
+import fs = require('fs')
+import path = require('path')
 import { Injectable } from '@nestjs/common'
 import * as postmark from 'postmark'
 import handlebars from 'handlebars'
-import fs = require('fs')
-import path = require('path')
 import { LetterTemplate } from './letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { SEND_WARNING_AT_PERC } from '../common/constants'

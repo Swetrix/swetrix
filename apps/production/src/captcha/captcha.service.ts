@@ -338,9 +338,8 @@ export class CaptchaService {
       throw new Error('No JWT captcha cookie')
     }
 
-    const tokenCaptcha: TokenCaptcha = await this.decryptTokenCaptcha(
-      tokenCookie,
-    )
+    const tokenCaptcha: TokenCaptcha =
+      await this.decryptTokenCaptcha(tokenCookie)
 
     return this.canPassWithoutVerification(tokenCaptcha)
   }
