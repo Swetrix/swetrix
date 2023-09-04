@@ -78,6 +78,7 @@ swetrix.trackViews({
   noHeartbeat: false,
   heartbeatOnBackground: false,
   noUserFlow: false,
+  doNotAnonymise: false,
 })
 ```
 
@@ -88,6 +89,7 @@ swetrix.trackViews({
 | noHeartbeat | Do not send Heartbeat requests to the server.<br />By setting this to `true` you will not be able to see the realtime amount of users on your website. | `false` |
 | heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means that users who opened your website in inactive browser tab or window will not be counted into users realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube. | `false` |
 | noUserFlow | Send previous page user visited to the server, only the pages on your website will be sent. Setting this to `true` means that no user flow analytics will be sent and as a consequence it won't be available to you later in Dashboard. | `false` |
+| doNotAnonymise | Do not send paths from ignore list to API. If set to `false`, the page view information will be sent to the Swetrix API, but the page will be displayed as a 'Redacted page' in the dashboard. | `false` |
 
 The `trackViews` function returns a `Promise` with an object with some methods allowing you to alter the behaviour of page tracking:
 ```javascript
