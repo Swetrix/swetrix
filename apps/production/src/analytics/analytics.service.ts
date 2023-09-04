@@ -208,6 +208,10 @@ const generateParamsQuery = (
   const columnsQuery = columns.join(', ')
 
   if (isPerformance) {
+    if (col === 'pg') {
+      return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
+    }
+
     return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
