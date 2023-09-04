@@ -220,7 +220,7 @@ const generateParamsQuery = (
   }
 
   if (col === 'pg' || isPageInclusiveFilterSet) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${columnsQuery}`
@@ -981,12 +981,15 @@ export class AnalyticsService {
         isCaptcha,
         isPerformance,
       )
+      console.log(col)
+      console.log(query)
       const res = await clickhouse.query(query, paramsData).toPromise()
 
       params[col] = res
     })
 
     await Promise.all(paramsPromises)
+    console.log(params)
 
     return params
   }
