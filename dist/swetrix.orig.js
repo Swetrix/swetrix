@@ -30,6 +30,11 @@
         return __assign.apply(this, arguments);
     };
 
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
     var findInSearch = function (exp) {
         var res = location.search.match(exp);
         return (res && res[2]) || undefined;
@@ -186,13 +191,15 @@
             }
         };
         Lib.prototype.getPreviousPage = function () {
+            var _a, _b;
             // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
             // That method of getting previous page works for SPA websites
             if (this.activePage) {
-                if (this.checkIgnore(this.activePage)) {
+                var shouldIgnore = this.checkIgnore(this.activePage);
+                if (shouldIgnore && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.doNotAnonymise)) {
                     return null;
                 }
-                return this.activePage;
+                return shouldIgnore ? null : this.activePage;
             }
             // Checking if URL is supported by the browser (for example, IE11 does not support it)
             if (typeof URL === 'function') {
@@ -208,28 +215,30 @@
                     if (host !== refHost) {
                         return null;
                     }
-                    if (this.checkIgnore(pathname)) {
+                    var shouldIgnore = this.checkIgnore(pathname);
+                    if (shouldIgnore && ((_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.doNotAnonymise)) {
                         return null;
                     }
-                    return pathname;
+                    return shouldIgnore ? null : pathname;
                 }
-                catch (_a) {
+                catch (_c) {
                     return null;
                 }
             }
             return null;
         };
         Lib.prototype.trackPage = function (pg, unique) {
-            var _a;
+            var _a, _b;
             if (unique === void 0) { unique = false; }
             if (!this.pageData)
                 return;
             this.pageData.path = pg;
-            if (this.checkIgnore(pg))
+            var shouldIgnore = this.checkIgnore(pg);
+            if (shouldIgnore && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.doNotAnonymise))
                 return;
             var perf = this.getPerformanceStats();
             var prev;
-            if (!((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.noUserFlow)) {
+            if (!((_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.noUserFlow)) {
                 prev = this.getPreviousPage();
             }
             var data = {
@@ -241,7 +250,7 @@
                 me: getUTMMedium(),
                 ca: getUTMCampaign(),
                 unique: unique,
-                pg: pg,
+                pg: shouldIgnore ? null : pg,
                 perf: perf,
                 prev: prev,
             };

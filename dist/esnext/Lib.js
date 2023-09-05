@@ -127,10 +127,11 @@ export class Lib {
         // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
         // That method of getting previous page works for SPA websites
         if (this.activePage) {
-            if (this.checkIgnore(this.activePage)) {
+            const shouldIgnore = this.checkIgnore(this.activePage);
+            if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) {
                 return null;
             }
-            return this.activePage;
+            return shouldIgnore ? null : this.activePage;
         }
         // Checking if URL is supported by the browser (for example, IE11 does not support it)
         if (typeof URL === 'function') {
@@ -146,10 +147,11 @@ export class Lib {
                 if (host !== refHost) {
                     return null;
                 }
-                if (this.checkIgnore(pathname)) {
+                const shouldIgnore = this.checkIgnore(pathname);
+                if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) {
                     return null;
                 }
-                return pathname;
+                return shouldIgnore ? null : pathname;
             }
             catch {
                 return null;
@@ -161,7 +163,8 @@ export class Lib {
         if (!this.pageData)
             return;
         this.pageData.path = pg;
-        if (this.checkIgnore(pg))
+        const shouldIgnore = this.checkIgnore(pg);
+        if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise)
             return;
         const perf = this.getPerformanceStats();
         let prev;
@@ -177,7 +180,7 @@ export class Lib {
             me: getUTMMedium(),
             ca: getUTMCampaign(),
             unique,
-            pg,
+            pg: shouldIgnore ? null : pg,
             perf,
             prev,
         };

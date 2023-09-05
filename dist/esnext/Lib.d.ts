@@ -42,6 +42,8 @@ export interface PageViewsOptions {
     unique?: boolean;
     /** A list of Regular Expressions or string pathes to ignore. */
     ignore?: Array<string | RegExp>;
+    /** Do not send paths from ignore list to API. If set to `false`, the page view information will be sent to the Swetrix API, but the page will be displayed as a 'Redacted page' in the dashboard. */
+    doNotAnonymise?: boolean;
     /** Do not send Heartbeat requests to the server. */
     noHeartbeat?: boolean;
     /** Send Heartbeat requests when the website tab is not active in the browser. */
