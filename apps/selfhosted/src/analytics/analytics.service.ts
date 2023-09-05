@@ -201,6 +201,10 @@ const generateParamsQuery = (
   const columnsQuery = columns.join(', ')
 
   if (isPerformance) {
+    if (col === 'pg') {
+      return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
+    }
+
     return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
@@ -208,7 +212,11 @@ const generateParamsQuery = (
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  if (col === 'pg' || isPageInclusiveFilterSet) {
+  if (col === 'pg') {
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
+  }
+
+  if (isPageInclusiveFilterSet) {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
@@ -752,6 +760,12 @@ export class AnalyticsService {
         const { filter, isExclusive } = converted[column][f]
 
         const param = `qf_${col}_${f}`
+
+        if (filter === null) {
+          query += `${column} IS ${isExclusive ? 'NOT' : ''} NULL`
+          params[param] = filter
+          continue
+        }
 
         query += `${isExclusive ? 'NOT ' : ''}${column} = {${param}:String}`
 
