@@ -58,6 +58,9 @@ export interface PageViewsOptions {
   /** A list of Regular Expressions or string pathes to ignore. */
   ignore?: Array<string | RegExp>
 
+  /** Do not send paths from ignore list to API. If set to `false`, the page view information will be sent to the Swetrix API, but the page will be displayed as a 'Redacted page' in the dashboard. */
+  doNotAnonymise?: boolean
+
   /** Do not send Heartbeat requests to the server. */
   noHeartbeat?: boolean
 
@@ -178,7 +181,6 @@ export class Lib {
     }
   }
 
-
   private heartbeat(): void {
     if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
       return
@@ -219,11 +221,13 @@ export class Lib {
     // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
     // That method of getting previous page works for SPA websites
     if (this.activePage) {
-      if (this.checkIgnore(this.activePage)) {
+      const shouldIgnore = this.checkIgnore(this.activePage)
+
+      if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) {
         return null
       }
 
-      return this.activePage
+      return shouldIgnore ? null : this.activePage
     }
 
     // Checking if URL is supported by the browser (for example, IE11 does not support it)
@@ -245,11 +249,13 @@ export class Lib {
           return null
         }
 
-        if (this.checkIgnore(pathname)) {
+        const shouldIgnore = this.checkIgnore(pathname)
+
+        if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) {
           return null
         }
 
-        return pathname
+        return shouldIgnore ? null : pathname
       } catch {
         return null
       }
@@ -262,7 +268,9 @@ export class Lib {
     if (!this.pageData) return
     this.pageData.path = pg
 
-    if (this.checkIgnore(pg)) return
+    const shouldIgnore = this.checkIgnore(pg)
+
+    if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) return
 
     const perf = this.getPerformanceStats()
 
@@ -281,7 +289,7 @@ export class Lib {
       me: getUTMMedium(),
       ca: getUTMCampaign(),
       unique,
-      pg,
+      pg: shouldIgnore ? null : pg,
       perf,
       prev,
     }
