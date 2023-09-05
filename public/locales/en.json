@@ -577,6 +577,7 @@
       "br": "Browser",
       "os": "OS name"
     },
+    "redactedPage": "Redacted page",
     "overview": "Overview",
     "weeklyStats": "Weekly stats",
     "statsFor": "Stats for",

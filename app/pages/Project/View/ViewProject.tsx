@@ -2443,6 +2443,10 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           onFragmentChange={setPgActiveFragment}
+                          rowMapper={({ name: entryName }) => {
+                            // todo: add uppercase
+                            return entryName || t('project.redactedPage')
+                          }}
                           name={pgPanelNameMapping[pgActiveFragment]}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
@@ -2567,6 +2571,27 @@ const ViewProject = ({
                           customTabs={customTabs}
                           valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                           capitalize
+                        />
+                      )
+                    }
+
+                    if (type === 'pg') {
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          activeTab={activeTab}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsDataPerf.data[type]}
+                          customTabs={customTabs}
+                          valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                          rowMapper={({ name: entryName }) => {
+                            // todo: add uppercase
+                            return entryName || t('project.redactedPage')
+                          }}
                         />
                       )
                     }

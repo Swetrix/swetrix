@@ -31,6 +31,10 @@ const Filter = ({
     displayFilter = countries.getName(filter, language)
   }
 
+  if (column === 'pg') {
+    displayFilter = filter || t('project.redactedPage')
+  }
+
   displayFilter = _truncate(displayFilter)
 
   return (
