@@ -995,15 +995,12 @@ export class AnalyticsService {
         isCaptcha,
         isPerformance,
       )
-      console.log(col)
-      console.log(query)
       const res = await clickhouse.query(query, paramsData).toPromise()
 
       params[col] = res
     })
 
     await Promise.all(paramsPromises)
-    console.log(params)
 
     return params
   }
