@@ -986,12 +986,19 @@ export class TaskManagerService {
       const messages = await this.telegramService.getMessages()
 
       messages.forEach(async message => {
-        await this.telegramService.sendMessage(
-          message.id,
-          message.chatId,
-          message.text,
-          message.extra,
-        )
+        try {
+          await this.telegramService.sendMessage(
+            message.id,
+            message.chatId,
+            message.text,
+            message.extra,
+          )
+        } catch (e) {
+          this.logger.error(
+            `[CRON WORKER](sendTelegramMessages) Error occured while sending message: ${e}`,
+          )
+          await this.telegramService.deleteMessage(message.id)
+        }
       })
     } catch (error) {
       this.logger.error(
