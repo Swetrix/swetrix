@@ -22,7 +22,7 @@ export class EventsDTO {
     description:
       'If true, only 1 event with the same ID will be saved per user session',
   })
-  unique: object
+  unique: boolean
 
   // Tracking metrics
   @ApiProperty({
