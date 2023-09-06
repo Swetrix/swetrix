@@ -3,25 +3,25 @@ title: Events API reference
 slug: /events-api
 ---
 
-With Swetrix you can record pageview or custom events programmatically manually. Usually this API is used when doing server-side tracking or in Mobile / Native applications.
+With Swetrix you can programmatically record page views or custom events manually. Typically this API is used when doing server-side tracking or in mobile/native applications.
 
-We already provide various [integrations](/integrations) and a [script](/swetrix-js-reference) for that purpose, but if for some reason none of these options work for you, you can use the Events API instead.
+We already provide several [integrations](/integrations) and a [script](/swetrix-js-reference) for this, but if for some reason none of these options work for you, you can use the Events API instead.
 
 ## Concepts
 ### Unique visitors tracking
 :::caution
-For the unique (and live) visitors functionality to properly work, each request must have `User-Agent` and `X-Client-IP-Address` HTTP headers set. If you don't set these headers, the API will still work, but the unique visitors count will be incorrect.
+For the unique (and live) visitor functionality to work properly, each request must have the `User-Agent` and `X-Client-IP-Address` HTTP headers set. If you don't set these headers, the API will still work, but the unique visitor count will be incorrect.
 :::
 
-The API relies on client's IP address and User-Agent for creating a temporary session (a salted hash which is forever removed from our database 30 minutes after the last interaction or at 12:00 AM UTC, whatever happens first). We **never** store visitor identifiable information in our database.
+The API relies on the client's IP address and user agent to create a temporary session (a salted hash that is permanently removed from our database 30 minutes after the last interaction or at 12:00 AM UTC, whichever comes first). We **never** store any visitor identifiable information in our database.
 
 ### Request headers
 #### User-Agent
-This header is used to determine the browser, operating system and device type of the visitor. It's also used to determine whether the visitor is a bot or not.
+This header is used to determine the visitor's browser, operating system and device type. It's also used to determine whether or not the visitor is a bot.
 We also use this header to create a temporary session for the visitor.
 
 #### X-Client-IP-Address
-This header is used to determine the IP address of the visitor. You have to forward the IP address of the visitor by using this header, otherwise the API will use the IP address of the server which is making the request (i.e. the IP address of your server), which will result in incorrect unique and live visitors data.
+This header is used to determine the visitor's IP address. You must pass the visitor's IP address using this header, otherwise the API will use the IP address of the server making the request (i.e. your server's IP address), resulting in incorrect unique and live visitor data.
 
 #### Content-Type
 Must be set to `application/json` for all requests.
@@ -30,9 +30,9 @@ Must be set to `application/json` for all requests.
 #### Pageview payload
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `pid` | `string` | `true` | A project ID to record pageview event for |
-| `tz` | `string` | `false` | Visitors timezone (it's used as a backup in case IP geolocation determinatino fails. I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set country of this entry as `Ukraine`) |
-| `pg` | `string` | `false` | A page to record pageview event for (e.g. `/home`). All our scripts send `pg` string with a slash (`/`) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent if using together with our official scripts  |
+| `pid` | `string` | `true` | A project ID to record the pageview event for |
+| `tz` | `string` | `false` | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`) |
+| `pg` | `string` | `false` | A page to record the pageview event for (e.g. `/home`). All our scripts send the `pg` string with a slash (`/`) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent when used together with our official scripts |
 | `prev` | `string` | `false` | Previous page user was on |
 | `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
 | `ref` | `string` | `false` | A referrer URL (e.g. `https://example.com/`) |
@@ -43,7 +43,7 @@ Must be set to `application/json` for all requests.
 | `perf` | `object` | `false` | An object with performance metrics related to the page load. See [Performance metrics](#performance-metrics-payload) for more details |
 
 #### Performance metrics payload
-This section describes the structure of the `perf` object which is used to record performance metrics related to the page load.
+This section describes the structure of the `perf` object which is used to record performance metrics related to the page loading.
 
 All of the values are numbers in milliseconds.
 
@@ -61,9 +61,9 @@ All of the values are numbers in milliseconds.
 ### Custom event structure
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `pid` | `string` | `true` | A project ID to record pageview event for |
+| `pid` | `string` | `true` | A project ID to record the pageview event for |
 | `ev` | `string` | `true` | An event identifier you want to track. This has to be a string, which:<br />1. Contains only English letters (a-Z A-Z), numbers (0-9), underscores (_) and dots (.).<br />2. Is fewer than 64 characters.<br />3. Starts with an English letter. |
-| `unique` | `boolean` | `false` | If set to true, only 1 custom event per session will be saved |
+| `unique` | `boolean` | `false` | If set to true, only 1 custom event will be saved per session |
 | `pg` | `string` | `false` | A page that user sent data from (e.g. `/home`) |
 | `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
 | `ref` | `string` | `false` | A referrer URL (e.g. `https://example.com/`) |
@@ -74,7 +74,7 @@ All of the values are numbers in milliseconds.
 ### Heartbeat event structure
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `pid` | `string` | `true` | A project ID to record heartbeat event for |
+| `pid` | `string` | `true` | A project ID to record the heartbeat event for |
 
 ## Endpoints
 ### POST /log
@@ -108,8 +108,8 @@ curl -i -X POST https://api.swetrix.com/log/custom \
 ```
 
 ### POST /log/hb
-This endpoint is used for heartbeat events. The heartbeat events are used to determine whether the user session is still active. This way you are able to see 'Live visitors' counter in the dashboard panel.
-It's recommended to send heartbeat events every 30 seconds. We also prolong the session lifetime after receiving a pageview or custom event.
+This endpoint is used for heartbeat events. Heartbeat events are used to determine if the user session is still active. This allows you to see the 'Live Visitors' counter in the Dashboard panel.
+It's recommended to send heartbeat events every 30 seconds. We also extend the session lifetime after receiving a pageview or custom event.
 
 ```bash title="Request"
 curl -i -X POST https://api.swetrix.com/log/hb \
@@ -131,14 +131,14 @@ The request was successful and the event was recorded.
 This error is usually returned when the request body is malformed (for example, the `pid` parameter is missing) or the project is disabled.
 
 ### 402 Payment Required
-This error is usually returned when the project is not active (i.e. the subscription is expired or quota is exceeded). Please go to the [Billing](https://swetrix.com/billing) page to see the current status and usage of your subscription.
+This error is usually returned when the project is not active (i.e. the subscription has expired or the quota has been exceeded). Please go to the [Billing](https://swetrix.com/billing) page to check the current status and usage of your subscription.
 
 ### 403 Forbidden
-This error is usually returned when `unique` parameter is set to `true` and the event is not unique, i.e. the pageview event has already been recorded for this session.
+This error is usually returned when the `unique` parameter is set to `true` and the event is not unique, i.e. the pageview event has already been recorded for this session.
 
 ### 500 Internal Server Error
-This error is usually returned when the server is unable to process the request due to a temporary issue (for example, the database is unavailable).
-If you receive this error, please try again later. In case the issue persists, please [contact us](https://swetrix.com/contact).
+This error is usually returned when the server is unable to process the request due to a temporary problem (for example, the database is unavailable).
+If you receive this error, please try again later. If the problem persists, please [contact us](https://swetrix.com/contact).
 
 ## Common request examples
 
