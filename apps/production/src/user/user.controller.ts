@@ -585,6 +585,8 @@ export class UserController {
         'registeredWithGoogle',
         'githubId',
         'registeredWithGithub',
+        'apiKey',
+        'emailRequests',
       ])
       await this.userService.update(id, userToUpdate)
 
