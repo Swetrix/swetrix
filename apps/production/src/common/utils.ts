@@ -209,7 +209,11 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
-const getIPFromHeaders = (headers: any) => {
+const getIPFromHeaders = (headers: any, tryXClientIPAddress?: boolean) => {
+  if (tryXClientIPAddress && headers['x-client-ip-address']) {
+    return headers['x-client-ip-address']
+  }
+
   if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
     return headers['cf-connecting-ip']
   }

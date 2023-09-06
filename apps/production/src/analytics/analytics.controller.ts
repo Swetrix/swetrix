@@ -874,7 +874,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip = getIPFromHeaders(headers) || reqIP || ''
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
 
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
@@ -946,7 +946,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent } = headers
     const { pid } = logDTO
-    const ip = getIPFromHeaders(headers) || reqIP || ''
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
 
     const sessionID = await this.analyticsService.getSessionHash(
       pid,
@@ -975,7 +975,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip = getIPFromHeaders(headers) || reqIP || ''
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
 
     await this.analyticsService.validate(logDTO, origin, 'log', ip)
 
