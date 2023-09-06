@@ -12,10 +12,11 @@ import {
   HttpCode,
   NotFoundException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Headers,
   Header,
   Patch,
-  HttpStatus,
   ConflictException,
   Res,
 } from '@nestjs/common'
@@ -303,8 +304,9 @@ export class ProjectController {
     }
 
     if (user.planCode === PlanCode.none) {
-      throw new ForbiddenException(
+      throw new HttpException(
         'You cannot create new projects due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
@@ -317,8 +319,9 @@ export class ProjectController {
           ) >= (maxProjects || PROJECTS_MAXIMUM),
         )
       ) {
-        throw new ForbiddenException(
+        throw new HttpException(
           `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          HttpStatus.PAYMENT_REQUIRED,
         )
       }
     } else if (

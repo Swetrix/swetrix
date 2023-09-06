@@ -11,6 +11,8 @@ import {
   Post,
   ForbiddenException,
   BadRequestException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common'
 import { In } from 'typeorm'
 import { ApiTags, ApiResponse } from '@nestjs/swagger'
@@ -19,15 +21,11 @@ import * as _map from 'lodash/map'
 import * as _omit from 'lodash/omit'
 import * as _pick from 'lodash/pick'
 
-import { UserService } from 'src/user/user.service'
-import { ProjectService } from 'src/project/project.service'
-import { AppLoggerService } from 'src/logger/logger.service'
-import {
-  UserType,
-  ACCOUNT_PLANS,
-  PlanCode,
-} from 'src/user/entities/user.entity'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { UserService } from '../user/user.service'
+import { ProjectService } from '../project/project.service'
+import { AppLoggerService } from '../logger/logger.service'
+import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
+import { JwtAccessTokenGuard } from '../auth/guards'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Alert } from './entity/alert.entity'
@@ -122,14 +120,16 @@ export class AlertController {
     const alertsCount = await this.alertService.count({ project: In(pids) })
 
     if (user.planCode === PlanCode.none) {
-      throw new ForbiddenException(
+      throw new HttpException(
         'You cannot create new alerts due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
     if (alertsCount >= (maxAlerts || ALERTS_MAXIMUM)) {
-      throw new ForbiddenException(
+      throw new HttpException(
         `You cannot create more than ${maxAlerts} alerts on your account plan. Please upgrade to be able to create more alerts.`,
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 

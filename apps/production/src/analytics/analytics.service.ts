@@ -26,7 +26,8 @@ import {
   Injectable,
   BadRequestException,
   InternalServerErrorException,
-  ForbiddenException,
+  HttpException,
+  HttpStatus,
   UnprocessableEntityException,
   PreconditionFailedException,
 } from '@nestjs/common'
@@ -381,8 +382,9 @@ export class AnalyticsService {
     }
 
     if (project.admin.planCode === PlanCode.none) {
-      throw new ForbiddenException(
+      throw new HttpException(
         'You cannot send analytics to this project due to no active subscription. Please upgrade your account plan to continue sending analytics.',
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
@@ -391,8 +393,9 @@ export class AnalyticsService {
       ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
 
     if (count >= maxCount) {
-      throw new ForbiddenException(
+      throw new HttpException(
         'You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.',
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
