@@ -3,10 +3,6 @@ title: Statistics API reference
 slug: /statistics-api
 ---
 
-:::caution
-The API is currently in beta and might be a subject to change in future.
-:::
-
 Swetrix provides the ability to retrieve aggregated data not only through the UI, but also programmatically using API queries.
 
 The statistics API provides several GET endpoints. These endpoints require some query parameters and return standard HTTP responses and a JSON-encoded body. API requests without a valid API key will fail (except for the publicly available API endpoints).
