@@ -102,10 +102,11 @@ module.exports = {
       apiKey: '4571f2913147bee4d59f82805c995d52',
       indexName: 'swetrix',
     },
-    // prism: {
-    //   theme: lightCodeTheme,
-    //   darkTheme: darkCodeTheme,
-    // },
+    prism: {
+      additionalLanguages: ['php'],
+      // theme: lightCodeTheme,
+      // darkTheme: darkCodeTheme,
+    },
   },
   presets: [
     [
