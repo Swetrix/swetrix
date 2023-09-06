@@ -18,6 +18,7 @@ module.exports = {
     ],
     'API': [
       'api/stats',
+      'api/events',
     ],
     'CAPTCHA': [
       'captcha/introduction',
