@@ -21,6 +21,7 @@ import {
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
+import { DeleteFeedback } from './entities/delete-feedback.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 
@@ -87,6 +88,8 @@ export class UserService {
     private usersRepository: Repository<User>,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
+    @InjectRepository(DeleteFeedback)
+    private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
   ) {}
 
   async create(
@@ -249,6 +252,20 @@ export class UserService {
 
   public async updateUser(id: string, user: Partial<Omit<User, 'id'>>) {
     return this.usersRepository.update({ id }, user)
+  }
+
+  public async saveDeleteFeedback(feedback: string) {
+    return this.deleteFeedbackRepository.save({
+      feedback,
+    })
+  }
+
+  public async findDeleteFeedback(id: string) {
+    return this.deleteFeedbackRepository.findOne({ id })
+  }
+
+  public async deleteDeleteFeedback(id: string) {
+    await this.deleteFeedbackRepository.delete({ id })
   }
 
   public async saveRefreshToken(userId: string, refreshToken: string) {

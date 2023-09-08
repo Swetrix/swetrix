@@ -63,6 +63,7 @@ import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
+import { DeleteSelfDTO } from './dto/delete-self.dto'
 import {
   checkRateLimit,
   getGeoDetails,
@@ -287,7 +288,10 @@ export class UserController {
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async deleteSelf(@CurrentUserId() id: string): Promise<any> {
+  async deleteSelf(
+    @CurrentUserId() id: string,
+    @Body() deleteSelfDTO: DeleteSelfDTO,
+  ): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
 
     const user = await this.userService.findOne(id, {
@@ -313,12 +317,24 @@ export class UserController {
       }
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.delete(id)
-
-      return 'accountDeleted'
     } catch (e) {
       this.logger.error(e)
       throw new BadRequestException('accountDeleteError')
     }
+
+    try {
+      if (deleteSelfDTO.feedback) {
+        await this.userService.saveDeleteFeedback(deleteSelfDTO.feedback)
+      }
+    } catch (reason) {
+      this.logger.error(
+        '[ERROR] Failed to save account deletion feedback:',
+        reason,
+      )
+      this.logger.error('DeleteSelfDTO: ', deleteSelfDTO)
+    }
+
+    return 'accountDeleted'
   }
 
   @Delete('/share/:shareId')
