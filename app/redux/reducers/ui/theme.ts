@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import _includes from 'lodash/includes'
 import { setCookie, getCookie } from 'utils/cookie'
 import {
-  isBrowser, LS_THEME_SETTING, SUPPORTED_THEMES, THEME_TYPE,
+  isBrowser, LS_THEME_SETTING, SUPPORTED_THEMES, THEME_TYPE, ThemeType,
 } from 'redux/constants'
 
 const setThemeToDOM = (theme: string) => {
@@ -17,13 +17,17 @@ const setThemeToDOM = (theme: string) => {
   root.classList.add(theme)
 }
 
-const setTheme = (theme: string): string => {
+const setTheme = (theme: string, storeToCookie = true): string => {
   setThemeToDOM(theme)
-  setCookie(LS_THEME_SETTING, theme)
+
+  if (storeToCookie) {
+    setCookie(LS_THEME_SETTING, theme)
+  }
+
   return theme
 }
 
-const getInitialTheme = (): 'light' | 'dark' => {
+const getInitialTheme = (): ThemeType => {
   if (!isBrowser) {
     return 'light'
   }
@@ -41,13 +45,13 @@ const getInitialTheme = (): 'light' | 'dark' => {
   //   return 'dark'
   // }
 
-  setTheme('light')
+  setTheme('light', false)
   return 'light' // light theme as the default
 }
 
 interface IInitialState {
-    theme: 'light' | 'dark'
-    type: string
+  theme: ThemeType
+  type: string
 }
 
 const getInitialState = (): IInitialState => {
@@ -61,7 +65,7 @@ const themeSlice = createSlice({
   name: 'theme',
   initialState: getInitialState(),
   reducers: {
-    setTheme(state, { payload }: PayloadAction<'light' | 'dark'>) {
+    setTheme(state, { payload }: PayloadAction<ThemeType>) {
       setTheme(payload)
       state.theme = payload
     },

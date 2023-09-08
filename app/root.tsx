@@ -18,7 +18,7 @@ import {
   whitelist, isBrowser, CONTACT_EMAIL, LS_THEME_SETTING,
 } from 'redux/constants'
 import {
-  getCookie,
+  getCookie, generateCookieString,
 } from 'utils/cookie'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Provider } from 'react-redux'
@@ -27,7 +27,6 @@ import _map from 'lodash/map'
 // @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
-// import { getCookie } from 'utils/cookie'
 
 import AlertTemplate from 'ui/Alert'
 import { trackViews } from 'utils/analytics'
@@ -84,6 +83,7 @@ export const meta: V2_MetaFunction = () => [
 ]
 
 export const headers: HeadersFunction = () => ({
+  // General headers
   'access-control-allow-origin': '*',
   'Cross-Origin-Embedder-Policy': 'require-corp; report-to="default";',
   'Cross-Origin-Opener-Policy': 'same-site; report-to="default";',
@@ -92,6 +92,10 @@ export const headers: HeadersFunction = () => ({
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'X-Powered-By': 'Mountain Dew',
   'X-XSS-Protection': '1; mode=block',
+  // Theme detection headers (browser hints)
+  'Accept-CH': 'Sec-CH-Prefers-Color-Scheme',
+  Vary: 'Sec-CH-Prefers-Color-Scheme',
+  'Critical-CH': 'Sec-CH-Prefers-Color-Scheme',
 })
 
 export function ErrorBoundary() {
@@ -178,7 +182,7 @@ export function ErrorBoundary() {
 export async function loader({ request }: LoaderArgs) {
   const { url } = request
   const locale = detectLanguage(request)
-  const theme = detectTheme(request)
+  const [theme, storeThemeToCookie] = detectTheme(request)
   const isAuthed = isAuthenticated(request)
 
   const REMIX_ENV = {
@@ -192,9 +196,16 @@ export async function loader({ request }: LoaderArgs) {
     STAGING: process.env.STAGING,
   }
 
+  const init = storeThemeToCookie ? {
+    headers: {
+      // 21600 seconds = 6 hours
+      'Set-Cookie': generateCookieString(LS_THEME_SETTING, theme, 21600),
+    },
+  } : undefined
+
   return json({
     locale, url, theme, REMIX_ENV, isAuthed,
-  })
+  }, init)
 }
 
 export const handle = {

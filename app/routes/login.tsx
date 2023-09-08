@@ -11,7 +11,7 @@ export const headers: HeadersFunction = ({ parentHeaders }) => {
 }
 
 export async function loader({ request }: LoaderArgs) {
-  const theme = detectTheme(request)
+  const [theme] = detectTheme(request)
 
   return json({ theme })
 }

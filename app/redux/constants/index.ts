@@ -232,6 +232,7 @@ export const SWETRIX_VS_SIMPLE_ANALYTICS: string = 'https://blog.swetrix.com/pos
 
 export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
+export type ThemeType = 'dark' | 'light'
 export const SUPPORTED_THEMES: string[] = ['light', 'dark']
 
 export const CONTACT_EMAIL: string = 'contact@swetrix.com'

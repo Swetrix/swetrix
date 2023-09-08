@@ -1,5 +1,6 @@
 import routes from 'routesPath'
-import { TITLE_SUFFIX } from 'redux/constants'
+import _includes from 'lodash/includes'
+import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from 'redux/constants'
 
 export const hasAuthCookies = (request: Request) => {
   const cookie = request.headers.get('Cookie')
@@ -9,15 +10,31 @@ export const hasAuthCookies = (request: Request) => {
   return accessToken && refreshToken
 }
 
-export function detectTheme(request: Request): 'dark' | 'light' {
+/**
+ * Function detects theme based on user's browser hints and cookies
+ * 
+ * @param request
+ * @returns [theme, storeToCookie]
+ */
+export function detectTheme(request: Request): [ThemeType, boolean] {
+  // Stage 1: Check if user has set theme manually
   const cookie = request.headers.get('Cookie')
-  const theme = cookie?.match(/(?<=colour-theme=)[^;]*/)?.[0]
+  const theme = cookie?.match(/(?<=colour-theme=)[^;]*/)?.[0] as ThemeType
 
-  if (theme === 'dark') {
-    return 'dark'
+  if (_includes(SUPPORTED_THEMES, theme)) {
+    return [theme, false]
   }
 
-  return 'light'
+  // Stage 2: Try to detect theme based on Sec-CH browser hints
+  // Currently only Chromium-based browsers support this feature
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Color-Scheme
+  const hintedTheme = request.headers.get('Sec-CH-Prefers-Color-Scheme') as ThemeType
+
+  if (_includes(SUPPORTED_THEMES, hintedTheme)) {
+    return [hintedTheme, true]
+  }
+
+  return ['light', false]
 }
 
 export function getAccessToken(request: Request): string | null {
