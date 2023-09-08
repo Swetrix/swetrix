@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderArgs) {
     return redirect('/login', 302)
   }
 
-  const theme = detectTheme(request)
+  const [theme] = detectTheme(request)
 
   return json({ theme })
 }

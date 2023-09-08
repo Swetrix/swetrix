@@ -24,7 +24,7 @@ export const meta: V2_MetaFunction = ({ location }) => {
 }
 
 export async function loader({ request }: LoaderArgs) {
-  const theme = detectTheme(request)
+  const [theme] = detectTheme(request)
 
   return json({ theme })
 }
