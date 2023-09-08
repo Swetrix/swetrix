@@ -150,9 +150,13 @@ export const signup = (data: {
       throw new Error(errorsArray)
     })
 
-export const deleteUser = () =>
+export const deleteUser = (deletionFeedback?: string) =>
   api
-    .delete('/user')
+    .delete('/user', {
+      data: {
+        feedback: deletionFeedback,
+      },
+    })
     .then((response): {} => response.data)
     .catch((error) => {
       throw new Error(JSON.stringify(error.response.data))

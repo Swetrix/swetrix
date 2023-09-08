@@ -31,6 +31,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   },
   onDelete: (
     t: (key: string) => string,
+    deletionFeedback: string,
     onSuccess: {
       (): void;
     },
@@ -46,6 +47,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
           trackCustom('ACCOUNT_DELETED')
           onSuccess()
         },
+        deletionFeedback,
         t,
       ),
     )

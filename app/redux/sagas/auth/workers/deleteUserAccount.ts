@@ -4,15 +4,16 @@ import { authActions } from 'redux/reducers/auth'
 import { alertsActions } from 'redux/reducers/alerts'
 const { deleteUser } = require('api')
 
-export default function* deleteUserAccountWorker({ payload: { errorCallback, successCallback, t } }: {
+export default function* deleteUserAccountWorker({ payload: { errorCallback, successCallback, t, deletionFeedback } }: {
   payload: {
     errorCallback: (error: any) => void,
     successCallback: () => void,
     t: (key: string) => string,
+    deletionFeedback: string,
   },
 }) {
   try {
-    yield call(deleteUser)
+    yield call(deleteUser, deletionFeedback)
     yield call(successCallback)
     yield put(authActions.deleteAccountSuccess())
     yield put(alertsActions.accountDeleted({

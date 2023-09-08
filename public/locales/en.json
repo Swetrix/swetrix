@@ -387,6 +387,8 @@
     "requestExport": "Request data export",
     "delete": "Delete account",
     "deactivateConfirmation": "Are you sure you want to deactivate your account?\nAll of your data will be permanently removed from our servers forever.\nThis action cannot be undone.",
+    "deletionFeedbackLabel": "Why are you leaving? (optional)",
+    "deletionFeedback": "We're sad to see you go, could you please tell us why you're leaving so we could improve our service?",
     "exportConfirmation": "As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store. This report does not include events data per project.\nThe data report will be sent to your email address.\nNote: you can request the data export only once per two weeks.",
     "dataExport": "Data export",
     "aDelete": "Delete my account",

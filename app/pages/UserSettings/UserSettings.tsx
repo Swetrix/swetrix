@@ -45,6 +45,7 @@ import Select from 'ui/Select'
 import Checkbox from 'ui/Checkbox'
 import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
+import Textarea from 'ui/Textarea'
 import Loader from 'ui/Loader'
 import {
   isValidEmail,
@@ -72,7 +73,7 @@ dayjs.extend(utc)
 const timeFormatArray = _map(TimeFormat, (key) => key)
 
 interface IProps {
-  onDelete: (t: (key: string) => string, callback: () => void) => void,
+  onDelete: (t: (key: string) => string, deletionFeedback: string, callback: () => void) => void,
   onDeleteProjectCache: () => void,
   removeProject: (id: string) => void,
   removeShareProject: (id: string) => void,
@@ -152,6 +153,7 @@ const UserSettings = ({
   const translatedFrequencies: string[] = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
   const translatedTimeFormat: string[] = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
   const [settingUpdating, setSettingUpdating] = useState<boolean>(false)
+  const [deletionFeedback, setDeletionFeedback] = useState<string>('')
 
   const copyTimerRef = useRef(null)
 
@@ -360,7 +362,7 @@ const UserSettings = ({
   }
 
   const _onDelete = () => {
-    onDelete(t, () => {
+    onDelete(t, deletionFeedback, () => {
       navigate(routes.main)
     })
   }
@@ -867,7 +869,10 @@ const UserSettings = ({
         isOpened={showExportModal}
       />
       <Modal
-        onClose={() => setShowModal(false)}
+        onClose={() => {
+          setDeletionFeedback('')
+          setShowModal(false)
+        }}
         onSubmit={() => {
           setShowModal(false)
           _onDelete()
@@ -877,7 +882,19 @@ const UserSettings = ({
         title={t('profileSettings.qDelete')}
         submitType='danger'
         type='error'
-        message={t('profileSettings.deactivateConfirmation')}
+        message={(
+          <>
+            {t('profileSettings.deactivateConfirmation')}
+            <Textarea
+              id='feedback'
+              className='mt-4'
+              placeholder={t('profileSettings.deletionFeedback')}
+              onChange={(e) => setDeletionFeedback(e.target.value)}
+              value={deletionFeedback}
+              label={t('profileSettings.deletionFeedbackLabel')}
+            />
+          </>
+        )}
         isOpened={showModal}
       />
       <Modal
