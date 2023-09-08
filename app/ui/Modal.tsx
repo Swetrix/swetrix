@@ -96,7 +96,7 @@ const Modal = ({
               )}
               <div className='mt-3 text-center sm:mt-0 sm:text-left w-full'>
                 {title && (
-                  <Dialog.Title as='h3' className='flex items-center text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
+                  <Dialog.Title as='h3' className='flex items-center justify-center sm:justify-start text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
                     {title}
                     {isBeta && (
                       <Beta className='ml-10' />

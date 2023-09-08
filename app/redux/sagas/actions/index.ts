@@ -94,11 +94,11 @@ const updateUserProfileAsync = (data: Partial<IUser>, callback = (item: any) => 
   payload: { data, callback },
 })
 
-const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?: (str?: string) => void, t?: (str: string) => {}) => {
+const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?: (str?: string) => void, deletionFeedback?: string, t?: (str: string) => {}) => {
   return {
     type: types.DELETE_ACCOUNT_ASYNC,
     payload: {
-      errorCallback, successCallback, t,
+      errorCallback, successCallback, t, deletionFeedback,
     },
   }
 }
