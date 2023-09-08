@@ -7,6 +7,8 @@
     "cancelSubFirst": "Пожалуйста, сначала отмените вашу оплачиваемую подписку",
     "accountDeleted": "Ваш аккаунт был удалён",
     "accountDeleteError": "Ошибка при удалении вашего аккаунта",
+    "updatedPeriodEmailReports": "User's email reports period has been updated",
+    "updatedPeriodEmailReportsError": "Error occurred while updating user's email reports period",
     "roleUpdated": "Роль пользователя была изменена",
     "roleUpdateError": "Ошибка при изменении роли пользователя",
     "userInvited": "Пользователь был приглашен в ваш проект",
@@ -31,8 +33,8 @@
     "socialisationAuthGenericError": "Произошла ошибка при аутентификации в стороннем сервисе",
     "socialAccountLinked": "Аккаунт Swetrix был привязан к выбранному провайдеру",
     "socialAccountUninked": "Аккаунт Swetrix был отвязан от выбранного провайдера",
-    "enterPassword": "Please enter the password",
-    "incorrectPassword": "Incorrect password, please try again."
+    "enterPassword": "Пожалуйста, введите пароль",
+    "incorrectPassword": "Неверный пароль, повторите попытку."
   },
   "common": {
     "features": "Функционал",
@@ -48,6 +50,9 @@
     "logout": "Выйти",
     "save": "Сохранить",
     "continue": "Продолжить",
+    "confirm": "Подтвердить",
+    "amount": "Сума",
+    "date": "Дата",
     "error": "Ошибка",
     "close": "Закрыть",
     "cancel": "Отменить",
@@ -297,7 +302,7 @@
       "password": "Пароль",
       "noRemember": "Чужой компьютер.",
       "repeat": "Повторите пароль",
-      "changePassword": "Change password",
+      "changePassword": "Изменить пароль",
       "hint": "Длиннее {{amount}} символов",
       "xCharsError": "Пароль должен состоять, как минимум, из {{amount}} символов.",
       "noMatchError": "Пароли должны совпадать.",
@@ -372,6 +377,7 @@
     ]
   },
   "profileSettings": {
+    "logoutAll": "Выйти со всех устройств",
     "general": "Общие настройки",
     "update": "Обновить профиль",
     "email": "Отчёты",
@@ -381,6 +387,8 @@
     "requestExport": "Экспорт данных",
     "delete": "Удалить аккаунт",
     "deactivateConfirmation": "Вы уверены, что хотите деактивировать свой аккаунт?\nВсе ваши данные будут навсегда удалены с наших серверов.\nЭто действие нельзя отменить.",
+    "deletionFeedbackLabel": "Why are you leaving? (optional)",
+    "deletionFeedback": "We're sad to see you go, could you please tell us why you're leaving so we could improve our service?",
     "exportConfirmation": "В соответствии со ст. 20 Общего регламента по защите данных (GDPR) вы имеете право получить ваши личные данные, которые мы храним. Этот отчет не включает данные о событиях по каждому вашему проекту.\nОтчет будет отправлен на ваш адрес электронной почты.\nПримечание: вы можете запросить экспорт данных только один раз в две недели.",
     "dataExport": "Экспорт данных",
     "aDelete": "Удалить аккаунт",
@@ -399,6 +407,7 @@
     "quitProject": "Вы уверены, что хотите покинуть этот проект?",
     "quitProjectTitle": "Покинуть {{project}}?",
     "shared": "Общие проекты",
+    "receiveLoginNotifications": "Получать уведомления о входе",
     "owned": "Ваши проекты",
     "sharedTable": {
       "project": "Проект",
@@ -453,8 +462,8 @@
     "regenerateSecretKeyTitle": "Пересоздать секретный ключ?",
     "regenerateSecretKeyMessage": "Вы уверены, что хотите сгенерировать новый секретный ключ?\nВсе существующие виджеты CAPTCHA перестанут работать, и вам нужно будет обновить их новым секретным ключом.",
     "captchaSecretKeyHint": "Это ваш секретный ключ, он используется для проверки ответа CAPTCHA на вашем сервере. Храните его в секрете и не делитесь им ни с кем.",
-    "showVisitorsInTitle": "Show live visitors in the page title",
-    "uiSettings": "UI Settings"
+    "showVisitorsInTitle": "Показывать посетителей в названии страницы",
+    "uiSettings": "Настройки пользовательского интерфейса"
   },
   "dashboard": {
     "newProject": "Новый проект",
@@ -505,6 +514,8 @@
     "create": "Создать оповещение",
     "add": "Добавить оповещение",
     "delete": "Удалить оповещение",
+    "noNameError": "Пожалуйста, введите название для оповещения.",
+    "queryValueError": "Пожалуйста, заполните порог, и значение запроса должно быть числом.",
     "noIntegration": "Вы еще не настроили интеграцию. Настройте её в <url>настройках учетной записи</url>.",
     "noNotification": "Нет каналов оповещений",
     "lastTriggered": "Последнее срабатывание",
@@ -541,8 +552,13 @@
     "support": "Связаться с поддержкой"
   },
   "project": {
+    "search": "Поиск",
+    "advancedFilters": "Расширенные фильтры",
+    "applyFilters": "Применить фильтры",
+    "overrideCurrentlyFilters": "Переопределить применяемые фильтры",
     "ad": "Хотите эту статистику для вашего веб-сайта?",
     "noExist": "Выбранный проект не существует",
+    "geo": "Геолокация",
     "exportData": "Экспорт данных",
     "asImage": "Как изображение",
     "asCSV": "Как CSV",
@@ -554,14 +570,16 @@
     "noCaptchaEv": "За указанный период времени не было зафиксировано ни одного события.\nЕсли вы ещё не настроили CAPTCHA, вы можете ознакомиться с <url>документацией</url>, чтобы легко интегрировать её в ваше приложение.",
     "mapping": {
       "cc": "Страна",
+      "rg": "Область",
+      "ct": "Город",
       "pg": "Страница",
       "lc": "Язык",
       "ref": "Источник",
       "dv": "Тип устройства",
       "br": "Браузер",
-      "os": "Операционная система",
-      "lt": "Время загрузки"
+      "os": "Операционная система"
     },
+    "redactedPage": "Redacted page",
     "overview": "Обзор",
     "weeklyStats": "Статистика недели",
     "statsFor": "Статистика за",
@@ -577,6 +595,8 @@
     "unique": "Уникальные посетители",
     "results": "Результатов",
     "total": "Количество просмотров",
+    "thisHour": "За этот час",
+    "all": "Все время",
     "today": "Сегодня",
     "yesterday": "Вчера",
     "last24h": "Последние 24 часа",
@@ -584,17 +604,19 @@
     "lastXWeeks": "Последние {{amount}} недель",
     "lastXMonths": "Последние {{amount}} месяцев",
     "custom": "Другая дата",
+    "minute": "Минута",
     "hour": "Час",
     "day": "День",
     "week": "Неделя",
     "month": "Месяц",
+    "year": "Год",
     "resetFilters": "Сбросить фильтры",
     "exportImgError": "Не удалось экспортировать данные как изображение",
     "codeExample": "Или вставьте следующий код в ваш сайт, чтобы отслеживать ваши события:",
     "metricVis": "Визуализация метрик",
-    "refreshStats": "Refresh stats",
-    "barChart": "Bar chart",
-    "lineChart": "Line chart",
+    "refreshStats": "Обновить статистику",
+    "barChart": "Линейчатая диаграмма",
+    "lineChart": "График",
     "settings": {
       "verify": "Пожалуйста, сначала подтвердите адрес эл. почты",
       "updated": "Настройки проекта были обновлены",
@@ -653,15 +675,20 @@
       "transferHint": "Вы можете перенести проект \"{{name}}\" другому пользователю.\nЭтот пользователь станет владельцем проекта и сможет управлять настройками проекта, добавлять/удалять участников и приглашать новых пользователей.\nВы будете автоматически назначены администратором этого проекта, однако, новый владелец сможет удалить вас из проекта.",
       "transfereeEmail": "Эл. почта получателя",
       "reseted": {
+        "selectFilters": "Выбрать фильтры",
         "all": "Сбросить всё",
         "allHint": "Все аналитические данные проекта будут навсегда удалены с наших серверов, но сам проект, его настройки и ID все еще будут доступны.",
         "partially": "Сбросить частично",
         "partiallyDesc": "Функция \"Сбросить частично\" позволяет вам сбросить данные конкретного проекта в пределах заданного временного диапазона.",
-        "partiallyHint": "Чтобы сбросить данные конкретного проекта в пределах временного диапазона, выберите даты начала и окончания диапазона и проект, который вы хотите сбросить.\nДважды проверьте, что вы выбрали правильный проект и временной диапазон, прежде чем сбросить его.\nКак только вы нажмете 'Сбросить', все данные, связанные с выбранным проектом в пределах выбранного временного диапазона, будут навсегда удалены и не могут быть восстановлены."
+        "partiallyHint": "Чтобы сбросить данные конкретного проекта в пределах временного диапазона, выберите даты начала и окончания диапазона и проект, который вы хотите сбросить.\nДважды проверьте, что вы выбрали правильный проект и временной диапазон, прежде чем сбросить его.\nКак только вы нажмете 'Сбросить', все данные, связанные с выбранным проектом в пределах выбранного временного диапазона, будут навсегда удалены и не могут быть восстановлены.",
+        "viaFilters": "Сбросить через фильтры",
+        "viaFiltersHint": "Функция 'Сброс через фильтры' позволяет вам сбросить данные конкретного проекта в заданном диапазоне дат и с определенными фильтрами.",
+        "filtersPlaceholder": "Выбрать фильтры",
+        "noFilters": "Не выбраны фильтры или нет данных для выбранного типа фильтра"
       },
-      "protected": "Password protected Dashboard",
-      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
-      "password": "Dashboard password"
+      "protected": "Панель защиты паролем",
+      "protectedHint": "Вы можете сделать вашу панель управления публичной и парольной защитой. Таким образом, только люди, знающие пароль, смогут получить к ней доступ.",
+      "password": "Пароль панели инструментов"
     },
     "captcha": {
       "settings": {
@@ -684,11 +711,11 @@
     "userFlow": {
       "noData": "Пользовательский поток ещё не доступен из-за нехватки данных, или вы отключили эту функцию в параметрах скрипта отслеживания"
     },
-    "noDateRange": "Please select a date range",
-    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
-    "previousPeriod": "Previous period",
-    "disableCompare": "Disable comparison",
-    "compare": "Compare"
+    "noDateRange": "Пожалуйста, выберите диапазон дат",
+    "compareDateRangeError": "Этот диапазон дат нельзя сравнить, выберите другой диапазон дат",
+    "previousPeriod": "Предыдущий период",
+    "disableCompare": "Отключить сравнение",
+    "compare": "Сравнить"
   },
   "billing": {
     "title": "Цены и тарифы",
@@ -701,13 +728,19 @@
     "noSubWarning": "У вас нет активной подписки.\nНовые аналитические данные не будут сохраняться в нашей базе данных, но вы сможете просмотреть данные, собранные до отмены подписки.",
     "inactive": "Неактивен",
     "cancelledSubMessage": "Вы отменили подписку.\nПодписка будет активна до {{date}}.\nПосле этого в нашу базу данных не будут храниться новые аналитические данные. Вы можете просмотреть данные, собранные до отмены подписки.",
-    "planUsage": "Plan usage",
-    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
-    "breakdown": "Breakdown by the event type:",
-    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
-    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
-    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
-    "gotoUsage": "Go to plan usage"
+    "planUsage": "План использования",
+    "usageOverview": "В этом месяце вы отследили события {{tracked}} ({{trackedPerc}}%) из событий {{maxEvents}} в вашем плане.",
+    "breakdown": "Разбивка по типу события:",
+    "pageviews": "События страницы: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Пользовательские события: {{quantity}} ({{percentage}}%)",
+    "captcha": "События CAPTCHA: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Перейти к тарифу использования",
+    "confirmNewPlan": "Подтвердите ваш новый тарифный план",
+    "previewLoadingError": "Произошла ошибка при загрузке прейскуранта цен, повторите попытку позже.\nЕсли проблема не устранена, пожалуйста, свяжитесь с нами по адресу <mail>{{email}}</mail>.\nВы все еще можете изменить свой план, но на данный момент вы не сможете увидеть предварительный просмотр цен, извините.",
+    "dueNow": "Оплатить сейчас",
+    "dueNowDescription": "Вам будет перечислена сумма за оставшиеся дни текущего расчетного периода.",
+    "negativePayment": "Отрицательная \"Сумма\" означает, что у вас будет кредитный баланс в размере {{currency}}{{dueNowAmount}}. Счет будет выставлен на {{currency}}0.00 в {{dueNowDate}}. После того как кредитный остаток будет израсходован, сумма повторяющихся платежей будет равна {{currency}}{{nextPaymentAmount}} в каждом расчетном цикле вашего плана подписки.",
+    "nextPayment": "Следующий платеж"
   },
   "modals": {
     "paidFeature": {
@@ -795,15 +828,15 @@
   },
   "open": {
     "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
-    "updated": "This page is updated regularly.",
+    "updated": "Эта страница обновляется регулярно.",
     "finance": {
-      "title": "Finance metrics",
-      "desc": "Our financial metrics, such as revenue, losses, etc."
+      "title": "Показатели финансирования",
+      "desc": "Наши финансовые показатели, такие как доход, убытки и т. д."
     },
     "usage": {
-      "title": "Usage metrics",
-      "desc": "Our user metrics, such as amount of active users, connected websites.",
-      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
+      "title": "Метрики использования",
+      "desc": "Наши показатели пользователей, такие как количество активных пользователей, подключенные веб-сайты.",
+      "live": "Вы можете увидеть наши показатели в реальном времени на нашей <livedemo>публичной панели</livedemo>. Вы также можете сделать публичными свои собственные панели Swetrix Dashboard и настроить их в соответствии со своими потребностями."
     }
   },
   "titles": {
@@ -823,7 +856,7 @@
     "press": "Медиа и пресса",
     "socialisation": "Социализация",
     "open": "Open startup",
-    "passwordProtected": "This project is password protected"
+    "passwordProtected": "Этот проект защищен паролем"
   },
   "header": {
     "switchTheme": "Переключить тему",
@@ -840,7 +873,7 @@
     "eu": "Европейском Союзе",
     "support": "Поддержка",
     "company": "Компания",
-    "legal": "Support & Legal",
+    "legal": "Поддержка и правовая поддержка",
     "copy": "Swetrix Analytics. Все права защищены.",
     "contact": "Обратная связь",
     "pp": "Политика конфиденциальности",
@@ -861,6 +894,6 @@
     "press": "Медиа и пресса",
     "open": "Open startup",
     "about": "О нас",
-    "features": "Features"
+    "features": "Возможности"
   }
 }

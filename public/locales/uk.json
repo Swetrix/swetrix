@@ -7,6 +7,8 @@
     "cancelSubFirst": "Будь ласка, спочатку скасуйте оплачувану підписку",
     "accountDeleted": "Ваш акаунт було видалено",
     "accountDeleteError": "Помилка при видаленні вашого акаунту",
+    "updatedPeriodEmailReports": "User's email reports period has been updated",
+    "updatedPeriodEmailReportsError": "Error occurred while updating user's email reports period",
     "roleUpdated": "Роль користувача була змінена",
     "roleUpdateError": "Сталася помилка під час зміни ролі користувача",
     "userInvited": "Користувач був запрошений до вашого проєкту",
@@ -31,8 +33,8 @@
     "socialisationAuthGenericError": "Сталася помилка під час автентифікації зі стороннім сервісом",
     "socialAccountLinked": "Обліковий запис Swetrix був привʼязаний до вашого обраного провайдера",
     "socialAccountUninked": "Обліковий запис Swetrix був відвʼязаний від вашого обраного провайдера",
-    "enterPassword": "Please enter the password",
-    "incorrectPassword": "Incorrect password, please try again."
+    "enterPassword": "Будь ласка, введіть пароль",
+    "incorrectPassword": "Хибний пароль, спробуйте ще."
   },
   "common": {
     "features": "Функціонал",
@@ -48,6 +50,9 @@
     "logout": "Вийти",
     "save": "Зберегти",
     "continue": "Продовжити",
+    "confirm": "Підтвердити",
+    "amount": "Сума",
+    "date": "Дата",
     "error": "Помилка",
     "close": "Закрити",
     "cancel": "Відмінити",
@@ -297,7 +302,7 @@
       "password": "Пароль",
       "noRemember": "Чужий комп'ютер.",
       "repeat": "Повторіть пароль",
-      "changePassword": "Change password",
+      "changePassword": "Змінити пароль",
       "hint": "Довше {{amount}} символів",
       "xCharsError": "Пароль повинен складатися, як мінімум, з {{amount}} символів.",
       "noMatchError": "Паролі повинні збігатися.",
@@ -372,6 +377,7 @@
     ]
   },
   "profileSettings": {
+    "logoutAll": "Вийти з усіх пристроїв",
     "general": "Загальні налаштування",
     "update": "Оновити профіль",
     "email": "Звіти",
@@ -381,6 +387,8 @@
     "requestExport": "Експорт даних",
     "delete": "Видалити акаунт",
     "deactivateConfirmation": "Ви впевнені, що хочете деактивувати свій обліковий запис?\nВсі ваші дані будуть назавжди вилучені з наших серверів.\nПісля підтвердження, цю дію неможливо скасувати.",
+    "deletionFeedbackLabel": "Why are you leaving? (optional)",
+    "deletionFeedback": "We're sad to see you go, could you please tell us why you're leaving so we could improve our service?",
     "exportConfirmation": "Відповідно до ст. 20 Загального регламенту щодо захисту даних (GDPR) ви маєте право отримати ваші особисті дані, які ми зберігаємо. Цей звіт не включає дані про події по кожному вашому проєкту.\nЗвіт буде відправлений на Вашу електронну адресу.\nПримітка: ви можете запросити експорт даних тільки один раз в два тижні.",
     "dataExport": "Експорт даних",
     "aDelete": "Видалити акаунт",
@@ -399,6 +407,7 @@
     "quitProject": "Ви впевнені, що хочете покинути цей проєкт?",
     "quitProjectTitle": "Покинути {{project}}?",
     "shared": "Спільні проєкти",
+    "receiveLoginNotifications": "Отримувати сповіщення про вхід",
     "owned": "Власні проєкти",
     "sharedTable": {
       "project": "Проєкт",
@@ -453,8 +462,8 @@
     "regenerateSecretKeyTitle": "Створити новий секретний ключ?",
     "regenerateSecretKeyMessage": "Ви впевнені, що хочете згенерувати новий секретний ключ?\nВсі чинні віджети CAPTCHA не працюватимуть, і вам необхідно оновити їх за допомогою нового секретного ключа.",
     "captchaSecretKeyHint": "Це ваш секретний ключ, він використовується для перевірки відповіді CAPTCHA на вашому сервері. Зберігайте його в секреті й не поширюйте його нікому.",
-    "showVisitorsInTitle": "Show live visitors in the page title",
-    "uiSettings": "UI Settings"
+    "showVisitorsInTitle": "Показати живих відвідувачів сторінки в заголовку",
+    "uiSettings": "Налаштування інтерфейсу користувача"
   },
   "dashboard": {
     "newProject": "Новий проєкт",
@@ -505,6 +514,8 @@
     "create": "Створити сповіщення",
     "add": "Додати сповіщення",
     "delete": "Видалити сповіщення",
+    "noNameError": "Будь ласка, введіть назву для оповіщення.",
+    "queryValueError": "Будь ласка, введіть поріг і значення запиту має бути числом.",
     "noIntegration": "Ви ще не налаштували інтеграції. Додайте її в <url>налаштуваннях акаунту</url>.",
     "noNotification": "Канали сповіщень не налаштовано",
     "lastTriggered": "Останнє спрацьовування",
@@ -541,8 +552,13 @@
     "support": "Зв'язатися з підтримкою"
   },
   "project": {
+    "search": "Пошук",
+    "advancedFilters": "Розширені фільтри",
+    "applyFilters": "Застосувати фільтри",
+    "overrideCurrentlyFilters": "Перевизначити застосовані фільтри",
     "ad": "Хочете цю статистику на вашому сайті?",
     "noExist": "Обраний проєкт не існує",
+    "geo": "Геолокація",
     "exportData": "Експорт даних",
     "asImage": "Як зображення",
     "asCSV": "Як CSV",
@@ -554,14 +570,16 @@
     "noCaptchaEv": "За вказаний період часу не було зафіксовано жодної події.\nЯкщо ви ще не інтегрували віджет CAPTCHA в ваш вебсайт, ви можете ознайомитися з <url>документацією</url>, щоб легко це зробити.",
     "mapping": {
       "cc": "Країна",
+      "rg": "Область",
+      "ct": "Місто",
       "pg": "Сторінка",
       "lc": "Мова",
       "ref": "Джерело",
       "dv": "Тип пристрою",
       "br": "Браузер",
-      "os": "Операційна система",
-      "lt": "Час завантаження"
+      "os": "Операційна система"
     },
+    "redactedPage": "Redacted page",
     "overview": "Огляд",
     "weeklyStats": "Тижнева статистика",
     "statsFor": "Статистика за",
@@ -577,6 +595,8 @@
     "unique": "Унікальні відвідування",
     "results": "Результатів",
     "total": "Кількість переглядів",
+    "thisHour": "Ця година",
+    "all": "За весь час",
     "today": "Сьогодні",
     "yesterday": "Вчора",
     "last24h": "Останні 24 години",
@@ -584,17 +604,19 @@
     "lastXWeeks": "Останні {{amount}} тижнів",
     "lastXMonths": "Останні {{amount}} місяців",
     "custom": "Інша дата",
+    "minute": "Хвилина",
     "hour": "Година",
     "day": "День",
     "week": "Тиждень",
     "month": "Місяць",
+    "year": "Рік",
     "resetFilters": "Скинути фільтри",
     "exportImgError": "Не вдалося експортувати дані як зображення",
     "codeExample": "Або вставте наступний код на ваш вебсайт, щоб відстежувати ваші події:",
     "metricVis": "Візуалізація метрик",
-    "refreshStats": "Refresh stats",
-    "barChart": "Bar chart",
-    "lineChart": "Line chart",
+    "refreshStats": "Оновити статистику",
+    "barChart": "Гістограма",
+    "lineChart": "Лінійний графік",
     "settings": {
       "verify": "Будь ласка, спочатку підтвердіть вашу ел. адресу",
       "updated": "Налаштування проєкту було оновлено",
@@ -653,15 +675,20 @@
       "transferHint": "Ви можете передати \"{{name}}\" проєкт іншому користувачеві.\nЦей користувач стане власником проєкту і зможе керувати параметрами проєкту, додавати/видаляти учасників і запрошувати нових користувачів.\nВас буде автоматично призначено адміністратором проекту, однак, новий власник зможе видалити вас із проєкту.",
       "transfereeEmail": "Ел. адреса отримувача",
       "reseted": {
+        "selectFilters": "Обрати фільтри",
         "all": "Скинути все",
         "allHint": "Усі дані аналітики проєкту будуть видалені з наших серверів, але сам проєкт, його налаштування та ідентифікатор все ще будуть доступними.",
         "partially": "Скинути частково",
         "partiallyDesc": "Функція \"Скинути частково\" дозволяє вам скинути дані певного проєкту за заданим часовим діапазоном.",
-        "partiallyHint": "Щоб скинути дані конкретного проєкту за певний проміжок часу, виберіть дати початку і закінчення діапазону, і проєкт, який ви хочете скинути.\nДвічі перевірте, що ви вибрали правильний проєкт і часовий діапазон перед тим, як натиснути кнопку \"Скинути\".\nКоли ви натиснете 'Скинути', всі дані, пов'язані з обраним проєктом протягом обраного часового діапазону будуть назавжди видалені і не можуть бути відновлені."
+        "partiallyHint": "Щоб скинути дані конкретного проєкту за певний проміжок часу, виберіть дати початку і закінчення діапазону, і проєкт, який ви хочете скинути.\nДвічі перевірте, що ви вибрали правильний проєкт і часовий діапазон перед тим, як натиснути кнопку \"Скинути\".\nКоли ви натиснете 'Скинути', всі дані, пов'язані з обраним проєктом протягом обраного часового діапазону будуть назавжди видалені і не можуть бути відновлені.",
+        "viaFilters": "Скинути за допомогою фільтрів",
+        "viaFiltersHint": "Функція \"Скидання за допомогою фільтрів\" дозволяє скинути дані конкретного проекту з заданим діапазоном дат і з конкретними фільтрами.",
+        "filtersPlaceholder": "Обрати фільтри",
+        "noFilters": "Немає вибраних фільтрів або немає даних для вибраного типу фільтра"
       },
-      "protected": "Password protected Dashboard",
-      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
-      "password": "Dashboard password"
+      "protected": "Панель захищених паролем",
+      "protectedHint": "Ви можете зробити вашу панель загальнодоступною для користувачів. Таким чином, лише люди, які знають пароль, зможуть отримати до неї доступ.",
+      "password": "Пароль меню налаштувань"
     },
     "captcha": {
       "settings": {
@@ -684,11 +711,11 @@
     "userFlow": {
       "noData": "Потік користувача поки що не доступний через брак даних, або ви вимкнули цю функцію в параметрах скрипта"
     },
-    "noDateRange": "Please select a date range",
-    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
-    "previousPeriod": "Previous period",
-    "disableCompare": "Disable comparison",
-    "compare": "Compare"
+    "noDateRange": "Будь ласка, виберіть проміжок часу",
+    "compareDateRangeError": "Цей діапазон не можна порівняти, будь ласка, оберіть інший діапазон дат",
+    "previousPeriod": "Попередній період",
+    "disableCompare": "Відключити порівняння",
+    "compare": "Порівняти"
   },
   "billing": {
     "title": "Ціни та тарифи",
@@ -701,13 +728,19 @@
     "noSubWarning": "У вас немає активної підписки.\nНові дані аналітики не будуть зберігатися в нашій базі даних. Ви все ще можете переглянути дані, зібрані до того, як підписка була скасована.",
     "inactive": "Неактивний",
     "cancelledSubMessage": "Ви скасували підписку.\nПідписка буде активна до {{date}}.\nПісля цього нові дані аналітики не будуть зберігатися в нашій базі даних. Ви все ще можете переглянути дані, зібрані до того, як підписка була скасована.",
-    "planUsage": "Plan usage",
-    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
-    "breakdown": "Breakdown by the event type:",
-    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
-    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
-    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
-    "gotoUsage": "Go to plan usage"
+    "planUsage": "Використання плану",
+    "usageOverview": "У цьому місяці ви відстежували події {{tracked}} ({{trackedPerc}}%) від {{maxEvents}} подій у вашому тарифному плані.",
+    "breakdown": "Аналіз за типом події:",
+    "pageviews": "Події розбивка сторінки: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Користувацькі події: {{quantity}} ({{percentage}}%)",
+    "captcha": "CAPTCHA подій: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Перейти до використання плану",
+    "confirmNewPlan": "Підтвердження нового тарифного плану",
+    "previewLoadingError": "Виникла помилка під час завантаження попереднього перегляду цін, будь ласка, повторіть спробу пізніше.\nЯкщо проблема не зникне, будь ласка, зв'яжіться з нами за адресою <mail>{{email}}</mail>.\nВи все ще можете змінити свій тарифний план, але на цю мить ви не зможете побачити попередній перегляд цін, вибачте за це.",
+    "dueNow": "Натерміновано",
+    "dueNowDescription": "Вам буде нараховано суму протягом останніх днів з поточного оплаченого періоду.",
+    "negativePayment": "Від'ємне значення \"Сума\" означає, що у вас буде кредитний залишок у розмірі {{currency}}{{dueNowAmount}}. Вам буде виставлено рахунок у {{currency}}0.00 на {{dueNowDate}}. Після того, як кредитний баланс буде вичерпано, ваш періодичний рахунок становитиме {{currency}}{{nextPaymentAmount}} кожного розрахункового циклу вашого плану підписки.",
+    "nextPayment": "Наступний платіж"
   },
   "modals": {
     "paidFeature": {
@@ -795,15 +828,15 @@
   },
   "open": {
     "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
-    "updated": "This page is updated regularly.",
+    "updated": "Ця сторінка регулярно оновлюється.",
     "finance": {
-      "title": "Finance metrics",
-      "desc": "Our financial metrics, such as revenue, losses, etc."
+      "title": "Фінансові метрики",
+      "desc": "Наші фінансові показники, такі як дохід, збитки та ін."
     },
     "usage": {
-      "title": "Usage metrics",
-      "desc": "Our user metrics, such as amount of active users, connected websites.",
-      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
+      "title": "Метрики використання",
+      "desc": "Наші показники користувача, такі як кількість активних користувачів, підключених веб-сайтів.",
+      "live": "Ви можете бачити наші показники в реальному часі на нашій <livedemo>публічній панелі моніторингу</livedemo>. Ви також можете зробити свої власні дашборди Swetrix загальнодоступними і налаштувати їх відповідно до ваших потреб."
     }
   },
   "titles": {
@@ -823,7 +856,7 @@
     "press": "Медіа та преса",
     "socialisation": "Соціалізація",
     "open": "Open startup",
-    "passwordProtected": "This project is password protected"
+    "passwordProtected": "Цей проект захищений паролем"
   },
   "header": {
     "switchTheme": "Змінити тему",
@@ -840,7 +873,7 @@
     "eu": "Європейському Союзі",
     "support": "Підтримка",
     "company": "Компанія",
-    "legal": "Support & Legal",
+    "legal": "Підтримка і правові налаштування",
     "copy": "Swetrix Analytics. Всі права захищені.",
     "contact": "Зворотний зв'язок",
     "pp": "Політика конфіденційності",
@@ -861,6 +894,6 @@
     "press": "Медіа та преса",
     "open": "Open startup",
     "about": "Про нас",
-    "features": "Features"
+    "features": "Можливості"
   }
 }

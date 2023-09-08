@@ -7,6 +7,8 @@
     "cancelSubFirst": "Bitte kündigen Sie zuerst Ihr bezahltes Abonnement",
     "accountDeleted": "Ihr Konto wurde gelöscht",
     "accountDeleteError": "Fehler beim Löschen Ihres Kontos",
+    "updatedPeriodEmailReports": "User's email reports period has been updated",
+    "updatedPeriodEmailReportsError": "Error occurred while updating user's email reports period",
     "roleUpdated": "Die Rolle des Benutzers wurde geändert",
     "roleUpdateError": "Fehler beim Ändern der Benutzerrolle",
     "userInvited": "Der Benutzer wurde zu Ihrem Projekt eingeladen",
@@ -31,8 +33,8 @@
     "socialisationAuthGenericError": "Fehler bei der Authentifizierung mit einem Drittanbieter Dienst",
     "socialAccountLinked": "Das Swetrix-Konto wurde mit dem ausgewählten Anbieter verknüpft",
     "socialAccountUninked": "Das Swetrix-Konto wurde vom gewählten Anbieter getrennt",
-    "enterPassword": "Please enter the password",
-    "incorrectPassword": "Incorrect password, please try again."
+    "enterPassword": "Bitte geben Sie das Passwort ein",
+    "incorrectPassword": "Falsches Passwort, bitte versuchen Sie es erneut."
   },
   "common": {
     "features": "Funktionen",
@@ -48,6 +50,9 @@
     "logout": "Abmelden",
     "save": "Speichern",
     "continue": "Fortfahren",
+    "confirm": "Bestätigen",
+    "amount": "Anzahl",
+    "date": "Datum",
     "error": "Fehler",
     "close": "Schließen",
     "cancel": "Abbrechen",
@@ -297,7 +302,7 @@
       "password": "Passwort",
       "noRemember": "Nicht erinnern",
       "repeat": "Passwort wiederholen",
-      "changePassword": "Change password",
+      "changePassword": "Passwort ändern",
       "hint": "Länger als {{amount}} Zeichen",
       "xCharsError": "Das Passwort muss aus mindestens {{amount}} Zeichen bestehen.",
       "noMatchError": "Die Passwörter stimmen nicht überein.",
@@ -372,6 +377,7 @@
     ]
   },
   "profileSettings": {
+    "logoutAll": "Von allen Geräten abmelden",
     "general": "Allgemeine Einstellungen",
     "update": "Konto aktualisieren",
     "email": "E-Mail Berichte",
@@ -381,6 +387,8 @@
     "requestExport": "Datenexport anfordern",
     "delete": "Konto löschen",
     "deactivateConfirmation": "Sind Sie sicher, dass Sie Ihr Konto deaktivieren möchten?\nAlle Ihre Daten werden dauerhaft und unwiderruflich von unseren Servern entfernt.\nDiese Aktion kann nicht rückgängig gemacht werden.",
+    "deletionFeedbackLabel": "Why are you leaving? (optional)",
+    "deletionFeedback": "We're sad to see you go, could you please tell us why you're leaving so we could improve our service?",
     "exportConfirmation": "Gemäß Art. 20 der General Data Protection Regulation (GDPR) haben Sie das Recht, Ihre bei uns gespeicherten persönlichen Daten einzusehen. Dieser Bericht enthält keine projektbezogenen Eventdaten.\nDer Datenbericht wird an Ihre E-Mail-Adresse gesendet.\nHinweis: Sie können den Datenexport nur einmal alle zwei Wochen anfordern.",
     "dataExport": "Datenexport",
     "aDelete": "Mein Konto Löschen",
@@ -399,6 +407,7 @@
     "quitProject": "Sind Sie sicher, dass Sie dieses Projekt verlassen möchten?",
     "quitProjectTitle": "{{project}} beenden?",
     "shared": "Geteilte Projekte",
+    "receiveLoginNotifications": "Anmelde-Benachrichtigungen erhalten",
     "owned": "Eigene Projekte",
     "sharedTable": {
       "project": "Projekt",
@@ -453,8 +462,8 @@
     "regenerateSecretKeyTitle": "Geheimschlüssel neu generieren?",
     "regenerateSecretKeyMessage": "Sind Sie sicher, dass Sie Ihren geheimen Schlüssel neu generieren möchten?\nAlle existierenden CAPTCHA Widgets funktionieren nicht mehr und Sie müssen sie mit dem neuen geheimen Schlüssel aktualisieren.",
     "captchaSecretKeyHint": "Dies ist Ihr geheimer Schlüssel, der verwendet wird, um die CAPTCHA-Antwort auf Ihrem Server zu überprüfen. Halten Sie ihn geheim und teilen Sie ihn mit niemandem.",
-    "showVisitorsInTitle": "Show live visitors in the page title",
-    "uiSettings": "UI Settings"
+    "showVisitorsInTitle": "Live-Besucher im Seitentitel anzeigen",
+    "uiSettings": "UI Einstellungen"
   },
   "dashboard": {
     "newProject": "Neues Projekt",
@@ -505,6 +514,8 @@
     "create": "Alarm einrichten",
     "add": "Alert hinzufügen",
     "delete": "Alarm löschen",
+    "noNameError": "Bitte benennen Sie die Benachrichtigung.",
+    "queryValueError": "Bitte geben Sie den Grenzwert ein und der Abfragewert muss eine Zahl sein.",
     "noIntegration": "Sie haben noch keine Integration konfiguriert. Erstellen Sie eine in Ihren <url>Kontoeinstellungen</url>.",
     "noNotification": "Keine Benachrichtigungskanäle festgelegt",
     "lastTriggered": "Zuletzt ausgelöst",
@@ -541,8 +552,13 @@
     "support": "Support kontaktieren"
   },
   "project": {
+    "search": "Suche",
+    "advancedFilters": "Erweiterte Filter",
+    "applyFilters": "Filter anwenden",
+    "overrideCurrentlyFilters": "Aktuell angewendete Filter überschreiben",
     "ad": "Sie möchten diese Statistiken für Ihre eigene Webseite?",
     "noExist": "Das ausgewählte Projekt existiert nicht",
+    "geo": "Standortbestimmung",
     "exportData": "Daten exportieren",
     "asImage": "Als Bild",
     "asCSV": "Als CSV",
@@ -554,14 +570,16 @@
     "noCaptchaEv": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, können Sie sich unsere <url>Docs</url> anschauen, um es einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",
+      "rg": "Region",
+      "ct": "Stadt",
       "pg": "Seite",
       "lc": "Sprache",
       "ref": "Referrer",
       "dv": "Gerätetyp",
       "br": "Browser",
-      "os": "Betriebssystem",
-      "lt": "Ladezeit"
+      "os": "Betriebssystem"
     },
+    "redactedPage": "Redacted page",
     "overview": "Übersicht",
     "weeklyStats": "Wöchentliche Statistik",
     "statsFor": "Statistik für",
@@ -577,6 +595,8 @@
     "unique": "Einzigartige Besucher",
     "results": "Ergebnisse",
     "total": "Seitenaufrufe insgesamt",
+    "thisHour": "This hour",
+    "all": "All time",
     "today": "Heute",
     "yesterday": "Gestern",
     "last24h": "Letzte 24 Stunden",
@@ -584,10 +604,12 @@
     "lastXWeeks": "Letzte {{amount}} Wochen",
     "lastXMonths": "Letzte {{amount}} Monate",
     "custom": "Benutzerdefiniertes Datum",
+    "minute": "Minute",
     "hour": "Stunde",
     "day": "Tag",
     "week": "Woche",
     "month": "Monat",
+    "year": "Year",
     "resetFilters": "Filter zurücksetzen",
     "exportImgError": "Exportieren der Daten als Bild fehlgeschlagen",
     "codeExample": "Oder fügen Sie den folgenden Code in Ihre Website ein, um Ihre Events zu tracken:",
@@ -653,11 +675,16 @@
       "transferHint": "Sie können '{{name}}' Projekt an einen anderen Benutzer übertragen.\nDieser Benutzer wird der Projektbesitzer und kann die Einstellungen des Projekts verwalten, Mitglieder hinzufügen/entfernen und neue Benutzer einladen.\nSie werden dem Projekt als Administrator zugewiesen. Der neue Eigentümer kann Sie jedoch aus dem Projekt entfernen.",
       "transfereeEmail": "Transfer-Empfänger E-Mail",
       "reseted": {
+        "selectFilters": "Select filters",
         "all": "Alle zurücksetzen",
         "allHint": "Alle zugehörigen Analysedaten des Projekts werden dauerhaft von unseren Servern entfernt aber das Projekt selbst, seine Einstellungen und die ID sind immer noch verfügbar.",
         "partially": "Teilweise zurücksetzen",
         "partiallyDesc": "Mit der Funktion 'Teilweise zurücksetzen' können Sie die Daten eines bestimmten Projekts innerhalb eines bestimmten Zeitraums zurücksetzen.",
-        "partiallyHint": "Um die Daten eines bestimmten Projekts innerhalb eines Datumsbereichs zurückzusetzen, wählen Sie die Start- und Enddaten des Bereichs und das Projekt, das Sie zurücksetzen möchten.\nÜberprüfen Sie, ob Sie den richtigen Projekt- und Datumsbereich ausgewählt haben, bevor Sie auf „Zurücksetzen“ klicken.\nSobald Sie auf „Zurücksetzen“ klicken, werden alle Daten, die mit dem ausgewählten Projekt im ausgewählten Zeitraum verknüpft sind, dauerhaft gelöscht und können nicht wiederhergestellt werden."
+        "partiallyHint": "Um die Daten eines bestimmten Projekts innerhalb eines Datumsbereichs zurückzusetzen, wählen Sie die Start- und Enddaten des Bereichs und das Projekt, das Sie zurücksetzen möchten.\nÜberprüfen Sie, ob Sie den richtigen Projekt- und Datumsbereich ausgewählt haben, bevor Sie auf „Zurücksetzen“ klicken.\nSobald Sie auf „Zurücksetzen“ klicken, werden alle Daten, die mit dem ausgewählten Projekt im ausgewählten Zeitraum verknüpft sind, dauerhaft gelöscht und können nicht wiederhergestellt werden.",
+        "viaFilters": "Reset via filters",
+        "viaFiltersHint": "The 'Reset via filters' function allows you to reset the data of a specific project within a given date range and with specific filters.",
+        "filtersPlaceholder": "Select filters",
+        "noFilters": "No filters selected or no data for the selected filter type"
       },
       "protected": "Password protected Dashboard",
       "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
@@ -707,7 +734,13 @@
     "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
     "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
     "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
-    "gotoUsage": "Go to plan usage"
+    "gotoUsage": "Go to plan usage",
+    "confirmNewPlan": "Confirm your new subscription plan",
+    "previewLoadingError": "An error occured while loading the pricing preview, please try again later.\nIf the problem persists, please contact us at <mail>{{email}}</mail>.\nYou can still change your plan, but you won't be able to see the pricing preview at the moment, sorry for that.",
+    "dueNow": "Due now",
+    "dueNowDescription": "You will be charged pro-rated amount for the remaining days of the current billing period.",
+    "negativePayment": "Negative 'Amount' means that you will have a credit balance of {{currency}}{{dueNowAmount}}. You will be billed {{currency}}0.00 on {{dueNowDate}}. Once the credit balance is used up, your recurring billing amount will be {{currency}}{{nextPaymentAmount}} every billing cycle of your subscription plan.",
+    "nextPayment": "Next payment"
   },
   "modals": {
     "paidFeature": {
