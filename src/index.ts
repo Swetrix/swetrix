@@ -1,4 +1,4 @@
-import * as http from 'http'
+import * as https from 'https'
 import { isInBrowser } from './utils'
 
 export interface LibOptions {
@@ -13,7 +13,12 @@ export interface LibOptions {
    */
   disabled?: boolean
 
-  /** Set a custom URL of the API server (for selfhosted variants of Swetrix). */
+  /**
+   * Set a custom URL of the API server (for selfhosted variants of Swetrix).
+   * 
+   * **Please do not include https:// prefix into this value.**
+   * This library will automatically add it (and it expects the API server to support HTTPS protocol).
+  */
   apiURL?: string
 
   /**
@@ -120,8 +125,14 @@ export interface TrackPageViewOptions {
   perf?: PerformanceMetrics
 }
 
-const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
+const DEFAULT_API_HOST = 'api.swetrix.com/log'
 
+/**
+ * Server-side implementation of Swetrix tracking library.
+ * 
+ * @param projectID Your project ID (you can find it in the project settings)
+ * @param options LibOptions
+ */
 export class Swetrix {
   constructor(private projectID: string, private options?: LibOptions) {
     this.heartbeat = this.heartbeat.bind(this)
@@ -230,12 +241,15 @@ export class Swetrix {
   }
 
   private sendRequest(path: string, ip: string, userAgent: string, body: object): void {
-    const hostname = this.options?.apiURL || DEFAULT_API_HOST
+    const link = (this.options?.apiURL || DEFAULT_API_HOST).split('/')
     const postData = JSON.stringify(body)
+
+    const hostname = link[0]
+    const pathPrefix = link.slice(1).join('/')
 
     const options = {
       hostname,
-      path: `/${path}`,
+      path: `${pathPrefix}/${path}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -244,18 +258,16 @@ export class Swetrix {
       },
     }
 
-    const req = http.request(options)
+    const req = https.request(options)
 
     req.on('error', (error) => {
       this.debug(`Error while sending request: ${error.message}`, true)
       this.debug(`Request hostname: ${hostname}`, true)
-      this.debug(`Request path: ${path}`, true)
-      this.debug(`Request body: ${body}`, true)
+      this.debug(`Request path: /${path}`, true)
+      this.debug(`Request body: ${JSON.stringify(body, null, 2)}`, true)
     })
 
     req.write(postData)
     req.end()
   }
 }
-
-export default Swetrix
