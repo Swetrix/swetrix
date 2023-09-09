@@ -146,7 +146,7 @@ export class Swetrix {
    * @param event TrackEventOptions
    * @returns void
    */
-  track(ip: string, userAgent: string, event: TrackEventOptions): void {
+  public track(ip: string, userAgent: string, event: TrackEventOptions): void {
     if (!this.canTrack()) {
       return
     }
@@ -166,7 +166,7 @@ export class Swetrix {
    * @param pageview TrackPageViewOptions
    * @returns void
    */
-  trackPageView(ip: string, userAgent: string, pageview?: TrackPageViewOptions) {
+  public trackPageView(ip: string, userAgent: string, pageview?: TrackPageViewOptions) {
     if (!this.canTrack()) {
       return
     }
@@ -196,7 +196,7 @@ export class Swetrix {
    * @param userAgent User agent of the visitor
    * @returns void
    */
-  heartbeat(ip: string, userAgent: string): void {
+  public heartbeat(ip: string, userAgent: string): void {
     if (!this.canTrack()) {
       return
     }
