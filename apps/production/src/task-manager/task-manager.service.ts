@@ -1006,4 +1006,52 @@ export class TaskManagerService {
       )
     }
   }
+
+  // Disable reports for inactive users
+  // Some people stop using Swetrix but keep the account (and don't disable the email reports in settings), so why keep spamming them?
+  // EVERY SUNDAY AT 2:00 AM (right before we send weekly reports)
+  @Cron('0 02 * * 0')
+  async disableReportsForInactiveUsers(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        reportFrequency: Not(ReportFrequency.NEVER),
+      },
+      relations: ['projects'],
+      select: ['id'],
+    })
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    // a bit more than 2 months ago
+    const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('DD.MM.YYYY')
+
+    const promises = _map(users, async user => {
+      const { id, projects } = user
+
+      if (_isEmpty(projects) || _isNull(projects)) {
+        return
+      }
+
+      const ids = _map(projects, p => p.id)
+      const query = `SELECT count() FROM analytics WHERE pid IN (${_map(
+        ids,
+        pid => `'${pid}'`,
+      ).join(',')}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+      const hasActivity =
+        Number((await clickhouse.query(query).toPromise())[0]['count()']) > 0
+
+      if (hasActivity) {
+        return
+      }
+
+      await this.userService.update(id, {
+        reportFrequency: ReportFrequency.NEVER,
+      })
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
+        reason,
+      )
+    })
+  }
 }
