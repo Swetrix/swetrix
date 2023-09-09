@@ -1006,4 +1006,73 @@ export class TaskManagerService {
       )
     }
   }
+
+  // Disable reports for inactive users
+  // Some people stop using Swetrix but keep the account (and don't disable the email reports in settings), so why keep spamming them?
+  // EVERY SUNDAY AT 2:00 AM (right before we send weekly reports)
+  @Cron('0 02 * * 0')
+  async disableReportsForInactiveUsers(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        reportFrequency: Not(ReportFrequency.NEVER),
+      },
+      relations: ['projects'],
+      select: ['id'],
+    })
+    const now = dayjs.utc().format('YYYY-MM-DD')
+    // a bit more than 2 months ago
+    const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('YYYY-MM-DD')
+
+    const promises = _map(users, async user => {
+      const { id, projects } = user
+
+      if (_isEmpty(projects) || _isNull(projects)) {
+        return
+      }
+
+      const pidsStringified = _map(projects, p => `'${p.id}'`).join(',')
+      // No need to check for performance activity because it's not tracked without tracking analytics
+      const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+      const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+      const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+
+      const hasAnalyticsActivity =
+        Number(
+          (await clickhouse.query(queryAnalytics).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasAnalyticsActivity) {
+        return
+      }
+
+      const hasCaptchaActivity =
+        Number(
+          (await clickhouse.query(queryCaptcha).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasCaptchaActivity) {
+        return
+      }
+
+      const hasCustomEventsActivity =
+        Number(
+          (await clickhouse.query(queryCustomEvents).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasCustomEventsActivity) {
+        return
+      }
+
+      await this.userService.update(id, {
+        reportFrequency: ReportFrequency.NEVER,
+      })
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
+        reason,
+      )
+    })
+  }
 }
