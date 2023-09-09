@@ -1,3 +1,4 @@
+import * as http from 'http'
 import { isInBrowser } from './utils'
 
 export interface LibOptions {
@@ -126,7 +127,15 @@ export class Lib {
     this.heartbeat = this.heartbeat.bind(this)
   }
 
-  track(event: TrackEventOptions): void {
+  /**
+   * This function is used to send custom events (implements https://docs.swetrix.com/events-api#post-loghb).
+   * 
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @param event TrackEventOptions
+   * @returns void
+   */
+  track(ip: string, userAgent: string, event: TrackEventOptions): void {
     if (!this.canTrack()) {
       return
     }
@@ -135,10 +144,18 @@ export class Lib {
       pid: this.projectID,
       ...event,
     }
-    this.sendRequest('custom', data)
+    this.sendRequest('custom', ip, userAgent, data)
   }
 
-  trackPageView(pageview?: TrackPageViewOptions) {
+  /**
+   * This function is used to send pageview events (implements https://docs.swetrix.com/events-api#post-loghb).
+   * 
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @param pageview TrackPageViewOptions
+   * @returns void
+   */
+  trackPageView(ip: string, userAgent: string, pageview?: TrackPageViewOptions) {
     if (!this.canTrack()) {
       return
     }
@@ -154,10 +171,21 @@ export class Lib {
       ...(pageview || {}),
     }
 
-    this.sendRequest('', data)
+    this.sendRequest('', ip, userAgent, data)
   }
 
-  heartbeat(): void {
+  /**
+   * This function is used to send heartbeat events (implements https://docs.swetrix.com/events-api#post-loghb).
+   * Heartbeat events are used to determine if the user session is still active.
+   * This allows you to see the 'Live Visitors' counter in the Dashboard panel.
+   * It's recommended to send heartbeat events every 30 seconds.
+   * We also extend the session lifetime after receiving a pageview or custom event.
+   * 
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @returns void
+   */
+  heartbeat(ip: string, userAgent: string): void {
     if (!this.canTrack()) {
       return
     }
@@ -165,7 +193,7 @@ export class Lib {
     const data = {
       pid: this.projectID,
     }
-    this.sendRequest('heartbeat', data)
+    this.sendRequest('heartbeat', ip, userAgent, data)
   }
 
   private checkIgnore(path?: string): boolean {
@@ -181,8 +209,8 @@ export class Lib {
     return false
   }
 
-  private debug(message: string): void {
-    if (this.options?.debug) {
+  private debug(message: string, force?: boolean): void {
+    if (this.options?.debug || force) {
       console.log('[Swetrix]', message)
     }
   }
@@ -201,11 +229,31 @@ export class Lib {
     return true
   }
 
-  private sendRequest(path: string, body: object): void {
-    const host = this.options?.apiURL || DEFAULT_API_HOST
-    const req = new XMLHttpRequest()
-    req.open('POST', `${host}/${path}`, true)
-    req.setRequestHeader('Content-Type', 'application/json')
-    req.send(JSON.stringify(body))
+  private sendRequest(path: string, ip: string, userAgent: string, body: object): void {
+    const hostname = this.options?.apiURL || DEFAULT_API_HOST
+    const postData = JSON.stringify(body)
+
+    const options = {
+      hostname,
+      path: `/${path}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Client-IP-Address': ip,
+        'User-Agent': userAgent,
+      },
+    }
+
+    const req = http.request(options)
+
+    req.on('error', (error) => {
+      this.debug(`Error while sending request: ${error.message}`, true)
+      this.debug(`Request hostname: ${hostname}`, true)
+      this.debug(`Request path: ${path}`, true)
+      this.debug(`Request body: ${body}`, true)
+    })
+
+    req.write(postData)
+    req.end()
   }
 }
