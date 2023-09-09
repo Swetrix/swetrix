@@ -1,4 +1,4 @@
-import * as https from 'https'
+import fetch from 'node-fetch'
 import { isInBrowser } from './utils'
 
 export interface LibOptions {
@@ -15,10 +15,7 @@ export interface LibOptions {
 
   /**
    * Set a custom URL of the API server (for selfhosted variants of Swetrix).
-   * 
-   * **Please do not include https:// prefix into this value.**
-   * This library will automatically add it (and it expects the API server to support HTTPS protocol).
-  */
+   */
   apiURL?: string
 
   /**
@@ -125,7 +122,7 @@ export interface TrackPageViewOptions {
   perf?: PerformanceMetrics
 }
 
-const DEFAULT_API_HOST = 'api.swetrix.com/log'
+const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 
 /**
  * Server-side implementation of Swetrix tracking library.
@@ -204,7 +201,7 @@ export class Swetrix {
     const data = {
       pid: this.projectID,
     }
-    this.sendRequest('heartbeat', ip, userAgent, data)
+    this.sendRequest('hb', ip, userAgent, data)
   }
 
   private checkIgnore(path?: string): boolean {
@@ -240,34 +237,31 @@ export class Swetrix {
     return true
   }
 
-  private sendRequest(path: string, ip: string, userAgent: string, body: object): void {
-    const link = (this.options?.apiURL || DEFAULT_API_HOST).split('/')
+  private async sendRequest(path: string, ip: string, userAgent: string, body: object): Promise<void> {
+    const link = this.options?.apiURL || DEFAULT_API_HOST
     const postData = JSON.stringify(body)
 
-    const hostname = link[0]
-    const pathPrefix = link.slice(1).join('/')
-
-    const options = {
-      hostname,
-      path: `${pathPrefix}/${path}`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Client-IP-Address': ip,
-        'User-Agent': userAgent,
-      },
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-Client-IP-Address': ip,
+      'User-Agent': userAgent,
     }
 
-    const req = https.request(options)
+    try {
+      const response = await fetch(`${link}/${path}`, {
+        method: 'POST',
+        headers,
+        body: postData,
+      })
 
-    req.on('error', (error) => {
-      this.debug(`Error while sending request: ${error.message}`, true)
-      this.debug(`Request hostname: ${hostname}`, true)
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+      }
+    } catch (reason) {
+      this.debug(`Error while sending request: ${reason}`, true)
+      this.debug(`Request link: ${link}`, true)
       this.debug(`Request path: /${path}`, true)
       this.debug(`Request body: ${JSON.stringify(body, null, 2)}`, true)
-    })
-
-    req.write(postData)
-    req.end()
+    }
   }
 }

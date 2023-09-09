@@ -33,11 +33,13 @@
   "homepage": "https://swetrix.com/docs",
   "dependencies": {
     "@types/node": "^20.5.9",
+    "node-fetch": "^3.3.2",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-node-resolve": "^15.2.1",
+    "@types/node-fetch": "^2.6.4",
     "rimraf": "^4.4.1",
     "rollup": "^2.79.1",
     "rollup-plugin-node-resolve": "^5.2.0",

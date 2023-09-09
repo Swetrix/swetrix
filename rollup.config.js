@@ -13,6 +13,7 @@ export default [
     ],
     plugins: [
       typescript(), nodeResolve(), commonjs(), sourceMaps(),
-    ]
+    ],
+    inlineDynamicImports: true,
   },
 ]
