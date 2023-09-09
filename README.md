@@ -1,7 +1,6 @@
 <img src="https://swetrix.com/assets/logo_blue.png" alt="" height="80" />
 
-# @swetrix/node
-## Swetrix NodeJS integration
+# `@swetrix/node` - Swetrix NodeJS integration
 
 This repository contains the analytics script for server-side tracking of your website.
 
