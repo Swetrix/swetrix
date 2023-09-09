@@ -1019,9 +1019,9 @@ export class TaskManagerService {
       relations: ['projects'],
       select: ['id'],
     })
-    const now = dayjs.utc().format('DD.MM.YYYY')
+    const now = dayjs.utc().format('YYYY-MM-DD')
     // a bit more than 2 months ago
-    const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('DD.MM.YYYY')
+    const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('YYYY-MM-DD')
 
     const promises = _map(users, async user => {
       const { id, projects } = user
@@ -1030,15 +1030,36 @@ export class TaskManagerService {
         return
       }
 
-      const ids = _map(projects, p => p.id)
-      const query = `SELECT count() FROM analytics WHERE pid IN (${_map(
-        ids,
-        pid => `'${pid}'`,
-      ).join(',')}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
-      const hasActivity =
-        Number((await clickhouse.query(query).toPromise())[0]['count()']) > 0
+      const pidsStringified = _map(projects, p => `'${p.id}'`).join(',')
+      // No need to check for performance activity because it's not tracked without tracking analytics
+      const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+      const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+      const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
 
-      if (hasActivity) {
+      const hasAnalyticsActivity =
+        Number(
+          (await clickhouse.query(queryAnalytics).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasAnalyticsActivity) {
+        return
+      }
+
+      const hasCaptchaActivity =
+        Number(
+          (await clickhouse.query(queryCaptcha).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasCaptchaActivity) {
+        return
+      }
+
+      const hasCustomEventsActivity =
+        Number(
+          (await clickhouse.query(queryCustomEvents).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasCustomEventsActivity) {
         return
       }
 
