@@ -818,14 +818,12 @@ export class TaskManagerService {
       const isUnique = Number(
         alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS,
       )
-      const isCustomEventsMetrics = Number(
-        alert.queryMetric === QueryMetric.CUSTOM_EVENTS,
-      )
       const time = getQueryTime(alert.queryTime)
       const createdCondition = getQueryCondition(alert.queryCondition)
-      const query = isCustomEventsMetrics
-        ? `SELECT count() FROM customEV WHERE pid='${project.id}' AND ev={ev:String} AND created ${createdCondition} now() - ${time}`
-        : `SELECT count() FROM analytics WHERE pid='${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
+      const query =
+        alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+          ? `SELECT count() FROM customEV WHERE pid='${project.id}' AND ev={ev:String} AND created ${createdCondition} now() - ${time}`
+          : `SELECT count() FROM analytics WHERE pid='${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
 
       const params = {
         ev: alert.queryCustomEvent,
