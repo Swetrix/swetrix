@@ -1087,7 +1087,15 @@ export class AnalyticsService {
   generateDateString(row: { [key: string]: number }): string {
     const { year, month, day, hour, minute } = row
 
-    let dateString = `${year}-${month < 10 ? `0${month}` : month}`
+    let dateString = `${year}`
+
+    if (typeof month === 'number') {
+      if (month < 10) {
+        dateString += `-0${month}`
+      } else {
+        dateString += `-${month}`
+      }
+    }
 
     if (typeof day === 'number') {
       if (day < 10) {
