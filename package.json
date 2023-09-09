@@ -22,17 +22,17 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Swetrix/swetrix-js.git"
+    "url": "git+https://github.com/Swetrix/swetrix-node.git"
   },
   "author": "Andrii R. <andrii@swetrix.com>",
   "funding": "https://ko-fi.com/andriir",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Swetrix/swetrix-js/issues"
+    "url": "https://github.com/Swetrix/swetrix-node/issues"
   },
-  "homepage": "https://swetrix.com/docs",
+  "homepage": "https://docs.swetrix.com",
   "dependencies": {
-    "@types/node": "^20.5.9",
+    "@types/node": "^20.6.0",
     "node-fetch": "^3.3.2",
     "tslib": "^2.6.2"
   },
