@@ -1,0 +1,48 @@
+{
+  "name": "@swetrix/node",
+  "version": "1.0.0",
+  "description": "Swetrix NodeJS server-side tracking module",
+  "main": "dist/swetrix.cjs.js",
+  "module": "dist/swetrix.es5.js",
+  "esnext": "dist/esnext/index.js",
+  "typings": "dist/esnext/index.d.ts",
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "prepublish": "npm run build",
+    "build": "rollup -c && tsc -p tsconfig.esnext.json",
+    "start": "rollup -c -w",
+    "tsc": "tsc -p tsconfig.esnext.json"
+  },
+  "keywords": [
+    "swetrix",
+    "analytics",
+    "monitoring",
+    "metrics",
+    "privacy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swetrix/swetrix-js.git"
+  },
+  "author": "Andrii R. <contact@swetrix.com>",
+  "funding": "https://ko-fi.com/andriir",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Swetrix/swetrix-js/issues"
+  },
+  "homepage": "https://swetrix.com/docs",
+  "dependencies": {
+    "@types/node": "^20.5.9",
+    "tslib": "^2.6.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.1",
+    "rimraf": "^4.4.1",
+    "rollup": "^2.79.1",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-typescript2": "^0.35.0",
+    "typescript": "^5.2.2"
+  }
+}
