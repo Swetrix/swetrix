@@ -140,6 +140,16 @@ This error is usually returned when the `unique` parameter is set to `true` and 
 This error is usually returned when the server is unable to process the request due to a temporary problem (for example, the database is unavailable).
 If you receive this error, please try again later. If the problem persists, please [contact us](https://swetrix.com/contact).
 
+## API wrappers
+### NodeJS
+Currently we provide an official NodeJS API wrapper for the events API.
+You can find how to install and use it by opening its [npm package page](https://www.npmjs.com/package/@swetrix/node).
+
+### Contributing
+We welcome any countributions to Swetrix. If you want to create your own API wrapper, feel free to do so. Please [contact us](https://swetrix.com/contact) and we will list your library here.
+
+Also as an example, feel free to check out the [source code](https://github.com/swetrix/swetrix-node) of our NodeJS API wrapper.
+
 ## Common request examples
 
 ### Recording a pageview event using JavaScript fetch API
