@@ -122,7 +122,7 @@ export interface TrackPageViewOptions {
 
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 
-export class Lib {
+export class Swetrix {
   constructor(private projectID: string, private options?: LibOptions) {
     this.heartbeat = this.heartbeat.bind(this)
   }
@@ -257,3 +257,5 @@ export class Lib {
     req.end()
   }
 }
+
+export default Swetrix
