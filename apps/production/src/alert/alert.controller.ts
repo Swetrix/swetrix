@@ -19,15 +19,11 @@ import * as _map from 'lodash/map'
 import * as _omit from 'lodash/omit'
 import * as _pick from 'lodash/pick'
 
-import { UserService } from 'src/user/user.service'
-import { ProjectService } from 'src/project/project.service'
-import { AppLoggerService } from 'src/logger/logger.service'
-import {
-  UserType,
-  ACCOUNT_PLANS,
-  PlanCode,
-} from 'src/user/entities/user.entity'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { UserService } from '../user/user.service'
+import { ProjectService } from '../project/project.service'
+import { AppLoggerService } from '../logger/logger.service'
+import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
+import { JwtAccessTokenGuard } from '../auth/guards'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Alert } from './entity/alert.entity'

@@ -718,9 +718,8 @@ export class ProjectService {
         clickhouse.query(countCaptchaQuery).toPromise(),
       ]
 
-      const [rawTraffic, rawCustomEvents, rawCaptcha] = await Promise.all(
-        promises,
-      )
+      const [rawTraffic, rawCustomEvents, rawCaptcha] =
+        await Promise.all(promises)
 
       const traffic = rawTraffic[0]['count()']
       const customEvents = rawCustomEvents[0]['count()']

@@ -139,9 +139,8 @@ export class ExtensionsController {
   @Get()
   async getExtensions(@Query() queries: GetAllExtensionsQueries) {
     // eslint-disable-next-line prefer-const
-    let [extensions, count] = await this.extensionsService.getExtensions(
-      queries,
-    )
+    let [extensions, count] =
+      await this.extensionsService.getExtensions(queries)
 
     extensions = _map(extensions, extension => {
       extension.usersQuantity = _size(extension.users)
@@ -310,9 +309,8 @@ export class ExtensionsController {
   @Get('search')
   async searchExtension(@Query() queries: SearchExtensionQueries) {
     // eslint-disable-next-line prefer-const
-    let [extensions, count] = await this.extensionsService.searchExtension(
-      queries,
-    )
+    let [extensions, count] =
+      await this.extensionsService.searchExtension(queries)
 
     extensions = _map(extensions, extension => {
       extension.usersQuantity = _size(extension.users)

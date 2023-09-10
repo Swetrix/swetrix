@@ -781,8 +781,8 @@ export class TaskManagerService {
     })
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
-  // @Cron(CronExpression.EVERY_5_SECONDS)
+  // @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async checkMetricAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
@@ -846,9 +846,11 @@ export class TaskManagerService {
             : 'page views'
         const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${
           project.name
-        }* has had *${count}* ${queryMetric} in the last ${getQueryTimeString(
-          alert.queryTime,
-        )}!`
+        }* has had *${count}*${
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+            ? ` "${alert.queryCustomEvent}"`
+            : ''
+        } ${queryMetric} in the last ${getQueryTimeString(alert.queryTime)}!`
 
         if (project.admin && project.admin.isTelegramChatIdConfirmed) {
           this.telegramService.addMessage(project.admin.telegramChatId, text, {

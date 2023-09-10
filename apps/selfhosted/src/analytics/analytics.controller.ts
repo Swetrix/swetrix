@@ -596,9 +596,8 @@ export class AnalyticsController {
     const result = {}
 
     const keyCountPromises = _map(pidsArray, async currentPID => {
-      result[currentPID] = await this.analyticsService.getOnlineUserCount(
-        currentPID,
-      )
+      result[currentPID] =
+        await this.analyticsService.getOnlineUserCount(currentPID)
     })
 
     await Promise.all(keyCountPromises).catch(reason => {
