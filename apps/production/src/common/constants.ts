@@ -152,6 +152,7 @@ const sentryIgnoreErrors: (string | RegExp)[] = [
   'RequestHeaderFieldsTooLargeException',
   'UnavailableForLegalReasonsException',
   'ClientClosedRequestException',
+  'HttpException', // at the moment, these are either rate-limiting or payment required errors, so no need to track them
 ]
 
 export {
