@@ -781,8 +781,8 @@ export class TaskManagerService {
     })
   }
 
-  // @Cron(CronExpression.EVERY_5_MINUTES)
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkMetricAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
