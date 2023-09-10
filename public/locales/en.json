@@ -465,6 +465,11 @@
     "showVisitorsInTitle": "Show live visitors in the page title",
     "uiSettings": "UI Settings"
   },
+  "alertsSettings": {
+    "alertCreated": "The alert has been created",
+    "alertUpdated": "The alert has been updated",
+    "alertDeleted": "The alert has been deleted"
+  },
   "dashboard": {
     "newProject": "New project",
     "newCaptchaProject": "New CAPTCHA project",
@@ -512,6 +517,7 @@
   },
   "alert": {
     "create": "Create an alert",
+    "customEvent": "Custom event name",
     "add": "Add Alert",
     "delete": "Delete alert",
 		"noNameError": "Please enter a name for the alert.",
@@ -542,7 +548,8 @@
     "metrics": {
       "page_views": "Page views",
       "unique_page_views": "Unique sessions",
-      "online_users": "Online users"
+      "online_users": "Online users",
+      "custom_events": "Custom events"
     }
   },
   "notFoundPage": {

@@ -11,4 +11,5 @@ export interface IAlerts {
     queryValue: number
     queryTime: keyof typeof QUERY_TIME
     pid: string
+    queryCustomEvent?: string
 }

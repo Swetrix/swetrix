@@ -70,6 +70,7 @@ const ProjectAlertsSettings = ({
     queryCondition: QUERY_CONDITION.GREATER_THAN,
     queryMetric: QUERY_METRIC.PAGE_VIEWS,
     active: true,
+    queryCustomEvent: '',
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
@@ -145,6 +146,10 @@ const ProjectAlertsSettings = ({
 
     if (_isEmpty(form.name) || _size(form.name) < 3) {
       allErrors.name = t('alert.noNameError')
+    }
+
+    if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && _isEmpty(form.queryCustomEvent)) {
+      allErrors.queryCustomEvent = t('alert.noCustomEventError')
     }
 
     if (Number.isNaN(_toNumber(form.queryValue))) {
@@ -292,6 +297,19 @@ const ProjectAlertsSettings = ({
             }}
           />
         </div>
+        {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && (
+          <Input
+            name='queryCustomEvent'
+            id='queryCustomEvent'
+            type='text'
+            label={t('alert.customEvent')}
+            value={form.queryCustomEvent || ''}
+            placeholder={t('alert.customEvent')}
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted ? errors.queryCustomEvent : null}
+          />
+        )}
         <div className='mt-4'>
           <Select
             id='queryCondition'
