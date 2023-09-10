@@ -781,8 +781,8 @@ export class TaskManagerService {
     })
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
-  // @Cron(CronExpression.EVERY_5_SECONDS)
+  // @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async checkMetricAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
@@ -820,8 +820,15 @@ export class TaskManagerService {
       )
       const time = getQueryTime(alert.queryTime)
       const createdCondition = getQueryCondition(alert.queryCondition)
-      const query = `SELECT count() FROM analytics WHERE pid = '${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
-      const queryResult = await clickhouse.query(query).toPromise()
+      const query =
+        alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+          ? `SELECT count() FROM customEV WHERE pid='${project.id}' AND ev={ev:String} AND created ${createdCondition} now() - ${time}`
+          : `SELECT count() FROM analytics WHERE pid='${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
+
+      const params = {
+        ev: alert.queryCustomEvent,
+      }
+      const queryResult = await clickhouse.query(query, { params }).toPromise()
 
       const count = Number(queryResult[0]['count()'])
 
@@ -832,14 +839,18 @@ export class TaskManagerService {
         })
 
         const queryMetric =
-          alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+            ? 'custom events'
+            : alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
             ? 'unique page views'
             : 'page views'
         const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${
           project.name
-        }* has had *${count}* ${queryMetric} in the last ${getQueryTimeString(
-          alert.queryTime,
-        )}!`
+        }* has had *${count}*${
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+            ? ` "${alert.queryCustomEvent}"`
+            : ''
+        } ${queryMetric} in the last ${getQueryTimeString(alert.queryTime)}!`
 
         if (project.admin && project.admin.isTelegramChatIdConfirmed) {
           this.telegramService.addMessage(project.admin.telegramChatId, text, {

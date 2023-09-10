@@ -189,6 +189,7 @@ export class AlertController {
         'queryTime',
         'active',
         'name',
+        'queryCustomEvent',
       ]),
     }
 

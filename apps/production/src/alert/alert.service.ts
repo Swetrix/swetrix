@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { Pagination, PaginationOptionsInterface } from 'src/common/pagination'
+import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO } from './dto/alert.dto'
 
@@ -65,8 +65,8 @@ export class AlertService {
     return this.alertsReporsitory.findOne({ where, ...params })
   }
 
-  async create(project: AlertDTO | Alert): Promise<Alert> {
-    return this.alertsReporsitory.save(project)
+  async create(alert: AlertDTO | Alert): Promise<Alert> {
+    return this.alertsReporsitory.save(alert)
   }
 
   async update(id: string, alertDTO: AlertDTO | Alert): Promise<any> {
