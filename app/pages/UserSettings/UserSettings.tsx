@@ -85,7 +85,7 @@ interface IProps {
   genericError: (message: string) => void,
   onGDPRExportFailed: (message: string) => void,
   updateProfileFailed: (message: string) => void,
-  updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (e: any) => {}) => void,
+  updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (isSuccess: boolean) => void) => void,
   accountUpdated: (t: string) => void,
   setAPIKey: (key: string | null) => void,
   user: IUser,
@@ -95,6 +95,7 @@ interface IProps {
   unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
   theme: string,
   updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => void,
+  logoutLocal: () => void,
   logoutAll: () => void,
   loading: boolean,
 }
@@ -110,7 +111,7 @@ const UserSettings = ({
   setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData,
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
   accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
-  linkSSO, unlinkSSO, theme, updateShowLiveVisitorsInTitle, logoutAll, loading,
+  linkSSO, unlinkSSO, theme, updateShowLiveVisitorsInTitle, logoutAll, loading, logoutLocal,
 }: IProps): JSX.Element => {
   const navigate = useNavigate()
   const {
@@ -135,6 +136,7 @@ const UserSettings = ({
     user.timezone || DEFAULT_TIMEZONE,
   )
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState<boolean>(false)
   const [timezoneChanged, setTimezoneChanged] = useState<boolean>(false)
   const [reportFrequency, setReportFrequency] = useState<string>(
     user.reportFrequency,
@@ -182,8 +184,9 @@ const UserSettings = ({
     setValidated(valid)
   }
 
-  const onSubmit = (data: any, callback = () => { }) => {
+  const onSubmit = (data: any, callback: (isSuccess: boolean) => void = () => { }) => {
     delete data.repeat
+
     // eslint-disable-next-line no-restricted-syntax
     for (const key in data) {
       if (data[key] === '') {
@@ -191,7 +194,7 @@ const UserSettings = ({
       }
     }
 
-    updateUserProfileAsync(data, t('profileSettings.updated'))
+    updateUserProfileAsync(data, t('profileSettings.updated'), callback)
   }
 
   useEffect(() => {
@@ -233,13 +236,21 @@ const UserSettings = ({
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | null, force?: boolean, callback: (isSuccess: boolean) => void = () => { }) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     setBeenSubmitted(true)
 
     if (validated) {
-      onSubmit(form)
+      // User is about to change their password, let's warn him if 
+      if (form.password && !force) {
+        setIsPasswordChangeModalOpened(true)
+        return
+      }
+
+      onSubmit(form, callback)
     }
   }
 
@@ -921,6 +932,26 @@ const UserSettings = ({
         message={error}
         isOpened={Boolean(error)}
       />
+      <Modal
+        onClose={() => {
+          setIsPasswordChangeModalOpened(false)
+        }}
+        onSubmit={() => {
+          setIsPasswordChangeModalOpened(false)
+          handleSubmit(null, true, (isSuccess: boolean) => {
+            // password has been changed, let's log out the user as all the sessions are now invalid
+            if (isSuccess) {
+              logoutLocal()
+            }
+          })
+        }}
+        closeText={t('common.cancel')}
+        submitText={t('common.continue')}
+        type='warning'
+        title={t('profileSettings.passwordChangeWarningModal.title')}
+        message={t('profileSettings.passwordChangeWarningModal.body')}
+        isOpened={isPasswordChangeModalOpened}
+      />
     </div>
   )
 }
@@ -947,6 +978,8 @@ UserSettings.propTypes = {
   linkSSO: PropTypes.func.isRequired,
   unlinkSSO: PropTypes.func.isRequired,
   theme: PropTypes.string.isRequired,
+  logoutLocal: PropTypes.func.isRequired,
+  logoutAll: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(UserSettings, auth.authenticated))

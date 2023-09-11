@@ -463,7 +463,11 @@
     "regenerateSecretKeyMessage": "Are you sure you want to regenerate your secret key?\nAll the existing CAPTCHA widgets will stop working and you will need to update them with the new secret key.",
     "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone.",
     "showVisitorsInTitle": "Show live visitors in the page title",
-    "uiSettings": "UI Settings"
+    "uiSettings": "UI Settings",
+    "passwordChangeWarningModal": {
+      "title": "You're about to change your password",
+      "body": "You're about to change your password, this will log you out from all devices (including this one) and you will need to log in again with your new password."
+    }
   },
   "alertsSettings": {
     "alertCreated": "The alert has been created",
