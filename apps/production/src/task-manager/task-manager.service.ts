@@ -44,6 +44,7 @@ import {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   REDIS_LOG_CAPTCHA_CACHE_KEY,
+  JWT_REFRESH_TOKEN_LIFETIME,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
@@ -1085,5 +1086,20 @@ export class TaskManagerService {
         reason,
       )
     })
+  }
+
+  // Delete old refresh tokens
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async deleteOldRefreshTokens(): Promise<void> {
+    const minDate = dayjs
+      .utc()
+      .subtract(JWT_REFRESH_TOKEN_LIFETIME, 's')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const where: Record<string, unknown> = {
+      created: LessThan(minDate),
+    }
+
+    await this.userService.deleteRefreshTokensWhere(where)
   }
 }

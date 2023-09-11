@@ -43,7 +43,13 @@ const clickhouse = new ClickHouse({
   },
 })
 
-const { JWT_ACCESS_TOKEN_SECRET } = process.env
+const {
+  JWT_ACCESS_TOKEN_SECRET,
+  // 30 days
+  JWT_REFRESH_TOKEN_LIFETIME = 60 * 60 * 24 * 30,
+  // 30 minutes
+  JWT_ACCESS_TOKEN_LIFETIME = 60 * 30,
+} = process.env
 const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -98,6 +104,9 @@ const TRAFFIC_COLUMNS = [
 
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
 
+const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
+const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
+
 export {
   clickhouse,
   redis,
@@ -122,6 +131,8 @@ export {
   isDevelopment,
   DEFAULT_SELFHOSTED_UUID,
   JWT_ACCESS_TOKEN_SECRET,
+  NUMBER_JWT_REFRESH_TOKEN_LIFETIME as JWT_REFRESH_TOKEN_LIFETIME,
+  NUMBER_JWT_ACCESS_TOKEN_LIFETIME as JWT_ACCESS_TOKEN_LIFETIME,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   isProxiedByCloudflare,

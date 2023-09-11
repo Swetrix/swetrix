@@ -42,7 +42,13 @@ const clickhouse = new ClickHouse({
   },
 })
 
-const { JWT_ACCESS_TOKEN_SECRET } = process.env
+const {
+  JWT_ACCESS_TOKEN_SECRET,
+  // 30 days
+  JWT_REFRESH_TOKEN_LIFETIME = 60 * 60 * 24 * 30,
+  // 30 minutes
+  JWT_ACCESS_TOKEN_LIFETIME = 60 * 30,
+} = process.env
 const isDevelopment = process.env.NODE_ENV === 'development'
 const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
@@ -155,6 +161,9 @@ const sentryIgnoreErrors: (string | RegExp)[] = [
   'HttpException', // at the moment, these are either rate-limiting or payment required errors, so no need to track them
 ]
 
+const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
+const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
+
 export {
   clickhouse,
   redis,
@@ -189,6 +198,8 @@ export {
   PRODUCTION_ORIGIN,
   REDIS_SSO_UUID,
   JWT_ACCESS_TOKEN_SECRET,
+  NUMBER_JWT_REFRESH_TOKEN_LIFETIME as JWT_REFRESH_TOKEN_LIFETIME,
+  NUMBER_JWT_ACCESS_TOKEN_LIFETIME as JWT_ACCESS_TOKEN_LIFETIME,
   getRedisUserUsageInfoKey,
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
