@@ -39,6 +39,8 @@ import {
   PRODUCTION_ORIGIN,
   isDevelopment,
   JWT_ACCESS_TOKEN_SECRET,
+  JWT_ACCESS_TOKEN_LIFETIME,
+  JWT_REFRESH_TOKEN_LIFETIME,
 } from '../common/constants'
 import { getGeoDetails } from '../common/utils'
 import { TelegramService } from '../integrations/telegram/telegram.service'
@@ -170,7 +172,7 @@ export class AuthService {
       },
       {
         algorithm: 'HS256',
-        expiresIn: 60 * 30,
+        expiresIn: JWT_ACCESS_TOKEN_LIFETIME,
         secret: JWT_ACCESS_TOKEN_SECRET,
       },
     )
@@ -326,10 +328,16 @@ export class AuthService {
   ): Promise<void> {
     const hashedPassword = await this.hashPassword(password)
 
+    // Update user password
     await this.userService.updateUser(actionToken.user.id, {
       password: hashedPassword,
     })
+
+    // Delete current 'reset password' action token
     await this.actionTokensService.deleteActionToken(actionToken.id)
+
+    // Delete all user refresh tokens
+    await this.logoutAll(actionToken.user.id)
   }
 
   public async changePassword(userId: string, password: string): Promise<void> {
@@ -414,7 +422,7 @@ export class AuthService {
       },
       {
         algorithm: 'HS256',
-        expiresIn: 60 * 60 * 24 * 30,
+        expiresIn: JWT_REFRESH_TOKEN_LIFETIME,
         secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       },
     )

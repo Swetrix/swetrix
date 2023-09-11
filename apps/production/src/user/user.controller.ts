@@ -498,13 +498,15 @@ export class UserController {
     this.logger.log({ userDTO, id }, 'PUT /user')
     const user = await this.userService.findOneWhere({ id })
 
-    if (!_isEmpty(userDTO.password) && _isString(userDTO.password)) {
+    const shouldUpdatePassword =
+      !_isEmpty(userDTO.password) && _isString(userDTO.password)
+
+    if (shouldUpdatePassword) {
+      // Validate new password
       this.userService.validatePassword(userDTO.password)
+
+      // Hash new password
       userDTO.password = await this.authService.hashPassword(userDTO.password)
-      await this.mailerService.sendEmail(
-        userDTO.email,
-        LetterTemplate.PasswordChanged,
-      )
     }
 
     try {
@@ -605,6 +607,18 @@ export class UserController {
         'emailRequests',
       ])
       await this.userService.update(id, userToUpdate)
+
+      // If password should have been updated and there were no issues doing so, then...
+      if (shouldUpdatePassword) {
+        // Send 'Password changed' email notification
+        await this.mailerService.sendEmail(
+          userDTO.email,
+          LetterTemplate.PasswordChanged,
+        )
+
+        // Log out all user sessions
+        await this.authService.logoutAll(id)
+      }
 
       const updatedUser = await this.userService.findOneWhere({ id })
       return this.userService.omitSensitiveData(updatedUser)

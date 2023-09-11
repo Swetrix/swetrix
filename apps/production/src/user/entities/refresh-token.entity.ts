@@ -23,4 +23,7 @@ export class RefreshToken {
   })
   @JoinColumn()
   user: User
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created: Date
 }

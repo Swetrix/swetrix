@@ -297,6 +297,10 @@ export class UserService {
     })
   }
 
+  public async deleteRefreshTokensWhere(where: Record<string, unknown>) {
+    await this.refreshTokenRepository.delete(where)
+  }
+
   public async findUserByApiKey(apiKey: string) {
     return this.usersRepository.findOne({ where: { apiKey } })
   }
