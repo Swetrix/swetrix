@@ -985,7 +985,7 @@ export class AnalyticsController {
 
     await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
-    if (unique && logDTO.unique) {
+    if (!unique && logDTO.unique) {
       throw new ForbiddenException(
         'The event was not saved because it was not unique while unique only param is provided',
       )
