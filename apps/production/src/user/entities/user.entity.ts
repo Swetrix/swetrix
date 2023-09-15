@@ -5,12 +5,14 @@ import {
   OneToMany,
   BeforeUpdate,
   JoinTable,
+  ManyToOne,
 } from 'typeorm'
 import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
 import { Extension } from '../../marketplace/extensions/entities/extension.entity'
 import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
+import { Payouts } from '../../payouts/entities/payouts.entity'
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
@@ -219,6 +221,12 @@ export class User {
   @Column({ default: false })
   showLiveVisitorsInTitle: boolean
 
+  @Column('varchar', { default: null })
+  referrerID: string | null
+
+  @Column('varchar', { length: 254, unique: true })
+  paypalPaymentsEmail: string
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date()
@@ -226,6 +234,9 @@ export class User {
 
   @OneToMany(() => Project, project => project.admin)
   projects: Project[]
+
+  @ManyToOne(() => Payouts, payouts => payouts.user)
+  payouts: Payouts
 
   @OneToMany(() => ProjectShare, sharedProjects => sharedProjects.user)
   sharedProjects: ProjectShare[]

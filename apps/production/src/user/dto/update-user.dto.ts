@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail } from 'class-validator'
+import { IsEmail, IsOptional } from 'class-validator'
 import { TimeFormat } from '../entities/user.entity'
 
 export class UpdateUserProfileDTO {
@@ -9,6 +9,11 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ example: 'your_password123' })
   password: string
+
+  @ApiProperty({ example: 'paypal@example.com' })
+  @IsOptional()
+  @IsEmail()
+  paypalPaymentsEmail: string
 
   @ApiProperty({ example: 'week' })
   reportFrequency: string
