@@ -8,6 +8,7 @@ import { User } from './entities/user.entity'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { AuthModule } from '../auth/auth.module'
+import { PayoutsModule } from '../payouts/payouts.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -22,6 +23,7 @@ import { Message } from '../integrations/telegram/entities/message.entity'
     forwardRef(() => AuthModule),
     AppLoggerModule,
     ProjectModule,
+    PayoutsModule,
   ],
   providers: [UserService, TelegramService],
   exports: [UserService],

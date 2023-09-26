@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { In, Not, Repository } from 'typeorm'
 import axios from 'axios'
 import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -13,11 +13,13 @@ import * as _omit from 'lodash/omit'
 import * as _isNull from 'lodash/isNull'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
+import { PayoutsService } from '../payouts/payouts.service'
 import {
   User,
   ACCOUNT_PLANS,
   TRIAL_DURATION,
   BillingFrequency,
+  PlanCode,
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -90,6 +92,7 @@ export class UserService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     @InjectRepository(DeleteFeedback)
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
+    private readonly payoutsService: PayoutsService,
   ) {}
 
   async create(
@@ -134,8 +137,8 @@ export class UserService {
     return this.usersRepository.delete(id)
   }
 
-  async count(): Promise<number> {
-    return this.usersRepository.count()
+  async count(options?: any): Promise<number> {
+    return this.usersRepository.count(options)
   }
 
   omitSensitiveData(user: Partial<User>): Partial<User> {
@@ -494,5 +497,44 @@ export class UserService {
     }
 
     await this.update(id, updateParams)
+  }
+
+  async getPayoutsList(user: User, take = 20, skip = 0) {
+    return this.payoutsService.paginate(
+      {
+        take,
+        skip,
+      },
+      {
+        user: user.id,
+      },
+    )
+  }
+
+  async getPayoutsInfo(user: User): Promise<any> {
+    const { id } = user
+
+    const trials = await this.count({
+      referrerID: id,
+      planCode: In([PlanCode.trial, PlanCode.none]),
+    })
+
+    const subscribers = await this.count({
+      referrerID: id,
+      planCode: Not([PlanCode.trial, PlanCode.none]),
+    })
+
+    // todo
+    const paid = 0
+    const nextPayout = 0
+    const pending = 0
+
+    return {
+      trials,
+      subscribers,
+      paid,
+      nextPayout,
+      pending,
+    }
   }
 }

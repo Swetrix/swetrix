@@ -70,6 +70,7 @@ import {
   getIPFromHeaders,
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
+import { Payout } from '../payouts/entities/payouts.entity'
 
 dayjs.extend(utc)
 
@@ -625,6 +626,42 @@ export class UserController {
     } catch (e) {
       throw new BadRequestException(e.message)
     }
+  }
+
+  @Get('payouts/list')
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getPayoutsList(
+    @CurrentUserId() id: string,
+    @Query('take') take: number | undefined,
+    @Query('skip') skip: number | undefined,
+  ): Promise<Pagination<Payout> | Payout[]> {
+    this.logger.log({ id, take, skip }, 'GET /user/payouts/list')
+
+    const user = await this.userService.findOneWhere({ id })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    return this.userService.getPayoutsList(user)
+  }
+
+  @Get('payouts/info')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getPayoutsInfo(@CurrentUserId() id: string): Promise<any> {
+    this.logger.log({ id }, 'GET /user/payouts/info')
+
+    const user = await this.userService.findOneWhere({ id })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    return this.userService.getPayoutsInfo(user)
   }
 
   @Get('/export')
