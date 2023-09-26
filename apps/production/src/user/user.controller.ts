@@ -68,6 +68,7 @@ import {
   checkRateLimit,
   getGeoDetails,
   getIPFromHeaders,
+  generateRefCode,
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { Payout } from '../payouts/entities/payouts.entity'
@@ -662,6 +663,32 @@ export class UserController {
     }
 
     return this.userService.getPayoutsInfo(user)
+  }
+
+  @Post('generate-ref-code')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async generateRefCode(@CurrentUserId() id: string): Promise<void> {
+    this.logger.log({ id }, 'POST /user/generate-ref-code')
+
+    const user = await this.userService.findOneWhere({ id })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (user.refCode) {
+      throw new BadRequestException('Referral code already exists')
+    }
+
+    let refCode = generateRefCode()
+
+    // eslint-disable-next-line no-await-in-loop
+    while (!(await this.userService.isRefCodeUnique(refCode))) {
+      refCode = generateRefCode()
+    }
+
+    await this.userService.update(id, { refCode })
   }
 
   @Get('/export')

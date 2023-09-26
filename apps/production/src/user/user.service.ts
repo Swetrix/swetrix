@@ -537,4 +537,10 @@ export class UserService {
       pending,
     }
   }
+
+  async isRefCodeUnique(code: string): Promise<boolean> {
+    const user = await this.findOneWhere({ refCode: code })
+
+    return !user
+  }
 }

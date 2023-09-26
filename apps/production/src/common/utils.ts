@@ -130,6 +130,13 @@ const generateRecoveryCode = () =>
     capitalization: 'uppercase',
   })
 
+const generateRefCode = () =>
+  randomstring.generate({
+    length: 8,
+    charset: 'alphanumeric',
+    capitalization: 'uppercase',
+  })
+
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
 const generateRandomString = (length: number): string =>
@@ -245,4 +252,5 @@ export {
   lookup,
   getGeoDetails,
   getIPFromHeaders,
+  generateRefCode,
 }

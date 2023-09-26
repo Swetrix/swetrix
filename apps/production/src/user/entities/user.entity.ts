@@ -220,6 +220,9 @@ export class User {
   @Column({ default: false })
   showLiveVisitorsInTitle: boolean
 
+  @Column('varchar', { length: 8, default: null })
+  refCode: string | null
+
   @Column('varchar', { default: null })
   referrerID: string | null
 
