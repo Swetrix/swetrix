@@ -1,22 +1,62 @@
-import { Entity, PrimaryGeneratedColumn, OneToMany, Column } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm'
 import { User } from '../../user/entities/user.entity'
 
+export enum PayoutStatus {
+  pending = 'pending',
+  paid = 'paid',
+  suspended = 'suspended',
+}
+
 @Entity()
-export class Payouts {
+export class Payout {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
+  // The date when the payout was created
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
 
-  // The referrer (user which receives the payout)
-  @OneToMany(() => User, user => user.payouts)
-  user: User
+  // The amount of the payout
+  @Column({
+    type: 'decimal',
+  })
+  amount: number
 
-  // TODO:
-  // 1. Add a column for the amount of the payout
-  // 2. Add a column for the referrals that were used to calculate the payout
-  // 3. Add a column for the payout status (pending, paid, etc.)
-  // ? 4. Add a column for the payout method (paypal, stripe, etc.)
-  // 5. Add a column for the payout transaction ID
+  // The currency of the payout
+  @Column({
+    type: 'varchar',
+    length: 3,
+  })
+  currency: string
+
+  // The referral ID (user which was referred)
+  @Column('varchar', { length: 36 })
+  referralId: string
+
+  // The status of the payout
+  @Column({
+    type: 'enum',
+    enum: PayoutStatus,
+    default: PayoutStatus.pending,
+  })
+  status: PayoutStatus
+
+  // The date when the payout was paid
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  paidAt: Date
+
+  // The transaction ID of the payout
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
+  transactionId: string
+
+  // The referrer (user which receives the payout)
+  @ManyToOne(() => User, user => user.payouts)
+  user: User
 }

@@ -137,6 +137,48 @@ export class WebhookController {
       //   break
       // }
 
+      case 'subscription_payment_succeeded': {
+        const { subscription_id: subID, earnings, currency } = body
+
+        const subscriber = await this.userService.findOneWhere({ subID })
+
+        if (!subscriber) {
+          this.logger.error(
+            `[subscription_payment_succeeded] Cannot find the subscriber with subID: ${subID}\nBody: ${JSON.stringify(
+              body,
+              null,
+              2,
+            )}`,
+          )
+          return
+        }
+
+        // That user was not referred by anyone
+        if (!subscriber.referrerID) {
+          return
+        }
+
+        const referrer = await this.userService.findOneWhere({
+          id: subscriber.referrerID,
+        })
+
+        if (!referrer) {
+          this.logger.error(
+            `[subscription_payment_succeeded] Cannot find the referrer with ID: ${subscriber.referrerID}`,
+          )
+          return
+        }
+
+        await this.webhookService.addPayoutForUser(
+          referrer,
+          subscriber.id,
+          Number(earnings),
+          currency,
+        )
+
+        break
+      }
+
       case 'subscription_payment_failed': {
         const { subscription_id: subID, attempt_number: attemptNumber } = body
 

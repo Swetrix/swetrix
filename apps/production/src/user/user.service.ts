@@ -153,7 +153,7 @@ export class UserService {
     return this.usersRepository.findOne({ where, relations })
   }
 
-  findOne(id: string, params: object = {}): Promise<User> {
+  findOne(id: string, params: any = {}): Promise<User> {
     return this.usersRepository.findOne({
       where: { id },
       ...params,
@@ -174,7 +174,7 @@ export class UserService {
     })
   }
 
-  find(params: object): Promise<User[]> {
+  find(params: any): Promise<User[]> {
     return this.usersRepository.find(params)
   }
 
