@@ -226,8 +226,13 @@ export class User {
   @Column('varchar', { default: null })
   referrerID: string | null
 
-  @Column('varchar', { length: 254, unique: true })
-  paypalPaymentsEmail: string
+  @Column('varchar', {
+    length: 254,
+    unique: true,
+    default: null,
+    nullable: true,
+  })
+  paypalPaymentsEmail: string | null
 
   @BeforeUpdate()
   updateTimestamp() {
