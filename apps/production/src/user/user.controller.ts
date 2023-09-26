@@ -668,7 +668,7 @@ export class UserController {
   @Post('generate-ref-code')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async generateRefCode(@CurrentUserId() id: string): Promise<void> {
+  async generateRefCode(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'POST /user/generate-ref-code')
 
     const user = await this.userService.findOneWhere({ id })
@@ -689,6 +689,10 @@ export class UserController {
     }
 
     await this.userService.update(id, { refCode })
+
+    return {
+      refCode,
+    }
   }
 
   @Get('/export')
