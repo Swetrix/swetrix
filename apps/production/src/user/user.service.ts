@@ -515,13 +515,23 @@ export class UserService {
     const { id } = user
 
     const trials = await this.count({
-      referrerID: id,
-      planCode: In([PlanCode.trial, PlanCode.none]),
+      where: {
+        referrerID: id,
+        planCode: In([PlanCode.trial, PlanCode.none]),
+      },
     })
 
     const subscribers = await this.count({
-      referrerID: id,
-      planCode: Not([PlanCode.trial, PlanCode.none]),
+      where: [
+        {
+          referrerID: id,
+          planCode: Not(PlanCode.none),
+        },
+        {
+          referrerID: id,
+          planCode: Not(PlanCode.trial),
+        },
+      ],
     })
 
     // todo
