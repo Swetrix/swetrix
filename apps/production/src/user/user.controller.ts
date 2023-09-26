@@ -607,6 +607,8 @@ export class UserController {
         'registeredWithGithub',
         'apiKey',
         'emailRequests',
+        'refCode',
+        'referrerID',
       ])
       await this.userService.update(id, userToUpdate)
 
