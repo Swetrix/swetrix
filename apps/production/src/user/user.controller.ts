@@ -631,17 +631,32 @@ export class UserController {
     }
   }
 
-  @Get('payouts/list')
-  @ApiQuery({ name: 'take', required: false })
-  @ApiQuery({ name: 'skip', required: false })
+  // @Get('payouts/list')
+  // @ApiQuery({ name: 'take', required: false })
+  // @ApiQuery({ name: 'skip', required: false })
+  // @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  // async getPayoutsList(
+  //   @CurrentUserId() id: string,
+  //   @Query('take') take: number | undefined,
+  //   @Query('skip') skip: number | undefined,
+  // ): Promise<Pagination<Payout> | Payout[]> {
+  //   this.logger.log({ id, take, skip }, 'GET /user/payouts/list')
+
+  //   const user = await this.userService.findOneWhere({ id })
+
+  //   if (!user) {
+  //     throw new BadRequestException('User not found')
+  //   }
+
+  //   return this.userService.getPayoutsList(user)
+  // }
+
+  @Get('referrals')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async getPayoutsList(
-    @CurrentUserId() id: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-  ): Promise<Pagination<Payout> | Payout[]> {
-    this.logger.log({ id, take, skip }, 'GET /user/payouts/list')
+  async getReferralsList(@CurrentUserId() id: string): Promise<any> {
+    this.logger.log({ id }, 'GET /user/referrals')
 
     const user = await this.userService.findOneWhere({ id })
 
@@ -649,7 +664,7 @@ export class UserController {
       throw new BadRequestException('User not found')
     }
 
-    return this.userService.getPayoutsList(user)
+    return this.userService.getReferralsList(user)
   }
 
   @Get('payouts/info')

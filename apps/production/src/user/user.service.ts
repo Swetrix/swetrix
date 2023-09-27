@@ -11,6 +11,7 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 import * as _isNull from 'lodash/isNull'
+import * as _map from 'lodash/map'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { PayoutsService } from '../payouts/payouts.service'
@@ -511,6 +512,21 @@ export class UserService {
         user: user.id,
       },
     )
+  }
+
+  async getReferralsList(user: User): Promise<Partial<User>[]> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.planCode',
+        'user.created',
+        'user.billingFrequency',
+        'user.tierCurrency',
+      ])
+      .where('user.referrerID = :id', { id: user.id })
+      .andWhere('user.planCode != :planCode', { planCode: PlanCode.none })
+      .orderBy('user.created', 'DESC')
+      .getMany()
   }
 
   async getPayoutsInfo(user: User): Promise<any> {
