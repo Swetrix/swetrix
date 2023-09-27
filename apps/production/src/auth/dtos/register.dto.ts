@@ -39,7 +39,7 @@ export class RegisterRequestDto {
     description: 'Affiliate code',
     example: 'ABCDEFGH',
   })
-  public readonly refCode: boolean
+  public readonly refCode?: string
 }
 
 export class RegisterResponseDto {

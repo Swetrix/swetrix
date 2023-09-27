@@ -107,17 +107,7 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
     }
 
-    let referrerID
-
-    if (body.refCode) {
-      const referrer = await this.userService.findOneWhere({
-        refCode: body.refCode,
-      })
-
-      if (referrer) {
-        referrerID = referrer.id
-      }
-    }
+    const referrerID = await this.authService.getReferrerId(body.refCode)
 
     const newUser = await this.authService.createUnverifiedUser(
       body.email,
@@ -502,9 +492,15 @@ export class AuthController {
   ): Promise<any> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const { hash, provider } = body
+    const { hash, provider, refCode } = body
 
-    return this.authService.authenticateSSO(hash, headers, ip, provider)
+    return this.authService.authenticateSSO(
+      hash,
+      headers,
+      ip,
+      provider,
+      refCode,
+    )
   }
 
   @ApiOperation({ summary: 'Link SSO provider to an existing account' })

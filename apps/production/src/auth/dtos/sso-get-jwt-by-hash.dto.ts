@@ -17,4 +17,10 @@ export class SSOGetJWTByHashDto {
   })
   @IsEnum(SSOProviders)
   provider: SSOProviders
+
+  @ApiProperty({
+    description: 'Affiliate code',
+    example: 'ABCDEFGH',
+  })
+  refCode?: string
 }
