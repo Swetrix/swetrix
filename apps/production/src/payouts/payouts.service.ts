@@ -17,8 +17,8 @@ export class PayoutsService {
     return this.payoutsRepository.save(payout)
   }
 
-  async update(id: string, update: Record<string, unknown>): Promise<any> {
-    return this.payoutsRepository.update({ id }, update)
+  async update(criteria: any, update: Record<string, unknown>): Promise<any> {
+    return this.payoutsRepository.update(criteria, update)
   }
 
   async delete(id: string): Promise<any> {

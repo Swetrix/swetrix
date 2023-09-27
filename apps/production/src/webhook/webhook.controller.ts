@@ -138,7 +138,11 @@ export class WebhookController {
       // }
 
       case 'subscription_payment_succeeded': {
-        const { subscription_id: subID, earnings, currency } = body
+        const {
+          subscription_id: subID,
+          balance_earnings: balanceEarnings,
+          balance_currency: balanceCurrency,
+        } = body
 
         const subscriber = await this.userService.findOneWhere({ subID })
 
@@ -169,11 +173,16 @@ export class WebhookController {
           return
         }
 
+        await this.webhookService.setReferralPayoutsToProcessing(
+          subscriber.id,
+          referrer,
+        )
+
         await this.webhookService.addPayoutForUser(
           referrer,
           subscriber.id,
-          Number(earnings),
-          currency,
+          Number(balanceEarnings),
+          balanceCurrency,
         )
 
         break

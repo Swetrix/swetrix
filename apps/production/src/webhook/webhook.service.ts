@@ -11,6 +11,7 @@ import * as _keys from 'lodash/keys'
 import * as _isArray from 'lodash/isArray'
 import { AppLoggerService } from '../logger/logger.service'
 import { PayoutsService } from '../payouts/payouts.service'
+import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import { User } from '../user/entities/user.entity'
 
 const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
@@ -108,5 +109,20 @@ export class WebhookService {
       referralId,
       user: referrer,
     })
+  }
+
+  async setReferralPayoutsToProcessing(
+    referralId: string,
+    referrer: User,
+  ): Promise<any> {
+    return this.payoutsService.update(
+      {
+        referralId,
+        user: referrer,
+      },
+      {
+        status: PayoutStatus.processing,
+      },
+    )
   }
 }
