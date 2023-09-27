@@ -15,6 +15,7 @@ import {
   ConflictException,
   Headers,
   Ip,
+  Patch,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
@@ -196,6 +197,23 @@ export class UserController {
     )
 
     return this.userService.update(userId, { receiveLoginNotifications })
+  }
+
+  @Patch('/set-paypal-email')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async setPaypalEmail(
+    @CurrentUserId() userId: string,
+    @Body('paypalPaymentsEmail') paypalPaymentsEmail: string,
+  ): Promise<User> {
+    this.logger.log(
+      { userId, paypalPaymentsEmail },
+      'PATCH /user/set-paypal-email',
+    )
+
+    return this.userService.update(userId, {
+      paypalPaymentsEmail: paypalPaymentsEmail || null,
+    })
   }
 
   @Post('/api-key')

@@ -1120,7 +1120,6 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
   async payReferrers(): Promise<void> {
     if (isDevelopment || !paypalClient) {
-      return
     }
 
     // TODO
