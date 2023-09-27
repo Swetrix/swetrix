@@ -148,12 +148,14 @@ export class AuthService {
   public async createUnverifiedUser(
     email: string,
     password: string,
+    referrerID?: string,
   ): Promise<User> {
     const hashedPassword = await this.hashPassword(password)
 
     const user = await this.userService.createUser({
       email,
       password: hashedPassword, // Using the password field is incorrect.
+      referrerID,
     })
 
     await this.sendVerificationEmail(user.id, user.email)

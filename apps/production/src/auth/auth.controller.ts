@@ -107,9 +107,22 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
     }
 
+    let referrerID
+
+    if (body.refCode) {
+      const referrer = await this.userService.findOneWhere({
+        refCode: body.refCode,
+      })
+
+      if (referrer) {
+        referrerID = referrer.id
+      }
+    }
+
     const newUser = await this.authService.createUnverifiedUser(
       body.email,
       body.password,
+      referrerID,
     )
 
     const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)

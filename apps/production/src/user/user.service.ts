@@ -239,7 +239,9 @@ export class UserService {
     return this.usersRepository.findOne({ email })
   }
 
-  public async createUser(user: Pick<User, 'email' | 'password'>) {
+  public async createUser(
+    user: Pick<User, 'email' | 'password' | 'referrerID'>,
+  ) {
     return this.usersRepository.save({
       ...user,
       trialEndDate: dayjs

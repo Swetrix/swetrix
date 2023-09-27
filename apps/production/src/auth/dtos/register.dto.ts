@@ -34,6 +34,12 @@ export class RegisterRequestDto {
   @IsNotEmpty({ message: 'This field is required.' })
   @IsBoolean({ message: 'Please enter the valid value (true or false).' })
   public readonly checkIfLeaked: boolean
+
+  @ApiProperty({
+    description: 'Affiliate code',
+    example: 'ABCDEFGH',
+  })
+  public readonly refCode: boolean
 }
 
 export class RegisterResponseDto {
