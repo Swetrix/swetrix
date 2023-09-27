@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
+import Paypal from '@paypal/payouts-sdk'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -45,11 +46,24 @@ import {
   PROJECT_INVITE_EXPIRE,
   REDIS_LOG_CAPTCHA_CACHE_KEY,
   JWT_REFRESH_TOKEN_LIFETIME,
+  PAYPAL_CLIENT_ID,
+  PAYPAL_CLIENT_SECRET,
+  isDevelopment,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
+
+let paypalClient
+
+if (PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET) {
+  const environment = new Paypal.core.SandboxEnvironment(
+    PAYPAL_CLIENT_ID,
+    PAYPAL_CLIENT_SECRET,
+  )
+  paypalClient = new Paypal.core.PayPalHttpClient(environment)
+}
 
 const getQueryTime = (time: QueryTime): number => {
   if (time === QueryTime.LAST_15_MINUTES) return 15 * 60
@@ -1101,5 +1115,14 @@ export class TaskManagerService {
     }
 
     await this.userService.deleteRefreshTokensWhere(where)
+  }
+
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
+  async payReferrers(): Promise<void> {
+    if (isDevelopment || !paypalClient) {
+      return
+    }
+
+    // TODO
   }
 }
