@@ -11,7 +11,6 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 import * as _isNull from 'lodash/isNull'
-import * as _map from 'lodash/map'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { PayoutsService } from '../payouts/payouts.service'

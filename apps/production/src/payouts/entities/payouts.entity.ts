@@ -2,8 +2,22 @@ import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm'
 import { User } from '../../user/entities/user.entity'
 
 export enum PayoutStatus {
+  /**
+   * The payout is ready to be paid on the next payout date.
+   * This status is assigned when we received the next payment for the subscription from the user.
+   */
+  processing = 'processing',
+  /**
+   * The payout is pending and will be paid automatically unless user cancels their subscriptions or makes a refund or chargeback.
+   */
   pending = 'pending',
+  /**
+   * The payout was paid to the referrer.
+   */
   paid = 'paid',
+  /**
+   * The payout was suspended for some reason. It won't be paid automatically and will require manual intervention.
+   */
   suspended = 'suspended',
 }
 

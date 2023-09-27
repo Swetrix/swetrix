@@ -71,7 +71,6 @@ import {
   generateRefCode,
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
-import { Payout } from '../payouts/entities/payouts.entity'
 
 dayjs.extend(utc)
 
