@@ -21,6 +21,7 @@ import {
   BillingFrequency,
   PlanCode,
 } from './entities/user.entity'
+import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
@@ -551,10 +552,22 @@ export class UserService {
       ],
     })
 
-    // todo
-    const paid = 0
-    const nextPayout = 0
-    const pending = 0
+    let paid = await this.payoutsService.sumAmountByReferrerId(
+      id,
+      PayoutStatus.paid,
+    )
+    let nextPayout = await this.payoutsService.sumAmountByReferrerId(
+      id,
+      PayoutStatus.processing,
+    )
+    let pending = await this.payoutsService.sumAmountByReferrerId(
+      id,
+      PayoutStatus.pending,
+    )
+
+    paid = paid ?? 0
+    nextPayout = nextPayout ?? 0
+    pending = pending ?? 0
 
     return {
       trials,

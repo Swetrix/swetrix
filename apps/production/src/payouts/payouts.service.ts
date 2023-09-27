@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { Payout } from './entities/payouts.entity'
+import { Payout, PayoutStatus } from './entities/payouts.entity'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 
 @Injectable()
@@ -34,6 +34,20 @@ export class PayoutsService {
       where,
       ...params,
     })
+  }
+
+  async sumAmountByReferrerId(
+    referrerId: string,
+    status: PayoutStatus,
+  ): Promise<number> {
+    const result = await this.payoutsRepository
+      .createQueryBuilder('payout')
+      .select('SUM(payout.amount)', 'sum')
+      .where('payout.userId = :referrerId', { referrerId })
+      .andWhere('payout.status = :status', { status })
+      .getRawOne()
+
+    return result.sum
   }
 
   async paginate(
