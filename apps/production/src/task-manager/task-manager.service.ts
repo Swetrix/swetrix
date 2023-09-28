@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
 import Paypal from '@paypal/payouts-sdk'
+import { v4 as uuidv4 } from 'uuid'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -57,13 +58,13 @@ dayjs.extend(utc)
 
 let paypalClient
 
-if (PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET) {
-  const environment = new Paypal.core.SandboxEnvironment(
-    PAYPAL_CLIENT_ID,
-    PAYPAL_CLIENT_SECRET,
-  )
-  paypalClient = new Paypal.core.PayPalHttpClient(environment)
-}
+// if (PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET) {
+//   const environment = new Paypal.core.SandboxEnvironment(
+//     PAYPAL_CLIENT_ID,
+//     PAYPAL_CLIENT_SECRET,
+//   )
+//   paypalClient = new Paypal.core.PayPalHttpClient(environment)
+// }
 
 const getQueryTime = (time: QueryTime): number => {
   if (time === QueryTime.LAST_15_MINUTES) return 15 * 60
@@ -1120,8 +1121,20 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
   async payReferrers(): Promise<void> {
     if (isDevelopment || !paypalClient) {
+      return
     }
 
     // TODO
+
+    const transactionId = uuidv4()
+
+    const requestBody = {
+      sender_batch_header: {
+        recipient_type: 'EMAIL',
+        email_message: 'Swetrix referral program payout.',
+        note: 'Swetrix referral program payout.',
+        sender_batch_id: transactionId,
+      },
+    }
   }
 }

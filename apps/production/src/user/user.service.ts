@@ -4,13 +4,14 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Not, Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import axios from 'axios'
 import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 import * as _isNull from 'lodash/isNull'
+import * as _toNumber from 'lodash/toNumber'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { PayoutsService } from '../payouts/payouts.service'
@@ -524,7 +525,9 @@ export class UserService {
         'user.tierCurrency',
       ])
       .where('user.referrerID = :id', { id: user.id })
-      .andWhere('user.planCode != :planCode', { planCode: PlanCode.none })
+      .andWhere('user.planCode != :none', { none: PlanCode.none })
+      .andWhere('user.planCode != :trial', { trial: PlanCode.trial })
+      .andWhere('user.planCode != :free', { free: PlanCode.free })
       .orderBy('user.created', 'DESC')
       .getMany()
   }
@@ -539,18 +542,17 @@ export class UserService {
       },
     })
 
-    const subscribers = await this.count({
-      where: [
-        {
-          referrerID: id,
-          planCode: Not(PlanCode.none),
-        },
-        {
-          referrerID: id,
-          planCode: Not(PlanCode.trial),
-        },
-      ],
-    })
+    const subscribers = _toNumber(
+      (
+        await this.usersRepository
+          .createQueryBuilder('user')
+          .select('COUNT(user.id)', 'count')
+          .where('user.referrerID = :id', { id })
+          .andWhere('user.planCode != :none', { none: PlanCode.none })
+          .andWhere('user.planCode != :trial', { trial: PlanCode.trial })
+          .getRawOne()
+      )?.count,
+    )
 
     let paid = await this.payoutsService.sumAmountByReferrerId(
       id,

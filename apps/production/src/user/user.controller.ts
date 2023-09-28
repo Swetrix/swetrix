@@ -211,6 +211,8 @@ export class UserController {
       'PATCH /user/set-paypal-email',
     )
 
+    // TODO: SEND EMAIL TO USER TO INFORM THEM THAT THEY HAVE CHANGED THEIR PAYPAL EMAIL
+
     return this.userService.update(userId, {
       paypalPaymentsEmail: paypalPaymentsEmail || null,
     })

@@ -5,6 +5,7 @@ import {
   IsBoolean,
   MaxLength,
   MinLength,
+  IsOptional,
 } from 'class-validator'
 
 export class RegisterRequestDto {
@@ -39,6 +40,7 @@ export class RegisterRequestDto {
     description: 'Affiliate code',
     example: 'ABCDEFGH',
   })
+  @IsOptional()
   public readonly refCode?: string
 }
 
