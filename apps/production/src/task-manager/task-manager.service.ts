@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
-import Paypal from '@paypal/payouts-sdk'
-import { v4 as uuidv4 } from 'uuid'
+import * as Paypal from '@paypal/payouts-sdk'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -13,6 +12,8 @@ import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
 import * as _find from 'lodash/find'
+import * as _toNumber from 'lodash/toNumber'
+import * as _reduce from 'lodash/reduce'
 
 import { AlertService } from '../alert/alert.service'
 import { QueryCondition, QueryMetric, QueryTime } from '../alert/dto/alert.dto'
@@ -27,6 +28,8 @@ import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
+import { PayoutsService } from '../payouts/payouts.service'
+import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import {
   ACCOUNT_PLANS,
   PlanCode,
@@ -58,13 +61,13 @@ dayjs.extend(utc)
 
 let paypalClient
 
-// if (PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET) {
-//   const environment = new Paypal.core.SandboxEnvironment(
-//     PAYPAL_CLIENT_ID,
-//     PAYPAL_CLIENT_SECRET,
-//   )
-//   paypalClient = new Paypal.core.PayPalHttpClient(environment)
-// }
+if (PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET) {
+  const environment = new Paypal.core.SandboxEnvironment(
+    PAYPAL_CLIENT_ID,
+    PAYPAL_CLIENT_SECRET,
+  )
+  paypalClient = new Paypal.core.PayPalHttpClient(environment)
+}
 
 const getQueryTime = (time: QueryTime): number => {
   if (time === QueryTime.LAST_15_MINUTES) return 15 * 60
@@ -106,6 +109,7 @@ export class TaskManagerService {
     private readonly extensionsService: ExtensionsService,
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
+    private readonly payoutsService: PayoutsService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -1118,23 +1122,109 @@ export class TaskManagerService {
     await this.userService.deleteRefreshTokensWhere(where)
   }
 
-  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
+  // @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async payReferrers(): Promise<void> {
     if (isDevelopment || !paypalClient) {
       return
     }
 
-    // TODO
+    const payoutsToProcess = await this.payoutsService.find({
+      where: {
+        status: PayoutStatus.processing,
+      },
+      relations: ['user'],
+    })
 
-    const transactionId = uuidv4()
+    if (_isEmpty(payoutsToProcess)) {
+      return
+    }
+
+    // A map of emails to pay and their amounts
+    const payouts = {}
+
+    for (let i = 0; i < _size(payoutsToProcess); ++i) {
+      const key =
+        payoutsToProcess[i].user.paypalPaymentsEmail ||
+        payoutsToProcess[i].user.email
+
+      if (!payouts[key]) {
+        payouts[key] = {
+          amount: 0,
+          payoutsIds: [],
+        }
+      }
+
+      payouts[key].amount += _toNumber(payoutsToProcess[i].amount)
+      payouts[key].payoutsIds.push(payoutsToProcess[i].id)
+    }
 
     const requestBody = {
       sender_batch_header: {
         recipient_type: 'EMAIL',
         email_message: 'Swetrix referral program payout.',
         note: 'Swetrix referral program payout.',
-        sender_batch_id: transactionId,
       },
+      items: _reduce(
+        payouts,
+        (acc, value, key) => {
+          acc.push({
+            recipient_type: 'EMAIL',
+            amount: {
+              value: value.amount.toFixed(2),
+              currency: 'USD',
+            },
+            receiver: key,
+            note: `Your Swetrix $${value.amount.toFixed(2)} payout.`,
+          })
+
+          return acc
+        },
+        [],
+      ),
     }
+
+    // Send the request to PayPal
+    const request = new Paypal.payouts.PayoutsPostRequest()
+    request.requestBody(requestBody)
+
+    const response = await paypalClient.execute(request)
+
+    if (response.statusCode !== 201) {
+      console.error(
+        `[CRON](payReferrers) An error occured while executing a request to pay referrers: ${JSON.stringify(
+          response,
+          null,
+          2,
+        )}`,
+      )
+      console.error(`Payouts: ${JSON.stringify(payouts, null, 2)}`)
+
+      // Update the payouts in the DB
+      await this.payoutsService.update(
+        {
+          where: {
+            id: In(_map(payoutsToProcess, 'id')),
+          },
+        },
+        {
+          status: PayoutStatus.suspended,
+        },
+      )
+      return
+    }
+
+    // Update the payouts in the DB
+    await this.payoutsService.update(
+      {
+        where: {
+          id: In(_map(payoutsToProcess, 'id')),
+        },
+      },
+      {
+        status: PayoutStatus.paid,
+        transactionId: response.result?.batch_header?.payout_batch_id,
+      },
+    )
   }
 }
