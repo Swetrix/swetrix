@@ -1144,9 +1144,11 @@ export class TaskManagerService {
     const payouts = {}
 
     for (let i = 0; i < _size(payoutsToProcess); ++i) {
-      const key =
-        payoutsToProcess[i].user.paypalPaymentsEmail ||
-        payoutsToProcess[i].user.email
+      const key = payoutsToProcess[i].user.paypalPaymentsEmail
+
+      if (!key) {
+        continue
+      }
 
       if (!payouts[key]) {
         payouts[key] = {
