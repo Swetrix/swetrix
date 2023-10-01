@@ -242,9 +242,9 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     Latest news
                   </p>
                   {_isEmpty(lastBlogPost) ? (
-                    <div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-80 rounded-md animate-pulse' />
+                    <div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-full max-w-xs rounded-md animate-pulse' />
                   ) : (
-                    <ClientOnly fallback={<div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-80 rounded-md animate-pulse' />}>
+                    <ClientOnly fallback={<div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-full max-w-xs rounded-md animate-pulse' />}>
                       {() => (
                         <a
                           className='inline-flex ml-1 items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 hover:underline'
