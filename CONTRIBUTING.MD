@@ -1,5 +1,5 @@
 # Contributing
-We are happy for anyone to contribute to Swetrix. This file will contain unstrucitons on how to set up a development environment, find a task, and submit a pull request.
+We are happy for anyone to contribute to Swetrix. This file will contain instrucitons on how to set up a development environment, find a task, and submit a pull request.
 
 ## Setting up a development environment
 The easiest way to get started with Swetrix API is by using [Docker](https://docs.docker.com/get-docker/) and use it to run all the databases and other dependencies.
@@ -19,7 +19,7 @@ npm install --legacy-peer-deps
 ```
 
 ### 3. Set up environment variables
-Copy the `.env.example` file and rename it to `.env`. Then open the file and set the environment variables to your liking. You can find a list of all the environment variables in the [configuration](https://swetrix.com/docs/selfhosting/configuring) documentation.
+Copy the `.env.example` file and rename it to `.env`. 
 
 ### 4. Start the Docker container containing the databases
 To start the Docker container containing the databases you need to run the following command in the root of the repository:
@@ -40,10 +40,21 @@ npm run start:dev
 ```
 
 ### 7. Start the frontend
-To start the frontend locally you have to fork and clone [the frontend repository](https://github.com/Swetrix/swetrix-fe), install it's dependencies (`npm i`), set up it's `.env` file and start it (`npm run start`).
+To start the frontend locally you have to fork and clone [the frontend repository](https://github.com/Swetrix/swetrix-fe), install it's dependencies (`npm i`), set up it's `.env` file and start it (`npm run dev:staging`).
 
-### 8. Generate some dummy data
-This step is not neccessary, but for your convenience you can generate some dummy data. To do that run a script called `generate-dummy-data.js` which is located in the `meta/clickhouse` directory.
+### 8. Creating a Swetrix account for development
+
+In this step, go to the Swetrix API specification page by following this link : [Swagger Documentation - AuthController-Register](http://localhost:5005/api#/Auth/AuthController_register). Click on the "try it out" button and then execute the request. After completing this step, take a look at the terminal output where you will find the following object:
+```bash
+"params": {
+"url": "http://localhost: 3000/verify/e1365737-be07-4675-855-901efcd27668"
+}
+```
+Copy the verification token provided and navigate to the "verify email token" method by visiting this link : [Swagger Documentation - AuthController_Verify-mail](http://localhost:5005/api#/Auth/AuthController_verifyEmail). Once this step is done, the account will be successfully created.
+
+
+### 9. Generate some dummy data
+This step is not necessary, but for your convenience you can generate some dummy data. To do that run a script called `generate-dummy-data.js` which is located in the `meta/clickhouse` directory.
 ```bash
 node meta/clickhouse/generate-dummy-data.js --help
 ```
