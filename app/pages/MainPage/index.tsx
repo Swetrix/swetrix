@@ -123,7 +123,7 @@ const COMPETITOR_FEATURE_TABLE: {
   },
 }
 
-const Lines = (): JSX.Element => (
+export const Lines = (): JSX.Element => (
   <div className='relative pointer-events-none'>
     <div className='absolute rotate-6 right-[-48rem] top-[32rem] h-px w-[800%] bg-gradient-to-l from-slate-600 dark:from-slate-400 opacity-10' />
     <div className='absolute rotate-[96deg] top-[22.26rem] xl:top-[23.5rem] -left-60 ml-[-0.5px] h-96 w-[2px] rounded-full bg-gradient-to-t from-emerald-600 dark:from-emerald-700 opacity-50' />
@@ -210,7 +210,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               }}
             />
           </div>
-          <Header ssrTheme={ssrTheme} authenticated={authenticated} />
+          <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
           <div className='flex justify-center items-center py-2 px-2'>
             <a
               href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi'
@@ -319,7 +319,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         {/* end first block with live demo */}
         {/* section Core Analytics Features */}
         <div className='dark:bg-slate-900 bg-white px-4 pb-24'>
-          <section className='flex pt-16 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
+          <section id='core-analytics' className='flex pt-16 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
             <picture>
               <source srcSet={theme === 'dark' ? '/assets/CoreFeaturesDark.webp' : '/assets/CoreFeaturesLight.webp'} type='image/webp' />
               <img src={theme === 'dark' ? '/assets/CoreFeaturesDark.png' : '/assets/CoreFeaturesLight.png'} className='md:max-w-md md:mr-3 mt-3 mb-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />

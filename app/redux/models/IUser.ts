@@ -37,4 +37,7 @@ export interface IUser {
   tierCurrency: 'USD' | 'EUR' | 'GBP' | null
   showLiveVisitorsInTitle: boolean
   receiveLoginNotifications: boolean
+  refCode: string | null
+  referrerID: string | null
+  paypalPaymentsEmail: string | null
 }

@@ -19,6 +19,8 @@ const mapStateToProps = (state: StateType) => {
     isPaidTierUsed: state.auth.isPaidTierUsed,
     theme: state.ui.theme.theme,
     loading: state.auth.loading,
+    activeReferrals: state.ui.cache.activeReferrals,
+    referralStatistics: state.ui.cache.referralStatistics,
   }
 }
 
@@ -66,6 +68,12 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
         type: 'success',
       }),
     )
+  },
+  setCache: (key: string, value: any) => {
+    dispatch(UIActions.setCache({
+      key,
+      value,
+    }))
   },
   sharedProjectError: (message: string) => {
     dispatch(

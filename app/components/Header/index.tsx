@@ -3,7 +3,7 @@ import React, {
   memo, Fragment, useRef, useMemo, MutableRefObject,
 } from 'react'
 
-import { Link, useLocation } from '@remix-run/react'
+import { Link } from '@remix-run/react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
@@ -422,7 +422,7 @@ const AuthedHeader = ({
 )
 
 const NotAuthedHeader = ({
-  switchTheme, theme, onLanguageChange, t, language, colourBackground,
+  switchTheme, theme, onLanguageChange, t, language, colourBackground, refPage,
 }: {
   switchTheme: (a?: string) => void,
   theme: string,
@@ -430,6 +430,7 @@ const NotAuthedHeader = ({
   t: (key: string) => string,
   language: string,
   colourBackground: boolean,
+  refPage?: boolean,
 }) => (
   <header
     className={cx('relative overflow-x-clip', {
@@ -440,47 +441,61 @@ const NotAuthedHeader = ({
       <div className='w-full py-4 flex items-center justify-between border-b border-indigo-500 dark:border-slate-600 lg:border-none'>
         <div className='flex items-center'>
           {/* Logo */}
-          <Link to={routesPath.main}>
-            <span className='sr-only'>Swetrix</span>
-            <img
-              className='h-7 -translate-y-[3px]'
-              height='28'
-              src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-              alt='Swetrix'
-            />
-          </Link>
+          {refPage ? (
+            <span>
+              <span className='sr-only'>Swetrix</span>
+              <img
+                className='h-7 -translate-y-[3px]'
+                height='28'
+                src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
+                alt='Swetrix'
+              />
+            </span>
+          ) : (
+            <Link to={routesPath.main}>
+              <span className='sr-only'>Swetrix</span>
+              <img
+                className='h-7 -translate-y-[3px]'
+                height='28'
+                src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
+                alt='Swetrix'
+              />
+            </Link>
+          )}
 
-          <div className='hidden ml-10 space-x-1 lg:flex gap-4 items-center'>
-            <a
-              href={BLOG_URL}
-              className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-              target='_blank'
-              rel='noreferrer noopener'
-            >
-              {t('footer.blog')}
-            </a>
-            {!isSelfhosted && (
-              <>
-                <Link
-                  to={routesPath.features}
-                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-                >
-                  {t('common.features')}
-                </Link>
-                <Link
-                  to={`${routesPath.main}#pricing`}
-                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-                  key='Pricing'
-                >
-                  {t('common.pricing')}
-                </Link>
-              </>
-            )}
-            <a href={DOCS_URL} className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white' target='_blank' rel='noreferrer noopener'>
-              {/* <DocumentTextIcon className='w-5 h-5 mr-1' /> */}
-              {t('common.docs')}
-            </a>
-          </div>
+          {!refPage && (
+            <div className='hidden ml-10 space-x-1 lg:flex gap-4 items-center'>
+              <a
+                href={BLOG_URL}
+                className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                target='_blank'
+                rel='noreferrer noopener'
+              >
+                {t('footer.blog')}
+              </a>
+              {!isSelfhosted && (
+                <>
+                  <Link
+                    to={routesPath.features}
+                    className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  >
+                    {t('common.features')}
+                  </Link>
+                  <Link
+                    to={`${routesPath.main}#pricing`}
+                    className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    key='Pricing'
+                  >
+                    {t('common.pricing')}
+                  </Link>
+                </>
+              )}
+              <a href={DOCS_URL} className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white' target='_blank' rel='noreferrer noopener'>
+                {/* <DocumentTextIcon className='w-5 h-5 mr-1' /> */}
+                {t('common.docs')}
+              </a>
+            </div>
+          )}
         </div>
         <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
           {/* Language selector */}
@@ -509,13 +524,17 @@ const NotAuthedHeader = ({
             switchTheme={switchTheme}
             t={t}
           />
-          <span className='text-slate-700'>
-            |
-          </span>
-          <Link to={routesPath.signin} className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
-            {t('auth.common.signin')}
-            <ArrowSmallRightIcon className='ml-1 stroke-2 h-4 w-4 mt-[1px]' />
-          </Link>
+          {!refPage && (
+            <>
+              <span className='text-slate-700'>
+                |
+              </span>
+              <Link to={routesPath.signin} className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+                {t('auth.common.signin')}
+                <ArrowSmallRightIcon className='ml-1 stroke-2 h-4 w-4 mt-[1px]' />
+              </Link>
+            </>
+          )}
         </div>
         <div className='md:hidden flex justify-center items-center'>
           {/* Theme switch */}
@@ -536,37 +555,39 @@ const NotAuthedHeader = ({
           </Popover.Button>
         </div>
       </div>
-      <div className='py-4 flex gap-4 flex-wrap justify-center space-x-2 lg:hidden'>
-        <a
-          href={BLOG_URL}
-          className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-          target='_blank'
-          rel='noreferrer noopener'
-        >
-          {t('footer.blog')}
-        </a>
-        <Link
-          to={`${routesPath.main}#pricing`}
-          className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-          key='Pricing'
-        >
-          {t('common.pricing')}
-        </Link>
-        <Link
-          to={routesPath.features}
-          className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-        >
-          {t('common.features')}
-        </Link>
-        <a
-          href={DOCS_URL}
-          className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-          target='_blank'
-          rel='noreferrer noopener'
-        >
-          {t('common.docs')}
-        </a>
-      </div>
+      {!refPage && (
+        <div className='py-4 flex gap-4 flex-wrap justify-center space-x-2 lg:hidden'>
+          <a
+            href={BLOG_URL}
+            className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+            target='_blank'
+            rel='noreferrer noopener'
+          >
+            {t('footer.blog')}
+          </a>
+          <Link
+            to={`${routesPath.main}#pricing`}
+            className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+            key='Pricing'
+          >
+            {t('common.pricing')}
+          </Link>
+          <Link
+            to={routesPath.features}
+            className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+          >
+            {t('common.features')}
+          </Link>
+          <a
+            href={DOCS_URL}
+            className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+            target='_blank'
+            rel='noreferrer noopener'
+          >
+            {t('common.docs')}
+          </a>
+        </div>
+      )}
     </nav>
   </header>
 )
@@ -574,9 +595,11 @@ const NotAuthedHeader = ({
 interface IHeader {
   ssrTheme: 'dark' | 'light'
   authenticated: boolean
+  refPage?: boolean
+  transparent?: boolean
 }
 
-const Header: React.FC<IHeader> = ({ ssrTheme, authenticated }): JSX.Element => {
+const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transparent }): JSX.Element => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
       [key: string]: string | number | null
@@ -587,7 +610,6 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated }): JSX.Element => 
   const _dispatch = useDispatch()
   const { user } = useSelector((state: StateType) => state.auth)
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const { pathname } = useLocation()
   // @ts-ignore
   const buttonRef: MutableRefObject<HTMLButtonElement> = useRef<HTMLButtonElement>()
   const theme = isBrowser ? reduxTheme : ssrTheme
@@ -653,7 +675,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated }): JSX.Element => 
           theme={theme}
           onLanguageChange={onLanguageChange}
           language={language}
-          colourBackground={pathname !== routesPath.main}
+          colourBackground={!transparent}
           t={t}
         />
       ) : (
@@ -662,7 +684,8 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated }): JSX.Element => 
           theme={theme}
           onLanguageChange={onLanguageChange}
           language={language}
-          colourBackground={pathname !== routesPath.main}
+          colourBackground={!transparent}
+          refPage={refPage}
           t={t}
         />
       )}

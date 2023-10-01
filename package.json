@@ -112,6 +112,7 @@
       "lodash/prefer-lodash-method": "warn",
       "import/newline-after-import": "off",
       "@typescript-eslint/consistent-type-imports": "off",
+      "jsx-a11y/anchor-has-content": "off",
       "consistent-return": "off",
       "max-len": "off",
       "no-console": "off",

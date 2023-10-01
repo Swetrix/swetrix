@@ -40,7 +40,7 @@ const Button = ({
   giant, type, className, loading, semiSmall, semiDanger, noBorder, focus, disabled,
 }: IButton): JSX.Element => (
   <button
-    disabled={disabled}
+    disabled={disabled || loading}
     type={type}
     onClick={onClick}
     className={cx('relative inline-flex select-none items-center border leading-4 font-medium rounded-md', {

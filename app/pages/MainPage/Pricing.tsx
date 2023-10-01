@@ -15,7 +15,7 @@ import cx from 'clsx'
 import Modal from 'ui/Modal'
 import Spin from 'ui/icons/Spin'
 import {
-  CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS, CURRENCIES,
+  CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS, CURRENCIES, BillingFrequency, REFERRAL_DISCOUNT_CODE,
 } from 'redux/constants'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
@@ -135,11 +135,6 @@ const getTiers = (t: (key: string, options?: {
     ypid: 776471,
   },
 ]
-
-const BillingFrequency = {
-  monthly: 'monthly',
-  yearly: 'yearly',
-}
 
 interface IPricingItem {
   tier: any
@@ -382,6 +377,10 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
         return
       }
 
+      const discountCode = (user.referrerID && (user.planCode === 'trial' || user.planCode === 'none'))
+        ? REFERRAL_DISCOUNT_CODE
+        : null
+
       // @ts-ignore
       window.Paddle.Checkout.open({
         product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
@@ -393,6 +392,7 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
         title: tier.name,
         displayModeTheme: theme,
         country: metainfo.country,
+        discountCode,
       })
     }
   }
@@ -575,7 +575,19 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
               <Loader />
             )}
             {subUpdatePreview === false && (
-              <p className='whitespace-pre-line'>{t('billing.previewLoadingError')}</p>
+              <p className='whitespace-pre-line'>
+                <Trans
+                  // @ts-ignore
+                  t={t}
+                  i18nKey='billing.previewLoadingError'
+                  values={{
+                    email: CONTACT_EMAIL,
+                  }}
+                  components={{
+                    mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
+                  }}
+                />
+              </p>
             )}
             {subUpdatePreview && (
               <div>

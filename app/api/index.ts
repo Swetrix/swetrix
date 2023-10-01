@@ -136,8 +136,8 @@ export const login = (credentials: {
 
 export const signup = (data: {
   email: string,
-  password: string
-  repeat: string
+  password: string,
+  refCode?: string,
 }) =>
   api
     .post('v1/auth/register', data)
@@ -177,6 +177,42 @@ export const changeUserDetails = (data: IUser) =>
 export const setShowLiveVisitorsInTitle = (show: boolean) =>
   api
     .put('/user/live-visitors', { show })
+    .then((response): Partial<IUser> => response.data)
+    .catch((error) => {
+      const errorsArray = error.response.data.message
+      if (_isArray(errorsArray)) {
+        throw errorsArray
+      }
+      throw new Error(errorsArray)
+    })
+
+export const generateRefCode = () =>
+  api
+    .post('/user/generate-ref-code')
+    .then((response): Partial<IUser> => response.data)
+    .catch((error) => {
+      const errorsArray = error.response.data.message
+      if (_isArray(errorsArray)) {
+        throw errorsArray
+      }
+      throw new Error(errorsArray)
+    })
+
+export const getPayoutsInfo = () =>
+  api
+    .get('/user/payouts/info')
+    .then((response): Partial<IUser> => response.data)
+    .catch((error) => {
+      const errorsArray = error.response.data.message
+      if (_isArray(errorsArray)) {
+        throw errorsArray
+      }
+      throw new Error(errorsArray)
+    })
+
+export const getReferrals = () =>
+  api
+    .get('/user/referrals')
     .then((response): Partial<IUser> => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
@@ -911,9 +947,9 @@ export const generateSSOAuthURL = (provider: string) =>
         : error.response.data.message
     })
 
-export const getJWTBySSOHash = (hash: string, provider: string) =>
+export const getJWTBySSOHash = (hash: string, provider: string, refCode?: string) =>
   api
-    .post('v1/auth/sso/hash', { hash, provider })
+    .post('v1/auth/sso/hash', { hash, provider, refCode })
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
@@ -1076,6 +1112,15 @@ export const resetFilters = (pid: string, type: string, filters: string[]) =>
 export const receiveLoginNotification = (receiveLoginNotifications: boolean) =>
   api
     .post('user/recieve-login-notifications', { receiveLoginNotifications })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
+
+export const setPaypalEmail = (paypalPaymentsEmail: string | null) =>
+  api
+    .patch('user/set-paypal-email', { paypalPaymentsEmail })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

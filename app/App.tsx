@@ -9,6 +9,7 @@ import { useAlert } from '@blaumaus/react-alert'
 import cx from 'clsx'
 import _some from 'lodash/some'
 import _includes from 'lodash/includes'
+import _startsWith from 'lodash/startsWith'
 import 'dayjs/locale/ru'
 import 'dayjs/locale/uk'
 
@@ -135,10 +136,12 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
 
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
+  const isReferralPage = _startsWith(pathname, '/ref/')
+
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <Suspense fallback={<></>}>
-      {pathname !== routesPath.main && (
+      {pathname !== routesPath.main && !isReferralPage && (
         <Header ssrTheme={ssrTheme} authenticated={authenticated} />
       )}
       {/* @ts-ignore */}
@@ -147,7 +150,9 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
           <Outlet />
         </Suspense>
       </ScrollToTop>
-      <Footer minimal={isMinimalFooter} authenticated={authenticated} />
+      {!isReferralPage && (
+        <Footer minimal={isMinimalFooter} authenticated={authenticated} />
+      )}
     </Suspense>
   )
 }

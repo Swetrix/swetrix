@@ -1,10 +1,11 @@
 import { call, put } from 'redux-saga/effects'
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
-import _omit from 'lodash/omit'
 
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
+import { getCookie, deleteCookie } from 'utils/cookie'
+import { REFERRAL_COOKIE } from 'redux/constants'
 import sagaActions from '../../actions'
 const { signup } = require('api')
 
@@ -15,17 +16,27 @@ export default function* signupWorder({ payload: { data: rawData, callback } }: 
       password: string
       repeat: string
       dontRemember: boolean
+      checkIfLeaked: boolean
     },
     callback: (isSuccess: boolean) => void
   }
 }) {
   try {
-    const { repeat, ...data } = rawData
-    const { dontRemember } = data
+    const { dontRemember } = rawData
+    const refCode = getCookie(REFERRAL_COOKIE)
     const {
       user, accessToken, refreshToken, // theme,
       // @ts-ignore
-    } = yield call(signup, _omit(data, ['dontRemember']))
+    } = yield call(signup, {
+      email: rawData.email,
+      password: rawData.password,
+      checkIfLeaked: rawData.checkIfLeaked,
+      refCode,
+    })
+
+    if (refCode) {
+      deleteCookie(REFERRAL_COOKIE)
+    }
 
     yield put(authActions.signupUpSuccessful(user))
     yield call(setAccessToken, accessToken, dontRemember)

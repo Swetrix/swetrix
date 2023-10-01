@@ -43,7 +43,11 @@ const Input = ({
           )}
         </label>
       </div>
-      <div className='mt-1 relative'>
+      <div
+        className={cx('relative', {
+          'mt-1': label && hint,
+        })}
+      >
         <input
           type={type}
           value={value}
@@ -65,7 +69,14 @@ const Input = ({
           </div>
         )}
       </div>
-      <p className='mt-2 text-sm text-gray-500 dark:text-gray-300 whitespace-pre-line' id={`${identifier}-optional`}>{hint}</p>
+      {hint && (
+        <p
+          className='mt-2 text-sm text-gray-500 dark:text-gray-300 whitespace-pre-line'
+          id={`${identifier}-optional`}
+        >
+          {hint}
+        </p>
+      )}
       {isError && (
         <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>{error}</p>
       )}

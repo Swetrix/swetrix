@@ -5,6 +5,8 @@ import { errorsActions } from 'redux/reducers/errors'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
 import { openBrowserWindow } from 'utils/generic'
+import { getCookie, deleteCookie } from 'utils/cookie'
+import { REFERRAL_COOKIE } from 'redux/constants'
 import sagaActions from '../../actions/index'
 const {
   getJWTBySSOHash, generateSSOAuthURL,
@@ -50,14 +52,20 @@ export default function* ssoAuth({
     // Closing the authorisation window after the session expires
     setTimeout(authWindow.close, expiresIn)
 
+    const refCode = getCookie(REFERRAL_COOKIE)
+
     while (true) {
       yield delay(HASH_CHECK_FREQUENCY)
 
       try {
         const {
           accessToken, refreshToken, user,
-        } = yield call(getJWTBySSOHash, uuid, provider)
+        } = yield call(getJWTBySSOHash, uuid, provider, refCode)
         authWindow.close()
+
+        if (refCode) {
+          deleteCookie(REFERRAL_COOKIE)
+        }
 
         yield put(authActions.setDontRemember(dontRemember))
 

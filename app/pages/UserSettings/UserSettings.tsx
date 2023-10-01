@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign, react/forbid-prop-types */
 import React, {
-  useState, useEffect, memo, useRef,
+  useState, useEffect, memo, useRef, useMemo,
 } from 'react'
 import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils'
@@ -11,6 +11,7 @@ import _isNull from 'lodash/isNull'
 import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
+import _find from 'lodash/find'
 import {
   EnvelopeIcon,
   ExclamationTriangleIcon,
@@ -18,6 +19,10 @@ import {
   CurrencyDollarIcon,
   ClipboardDocumentIcon,
   ChevronDownIcon,
+  UserIcon,
+  ChatBubbleLeftEllipsisIcon,
+  ComputerDesktopIcon,
+  CursorArrowRaysIcon,
 } from '@heroicons/react/24/outline'
 import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
@@ -66,11 +71,42 @@ import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
 import Integrations from './components/Integrations'
 import Socialisations from './components/Socialisations'
+import Referral from './components/Referral'
 import NoSharedProjects from './components/NoSharedProjects'
 
 dayjs.extend(utc)
 
 const timeFormatArray = _map(TimeFormat, (key) => key)
+
+const TAB_MAPPING = {
+  ACCOUNT: 'account',
+  REFERRALS: 'referrals',
+  INTERFACE: 'interface',
+  COMMUNICATIONS: 'communications',
+}
+
+const getTabs = (t: (key: string) => string) => ([
+  {
+    id: TAB_MAPPING.ACCOUNT,
+    label: t('profileSettings.account'),
+    icon: UserIcon,
+  },
+  {
+    id: TAB_MAPPING.COMMUNICATIONS,
+    label: 'Communications',
+    icon: ChatBubbleLeftEllipsisIcon,
+  },
+  {
+    id: TAB_MAPPING.INTERFACE,
+    label: 'Interface settings',
+    icon: ComputerDesktopIcon,
+  },
+  {
+    id: TAB_MAPPING.REFERRALS,
+    label: t('profileSettings.referral.title'),
+    icon: CursorArrowRaysIcon,
+  },
+])
 
 interface IProps {
   onDelete: (t: (key: string) => string, deletionFeedback: string, callback: () => void) => void,
@@ -98,6 +134,9 @@ interface IProps {
   logoutLocal: () => void,
   logoutAll: () => void,
   loading: boolean,
+  setCache: (key: string, value: any) => void,
+  activeReferrals: any[],
+  referralStatistics: any,
 }
 
 interface IForm extends Partial<IUser> {
@@ -112,6 +151,7 @@ const UserSettings = ({
   genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
   accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
   linkSSO, unlinkSSO, theme, updateShowLiveVisitorsInTitle, logoutAll, loading, logoutLocal,
+  referralStatistics, activeReferrals, setCache,
 }: IProps): JSX.Element => {
   const navigate = useNavigate()
   const {
@@ -124,7 +164,7 @@ const UserSettings = ({
       }
     ) => string;
   } = useTranslation('common')
-
+  const [activeTab, setActiveTab] = useState<string>(TAB_MAPPING.ACCOUNT)
   const [form, setForm] = useState<IForm>({
     email: user.email || '',
     password: '',
@@ -158,6 +198,9 @@ const UserSettings = ({
   const [deletionFeedback, setDeletionFeedback] = useState<string>('')
 
   const copyTimerRef = useRef(null)
+
+  const tabs = getTabs(t)
+  const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
 
   const validate = () => {
     const allErrors = {} as {
@@ -477,9 +520,59 @@ const UserSettings = ({
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
           {t('titles.profileSettings')}
         </h2>
-        <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-          {t('profileSettings.general')}
-        </h3>
+        {/* Tabs selector */}
+        <div className='mt-2'>
+          <div className='sm:hidden'>
+            <Select
+              items={tabs}
+              keyExtractor={(item) => item.id}
+              labelExtractor={(item) => item.label}
+              onSelect={(label) => {
+                const selected = _find(tabs, (tab) => tab.label === label)
+                if (selected) {
+                  setActiveTab(selected?.id)
+                }
+              }}
+              title={activeTabLabel}
+            />
+          </div>
+          <div className='hidden sm:block'>
+            <div>
+              <nav className='-mb-px flex space-x-4' aria-label='Tabs'>
+                {_map(tabs, tab => {
+                  const isCurrent = tab.id === activeTab
+
+                  const onClick = () => {
+                    setActiveTab(tab.id)
+                  }
+
+                  return (
+                    <div
+                      key={tab.id}
+                      onClick={onClick}
+                      className={cx('group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer', {
+                        'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50': isCurrent,
+                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300': !isCurrent,
+                      })}
+                      aria-current={isCurrent ? 'page' : undefined}
+                    >
+                      <tab.icon
+                        className={cx(
+                          isCurrent ? 'text-slate-900 dark:text-gray-50' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
+                          '-ml-0.5 mr-2 h-5 w-5',
+                        )}
+                        aria-hidden='true'
+                      />
+                      <span>
+                        {tab.label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </nav>
+            </div>
+          </div>
+        </div>
         <ClientOnly
           fallback={(
             <Loader />
@@ -490,67 +583,71 @@ const UserSettings = ({
               return <Loader />
             }
 
-            return (
-              <>
-                <Input
-                  name='email'
-                  id='email'
-                  type='email'
-                  label={t('auth.common.email')}
-                  value={form.email}
-                  placeholder='you@example.com'
-                  className='mt-4'
-                  onChange={handleInput}
-                  error={beenSubmitted ? errors.email : null}
-                  disabled={isSelfhosted}
-                />
-                {!isSelfhosted && (
-                  <>
-                    <span
-                      onClick={toggleShowPasswordFields}
-                      className='flex items-center cursor-pointer max-w-max text-gray-900 dark:text-gray-50 hover:underline'
-                    >
-                      {t('auth.common.changePassword')}
-                      <ChevronDownIcon
-                        className={cx('w-4 h-4 ml-2', {
-                          'rotate-180': showPasswordFields,
-                        })}
-                      />
-                    </span>
-                    {showPasswordFields && (
-                      <div className='grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mt-4'>
-                        <Input
-                          name='password'
-                          id='password'
-                          type='password'
-                          label={t('auth.common.password')}
-                          hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-                          value={form.password}
-                          placeholder={t('auth.common.password')}
-                          className='sm:col-span-3'
-                          onChange={handleInput}
-                          error={beenSubmitted ? errors.password : null}
+            if (activeTab === TAB_MAPPING.ACCOUNT) {
+              return (
+                <>
+                  <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                    {t('profileSettings.general')}
+                  </h3>
+                  <Input
+                    name='email'
+                    id='email'
+                    type='email'
+                    label={t('auth.common.email')}
+                    value={form.email}
+                    placeholder='you@example.com'
+                    className='mt-4'
+                    onChange={handleInput}
+                    error={beenSubmitted ? errors.email : null}
+                    disabled={isSelfhosted}
+                  />
+                  {!isSelfhosted && (
+                    <>
+                      <span
+                        onClick={toggleShowPasswordFields}
+                        className='flex items-center cursor-pointer max-w-max text-gray-900 dark:text-gray-50 hover:underline'
+                      >
+                        {t('auth.common.changePassword')}
+                        <ChevronDownIcon
+                          className={cx('w-4 h-4 ml-2', {
+                            'rotate-180': showPasswordFields,
+                          })}
                         />
-                        <Input
-                          name='repeat'
-                          id='repeat'
-                          type='password'
-                          label={t('auth.common.repeat')}
-                          value={form.repeat}
-                          placeholder={t('auth.common.repeat')}
-                          className='sm:col-span-3'
-                          onChange={handleInput}
-                          error={beenSubmitted ? errors.repeat : null}
-                        />
-                      </div>
-                    )}
-                    <Button className='mt-4' type='submit' primary large>
-                      {t('profileSettings.update')}
-                    </Button>
-                  </>
-                )}
-                {/* Theme type switch */}
-                {/* <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      </span>
+                      {showPasswordFields && (
+                        <div className='grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mt-4'>
+                          <Input
+                            name='password'
+                            id='password'
+                            type='password'
+                            label={t('auth.common.password')}
+                            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                            value={form.password}
+                            placeholder={t('auth.common.password')}
+                            className='sm:col-span-3'
+                            onChange={handleInput}
+                            error={beenSubmitted ? errors.password : null}
+                          />
+                          <Input
+                            name='repeat'
+                            id='repeat'
+                            type='password'
+                            label={t('auth.common.repeat')}
+                            value={form.repeat}
+                            placeholder={t('auth.common.repeat')}
+                            className='sm:col-span-3'
+                            onChange={handleInput}
+                            error={beenSubmitted ? errors.repeat : null}
+                          />
+                        </div>
+                      )}
+                      <Button className='mt-4' type='submit' primary large>
+                        {t('profileSettings.update')}
+                      </Button>
+                    </>
+                  )}
+                  {/* Theme type switch */}
+                  {/* <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                 <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
                   {t('profileSettings.theme')}
                 </h3>
@@ -565,299 +662,333 @@ const UserSettings = ({
                     />
                   </div>
                 </div> */}
-                {/* Timezone selector */}
-                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50 flex items-center'>
-                  {t('profileSettings.timezone')}
-                  <div className='ml-5'>
-                    <Beta />
-                  </div>
-                </h3>
-                <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
-                  <div>
-                    <TimezonePicker value={timezone} onChange={_setTimezone} />
-                  </div>
-                </div>
-                <Button className='mt-4' onClick={handleTimezoneSave} primary large>
-                  {t('common.save')}
-                </Button>
-                {/* Timeformat selector (12 / 24 hour format) */}
-                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.timeFormat')}
-                </h3>
-                <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
-                  <div>
-                    <Select
-                      title={t(`profileSettings.${form.timeFormat}`)}
-                      label={t('profileSettings.selectTimeFormat')}
-                      className='w-full'
-                      items={translatedTimeFormat}
-                      onSelect={(f) => setForm((prev) => ({
-                        ...prev,
-                        timeFormat:
-                          timeFormatArray[
-                            _findIndex(translatedTimeFormat, (freq) => freq === f)
-                          ],
-                      }))}
-                    />
-                  </div>
-                </div>
-                <Button className='mt-4' onClick={setAsyncTimeFormat} primary large>
-                  {t('common.save')}
-                </Button>
+                  {!isSelfhosted && (
+                    <>
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
-                {!isSelfhosted && (
-                  <>
-                    {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                    <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.email')}
-                    </h3>
-                    <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
-                      <div>
-                        <Select
-                          title={t(`profileSettings.${reportFrequency}`)}
-                          label={t('profileSettings.frequency')}
-                          className='w-full'
-                          items={translatedFrequencies}
-                          iconExtractor={reportIconExtractor}
-                          onSelect={(f) => _setReportFrequency(
-                            reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <Button className='mt-4' onClick={handleReportSave} primary large>
-                      {t('common.save')}
-                    </Button>
-                  </>
-                )}
-
-                {/* UI Settings */}
-                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.uiSettings')}
-                </h3>
-                <Checkbox
-                  checked={user.showLiveVisitorsInTitle}
-                  onChange={handleShowLiveVisitorsSave}
-                  disabled={settingUpdating}
-                  name='active'
-                  id='active'
-                  className='mt-4'
-                  label={t('profileSettings.showVisitorsInTitle')}
-                />
-
-                {!isSelfhosted && (
-                  <>
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                    {/* Integrations setup */}
-                    <h3 id='integrations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.integrations')}
-                    </h3>
-                    <Integrations
-                      user={user}
-                      updateUserData={updateUserData}
-                      handleIntegrationSave={handleIntegrationSave}
-                      genericError={genericError}
-                    />
-                    {user.isTelegramChatIdConfirmed && (
-                      <Checkbox
-                        checked={user.receiveLoginNotifications}
-                        onChange={handleReceiveLoginNotifications}
-                        disabled={settingUpdating}
-                        name='receiveLoginNotifications'
-                        id='receiveLoginNotifications'
-                        className='mt-4'
-                        label={t('profileSettings.receiveLoginNotifications')}
-                      />
-                    )}
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-
-                    {/* API access setup */}
-                    <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.apiKey')}
-                      <div className='ml-5'>
-                        <Beta />
-                      </div>
-                    </h3>
-                    {user.apiKey ? (
-                      <>
-                        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                          {t('profileSettings.apiKeyWarning')}
-                        </p>
-                        <p className='mt-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                          {t('profileSettings.apiKey')}
-                        </p>
-                        <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
-                          <div className='relative group'>
-                            <Input
-                              name='apiKey'
-                              id='apiKey'
-                              type='text'
-                              className='pr-9'
-                              value={user.apiKey}
-                              onChange={handleInput}
-                              disabled
-                            />
-                            <div className='absolute right-2 top-3'>
-                              <div className='group relative'>
-                                <Button
-                                  type='button'
-                                  onClick={() => setToClipboard(user.apiKey || '')}
-                                  className='opacity-70 hover:opacity-100'
-                                  noBorder
-                                >
-                                  <>
-                                    <ClipboardDocumentIcon className='w-6 h-6' />
-                                    {copied && (
-                                      <div className='animate-appear bg-white dark:bg-slate-800 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
-                                        {t('common.copied')}
-                                      </div>
-                                    )}
-                                  </>
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
+                      {/* API access setup */}
+                      <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.apiKey')}
+                        <div className='ml-5'>
+                          <Beta />
                         </div>
-                      </>
-                    ) : (
-                      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                        {t('profileSettings.noApiKey')}
-                      </p>
-                    )}
-                    {user.apiKey ? (
-                      <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
-                        {t('profileSettings.deleteApiKeyBtn')}
-                      </Button>
-                    ) : (
-                      <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
-                        {t('profileSettings.addApiKeyBtn')}
-                      </Button>
-                    )}
-
-                    {/* 2FA setting */}
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                    <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.2fa')}
-                    </h3>
-                    <TwoFA
-                      user={user}
-                      dontRemember={dontRemember}
-                      updateUserData={updateUserData}
-                      genericError={genericError}
-                    />
-
-                    {/* Socialisations setup */}
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                    <h3 id='socialisations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.socialisations')}
-                    </h3>
-                    <Socialisations
-                      user={user}
-                      genericError={genericError}
-                      linkSSO={linkSSO}
-                      unlinkSSO={unlinkSSO}
-                      theme={theme}
-                    />
-
-                    {/* Shared projects setting */}
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                    <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.shared')}
-                    </h3>
-                    <div>
-                      {!_isEmpty(user.sharedProjects) ? (
-                        <div className='mt-3 flex flex-col'>
-                          <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
-                            <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                              <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
-                                <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                                  <thead>
-                                    <tr className='dark:bg-slate-800'>
-                                      <th
-                                        scope='col'
-                                        className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
-                                      >
-                                        {t('profileSettings.sharedTable.project')}
-                                      </th>
-                                      <th
-                                        scope='col'
-                                        className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                                      >
-                                        {t('profileSettings.sharedTable.role')}
-                                      </th>
-                                      <th
-                                        scope='col'
-                                        className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                                      >
-                                        {t('profileSettings.sharedTable.joinedOn')}
-                                      </th>
-                                      <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
-                                    </tr>
-                                  </thead>
-                                  <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                                    {_map(user.sharedProjects, (item) => (
-                                      <ProjectList
-                                        key={item.id}
-                                        item={item}
-                                        removeProject={removeProject}
-                                        removeShareProject={removeShareProject}
-                                        setUserShareData={setUserShareData}
-                                        setProjectsShareData={setProjectsShareData}
-                                        userSharedUpdate={userSharedUpdate}
-                                        sharedProjectError={sharedProjectError}
-                                      />
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <NoSharedProjects t={t} />
-                      )}
-                    </div>
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                    {!user.isActive && (
-                      <div
-                        className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800 dark:hover:text-indigo-600'
-                        onClick={() => onEmailConfirm(setError)}
-                      >
-                        <EnvelopeIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
-                        {t('profileSettings.noLink')}
-                      </div>
-                    )}
-                    <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-4'>
-                      <Button onClick={() => setShowExportModal(true)} semiSmall primary>
+                      </h3>
+                      {user.apiKey ? (
                         <>
-                          <ArrowDownTrayIcon className='w-5 h-5 mr-1' />
-                          {t('profileSettings.requestExport')}
+                          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                            {t('profileSettings.apiKeyWarning')}
+                          </p>
+                          <p className='mt-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                            {t('profileSettings.apiKey')}
+                          </p>
+                          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
+                            <div className='relative group'>
+                              <Input
+                                name='apiKey'
+                                id='apiKey'
+                                type='text'
+                                className='pr-9'
+                                value={user.apiKey}
+                                onChange={handleInput}
+                                disabled
+                              />
+                              <div className='absolute right-2 top-3'>
+                                <div className='group relative'>
+                                  <Button
+                                    type='button'
+                                    onClick={() => setToClipboard(user.apiKey || '')}
+                                    className='opacity-70 hover:opacity-100'
+                                    noBorder
+                                  >
+                                    <>
+                                      <ClipboardDocumentIcon className='w-6 h-6' />
+                                      {copied && (
+                                        <div className='animate-appear bg-white dark:bg-slate-800 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
+                                          {t('common.copied')}
+                                        </div>
+                                      )}
+                                    </>
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </>
-                      </Button>
-                      <div className='flex justify-center flex-wrap gap-2'>
-                        <Button onClick={logoutAll} semiSmall semiDanger>
-                          <>
-                            {/* We need this div for the button to match the height of the button after it */}
-                            <div className='h-5' />
-                            {t('profileSettings.logoutAll')}
-                          </>
+                      ) : (
+                        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                          {t('profileSettings.noApiKey')}
+                        </p>
+                      )}
+                      {user.apiKey ? (
+                        <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
+                          {t('profileSettings.deleteApiKeyBtn')}
                         </Button>
-                        <Button onClick={() => setShowModal(true)} semiSmall danger>
-                          <>
-                            <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-                            {t('profileSettings.delete')}
-                          </>
+                      ) : (
+                        <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
+                          {t('profileSettings.addApiKeyBtn')}
                         </Button>
+                      )}
+
+                      {/* 2FA setting */}
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.2fa')}
+                      </h3>
+                      <TwoFA
+                        user={user}
+                        dontRemember={dontRemember}
+                        updateUserData={updateUserData}
+                        genericError={genericError}
+                      />
+
+                      {/* Socialisations setup */}
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      <h3 id='socialisations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.socialisations')}
+                      </h3>
+                      <Socialisations
+                        user={user}
+                        genericError={genericError}
+                        linkSSO={linkSSO}
+                        unlinkSSO={unlinkSSO}
+                        theme={theme}
+                      />
+
+                      {/* Shared projects setting */}
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.shared')}
+                      </h3>
+                      <div>
+                        {!_isEmpty(user.sharedProjects) ? (
+                          <div className='mt-3 flex flex-col'>
+                            <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                                    <thead>
+                                      <tr className='dark:bg-slate-800'>
+                                        <th
+                                          scope='col'
+                                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
+                                        >
+                                          {t('profileSettings.sharedTable.project')}
+                                        </th>
+                                        <th
+                                          scope='col'
+                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                                        >
+                                          {t('profileSettings.sharedTable.role')}
+                                        </th>
+                                        <th
+                                          scope='col'
+                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                                        >
+                                          {t('profileSettings.sharedTable.joinedOn')}
+                                        </th>
+                                        <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
+                                      </tr>
+                                    </thead>
+                                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                                      {_map(user.sharedProjects, (item) => (
+                                        <ProjectList
+                                          key={item.id}
+                                          item={item}
+                                          removeProject={removeProject}
+                                          removeShareProject={removeShareProject}
+                                          setUserShareData={setUserShareData}
+                                          setProjectsShareData={setProjectsShareData}
+                                          userSharedUpdate={userSharedUpdate}
+                                          sharedProjectError={sharedProjectError}
+                                        />
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <NoSharedProjects t={t} />
+                        )}
                       </div>
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      {!user.isActive && (
+                        <div
+                          className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800 dark:hover:text-indigo-600'
+                          onClick={() => onEmailConfirm(setError)}
+                        >
+                          <EnvelopeIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
+                          {t('profileSettings.noLink')}
+                        </div>
+                      )}
+                      <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-4'>
+                        <Button onClick={() => setShowExportModal(true)} semiSmall primary>
+                          <>
+                            <ArrowDownTrayIcon className='w-5 h-5 mr-1' />
+                            {t('profileSettings.requestExport')}
+                          </>
+                        </Button>
+                        <div className='flex justify-center flex-wrap gap-2'>
+                          <Button onClick={logoutAll} semiSmall semiDanger>
+                            <>
+                              {/* We need this div for the button to match the height of the button after it */}
+                              <div className='h-5' />
+                              {t('profileSettings.logoutAll')}
+                            </>
+                          </Button>
+                          <Button onClick={() => setShowModal(true)} semiSmall danger>
+                            <>
+                              <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                              {t('profileSettings.delete')}
+                            </>
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
+              )
+            }
+
+            if (activeTab === TAB_MAPPING.INTERFACE) {
+              return (
+                <>
+                  {/* Timezone selector */}
+                  <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50 flex items-center'>
+                    {t('profileSettings.timezone')}
+                    <div className='ml-5'>
+                      <Beta />
                     </div>
-                  </>
-                )}
-              </>
-            )
+                  </h3>
+                  <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+                    <div>
+                      <TimezonePicker value={timezone} onChange={_setTimezone} />
+                    </div>
+                  </div>
+                  <Button className='mt-4' onClick={handleTimezoneSave} primary large>
+                    {t('common.save')}
+                  </Button>
+                  {/* Timeformat selector (12 / 24 hour format) */}
+                  <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                  <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                    {t('profileSettings.timeFormat')}
+                  </h3>
+                  <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+                    <div>
+                      <Select
+                        title={t(`profileSettings.${form.timeFormat}`)}
+                        label={t('profileSettings.selectTimeFormat')}
+                        className='w-full'
+                        items={translatedTimeFormat}
+                        onSelect={(f) => setForm((prev) => ({
+                          ...prev,
+                          timeFormat:
+                            timeFormatArray[
+                            _findIndex(translatedTimeFormat, (freq) => freq === f)
+                            ],
+                        }))}
+                      />
+                    </div>
+                  </div>
+                  <Button className='mt-4' onClick={setAsyncTimeFormat} primary large>
+                    {t('common.save')}
+                  </Button>
+
+                  {/* UI Settings */}
+                  <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                  <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                    {t('profileSettings.uiSettings')}
+                  </h3>
+                  <Checkbox
+                    checked={user.showLiveVisitorsInTitle}
+                    onChange={handleShowLiveVisitorsSave}
+                    disabled={settingUpdating}
+                    name='active'
+                    id='active'
+                    className='mt-4'
+                    label={t('profileSettings.showVisitorsInTitle')}
+                  />
+                </>
+              )
+            }
+
+            if (activeTab === TAB_MAPPING.COMMUNICATIONS) {
+              return (
+                <>
+
+                  {!isSelfhosted && (
+                    <>
+                      {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
+                      <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.email')}
+                      </h3>
+                      <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+                        <div>
+                          <Select
+                            title={t(`profileSettings.${reportFrequency}`)}
+                            label={t('profileSettings.frequency')}
+                            className='w-full'
+                            items={translatedFrequencies}
+                            iconExtractor={reportIconExtractor}
+                            onSelect={(f) => _setReportFrequency(
+                              reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <Button className='mt-4' onClick={handleReportSave} primary large>
+                        {t('common.save')}
+                      </Button>
+
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      {/* Integrations setup */}
+                      <h3 id='integrations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.integrations')}
+                      </h3>
+                      <Integrations
+                        user={user}
+                        updateUserData={updateUserData}
+                        handleIntegrationSave={handleIntegrationSave}
+                        genericError={genericError}
+                      />
+                      {user.isTelegramChatIdConfirmed && (
+                        <Checkbox
+                          checked={user.receiveLoginNotifications}
+                          onChange={handleReceiveLoginNotifications}
+                          disabled={settingUpdating}
+                          name='receiveLoginNotifications'
+                          id='receiveLoginNotifications'
+                          className='mt-4'
+                          label={t('profileSettings.receiveLoginNotifications')}
+                        />
+                      )}
+                    </>
+                  )}
+                </>
+              )
+            }
+
+            if (activeTab === TAB_MAPPING.REFERRALS) {
+              return (
+                <>
+                  <h3 id='socialisations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                    {t('profileSettings.referral.title')}
+                  </h3>
+                  <Referral
+                    user={user}
+                    genericError={genericError}
+                    updateUserData={updateUserData}
+                    referralStatistics={referralStatistics}
+                    activeReferrals={activeReferrals}
+                    setCache={setCache}
+                    accountUpdated={accountUpdated}
+                  />
+                </>
+              )
+            }
+
+            return null
           }}
         </ClientOnly>
       </form>
@@ -980,6 +1111,9 @@ UserSettings.propTypes = {
   theme: PropTypes.string.isRequired,
   logoutLocal: PropTypes.func.isRequired,
   logoutAll: PropTypes.func.isRequired,
+  referralStatistics: PropTypes.object.isRequired,
+  activeReferrals: PropTypes.array.isRequired,
+  setCache: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(UserSettings, auth.authenticated))

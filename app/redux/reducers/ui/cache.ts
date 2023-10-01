@@ -44,6 +44,8 @@ interface IInitialState {
   userFlowDescending: {
     [key: string]: IUserFlow
   }
+  activeReferrals: any[]
+  referralStatistics: any
 }
 
 const initialState: IInitialState = {
@@ -55,6 +57,8 @@ const initialState: IInitialState = {
   customEventsPrefs: {},
   userFlowAscending: {},
   userFlowDescending: {},
+  activeReferrals: [],
+  referralStatistics: {},
 }
 
 const cacheSlice = createSlice({
@@ -219,6 +223,12 @@ const cacheSlice = createSlice({
         ...state.userFlowDescending,
         [key]: payload.data,
       }
+    },
+    setCache(state, { payload }: PayloadAction<{ key: string, value: any }>) {
+      const { key, value } = payload
+
+      // @ts-ignore
+      state[key] = value
     },
   },
 })

@@ -32,6 +32,7 @@ const routes = Object.freeze({
   socialised: '/socialised',
   project_protected_password: '/projects/:id/password',
   open: '/open',
+  ref: '/ref/:id',
 })
 
 export default routes

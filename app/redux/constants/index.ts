@@ -218,17 +218,27 @@ export const TWITTER_USERNAME: string = '@swetrix'
 export const DISCORD_URL: string = 'https://discord.gg/ZVK8Tw2E8j'
 export const STATUSPAGE_URL: string = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const MAIN_URL: string = 'https://swetrix.com'
+export const REF_URL_PREFIX: string = `${MAIN_URL}/ref/`
 export const UTM_GENERATOR_URL: string = 'https://url.swetrix.com'
 export const LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV'
 export const MARKETPLACE_URL: string = 'https://marketplace.swetrix.com'
 export const DOCS_URL: string = 'https://docs.swetrix.com'
 export const CAPTCHA_URL: string = 'https://captcha.swetrix.com'
 export const DOCS_CAPTCHA_URL: string = `${DOCS_URL}/captcha/introduction`
+export const DOCS_REFERRAL_PROGRAM_URL: string = `${DOCS_URL}/affiliate/about`
 
 // Swetrix vs ...
 export const SWETRIX_VS_GOOGLE: string = 'https://blog.swetrix.com/post/vs-google-analytics/'
 export const SWETRIX_VS_CLOUDFLARE: string = 'https://blog.swetrix.com/post/vs-cloudflare-analytics/'
 export const SWETRIX_VS_SIMPLE_ANALYTICS: string = 'https://blog.swetrix.com/post/vs-simple-analytics/'
+
+// Referral program
+export const REFERRAL_COOKIE = 'affiliate'
+export const REFERRAL_COOKIE_DAYS = 30
+export const REFERRAL_DISCOUNT = 20
+export const REFERRAL_PENDING_PAYOUT_DAYS = 30
+export const REFERRAL_CUT = 0.2
+export const REFERRAL_DISCOUNT_CODE = 'REFERRAL_DISCOUNT'
 
 export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
@@ -435,6 +445,25 @@ type ICurrencies = {
 
 export const CURRENCIES: ICurrencies = {
   EUR, USD, GBP,
+}
+
+export const MERCHANT_FEE = '5% + 50¢'
+
+// Paddle fee is 5% + 50¢
+const calculatePriceAfterFees = (price: number): number => {
+  const fee = 0.05 * price + 0.5
+  return price - fee
+}
+
+export const calculateReferralCut = (originalTierPrice: number): number => {
+  const priceAfterFees = calculatePriceAfterFees(originalTierPrice)
+  const referralCut = REFERRAL_CUT * priceAfterFees
+  return referralCut
+}
+
+export const BillingFrequency = {
+  monthly: 'monthly',
+  yearly: 'yearly',
 }
 
 // TODO: Eventually this should be fetched from the API, e.g. GET /config route
