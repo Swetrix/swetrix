@@ -11,6 +11,10 @@ module.exports = {
         items: ['integrations/wordpress', 'integrations/webflow', 'integrations/wix', 'integrations/ghost', 'integrations/django', 'integrations/sveltekit'],
       }
     ],
+    'Affiliate program': [
+      'affiliate/about',
+      'affiliate/terms',
+    ],
     'Extensions SDK': [
       'ext-sdk-introduction',
       'ext-sdk-faq',
