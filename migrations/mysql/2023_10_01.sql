@@ -11,6 +11,6 @@ CREATE TABLE IF NOT EXISTS `payout` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-alter table user add column if not exists `referrerID` varchar(255) DEFAULT NULL after `receiveLoginNotifications`;
-alter table user add column if not exists `paypalPaymentsEmail` varchar(254) DEFAULT NULL after `referrerID`;
-alter table user add column if not exists `refCode` varchar(8) DEFAULT NULL after `paypalPaymentsEmail`;
+alter table user add column `referrerID` varchar(255) DEFAULT NULL after `receiveLoginNotifications`;
+alter table user add column `paypalPaymentsEmail` varchar(254) DEFAULT NULL after `referrerID`;
+alter table user add column `refCode` varchar(8) DEFAULT NULL after `paypalPaymentsEmail`;
