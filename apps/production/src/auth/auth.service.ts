@@ -148,12 +148,14 @@ export class AuthService {
   public async createUnverifiedUser(
     email: string,
     password: string,
+    referrerID?: string,
   ): Promise<User> {
     const hashedPassword = await this.hashPassword(password)
 
     const user = await this.userService.createUser({
       email,
       password: hashedPassword, // Using the password field is incorrect.
+      referrerID,
     })
 
     await this.sendVerificationEmail(user.id, user.email)
@@ -502,7 +504,7 @@ export class AuthService {
     }
   }
 
-  async registerUserGoogle(sub: string, email: string) {
+  async registerUserGoogle(sub: string, email: string, referrerId?: string) {
     const query: UserGoogleDTO = {
       googleId: sub,
       trialEndDate: dayjs
@@ -513,6 +515,7 @@ export class AuthService {
       isActive: true,
       emailRequests: 0,
       email,
+      referrerId,
     }
 
     const userWithSameEmail = await this.userService.findOneWhere({
@@ -578,24 +581,57 @@ export class AuthService {
     return payload
   }
 
+  async getReferrerId(refCode?: string): Promise<string | undefined> {
+    if (!refCode) {
+      return undefined
+    }
+
+    try {
+      let referrerID
+
+      if (refCode) {
+        const referrer = await this.userService.findOneWhere({
+          refCode,
+        })
+
+        if (referrer) {
+          referrerID = referrer.id
+        }
+      }
+
+      return referrerID
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> getReferrerId]: ${reason} - ${refCode}`,
+      )
+      return undefined
+    }
+  }
+
   async authenticateSSO(
     ssoHash: string,
     headers: unknown,
     ip: string,
     provider: SSOProviders,
+    refCode?: string,
   ) {
     if (provider === SSOProviders.GOOGLE) {
-      return this.authenticateGoogle(ssoHash, headers, ip)
+      return this.authenticateGoogle(ssoHash, headers, ip, refCode)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      return this.authenticateGithub(ssoHash, headers, ip)
+      return this.authenticateGithub(ssoHash, headers, ip, refCode)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
   }
 
-  async authenticateGoogle(ssoHash: string, headers: unknown, ip: string) {
+  async authenticateGoogle(
+    ssoHash: string,
+    headers: unknown,
+    ip: string,
+    refCode?: string,
+  ) {
     const { sub, email } = await this.processHash(ssoHash)
 
     try {
@@ -604,7 +640,9 @@ export class AuthService {
       })
 
       if (!user) {
-        return await this.registerUserGoogle(sub, email)
+        const referrerId = await this.getReferrerId(refCode)
+
+        return await this.registerUserGoogle(sub, email, referrerId)
       }
 
       return await this.handleExistingUserGoogle(user, headers, ip)
@@ -858,7 +896,7 @@ export class AuthService {
     )
   }
 
-  async registerUserGithub(id: number, email: string) {
+  async registerUserGithub(id: number, email: string, referrerId?: string) {
     const query: UserGithubDTO = {
       githubId: id,
       trialEndDate: dayjs
@@ -869,6 +907,7 @@ export class AuthService {
       isActive: true,
       emailRequests: 0,
       email,
+      referrerId,
     }
 
     const userWithSameEmail = await this.userService.findOneWhere({
@@ -966,7 +1005,12 @@ export class AuthService {
     })
   }
 
-  async authenticateGithub(ssoHash: string, headers: unknown, ip: string) {
+  async authenticateGithub(
+    ssoHash: string,
+    headers: unknown,
+    ip: string,
+    refCode?: string,
+  ) {
     const { id, email } = await this.processHash(ssoHash)
 
     try {
@@ -975,7 +1019,9 @@ export class AuthService {
       })
 
       if (!user) {
-        return await this.registerUserGithub(id, email)
+        const referrerId = await this.getReferrerId(refCode)
+
+        return await this.registerUserGithub(id, email, referrerId)
       }
 
       return await this.handleExistingUserGithub(user, headers, ip)

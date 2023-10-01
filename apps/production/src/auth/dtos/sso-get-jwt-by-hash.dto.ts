@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEnum, IsString } from 'class-validator'
+import { IsEnum, IsString, IsOptional } from 'class-validator'
 
 import { SSOProviders } from './sso-generate.dto'
 
@@ -17,4 +17,11 @@ export class SSOGetJWTByHashDto {
   })
   @IsEnum(SSOProviders)
   provider: SSOProviders
+
+  @ApiProperty({
+    description: 'Affiliate code',
+    example: 'ABCDEFGH',
+  })
+  @IsOptional()
+  refCode?: string
 }

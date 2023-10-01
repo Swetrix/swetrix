@@ -8,7 +8,7 @@ import {
 } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
-import { Alert } from 'src/alert/entity/alert.entity'
+import { Alert } from '../../alert/entity/alert.entity'
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'

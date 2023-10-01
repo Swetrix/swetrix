@@ -15,4 +15,5 @@ export enum LetterTemplate {
   TrialEndsTomorrow = 'trial-ends-tomorrow',
   ProjectSubscriberInvitation = 'project-subscriber-invitation',
   ProjectTransfer = 'project-transfer',
+  PayPalEmailUpdate = 'paypal-email-update',
 }

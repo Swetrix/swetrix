@@ -6,7 +6,8 @@ import * as _toNumber from 'lodash/toNumber'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
-const { CLICKHOUSE_DATABASE } = process.env
+const { CLICKHOUSE_DATABASE, PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } =
+  process.env
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -207,4 +208,6 @@ export {
   PERFORMANCE_COLUMNS,
   sentryIgnoreErrors,
   isProxiedByCloudflare,
+  PAYPAL_CLIENT_ID,
+  PAYPAL_CLIENT_SECRET,
 }

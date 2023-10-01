@@ -36,6 +36,7 @@
     "@nestjs/schedule": "^3.0.3",
     "@nestjs/swagger": "^7.1.10",
     "@nestjs/typeorm": "^10.0.0",
+    "@paypal/payouts-sdk": "^1.1.1",
     "@sentry/node": "^7.67.0",
     "axios": "^1.5.0",
     "bcrypt": "^5.1.1",

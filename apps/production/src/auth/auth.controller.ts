@@ -107,9 +107,12 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
     }
 
+    const referrerID = await this.authService.getReferrerId(body.refCode)
+
     const newUser = await this.authService.createUnverifiedUser(
       body.email,
       body.password,
+      referrerID,
     )
 
     const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
@@ -489,9 +492,15 @@ export class AuthController {
   ): Promise<any> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const { hash, provider } = body
+    const { hash, provider, refCode } = body
 
-    return this.authService.authenticateSSO(hash, headers, ip, provider)
+    return this.authService.authenticateSSO(
+      hash,
+      headers,
+      ip,
+      provider,
+      refCode,
+    )
   }
 
   @ApiOperation({ summary: 'Link SSO provider to an existing account' })

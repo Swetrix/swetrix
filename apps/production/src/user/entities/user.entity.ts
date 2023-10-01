@@ -11,6 +11,7 @@ import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
 import { Extension } from '../../marketplace/extensions/entities/extension.entity'
 import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
+import { Payout } from '../../payouts/entities/payouts.entity'
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
@@ -219,6 +220,20 @@ export class User {
   @Column({ default: false })
   showLiveVisitorsInTitle: boolean
 
+  @Column('varchar', { length: 8, default: null })
+  refCode: string | null
+
+  @Column('varchar', { default: null })
+  referrerID: string | null
+
+  @Column('varchar', {
+    length: 254,
+    unique: true,
+    default: null,
+    nullable: true,
+  })
+  paypalPaymentsEmail: string | null
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date()
@@ -226,6 +241,9 @@ export class User {
 
   @OneToMany(() => Project, project => project.admin)
   projects: Project[]
+
+  @OneToMany(() => Payout, payout => payout.user)
+  payouts: Payout[]
 
   @OneToMany(() => ProjectShare, sharedProjects => sharedProjects.user)
   sharedProjects: ProjectShare[]

@@ -4,21 +4,25 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import axios from 'axios'
 import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _omit from 'lodash/omit'
 import * as _isNull from 'lodash/isNull'
+import * as _toNumber from 'lodash/toNumber'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
+import { PayoutsService } from '../payouts/payouts.service'
 import {
   User,
   ACCOUNT_PLANS,
   TRIAL_DURATION,
   BillingFrequency,
+  PlanCode,
 } from './entities/user.entity'
+import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
@@ -90,6 +94,7 @@ export class UserService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     @InjectRepository(DeleteFeedback)
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
+    private readonly payoutsService: PayoutsService,
   ) {}
 
   async create(
@@ -134,8 +139,8 @@ export class UserService {
     return this.usersRepository.delete(id)
   }
 
-  async count(): Promise<number> {
-    return this.usersRepository.count()
+  async count(options?: any): Promise<number> {
+    return this.usersRepository.count(options)
   }
 
   omitSensitiveData(user: Partial<User>): Partial<User> {
@@ -153,7 +158,7 @@ export class UserService {
     return this.usersRepository.findOne({ where, relations })
   }
 
-  findOne(id: string, params: object = {}): Promise<User> {
+  findOne(id: string, params: any = {}): Promise<User> {
     return this.usersRepository.findOne({
       where: { id },
       ...params,
@@ -174,7 +179,7 @@ export class UserService {
     })
   }
 
-  find(params: object): Promise<User[]> {
+  find(params: any): Promise<User[]> {
     return this.usersRepository.find(params)
   }
 
@@ -236,7 +241,9 @@ export class UserService {
     return this.usersRepository.findOne({ email })
   }
 
-  public async createUser(user: Pick<User, 'email' | 'password'>) {
+  public async createUser(
+    user: Pick<User, 'email' | 'password' | 'referrerID'>,
+  ) {
     return this.usersRepository.save({
       ...user,
       trialEndDate: dayjs
@@ -494,5 +501,88 @@ export class UserService {
     }
 
     await this.update(id, updateParams)
+  }
+
+  async getPayoutsList(user: User, take = 20, skip = 0) {
+    return this.payoutsService.paginate(
+      {
+        take,
+        skip,
+      },
+      {
+        user: user.id,
+      },
+    )
+  }
+
+  async getReferralsList(user: User): Promise<Partial<User>[]> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.planCode',
+        'user.created',
+        'user.billingFrequency',
+        'user.tierCurrency',
+      ])
+      .where('user.referrerID = :id', { id: user.id })
+      .andWhere('user.planCode != :none', { none: PlanCode.none })
+      .andWhere('user.planCode != :trial', { trial: PlanCode.trial })
+      .andWhere('user.planCode != :free', { free: PlanCode.free })
+      .orderBy('user.created', 'DESC')
+      .getMany()
+  }
+
+  async getPayoutsInfo(user: User): Promise<any> {
+    const { id } = user
+
+    const trials = await this.count({
+      where: {
+        referrerID: id,
+        planCode: In([PlanCode.trial, PlanCode.none]),
+      },
+    })
+
+    const subscribers = _toNumber(
+      (
+        await this.usersRepository
+          .createQueryBuilder('user')
+          .select('COUNT(user.id)', 'count')
+          .where('user.referrerID = :id', { id })
+          .andWhere('user.planCode != :none', { none: PlanCode.none })
+          .andWhere('user.planCode != :trial', { trial: PlanCode.trial })
+          .getRawOne()
+      )?.count,
+    )
+
+    let paid = await this.payoutsService.sumAmountByReferrerId(
+      id,
+      PayoutStatus.paid,
+    )
+    let nextPayout = await this.payoutsService.sumAmountByReferrerId(
+      id,
+      PayoutStatus.processing,
+    )
+    let pending = await this.payoutsService.sumAmountByReferrerId(
+      id,
+      PayoutStatus.pending,
+    )
+
+    paid = paid ?? 0
+    nextPayout = nextPayout ?? 0
+    pending = pending ?? 0
+
+    return {
+      trials,
+      subscribers,
+      paid,
+      nextPayout,
+      pending,
+    }
+  }
+
+  async isRefCodeUnique(code: string): Promise<boolean> {
+    const user = await this.findOneWhere({ refCode: code })
+
+    return !user
   }
 }
