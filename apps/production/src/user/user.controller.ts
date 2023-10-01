@@ -219,6 +219,10 @@ export class UserController {
 
     const user = await this.userService.findOne(userId)
 
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
     await this.mailerService.sendEmail(
       user.email,
       LetterTemplate.PayPalEmailUpdate,
