@@ -205,13 +205,24 @@ export class UserController {
   async setPaypalEmail(
     @CurrentUserId() userId: string,
     @Body('paypalPaymentsEmail') paypalPaymentsEmail: string,
+    @Headers() headers,
+    @Ip() reqIP,
   ): Promise<User> {
     this.logger.log(
       { userId, paypalPaymentsEmail },
       'PATCH /user/set-paypal-email',
     )
 
-    // TODO: SEND EMAIL TO USER TO INFORM THEM THAT THEY HAVE CHANGED THEIR PAYPAL EMAIL
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'set-paypal-email', 10, 3600)
+
+    const user = await this.userService.findOne(userId)
+
+    await this.mailerService.sendEmail(
+      user.email,
+      LetterTemplate.PayPalEmailUpdate,
+    )
 
     return this.userService.update(userId, {
       paypalPaymentsEmail: paypalPaymentsEmail || null,

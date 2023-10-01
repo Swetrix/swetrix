@@ -92,6 +92,11 @@ const metaInfoJson = {
         `A Swetrix user offers to transfer ${p.name} project to your account.`,
     },
   },
+  [LetterTemplate.PayPalEmailUpdate]: {
+    subject: {
+      en: () => 'Your PayPal email has been updated',
+    },
+  },
 }
 
 interface Params {
