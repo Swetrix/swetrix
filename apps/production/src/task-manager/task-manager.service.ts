@@ -1122,8 +1122,7 @@ export class TaskManagerService {
     await this.userService.deleteRefreshTokensWhere(where)
   }
 
-  // @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
   async payReferrers(): Promise<void> {
     if (isDevelopment || !paypalClient) {
       return
