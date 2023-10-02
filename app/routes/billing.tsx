@@ -5,7 +5,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 import Billing from 'pages/Billing'
 
 import { isSelfhosted } from 'redux/constants'
-import { isAuthenticated } from 'utils/server'
+import { isAuthenticated, detectTheme } from 'utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
@@ -16,13 +16,14 @@ export async function loader({ request }: LoaderArgs) {
     return redirect('/login', 302)
   }
 
+  const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
 
-  return json({ isAuth })
+  return json({ isAuth, theme })
 }
 
 export default function Index() {
-  const { isAuth } = useLoaderData<typeof loader>()
+  const { isAuth, theme } = useLoaderData<typeof loader>()
 
-  return <Billing ssrAuthenticated={isAuth} />
+  return <Billing ssrAuthenticated={isAuth} ssrTheme={theme} />
 }

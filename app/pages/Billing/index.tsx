@@ -4,7 +4,6 @@ import React, {
 } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { Link } from '@remix-run/react'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import duration from 'dayjs/plugin/duration'
@@ -17,10 +16,12 @@ import {
 import { loadScript } from 'utils/generic'
 import Loader from 'ui/Loader'
 import { useAppDispatch, StateType } from 'redux/store'
-import routes from 'routesPath'
 import sagaActions from 'redux/sagas/actions'
 import { withAuthentication, auth } from 'hoc/protected'
 import Modal from 'ui/Modal'
+import Button from 'ui/Button'
+import MultiProgress from 'ui/MultiProgress'
+import Tooltip from 'ui/Tooltip'
 import { IUser } from 'redux/models/IUser'
 import UIActions from 'redux/reducers/ui'
 import Pricing from '../MainPage/Pricing'
@@ -30,15 +31,17 @@ dayjs.extend(duration)
 
 interface IBilling {
   ssrAuthenticated: boolean,
+  ssrTheme: 'dark' | 'light',
 }
 
-const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
+const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Element => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
   const { metainfo, usageinfo } = useSelector((state: StateType) => state.ui.misc)
   const { user, loading }: {
     user: IUser, loading: boolean,
   } = useSelector((state: StateType) => state.auth)
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { theme: reduxTheme } = useSelector((state: StateType) => state.ui.theme)
+  const theme = isBrowser ? reduxTheme : ssrTheme
   const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
   const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
   const dispatch = useDispatch()
@@ -55,6 +58,7 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
   const {
     nextBillDate, planCode, subUpdateURL, trialEndDate, timeFormat, cancellationEffectiveDate, subCancelURL, maxEventsCount,
   } = user
+  const isSubscriber = user.planCode !== 'none' && user.planCode !== 'trial' && user.planCode !== 'free'
 
   const isTrial: boolean = planCode === 'trial'
   const isNoSub: boolean = planCode === 'none'
@@ -181,36 +185,37 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
 
   return (
     <div className='bg-gray-50 dark:bg-slate-900 min-h-page'>
+      {/* NEW */}
       <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
         <div className='flex justify-between flex-wrap gap-y-2 mb-4'>
           <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
             {t('billing.title')}
           </h1>
-          <div>
-            {subUpdateURL && (
-              <span onClick={onUpdatePaymentDetails} className='inline-flex select-none cursor-pointer mr-2 items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm'>
-                {t('billing.update')}
-              </span>
-            )}
-            {subCancelURL && (
-              <span onClick={() => setIsCancelSubModalOpened(true)} className='inline-flex select-none cursor-pointer items-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-4 py-2 text-sm'>
-                {t('billing.cancelSub')}
-              </span>
-            )}
-          </div>
         </div>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          {t('billing.desc')}
-          <br />
-          <Link to={`${routes.billing}#usage`} className='text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-500'>
-            {t('billing.gotoUsage')}
-          </Link>
+        <h2 id='billing' className='text-2xl font-medium text-gray-900 dark:text-gray-50 tracking-tight mb-2'>
+          {t('billing.subscription')}
+        </h2>
+        <p className='mt-1 text-base text-gray-900 dark:text-gray-50 tracking-tight'>
+          {isSubscriber
+            ? t('billing.selectPlan')
+            : t('billing.changePlan')}
         </p>
-        <hr className='mt-3 mb-2 border-gray-200 dark:border-gray-600' />
+        <p className='text-base text-gray-900 dark:text-gray-50 tracking-tight'>
+          {t('billing.membersNotification')}
+        </p>
+        {isSubscriber && nextBillDate && (
+          <p className='mt-1 text-base text-gray-900 dark:text-gray-50 tracking-tight'>
+            {t('billing.nextBillDateIs', {
+              date: language === 'en'
+                ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
+                : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY')
+            })}
+          </p>
+        )}
         {cancellationEffectiveDate && (
-          <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-3'>
             <InformationCircleIcon className='h-10 w-10 mr-2 text-blue-600' aria-hidden='true' />
-            <span className='font-bold max-w-prose'>
+            <span className='font-medium max-w-prose'>
               {t('billing.cancelledSubMessage', {
                 date: language === 'en'
                   ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
@@ -219,30 +224,17 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
             </span>
           </div>
         )}
-        {nextBillDate && (
-          <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            <span className='font-bold'>
-              {t('billing.nextBillDate')}
-            </span>
-            &nbsp;
-            <span>
-              {language === 'en'
-                ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
-                : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY')}
-            </span>
-          </div>
-        )}
         {isTrial && trialMessage && (
-          <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-            <span className='font-bold'>
+          <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-3'>
+            <span className='font-medium'>
               {trialMessage}
             </span>
           </div>
         )}
         {isNoSub && (
-          <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+          <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-3'>
             <ExclamationTriangleIcon className='h-10 w-10 mr-2 text-red-600' aria-hidden='true' />
-            <span className='font-bold max-w-prose'>
+            <span className='font-medium max-w-prose'>
               {t('billing.noSubWarning')}
             </span>
           </div>
@@ -251,52 +243,95 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated }): JSX.Element => {
           <Loader />
         ) : (
           <>
-            <Pricing authenticated={authenticated} t={t} language={language} />
-            <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-10'>
-              <Trans
-                // @ts-ignore
-                t={t}
-                i18nKey='billing.contact'
-                values={{ email: CONTACT_EMAIL }}
-                // @ts-ignore
-                components={{
-                  mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
-                  amount: 5,
-                }}
-              />
-            </p>
-            <h2 id='usage' className='mt-5 text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
+            <div className='flex xl:space-x-5 mt-5 flex-col xl:flex-row'>
+              <Pricing authenticated={authenticated} t={t} language={language} isBillingPage />
+              <div className='space-y-2'>
+                {subUpdateURL && (
+                  <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>
+                    {t('billing.update')}
+                  </Button>
+                )}
+                {subCancelURL && (
+                  <Button onClick={() => setIsCancelSubModalOpened(true)} type='button' semiDanger large>
+                    {t('billing.cancelSub')}
+                  </Button>
+                )}
+              </div>
+            </div>
+            <h2 id='usage' className='mt-5 text-2xl font-medium text-gray-900 dark:text-gray-50 tracking-tight'>
               {t('billing.planUsage')}
             </h2>
-            <p className='mt-1 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              {t('billing.usageOverview', {
-                tracked: usageinfo.total || 0,
-                trackedPerc: totalUsage || 0,
-                maxEvents: maxEventsCount || 0,
-              })}
+            <p className='mt-1 text-base text-gray-900 dark:text-gray-50 tracking-tight'>
+              {t('billing.planUsageDesc')}
             </p>
             <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              {t('billing.breakdown')}
-              <ul className='list-disc list-inside'>
-                <li>
-                  {t('billing.pageviews', {
-                    quantity: usageinfo.traffic || 0,
-                    percentage: usageinfo.trafficPerc || 0,
-                  })}
-                </li>
-                <li>
-                  {t('billing.customEvents', {
-                    quantity: usageinfo.customEvents || 0,
-                    percentage: usageinfo.customEventsPerc || 0,
-                  })}
-                </li>
-                <li>
-                  {t('billing.captcha', {
-                    quantity: usageinfo.captcha || 0,
-                    percentage: usageinfo.captchaPerc || 0,
-                  })}
-                </li>
-              </ul>
+              <p className='text-base font-medium text-gray-900 dark:text-gray-50 tracking-tight mb-1'>
+                {t('billing.xofy', {
+                  x: usageinfo.total || 0,
+                  y: maxEventsCount || 0,
+                })}
+              </p>
+
+              <Tooltip
+                text={(
+                  <div>
+                    <p>
+                      {t('billing.usageOverview', {
+                        tracked: usageinfo.total || 0,
+                        trackedPerc: totalUsage || 0,
+                        maxEvents: maxEventsCount || 0,
+                      })}
+                    </p>
+                    <ul className='list-disc list-inside mt-2'>
+                      <li className='marker:text-blue-600 dark:marker:text-blue-800'>
+                        {t('billing.pageviews', {
+                          quantity: usageinfo.traffic || 0,
+                          percentage: usageinfo.trafficPerc || 0,
+                        })}
+                      </li>
+                      <li className='marker:text-fuchsia-600 dark:marker:text-fuchsia-800'>
+                        {t('billing.customEvents', {
+                          quantity: usageinfo.customEvents || 0,
+                          percentage: usageinfo.customEventsPerc || 0,
+                        })}
+                      </li>
+                      <li className='marker:text-lime-600 dark:marker:text-lime-800'>
+                        {t('billing.captcha', {
+                          quantity: usageinfo.captcha || 0,
+                          percentage: usageinfo.captchaPerc || 0,
+                        })}
+                      </li>
+                    </ul>
+                  </div>
+                )}
+                tooltipNode={(
+                  <MultiProgress
+                    theme={theme}
+                    className='max-w-[25rem] w-[85vw]'
+                    progress={[
+                      {
+                        value: usageinfo.traffic === 0 ? 0 : maxEventsCount / usageinfo.traffic,
+                        lightColour: '#2563eb',
+                        darkColour: '#1d4ed8',
+                      },
+                      {
+                        value: usageinfo.customEvents === 0 ? 0 : maxEventsCount / usageinfo.customEvents,
+                        lightColour: '#c026d3',
+                        darkColour: '#a21caf',
+                      },
+                      {
+                        value: usageinfo.captcha === 0 ? 0 : maxEventsCount / usageinfo.captcha,
+                        lightColour: '#65a30d',
+                        darkColour: '#4d7c0f',
+                      }
+                    ]}
+                  />
+                )}
+                className='max-w-max !w-max !h-auto'
+              />
+              <p className='mt-1 text-base text-gray-900 dark:text-gray-50 tracking-tight'>
+                {t('billing.resetDate')}
+              </p>
             </div>
           </>
         )}

@@ -7,15 +7,15 @@ import { CheckIcon } from '@heroicons/react/24/solid'
 import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import _isNil from 'lodash/isNil'
-import _findIndex from 'lodash/findIndex'
-import _isEmpty from 'lodash/isEmpty'
+import _includes from 'lodash/includes'
 import { Trans } from 'react-i18next'
+import { RadioGroup } from '@headlessui/react'
 import cx from 'clsx'
 
 import Modal from 'ui/Modal'
-import Spin from 'ui/icons/Spin'
+import Button from 'ui/Button'
 import {
-  CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS, CURRENCIES, BillingFrequency, REFERRAL_DISCOUNT_CODE,
+  CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS, CURRENCIES, BillingFrequency, REFERRAL_DISCOUNT_CODE, STANDARD_PLANS,
 } from 'redux/constants'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
@@ -25,244 +25,21 @@ import {
   authMe, previewSubscriptionUpdate, changeSubscriptionPlan,
 } from 'api'
 import routes from 'routesPath'
-import { IUser } from 'redux/models/IUser'
 import { AppDispatch, StateType } from 'redux/store'
 import Loader from 'ui/Loader'
 
-type CurrencyCode = 'USD' | 'EUR' | 'GBP'
-
-const getNonStandardTiers = (t: (key: string, options?: {
-  [key: string]: any
-}) => string, currencyCode: CurrencyCode) => ({
-  free: {
-    name: t('pricing.free'),
-    planCode: 'free',
-    priceMonthly: PLAN_LIMITS.free.price[currencyCode].monthly,
-    priceYearly: PLAN_LIMITS.free.price[currencyCode].yearly,
-    legacy: PLAN_LIMITS.free.legacy,
-    includedFeatures: [
-      t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.free.monthlyUsageLimit.toLocaleString('en-US') }),
-      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.free.maxProjects }),
-      // t('pricing.tiers.xMoDataRetention', { amount: 3 }),
-      t('pricing.tiers.xAlertsSingular', { amount: PLAN_LIMITS.free.maxAlerts }),
-      t('pricing.tiers.userFlowAnalysis'),
-      t('pricing.tiers.dataExports'),
-      t('pricing.tiers.dataOwnership'),
-      t('main.competitiveFeatures.perf'),
-      t('pricing.tiers.dashboards'),
-      t('pricing.tiers.reports'),
-    ],
-  },
-  trial: {
-    name: t('pricing.tiers.trial'),
-    planCode: 'trial',
-    priceMonthly: PLAN_LIMITS.trial.price[currencyCode].monthly,
-    priceYearly: PLAN_LIMITS.trial.price[currencyCode].yearly,
-    legacy: PLAN_LIMITS.trial.legacy,
-    includedFeatures: [
-      t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
-    ],
-  },
-})
-
-const getTiers = (t: (key: string, options?: {
-  [key: string]: any
-}) => string, currencyCode: CurrencyCode) => [
-  {
-    name: t('pricing.tiers.hobby'),
-    planCode: 'hobby',
-    priceMonthly: PLAN_LIMITS.hobby.price[currencyCode].monthly,
-    priceYearly: PLAN_LIMITS.hobby.price[currencyCode].yearly,
-    includedFeatures: [
-      t('pricing.tiers.upToXVMo', { amount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString('en-US') }),
-      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.hobby.maxProjects }),
-      // t('pricing.tiers.xMoDataRetention', { amount: 3 }),
-      t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.hobby.maxAlerts }),
-      t('pricing.tiers.userFlowAnalysis'),
-      t('pricing.tiers.dataExports'),
-      t('pricing.tiers.dataOwnership'),
-      t('main.competitiveFeatures.perf'),
-      t('pricing.tiers.dashboards'),
-      t('pricing.tiers.reports'),
-    ],
-    pid: '813694', // Plan ID
-    ypid: '813695', // Plan ID - Yearly billing
-  },
-  {
-    name: t('pricing.tiers.freelancer'),
-    planCode: 'freelancer',
-    priceMonthly: PLAN_LIMITS.freelancer.price[currencyCode].monthly,
-    priceYearly: PLAN_LIMITS.freelancer.price[currencyCode].yearly,
-    includedFeatures: [
-      t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.hobby') }),
-      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US') }),
-      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.freelancer.maxProjects }),
-      t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.freelancer.maxAlerts }),
-      // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
-      // t('pricing.tiers.smallBusiSupport'),
-    ],
-    pid: 752316, // Plan ID
-    ypid: 776469, // Plan ID - Yearly billing
-  },
-  {
-    name: t('pricing.tiers.startup'),
-    planCode: 'startup',
-    priceMonthly: PLAN_LIMITS.startup.price[currencyCode].monthly,
-    priceYearly: PLAN_LIMITS.startup.price[currencyCode].yearly,
-    includedFeatures: [
-      t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.freelancer') }),
-      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.startup.monthlyUsageLimit.toLocaleString('en-US') }),
-      t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.startup.maxAlerts }),
-      // t('pricing.tiers.xMoDataRetention', { amount: 12 }),
-    ],
-    pid: 752317,
-    ypid: 776470,
-    mostPopular: true,
-  },
-  {
-    name: t('pricing.tiers.enterprise'),
-    planCode: 'enterprise',
-    priceMonthly: PLAN_LIMITS.enterprise.price[currencyCode].monthly,
-    priceYearly: PLAN_LIMITS.enterprise.price[currencyCode].yearly,
-    includedFeatures: [
-      t('pricing.tiers.evXPlanIncl', { plan: t('pricing.tiers.startup') }),
-      t('pricing.tiers.xVMo', { amount: PLAN_LIMITS.enterprise.monthlyUsageLimit.toLocaleString('en-US') }),
-      t('pricing.tiers.upToXWebsites', { amount: PLAN_LIMITS.enterprise.maxProjects }),
-      t('pricing.tiers.xAlertsPlural', { amount: PLAN_LIMITS.enterprise.maxAlerts }),
-      // t('pricing.tiers.xMoDataRetention', { amount: 24 }),
-    ],
-    pid: 752318,
-    ypid: 776471,
-  },
-]
-
-interface IPricingItem {
-  tier: any
-  user: IUser
-  t: (key: string, options?: {
-    [key: string]: any
-  }) => string
-  authenticated: boolean
-  billingFrequency: string
-  onPlanChange: (planCode: {
-    planCode: string,
-    name: string,
-    pid: string,
-    ypid: string,
-  }) => void
-  downgradeHandler: (item: any) => void
-  downgrade: boolean
-  planCodeLoading: boolean | string | null
-  planCodeID: string | number
-  userPlancodeID: string | number
-  currencyCode: CurrencyCode
-}
-
-const PricingItem = ({
-  tier, user, t, authenticated, billingFrequency, onPlanChange, downgradeHandler, downgrade,
-  planCodeLoading, planCodeID, userPlancodeID, currencyCode,
-}: IPricingItem) => {
-  let action
-
-  const currency = CURRENCIES[currencyCode]
-
-  if (planCodeID > userPlancodeID) {
-    action = t('pricing.upgrade')
-  } else if (downgrade) {
-    action = t('pricing.downgrade')
-  } else if (user.billingFrequency === billingFrequency || user.planCode === 'free' || user.planCode === 'trial') {
-    action = t('pricing.yourPlan')
-  } else if (billingFrequency === BillingFrequency.monthly) {
-    action = t('pricing.switchToMonthly')
-  } else {
-    action = t('pricing.switchToYearly')
-  }
-
-  return (
-    <div
-      key={tier.name}
-      className={cx('relative border rounded-2xl shadow-sm divide-y bg-[#F5F5F5] dark:bg-slate-800/20 dark:border dark:border-slate-800 divide-gray-200 dark:divide-slate-700', {
-        'border-indigo-400': user.planCode === tier.planCode,
-        'border-gray-200 dark:border-gray-500': user.planCode !== tier.planCode,
-      })}
-    >
-      {user.planCode === tier.planCode && (
-        <div className='absolute inset-x-0 top-0 transform translate-y-px'>
-          <div className='flex justify-center transform -translate-y-1/2'>
-            <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider uppercase text-white'>
-              {t('pricing.currentPlan')}
-            </span>
-          </div>
-        </div>
-      )}
-      <div className='p-6 border-none'>
-        <h2 className='text-lg leading-6 font-semibold text-[#4D4D4D] dark:text-gray-50 text-center'>{tier.name}</h2>
-        {tier.mostPopular && !authenticated && (
-          <p className='absolute top-0 py-1.5 px-4 bg-indigo-600 dark:bg-indigo-700 rounded-full text-xs font-semibold uppercase tracking-wide text-white transform -translate-y-1/2'>
-            {t('pricing.mostPopular')}
-          </p>
-        )}
-        {tier.legacy && (
-          <p className='absolute top-0 left-2 py-1 px-2 bg-yellow-500 rounded-full text-xs font-semibold uppercase tracking-wide text-white transform translate-y-4'>
-            {t('pricing.legacy')}
-          </p>
-        )}
-        <ClientOnly fallback={<Loader />}>
-          {() => (
-            <p className='mt-4 text-center'>
-              <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
-                {currency.symbol}
-                {billingFrequency === BillingFrequency.monthly ? tier.priceMonthly : tier.priceYearly}
-              </span>
-              &nbsp;
-              <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
-                /
-                {t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
-              </span>
-            </p>
-          )}
-        </ClientOnly>
-        {authenticated ? (
-          <span
-            onClick={() => downgrade ? downgradeHandler(tier) : onPlanChange(tier)}
-            className={cx('inline-flex items-center justify-center mt-8 w-full rounded-md py-2 text-sm font-semibold text-white text-center select-none', {
-              'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 hover:dark:bg-indigo-800 cursor-pointer': planCodeLoading === null && (tier.planCode !== user.planCode || (user.billingFrequency !== billingFrequency && user.planCode !== 'free')),
-              'bg-indigo-400 cursor-default': planCodeLoading !== null || (tier.planCode === user.planCode && (user.billingFrequency === billingFrequency || user.planCode === 'free' || user.planCode === 'trial')),
-            })}
-          >
-            {planCodeLoading === tier.planCode && (
-              <Spin />
-            )}
-            {action}
-          </span>
-        ) : (
-          <Link
-            className='mt-8 block w-full bg-indigo-600 dark:bg-indigo-700 hover:dark:bg-indigo-800 rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-indigo-700'
-            to={routes.signup}
-            aria-label={t('titles.signup')}
-          >
-            {t('common.getStarted')}
-          </Link>
-        )}
-      </div>
-      <div className='px-6 border-none'>
-        <hr className='w-full mx-auto border border-gray-300 dark:border-slate-800' />
-      </div>
-      <div className='pt-6 pb-8 px-6 border-none'>
-        <h3 className='text-xs font-medium text-gray-900 dark:text-gray-50 tracking-wide uppercase'>
-          {t('pricing.whatIncl')}
-        </h3>
-        <ul className='mt-6 space-y-4'>
-          {_map(tier.includedFeatures, (feature) => (
-            <li key={feature} className='flex space-x-3'>
-              <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-500' aria-hidden='true' />
-              <span className='text-sm text-gray-500 dark:text-gray-200'>{feature}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
+const getPaidFeatures = (t: any, tier: any) => {
+  return [
+    t('pricing.tiers.upToXVMo', { amount: tier.monthlyUsageLimit.toLocaleString('en-US') }),
+    t('pricing.tiers.upToXWebsites', { amount: 50 }),
+    t('pricing.tiers.xAlertsPlural', { amount: 50 }),
+    t('pricing.tiers.userFlowAnalysis'),
+    t('pricing.tiers.dataExports'),
+    t('pricing.tiers.dataOwnership'),
+    t('main.competitiveFeatures.perf'),
+    t('pricing.tiers.dashboards'),
+    t('pricing.tiers.reports'),
+  ]
 }
 
 interface IPricing {
@@ -271,9 +48,10 @@ interface IPricing {
   }) => string,
   language: string,
   authenticated: boolean,
+  isBillingPage?: boolean,
 }
 
-const Pricing = ({ t, language, authenticated }: IPricing) => {
+const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
   const dispatch: AppDispatch = useDispatch()
   const { user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
@@ -294,13 +72,25 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
   } | null>(null)
   const [showDowngradeModal, setShowDowngradeModal] = useState<boolean>(false)
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
-  const tiers = getTiers(t, currencyCode)
-  const nonStandardTiers: {
-    [key: string]: {
-      [key: string]: any,
-    },
-  } = getNonStandardTiers(t, currencyCode)
-  const isNonStandardTier = authenticated && !_isEmpty(nonStandardTiers[user.planCode])
+
+  const PLAN_CODES_ARRAY = authenticated
+    ? _includes(STANDARD_PLANS, user.planCode)
+      ? STANDARD_PLANS
+      : [user.planCode, ...STANDARD_PLANS]
+    : STANDARD_PLANS
+
+  // @ts-ignore
+  const [selectedTier, setSelectedTier] = useState<any>(authenticated ? PLAN_LIMITS[user.planCode] : PLAN_LIMITS.hobby)
+  const planFeatures = getPaidFeatures(t, selectedTier)
+  const currency = CURRENCIES[currencyCode]
+
+  const onSelectPlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const index = Number(e.target.value)
+    const planCode = PLAN_CODES_ARRAY[index]
+
+    // @ts-ignore
+    setSelectedTier(PLAN_LIMITS[planCode])
+  }
 
   useEffect(() => {
     const lastEventHandler = async (data: {
@@ -449,87 +239,194 @@ const Pricing = ({ t, language, authenticated }: IPricing) => {
     }
   }
 
-  const userPlancodeID = _findIndex(tiers, (el) => el.planCode === user.planCode)
+  // @ts-ignore
+  const userPlancodeID = PLAN_LIMITS[user.planCode]?.index
+  const planCodeID = selectedTier.index
+  const downgrade = planCodeID < userPlancodeID
+
+  let action: string
+
+  if (planCodeID > userPlancodeID) {
+    action = t('pricing.upgrade')
+  } else if (downgrade) {
+    action = t('pricing.downgrade')
+  } else if (user.billingFrequency === billingFrequency || user.planCode === 'free' || user.planCode === 'trial' || user.planCode === 'none') {
+    action = t('pricing.yourPlan')
+  } else if (billingFrequency === BillingFrequency.monthly) {
+    action = t('pricing.switchToMonthly')
+  } else {
+    action = t('pricing.switchToYearly')
+  }
 
   return (
     <>
       <div id='pricing' className={cx({ 'bg-white dark:bg-slate-900/75': !authenticated })}>
-        <div className={cx('w-11/12 max-w-7xl mx-auto whitespace-pre-line', { 'px-4 sm:px-6 lg:px-8 py-24': !authenticated })}>
+        <div
+          className={cx('max-w-max whitespace-pre-line', {
+            'px-4 sm:px-6 lg:px-8 py-24': !authenticated,
+            'mx-auto': !isBillingPage,
+          })}
+          >
           <div className='sm:flex sm:flex-col sm:align-center'>
             {!authenticated && (
               <>
                 <h1 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 sm:text-center'>
                   {t('pricing.title')}
                 </h1>
-                <p className='mt-5 text-xl text-gray-500 dark:text-gray-200 sm:text-center'>
+                <p className='mt-5 text-xl text-gray-500 dark:text-gray-200 sm:text-center mb-5'>
                   {t('pricing.adv')}
                 </p>
               </>
             )}
-            <div className='relative self-center mt-6 bg-gray-100 dark:bg-slate-800 rounded-lg p-0.5 flex sm:mt-8 xs:flex-row flex-col'>
-              <button
-                type='button'
-                onClick={() => setBillingFrequency(BillingFrequency.monthly)}
-                className={cx('relative xs:w-1/2 rounded-md shadow-sm py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
-                  'bg-white border-gray-200 text-gray-900 dark:bg-slate-900 dark:border-gray-800 dark:text-gray-50': billingFrequency === BillingFrequency.monthly,
-                  'text-gray-700 dark:text-gray-100': billingFrequency === BillingFrequency.yearly,
-                })}
-              >
-                {t('pricing.monthlyBilling')}
-              </button>
-              <button
-                type='button'
-                onClick={() => setBillingFrequency(BillingFrequency.yearly)}
-                className={cx('ml-0.5 relative xs:w-1/2 border border-transparent rounded-md py-2 text-sm font-medium whitespace-nowrap sm:w-auto sm:px-8', {
-                  'text-gray-700 dark:text-gray-100': billingFrequency === BillingFrequency.monthly,
-                  'bg-white border-gray-200 text-gray-900 dark:bg-slate-900 dark:border-gray-800 dark:text-gray-50': billingFrequency === BillingFrequency.yearly,
-                })}
-              >
-                {t('pricing.yearlyBilling')}
-              </button>
+            <div className='flex justify-between'>
+              <div>
+                <h3 className='text-lg font-medium text-gray-900 dark:text-gray-50 tracking-tight'>
+                  {selectedTier.monthlyUsageLimit.toLocaleString('en-US')}
+                </h3>
+                <p className='text-gray-700 dark:text-gray-200'>
+                  {t('pricing.eventPerMonth')}
+                </p>
+              </div>
+              <div className='flex justify-center'>
+                <RadioGroup
+                  value={billingFrequency}
+                  onChange={setBillingFrequency}
+                  className='grid grid-cols-2 gap-x-1 rounded-md p-1 text-center text-xs font-semibold leading-5 ring-1 ring-inset ring-gray-200 dark:ring-slate-700'
+                >
+                  <RadioGroup.Label className='sr-only'>
+                    {t('pricing.frequency')}
+                  </RadioGroup.Label>
+                  <RadioGroup.Option
+                    key={BillingFrequency.monthly}
+                    value={BillingFrequency.monthly}
+                    className={({ checked }) =>
+                      cx(
+                        checked ? 'bg-slate-900 dark:bg-indigo-700 text-gray-50' : 'text-gray-500 dark:text-gray-200',
+                        'cursor-pointer rounded-md px-2.5 flex justify-center items-center'
+                      )
+                    }
+                  >
+                    <span>
+                      {t('pricing.monthlyBilling')}
+                    </span>
+                  </RadioGroup.Option>
+                  <RadioGroup.Option
+                    key={BillingFrequency.yearly}
+                    value={BillingFrequency.yearly}
+                    className={({ checked }) =>
+                      cx(
+                        checked ? 'bg-slate-900 dark:bg-indigo-700 text-gray-50' : 'text-gray-500 dark:text-gray-200',
+                        'cursor-pointer rounded-md px-2.5 flex justify-center items-center'
+                      )
+                    }
+                  >
+                    <span>
+                      {t('pricing.yearlyBilling')}
+                    </span>
+                  </RadioGroup.Option>
+                </RadioGroup>
+              </div>
             </div>
           </div>
-          <div className='mt-6 space-y-4 sm:mt-10 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-4'>
-            {isNonStandardTier && (
-              <PricingItem
-                key={user.planCode}
-                tier={nonStandardTiers[user.planCode]}
-                user={user}
-                t={t}
-                billingFrequency={billingFrequency}
-                onPlanChange={onPlanChange}
-                downgrade={false}
-                downgradeHandler={downgradeHandler}
-                planCodeLoading={planCodeLoading}
-                authenticated={authenticated}
-                planCodeID={user.planCode}
-                userPlancodeID={user.planCode}
-                currencyCode={currencyCode}
-              />
+          <input
+            type='range'
+            min='0'
+            max={PLAN_CODES_ARRAY.length - 1}
+            value={PLAN_CODES_ARRAY.indexOf(selectedTier.planCode)}
+            className='arrows-handle mt-5 w-full appearance-none bg-gray-200 dark:bg-slate-600 h-2 rounded-full'
+            onChange={onSelectPlanChange}
+          />
+          <div className='mt-5 relative border rounded-2xl shadow-sm divide-y ring-1 ring-gray-200 dark:ring-slate-700'>
+            {user.planCode === selectedTier.planCode && (
+              <div className='absolute left-5 top-0 transform translate-y-px'>
+                <div className='flex justify-center transform -translate-y-1/2'>
+                  <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider uppercase text-white'>
+                    {t('pricing.currentPlan')}
+                  </span>
+                </div>
+              </div>
             )}
-            {_map(tiers, (tier) => {
-              const planCodeID = _findIndex(tiers, (el) => el.planCode === tier.planCode)
-              const downgrade = planCodeID < userPlancodeID
+            {selectedTier.legacy && (
+              <div className='absolute right-5 top-0 transform translate-y-px'>
+                <div className='flex justify-center transform -translate-y-1/2'>
+                  <span className='inline-flex rounded-full bg-amber-400 px-2 py-1 text-sm font-semibold tracking-wider uppercase text-white'>
+                    {t('pricing.legacy')}
+                  </span>
+                </div>
+              </div>
+            )}
+            <div className='p-6 border-none'>
+              <ClientOnly fallback={<Loader />}>
+                {() => (
+                  <div className='flex justify-between'>
+                    <p>
+                      <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
+                        {currency.symbol}
+                        {billingFrequency === BillingFrequency.monthly ? selectedTier.price[currencyCode]?.monthly : selectedTier.price[currencyCode]?.yearly}
+                      </span>
+                      &nbsp;
+                      <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
+                        /
+                        {t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
+                      </span>
+                    </p>
 
-              return (
-                <PricingItem
-                  key={tier.planCode}
-                  tier={tier}
-                  user={user}
-                  t={t}
-                  billingFrequency={billingFrequency}
-                  onPlanChange={onPlanChange}
-                  downgrade={downgrade}
-                  downgradeHandler={downgradeHandler}
-                  planCodeLoading={planCodeLoading}
-                  authenticated={authenticated}
-                  planCodeID={planCodeID}
-                  userPlancodeID={userPlancodeID}
-                  currencyCode={currencyCode}
-                />
-              )
-            })}
+                    {authenticated ? (
+                      <Button
+                        onClick={() => downgrade ? downgradeHandler(selectedTier) : onPlanChange(selectedTier)}
+                        type='button'
+                        loading={planCodeLoading === selectedTier.planCode}
+                        disabled={planCodeLoading !== null || (selectedTier.planCode === user.planCode && (user.billingFrequency === billingFrequency || user.planCode === 'free' || user.planCode === 'trial' || user.planCode === 'none'))}
+                        primary
+                        large
+                      >
+                        {action}
+                      </Button>
+                    ) : (
+                      <Link
+                        className='relative inline-flex select-none items-center border leading-4 font-medium rounded-md px-4 py-2 text-sm shadow-sm text-gray-50 bg-slate-900 hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 border-transparent'
+                        to={routes.signup}
+                        aria-label={t('titles.signup')}
+                      >
+                        {t('common.getStarted')}
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </ClientOnly>
+            </div>
+            <div className='px-6 border-none'>
+              <hr className='w-full mx-auto border border-gray-300 dark:border-slate-800' />
+            </div>
+            <div className='pt-6 pb-8 px-6 border-none'>
+              <h3 className='text-xs font-medium text-gray-900 dark:text-gray-50 tracking-wide uppercase'>
+                {t('pricing.whatIncl')}
+              </h3>
+              {/* space-y-4 */}
+              <ul className='mt-6 grid grid-cols-2 gap-4'>
+                {_map(planFeatures, (feature) => (
+                  <li key={feature} className='flex space-x-3'>
+                    <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-500' aria-hidden='true' />
+                    <span className='text-sm text-gray-700 dark:text-gray-200'>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
+          <p className='text-base text-gray-900 dark:text-gray-50 tracking-tight mt-5'>
+            <Trans
+              // @ts-ignore
+              t={t}
+              i18nKey='billing.contact'
+              values={{
+                amount: 10,
+              }}
+              // @ts-ignore
+              components={{
+                url: <Link to={routes.contact} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('footer.tos')} />,
+              }}
+            />
+          </p>
         </div>
         <div className='checkout-container' id='checkout-container' />
       </div>
