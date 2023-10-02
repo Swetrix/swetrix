@@ -45,7 +45,7 @@ const Input = ({
       </div>
       <div
         className={cx('relative', {
-          'mt-1': label && hint,
+          'mt-1': label,
         })}
       >
         <input

@@ -285,7 +285,8 @@
       "2fa": "Two-factor authentication",
       "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
       "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
-      "6digitCode": "6-digit authentication code"
+      "6digitCode": "6-digit authentication code",
+      "notAMember": "Not a member? <url>Start a {{amount}} day free trial</url>"
     },
     "signup": {
       "button": "Sign up",
@@ -293,7 +294,8 @@
       "email": "Email address",
       "create": "Create your account",
       "trial": "Start your free {{amount}} day trial",
-      "noCC": "No credit card required."
+      "noCC": "No credit card required.",
+      "alreadyAMember": "Already a member? <url>Sign in</url>"
     },
     "verification": {
       "success": "Your email has been successfully verified!"
@@ -321,66 +323,11 @@
       "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text.",
       "addedOn": "Added on",
       "continueWithGoogle": "Continue with Google",
-      "continueWithGithub": "Continue with Github"
+      "continueWithGithub": "Continue with Github",
+      "google": "Google",
+      "github": "Github",
+      "orContinueWith": "Or continue with"
     }
-  },
-  "features": {
-    "feature1Name": "Transparency",
-    "feature1Content": "At Swetrix, we believe that everyone has a right to privacy and transparency, especially when it comes to analytics.\nWe do not collect more information than we <docs>claim</docs>, all data is stored on servers physically located in the European Union and our analytics script is publicly available and accessible to all on our <gh>Github</gh>.",
-    "feature2Name": "Browser Addons",
-    "feature2Content": "Need to quickly view statistics for your website?\nWe have developed <chrome>Chrome</chrome> and <firefox>Firefox</firefox> extensions for this purpose.\nUsing these, you can instantly view the most important insights, receive traffic spikes notifications and much more!",
-    "ready": "Ready to get to know your users?",
-    "start": "Start using Swetrix today.",
-    "list": [
-      {
-        "name": "Performance monitoring",
-        "content": "With Swetrix you can stop guessing how fast does your website load across the globe.\nWe offer a wide range of metrics, such as page load time, DNS lookup time, TTFB and more.\nYou can see data breakdowns by time spent on frontend, backend or network, view this data for the specific countries, browsers, devices.\nAll of this is available in real-time, so you can see how your website performs at any given moment."
-      },
-      {
-        "name": "Custom alerts",
-        "content": "Do you want to track traffic spikes? Or maybe the pageviews for a specific time period? All this is available with custom alerts.\nYou can set up alerts for a wide range of metrics and receive notifications via messengers like Telegram when they get triggered."
-      },
-      {
-        "name": "Extensions & Extension Marketplace",
-        "content": "Is there some feature missing or you want to modify the Dashboard specifically for your needs? All of this is possible with Swetrix Extensions: we offer a customisable SDK which will allow you to modify the dashboard in any way you want, you can also publish your extension for other people to use or install addons people created from our Extension Marketplace."
-      },
-      {
-        "name": "AI forecasting",
-        "content": "You can forecast your website traffic with our AI-powered forecasting tool."
-      },
-      {
-        "name": "Public & Shared Dashboards",
-        "content": "With Swetrix you can make your dashboard available for other people to view.\nYou can also invite other Swetrix users to your projects, assign different roles to them."
-      },
-      {
-        "name": "Simplicity",
-        "content": "When we created our service we tried to make it as simple and flexible as possible.\nNo more confusing metrics and complicated dashboards - with us you can have control over all your projects and data in a simple and straightforward way."
-      },
-      {
-        "name": "Page Views Tracking",
-        "content": "Swetrix offers the ability to track page views, including unique views as well as user flow.\nAll views include a wide range of data, such as user country, locale, device type, page load time, and more.\nWe do not use cookies or any other type of user profiling to collect data. All incoming data is anonymised, ensuring that users cannot be tracked down in any way based on this."
-      },
-      {
-        "name": "Custom Events Tracking",
-        "content": "In addition to tracking page views, we also offer the ability to track сustom events.\nYou can track any event, such as button clicks, registrations or authorisations.\nAll of this is also completely private to the user, as we don't store any other information about them along with the events.\nYou can read more about custom events in our documentation."
-      },
-      {
-        "name": "Developer API",
-        "content": "We offer a developer API, which allows you to integrate Swetrix into your own applications.\nYou can use our API to create custom dashboards, or to integrate Swetrix into your own applications."
-      },
-      {
-        "name": "Convenience",
-        "content": "Besides the big features we try to focus on small things that make any project better.\nYou can customise Swetrix for your needs, for example use your native language or your favourite theme, set up 2FA, use a timezone or a time notation you prefer."
-      },
-      {
-        "name": "Speed",
-        "content": "We are fast. Our analytics script is as optimised as possible and uses CDNs for its delivery, which ensures that the script won't slow down your sites."
-      },
-      {
-        "name": "Trust",
-        "content": "We are a small business, not a big corporation.\nWe are interested in creating a good and quality product that will be used by satisfied customers, not in squeezing as much money as possible from our users or selling your personal data."
-      }
-    ]
   },
   "profileSettings": {
     "logoutAll": "Log out from all devices",
@@ -770,6 +717,7 @@
     "contact": "Need to track more than {{amount}} million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
     "update": "Update payment details",
     "nextBillDate": "Next bill date:",
+    "nextBillDateIs": "Your next bill date is {{date}}",
     "trialEnds": "Trial ends {{date}}",
     "cancelSub": "Cancel subscription",
     "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
@@ -787,7 +735,14 @@
     "dueNow": "Due now",
     "dueNowDescription": "You will be charged pro-rated amount for the remaining days of the current billing period.",
     "negativePayment": "Negative 'Amount' means that you will have a credit balance of {{currency}}{{dueNowAmount}}. You will be billed {{currency}}0.00 on {{dueNowDate}}. Once the credit balance is used up, your recurring billing amount will be {{currency}}{{nextPaymentAmount}} every billing cycle of your subscription plan.",
-    "nextPayment": "Next payment"
+    "nextPayment": "Next payment",
+    "subscription": "Subscription",
+    "planUsageDesc": "The plan usage shows the number of events (page views, custom events, CAPTCHA completions) that you have used for the current month.",
+    "xofy": "{{x}} of {{y}}",
+    "resetDate": "The plan usage resets on the first day of each month.",
+    "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
+    "changePlan": "You can change or cancel your subscription plan at any time here.",
+    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription."
   },
   "modals": {
     "paidFeature": {
@@ -893,7 +848,6 @@
     "verification": "Email verification",
     "invitation": "Shared project invitation",
     "profileSettings": "Profile settings",
-    "features": "Features",
     "dashboard": "Dashboard",
     "docs": "Documentation",
     "billing": "Billing",

@@ -474,13 +474,6 @@ const NotAuthedHeader = ({
                 {t('footer.blog')}
               </a>
               {!isSelfhosted && (
-                <>
-                  <Link
-                    to={routesPath.features}
-                    className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-                  >
-                    {t('common.features')}
-                  </Link>
                   <Link
                     to={`${routesPath.main}#pricing`}
                     className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -488,7 +481,6 @@ const NotAuthedHeader = ({
                   >
                     {t('common.pricing')}
                   </Link>
-                </>
               )}
               <a href={DOCS_URL} className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white' target='_blank' rel='noreferrer noopener'>
                 {/* <DocumentTextIcon className='w-5 h-5 mr-1' /> */}
@@ -571,12 +563,6 @@ const NotAuthedHeader = ({
             key='Pricing'
           >
             {t('common.pricing')}
-          </Link>
-          <Link
-            to={routesPath.features}
-            className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-          >
-            {t('common.features')}
           </Link>
           <a
             href={DOCS_URL}

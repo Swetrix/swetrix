@@ -45,14 +45,14 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
 
   return (
     <Button
-      className={cx(className, 'border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700')}
+      className={cx(className, 'flex items-center justify-center border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700')}
       onClick={googleLogin}
       secondary
       regular
     >
       <>
         <GoogleGSVG className='w-5 h-5 mr-2' />
-        {t('auth.common.continueWithGoogle')}
+        {t('auth.common.google')}
       </>
     </Button>
   )

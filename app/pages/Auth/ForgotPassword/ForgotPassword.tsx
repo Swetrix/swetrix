@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 
@@ -9,6 +9,7 @@ import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routesPath'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
+import { TRIAL_DAYS } from 'redux/constants'
 import { isValidEmail } from 'utils/validator'
 
 const ForgotPassword = ({
@@ -94,31 +95,44 @@ const ForgotPassword = ({
 
   return (
     <div>
-      <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+      <div className='min-h-[40rem] bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <div className='sm:mx-auto sm:w-full sm:max-w-md'>
+          <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
             {t('titles.recovery')}
           </h2>
-          <Input
-            name='email'
-            id='email'
-            type='email'
-            label={t('auth.common.email')}
-            value={form.email}
-            placeholder='you@example.com'
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted && errors.email}
-          />
-          <div className='flex justify-between mt-3'>
-            <Link to={routes.signin} className='mt-1 underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
-              {t('auth.common.signin')}
-            </Link>
-            <Button type='submit' loading={isLoading} primary large>
-              {t('auth.forgot.reset')}
-            </Button>
+        </div>
+        <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
+          <div className='bg-white dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 px-6 py-12 shadow sm:rounded-lg sm:px-12'>
+            <form className='space-y-6' onSubmit={handleSubmit}>
+              <Input
+                name='email'
+                id='email'
+                type='email'
+                label={t('auth.common.email')}
+                value={form.email}
+                onChange={handleInput}
+                error={beenSubmitted && errors.email}
+              />
+              <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
+                {t('auth.forgot.reset')}
+              </Button>
+            </form>
           </div>
-        </form>
+          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+            <Trans
+              // @ts-ignore
+              t={t}
+              i18nKey='auth.signin.notAMember'
+              components={{
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                url: <Link to={routes.signup} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('footer.tos')} />,
+              }}
+              values={{
+                amount: TRIAL_DAYS,
+              }}
+            />
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -124,12 +124,6 @@ export const getPageMeta = (
       }
       break
 
-    case routes.features:
-      result = {
-        title: t('titles.features'),
-      }
-      break
-
     case routes.billing:
       result = {
         title: t('titles.billing'),

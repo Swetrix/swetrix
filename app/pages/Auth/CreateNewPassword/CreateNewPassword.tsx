@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Link, useNavigate, useParams } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
@@ -108,43 +108,51 @@ const CreateNewPassword = ({
 
   return (
     <div>
-      <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+      <div className='min-h-[40rem] bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <div className='sm:mx-auto sm:w-full sm:max-w-md'>
+          <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
             {t('auth.recovery.title')}
           </h2>
-          <Input
-            name='password'
-            id='password'
-            type='password'
-            label={t('auth.recovery.newPassword')}
-            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-            value={form.password}
-            placeholder={t('auth.common.password')}
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted && errors.password}
-          />
-          <Input
-            name='repeat'
-            id='repeat'
-            type='password'
-            label={t('auth.common.repeat')}
-            value={form.repeat}
-            placeholder={t('auth.common.password')}
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted && errors.repeat}
-          />
-          <div className='flex justify-between mt-3'>
-            <Link to={routes.signin} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
-              {t('auth.common.signinInstead')}
-            </Link>
-            <Button type='submit' loading={isLoading} primary large>
-              {t('auth.recovery.save')}
-            </Button>
+        </div>
+        <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
+          <div className='bg-white dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 px-6 py-12 shadow sm:rounded-lg sm:px-12'>
+            <form className='space-y-6' onSubmit={handleSubmit}>
+              <Input
+                name='password'
+                id='password'
+                type='password'
+                label={t('auth.recovery.newPassword')}
+                hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                value={form.password}
+                onChange={handleInput}
+                error={beenSubmitted && errors.password}
+              />
+              <Input
+                name='repeat'
+                id='repeat'
+                type='password'
+                label={t('auth.common.repeat')}
+                value={form.repeat}
+                onChange={handleInput}
+                error={beenSubmitted && errors.repeat}
+              />
+              <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
+                {t('auth.recovery.save')}
+              </Button>
+            </form>
           </div>
-        </form>
+          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+            <Trans
+              // @ts-ignore
+              t={t}
+              i18nKey='auth.signup.alreadyAMember'
+              components={{
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                url: <Link to={routes.signin} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('footer.tos')} />,
+              }}
+            />
+          </p>
+        </div>
       </div>
     </div>
   )

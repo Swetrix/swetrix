@@ -16,7 +16,7 @@ import Checkbox from 'ui/Checkbox'
 import {
   isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
 } from 'utils/validator'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted, TRIAL_DAYS } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { submit2FA } from 'api'
 import { setAccessToken, removeAccessToken } from 'utils/accessToken'
@@ -180,15 +180,15 @@ const Signin = ({
           <div className='flex justify-between mt-3'>
             <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
               {!isSelfhosted && (
-              <Trans
-                // @ts-ignore
-                t={t}
-                i18nKey='auth.signin.2faUnavailable'
-                components={{
-                  // eslint-disable-next-line jsx-a11y/anchor-has-content
-                  ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />,
-                }}
-              />
+                <Trans
+                  // @ts-ignore
+                  t={t}
+                  i18nKey='auth.signin.2faUnavailable'
+                  components={{
+                    // eslint-disable-next-line jsx-a11y/anchor-has-content
+                    ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />,
+                  }}
+                />
               )}
             </div>
             <Button type='submit' loading={isLoading} primary large>
@@ -201,80 +201,102 @@ const Signin = ({
   }
 
   return (
-    <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+    <div className='bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='sm:mx-auto sm:w-full sm:max-w-md'>
+        <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
           {t('auth.signin.title')}
         </h2>
-        <Input
-          name='email'
-          id='email'
-          type='email'
-          label={t('auth.common.email')}
-          value={form.email}
-          placeholder='you@example.com'
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted && errors.email}
-        />
-        <Input
-          name='password'
-          id='password'
-          type='password'
-          label={t('auth.common.password')}
-          hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-          value={form.password}
-          placeholder={t('auth.common.password')}
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted && errors.password}
-        />
-        <Checkbox
-          checked={form.dontRemember}
-          onChange={handleInput}
-          name='dontRemember'
-          id='dontRemember'
-          className='mt-4'
-          label={t('auth.common.noRemember')}
-        />
-        <div className='flex justify-between mt-3'>
-          <div className='pt-1'>
-            {!isSelfhosted && (
-            <>
-              <Link to={routes.reset_password} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500'>
-                {t('auth.signin.forgot')}
-              </Link>
-              <span className='text-gray-900 dark:text-gray-50'>&nbsp;|&nbsp;</span>
-              <Link to={routes.signup} className='underline text-blue-600 hover:text-indigo-800 dark:text-blue-400 dark:hover:text-blue-500' aria-label={t('titles.signup')}>
-                {t('auth.common.signupInstead')}
-              </Link>
-            </>
-            )}
-          </div>
-          <Button type='submit' loading={isLoading} primary large>
-            {t('auth.signin.button')}
-          </Button>
+      </div>
+      <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
+        <div className='bg-white dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 px-6 py-12 shadow sm:rounded-lg sm:px-12'>
+          <form className='space-y-6' onSubmit={handleSubmit}>
+            <Input
+              name='email'
+              id='email'
+              type='email'
+              label={t('auth.common.email')}
+              value={form.email}
+              className='mt-4'
+              onChange={handleInput}
+              error={beenSubmitted ? errors.email : ''}
+            />
+            <Input
+              name='password'
+              id='password'
+              type='password'
+              label={t('auth.common.password')}
+              hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+              value={form.password}
+              className='mt-4'
+              onChange={handleInput}
+              error={beenSubmitted ? errors.password : ''}
+            />
+            <div className='flex items-center justify-between'>
+              <Checkbox
+                checked={form.dontRemember}
+                onChange={handleInput}
+                name='dontRemember'
+                id='dontRemember'
+                label={t('auth.common.noRemember')}
+              />
+              <div className='text-sm leading-6'>
+                <Link to={routes.reset_password} className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+                  {t('auth.signin.forgot')}
+                </Link>
+              </div>
+            </div>
+
+            <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
+              {t('auth.signin.button')}
+            </Button>
+          </form>
+
+          {!isSelfhosted && (
+            <div>
+              <div className='relative mt-10'>
+                <div className='absolute inset-0 flex items-center' aria-hidden='true'>
+                  <div className='w-full border-t border-gray-200 dark:border-gray-600' />
+                </div>
+                <div className='relative flex justify-center text-sm font-medium leading-6'>
+                  <span className='bg-white dark:bg-slate-800/20 px-6 text-gray-900 dark:text-gray-50'>
+                    {t('auth.common.orContinueWith')}
+                  </span>
+                </div>
+              </div>
+              <div className='mt-6 grid grid-cols-2 gap-4'>
+                <GoogleAuth
+                  setIsLoading={setIsLoading}
+                  authSSO={authSSO}
+                  callback={loginCallback}
+                  dontRemember={false}
+                />
+                <GithubAuth
+                  setIsLoading={setIsLoading}
+                  authSSO={authSSO}
+                  callback={loginCallback}
+                  dontRemember={false}
+                  ssrTheme={ssrTheme}
+                />
+              </div>
+            </div>
+          )}
         </div>
-        {!isSelfhosted && (
-        <div className='flex flex-wrap'>
-          <GoogleAuth
-            className='mt-4 mr-5'
-            setIsLoading={setIsLoading}
-            authSSO={authSSO}
-            callback={loginCallback}
-            dontRemember={form.dontRemember}
+
+        <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+          <Trans
+            // @ts-ignore
+            t={t}
+            i18nKey='auth.signin.notAMember'
+            components={{
+              // eslint-disable-next-line jsx-a11y/anchor-has-content
+              url: <Link to={routes.signup} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('footer.tos')} />,
+            }}
+            values={{
+              amount: TRIAL_DAYS,
+            }}
           />
-          <GithubAuth
-            className='mt-4'
-            setIsLoading={setIsLoading}
-            authSSO={authSSO}
-            callback={loginCallback}
-            dontRemember={form.dontRemember}
-            ssrTheme={ssrTheme}
-          />
-        </div>
-        )}
-      </form>
+        </p>
+      </div>
     </div>
   )
 }
