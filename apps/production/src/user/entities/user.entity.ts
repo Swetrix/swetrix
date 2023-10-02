@@ -22,8 +22,12 @@ export enum PlanCode {
   trial = 'trial',
   hobby = 'hobby',
   freelancer = 'freelancer',
+  '200k' = '200k',
+  '500k' = '500k',
   startup = 'startup',
+  '2m' = '2m',
   enterprise = 'enterprise',
+  '10m' = '10m',
 }
 
 export const ACCOUNT_PLANS = {
@@ -40,7 +44,7 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.free,
     displayName: 'Free plan',
     monthlyUsageLimit: 5000,
-    maxProjects: 10,
+    maxProjects: 50,
     maxAlerts: 1,
     maxApiKeyRequestsPerHour: 600,
     legacy: true,
@@ -49,8 +53,8 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.trial,
     displayName: 'Free trial',
     monthlyUsageLimit: 100000,
-    maxProjects: 20,
-    maxAlerts: 20,
+    maxProjects: 50,
+    maxAlerts: 50,
     maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
@@ -58,10 +62,10 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.hobby,
     displayName: 'Hobby plan',
     monthlyUsageLimit: 10000,
-    maxProjects: 20,
+    maxProjects: 50,
     pid: '813694', // Plan ID
     ypid: '813695', // Plan ID - Yearly billing
-    maxAlerts: 10,
+    maxAlerts: 50,
     maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
@@ -69,10 +73,32 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.freelancer,
     displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
-    maxProjects: 20,
+    maxProjects: 50,
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
-    maxAlerts: 20,
+    maxAlerts: 50,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
+  },
+  [PlanCode['200k']]: {
+    id: PlanCode['200k'],
+    displayName: '200k events',
+    monthlyUsageLimit: 200000,
+    maxProjects: 50,
+    pid: '854654', // Plan ID
+    ypid: '854655', // Plan ID - Yearly billing
+    maxAlerts: 50,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
+  },
+  [PlanCode['500k']]: {
+    id: PlanCode['500k'],
+    displayName: '500k events',
+    monthlyUsageLimit: 500000,
+    maxProjects: 50,
+    pid: '854656', // Plan ID
+    ypid: '854657', // Plan ID - Yearly billing
+    maxAlerts: 50,
     maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
@@ -80,9 +106,20 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.startup,
     displayName: 'Startup plan',
     monthlyUsageLimit: 1000000,
-    maxProjects: 30,
+    maxProjects: 50,
     pid: '752317',
     ypid: '776470',
+    maxAlerts: 50,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
+  },
+  [PlanCode['2m']]: {
+    id: PlanCode['2m'],
+    displayName: '2m events',
+    monthlyUsageLimit: 2000000,
+    maxProjects: 50,
+    pid: '854663', // Plan ID
+    ypid: '854664', // Plan ID - Yearly billing
     maxAlerts: 50,
     maxApiKeyRequestsPerHour: 600,
     legacy: false,
@@ -94,7 +131,18 @@ export const ACCOUNT_PLANS = {
     maxProjects: 50,
     pid: '752318',
     ypid: '776471',
-    maxAlerts: 100,
+    maxAlerts: 50,
+    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
+  },
+  [PlanCode['10m']]: {
+    id: PlanCode['10m'],
+    displayName: '10m events',
+    monthlyUsageLimit: 10000000,
+    maxProjects: 50,
+    pid: '854665', // Plan ID
+    ypid: '854666', // Plan ID - Yearly billing
+    maxAlerts: 50,
     maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
