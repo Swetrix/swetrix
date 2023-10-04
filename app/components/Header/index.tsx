@@ -735,7 +735,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                     {user?.planCode === 'trial' && (
                       <Link
                         to={routesPath.billing}
-                        className={cx('font-semibold leading-6 text-base', {
+                        className={cx('font-semibold leading-6 text-base text-center', {
                           'text-amber-600 hover:text-amber-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                           'text-rose-600 hover:text-rose-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
                         })}

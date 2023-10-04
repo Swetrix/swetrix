@@ -725,7 +725,7 @@ const ProjectSettings = ({
         title={t('project.settings.protected')}
         message={(
           <div>
-            <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
+            <p className='text-gray-500 dark:text-gray-300 mt-1 mb-4 text-sm'>
               {t('project.settings.protectedHint')}
             </p>
             <Input
@@ -734,8 +734,7 @@ const ProjectSettings = ({
               type='password'
               label={t('project.settings.password')}
               value={form?.password || ''}
-              placeholder={t('project.settings.password')}
-              className='mt-4'
+              className='mt-4 px-4 sm:px-0'
               onChange={handleInput}
               error={beenSubmitted ? errors.password : null}
             />

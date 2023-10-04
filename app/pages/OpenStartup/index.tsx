@@ -1,6 +1,5 @@
 /* eslint-disable */
 import React, { useEffect } from 'react'
-import type { LinksFunction } from '@remix-run/node'
 import _map from 'lodash/map'
 import bb, {
   bar, line,
@@ -12,14 +11,6 @@ import { useSelector } from 'react-redux'
 import { nFormatterSeparated } from 'utils/generic'
 import { StateType } from 'redux/store/index'
 import { LIVE_DEMO_URL } from 'redux/constants'
-
-import Style from 'styles/ProjectViewStyle.css'
-
-export const links: LinksFunction = () => {
-  return [
-    { rel: 'stylesheet', href: Style },
-  ]
-}
 
 // This should be generated on the API side, will be done later.
 // MRR taken from Profitwell dashboard

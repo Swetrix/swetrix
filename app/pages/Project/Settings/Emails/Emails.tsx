@@ -267,7 +267,7 @@ const NoSubscribers = ({ t }: {
 }): JSX.Element => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
-      <h2 className='text-2xl mb-8 text-center leading-snug'>
+      <h2 className='text-xl mb-8 text-center leading-snug px-4'>
         {t('project.settings.noPeople')}
       </h2>
     </div>

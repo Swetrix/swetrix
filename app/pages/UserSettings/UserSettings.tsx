@@ -605,7 +605,7 @@ const UserSettings = ({
                     <>
                       <span
                         onClick={toggleShowPasswordFields}
-                        className='flex items-center cursor-pointer max-w-max text-gray-900 dark:text-gray-50 hover:underline'
+                        className='flex items-center cursor-pointer max-w-max text-gray-900 dark:text-gray-50 hover:underline mt-2'
                       >
                         {t('auth.common.changePassword')}
                         <ChevronDownIcon
@@ -815,7 +815,7 @@ const UserSettings = ({
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                       {!user.isActive && (
                         <div
-                          className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800 dark:hover:text-indigo-600'
+                          className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800 dark:hover:text-indigo-600 max-w-max'
                           onClick={() => onEmailConfirm(setError)}
                         >
                           <EnvelopeIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
@@ -837,7 +837,7 @@ const UserSettings = ({
                               {t('profileSettings.logoutAll')}
                             </>
                           </Button>
-                          <Button onClick={() => setShowModal(true)} semiSmall danger>
+                          <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
                             <>
                               <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
                               {t('profileSettings.delete')}

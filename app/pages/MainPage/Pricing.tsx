@@ -167,9 +167,8 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
         return
       }
 
-      const discountCode = (user.referrerID && (user.planCode === 'trial' || user.planCode === 'none'))
-        ? REFERRAL_DISCOUNT_CODE
-        : null
+      const discountMayBeApplied = user.referrerID && (user.planCode === 'trial' || user.planCode === 'none') && !user.cancellationEffectiveDate
+      const coupon = discountMayBeApplied ? REFERRAL_DISCOUNT_CODE : undefined
 
       // @ts-ignore
       window.Paddle.Checkout.open({
@@ -182,7 +181,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
         title: tier.name,
         displayModeTheme: theme,
         country: metainfo.country,
-        discountCode,
+        coupon,
       })
     }
   }
@@ -358,8 +357,8 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
             <div className='p-6 border-none'>
               <ClientOnly fallback={<Loader />}>
                 {() => (
-                  <div className='flex justify-between'>
-                    <p>
+                  <div className='flex justify-between flex-wrap'>
+                    <p className='mt-2 sm:mt-0'>
                       <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
                         {currency.symbol}
                         {billingFrequency === BillingFrequency.monthly ? selectedTier.price[currencyCode]?.monthly : selectedTier.price[currencyCode]?.yearly}
@@ -375,6 +374,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                       <Button
                         onClick={() => downgrade ? downgradeHandler(selectedTier) : onPlanChange(selectedTier)}
                         type='button'
+                        className='mt-2 sm:mt-0'
                         loading={planCodeLoading === selectedTier.planCode}
                         disabled={planCodeLoading !== null || (selectedTier.planCode === user.planCode && (user.billingFrequency === billingFrequency || user.planCode === 'free' || user.planCode === 'trial' || user.planCode === 'none'))}
                         primary
