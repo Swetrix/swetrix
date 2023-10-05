@@ -389,6 +389,22 @@ const Dashboard = ({
   }, [dashboardPaginationPage, dashboardPaginationPageShared])
 
   const dashboardLocTabs = useMemo(() => {
+    if (sharedTotal <= 0) {
+      return [
+        {
+          id: DASHBOARD_TABS.owned,
+          name: tabForOwnedProject,
+          label: t('profileSettings.owned'),
+        },
+        {
+          id: DASHBOARD_TABS.captcha,
+          name: tabForCaptchaProject,
+          label: t('profileSettings.captcha'),
+        },
+      ]
+    }
+
+
     return [
       {
         id: DASHBOARD_TABS.owned,
