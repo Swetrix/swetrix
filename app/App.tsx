@@ -10,6 +10,7 @@ import cx from 'clsx'
 import _some from 'lodash/some'
 import _includes from 'lodash/includes'
 import _startsWith from 'lodash/startsWith'
+import _endsWith from 'lodash/endsWith'
 import 'dayjs/locale/ru'
 import 'dayjs/locale/uk'
 
@@ -137,12 +138,18 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
   const isReferralPage = _startsWith(pathname, '/ref/')
-  const isProjectPage = _startsWith(pathname, '/projects/')
+  const isProjectViewPage = _startsWith(pathname, '/projects/')
+    && !_endsWith(pathname, '/new')
+    && !_endsWith(pathname, '/subscribers/invite')
+    && !_endsWith(pathname, '/subscribers/invite')
+    && !_endsWith(pathname, '/password')
+    && !_includes(pathname, '/alerts/')
+    && !_includes(pathname, '/settings/')
 
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <Suspense fallback={<></>}>
-      {pathname !== routesPath.main && !isReferralPage && !isProjectPage && (
+      {pathname !== routesPath.main && !isReferralPage && !isProjectViewPage && (
         <Header ssrTheme={ssrTheme} authenticated={authenticated} />
       )}
       {/* @ts-ignore */}
@@ -151,7 +158,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
           <Outlet />
         </Suspense>
       </ScrollToTop>
-      {!isReferralPage && !isProjectPage && (
+      {!isReferralPage && !isProjectViewPage && (
         <Footer minimal={isMinimalFooter} authenticated={authenticated} />
       )}
     </Suspense>
