@@ -22,6 +22,7 @@ import {
 } from '@nestjs/common'
 import { Response } from 'express'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
@@ -111,6 +112,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async get(
@@ -118,17 +120,40 @@ export class ProjectController {
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
     @Query('isCaptcha') isCaptchaStr: string | undefined,
+    @Query('search') search: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
     const isCaptcha = isCaptchaStr === 'true'
 
-    const where = Object()
-    where.admin = userId
+    let where: any
 
-    if (isCaptcha) {
-      where.isCaptchaProject = true
+    if (search) {
+      where = [
+        {
+          admin: userId,
+          isCaptchaProject: isCaptcha,
+          isAnalyticsProject: !isCaptcha,
+          name: ILike(`%${search}%`),
+          // name: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
+        },
+        {
+          admin: userId,
+          isCaptchaProject: isCaptcha,
+          isAnalyticsProject: !isCaptcha,
+          id: ILike(`%${search}%`),
+          // id: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
+        },
+      ]
     } else {
-      where.isAnalyticsProject = true
+      where = {
+        admin: userId,
+      }
+
+      if (isCaptcha) {
+        where.isCaptchaProject = true
+      } else {
+        where.isAnalyticsProject = true
+      }
     }
 
     const paginated = await this.projectService.paginate({ take, skip }, where)
