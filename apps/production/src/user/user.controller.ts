@@ -643,6 +643,7 @@ export class UserController {
         'emailRequests',
         'refCode',
         'referrerID',
+        'maxProjects',
       ])
       await this.userService.update(id, userToUpdate)
 
