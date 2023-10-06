@@ -37,6 +37,17 @@ export function detectTheme(request: Request): [ThemeType, boolean] {
   return ['light', false]
 }
 
+
+/**
+ * Function detects theme based on user's browser hints and cookies
+ * 
+ * @param request
+ * @returns boolean
+ */
+export function isEmbedded(request: Request): boolean {
+  return new URL(request.url).searchParams.get('embedded') === 'true'
+}
+
 export function getAccessToken(request: Request): string | null {
   const cookie = request.headers.get('Cookie')
   const accessToken = cookie?.match(/(?<=access_token=)[^;]*/)?.[0]

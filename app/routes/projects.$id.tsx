@@ -5,7 +5,7 @@ import { json } from '@remix-run/node'
 import _split from 'lodash/split'
 
 import { API_URL } from 'redux/constants'
-import { detectTheme } from 'utils/server'
+import { detectTheme, isEmbedded, isAuthenticated } from 'utils/server'
 import ProjectViewStyle from 'styles/ProjectViewStyle.css'
 
 export const links: LinksFunction = () => [
@@ -24,15 +24,17 @@ export const meta: V2_MetaFunction = ({ location }) => {
 }
 
 export async function loader({ request }: LoaderArgs) {
+  const embedded = isEmbedded(request)
   const [theme] = detectTheme(request)
+  const isAuth = isAuthenticated(request)
 
-  return json({ theme })
+  return json({ theme, embedded, isAuth })
 }
 
 export default function Index() {
   const {
-    theme,
+    theme, embedded, isAuth,
   } = useLoaderData<typeof loader>()
 
-  return <ViewProject ssrTheme={theme} />
+  return <ViewProject ssrTheme={theme} ssrAuthenticated={isAuth} embedded={embedded} />
 }

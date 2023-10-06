@@ -137,11 +137,12 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
   const isReferralPage = _startsWith(pathname, '/ref/')
+  const isProjectPage = _startsWith(pathname, '/projects/')
 
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <Suspense fallback={<></>}>
-      {pathname !== routesPath.main && !isReferralPage && (
+      {pathname !== routesPath.main && !isReferralPage && !isProjectPage && (
         <Header ssrTheme={ssrTheme} authenticated={authenticated} />
       )}
       {/* @ts-ignore */}
@@ -150,7 +151,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
           <Outlet />
         </Suspense>
       </ScrollToTop>
-      {!isReferralPage && (
+      {!isReferralPage && !isProjectPage && (
         <Footer minimal={isMinimalFooter} authenticated={authenticated} />
       )}
     </Suspense>

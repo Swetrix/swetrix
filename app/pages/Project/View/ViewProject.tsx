@@ -62,6 +62,8 @@ import FlatPicker from 'ui/Flatpicker'
 import Robot from 'ui/icons/Robot'
 import Forecast from 'modals/Forecast'
 import routes from 'routesPath'
+import Header from 'components/Header'
+import Footer from 'components/Footer'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents, getProjectCompareData, checkPassword,
 } from 'api'
@@ -122,14 +124,18 @@ interface IViewProject {
   },
   theme: 'dark' | 'light',
   ssrTheme: 'dark' | 'light',
+  embedded: boolean,
+  ssrAuthenticated: boolean,
 }
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
-  setLiveStatsForProject, authenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
+  setLiveStatsForProject, authenticated: csrAuthenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
   projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password, theme,
-  ssrTheme,
+  ssrTheme, embedded, ssrAuthenticated,
 }: IViewProject) => {
+  const authenticated = isBrowser ? csrAuthenticated : ssrAuthenticated
+
   // t is used for translation
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -1606,7 +1612,7 @@ const ViewProject = ({
         loadAnalyticsPerf()
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, period, chartType, filters, forecasedChartData, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, activeTab, areFiltersPerfParsed])
 
   // using this for fix some bugs with update custom events data for chart
@@ -1880,14 +1886,23 @@ const ViewProject = ({
   if (!isLoading) {
     return (
       <>
+        {!embedded && (
+          <Header ssrTheme={ssrTheme} authenticated={authenticated} />
+        )}
         <EventsRunningOutBanner />
-        <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
+        <div
+          ref={ref}
+          className={cx('bg-gray-50 dark:bg-slate-900', {
+            'min-h-[100vh]': analyticsLoading && embedded,
+          })}
+        >
           <div
             className={cx(
               'max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8',
               {
-                'min-h-min-footer': authenticated || activeTab === PROJECT_TABS.alerts,
-                'min-h-min-footer-ad': !authenticated && activeTab !== PROJECT_TABS.alerts,
+                'min-h-min-footer': (authenticated || activeTab === PROJECT_TABS.alerts) && !embedded,
+                'min-h-min-footer-ad': (!authenticated && activeTab !== PROJECT_TABS.alerts) && !embedded,
+                'min-h-[100vh]': embedded,
               },
             )}
             ref={dashboardRef}
@@ -2616,7 +2631,7 @@ const ViewProject = ({
             )}
           </div>
         </div>
-        {!authenticated && activeTab !== PROJECT_TABS.alerts && (
+        {!authenticated && activeTab !== PROJECT_TABS.alerts && !embedded && (
           <div className='bg-indigo-600'>
             <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
               <h2 className='text-3xl sm:text-4xl font-bold tracking-tight text-gray-900'>
@@ -2658,14 +2673,30 @@ const ViewProject = ({
           pid={id}
           language={language}
         />
+        {!embedded && (
+          <Footer authenticated={authenticated} minimal />
+        )}
       </>
     )
   }
 
   return (
-    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <Loader />
-    </div>
+    <>
+      {!embedded && (
+        <Header ssrTheme={ssrTheme} authenticated={authenticated} />
+      )}
+      <div
+        className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900', {
+          'min-h-min-footer': !embedded,
+          'min-h-[100vh]': embedded,
+        })}
+      >
+        <Loader />
+      </div>
+      {!embedded && (
+        <Footer authenticated={authenticated} minimal />
+      )}
+    </>
   )
 }
 
@@ -2682,6 +2713,8 @@ ViewProject.propTypes = {
   authenticated: PropTypes.bool.isRequired,
   extensions: PropTypes.arrayOf(PropTypes.object).isRequired,
   timezone: PropTypes.string,
+  embedded: PropTypes.bool.isRequired,
+  ssrAuthenticated: PropTypes.bool.isRequired,
 }
 
 ViewProject.defaultProps = {
