@@ -33,36 +33,28 @@ export enum PlanCode {
 export const ACCOUNT_PLANS = {
   [PlanCode.none]: {
     id: PlanCode.none,
-    displayName: 'No plan',
     monthlyUsageLimit: 0,
-    maxProjects: 0,
     maxAlerts: 0,
     maxApiKeyRequestsPerHour: 0,
     legacy: false,
   },
   [PlanCode.free]: {
     id: PlanCode.free,
-    displayName: 'Free plan',
     monthlyUsageLimit: 5000,
-    maxProjects: 50,
     maxAlerts: 1,
     maxApiKeyRequestsPerHour: 600,
     legacy: true,
   },
   [PlanCode.trial]: {
     id: PlanCode.trial,
-    displayName: 'Free trial',
     monthlyUsageLimit: 100000,
-    maxProjects: 50,
     maxAlerts: 50,
     maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode.hobby]: {
     id: PlanCode.hobby,
-    displayName: 'Hobby plan',
     monthlyUsageLimit: 10000,
-    maxProjects: 50,
     pid: '813694', // Plan ID
     ypid: '813695', // Plan ID - Yearly billing
     maxAlerts: 50,
@@ -71,9 +63,7 @@ export const ACCOUNT_PLANS = {
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
-    displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
-    maxProjects: 50,
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
     maxAlerts: 50,
@@ -82,9 +72,7 @@ export const ACCOUNT_PLANS = {
   },
   [PlanCode['200k']]: {
     id: PlanCode['200k'],
-    displayName: '200k events',
     monthlyUsageLimit: 200000,
-    maxProjects: 50,
     pid: '854654', // Plan ID
     ypid: '854655', // Plan ID - Yearly billing
     maxAlerts: 50,
@@ -93,9 +81,7 @@ export const ACCOUNT_PLANS = {
   },
   [PlanCode['500k']]: {
     id: PlanCode['500k'],
-    displayName: '500k events',
     monthlyUsageLimit: 500000,
-    maxProjects: 50,
     pid: '854656', // Plan ID
     ypid: '854657', // Plan ID - Yearly billing
     maxAlerts: 50,
@@ -104,9 +90,7 @@ export const ACCOUNT_PLANS = {
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
-    displayName: 'Startup plan',
     monthlyUsageLimit: 1000000,
-    maxProjects: 50,
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
@@ -115,9 +99,7 @@ export const ACCOUNT_PLANS = {
   },
   [PlanCode['2m']]: {
     id: PlanCode['2m'],
-    displayName: '2m events',
     monthlyUsageLimit: 2000000,
-    maxProjects: 50,
     pid: '854663', // Plan ID
     ypid: '854664', // Plan ID - Yearly billing
     maxAlerts: 50,
@@ -126,9 +108,7 @@ export const ACCOUNT_PLANS = {
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
-    displayName: 'Enterprise plan',
     monthlyUsageLimit: 5000000,
-    maxProjects: 50,
     pid: '752318',
     ypid: '776471',
     maxAlerts: 50,
@@ -137,9 +117,7 @@ export const ACCOUNT_PLANS = {
   },
   [PlanCode['10m']]: {
     id: PlanCode['10m'],
-    displayName: '10m events',
     monthlyUsageLimit: 10000000,
-    maxProjects: 50,
     pid: '854665', // Plan ID
     ypid: '854666', // Plan ID - Yearly billing
     maxAlerts: 50,
@@ -258,6 +236,9 @@ export class User {
 
   @Column('varchar', { length: 50, default: Theme.classic })
   theme: Theme
+
+  @Column('int', { default: 50 })
+  maxProjects: number
 
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean
