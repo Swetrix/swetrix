@@ -21,13 +21,15 @@ export const withProjectProtected = <P extends PropsType>(WrappedComponent: any)
       id: string
     } = useParams()
 
+    const queryPassword = new URLSearchParams(window.location.search).get('password')
+
     const project = _find(projects, { id })
 
     if (project?.isOwner) {
       return <WrappedComponent {...props} />
     }
 
-    if (project?.isPasswordProtected && !passwords[id]) {
+    if (project?.isPasswordProtected && !passwords[id] && !queryPassword) {
       navigate(_replace(routes.project_protected_password, ':id', id))
       return null
     }
