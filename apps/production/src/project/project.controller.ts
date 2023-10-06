@@ -85,7 +85,7 @@ import {
   ShareUpdateDTO,
 } from './dto'
 
-const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
+const PROJECTS_MAXIMUM = 50
 
 const isValidShareDTO = (share: ShareDTO): boolean => {
   return !_isEmpty(_trim(share.email)) && _includes(roles, share.role)
@@ -243,7 +243,7 @@ export class ProjectController {
     const user = await this.userService.findOneWithRelations(userId, [
       'projects',
     ])
-    const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+    const { maxProjects = PROJECTS_MAXIMUM } = user
 
     if (!user.isActive) {
       throw new ForbiddenException(
@@ -251,7 +251,7 @@ export class ProjectController {
       )
     }
 
-    if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
+    if (_size(user.projects) >= maxProjects) {
       throw new ForbiddenException(
         `The user's plan supports maximum of ${maxProjects} projects`,
       )
@@ -297,7 +297,7 @@ export class ProjectController {
     const user = await this.userService.findOneWithRelations(userId, [
       'projects',
     ])
-    const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+    const { maxProjects = PROJECTS_MAXIMUM } = user
 
     if (!user.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
@@ -316,7 +316,7 @@ export class ProjectController {
           _filter(
             user.projects,
             (project: Project) => project.isCaptchaProject,
-          ) >= (maxProjects || PROJECTS_MAXIMUM),
+          ) >= maxProjects,
         )
       ) {
         throw new HttpException(
@@ -329,7 +329,7 @@ export class ProjectController {
         _filter(
           user.projects,
           (project: Project) => project.isAnalyticsProject,
-        ) >= (maxProjects || PROJECTS_MAXIMUM),
+        ) >= maxProjects,
       )
     ) {
       throw new ForbiddenException(
@@ -1236,9 +1236,9 @@ export class ProjectController {
         user.projects,
         (fProject: Project) => fProject.isCaptchaProject,
       )
-      const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+      const { maxProjects = PROJECTS_MAXIMUM } = user
 
-      if (_size(captchaProjects >= (maxProjects || PROJECTS_MAXIMUM))) {
+      if (_size(captchaProjects >= maxProjects)) {
         throw new ForbiddenException(
           `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
         )
