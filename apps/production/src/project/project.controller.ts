@@ -193,17 +193,37 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async getShared(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
+    @Query('search') search: string | undefined,
   ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
-    this.logger.log({ userId, take, skip }, 'GET /project/shared')
+    this.logger.log({ userId, take, skip, search }, 'GET /project/shared')
 
-    const where = Object()
-    where.user = userId
+    let where = Object()
+
+    if (search) {
+      where = [
+        {
+          user: userId,
+          project: {
+            name: ILike(`%${search}%`),
+          },
+        },
+        {
+          user: userId,
+          project: {
+            id: ILike(`%${search}%`),
+          },
+        },
+      ]
+    } else {
+      where.user = userId
+    }
 
     const paginated = await this.projectService.paginateShared(
       { take, skip },
