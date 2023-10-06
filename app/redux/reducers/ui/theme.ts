@@ -32,6 +32,13 @@ const getInitialTheme = (): ThemeType => {
     return 'light'
   }
 
+  const queryTheme = new URLSearchParams(window.location.search).get('theme') as (ThemeType | null)
+
+  if (queryTheme && _includes(SUPPORTED_THEMES, queryTheme)) {
+    setThemeToDOM(queryTheme)
+    return queryTheme
+  }
+
   const lsTheme: any = getCookie(LS_THEME_SETTING)
 
   if (_includes(SUPPORTED_THEMES, lsTheme)) {

@@ -17,7 +17,14 @@ export const hasAuthCookies = (request: Request) => {
  * @returns [theme, storeToCookie]
  */
 export function detectTheme(request: Request): [ThemeType, boolean] {
-  // Stage 1: Check if user has set theme manually
+  // Stage 1: Check if theme is set via `theme` query param
+  const queryTheme = new URL(request.url).searchParams.get('theme') as (ThemeType | null)
+
+  if (queryTheme && _includes(SUPPORTED_THEMES, queryTheme)) {
+    return [queryTheme, false]
+  }
+
+  // Stage 2: Check if user has set theme manually
   const cookie = request.headers.get('Cookie')
   const theme = cookie?.match(/(?<=colour-theme=)[^;]*/)?.[0] as ThemeType
 
@@ -25,7 +32,7 @@ export function detectTheme(request: Request): [ThemeType, boolean] {
     return [theme, false]
   }
 
-  // Stage 2: Try to detect theme based on Sec-CH browser hints
+  // Stage 3: Try to detect theme based on Sec-CH browser hints
   // Currently only Chromium-based browsers support this feature
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Color-Scheme
   const hintedTheme = request.headers.get('Sec-CH-Prefers-Color-Scheme') as ThemeType
